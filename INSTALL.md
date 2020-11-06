@@ -58,14 +58,12 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
     pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake expat mingw64/mingw-w64-x86_64-openblas
     ```
 
-4. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` to the number of threads to use for matrix operations.
-
-5. *(Optional)* Install the NetCDF library:
+4. *(Optional)* Install the NetCDF library:
     ```
     pacman -S mingw-w64-x86_64-netcdf
     ```
 
-6. *(Optional)* Download and install liberfa:
+5. *(Optional)* Download and install liberfa:
 
     6.1. Install the `tar` utility and required build tool:
     ```
@@ -83,7 +81,7 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
     make install
     ```
 
-7. *(Optional)* Install Microsoft MPI:
+6. *(Optional)* Install Microsoft MPI:
 
     7.1 Download and install the [Microsoft MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi).
 
@@ -92,14 +90,14 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
     pacman -S mingw-w64-x86_64-msmpi
     ```
 
-8. Create the build directory and compile GROOPS:
+7. Create the build directory and compile GROOPS:
     ```
     mkdir /c/groops/source/build && cd /c/groops/source/build
-    cmake.exe .. -G "MinGW Makefiles"
+    cmake.exe .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
     mingw32-make.exe
     ```
 
-9. Make sure to also read the [post-installation steps](#windows-post-installation-steps).
+8. Make sure to also read the [post-installation steps](#windows-post-installation-steps).
 
 ### Graphical User Interface (GUI)
 
@@ -127,10 +125,8 @@ The current GROOPS release is tested against GMT version 6.0.0.
 After the installation of GROOPS and GROOPS GUI, we recommend some post-installation configuration steps to make
 working with GROOPS easier.
 
-- Environment variables:
-
-    To use the GROOPS and GROOPS GUI binaries without directory prefix, you have to add the required
-    directories to the system path.
+1. To use the GROOPS and GROOPS GUI binaries without directory prefix, you have to add the required
+   directories to the system path.
 
     1.1. Open the Control Panel through the Windows Start Menu: `Windows System > Control Panel`.
 
@@ -149,6 +145,8 @@ working with GROOPS easier.
     ```
     "C:\Qt\5.15.1\mingw81_64\bin"
     ```
+
+2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` to the number of threads to use for matrix operations.
 
 ## Linux
 
@@ -191,7 +189,7 @@ This installation guide assumes that the GROOPS source code is located in `$HOME
 6. Create the build directory and compile GROOPS:
     ```
     mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
-    cmake ..
+    cmake .. -DCMAKE_BUILD_TYPE=Release
     make
     ```
 
@@ -291,11 +289,12 @@ sudo zypper install GMT GMT-doc GMT-coastlines
 After the installation of GROOPS and GROOPS GUI, we recommend some post-installation configuration steps to make
 working with GROOPS easier.
 
-- Environment variables:
+1. To use the GROOPS and GROOPS GUI binaries without directory prefix, you have to add the required
+   directories to the system path:
 
-    To use the GROOPS and GROOPS GUI binaries without directory prefix, you have to add the required
-    directories to the system path:
-    ```
-    echo "export PATH=$PATH:$HOME/groops/bin" >> $HOME/.bashrc
-    source $HOME/.bashrc
-    ```
+   ```
+   echo "export PATH=$PATH:$HOME/groops/bin" >> $HOME/.bashrc
+   source $HOME/.bashrc
+   ```
+
+2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` to the number of threads to use for matrix operations.
