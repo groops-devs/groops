@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - Config files</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1 id="general.configFiles">Config files</h1><p>
+GROOPS is controlled by XML configuration files. One or more configuration files
+must be passed as arguments to GROOPS:
+<pre>
+  groops config1.xml config2.xml [...]
+</pre>
+These files can be created with the graphical user interface program <code>groopsGui</code>
+in a convenient way (see section <a class="groops-ref" href="general.gui.html">GUI</a>).
+A complete formal (computer readable) description of a configuration file
+in the form of an XSD schema file can be created with the command
+<pre>
+  groops --xsd groops.xsd
+</pre></p><p>A configuration file consists of a list of <a class="groops-ref" href="programType.html">programs</a>
+that are executed in sequential order. Each program comes with its own config options
+and they work independently without any internal communication between programs.
+Data flow between programs is realized via files. An <strong class="groops-config-element">outputfile</strong> of one program can serve as
+an <strong class="groops-config-element">inputfile</strong> for the next program.
+Most programs are deliberately kept small and focused on a specific task. This modularity combined with the
+general purpose design of many programs enables the creation of complex workflows with little effort.
+Including <a class="groops-ref" href="general.loopsAndConditions.html">loops and conditions</a> in a config file provides even more flexibility.</p><p>Individual programs (and also other optional config elements) can be disabled
+and are ignored during execution. Mandatory config elements are indicated by a star (<code>*</code>).
+Empty optional elements are ignored or a meaningful default value is assumed.</p><p>The elements of a configuration file can be one of the following basic data types:
+<ul>
+
+<li><code>int</code>: integer number
+</li><li>
+<code>uint</code>: unsigned integer number
+</li><li>
+<code>double</code>: floating point number
+</li><li>
+<code>angle</code>: given in degree
+</li><li>
+<code>time</code>: given in modified Julian date (MJD)
+</li><li>
+<code>boolean</code>: 0: false, 1: true
+</li><li>
+<code>string</code>: text
+</li><li>
+<code>filename</code>: absolute path to a file or path relative to the working directory
+</li><li>
+<code>expression</code>: numerical expression evaluated during execution
+</li><li>
+<code>doodson</code>: Doodson number or Darwin's name of a tidal frequency
+</li><li>
+<code>gnssType</code>: GNSS observation type according to the RINEX 3 definition
+</li></ul>
+
+The first 5 data types also allow numerical expressions as input in addition to pure numbers.
+Next to these basic types there are a number of complex data types called classes,
+which are described in section <a class="groops-ref" href="classes.html">Classes</a>.</p><p><h2 id="globalSection">Global section</h2><p>
+In addition to programs a config file can also include multiple global elements.
+These elements are comparable to read-only global variables in programming and can be referenced from any program.
+This can be done by either linking an element directly to a global element or
+by using the name of the global element as a variable in an input field (see section <a class="groops-ref" href="general.parser.html">Parsers and variables</a>).
+While elements can only be directly linked to global elements of the same type, this also supports complex data types
+such as <a class="groops-class" href="gravityfieldType.html">gravityfield</a>. Thus it is possible to, for example, define a reference gravity field once
+in the global section and use it multiple times in different programs.</p><p>One special global element is <code>groopsDataDir</code>, which is used as a variable in most default
+file paths throughout many GROOPS programs. Since this global element is going to be needed in
+most config files, it is recommended to define it in a template file that is used when creating
+new config files in the GUI. See section <a class="groops-ref" href="general.gui.html">Graphical User Interface (GUI)</a>
+for details on how to set up a template file.</p><p>It is also possible to import global sections from other config files by providing them as <strong class="groops-config-element">inputfileGlobal</strong>.
+Global elements defined in the config file itself overwrite those with the same name imported from other config files.
+This functionality allows the definition of a set of global variables in a single file that is then imported into multiple
+other config files, which can be useful in larger scenarios/projects.
+</p>
+
+        </div>
+    </main>
+</body>
+</html>

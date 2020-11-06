@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - timeSeriesType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="timeSeriesType">TimeSeries</h1><p>
+This class generates a series of points in time. The series is always sorted in ascending order.
+Depending of the application the series is interpreted as list of points or as intervals between the points.</p><p><figure><img class="figure" style="width:40%;" src="../figures/timeSeriesIntervals.png" alt="timeSeriesIntervals"><figcaption class="center">Figure: List of points $t_i$ vs. intervals $T_i$.</figcaption></figure>
+</p>
+
+<h2 id="uniformSampling">UniformSampling</h2><p>
+Generates a time series with uniform sampling. The first point in time will be <strong class="groops-config-element">timeStart</strong>.
+The last generated point in time will be less or equal <strong class="groops-config-element">timeEnd</strong>.
+The time step between generated points in time is given by <strong class="groops-config-element">sampling</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeStart</div></div></td><td>time</td><td>first point in time</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeEnd</div></div></td><td>time</td><td>last point in time will be less or equal timeEnd</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">sampling</div></div></td><td>time</td><td>time step between points in time</td></tr>
+</table>
+
+<h2>UniformInterval</h2><p>
+Generates a time series with uniform sampling between <strong class="groops-config-element">timeStart</strong> and <strong class="groops-config-element">timeEnd</strong>.
+<strong class="groops-config-element">intervallCount</strong> gives the count of intervals. This class generates count+1 points in time
+inclusive <strong class="groops-config-element">timeStart</strong> and <strong class="groops-config-element">timeEnd</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeStart</div></div></td><td>time</td><td>1st point of the time series</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeEnd</div></div></td><td>time</td><td>last point of the time series</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">intervalCount</div></div></td><td>uint</td><td>count of intervals, count+1 points in time will generated</td></tr>
+</table>
+
+<h2>Irregular</h2><p>
+The points of the time series are given explicitly with <strong class="groops-config-element">time</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">time</div></div></td><td>time</td><td>explicit list of points in time</td></tr>
+</table>
+
+<h2>Monthly</h2><p>
+If <strong class="groops-config-element">monthMiddle</strong> is set, time points are generated at mid of each month inclusively
+the <strong class="groops-config-element">monthStart</strong> in <strong class="groops-config-element">yearStart</strong> and <strong class="groops-config-element">monthEnd</strong> in <strong class="groops-config-element">yearEnd</strong>.
+Otherwise times are given at the first of each month and a time point after the last month.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">monthStart</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">yearStart</div></div></td><td>uint</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">monthEnd</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">yearEnd</div></div></td><td>uint</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">useMonthMiddle</div></div></td><td>boolean</td><td>time points are mid of months, otherwise the 1st of each month + a time point behind the last month</td></tr>
+</table>
+
+<h2>Yearly</h2><p>
+If <strong class="groops-config-element">yearMiddle</strong> is set, time points are generated at mid of each year inclusively <strong class="groops-config-element">yearStart</strong>
+and <strong class="groops-config-element">yearEnd</strong>. Otherwise times are given at the first of each year and a time point after the last year.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">yearStart</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">yearEnd</div></div></td><td>uint</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">useYearMiddle</div></div></td><td>boolean</td><td>time points are mid of years, otherwise the 1st of each year + a time point behind the last year</td></tr>
+</table>
+
+<h2>EveryMonth</h2><p>
+Generates a time series with monthly sampling. The first point in time will be <strong class="groops-config-element">timeStart</strong> and the following
+points are generated for each month at the same day and time in month.
+The last generated point in time will be less or equal <strong class="groops-config-element">timeEnd</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeStart</div></div></td><td>time</td><td>first point in time</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeEnd</div></div></td><td>time</td><td>last point in time will be less or equal timeEnd</td></tr>
+</table>
+
+<h2>EveryYear</h2><p>
+Generates a time series with yearly sampling. The first point in time will be <strong class="groops-config-element">timeStart</strong> and the following
+points are generated for each year at the same day and time in year.
+The last generated point in time will be less or equal <strong class="groops-config-element">timeEnd</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeStart</div></div></td><td>time</td><td>first point in time</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeEnd</div></div></td><td>time</td><td>last point in time will be less or equal timeEnd</td></tr>
+</table>
+
+<h2>Instrument</h2><p>
+Read a time series (epochs) from an <a class="groops-file" href="fileFormat_instrument.html">instrument file</a>.
+The time series can be restricted to the interval
+starting from <strong class="groops-config-element">timeStart</strong> and before <strong class="groops-config-element">timeEnd</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileInstrument</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">timeStart</div></div></td><td>time</td><td>exclude peochs before this epoch</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">timeEnd</div></div></td><td>time</td><td>only epochs before this time are used</td></tr>
+</table>
+
+<h2>InstrumentArcIntervals</h2><p>
+Reconstruct a time series from an <a class="groops-file" href="fileFormat_instrument.html">instrument file</a>.
+The time series is the first epoch of each arc plus one time step beyond the last
+epoch of the last arc (using median sampling).
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileInstrument</div></div></td><td>filename</td><td>Must be regular. Time series is first epoch of each arc plus one time step extrapolated from last epoch of last arc.</td></tr>
+</table>
+
+<h2>Revolution</h2><p>
+Reads an <a class="groops-file" href="fileFormat_instrument.html">orbit file</a> and create a time stamp for each ascending equator crossing.
+The time series can be restricted to the interval
+starting from <strong class="groops-config-element">timeStart</strong> and before <strong class="groops-config-element">timeEnd</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">timeStart</div></div></td><td>time</td><td>exclude peochs before this epoch</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">timeEnd</div></div></td><td>time</td><td>only epochs before this time are used</td></tr>
+</table>
+
+<h2>Exclude</h2><p>
+In a first step a <a class="groops-class" href="timeSeriesType.html">timeSeries</a> is generated.
+In a second step all times are removed which are in range before or after <strong class="groops-config-element">excludeMargin</strong> seconds
+of the times given by <a class="groops-class" href="timeSeriesType.html">timeSeriesExclude</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>time series to be created</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeriesExclude</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>exclude this time points from time series (within margin)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">excludeMargin</div></div></td><td>double</td><td>on both sides [seconds]</td></tr>
+</table>
+
+<h2>Conditional</h2><p>
+Only times for which the <a class="groops-class" href="conditionType.html">condition</a> is met are included in the time series.
+The <strong class="groops-config-element">variableLoopTime</strong> is set to every time and the <a class="groops-class" href="conditionType.html">condition</a> is evaluated.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>only times for which condition is met will be included</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopTime</div></div></td><td>string</td><td>variable with time of each loop</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>test for each time</td></tr>
+</table>
+
+<h2>Interpolate</h2><p>
+Interpolates <strong class="groops-config-element">nodeInterpolation</strong> count points between
+the given <a class="groops-class" href="timeSeriesType.html">timeSeries</a> uniformly.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>time series to be created</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">nodeInterpolation</div></div></td><td>uint</td><td>interpolates count points in each time interval given by the time series</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

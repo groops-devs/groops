@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - plotMapLayerType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="plotMapLayerType">PlotMapLayer</h1><p>
+Defines the content of a map of <a class="groops-program" href="PlotMap.html">PlotMap</a>. Multiple layers are are plotted sequentially.
+</p>
+
+<h2>GriddedData</h2><p>
+Creates a regular grid of yxz values. The standard <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>
+are available to select the data column of <a class="groops-class" href="fileFormat_griddedData.html">inputfileGriddedData</a>.
+Empty grid cells are not plotted. Cells with more than one value will be set to the mean value.
+The grid spacing can be determined automatically for regular rectangular grids otherwise
+it must be set with <strong class="groops-config-element">increment</strong>. To get a better display together with some projections
+the grid should be internally <strong class="groops-config-element">resample</strong>d to higher resolution.
+It is assumed that the points of <a class="groops-class" href="fileFormat_griddedData.html">inputfileGriddedData</a> represents centers of grid cells.
+This assumption can be changed with <strong class="groops-config-element">gridlineRegistered</strong> (e.g if the data starts at the north pole).
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileGriddedData</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">value</div></div></td><td>expression</td><td>expression to compute values (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">increment</div></div></td><td>angle</td><td>the grid spacing [degrees]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">illuminate</div></div></td><td>boolean</td><td>illuminate grid</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">resample</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">intermediateDpi</div></div></td><td>double</td><td>oversample grid for a smoother visual effect</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">interpolationMethod</div></div></td><td>choice</td><td>interpolation method for oversampling</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">bspline</div></div></td><td></td><td>B-Spline interpolation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">bicubic</div></div></td><td></td><td>bicubic interpolation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">bilinear</div></div></td><td></td><td>bilinear interpolation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">nearest</div></div></td><td></td><td>nearest neighbour interpolation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">threshold</div></div></td><td>double</td><td>A threshold of 1.0 requires all (4 or 16) nodes involved in interpolation to be non-NaN. 0.5 will interpolate about half way from a non-NaN value; 0.1 will go about 90% of the way.</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">gridlineRegistered</div></div></td><td>boolean</td><td>treat input as point values instead of cell means</td></tr>
+</table>
+
+<h2 id="points">Points</h2><p>
+Draws points (<a class="groops-class" href="plotSymbolType.html">symbol</a>) and/or <a class="groops-class" href="plotLineType.html">line</a>s
+between the points. If no <a class="groops-class" href="plotColorType.html">color</a> of the <a class="groops-class" href="plotSymbolType.html">symbol</a>
+is given a <a class="groops-class" href="plotColorbarType.html">colorbar</a> is required and the color is determined
+by the <strong class="groops-config-element">value</strong> expression. The standard <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>
+are available to select the data column of <a class="groops-class" href="fileFormat_griddedData.html">inputfileGriddedData</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileGriddedData</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">value</div></div></td><td>expression</td><td>expression to compute color (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">symbol</div></div></td><td><a href="plotSymbolType.html">plotSymbol</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">line</div></div></td><td><a href="plotLineType.html">plotLine</a></td><td>style of connecting lines</td></tr>
+</table>
+
+<h2>Arrows</h2><p>
+Draws an arrow for each point in <a class="groops-class" href="fileFormat_griddedData.html">inputfileGriddedData</a>.
+The arrows are defined by the expressions <strong class="groops-config-element">valueNorth/East</strong>.
+The standard <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>
+are available to select the correspondent data columns of <a class="groops-class" href="fileFormat_griddedData.html">inputfileGriddedData</a>.
+The <strong class="groops-config-element">scale</strong> factor converts the input units to cm in the plot.
+If no <a class="groops-class" href="plotColorType.html">color</a> is given a <a class="groops-class" href="plotColorbarType.html">colorbar</a> is required
+and the color is determined by the <strong class="groops-config-element">value</strong> expression.
+With <strong class="groops-config-element">scaleArrow</strong> a reference arrow as legend can be plotted inside or outside the map.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileGriddedData</div></div></td><td>filename</td><td>grid file with north and east values for arrows</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">valueNorth</div></div></td><td>expression</td><td>expression to compute north values (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">valueEast</div></div></td><td>expression</td><td>expression to compute east values (input columns are named data0, data1, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">value</div></div></td><td>expression</td><td>expression to compute arrow color (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">scale</div></div></td><td>double</td><td>[cm per input unit] length scale factor</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">penSize</div></div></td><td>double</td><td>[pt] width of arrow shaft</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">headSize</div></div></td><td>double</td><td>[pt] size of arrow head, 0: no head, negative: reverse head</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">color</div></div></td><td><a href="plotColorType.html">plotColor</a></td><td>empty: from value</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">scaleArrow</div></div></td><td>sequence</td><td>draw an arrow for scale reference</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">originX</div></div></td><td>double</td><td>[0-1] 0: left, 1: right</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">originY</div></div></td><td>double</td><td>[0-1] 0: bottom, 1: top</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">length</div></div></td><td>double</td><td>in same unit as valueNorth and valueEast</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">unit</div></div></td><td>string</td><td>displayed unit text (e.g. 1 cm)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">label</div></div></td><td>string</td><td>description of the arrows</td></tr>
+</table>
+
+<h2>Polygon</h2><p>
+Draws a <a class="groops-class" href="fileFormat_polygon.html">inputfilePolygon</a>.
+If <a class="groops-class" href="plotColorType.html">fillColor</a> is not set and a <strong class="groops-config-element">value</strong>
+is given the fill color is taken from a <a class="groops-class" href="plotColorbarType.html">colorbar</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfilePolygon</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">line</div></div></td><td><a href="plotLineType.html">plotLine</a></td><td>style of border lines</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">fillColor</div></div></td><td><a href="plotColorType.html">plotColor</a></td><td>polygon fill color (no fill color: determine from value if given, else: no fill)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">value</div></div></td><td>double</td><td>value to compute fill color from a colorbar (ignored if a fillColor is given)</td></tr>
+</table>
+
+<h2>Coast</h2><p>
+Plots coastlines. GMT provides them in different <strong class="groops-config-element">resolution</strong>s.
+Features with an area smaller than <strong class="groops-config-element">minArea</strong> in $km^2$ will not be plotted.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">resolution</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">crude</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">low</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">medium</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">high</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">full</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">line</div></div></td><td><a href="plotLineType.html">plotLine</a></td><td>line style for coastlines</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">landColor</div></div></td><td><a href="plotColorType.html">plotColor</a></td><td>fill land area</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">oceanColor</div></div></td><td><a href="plotColorType.html">plotColor</a></td><td>fill ocean area</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minArea</div></div></td><td>uint</td><td>[km^2] features with a smaller area than this are dropped</td></tr>
+</table>
+
+<h2>Rivers</h2><p>
+Plots rivers and lakes. GMT provides different <strong class="groops-config-element">class</strong>es
+(<a href="https://docs.generic-mapping-tools.org/latest/coast.html" target="_blank">https://docs.generic-mapping-tools.org/latest/coast.html</a>).
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">class</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">riversCanalsLakes</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">riversCanals</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">permanentRiversLakes</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">permanentRivers</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">intermittentRivers</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">canals</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">singleClass</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset-unbounded">class</div></div></td><td>uint</td><td>0-10. See GMT documentation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">line</div></div></td><td><a href="plotLineType.html">plotLine</a></td><td></td></tr>
+</table>
+
+<h2>PoliticalBoundary</h2><p>
+Plots national boundaries. GMT provides them in different <strong class="groops-config-element">resolution</strong>s.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">resolution</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">crude</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">low</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">medium</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">high</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">full</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">line</div></div></td><td><a href="plotLineType.html">plotLine</a></td><td></td></tr>
+</table>
+
+<h2>BlueMarble</h2><p>
+An image of the Earth's surface as seen from outer space -
+the image is known as <em>blue marble</em>. The directory of <strong class="groops-config-element">inputfileChannels</strong>
+contains several files in different resolutions representing the Earth's surface each
+month throughout a year.</p><p><figure><img class="figure" style="width:80%;" src="../figures/blueMarble.png" alt="blueMarble"><figcaption class="center">Figure: The blue marble.</figcaption></figure>
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileChannels</div></div></td><td>filename</td><td>GMT grid file containing layers for red, green and blue values.</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">brightness</div></div></td><td>double</td><td>brightness of bitmap [-1, 1]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">illuminate</div></div></td><td>sequence</td><td>add hillshade based on topography</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">inputfileTopography</div></div></td><td>filename</td><td>GMT grid file containing topography.</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">azimuth</div></div></td><td>angle</td><td>direction of lighting source [deg]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">elevation</div></div></td><td>angle</td><td>direction of lighting source [deg]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">ambient</div></div></td><td>double</td><td>ambient lighting</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">diffuse</div></div></td><td>double</td><td>diffuse lighting</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">specular</div></div></td><td>double</td><td>specular reflection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">shine</div></div></td><td>double</td><td>surface shine</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">amplitude</div></div></td><td>double</td><td>scale gradient by factor</td></tr>
+</table>
+
+<h2>Text</h2><p>
+Writes a <strong class="groops-config-element">text</strong> at <strong class="groops-config-element">originLongitude</strong> and <strong class="groops-config-element">originLatitude</strong> position in the map.
+With <strong class="groops-config-element">clip</strong> the text is cutted at the boundaries of the plotting area.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">text</div></div></td><td>string</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">originLongitude</div></div></td><td>angle</td><td>[deg]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">originLatitude</div></div></td><td>angle</td><td>[deg]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">offsetX</div></div></td><td>double</td><td>[cm] x-offset from origin</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">offsetY</div></div></td><td>double</td><td>[cm] y-offset from origin</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">alignment</div></div></td><td>string</td><td>L, C, R (left, center, right) and T, M, B (top, middle, bottom)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">fontSize</div></div></td><td>double</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">fontColor</div></div></td><td><a href="plotColorType.html">plotColor</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">clip</div></div></td><td>boolean</td><td>clip at boundaries</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

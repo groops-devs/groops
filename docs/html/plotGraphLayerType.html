@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - plotGraphLayerType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="plotGraphLayerType">PlotGraphLayer</h1><p>
+Defines the content of an xy-plot of <a class="groops-program" href="PlotGraph.html">PlotGraph</a>.
+Multiple layers are are plotted sequentially. With <strong class="groops-config-element">plotOnSecondAxis</strong>
+the alternative y-axis on the right hand side can be selected if provided.
+</p>
+
+<h2 id="linesAndPoints">LinesAndPoints</h2><p>
+Draws a <a class="groops-class" href="plotLineType.html">line</a> and/or points (<a class="groops-class" href="plotSymbolType.html">symbol</a>)
+of xy data. The standard <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>
+are available to select the data columns of <a class="groops-class" href="fileFormat_matrix.html">inputfileMatrix</a>.
+If no <a class="groops-class" href="plotColorType.html">color</a> of the <a class="groops-class" href="plotSymbolType.html">symbol</a>
+is given a <a class="groops-class" href="plotColorbarType.html">colorbar</a>
+is required and the color is determined by <strong class="groops-config-element">valueZ</strong>.
+Additionally a vertical error bar can be plotted at each data point with
+size <strong class="groops-config-element">valueErrorBar</strong>.</p><p>See <a class="groops-program" href="Gravityfield2AreaMeanTimeSeries.html">Gravityfield2AreaMeanTimeSeries</a> for an example plot.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileMatrix</div></div></td><td>filename</td><td>each line contains x,y</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">valueX</div></div></td><td>expression</td><td>expression for x-values (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">valueY</div></div></td><td>expression</td><td>expression for y-values (input columns are named data0, data1, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">valueZ</div></div></td><td>expression</td><td>expression for the colorbar</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">valueErrorBar</div></div></td><td>expression</td><td>expression for error bars (input columns are named data0, data1, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">description</div></div></td><td>string</td><td>text of the legend</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">line</div></div></td><td><a href="plotLineType.html">plotLine</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">symbol</div></div></td><td><a href="plotSymbolType.html">plotSymbol</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">plotOnSecondAxis</div></div></td><td>boolean</td><td>draw dataset on a second Y-axis (if available).</td></tr>
+</table>
+
+<h2>ErrorEnvelope</h2><p>
+Draws a symmetrical envelope around <strong class="groops-config-element">valueY</strong> as function of <strong class="groops-config-element">valueX</strong>
+using deviations <strong class="groops-config-element">valueErrors</strong>.
+The standard <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>
+are available to select the data columns of <a class="groops-class" href="fileFormat_matrix.html">inputfileMatrix</a>.
+The data line itself is not plotted but must be added as extra
+<a class="groops-class" href="plotGraphLayerType.html#linesAndPoints">layer:linesAndPoints</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileMatrix</div></div></td><td>filename</td><td>each line contains x,y</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">valueX</div></div></td><td>expression</td><td>expression for x-values (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">valueY</div></div></td><td>expression</td><td>expression for y-values (input columns are named data0, data1, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">valueErrors</div></div></td><td>expression</td><td>expression for error values</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">description</div></div></td><td>string</td><td>text of the legend</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">fillColor</div></div></td><td><a href="plotColorType.html">plotColor</a></td><td>fill color of the envelope</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">edgeLine</div></div></td><td><a href="plotLineType.html">plotLine</a></td><td>edge line style of the envelope</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">plotOnSecondAxis</div></div></td><td>boolean</td><td>draw dataset on a second Y-axis (if available).</td></tr>
+</table>
+
+<h2>Bars</h2><p>
+Creates a bar plot with vertical or <strong class="groops-config-element">horizontal</strong> bars out of the given
+x- and y-values. The standard <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>
+are available to select the data columns of <a class="groops-class" href="fileFormat_matrix.html">inputfileMatrix</a>.
+The bars ranges from <strong class="groops-config-element">valueBase</strong> (can be also an expression) to the <strong class="groops-config-element">valueY</strong>.
+If no <a class="groops-class" href="plotColorType.html">color</a> is given a <a class="groops-class" href="plotColorbarType.html">colorbar</a>
+is required and the color is determined by <strong class="groops-config-element">valueZ</strong>.</p><p>See <a class="groops-program" href="Instrument2Histogram.html">Instrument2Histogram</a> for an example plot.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileMatrix</div></div></td><td>filename</td><td>each line contains x,y</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">valueX</div></div></td><td>expression</td><td>expression for x-values (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">valueY</div></div></td><td>expression</td><td>expression for y-values (input columns are named data0, data1, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">valueZ</div></div></td><td>expression</td><td>expression for the colorbar</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">valueBase</div></div></td><td>expression</td><td>base value of bars (default: minimum y-value)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">width</div></div></td><td>expression</td><td>width of bars (default: minimum x-gap)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">horizontal</div></div></td><td>boolean</td><td>draw horizontal bars instead of vertical</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">description</div></div></td><td>string</td><td>text of the legend</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">color</div></div></td><td><a href="plotColorType.html">plotColor</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">edgeLine</div></div></td><td><a href="plotLineType.html">plotLine</a></td><td>line</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">plotOnSecondAxis</div></div></td><td>boolean</td><td>draw dataset on a second Y-axis (if available).</td></tr>
+</table>
+
+<h2>Gridded</h2><p>
+Creates a regular grid of yxz values. The standard <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>
+are available to select the data columns of <a class="groops-class" href="fileFormat_matrix.html">inputfileMatrix</a>.
+Empty grid cells are not plotted. Cells with more than one value will be set to the mean value.
+The grid spacing is determined by the median spacing of the input data or set by <strong class="groops-config-element">incrementX/Y</strong>.</p><p>See <a class="groops-program" href="Orbit2ArgumentOfLatitude.html">Orbit2ArgumentOfLatitude</a> for an example plot.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileMatrix</div></div></td><td>filename</td><td>each line contains x,y,z</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">valueX</div></div></td><td>expression</td><td>expression for x-values (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">valueY</div></div></td><td>expression</td><td>expression for y-values (input columns are named data0, data1, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">valueZ</div></div></td><td>expression</td><td>expression for the colorbar</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">incrementX</div></div></td><td>double</td><td>the grid spacing</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">incrementY</div></div></td><td>double</td><td>the grid spacing</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">plotOnSecondAxis</div></div></td><td>boolean</td><td>draw dataset on a second Y-axis (if available).</td></tr>
+</table>
+
+<h2>Rectangle</h2><p>
+Plots a rectangle to highlight an area.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minX</div></div></td><td>double</td><td>empty: left</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxX</div></div></td><td>double</td><td>empty: right</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minY</div></div></td><td>double</td><td>empty: bottom</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxY</div></div></td><td>double</td><td>empty: top</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">description</div></div></td><td>string</td><td>text of the legend</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">edgeLine</div></div></td><td><a href="plotLineType.html">plotLine</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">fillColor</div></div></td><td><a href="plotColorType.html">plotColor</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">plotOnSecondAxis</div></div></td><td>boolean</td><td>draw dataset on a second Y-axis (if available).</td></tr>
+</table>
+
+<h2>Text</h2><p>
+Writes a <strong class="groops-config-element">text</strong> at <strong class="groops-config-element">originX</strong> and <strong class="groops-config-element">originY</strong> position in the graph.
+With <strong class="groops-config-element">clip</strong> the text is cutted at the boundaries of the plotting area.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">text</div></div></td><td>string</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">originX</div></div></td><td>double</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">originY</div></div></td><td>double</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">offsetX</div></div></td><td>double</td><td>[cm] x-offset from origin</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">offsetY</div></div></td><td>double</td><td>[cm] y-offset from origin</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">alignment</div></div></td><td>string</td><td>L, C, R (left, center, right) and T, M, B (top, middle, bottom)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">fontSize</div></div></td><td>double</td><td>[pt]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">fontColor</div></div></td><td><a href="plotColorType.html">plotColor</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">clip</div></div></td><td>boolean</td><td>clip at boundaries</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">plotOnSecondAxis</div></div></td><td>boolean</td><td>draw dataset on a second Y-axis (if available).</td></tr>
+</table>
+
+<h2>DegreeAmplitudes</h2><p>
+Plot degree amplitudes of potential coefficients computed by <a class="groops-program" href="Gravityfield2DegreeAmplitudes.html">Gravityfield2DegreeAmplitudes</a>
+or <a class="groops-program" href="PotentialCoefficients2DegreeAmplitudes.html">PotentialCoefficients2DegreeAmplitudes</a>.
+The standard <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a> are available to select
+the data columns of <a class="groops-class" href="fileFormat_matrix.html">inputfileMatrix</a>. It plots a solid line for the
+<strong class="groops-config-element">valueSignal</strong> and a dotted line for the <strong class="groops-config-element">valueError</strong> per default.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileMatrix</div></div></td><td>filename</td><td>degree amplitudes</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">valueDegree</div></div></td><td>expression</td><td>expression for x-values (degrees) (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">valueSignal</div></div></td><td>expression</td><td>expression for y-values (signal) (input columns are named data0, data1, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">valueErrors</div></div></td><td>expression</td><td>expression for y-values (formal errors)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">description</div></div></td><td>string</td><td>text of the legend</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">lineSignal</div></div></td><td><a href="plotLineType.html">plotLine</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">lineErrors</div></div></td><td><a href="plotLineType.html">plotLine</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">plotOnSecondAxis</div></div></td><td>boolean</td><td>draw dataset on a second Y-axis (if available).</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

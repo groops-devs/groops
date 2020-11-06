@@ -1,0 +1,29 @@
+\section{Loops and conditions}\label{general.loopsAndConditions}
+The program flow within a config file can be controlled by the classes \configClass{loop}{loopType}
+and \configClass{condition}{conditionType}. The easiest way to access these classes is with the programs
+\program{LoopPrograms} and \program{IfPrograms}.
+
+The programs defined in \program{IfPrograms} are only executed if the defined
+\configClass{condition}{conditionType} is met. A typical example is to check whether a file that
+should have been created in previous programs actually exists. Further options are string comparisons and
+checking the result of a numerical expression or the return value of an external command.
+
+With \program{LoopPrograms} it is possible to repeat the programs defined inside within a loop.
+The class \configClass{loop}{loopType} creates a sequence to loop over and defines \reference{variables}{general.parser}
+that contain the index and element for the current iteration.
+
+If \configClass{loop}{loopType} and \configClass{condition}{conditionType} are defined in the global
+section (see section~\reference{Config files}{general.configFiles}) they become powerful tools as the
+they can be attributed to single config elements (including programs).
+Config elements with an assigned loop are repeated, with the loop variables being evaluated for each element.
+If a \configClass{condition}{conditionType} is attributed to a config element in addition to a loop, each element within the loop
+is only created if the condition is met. Conditions can also be attributed to optional elements without an associated loop.
+If the condition is not met, the optional element will be treated as if it was not provided.
+
+Example: A program needs all files in a download directory as input.
+All the \config{inputfile}s can be selected manually of course, but it is much easier to assign
+a loop variable with \config{inputfile}=\verb|{loopFile}| and attribute a
+\configClass{loop:commandOutput}{loopType:commandOutput} from the global section.
+The \config{command}='\verb|ls -1 download|' (or '\verb|dir /b download|' for Windows)
+lists the content of the download directory and assigns each file name to the
+\config{variableLoopString}=\verb|loopFile|.

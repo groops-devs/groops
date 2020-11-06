@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - gravityfieldType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="gravityfieldType">Gravityfield</h1><p>
+This class computes functionals of the time depending gravity field,
+e.g potential, gravity anomalies or gravity gradients.</p><p>If several instances of the class are given the results are summed up.
+Before summation every single result is multiplicated by a <strong class="groops-config-element">factor</strong>.
+To substract a normal field like GRS80 from a potential
+to get the disturbance potential you must choose one factor by 1
+and the other by -1. To get the mean of two fields just set each factor to 0.5.</p><p>Some of the instances gives also information about the accuracy.
+The variance of the result (sum) is computed by means of variance propagation.
+</p>
+
+<h2 id="potentialCoefficients">PotentialCoefficients</h2><p>
+Reads coefficients of a spherical harmonics expansion from file.
+The potential is given by
+\[
+V(\lambda,\vartheta,r) = \frac{GM}{R}\sum_{n=0}^\infty \sum_{m=0}^n \left(\frac{R}{r}\right)^{n+1}
+  \left(c_{nm} C_{nm}(\lambda,\vartheta) + s_{nm} S_{nm}(\lambda,\vartheta)\right).
+\]If set the expansion is limited in the range between <strong class="groops-config-element">minDegree</strong>
+and <strong class="groops-config-element">maxDegree</strong> inclusivly. The computed result
+is multiplied with <strong class="groops-config-element">factor</strong>. If <strong class="groops-config-element">setSigmasToZero</strong> is true
+the variances are set to zero. This option is only important for variance propagation
+and does not change the result of the gravity field functionals.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfilePotentialCoefficients</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">setSigmasToZero</div></div></td><td>boolean</td><td>set variances to zero, should be used by adding back reference fields</td></tr>
+</table>
+
+<h2>PotentialCoefficientsInterior</h2><p>
+Reads coefficients of a spherical harmonics expansion (for inner space) from file.
+If set the expansion is limited in the range between <strong class="groops-config-element">minDegree</strong>
+and <strong class="groops-config-element">maxDegree</strong> inclusivly. The computed result is multiplied with <strong class="groops-config-element">factor</strong>.
+If <strong class="groops-config-element">setSigmasToZero</strong> is true the variances are set to zero.
+This option is only important for error propagation
+and does not change the result of the gravity field functionals.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfilePotentialCoefficients</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">setSigmasToZero</div></div></td><td>boolean</td><td>set variances to zero, should be used by adding back reference fields</td></tr>
+</table>
+
+<h2 id="fromParametrization">FromParametrization</h2><p>
+Reads a solution vector from file <a class="groops-class" href="fileFormat_matrix.html">inputfileSolution</a>
+which may be computed by a least squares adjustment (e.g. by <a class="groops-program" href="NormalsSolverVCE.html">NormalsSolverVCE</a>).
+The coefficients of the vector are interpreted from position <strong class="groops-config-element">indexStart</strong>
+(counting from zero) with help of <a class="groops-class" href="parametrizationGravityType.html">parametrizationGravity</a>.
+If the solution file contains solution of several right hand sides you can choose
+one with number <strong class="groops-config-element">rightSide</strong> (counting from zero).
+You can also read a vector from file <a class="groops-class" href="fileFormat_matrix.html">inputfileSigmax</a>
+containing the accuracies of the coefficients.</p><p>The computed result is multiplied with <strong class="groops-config-element">factor</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrization</div></div></td><td><a href="parametrizationGravityType.html">parametrizationGravity</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileSolution</div></div></td><td>filename</td><td>solution vector</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileSigmax</div></div></td><td>filename</td><td>standards deviations or covariance matrix of the solution</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">indexStart</div></div></td><td>uint</td><td>position in the solution vector</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">rightSide</div></div></td><td>uint</td><td>if solution contains several right hand sides, select one</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+</table>
+
+<h2 id="timeSplines">TimeSplines</h2><p>
+Read a time variable gravity field from file
+<a class="groops-class" href="fileFormat_timeSplinesGravityField.html">inputfileTimeSplinesGravityfield</a>
+represented by a spherical harmonics expansion in the spatial domain and spline functions
+in the time domain. If set the expansion is limited in the range between
+<strong class="groops-config-element">minDegree</strong> and <strong class="groops-config-element">maxDegree</strong> inclusivly.</p><p>This file can be created for example by <a class="groops-program" href="Gravityfield2TimeSplines.html">Gravityfield2TimeSplines</a> or
+<a class="groops-program" href="PotentialCoefficients2BlockMeanTimeSplines.html">PotentialCoefficients2BlockMeanTimeSplines</a>.</p><p>The computed result is multiplied with <strong class="groops-config-element">factor</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTimeSplinesGravityfield</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileTimeSplinesCovariance</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+</table>
+
+<h2 id="trend">Trend</h2><p>
+The given <a class="groops-class" href="gravityfieldType.html">gravityfield</a> is interpreted
+as trend function and the result is computed at time $t$ as follows
+\[
+V(\M x,t) = \frac{t-t_0}{\Delta t}V(\M x),
+\]with $t_0$ is <strong class="groops-config-element">timeStart</strong> and $\Delta t$ is <strong class="groops-config-element">timeStep</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">gravityfield</div></div></td><td><a href="gravityfieldType.html">gravityfield</a></td><td>this field is multiplicated by (time-time0)/timeStep</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeStart</div></div></td><td>time</td><td>reference time</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeStep</div></div></td><td>time</td><td></td></tr>
+</table>
+
+<h2 id="oscillation">Oscillation</h2><p>
+The given <a class="groops-class" href="gravityfieldType.html">gravityfield</a> is interpreted
+as oscillation function and the result is computed at time $t$ as follows
+\[
+V(\M x,t) = \cos(\omega)V_{cos}(\M x)+\sin(\omega)V_{sin}(\M x),
+\]with $\omega=\frac{2\pi}{T}(t-t_0)$.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">gravityfieldCos</div></div></td><td><a href="gravityfieldType.html">gravityfield</a></td><td>multiplicated by cos(2pi/T(time-time0))</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">gravityfieldSin</div></div></td><td><a href="gravityfieldType.html">gravityfield</a></td><td>multiplicated by sin(2pi/T(time-time0))</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">time0</div></div></td><td>time</td><td>reference time</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">period</div></div></td><td>time</td><td>[day]</td></tr>
+</table>
+
+<h2>InInterval</h2><p>
+A <a class="groops-class" href="gravityfieldType.html">gravityfield</a> is only evaluated in the interval between
+<strong class="groops-config-element">timeStart</strong> inclusively and <strong class="groops-config-element">timeEnd</strong> exclusively.
+Outside the interval the result is zero.</p><p>This class is useful to get a time series of monthly mean GRACE gravity field solutions.
+In each month another file of potentialCoefficients is valid.
+This can easily be created with <a class="groops-class" href="loopType.html">loop</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">gravityfield</div></div></td><td><a href="gravityfieldType.html">gravityfield</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeStart</div></div></td><td>time</td><td>first point in time</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeEnd</div></div></td><td>time</td><td>last point in time will be less or equal timeEnd</td></tr>
+</table>
+
+<h2 id="tides">Tides</h2><p>
+Treat <a class="groops-class" href="tidesType.html">tides</a> as gravitational forces.
+The tides need a realization of <a class="groops-class" href="earthRotationType.html">earthRotation</a>
+to transform between the CRF and TRF and to compute rotational deformation
+from polar motion.
+It also needs <a class="groops-class" href="ephemeridesType.html">ephemerides</a> from Sun, moon, and planets.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">tides</div></div></td><td><a href="tidesType.html">tides</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">earthRotation</div></div></td><td><a href="earthRotationType.html">earthRotation</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
+</table>
+
+<h2 id="topography">Topography</h2><p>
+The gravity is integrated from a topographic mass distribution.
+For each grid point in <a class="groops-class" href="fileFormat_griddedData.html">inputfileGridRectangular</a> a prisma with
+<strong class="groops-config-element">density</strong> is assumed. The horizontal extension is computed from the grid spacing
+and the vertical extension is given by <strong class="groops-config-element">radialLowerBound</strong>
+and <strong class="groops-config-element">radialUpperBound</strong> above ellipsoid. All values are expressions and computed
+for each point with given data in the grid file. The standard variables for grids
+are available, see <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>.</p><p>Example: The grid file contains the orthometric height of the topography in the first
+column, the geoid height in the second and the mean density of each prism in the third
+column. In this case the following settings should be used:
+<ul>
+
+<li><strong class="groops-config-element">radialUpperBound</strong> = <code>data0+data1</code>,
+</li><li>
+<strong class="groops-config-element">radialLowerBound</strong> = <code>data1</code>,
+</li><li>
+<strong class="groops-config-element">density</strong> = <code>data2</code>.
+</li></ul>
+</p><p>As the prim computation is time consuming a maximum distance around the evaluation point
+can defined with <strong class="groops-config-element">distancePrism</strong>. Afterwards a simplified radial line
+(the prism mass is concentrated to a line in the center) is used up to
+a distance of <strong class="groops-config-element">distanceLine</strong>. At last the prim is approximated by a point mass
+in the center up to a distance <strong class="groops-config-element">distanceMax</strong> (if set). Prisms nearby the evaluation
+point can be excluded with <strong class="groops-config-element">distanceMin</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileGridRectangular</div></div></td><td>filename</td><td>Digital Terrain Model</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">density</div></div></td><td>expression</td><td>expression [kg/m**3]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">radialUpperBound</div></div></td><td>expression</td><td>expression (variables 'height', 'data', 'L', 'B' and, 'area' are taken from the gridded data</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">radialLowerBound</div></div></td><td>expression</td><td>expression (variables 'height', 'data', 'L', 'B' and, 'area' are taken from the gridded data</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">distanceMin</div></div></td><td>double</td><td>[km] min. influence distance (ignore near zone)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">distancePrism</div></div></td><td>double</td><td>[km] max. distance for prism formular</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">distanceLine</div></div></td><td>double</td><td>[km] max. distance for radial integration</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">distanceMax</div></div></td><td>double</td><td>[km] max. influence distance (ignore far zone)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+</table>
+
+<h2>EarthquakeOscillation</h2><p>
+The given <a class="groops-class" href="gravityfieldType.html">gravityfield</a> is interpreted as an oscillation function
+in the gravitational potential field, caused by large earthquakes.
+The result is computed at time $t$ as follows:
+\[
+C_{lm}(\M t) = \sum_{n=0}^NC_{nlm}(1-\cos(\omega)\exp(\frac{-\omega}{2Q_{nlm}})),
+\]with $\omega=\frac{2\pi}{T_{nlm}}(t-t_0)$. In this equation, $Q_{nlm}$ is the attenuation factor,
+$n$ is the overtone factor, $m$ is degree, $l$ is order, and $t$ is time in second.
+$T_{nlm}$ and $Q_{nlm}$ are computed with the elastic Earth model or observed from the long
+period record of superconducting gravimeter measurements after the earthquakes.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputCoefficientMatrix</div></div></td><td>filename</td><td>oscillation model parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">time0</div></div></td><td>time</td><td>the time earthquake happened</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">GM</div></div></td><td>double</td><td>Geocentric gravitational constant</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">R</div></div></td><td>double</td><td>reference radius</td></tr>
+</table>
+
+<h2>Filter</h2><p>
+Convert <a class="groops-class" href="gravityfieldType.html">gravityfield</a> to spherical harmonics
+and <a class="groops-class" href="sphericalHarmonicsFilterType.html">filter</a> the coefficients.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">gravityfield</div></div></td><td><a href="gravityfieldType.html">gravityfield</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">filter</div></div></td><td><a href="sphericalHarmonicsFilterType.html">sphericalHarmonicsFilter</a></td><td></td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

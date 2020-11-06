@@ -1,0 +1,69 @@
+\section{Constants and the settings file}\label{general.constants}
+GROOPS uses some built-in constants like \verb|DEFAULT_GM| or the definition
+of leap seconds, which are defined in  \verb|source/base/constants.cpp|.
+
+A complete list of the constants can be written to an XML file with:
+\begin{verbatim}
+  groops --write-settings <groopsDefaults.xml>
+\end{verbatim}
+
+The built-in constants can be overwritten by a \verb|groopsDefaults.xml| file
+in the working directory or by explicitly passing the file as an argument at execution:
+\begin{verbatim}
+  groops --settings <groopsDefaults.xml> <config.xml>
+\end{verbatim}
+
+It might also be useful to adjust the default values in the schema file used by the \reference{GUI}{general.gui}:
+\begin{verbatim}
+  groops --settings <groopsDefaults.xml> --xsd <groops.xsd>
+\end{verbatim}
+
+Example file:
+\begin{verbatim}
+<?xml version="1.0" encoding="UTF-8"?>
+<groops>
+  <LIGHT_VELOCITY>299792458</LIGHT_VELOCITY>
+  <DEFAULT_GM>3.986004415e+14</DEFAULT_GM>
+  <DEFAULT_R>6378136.3</DEFAULT_R>
+  <GRS80_a>6378137.0</GRS80_a>
+  <GRS80_f>298.2572221010</GRS80_f>
+  <GRAVITATIONALCONSTANT>6.6730e-11</GRAVITATIONALCONSTANT>
+  <R_Earth>6.37813630000000e+06</R_Earth>
+  <R_Moon>1.73800000000000e+06</R_Moon>
+  <GM_Earth>3.98600441500000e+14</GM_Earth>
+  <GM_Sun>1.32712442076000e+20</GM_Sun>
+  <GM_Moon>4.90280105600000e+12</GM_Moon>
+  <GM_MERCURY>2.20320808280762e+13</GM_MERCURY>
+  <GM_VENUS>3.24858603864143e+14</GM_VENUS>
+  <GM_MARS>4.28283149222192e+13</GM_MARS>
+  <GM_JUPITER>1.26712769822770e+17</GM_JUPITER>
+  <GM_SATURN>3.79406266494906e+16</GM_SATURN>
+  <TIME_EPSILON>1.0e-05</TIME_EPSILON>
+  <DELTA_TAI_GPS>19</DELTA_TAI_GPS>
+  <DELTA_TT_GPS>51.184</DELTA_TT_GPS>
+  <J2000>51544.5</J2000>
+  <leapSecond>
+    <MJD>57754</MJD>
+    <DELTA_UTC_GPS>-18</DELTA_UTC_GPS>
+  </leapSecond>
+  <leapSecond>
+    <MJD>57204</MJD>
+    <DELTA_UTC_GPS>-17</DELTA_UTC_GPS>
+  </leapSecond>
+  <leapSecond>
+    <MJD>56109</MJD>
+    <DELTA_UTC_GPS>-16</DELTA_UTC_GPS>
+  </leapSecond>
+
+  ...
+
+  <leapSecond>
+    <MJD>41317</MJD>
+    <DELTA_UTC_GPS>9</DELTA_UTC_GPS>
+  </leapSecond>
+  <leapSecond>
+    <MJD>0</MJD>
+    <DELTA_UTC_GPS>10</DELTA_UTC_GPS>
+  </leapSecond>
+</groops>
+\end{verbatim}

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - parameterNamesType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="parameterNamesType">ParameterNames</h1><p>
+Generate a list of parameter names. All parameters are appended.
+</p>
+
+<h2>Name</h2><p>
+The parameter is given by explicitly by four parts:
+<ol>
+
+<li>object: Object this parameter refers to, e.g. <code>graceA</code>, <code>G023</code>, <code>earth</code>, &hellip; </li><li>
+type: Type of this parameter, e.g. <code>accBias</code>, <code>position.x</code>, &hellip; </li><li>
+temporal: Temporal representation of this parameter, e.g. <code>trend</code>, <code>polynomial.degree1</code>, &hellip; </li><li>
+interval: Interval/epoch this parameter represents, e.g. <code>2017-01-01_00-00-00_2017-01-02_00-00-00</code>, <code>2018-01-01_00-00-00</code>.
+</li></ol>
+
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">object</div></div></td><td>string</td><td>object this parameter refers to, e.g. graceA, G023, earth</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">type</div></div></td><td>string</td><td>type of this parameter, e.g. accBias, position.x</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">temporal</div></div></td><td>string</td><td>temporal representation of this parameter, e.g. trend, polynomial.degree1</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interval</div></div></td><td>string</td><td>interval/epoch this parameter refers to, e.g. 2017-01-01_00-00-00_2017-01-02_00-00-00, 2008-01-01_00-00-00</td></tr>
+</table>
+
+<h2>File</h2><p>
+Read parameter names from <a class="groops-file" href="fileFormat_parameterName.html">file</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileParameterNames</div></div></td><td>filename</td><td>file with parameter names</td></tr>
+</table>
+
+<h2>Gravity</h2><p>
+Parameter names of gravity <a class="groops-class" href="parametrizationGravityType.html">parametrization</a>.
+An additional <strong class="groops-config-element">object</strong> name can be included in the parameter names.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">object</div></div></td><td>string</td><td>object these parameters refers to, e.g. earth</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrization</div></div></td><td><a href="parametrizationGravityType.html">parametrizationGravity</a></td><td></td></tr>
+</table>
+
+<h2>Acceleration</h2><p>
+Parameter names of satellite acceleration <a class="groops-class" href="parametrizationAccelerationType.html">parametrization</a>.
+Arc related parameters are appended if an <a class="groops-class" href="fileFormat_instrument.html">inputfileInstrument</a> is provided which
+defines the arc structure.
+An additional <strong class="groops-config-element">object</strong> name can be included in the parameter names.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">object</div></div></td><td>string</td><td>object these parameters refers to, e.g. graceA, G023</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parameterization</div></div></td><td><a href="parametrizationAccelerationType.html">parametrizationAcceleration</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileInstrument</div></div></td><td>filename</td><td>defines the arc structure for arc related parameters</td></tr>
+</table>
+
+<h2>SatelliteTracking</h2><p>
+Parameter names of satellite tracking <a class="groops-class" href="parametrizationSatelliteTrackingType.html">parametrization</a>.
+An additional <strong class="groops-config-element">object</strong> name can be included in the parameter names.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">object</div></div></td><td>string</td><td>object these parameters refers to, e.g. grace1.grace2</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parameterization</div></div></td><td><a href="parametrizationSatelliteTrackingType.html">parametrizationSatelliteTracking</a></td><td></td></tr>
+</table>
+
+<h2>Temporal</h2><p>
+Parameter names from temporal parametrization.
+It is possible to setup the temporal parameters for each <a class="groops-class" href="parameterNamesType.html">parameterNameBase</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">parameterNameBase</div></div></td><td><a href="parameterNamesType.html">parameterNames</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrizationTemporal</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td></td></tr>
+</table>
+
+<h2>GnssAntenna</h2><p>
+Parameter names of GNSS antenna center variation <a class="groops-class" href="parametrizationGnssAntennaType.html">parametrization</a>.
+An additional <strong class="groops-config-element">object</strong> name (antenna name) can be included in the parameter names.
+It is possible to setup the parameters for each <a class="groops-class" href="gnssType.html">gnssType</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">object</div></div></td><td>string</td><td>antenna name</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrization</div></div></td><td><a href="parametrizationGnssAntennaType.html">parametrizationGnssAntenna</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">gnssType</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>e.g. C1CG**</td></tr>
+</table>
+
+<h2>Observation</h2><p>
+Parameter names used in <a class="groops-class" href="observationType.html">observation equations</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">observation</div></div></td><td><a href="observationType.html">observation</a></td><td></td></tr>
+</table>
+
+<h2>Rename</h2><p>
+Replaces parts of <a class="groops-class" href="parameterNamesType.html">parameterName</a>s.
+The star "<code>*</code>" left this part untouched.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parameterName</div></div></td><td><a href="parameterNamesType.html">parameterNames</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">object</div></div></td><td>string</td><td>*: left this part untouched, object</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">type</div></div></td><td>string</td><td>*: left this part untouched, type</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">temporal</div></div></td><td>string</td><td>*: left this part untouched, temporal representation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interval</div></div></td><td>string</td><td>*: left this part untouched, interval/epoch</td></tr>
+</table>
+
+<h2>Selection</h2><p>
+Select a subset of <a class="groops-class" href="parameterNamesType.html">parameterName</a>s
+using <a class="groops-class" href="parameterSelectorType.html">parameterSelection</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parameterName</div></div></td><td><a href="parameterNamesType.html">parameterNames</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parameterSelection</div></div></td><td><a href="parameterSelectorType.html">parameterSelector</a></td><td>parameter order/selection</td></tr>
+</table>
+
+<h2>WithoutDuplicates</h2><p>
+Removes all duplicate names (keep first) from <a class="groops-class" href="parameterNamesType.html">parameterName</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parameterName</div></div></td><td><a href="parameterNamesType.html">parameterNames</a></td><td></td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

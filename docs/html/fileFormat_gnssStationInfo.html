@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - GnssStationInfo</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>GnssStationInfo (file format)</h1><p>
+
+Information file for a station or satellite equipped with a GNSS receiver
+or for a GNSS satellite.</p><p>For stations and receiving satellites it defines the time intervals and
+local coordinates of installed antennas and receivers.
+For GNSS satellites it defines the PRN-SVN mapping and antenna offsets
+and orientations.</p><p>GNSS station infos can be created from station log files with
+<a class="groops-program" href="GnssStationLog2StationInfo.html">GnssStationLog2StationInfo</a>. GNSS satellite transmitter infos
+can be created from an ANTEX file with <a class="groops-program" href="GnssAntex2AntennaDefinition.html">GnssAntex2AntennaDefinition</a>.</p><p>See <a class="groops-program" href="GnssStationInfoCreate.html">GnssStationInfoCreate</a>.</p><p><pre>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;groops type="stationInfo" version="20190429">
+    &lt;stationCount>1&lt;/stationCount>
+    &lt;station>
+        &lt;markerName>GRAZ&lt;/markerName>
+        &lt;markerNumber>11001M002&lt;/markerNumber>
+        &lt;comment>Graz, AUSTRIA&lt;/comment>
+        &lt;approxPosition>
+            &lt;x>4.19442412400000e+06&lt;/x>
+            &lt;y>1.16270246000000e+06&lt;/y>
+            &lt;z>4.64724519300000e+06&lt;/z>
+        &lt;/approxPosition>
+        &lt;antenna>
+            &lt;count>8&lt;/count>
+            ...
+            &lt;cell>
+                &lt;name>LEIAR25.R4&lt;/name>
+                &lt;serial>726444&lt;/serial>
+                &lt;radome>LEIT&lt;/radome>
+                &lt;comment/>
+                &lt;timeStart>58080.4041666666666650&lt;/timeStart>
+                &lt;timeEnd>234166.0000000000000000&lt;/timeEnd>
+                &lt;position>
+                    &lt;x>0.00000000000000e+00&lt;/x>
+                    &lt;y>0.00000000000000e+00&lt;/y>
+                    &lt;z>1.96400000000000e+00&lt;/z>
+                &lt;/position>
+                &lt;local2antennaFrame>
+                    &lt;xx>1.00000000000000e+00&lt;/xx>
+                    &lt;xy>0.00000000000000e+00&lt;/xy>
+                    &lt;xz>0.00000000000000e+00&lt;/xz>
+                    &lt;yx>0.00000000000000e+00&lt;/yx>
+                    &lt;yy>1.00000000000000e+00&lt;/yy>
+                    &lt;yz>0.00000000000000e+00&lt;/yz>
+                    &lt;zx>0.00000000000000e+00&lt;/zx>
+                    &lt;zy>0.00000000000000e+00&lt;/zy>
+                    &lt;zz>1.00000000000000e+00&lt;/zz>
+                &lt;/local2antennaFrame>
+            &lt;/cell>
+        &lt;/antenna>
+        &lt;receiver>
+            &lt;count>25&lt;/count>
+            ...
+            &lt;cell>
+                &lt;name>SEPT POLARX5&lt;/name>
+                &lt;serial>4501501&lt;/serial>
+                &lt;version>5.2.0&lt;/version>
+                &lt;comment/>
+                &lt;timeStart>58903.2958333333333343&lt;/timeStart>
+                &lt;timeEnd>234166.0000000000000000&lt;/timeEnd>
+            &lt;/cell>
+        &lt;/receiver>
+        &lt;referencePoint>
+            &lt;count>0&lt;/count>
+        &lt;/referencePoint>
+    &lt;/station>
+&lt;/groops>
+</pre>
+</p>
+
+        </div>
+    </main>
+</body>
+</html>

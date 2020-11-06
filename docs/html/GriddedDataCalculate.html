@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - GriddedDataCalculate</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>GriddedDataCalculate</h1><p>
+
+This program manipulates <a class="groops-file" href="fileFormat_griddedData.html">grid files</a> with data in columns similar to
+<a class="groops-program" href="FunctionsCalculate.html">FunctionsCalculate</a>, see there for more details.
+If several <strong class="groops-config-element">inputfile</strong>s are given the data columns are copied side by side.
+All <strong class="groops-config-element">inputfile</strong>s must contain the same grid points.
+The columns are enumerated by <code>data0</code>, <code>data1</code>, &hellip; .</p><p>The content of <a class="groops-class" href="fileFormat_griddedData.html">outputfileGriddedData</a> is controlled by <strong class="groops-config-element">outColumn</strong>.
+The algorithm to compute the output is as follows:
+The expressions in <strong class="groops-config-element">outColumn</strong> are evaluated once for each grid point of the input.
+The variables <code>data0</code>, <code>data1</code>, &hellip; are replaced by the according values
+from the input columns before.
+Additional variables are available, e.g. <code>index</code>, <code>data0rms</code>,
+see <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>.</p><p>For a simplified handling <strong class="groops-config-element">constant</strong>s can be defined by <code>name=value</code>.
+It is also possible to estimate <strong class="groops-config-element">parameter</strong>s in a least squares adjustment.
+The <strong class="groops-config-element">leastSquares</strong> serves as template for observation equations for every point.
+The expression <strong class="groops-config-element">leastSquares</strong> is evaluated for each grid point.
+The variables <code>data0</code>, <code>data1</code>, &hellip; are replaced by the according values from the input columns before.
+In the next step the parameters are estimated in order to minimize the expressions in <strong class="groops-config-element">leastSquares</strong>
+in the sense of least squares.</p><p>Afterwards grid points are removed if one of the <strong class="groops-config-element">removalCriteria</strong> expressions
+for this grid point evaluates true (not zero).</p><p>An extra <a class="groops-class" href="fileFormat_matrix.html">statistics:outputfile</a> can be generated with one row of data.
+For the computation of the <strong class="groops-config-element">outColumn</strong> values
+all <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a> are available
+(e.g. <code>data3mean</code>, <code>data4std</code>) inclusively the <strong class="groops-config-element">constant</strong>s and
+estimated <strong class="groops-config-element">parameter</strong>s but without the <code>data0</code>, <code>data1</code>, &hellip; itself.
+The variables and the numbering of the columns refers to the <a class="groops-class" href="fileFormat_griddedData.html">outputfileGriddedData</a>.</p><p>See also <a class="groops-program" href="FunctionsCalculate.html">FunctionsCalculate</a>, <a class="groops-program" href="InstrumentArcCalculate.html">InstrumentArcCalculate</a>, <a class="groops-program" href="MatrixCalculate.html">MatrixCalculate</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileGriddedData</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfileGriddedData</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">constant</div></div></td><td>expression</td><td>define a constant by name=value</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">parameter</div></div></td><td>expression</td><td>define a parameter by name[=value]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">leastSquares</div></div></td><td>expression</td><td>try to minimize the expression by adjustment of the parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">removalCriteria</div></div></td><td>expression</td><td>points are removed if one criterion evaluates true. data0 is the first data field.</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">longitude</div></div></td><td>expression</td><td>expression</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">latitude</div></div></td><td>expression</td><td>expression</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">height</div></div></td><td>expression</td><td>expression</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">area</div></div></td><td>expression</td><td>expression: e.g. deltaL * 2.0 * sin(deltaB/2.0) * cos(latitude/rho)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">value</div></div></td><td>expression</td><td>expression to compute values (input columns are named data0, data1, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeArea</div></div></td><td>boolean</td><td>automatically area computation of rectangular grids (overwrite area)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">R</div></div></td><td>double</td><td>reference radius for ellipsoidal coordinates</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inverseFlattening</div></div></td><td>double</td><td>reference flattening for ellipsoidal coordinates</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">statistics</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">outputfile</div></div></td><td>filename</td><td>matrix with one row, columns are user defined</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset-unbounded">outColumn</div></div></td><td>expression</td><td>expression to compute statistics columns, data* are the outputColumns</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

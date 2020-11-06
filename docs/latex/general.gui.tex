@@ -1,0 +1,102 @@
+\section{Graphical User Interface (GUI)}\label{general.gui}
+
+The graphical user interface program \verb|groopsGui| enables the convenient creation of GROOPS config files.
+It uses the \href{https://qt.io}{Qt5 framework} for cross-platform support.
+
+\fig{!ht}{1.0}{gui_overview}{fig:gui_overview}{Overview of the GUI (components mentioned below marked in red)}
+
+\subsection{Settings and first-time setup}
+
+The GUI depends on an XSD schema file containing the complete formal (computer readable) description of a GROOPS config file.
+This schema file can be created with the command:
+\begin{verbatim}
+  groops --xsd <groopsDir>/groops.xsd
+\end{verbatim}
+At least one schema file has to be set via
+the menu \verb|Settings - Default Paths and Files|. Setting more than one schema files enables the \emph{schema selector} in the toolbar.
+The selected schema will be used when (re-)opening or creating a config file.
+This feature is useful when working with different versions of GROOPS at the same time.
+
+It is possible to set a \emph{template file} via the menu \verb|Settings - Default Paths and Files|. This can be any GROOPS config file.
+Whenever a new config file is created via the GUI, all global elements and programs defined in the template file are automatically created in the new config file.
+It is highly recommended to create a template file containing at least the global element \verb|groopsDataDir| of type \verb|filename|.
+This element is used as a \reference{variable}{general.parser} in most default file paths throughout many GROOPS programs.
+Thus, setting the path to the base directory containing all GROOPS data once in the template file, for example as
+\config{groopsDataDir}=\verb|/home/<user>/groops/data|, is the most convenient way to handle default paths in GROOPS.
+The template file can also contain other often-used global elements, for example \verb|tmpDir| or  \verb|timeStart| and  \verb|timeEnd|.
+
+A \emph{working directory} can be set via \verb|Settings - Default Paths and Files|.
+This directory is used as the default directory in the save dialog of new config files.
+
+The GUI offers the option to open the GROOPS documentation for a selected program. To use this feature,
+the GROOPS documentation must be generated (if not already present) with the command:
+\begin{verbatim}
+  groops --doc <groopsDir>/docs/
+\end{verbatim}
+In the menu \verb|Settings - Default Paths and Files| the path to the HTML version of the documentation must be set (i.e. \verb|<groopsDir>/docs/html|).
+Selecting any program and pressing \verb|F1| opens the documentation for this program in an external browser.
+Pressing \verb|F1| without having any program selected opens the main page of the GROOPS documentation.
+
+Executing a config file from the GUI requires the setup of a run command in the menu \verb|Settings - Commands|.
+It is recommended for this command to open a new terminal in which GROOPS is executed with the config file given as an argument.
+The placeholders \verb|%w| and \verb|%f| are replaced by the directory and file name of the selected config file, respectively.
+Multiple commands can be set up, with the option to choose one of them in the run dialog.
+
+Example commands:
+\begin{itemize}
+	\item Windows: \verb|cd /d %w && groops.exe %f|
+	\item Linux (KDE): \verb|konsole --workdir %w -e bash -ic "groops %f; bash"|
+	\item Linux (GNOME): \verb|gnome-terminal --working-directory=%w -x bash -ic "groops %f; bash"|
+\end{itemize}
+
+\subsection{Basic features}
+
+Most basic features used to manipulate a config element are accessible via the context menu,
+for example attributing \reference{loops and conditions}{general.loopsAndConditions} or setting an element global.
+Global elements automatically appear in the dropdown value list of config elements of the same type.
+Selecting a global element from the dropdown list as a value links this config element to the global element.
+In case the global element is removed, all linked elements' values are replaced by the value of the deleted global element.
+Links to global elements imported from other config files via \config{inputfileGlobal}
+(see section~\reference{Config files}{general.configFiles}) can be set using the context menu item \verb|Set External Link|.
+
+The sidebar features three widgets:
+\begin{itemize}
+	\item \verb|Open Files|: An overview of all open config files (select to change current tree)
+	\item \verb|Program List|: A list of all programs defined in the schema of the active tree (filterable, supports drag and drop to tree, double click appends program)
+	\item \verb|Undo Stack|: Tracks all changes in a config file (select to change state of tree)
+\end{itemize}
+
+In case the names of programs or config elements change over time, the GUI offers a rename feature to update outdated config files.
+The changes must be documented in the schema using GROOPS' rename feature. Affected elements will be marked with an icon and
+the context menu item \verb|Update name| will be available to change the element to the new name defined in the schema.
+
+\subsection{Additional keyboard shortcuts}
+
+\begin{itemize}
+	\item Tree navigation:
+	\begin{itemize}
+		\item \verb|Enter|: Switch focus from tree to input field of selected row
+		\item \verb|Escape|: Switch focus from input field back to tree
+		\item \verb|Tab|: Next sibling element (or next sibling of parent if there is no next sibling, or next child otherwise)
+		\item \verb|Shift+Tab|: Previous sibling element (or parent if there is no previous sibling)
+		\item \verb|Ctrl+Tab|: Next tab/tree
+		\item \verb|Ctrl+Shift+Tab|: Previous tab/tree
+		\item \verb|Ctrl+Space|: Interact with the element (e.g. filename/program: open dialog; time: switch focus between input fields)
+		\item \verb|Ctrl+Up/Down|: Next/previous sibling element
+		\item \verb|Ctrl+Left/Right|: Fold/expand (complex) element
+	\end{itemize}
+	\item Tree manipulation:
+	\begin{itemize}
+		\item \verb|Ctrl+Shift+Up/Down|: Move unbounded list element (e.g. program, layer) up/down
+	\end{itemize}
+	\item Drag and Drop of tabs to other programs (i.e. text editors) or other GUI windows:
+	\begin{itemize}
+		\item \verb|Drag|: Copy tab (= keep in source window)
+		\item \verb|Shift+Drag|: Move tab (= remove from source window)
+	\end{itemize}
+	\item Drag and Drop GROOPS config file(s) into GUI:
+	\begin{itemize}
+		\item \verb|Drag|: Open file(s) in new tab(s)
+		\item \verb|Shift+Drag|: Open file in current tab (replaces current tab, only works with a single file)
+	\end{itemize}
+\end{itemize}

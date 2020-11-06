@@ -1,0 +1,16 @@
+\section{File formats}\label{general.fileFormat}
+All GROOPS files are written either in XML, binary, or ASCII format depending on the filename extension.
+\begin{itemize}
+\item \verb|.xml|: XML format
+\item \verb|.dat|: binary format
+\item \verb|.txt| and all other extensions: ASCII format
+\end{itemize}
+
+With an additional extension of '\verb|.gz|' files are directly compressed and uncompressed. It is also possible to directly uncompress and read (but not write) \href{https://en.wikipedia.org/wiki/Compress}{Unix compress}'d files ('\verb|.Z|').
+
+Comments are allowed in ASCII files and all the text starting from the character '\verb|#|' to the end of the line is ignored.
+
+The program \program{FileConvert} can be used to convert between the different formats. This program is also useful to get
+some general information of files in binary format.
+
+The following special file types are used in GROOPS:

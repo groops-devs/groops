@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - Instrument</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>Instrument (file format)</h1><p>
+
+This template file format can store different observations in a epoch wise manner. Each epoch consists of a time and
+additional data, e.g orbits, accelerometer data, star camera quaternions (see <a class="groops-class" href="instrumentTypeType.html">InstrumentType</a>).
+The time series can be divided in several arcs (see <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>).</p><p>Also a <a class="groops-file" href="fileFormat_matrix.html">matrix</a> file is allowed as one single arc. The first column must contain times [MJD]. Without any extra column
+the instrument type is INSTRUMENTTIME, with one additional column the type is MISCVALUE, and for more columns the type
+MISCVALUES is used.</p><p><pre>
+groops instrument version=20200123
+# SATELLITETRACKING
+         -9         60  # instrument type, number of arcs
+# Time [MJD]               data0: range [m]          data1: range-rate [m/s]   data2: range-acc [m/s^2]
+# =====================================================================================================
+         12 # number of epochs of 1. arc
+ 54588.000000000000000000 -5.074649470097549492e+05  5.755440207134928654e-01  1.877605261528093308e-03
+ 54588.000057870370255841 -5.074620458130163024e+05  5.849357691551860805e-01  1.878948916234051596e-03
+ 54588.000115740740966430 -5.074590976427756250e+05  5.943331739937073310e-01  1.879937220634776869e-03
+ 54588.000173611111222272 -5.074561024756557308e+05  6.037340169611068452e-01  1.880370529387525701e-03
+ 54588.000231481481478113 -5.074530602992626373e+05  6.131368121270999172e-01  1.880680632122925426e-03
+ 54588.000289351851733954 -5.074499711071007187e+05  6.225398878861636565e-01  1.880495369480403561e-03
+ 54588.000347222222444543 -5.074468349029610981e+05  6.319414138081351773e-01  1.880073731783055927e-03
+ 54588.000405092592700385 -5.074436516971451929e+05  6.413404243585696385e-01  1.879464843086203459e-03
+ 54588.000462962962956226 -5.074404215058300761e+05  6.507353310092597320e-01  1.878578987216372124e-03
+ 54588.000520833333212067 -5.074371443491023383e+05  6.601267978060636477e-01  1.877878184949659246e-03
+ 54588.000578703703922656 -5.074338202460713219e+05  6.695136489207137442e-01  1.876962042758626532e-03
+ 54588.000636574074178498 -5.074304492190054734e+05  6.788964444122400632e-01  1.876091925462087043e-03
+         12 # number of epochs of 2. arc
+ 54588.000694444444434339 -5.074270312892858055e+05  6.882748400534359767e-01  1.875376456928801432e-03
+ 54588.000752314814690180 -5.074235664742725785e+05  6.976508178537534910e-01  1.874929898412159559e-03
+ 54588.000810185185400769 -5.074200547868391732e+05  7.070236200716006891e-01  1.874312324351668077e-03
+ 54588.000868055555656611 -5.074164962409950094e+05  7.163943828291452487e-01  1.873924188388115340e-03
+ 54588.000925925925912452 -5.074128908454515622e+05  7.257639682023964145e-01  1.874025826380292404e-03
+ 54588.000983796296168293 -5.074092386012640782e+05  7.351333608427884636e-01  1.873680487441316657e-03
+ 54588.001041666666878882 -5.074055395130896359e+05  7.445020815182646912e-01  1.873849502509668122e-03
+ 54588.001099537037134724 -5.074017935789784533e+05  7.538716732272922050e-01  1.873971633320137753e-03
+ 54588.001157407407390565 -5.073980007962241652e+05  7.632414098560330595e-01  1.873984767500571974e-03
+ 54588.001215277777646406 -5.073941611626467784e+05  7.726123093411200182e-01  1.874295246964456478e-03
+ 54588.001273148148356995 -5.073902746728868224e+05  7.819835205798950639e-01  1.874226146744964808e-03
+ 54588.001331018518612836 -5.073863413272026228e+05  7.913547196412918927e-01  1.874173804634685515e-03
+</pre>
+</p>
+
+        </div>
+    </main>
+</body>
+</html>

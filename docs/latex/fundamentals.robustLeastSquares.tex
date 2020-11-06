@@ -1,0 +1,31 @@
+\section{Robust least squares adjusment}\label{fundamentals.robustLeastSquares}
+The robust least squares adjustment used in GROOPS is based on a modified Huber
+estimator. It downweights observations with large otuliers iteratively.
+
+The algorithm starts with a first solution with equal weights $\M P =\M I$
+\begin{equation}
+  \hat{\M x} = (\M A^T\M P\M A)^{-1}\M A^T\M P\M l.
+\end{equation}
+The solution is used to compute the residuals
+\begin{equation}
+  \hat{e}_i = \left(\M l - \M A \hat{\M x}\right)_i
+\end{equation}
+and the redundancies of all observations
+\begin{equation}
+  r_i = \left(\M I - \M A(\M A^T\M P\M A)^{-1}\M A^T\M P\right)_{ii}.
+\end{equation}
+For observations with large residuals a new standard deviation is assigned
+\begin{equation}
+  \sigma_i =
+  \begin{cases}
+    1                                     & \text{for } \left|\frac{\hat{e}_i}{r_i}\right| \le h\cdot\hat{\sigma} \\
+    \left|\frac{\hat{e}_i}{r_ih}\right|^p & \text{for } \left|\frac{\hat{e}_i}{r_i}\right| > h\cdot\hat{\sigma},
+  \end{cases}
+\end{equation}
+where $h$ is \config{huber}, $p$ is \config{huberPower}, and $\hat{\sigma}^2$ a robust overall variance factor
+computed from all residuals.
+The estimation is repeated \config{huberMaxIteration} times with a new weight matrix
+\begin{equation}
+  \M P = \text{diag}\left(\frac{1}{\sigma_1^2}, \frac{1}{\sigma_2^2}, \ldots, \frac{1}{\sigma_n^2}\right)
+\end{equation}
+ or until convergence is reached.

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - SatelliteModel</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>SatelliteModel (file format)</h1><p>
+
+Properties of a satellite to model non-conservative forces (e.g. <a class="groops-class" href="miscAccelerationsType.html">miscAccelerations</a>).
+The file may contain surface properties, mass, drag coefficients, and antenna thrust values.</p><p>See <a class="groops-program" href="SatelliteModelCreate.html">SatelliteModelCreate</a> and <a class="groops-program" href="SinexMetadata2SatelliteModel.html">SinexMetadata2SatelliteModel</a>.</p><p><pre>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;groops type="satelliteModel" version="20190429">
+   &lt;satelliteCount>1&lt;/satelliteCount>
+   &lt;satellite>
+       &lt;satelliteName>GALILEO-2&lt;/satelliteName>
+       &lt;mass>7.00000000000000e+02&lt;/mass>
+       &lt;coefficientDrag>0.00000000000000e+00&lt;/coefficientDrag>
+       &lt;surfaceCount>15&lt;/surfaceCount>
+       &lt;surface>
+           &lt;type>0&lt;/type>
+           &lt;normal>
+               &lt;x>-1.00000000000000e+00&lt;/x>
+               &lt;y>0.00000000000000e+00&lt;/y>
+               &lt;z>0.00000000000000e+00&lt;/z>
+           &lt;/normal>
+           &lt;area>4.40000000000000e-01&lt;/area>
+           &lt;reflexionVisible>0.00000000000000e+00&lt;/reflexionVisible>
+           &lt;diffusionVisible>7.00000000000000e-02&lt;/diffusionVisible>
+           &lt;absorptionVisible>9.30000000000000e-01&lt;/absorptionVisible>
+           &lt;reflexionInfrared>1.00000000000000e-01&lt;/reflexionInfrared>
+           &lt;diffusionInfrared>1.00000000000000e-01&lt;/diffusionInfrared>
+           &lt;absorptionInfrared>8.00000000000000e-01&lt;/absorptionInfrared>
+           &lt;hasThermalReemission>1&lt;/hasThermalReemission>
+       &lt;/surface>
+       ...
+       &lt;modulCount>2&lt;/modulCount>
+       &lt;modul>
+           &lt;type>1&lt;/type>
+           &lt;rotationAxis>
+               &lt;x>0.00000000000000e+00&lt;/x>
+               &lt;y>1.00000000000000e+00&lt;/y>
+               &lt;z>0.00000000000000e+00&lt;/z>
+           &lt;/rotationAxis>
+           &lt;normal>
+               &lt;x>0.00000000000000e+00&lt;/x>
+               &lt;y>0.00000000000000e+00&lt;/y>
+               &lt;z>1.00000000000000e+00&lt;/z>
+           &lt;/normal>
+           &lt;surface>
+               &lt;count>4&lt;/count>
+               &lt;cell>11&lt;/cell>
+               &lt;cell>12&lt;/cell>
+               &lt;cell>13&lt;/cell>
+               &lt;cell>14&lt;/cell>
+           &lt;/surface>
+       &lt;/modul>
+       &lt;modul>
+           &lt;type>2&lt;/type>
+           &lt;antennaThrust>
+               &lt;x>0.00000000000000e+00&lt;/x>
+               &lt;y>0.00000000000000e+00&lt;/y>
+               &lt;z>2.65000000000000e+02&lt;/z>
+           &lt;/antennaThrust>
+       &lt;/modul>
+   &lt;/satellite>
+&lt;/groops>
+</pre>
+</p>
+
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - GnssAntennaNormalsConstraint</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>GnssAntennaNormalsConstraint</h1><p>
+
+Apply constraints to <a class="groops-file" href="fileFormat_normalEquation.html">normal equations</a>
+containing <a class="groops-class" href="parametrizationGnssAntennaType.html">antennaCenterVariations</a>.
+Usually the antenna center variations are estimated together with other parameters
+like station coordinates, signal biases and slant TEC in <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>.
+This results in a rank deficient matrix as not all parameters can be separated.
+The deficient can be solved by adding pseudo observation equations as constraints.</p><p>To separate antenna center variations and signal biases
+apply <strong class="groops-config-element">constraint:mean</strong> for each GNSS <a class="groops-class" href="gnssType.html">type</a>.
+The observation equation for the integral mean of antenna center variations (ACV)
+in all azimuth $A$ and elevation $E$ dependent directions
+\[
+  0 = \iint ACV(A,E)\, d\Phi \approx \sum_i ACV(A_i,E_i)\, \Delta\Phi_i
+\]is approximated by a grid defined by
+<strong class="groops-config-element">deltaAzimuth</strong>, <strong class="groops-config-element">deltaZenith</strong>, and <strong class="groops-config-element">maxZenith</strong>.</p><p>To separate from station coordinates use <strong class="groops-config-element">constraint:centerMean</strong>
+and from slant TEC parameters use <strong class="groops-config-element">constraint:TEC</strong>.</p><p>The constraints are applied separatly to all antennas matching
+the wildcard patterns of <strong class="groops-config-element">name</strong>, <strong class="groops-config-element">serial</strong>, <strong class="groops-config-element">radome</strong>.</p><p>See also <a class="groops-program" href="ParameterVector2GnssAntennaDefinition.html">ParameterVector2GnssAntennaDefinition</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileNormalEquation</div></div></td><td>filename</td><td>with applied constraints</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileNormalEquation</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">constraint</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">center</div></div></td><td>sequence</td><td>zero center (x,y,z) of a single pattern</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">type</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>applied for each matching types</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">applyWeight</div></div></td><td>boolean</td><td>from normal equations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>[m]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">centerMean</div></div></td><td>sequence</td><td>zero center (x,y,z) as (weighted) mean of all patterns</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">applyWeight</div></div></td><td>boolean</td><td>from normal equations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>[m]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td>sequence</td><td>zero constant (mean of all directions) of a single pattern</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">type</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>applied for each matching types</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">applyWeight</div></div></td><td>boolean</td><td>from normal equations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>[m]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constantMean</div></div></td><td>sequence</td><td>zero constant (mean of all directions) as (weighted) mean of all patterns</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">applyWeight</div></div></td><td>boolean</td><td>from normal equations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>[m]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">TEC</div></div></td><td>sequence</td><td>zero TEC computed as (weighetd) least squares from all types</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">applyWeight</div></div></td><td>boolean</td><td>from normal equations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>[TECU]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">antennaCenterVariations</div></div></td><td><a href="parametrizationGnssAntennaType.html">parametrizationGnssAntenna</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">antennaName</div></div></td><td>string</td><td>apply constraints to all machting antennas</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">antennaSerial</div></div></td><td>string</td><td>apply constraints to all machting antennas</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">antennaRadome</div></div></td><td>string</td><td>apply constraints to all machting antennas</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">deltaAzimuth</div></div></td><td>angle</td><td>[degree] sampling of pattern to estimate center/constant</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">deltaZenith</div></div></td><td>angle</td><td>[degree] sampling of pattern to estimate center/constant</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxZenith</div></div></td><td>angle</td><td>[degree] sampling of pattern to estimate center/constant</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

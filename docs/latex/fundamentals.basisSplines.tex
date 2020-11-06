@@ -1,0 +1,51 @@
+\section{Basis splines}\label{fundamentals.basisSplines}
+A time variable function is given by
+\begin{equation}
+f(x,t) =  \sum_i f_i(x)\Psi_i(t),
+\end{equation}
+with the (spatial) coefficients $f_i(x)$ as parameters and the temporal basis functions~$\Psi_i(t)$.
+Basis splines are defined as polynomials of degree~$n$ in intervals between nodal points in time $t_i$:
+\begin{itemize}
+\item Block mean values ($n=0$)
+\begin{equation}
+  \Psi_i(t) = \begin{cases}
+  1 & \text{if } t\in[t_i,t_{i+1}), \\
+  0 & \text{otherwise}
+\end{cases}
+\end{equation}
+\item Linear splines ($n=1$)
+\begin{equation}
+  \Phi_i(t) = \begin{cases}
+  \tau_{i-1}   & \text{if } t_{i-1}\le t \le t_i, \\
+  1-\tau_i     & \text{if } t_{i}\le t \le t_{i+1}, \\
+  0 & \text{otherwise}.
+\end{cases}
+\end{equation}
+\item Quadratic splines ($n=2$)
+\begin{equation}
+  \Phi_i(t) = \begin{cases}
+  \frac{1}{2}\tau^2_{i-1}   & \text{if } t_{i-1}\le t \le t_i, \\
+  -\tau^2_{i-1}+\tau_{i-1}+\frac{1}{2}     & \text{if } t_{i}\le t \le t_{i+1}, \\
+  \frac{1}{2}\tau^2_{i-1}-\tau_{i-1}+\frac{1}{2}     & \text{if } t_{i}\le t \le t_{i+1}, \\
+  0 & \text{otherwise}.
+\end{cases}
+\end{equation}
+\item Cubic splines ($n=3$)
+\begin{equation}
+  \Phi_i(t) = \begin{cases}
+   \frac{1}{6}\tau^3                                                        & \text{if } t_{i-1}\le t \le t_i, \\
+  -\frac{3}{6}\tau^3 +\frac{3}{6}\tau^2 +\frac{3}{6}\tau  +\frac{1}{6} & \text{if } t_{i-1}\le t \le t_i, \\
+   \frac{3}{6}\tau^3 -            \tau^2                     +\frac{4}{6} & \text{if } t_{i-1}\le t \le t_i, \\
+  -\frac{1}{6}\tau^3 +\frac{3}{6}\tau^2 -\frac{3}{6}\tau  +\frac{1}{6} & \text{if } t_{i-1}\le t \le t_i, \\
+  0 & \text{otherwise}.
+\end{cases}
+\end{equation}
+\end{itemize}
+where $\tau$ is the normlized time in each time interval
+\begin{equation}
+  \tau_i = \frac{t-t_i}{t_{i+1}-t_i}.
+\end{equation}
+The total number of coefficients $f_i(x)$ is $N=N_t+n-1$,
+where $N_t$ is the count of nodal time points~$t_i$ and $n$ is the degree.
+
+\fig{!hb}{0.8}{basissplines}{fig:basissplines}{Basis splines for different degrees with nodal points every 6 hours.}

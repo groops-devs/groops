@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - InstrumentStarCameraAngularAccelerometerFusion</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>InstrumentStarCameraAngularAccelerometerFusion</h1><p>
+
+This program estimates the satellites orientation from star camera data
+<a class="groops-class" href="fileFormat_instrument.html">inputfileStarCamera</a> and angular accelerometer data
+<a class="groops-class" href="fileFormat_instrument.html">inputfileAngularAcc</a>. The combination of both observation types
+is achieved in a least square adjustment. The optimal weighting between the two different
+observation groups is achieved by means of VCE in combination with a robust estimator.
+The system of linearized observation equations within the sensor fusion approach can be formulated as:
+\[
+  \begin{bmatrix}
+  \M l_{ACC1B}\\
+  \M l_{SCA1B}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+  \M A_{ACC1B} & \M B_{ACC1B}\\
+  \M A_{SCA1B} & \M 0
+  \end{bmatrix}
+  \begin{bmatrix}
+  \M q\\
+  \M b
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+  \frac{\partial \dot{\boldsymbol{\omega}}}{\partial \M q} & \frac{\partial \dot{\boldsymbol{\omega}}}{\partial \M b}\\
+  \M I & \M 0
+  \end{bmatrix}
+  \begin{bmatrix}
+  \M q\\
+  \M b
+  \end{bmatrix}
+\]with
+\[\begin{split}
+  \M l_{ACC1B}  &= \dot{\boldsymbol{\omega}}_{ACC1B} - \dot{\boldsymbol{\omega}}_{0}, \\
+  \M l_{SCA1B}  &= \M q_{SCA1B} - \M q_{0}, \\
+  \M q_{Fusion} &= \M q + \M q_{0}.
+\end{split}\]The reference values $\M q_{0}$ and $\dot{\boldsymbol{\omega}}_{0}$ are derived
+from <a class="groops-class" href="fileFormat_instrument.html">inputfileStarCameraReference</a>. In the course of the estimation,
+the accelerometer data is calibrated, by setting a bias factor $\M b$ with <strong class="groops-config-element">accBias</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileStarCamera</div></div></td><td>filename</td><td>combined quaternions</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileCovariance</div></div></td><td>filename</td><td>epoch-wise covariance matrix</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileCovarianceMatrix</div></div></td><td>filename</td><td>full arc-wise covariance matrix per arc. arc number is appended to filename</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileEpochSigmaStarCamera</div></div></td><td>filename</td><td>from vce and outlier detection</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileEpochSigmaAccelerometer</div></div></td><td>filename</td><td>from vce and outlier detection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileAngularAcc</div></div></td><td>filename</td><td>angular acceleration observations (bias removed)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileSolution</div></div></td><td>filename</td><td>estimated parameter (one column for each arc)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStarCameraReference</div></div></td><td>filename</td><td>quaternions as taylor point</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStarCamera</div></div></td><td>filename</td><td>star camera observations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileStarCameraCovariance</div></div></td><td>filename</td><td>star camera observations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAngularAcc</div></div></td><td>filename</td><td>angular acceleration observations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">correctAccNonQuadratic</div></div></td><td>boolean</td><td>apply correction (non-square proof mass)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">accBias</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>accelerometer bias per interval and axis</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">accScale</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>accelerometer scale per interval and axis</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaStarcamera</div></div></td><td>double</td><td>[rad]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaAccelerometerX</div></div></td><td>double</td><td>[rad/s^2]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaAccelerometerY</div></div></td><td>double</td><td>[rad/s^2]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaAccelerometerZ</div></div></td><td>double</td><td>[rad/s^2]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateSigmaScaPerAxis</div></div></td><td>boolean</td><td>separate variance factor for roll, pitch, yaw, instead of one common factor.</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateSigmaAccPerAxis</div></div></td><td>boolean</td><td>separate variance factor for each accelerometer axis, instead of one common factor.</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huber</div></div></td><td>double</td><td>residuals > huber*sigma0 are downweighted</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huberPower</div></div></td><td>double</td><td>residuals > huber: sigma=(e/huber)^power*sigma0</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">iterationCount</div></div></td><td>uint</td><td>non linear equation solved iteratively</td></tr>
+</table>
+This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.
+
+        </div>
+    </main>
+</body>
+</html>

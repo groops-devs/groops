@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - Kinematic orbit determination of LEO satellites</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1 id="cookbook.kinematicOrbit">Kinematic orbit determination of LEO satellites</h1><p></p><p>This cookbook chapter describes exemplarily the steps for determining kinematic orbits of low-Earth orbit (LEO) satellites.</p><p><h2>Prepare LEO meta data</h2><p>
+<ol>
+
+  <li>For creating the <a class="groops-file" href="fileFormat_gnssStationInfo.html">GnssStationInfo file</a> use <a class="groops-program" href="GnssStationInfoCreate.html">GnssStationInfoCreate</a>. The rotation from the
+  satellite reference frame into the antenna reference frame as well as the change of the center of mass due to fuel consumption has to be considered here.
+  </li><li>
+The <a class="groops-file" href="fileFormat_gnssReceiverDefinition.html">GnssReceiverDefinition file</a> can be created by using <a class="groops-program" href="GnssReceiverDefinitionCreate.html">GnssReceiverDefinitionCreate</a>. In this program the different GNSS types has to be specified.
+  </li><li>
+For creating the <a class="groops-file" href="fileFormat_gnssAntennaDefinition.html">GnssAntennaDefinition file</a> use <a class="groops-program" href="GnssAntennaDefinitionCreate.html">GnssAntennaDefinitionCreate</a>. This program considers the phase center offsets of L1 and L2 frequency from the used antenna.
+  </li><li>
+For determining the elevation dependent accuracies the program <a class="groops-program" href="GnssAntennaDefinitionCreate.html">GnssAntennaDefinitionCreate</a> is used again.
+  <ul>
+
+    </li><li>
+<strong class="groops-config-element">antenna</strong>: set to new
+    </li><li>
+Set the <strong class="groops-config-element">pattern</strong>s for code (<strong class="groops-config-element">type</strong>=<code>C**</code>) and phase
+    (<strong class="groops-config-element">type</strong>=<code>L**</code>). The standard deviation is expressed e.g. with <strong class="groops-config-element">values</strong>=<code>0.001/cos(2*PI/180*zenith)</code>.
+  </li></ul>
+
+</ol></p><p><h2>Read LEO data</h2><p>
+<ol>
+
+  <li>Conversion of the approximated orbit and star camera data into GROOPS format using a conversion program.
+  </li><li>
+If no attitude data is given the star camera data can be simulated by using <a class="groops-program" href="SimulateStarCamera.html">SimulateStarCamera</a> or <a class="groops-program" href="SimulateStarCameraSentinel1.html">SimulateStarCameraSentinel1</a>.
+  </li><li>
+The GNSS observation data (given in RINEX format) can be converted with <a class="groops-program" href="RinexObservation2GnssReceiver.html">RinexObservation2GnssReceiver</a>.
+  </li><li>
+Suitable programs to get daily data are <a class="groops-program" href="InstrumentConcatenate.html">InstrumentConcatenate</a> and <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>.
+  </li><li>
+For interpolating the orbit and star camera data to GNSS receiver epochs use <a class="groops-program" href="InstrumentResample.html">InstrumentResample</a> and specify GNSS receiver as input for
+  <strong class="groops-config-element">timeSeries</strong>.
+  </li><li>
+For synchronizing these data use <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>
+</li></ol>
+
+Detailed description of instrument data handling can be found in <a class="groops-ref" href="cookbook.instrument.html">Instrument data handling</a>.</p><p><h2>Prepare GNSS satellite metadata, orbits, and clocks</h2><p>
+The cookbook chapter on <a class="groops-ref" href="cookbook.gnssPpp.html">GNSS precise point positioning (PPP)</a> details how to prepare the GNSS satellite
+<a class="groops-ref" href="cookbook.gnssPpp.html#metadata">metadata</a> and <a class="groops-ref" href="cookbook.gnssPpp.html#orbitPreparation">orbits</a>.
+Use <a class="groops-program" href="GnssClockRinex2InstrumentClock.html">GnssClockRinex2InstrumentClock</a> to convert satellite clock errors.</p><p><h2>Estimate kinematic orbits</h2><p></p><p>For kinematic orbit determination use <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>. The GNSS constellations have to be defined via
+<a class="groops-class" href="gnssParametrizationTransmitterType.html">transmitter</a> which requires for example the signal bias and clock data.
+The LEO satellite can be defined via <a class="groops-class" href="gnssParametrizationReceiverType.html#lowEarthOrbiter">receiver:lowEarthOrbiter</a> which requires for example the
+GNSS observations, the star camera and approximated orbit data. The impact of the ionosphere can be considered via
+<a class="groops-class" href="gnssParametrizationIonosphereType.html">ionosphere</a> and the estimation of the earth rotation parameters is done
+with <a class="groops-class" href="gnssParametrizationEarthRotationType.html">earthRotation</a>. The ambiguity resolution settings can be specified via
+<a class="groops-class" href="gnssParametrizationAmbiguitiesType.html">ambiguities</a>.</p><p>The processing flow is controlled via a list of processing steps <a class="groops-class" href="gnssProcessingStepType.html">processingStep</a>. The processing steps are
+processed consecutively. Some steps allow the selection of parameters,
+epochs, or the normal equation structure, which affects all subsequent steps.</p><p><ol>
+
+    <li><a class="groops-class" href="gnssProcessingStepType.html">processingStep:selectParameters</a>:  Parameters which should be estimated have to be enabled.
+    Consider the linear dependencies between the STEC and the VTEC as well as between the STEC and particular signal biases. This means, if STEC parameter
+    is enabled it is not possible to estimate the VTEC and TEC bias, so these parameters have to be be disabled.
+    </li><li>
+<a class="groops-class" href="gnssProcessingStepType.html">processingStep:estimate</a>: Estimation of the parameters. The number of iterations can be set with
+    <strong class="groops-config-element">maxIterationCount</strong>. The weights will be iteratively adjusted.
+    </li><li>
+Estimation of the TEC bias parameter using <a class="groops-class" href="gnssProcessingStepType.html">processingStep:selectParameters</a> and
+    <a class="groops-class" href="gnssProcessingStepType.html">processingStep:estimate</a>. Only <strong class="groops-config-element">estimateReceiverTecBias</strong> parameter has to be selected.
+    </li><li>
+<a class="groops-class" href="gnssProcessingStepType.html">processingStep:estimate</a>: Further estimation of the parameters.
+    </li><li>
+Solving the ambiguities via <a class="groops-class" href="gnssProcessingStepType.html">processingStep:resolveAmbiguities</a>.
+    </li><li>
+Further estimations of the parameters and the TEC bias parameter by using <a class="groops-class" href="gnssProcessingStepType.html">processingStep:estimate</a>.
+    </li><li>
+Computation of the epoch-wise covariance matrix can be done via <a class="groops-class" href="gnssProcessingStepType.html">processingStep:computeCovarianceMatrix</a>.
+    </li><li>
+<a class="groops-class" href="gnssProcessingStepType.html">processingStep:writeResults</a>: Write estimation results into output files.
+</li></ol>
+</p><p>
+
+</p>
+
+        </div>
+    </main>
+</body>
+</html>

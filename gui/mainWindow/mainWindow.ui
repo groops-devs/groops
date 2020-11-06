@@ -1,0 +1,691 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>GROOPS</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../resources/icons.qrc">
+    <normaloff>:/icons/scalable/groops.svg</normaloff>:/icons/scalable/groops.svg</iconset>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="fileNewAction"/>
+    <addaction name="fileOpenAction"/>
+    <addaction name="fileReOpenAction"/>
+    <addaction name="fileOpenRecentAction"/>
+    <addaction name="fileShowInManagerAction"/>
+    <addaction name="separator"/>
+    <addaction name="fileSaveAction"/>
+    <addaction name="fileSaveAsAction"/>
+    <addaction name="separator"/>
+    <addaction name="fileRunAction"/>
+    <addaction name="separator"/>
+    <addaction name="fileCloseAction"/>
+    <addaction name="fileCloseOtherAction"/>
+    <addaction name="fileExitAction"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="editCutAction"/>
+    <addaction name="editCopyAction"/>
+    <addaction name="editPasteAction"/>
+    <addaction name="editPasteOverwriteAction"/>
+    <addaction name="separator"/>
+    <addaction name="editFindReplaceAction"/>
+    <addaction name="editCollapseAllAction"/>
+    <addaction name="separator"/>
+    <addaction name="editAddAction"/>
+    <addaction name="editRemoveAction"/>
+    <addaction name="separator"/>
+    <addaction name="editSetGlobalAction"/>
+    <addaction name="editSetExternalLinkAction"/>
+    <addaction name="separator"/>
+    <addaction name="editSetLoopAction"/>
+    <addaction name="editRemoveLoopAction"/>
+    <addaction name="editSetConditionAction"/>
+    <addaction name="editRemoveConditionAction"/>
+    <addaction name="separator"/>
+    <addaction name="editEnabledAction"/>
+    <addaction name="editEnableAllAction"/>
+    <addaction name="editDisableAllAction"/>
+    <addaction name="separator"/>
+    <addaction name="editRenameAction"/>
+    <addaction name="editUpdateNameAction"/>
+    <addaction name="editCommentAction"/>
+    <addaction name="openExternallyAction"/>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>&amp;Settings</string>
+    </property>
+    <addaction name="settingsCommandAction"/>
+    <addaction name="settingsPathAction"/>
+    <addaction name="settingsFontAction"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="helpShowDescriptionsAction"/>
+    <addaction name="helpShowResultsAction"/>
+    <addaction name="separator"/>
+    <addaction name="helpOpenDocumentation"/>
+    <addaction name="separator"/>
+    <addaction name="helpAboutAction"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuSettings"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="fileNewAction"/>
+   <addaction name="fileOpenAction"/>
+   <addaction name="fileSaveAction"/>
+   <addaction name="fileSaveAsAction"/>
+   <addaction name="separator"/>
+   <addaction name="fileRunAction"/>
+   <addaction name="separator"/>
+   <addaction name="editEnableAllAction"/>
+   <addaction name="editDisableAllAction"/>
+   <addaction name="editCollapseAllAction"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="fileNewAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/document-new.svg</normaloff>:/icons/scalable/document-new.svg</iconset>
+   </property>
+   <property name="text">
+    <string>New</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="fileOpenAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/document-open.svg</normaloff>:/icons/scalable/document-open.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Open ...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="fileOpenRecentAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/document-open-recent.svg</normaloff>:/icons/scalable/document-open-recent.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Open Recent</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Recent</string>
+   </property>
+  </action>
+  <action name="fileSaveAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/document-save.svg</normaloff>:/icons/scalable/document-save.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="fileSaveAsAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/document-save-as.svg</normaloff>:/icons/scalable/document-save-as.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Save As ...</string>
+   </property>
+   <property name="toolTip">
+    <string>Save As</string>
+   </property>
+  </action>
+  <action name="fileReOpenAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/view-refresh.svg</normaloff>:/icons/scalable/view-refresh.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Reopen</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+  </action>
+  <action name="fileRunAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/run.svg</normaloff>:/icons/scalable/run.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Run ...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="fileCloseAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-delete.svg</normaloff>:/icons/scalable/edit-delete.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Close File</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="fileExitAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/application-exit.svg</normaloff>:/icons/scalable/application-exit.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="editCutAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-cut.svg</normaloff>:/icons/scalable/edit-cut.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Cut</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="editCopyAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-copy.svg</normaloff>:/icons/scalable/edit-copy.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Copy</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="editPasteAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-paste.svg</normaloff>:/icons/scalable/edit-paste.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="editPasteOverwriteAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-paste.svg</normaloff>:/icons/scalable/edit-paste.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Paste (Overwrite)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+V</string>
+   </property>
+  </action>
+  <action name="editFindReplaceAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-find-replace.svg</normaloff>:/icons/scalable/edit-find-replace.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Find/Replace</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="editAddAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-add.svg</normaloff>:/icons/scalable/edit-add.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Add</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="editRemoveAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-delete.svg</normaloff>:/icons/scalable/edit-delete.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Delete ...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="editSetGlobalAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/link.svg</normaloff>:/icons/scalable/link.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Set Global ...</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Global</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
+  <action name="editEnabledAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Enabled</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="editCommentAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-comment.svg</normaloff>:/icons/scalable/edit-comment.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Edit Comment</string>
+   </property>
+   <property name="shortcut">
+    <string>F4</string>
+   </property>
+  </action>
+  <action name="settingsCommandAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/settings.svg</normaloff>:/icons/scalable/settings.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Commands ...</string>
+   </property>
+  </action>
+  <action name="settingsPathAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/settings.svg</normaloff>:/icons/scalable/settings.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Default Paths and Files ...</string>
+   </property>
+   <property name="toolTip">
+    <string>Default Paths and Files</string>
+   </property>
+  </action>
+  <action name="settingsFontAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/settings.svg</normaloff>:/icons/scalable/settings.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Font</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+  </action>
+  <action name="helpShowDescriptionsAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/help-contents.svg</normaloff>:/icons/scalable/help-contents.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Show Descriptions</string>
+   </property>
+  </action>
+  <action name="helpShowResultsAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/help-contents.svg</normaloff>:/icons/scalable/help-contents.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Show Results of Links/Expressions</string>
+   </property>
+   <property name="toolTip">
+    <string>Show Results of Links/Expressions</string>
+   </property>
+  </action>
+  <action name="helpAboutAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/help-about.svg</normaloff>:/icons/scalable/help-about.svg</iconset>
+   </property>
+   <property name="text">
+    <string>About ...</string>
+   </property>
+  </action>
+  <action name="editRenameAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-rename.svg</normaloff>:/icons/scalable/edit-rename.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Rename ...</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
+  <action name="editSetLoopAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/loop-set.svg</normaloff>:/icons/scalable/loop-set.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Set Loop ...</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Loop</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="editRemoveLoopAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/loop-remove.svg</normaloff>:/icons/scalable/loop-remove.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Remove Loop</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove Loop</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+L</string>
+   </property>
+  </action>
+  <action name="editEnableAllAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-enable.svg</normaloff>:/icons/scalable/edit-enable.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Enable All</string>
+   </property>
+   <property name="toolTip">
+    <string>Enable All Top-Level Programs</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+E</string>
+   </property>
+  </action>
+  <action name="editDisableAllAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-disable.svg</normaloff>:/icons/scalable/edit-disable.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Disable All</string>
+   </property>
+   <property name="toolTip">
+    <string>Disable All Top-Level Programs</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+D</string>
+   </property>
+  </action>
+  <action name="editCollapseAllAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/document-collapse.svg</normaloff>:/icons/scalable/document-collapse.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Collapse All</string>
+   </property>
+   <property name="toolTip">
+    <string>Collapse All Elements</string>
+   </property>
+  </action>
+  <action name="helpOpenDocumentation">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/help-contents.svg</normaloff>:/icons/scalable/help-contents.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Open Documentation</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Documentation in External Browser</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="editSetConditionAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/condition-set.svg</normaloff>:/icons/scalable/condition-set.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Set Condition ...</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Condition</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
+   </property>
+  </action>
+  <action name="editRemoveConditionAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/condition-remove.svg</normaloff>:/icons/scalable/condition-remove.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Remove Condition</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove Condition</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+K</string>
+   </property>
+  </action>
+  <action name="editSetExternalLinkAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/link.svg</normaloff>:/icons/scalable/link.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Set External Link ...</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Link to Global Variable in an External File</string>
+   </property>
+  </action>
+  <action name="fileCloseOtherAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-delete.svg</normaloff>:/icons/scalable/edit-delete.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Close Other Files</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+W</string>
+   </property>
+  </action>
+  <action name="openExternallyAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/open-externally.svg</normaloff>:/icons/scalable/open-externally.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Open Externally</string>
+   </property>
+  </action>
+  <action name="fileShowInManagerAction">
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/open-externally.svg</normaloff>:/icons/scalable/open-externally.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Show in File Manager</string>
+   </property>
+  </action>
+  <action name="editUpdateNameAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/icons.qrc">
+     <normaloff>:/icons/scalable/edit-rename.svg</normaloff>:/icons/scalable/edit-rename.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Update Name</string>
+   </property>
+   <property name="toolTip">
+    <string>Update name in case the element has been renamed in the schema</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="../resources/icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

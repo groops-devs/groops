@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - DoodsonEarthOrientationParameter</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>DoodsonEarthOrientationParameter (file format)</h1><p>
+
+Corrections for Earth orientation parameters (EOP) ($x_p, y_p, UT1, LOD$)
+as cos/sin oscillations for a list of doodson tidal frequencies.</p><p><pre>
+groops doodsonEarthOrientationParameter version=20200123
+        11 # number of constituents
+# dood.   xpCos [arcsec]            xpSin [arcsec]            ypCos [arcsec]            ypSin [arcsec]            ut1Cos [sec]              ut1Sin [sec]              lodCos [sec]              lodSin [sec]             name
+# ===========================================================================================================================================================================================================================
+ 155.645  2.399999999999999786e-07  1.799999999999999971e-07  1.799999999999999971e-07 -2.399999999999999786e-07 -2.000000000000000042e-08  2.000000000000000042e-08 -1.499999999999999932e-07 -1.400000000000000095e-07 ""
+ 155.655 -8.220000000000000920e-06 -6.280000000000000012e-06 -6.280000000000000012e-06  8.220000000000000920e-06  7.899999999999999537e-07 -8.599999999999999187e-07  5.219999999999999150e-06  4.829999999999999496e-06 m1
+ 155.665 -1.649999999999999872e-06 -1.260000000000000007e-06 -1.260000000000000007e-06  1.649999999999999872e-06  1.600000000000000033e-07 -1.700000000000000135e-07  1.049999999999999900e-06  9.700000000000000302e-07 ""
+ 157.455 -1.539999999999999867e-06 -1.199999999999999946e-06 -1.199999999999999946e-06  1.539999999999999867e-06  1.499999999999999932e-07 -1.600000000000000033e-07  9.799999999999999345e-07  8.899999999999999491e-07 chi1
+ 157.465 -3.400000000000000270e-07 -2.599999999999999988e-07 -2.599999999999999988e-07  3.400000000000000270e-07  2.999999999999999732e-08 -4.000000000000000084e-08  2.099999999999999746e-07  1.999999999999999909e-07 ""
+ 161.557  9.999999999999999547e-08  8.000000000000000167e-08  8.000000000000000167e-08 -9.999999999999999547e-08 -1.000000000000000021e-08  1.000000000000000021e-08 -7.000000000000000477e-08 -4.999999999999999774e-08 ""
+ 162.556  2.549999999999999726e-06  2.019999999999999718e-06  2.019999999999999718e-06 -2.549999999999999726e-06 -2.099999999999999746e-07  2.899999999999999763e-07 -1.799999999999999919e-06 -1.289999999999999931e-06 pi1
+ 163.545 -4.899999999999999672e-07 -3.799999999999999616e-07 -3.799999999999999616e-07  4.899999999999999672e-07  4.000000000000000084e-08 -5.999999999999999464e-08  3.499999999999999842e-07  2.399999999999999786e-07 ""
+ 163.555  4.272999999999999238e-05  3.010999999999999801e-05  3.010999999999999801e-05 -4.272999999999999238e-05 -3.079999999999999734e-06  5.219999999999999150e-06 -3.270999999999999684e-05 -1.929999999999999817e-05 p1
+ 164.554 -3.599999999999999943e-07 -2.800000000000000191e-07 -2.800000000000000191e-07  3.599999999999999943e-07  2.999999999999999732e-08 -4.000000000000000084e-08  2.700000000000000090e-07  1.700000000000000135e-07 ""
+ 164.556 -1.029999999999999879e-06 -7.999999999999999638e-07 -7.999999999999999638e-07  1.029999999999999879e-06  8.000000000000000167e-08 -1.199999999999999893e-07  7.599999999999999233e-07  4.899999999999999672e-07 ""
+</pre>
+</p>
+
+        </div>
+    </main>
+</body>
+</html>

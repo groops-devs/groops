@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - matrixGeneratorType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="matrixGeneratorType">MatrixGenerator</h1><p>
+This class provides a matrix used e.g. by <a class="groops-program" href="MatrixCalculate.html">MatrixCalculate</a>.
+If multiple matrices are given the resulting matrix is the sum all
+and the size is exandeded to fit all matrices. Before the computation of each submatrix
+the variables <code>rowsBefore</code> and <code>columnsBefore</code> with current size of the overall matrix
+are set. As all matrices can be manipulated before, complex matrix operations are possible.
+</p>
+
+<h2>File</h2><p>
+Matrix from <a class="groops-file" href="fileFormat_matrix.html">file</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileMatrix</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td></td></tr>
+</table>
+
+<h2>Normals file</h2><p>
+Matrix from a <a class="groops-file" href="fileFormat_normalEquation.html">normal equation file</a>. The symmetric normal matrix,
+the right hand side vector or the lPl vector can be selected.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileNormalEquation</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">type</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">normalMatrix</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">rightHandSide</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">lPl</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td></td></tr>
+</table>
+
+<h2>Expression</h2><p>
+Matrix filled by an expression. For each element of the new matrix the variables
+<code>row</code> and <code>column</code> are set and the expression <strong class="groops-config-element">element</strong> is evaluated.</p><p>Excample: The <strong class="groops-config-element">element</strong>=<code>if(row==column,1,0)</code> generates an identity matrix.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">rows</div></div></td><td>expression</td><td>(variables: rowsBefore, columnsBefore)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">columns</div></div></td><td>expression</td><td>(variables: rowsBefore, columnsBefore)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">element</div></div></td><td>expression</td><td>for each element of matrix (variables: row, column, rows, columns, rowsBefore, columnsBefore)</td></tr>
+</table>
+
+<h2>Element manipulation</h2><p>
+The elements of a matrix are replaced an expression.
+For each element of the matrix the variables <code>data</code>, <code>row</code>, <code>column</code>
+are set and the expression <strong class="groops-config-element">element</strong> is evaluated and replaces the element.
+Additionally the standard data variables are available (assigned each row),
+see <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">element</div></div></td><td>expression</td><td>for each element of matrix (variables: data, row, column, rows, columns, rowsBefore, columnsBefore)</td></tr>
+</table>
+
+<h2>ElementWiseOperation</h2><p>
+Given two matrices $\mathbf{A}$ and $\mathbf{B}$ this class computes $c_{ij} = f(a_{ij}, b_{ij})$,
+where $f$ is an expression (for example <code>data0*data1</code>).
+For each element of the matrix the variables <code>data0</code>, <code>data1</code>, <code>row</code>, <code>column</code>
+are set and the expression <strong class="groops-config-element">element</strong> is evaluated.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix1</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix2</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">expression</div></div></td><td>expression</td><td>for each element of matrix (variables: data0, data1, row, column, rows, columns, rowsBefore, columnsBefore)</td></tr>
+</table>
+
+<h2>Append</h2><p>
+Append matrix to the right (first row) or bottom (first column).
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">side</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">right</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">bottom</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">diagonal</div></div></td><td></td><td></td></tr>
+</table>
+
+<h2>Shift</h2><p>
+Shift start row and start column of a matrix.
+In other words: zero lines and columns are inserted at the beginning of the matrix.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startRow</div></div></td><td>expression</td><td>start row (variables: rowsBefore, columnsBefore, rows, columns)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startColumn</div></div></td><td>expression</td><td>start column (variables: rowsBefore, columnsBefore, rows, columns)</td></tr>
+</table>
+
+<h2>Slice</h2><p>
+Slice of a matrix.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startRow</div></div></td><td>expression</td><td>start row of matrix (variables: rowsBefore, columnsBefore, rows, columns)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startColumn</div></div></td><td>expression</td><td>start column of matrix (variables: rowsBefore, columnsBefore, rows, columns)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">rows</div></div></td><td>expression</td><td>0: until end (variables: rowsBefore, columnsBefore, rows, columns)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">columns</div></div></td><td>expression</td><td>0: until end (variables: rowsBefore, columnsBefore, rows, columns)</td></tr>
+</table>
+
+<h2>Reshape</h2><p>
+Matrix reshaped columnwise to new row and columns.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">rows</div></div></td><td>expression</td><td>0: auto-determine rows, (variables: rowsBefore, columnsBefore)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">columns</div></div></td><td>expression</td><td>0: auto-determine columns (variables: rowsBefore, columnsBefore)</td></tr>
+</table>
+
+<h2 id="reorder">Reorder</h2><p>
+Reorder rows or columns of a matrix by an index vectors.
+The index vector can be created with <a class="groops-program" href="ParameterSelection2IndexVector.html">ParameterSelection2IndexVector</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileIndexVectorRow</div></div></td><td>filename</td><td>index in input matrix or -1 for new parameter.</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileIndexVectorColumn</div></div></td><td>filename</td><td>index in input matrix or -1 for new parameter.</td></tr>
+</table>
+
+<h2>Sort</h2><p>
+Sort matrix by <strong class="groops-config-element">column</strong> in ascending order by default or in <strong class="groops-config-element">descending</strong> order.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">column</div></div></td><td>uint</td><td>sort by column, top = highest priority</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">descending</div></div></td><td>boolean</td><td></td></tr>
+</table>
+
+<h2>Transpose</h2><p>
+Transposed of a matrix $\M A^T$.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+</table>
+
+<h2>Multiplication</h2><p>
+Multiplication of matrices.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix1</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix2</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td></td></tr>
+</table>
+
+<h2>Inverse</h2><p>
+Inverse of a matrix $\M A^{-1}$.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">pseudoInverse</div></div></td><td>boolean</td><td>compute pseudo inverse instead of regular one</td></tr>
+</table>
+
+<h2>Cholesky</h2><p>
+Upper triangular natrix of the cholesky decomposition of a symmetric matrix $\M A=\M W^T\M W$.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+</table>
+
+<h2>RankKUpdate</h2><p>
+Symmetric matrix from rank k update: $\M A^T\M A$.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td></td></tr>
+</table>
+
+<h2>EigenValues</h2><p>
+Computes the eigenvalues of a square matrix and gives a vector of eigenvalues for symmetric matrices
+or a matrix with 2 columns with real and imaginary parts in general case.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">eigenVectors</div></div></td><td>boolean</td><td>return eigen vectors instead of eigen values</td></tr>
+</table>
+
+<h2>Diagonal</h2><p>
+Extract the diagonal or subdiagnoal ($n\times 1$ vector) of a matrix.
+The zero <strong class="groops-config-element">diagonal</strong> means the main diagonal, a positive value the superdiagonal,
+and a negative the subdiagonal.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">diagonal</div></div></td><td>int</td><td>zero: main diagonal, positive: superdiagonal, negative: subdiagonal</td></tr>
+</table>
+
+<h2>FromDiagonal</h2><p>
+Generate a matrix from a diagonal vector.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td>(nx1) or (1xn) diagonal vector</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">diagonal</div></div></td><td>int</td><td>zero: main diagonal, positive: superdiagonal, negative: subdiagonal</td></tr>
+</table>
+
+<h2>Set type</h2><p>
+Set type (matrix, matrixSymmetricUpper, matrixSymmetricLower, matrixTriangularUpper, matrixTriangularLower)
+of a matrix. If the type is not matrix, the matrix must be quadratic. Symmetric matrices are filled symmetric
+and for triangular matrix the other triangle is set to zero.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">matrix</div></div></td><td><a href="matrixGeneratorType.html">matrixGenerator</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">type</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">matrix</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">matrixSymmetricUpper</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">matrixSymmetricLower</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">matrixTriangularUpper</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">matrixTriangularLower</div></div></td><td></td><td></td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

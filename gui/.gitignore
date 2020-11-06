@@ -1,0 +1,5 @@
+# dynamic content
+# ---------------
+groopsGui.pro.user*
+Makefile
+.qmake.stash

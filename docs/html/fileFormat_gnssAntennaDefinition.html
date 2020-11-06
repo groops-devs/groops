@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - GnssAntennaDefinition</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>GnssAntennaDefinition (file format)</h1><p>
+
+Contains a list of GNSS antennas which are identified by its
+name (type), serial, and radome. Each antenna consists of
+antenna center offsets (ACO) and antenna center variations (ACV)
+for different signal <a class="groops-class" href="gnssType.html">types</a> (code and phase).
+The ACV values for each type are stored in an elevation and azimuth dependent grid.</p><p>
+
+</p><p>See also <a class="groops-program" href="GnssAntennaDefinitionCreate.html">GnssAntennaDefinitionCreate</a>, <a class="groops-program" href="GnssAntex2AntennaDefinition.html">GnssAntex2AntennaDefinition</a>.</p><p><figure><img class="figure" style="width:100%;" src="../figures/fileFormatGnssAntennaDefinition.png" alt="fileFormatGnssAntennaDefinition"><figcaption class="center">Figure: Antenna center variations of ASH701945D\_M for two frequencies of GPS and GLONASS</figcaption></figure></p><p><pre>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;groops type="antennaDefinition" version="20190429">
+    &lt;antennaCount>65&lt;/antennaCount>
+    ...
+    &lt;antenna>
+        &lt;name>BLOCK IIIA&lt;/name>
+        &lt;serial>G074&lt;/serial>
+        &lt;radome>2018-109A&lt;/radome>
+        &lt;comment>PCO provided by the Aerospace Corporation, PV from estimations by ESA/CODE&lt;/comment>
+        &lt;pattern>
+            &lt;count>3&lt;/count>
+            &lt;cell>
+                &lt;type>*1*G**&lt;/type>
+                &lt;offset>
+                    &lt;x>-1.23333333333333e-03&lt;/x>
+                    &lt;y>4.33333333333333e-04&lt;/y>
+                    &lt;z>3.15200000000000e-01&lt;/z>
+                &lt;/offset>
+                &lt;dZenit>1.00000000000000e+00&lt;/dZenit>
+                &lt;pattern>
+                    &lt;type>0&lt;/type>
+                    &lt;rows>1&lt;/rows>
+                    &lt;columns>18&lt;/columns>
+                    &lt;cell row="0" col="0">1.39000000000000e-02&lt;/cell>
+                    &lt;cell row="0" col="1">1.28000000000000e-02&lt;/cell>
+                    &lt;cell row="0" col="2">1.02000000000000e-02&lt;/cell>
+                    &lt;cell row="0" col="3">5.80000000000000e-03&lt;/cell>
+                    &lt;cell row="0" col="4">1.10000000000000e-03&lt;/cell>
+                    &lt;cell row="0" col="5">-4.50000000000000e-03&lt;/cell>
+                    &lt;cell row="0" col="6">-9.70000000000000e-03&lt;/cell>
+                    &lt;cell row="0" col="7">-1.28000000000000e-02&lt;/cell>
+                    &lt;cell row="0" col="8">-1.34000000000000e-02&lt;/cell>
+                    &lt;cell row="0" col="9">-1.18000000000000e-02&lt;/cell>
+                    &lt;cell row="0" col="10">-8.90000000000000e-03&lt;/cell>
+                    &lt;cell row="0" col="11">-4.50000000000000e-03&lt;/cell>
+                    &lt;cell row="0" col="12">1.20000000000000e-03&lt;/cell>
+                    &lt;cell row="0" col="13">7.20000000000000e-03&lt;/cell>
+                    &lt;cell row="0" col="14">1.33000000000000e-02&lt;/cell>
+                    &lt;cell row="0" col="15">1.33000000000000e-02&lt;/cell>
+                    &lt;cell row="0" col="16">1.33000000000000e-02&lt;/cell>
+                    &lt;cell row="0" col="17">1.33000000000000e-02&lt;/cell>
+                &lt;/pattern>
+            &lt;/cell>
+            ...
+        &lt;/pattern>
+    &lt;/antenna>
+&lt;/groops>
+</pre>
+</p>
+
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# dynamic content
+# ---------------
+documentation.*
+!documentation.tex
+!documentation.pdf
+*.log

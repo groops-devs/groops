@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - EarthOrientationParameter</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>EarthOrientationParameter (file format)</h1><p>
+
+Earth Orientation Parameter (EOP) as provided by the International Earth Rotation and Reference Systems Service (IERS) (e.g <code>EOP 14 C04 (IAU2000A)</code>).</p><p>See <a class="groops-program" href="IersC04IAU2000EarthOrientationParameter.html">IersC04IAU2000EarthOrientationParameter</a>, <a class="groops-program" href="IersRapidIAU2000EarthOrientationParameter.html">IersRapidIAU2000EarthOrientationParameter</a>.</p><p><pre>
+groops earthOrientationParameter version=20200123
+       9641 # number of epochs
+# UTC [MJD]                 xp [arcsec]               yp [arcsec]               deltUT [sec]              LOD [sec]                 dX [arcsec]               dY [arcsec]
+# ====================================================================================================================================================================================
+  5.894700000000000000e+04  5.690599999999999825e-02  4.099130000000000273e-01 -2.316246000000000138e-01  1.636400000000000094e-03 -2.900000000000000017e-05  5.800000000000000034e-05
+  5.894800000000000000e+04  5.771400000000000141e-02  4.110159999999999925e-01 -2.332083000000000073e-01  1.520099999999999923e-03 -6.000000000000000152e-05  2.199999999999999943e-05
+  5.894900000000000000e+04  5.813000000000000111e-02  4.120099999999999874e-01 -2.346157000000000104e-01  1.293099999999999935e-03 -7.200000000000000182e-05  3.199999999999999855e-05
+  5.895000000000000000e+04  5.854100000000000276e-02  4.129849999999999910e-01 -2.357567999999999886e-01  9.872999999999999832e-04 -7.600000000000000418e-05  5.899999999999999754e-05
+  5.895100000000000000e+04  5.908599999999999963e-02  4.139869999999999939e-01 -2.366149999999999920e-01  7.075000000000000126e-04 -8.000000000000000654e-05  8.600000000000000331e-05
+  5.895200000000000000e+04  5.976900000000000268e-02  4.154180000000000095e-01 -2.372105999999999937e-01  4.798000000000000073e-04 -8.399999999999999535e-05  1.129999999999999955e-04
+  5.895300000000000000e+04  6.095400000000000124e-02  4.167310000000000181e-01 -2.375994999999999913e-01  3.118999999999999919e-04 -8.700000000000000051e-05  1.399999999999999877e-04
+  5.895400000000000000e+04  6.210199999999999748e-02  4.180929999999999924e-01 -2.378588000000000091e-01  1.710000000000000094e-04 -9.100000000000000287e-05  1.669999999999999935e-04
+  5.895500000000000000e+04  6.290999999999999370e-02  4.196619999999999795e-01 -2.380454999999999932e-01  1.719000000000000042e-04 -6.000000000000000152e-06  8.100000000000000375e-05
+  5.895600000000000000e+04  6.385599999999999610e-02  4.214060000000000028e-01 -2.382557999999999898e-01  2.683000000000000163e-04  1.029999999999999964e-04 -3.600000000000000091e-05
+  5.895700000000000000e+04  6.455500000000000127e-02  4.229890000000000039e-01 -2.385857000000000117e-01  4.040000000000000080e-04  1.019999999999999992e-04 -2.000000000000000164e-05
+  5.895800000000000000e+04  6.440300000000000191e-02  4.242549999999999932e-01 -2.390210000000000112e-01  4.910999999999999567e-04  5.899999999999999754e-05  4.399999999999999886e-05
+</pre>
+</p>
+
+        </div>
+    </main>
+</body>
+</html>

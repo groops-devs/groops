@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - PreprocessingPod</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>PreprocessingPod</h1><p>
+
+This program estimates empirical covariance functions of the instrument noise and determine arc wise variances to
+downweight arc with outliers.</p><p>A complete least squares adjustment for gravity field determination is performed by computing the <strong class="groops-config-element">observation</strong>
+equations, see <a class="groops-class" href="observationType.html#podIntegral">observation:podIntegral</a> or
+<a class="groops-class" href="observationType.html#podVariational">observation:podVariational</a> for details. The normal equations
+are accumulated and solved to <a class="groops-class" href="fileFormat_matrix.html">outputfileSolution</a> together with the estimated accuracies
+<a class="groops-class" href="fileFormat_matrix.html">outputfileSigmax</a>. The estimated residuals $\hat{\M e}=\M l-\M A\hat{\M x}$ can be computed with
+<strong class="groops-config-element">computeResiduals</strong>.</p><p>For each component (along, cross, radial) of the kinematic orbit positions a noise covariance function is estimated
+\[
+  \text{cov}(\Delta t_i) = \sum_{n=0}^{N-1} a_n^2 \cos\left(\frac{\pi}{T} n\Delta t_i\right).
+\]The covariance matrix is composed of the sum of matrices $F_n$ and unknown variance factors
+\[
+  \M\Sigma = a_1^2\M F_1 + a_2^2 \M F_2 + \cdots + a_N^2\M F_N,
+\]with the cosine transformation matrices
+\[
+  \M F_n = \left(\cos\left(\frac{\pi}{T} n(t_i-t_k)\right)\right)_{ik}.
+\]
+An additional variance factor can be computed (<strong class="groops-config-element">estimateArcSigmas</strong>) for each arc $k$  according to
+\[
+  \hat{\sigma}_k^2 = \frac{\hat{\M e}_k^T\M\Sigma^{-1}\hat{\M e}_k}{r_k},
+\]where $r_k$ is the redundancy. This variance factor should be around one for normal behaving arcs
+as the noise characteristics is already considered by the covariance matrix but bad arcs get a much larger variance.
+By appling this factor bad arcs or arcs with large outliers are downweighted.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileSolution</div></div></td><td>filename</td><td>estimated parameter vector (static part only)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileSigmax</div></div></td><td>filename</td><td>standard deviations of the parameters (sqrt of the diagonal of the inverse normal equation)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileParameterName</div></div></td><td>filename</td><td>names of estimated parameters (static part only)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateArcSigmas</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSigmasPerArcPod</div></div></td><td>filename</td><td>accuracies of each arc (POD2)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateCovarianceFunctions</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileCovarianceFunctionPod</div></div></td><td>filename</td><td>covariance functions for along, cross, radial direction</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeResiduals</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfilePodResiduals</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">observation</div></div></td><td>choice</td><td>obervation equations (POD)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">podIntegral</div></div></td><td>sequence</td><td>precise orbit data (integral approach)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">inputfileSatelliteModel</div></div></td><td>filename</td><td>satellite macro model</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset-unbounded">rightHandSide</div></div></td><td><a href="podRightSideType.html">podRightSide</a></td><td>input for the reduced observation vector</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileOrbit</div></div></td><td>filename</td><td>used to evaluate the observation equations, not used as observations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileStarCamera</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">earthRotation</div></div></td><td><a href="earthRotationType.html">earthRotation</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">gradientfield</div></div></td><td><a href="gravityfieldType.html">gravityfield</a></td><td>low order field to estimate the change of the gravity by position adjustement</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationGravity</div></div></td><td><a href="parametrizationGravityType.html">parametrizationGravity</a></td><td>gravity field parametrization</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationAcceleration</div></div></td><td><a href="parametrizationAccelerationType.html">parametrizationAcceleration</a></td><td>orbit force parameters</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">keepSatelliteStates</div></div></td><td>boolean</td><td>set boundary values of each arc global</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">integrationDegree</div></div></td><td>uint</td><td>integration of forces by polynomial approximation of degree n</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>orbit interpolation by polynomial approximation of degree n</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">accelerateComputation</div></div></td><td>boolean</td><td>acceleration of computation by transforming the observations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">podVariational</div></div></td><td>sequence</td><td>precise orbit data (variational equations)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">rightHandSide</div></div></td><td>sequence</td><td>input for observation vectors</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset">inputfileOrbit</div></div></td><td>filename</td><td>kinematic positions as observations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileVariational</div></div></td><td>filename</td><td>approximate position and integrated state matrix</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationGravity</div></div></td><td><a href="parametrizationGravityType.html">parametrizationGravity</a></td><td>gravity field parametrization</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationAcceleration</div></div></td><td><a href="parametrizationAccelerationType.html">parametrizationAcceleration</a></td><td>orbit force parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">integrationDegree</div></div></td><td>uint</td><td>integration of forces by polynomial approximation of degree n</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>orbit interpolation by polynomial approximation of degree n</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">accelerateComputation</div></div></td><td>boolean</td><td>acceleration of computation by transforming the observations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">covariancePod</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>apriori factor of covariance function</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerArc</div></div></td><td>filename</td><td>apriori different accuaries for each arc (multiplicated with sigma)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovarianceFunction</div></div></td><td>filename</td><td>approximate covariances in time</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovariancePodEpoch</div></div></td><td>filename</td><td>3x3 epoch covariances</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">sampling</div></div></td><td>double</td><td>[seconds] sampling of the covariance function</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileArcList</div></div></td><td>filename</td><td>list to correspond points of time to arc numbers</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">adjustmentThreshold</div></div></td><td>double</td><td>Adjustment factor threshold: Iteration will be stopped once both SST and POD adjustment factors are under this threshold</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">iterationCount</div></div></td><td>uint</td><td>(maximum) number of iterations for the estimation of calibration parameter and error PSD</td></tr>
+</table>
+This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.
+
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - parametrizationTemporalType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="parametrizationTemporalType">ParametrizationTemporal</h1><p>
+This class gives a parametrization of time depending parameters (gravity field, positions, ...).
+It will be used to set up the design matrix in a least squares adjustment.
+If multiple parametrizations are given the coefficents in the parameter vector
+are sequently appended.
+</p>
+
+<h2 id="constant">Constant</h2><p>
+Represents a parameter being constant in time in each <strong class="groops-config-element">interval</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">interval</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td></td></tr>
+</table>
+
+<h2 id="trend">Trend</h2><p>
+A time variable function is given by a linear trend
+\[
+f(x,t) = \frac{1}{T}(t-t_0) \cdot f_t(x),
+\]with $t_0$ is <strong class="groops-config-element">timeStart</strong> and $T$ is <strong class="groops-config-element">timeStep</strong> in days.
+A constant term is not included and must added separately.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeStart</div></div></td><td>time</td><td>reference time</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">timeStep</div></div></td><td>time</td><td></td></tr>
+</table>
+
+<h2 id="splines">Splines</h2><p>
+A time variable function is given by
+\[
+f(x,t) =  \sum_i f_i(x)\Psi_i(t),
+\]with the (spatial) coefficients $f_i(x)$ as parameters and the temporal basis functions $\Psi_i(t)$.
+Basis splines are defined as polynomials of degree $n$ in intervals between nodal points in time $t_i$,
+for details see <a class="groops-ref" href="fundamentals.basisSplines.html">basis splines</a>.</p><p>The parameters are ordered timewise. First all parameters of $f_{i=1}(x)$ then
+$f_{i=2}(x)$ and so on. The total parameter count in each <strong class="groops-config-element">interval</strong> is $N=N_t+d-1$,
+where $N_t$ is the count of time points from <a class="groops-class" href="timeSeriesType.html">timeSeries</a> in each interval and $d$
+is the <strong class="groops-config-element">degree</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">degree</div></div></td><td>uint</td><td>degree of splines</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>nodal points in time domain</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">intervals</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td></td></tr>
+</table>
+
+<h2>Polynomial</h2><p>
+A time variable function is represented by Legendre polynomials in each <strong class="groops-config-element">interval</strong>.
+The time is normed to $[-1,1)$ in each interval.</p><p>The total parameter count is $(N+1)M$,
+where $N$ is the polynmial degree and $M$ the number of intervals.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">polynomialDegree</div></div></td><td>uint</td><td>polynomial degree</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">interval</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>intervals of polynomials</td></tr>
+</table>
+
+<h2>Oscillation</h2><p>
+A time variable function is given by a oscillation
+\[
+f(x,t) = f^c(\M x)\cos(\omega_i(t)) + f^s(\M x)\sin(\omega_i(t))
+\]with $\omega_i=\frac{2\pi}{T_i}(t-t_0)$,
+$t_0$ is <strong class="groops-config-element">timeStart</strong> and $T$ is <strong class="groops-config-element">timePeriod</strong> in days.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">period</div></div></td><td>time</td><td>[day]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">time0</div></div></td><td>time</td><td>reference time</td></tr>
+</table>
+
+<h2>Fourier</h2><p>
+A time variable function is given by a fourier expansion
+\[
+f(x,t) = \sum_{m=1}^M f_m^c(\M x)\cos(2\pi m \tau) + f_m^s(\M x)\sin(2\pi m \tau)
+\]with the normalized time
+\[
+\tau = \frac{t-t_A}{t_B-t_A},
+\]and $t_A$ is <strong class="groops-config-element">timeStart</strong>, $t_B$ is <strong class="groops-config-element">timeEnd</strong> in each <strong class="groops-config-element">interval</strong>
+and $M$ is the <strong class="groops-config-element">fourierDegree</strong>.</p><p>The total parameter count is $2MN$, where $N$ is the number of intervals.
+The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">fourierDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">interval</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>intervals of fourier series</td></tr>
+</table>
+
+<h2>DoodsonHarmonic</h2><p>
+The time variable function is given by a fourier expansion
+\[
+  f(x,t) = \sum_{i} f_i^c(x)\cos(\Theta_i(t)) + f_i^s(x)\sin(\Theta_i(t)),
+\]where $\Theta_i(t)$ are the arguments of the tide constituents $i$
+\[
+  \Theta_i(t) = \sum_{k=1}^6 n_i^k\beta_k(t),
+\]where $\beta_k(t)$ are the Doodson's fundamental arguments ($\tau,s,h,p,N',p_s$) and $n_i^k$
+are the Doodson multipliers for the term at frequency $i$.
+The multipliers must be given by <a class="groops-class" href="doodson.html">doodson</a> coded as Doodson number
+(e.g. 255.555) or as names intoduced by Darwin (e.g. M2).</p><p>The major constituents given by <a class="groops-class" href="doodson.html">doodson</a> can be used to interpolate minor tidal constituents
+using the file <a class="groops-class" href="fileFormat_admittance.html">inputfileAdmittance</a>. This file can be created with
+<a class="groops-program" href="DoodsonHarmonicsCalculateAdmittance.html">DoodsonHarmonicsCalculateAdmittance</a>.</p><p>The total parameter count is $2N$ with $N$ the number of doodson frequencies.
+The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">doodson</div></div></td><td><a href="doodson.html">doodson</a></td><td>code number (e.g. 255.555) or darwin name (e.g. M2)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileAdmittance</div></div></td><td>filename</td><td>interpolation of minor constituents</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,137 @@
+\section{Regional geoid determination}\label{cookbook.regionalGeoid}
+This shows exemplary the computation of a regional geoid using terrestrial gravimetric observations
+in combination with a global satellite model such as GOCO06s. The geoid is estimated in a least squares adjustment with
+a parametrization using radial basis functions. A detailed desciption of the method is given in
+Christian Pock (2017), Consistent Combination of Satellite and Terrestrial Gravity Field Observations in Regional Geoid Modeling.
+Dissertation TU Graz.
+
+
+\subsection{Gravimetric data}
+Here it is assumed that the measured absolute gravity data is given at points in ellipsoidal coordinates.
+The observed values should be converted to SI units~$m/s^2$.
+\begin{itemize}
+  \item \program{Matrix2GriddedData} to convert data from text file in tabular form.
+\end{itemize}
+
+\fig{!ht}{0.5}{regionalGeoidGravimetricData}{fig:regionalGeoidGravimetricData}{Distribution of gravimetric observations}
+
+\subsection{Topography}
+A high resolution topography model is needed to reduce the observations.
+As the model heights are usually given in physical heights a reference geoid is needed to compute the correct ellipsoidal height.
+\begin{itemize}
+  \item \program{NetCdf2GridRectangular} convert into groops format.
+  \item \program{Gravityfield2GriddedData}: Compute geoid heights using the GOCO06s model with
+  \begin{itemize}
+    \item \configClass{grid:file}{gridType:file} The topography grid
+    \item \configClass{kernel:geoidHeight}{kernelType:geoidHeight}
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients} the GOCO06s model
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients}
+    Subtract (\config{factor}=-1) GRS680 normal field.
+  \end{itemize}
+  \item \program{GriddedDataCalculate}: Generate a new combined griddedData file
+        with the orthometric height (\verb|data0|) and the geoid height (\verb|data1|).
+  \item \program{GriddedTopography2PotentialCoefficients}: Compute the gravitational potential in terms
+        of spherical harmonics up to a maximum degree of the global satellite model.
+        This is the part of the topography, which is already included in the global satellite model.
+        The integration boundaries are \config{radialUpperBound}=\verb|data0+data1|
+        and \config{radialLowerBound}=\verb|data1|.
+\end{itemize}
+
+\fig{!ht}{1.0}{regionalGeoidTopography}{fig:regionalGeoidTopography}{Topography and geoid heights}
+
+\subsection{Reduce}
+Calculate approximate reference gravity to reduce it from the observations.
+\begin{itemize}
+  \item \program{Gravityfield2AbsoluteGravity}
+  \begin{itemize}
+    \item \configClass{grid:File}{gridType:file} at observation positions
+    \item \configClass{gravityfield:tides}{gravityfieldType:tides} Centrifugal potential
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients} full GOCO06s model
+    \item \configClass{gravityfield:topography}{gravityfieldType:topography}
+          (\config{radialUpperBound}=\verb|data0+data1|, \config{radialLowerBound}=\verb|data1|)
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients}
+          Subtract (\config{factor}=-1) the potential part of the topography already included in the GOCO06s model.
+  \end{itemize}
+  \item \program{GriddedDataCalculate} to calculate observed minus computed.
+  \item Large outliers can be removed in \program{GriddedDataCalculate} with \config{removalCriteria}.
+\end{itemize}
+
+\fig{!hb}{0.5}{regionalGeoidObserved-computed}{fig:regionalGeoidObserved-computed}{Gravity disturbances: observed minus computed}
+
+
+\subsection{Radial Basis Functions (RBF)}
+The residual gravity is parametrized in terms of Radial Basis Functions
+\configClass{parametrizationGravity:radialBasis}{parametrizationGravityType:radialBasis}.
+The basis functions should be distributed on a regular \configClass{grid}{gridType} covering
+a somewhat larger area than the observations, see \configClass{border}{borderType}.
+The shape of the functions \configClass{kernel:coefficients}{kernelType:coefficients} should reflect
+the signal content of reduced observations and are defined by the coefficients.
+\begin{itemize}
+  \item \program{KernelDegreeVariances}
+  \begin{itemize}
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients} accuracies of GOCO06s model
+    \item \config{maxDegree}=7000. Complemented by Kaula's rule of thumb
+  \end{itemize}
+\end{itemize}
+The maximum degree should correspond to the spatial resolution.
+Rule of thumb: the number of spherical harmonic coefficients $(\text{maxDegree}+1)^2$ should roughly agree
+to the number of grid points if they would cover the complete Earth.
+
+\fig{!hb}{0.5}{regionalGeoidDegreeAmplitudes}{fig:regionalGeoidDegreeAmplitudes}{Degree amplitudes for the shape of the radial basis functions}
+
+\subsection{Compute: Estimate parameters in a least squares adjustment}
+Setup the observation equations and accumulate the system of normal equations.
+\begin{itemize}
+\item \program{NormalsBuild}
+  \begin{itemize}
+    \item \configClass{normalEquation:design}{normalEquationType:design} with
+          \configClass{observation:terrestrial}{observationType:terrestrial}
+    \begin{itemize}
+      \item \configClass{kernel:disturbance}{kernelType:disturbance}
+      \item \configClass{parametrizationGravity:radialBasis}{parametrizationGravityType:radialBasis}
+            with \configClass{kernel:coefficients}{kernelType:coefficients}
+    \end{itemize}
+  \end{itemize}
+\item \program{NormalsSolverVCE}
+  \begin{itemize}
+    \item \configClass{normalEquation:file}{normalEquationType:file} from \program{NormalsBuild}
+    \item \configClass{normalEquation:regularization}{normalEquationType:regularization}
+           towards zero means regularization towards the GOCO06s, which is reduced from the data.
+  \end{itemize}
+\end{itemize}
+
+\subsection{Restore: Calculate the geoid solution}
+Evaluate the estimated parameters and add back the reduced reference models.
+\begin{itemize}
+  \item \program{Gravityfield2GriddedData}: Compute approximate geoid heights using the GOCO06s model with
+  \begin{itemize}
+    \item \configClass{grid}{gridType} select a grid with target resolution at elliposid
+    \item \configClass{kernel:geoidHeight}{kernelType:geoidHeight}
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients} GOCO06s model
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients}
+    Subtract (\config{factor}=-1) GRS80 normal field.
+  \end{itemize}
+  \item \program{GriddedDataCalculate}: Move points from ellipsoid to geoid with \config{height}=\verb|data0|
+  \item \program{Gravityfield2GriddedData}
+  \begin{itemize}
+    \item \configClass{grid:file}{gridType:file} from above.
+    \item \configClass{kernel:geoidHeight}{kernelType:geoidHeight}
+    \item \configClass{gravityfield:fromParametrization}{gravityfieldType:fromParametrization}
+          The solution vector~$\M x$ together with the RBF parametrization
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients} GOCO06s model
+    \item \configClass{gravityfield:topography}{gravityfieldType:topography}
+          (\config{radialUpperBound}=\verb|data0+data1|, \config{radialLowerBound}=\verb|data1|)
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients}
+          Subtract (\config{factor}=-1) the potential part of the topography already included in the GOCO06s model.
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients}
+          Subtract (\config{factor}=-1) GRS80 normal field.
+    \item \config{convertToHarmonics}=\verb|no|, otherwise the RBF are converted to harmonics up to degree 7000.
+  \end{itemize}
+  \item \program{GriddedDataCalculate}: Set \config{height}=0 of the computed geoid grid.
+  \item \program{GridRectangular2NetCdf}
+\end{itemize}
+
+\fig{!hb}{0.6}{regionalGeoidGeoid}{fig:regionalGeoidGeoid}{Estimated geoid}
+
+
+% =============================================================

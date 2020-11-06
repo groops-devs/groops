@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - Constants and the setting file</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1 id="general.constants">Constants and the settings file</h1><p>
+GROOPS uses some built-in constants like <code>DEFAULT_GM</code> or the definition
+of leap seconds, which are defined in  <code>source/base/constants.cpp</code>.</p><p>A complete list of the constants can be written to an XML file with:
+<pre>
+  groops --write-settings &lt;groopsDefaults.xml>
+</pre></p><p>The built-in constants can be overwritten by a <code>groopsDefaults.xml</code> file
+in the working directory or by explicitly passing the file as an argument at execution:
+<pre>
+  groops --settings &lt;groopsDefaults.xml> &lt;config.xml>
+</pre></p><p>It might also be useful to adjust the default values in the schema file used by the <a class="groops-ref" href="general.gui.html">GUI</a>:
+<pre>
+  groops --settings &lt;groopsDefaults.xml> --xsd &lt;groops.xsd>
+</pre></p><p>Example file:
+<pre>
+&lt;?xml version="1.0" encoding="UTF-8"?>
+&lt;groops>
+  &lt;LIGHT_VELOCITY>299792458&lt;/LIGHT_VELOCITY>
+  &lt;DEFAULT_GM>3.986004415e+14&lt;/DEFAULT_GM>
+  &lt;DEFAULT_R>6378136.3&lt;/DEFAULT_R>
+  &lt;GRS80_a>6378137.0&lt;/GRS80_a>
+  &lt;GRS80_f>298.2572221010&lt;/GRS80_f>
+  &lt;GRAVITATIONALCONSTANT>6.6730e-11&lt;/GRAVITATIONALCONSTANT>
+  &lt;R_Earth>6.37813630000000e+06&lt;/R_Earth>
+  &lt;R_Moon>1.73800000000000e+06&lt;/R_Moon>
+  &lt;GM_Earth>3.98600441500000e+14&lt;/GM_Earth>
+  &lt;GM_Sun>1.32712442076000e+20&lt;/GM_Sun>
+  &lt;GM_Moon>4.90280105600000e+12&lt;/GM_Moon>
+  &lt;GM_MERCURY>2.20320808280762e+13&lt;/GM_MERCURY>
+  &lt;GM_VENUS>3.24858603864143e+14&lt;/GM_VENUS>
+  &lt;GM_MARS>4.28283149222192e+13&lt;/GM_MARS>
+  &lt;GM_JUPITER>1.26712769822770e+17&lt;/GM_JUPITER>
+  &lt;GM_SATURN>3.79406266494906e+16&lt;/GM_SATURN>
+  &lt;TIME_EPSILON>1.0e-05&lt;/TIME_EPSILON>
+  &lt;DELTA_TAI_GPS>19&lt;/DELTA_TAI_GPS>
+  &lt;DELTA_TT_GPS>51.184&lt;/DELTA_TT_GPS>
+  &lt;J2000>51544.5&lt;/J2000>
+  &lt;leapSecond>
+    &lt;MJD>57754&lt;/MJD>
+    &lt;DELTA_UTC_GPS>-18&lt;/DELTA_UTC_GPS>
+  &lt;/leapSecond>
+  &lt;leapSecond>
+    &lt;MJD>57204&lt;/MJD>
+    &lt;DELTA_UTC_GPS>-17&lt;/DELTA_UTC_GPS>
+  &lt;/leapSecond>
+  &lt;leapSecond>
+    &lt;MJD>56109&lt;/MJD>
+    &lt;DELTA_UTC_GPS>-16&lt;/DELTA_UTC_GPS>
+  &lt;/leapSecond></p><p>  ...</p><p>  &lt;leapSecond>
+    &lt;MJD>41317&lt;/MJD>
+    &lt;DELTA_UTC_GPS>9&lt;/DELTA_UTC_GPS>
+  &lt;/leapSecond>
+  &lt;leapSecond>
+    &lt;MJD>0&lt;/MJD>
+    &lt;DELTA_UTC_GPS>10&lt;/DELTA_UTC_GPS>
+  &lt;/leapSecond>
+&lt;/groops>
+</pre>
+</p>
+
+        </div>
+    </main>
+</body>
+</html>

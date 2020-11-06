@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - digitalFilterType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="digitalFilterType">DigitalFilter</h1><p>
+Digital filter implementation for the filtering of equally spaced time series. This class implements the filter equations as
+\[\label{digitalFilterType:arma}
+  \sum_{l=0}^Q a_l y_{n-l} = \sum_{k=-p_0}^{P-p_0-1} b_k x_{n-k}, \hspace{25pt} a_0 = 1,
+\]where $Q$ is the autoregressive (AR) order and $P$ is the moving average (MA) order. Note that the MA part can also be non-causal.
+The characteristics of a filter cascade can be computed by the programs <a class="groops-program" href="DigitalFilter2FrequencyResponse.html">DigitalFilter2FrequencyResponse</a> and <a class="groops-program" href="DigitalFilter2ImpulseResponse.html">DigitalFilter2ImpulseResponse</a>.
+To apply a filter cascade to a time series (or an instrument file ) use <a class="groops-program" href="InstrumentFilter.html">InstrumentFilter</a>.
+Each filter can be applyed in forward and backward direction by setting <strong class="groops-config-element">backwardDirection</strong>.
+If the same filter is applied in both directions, the combined filter has zero phase and the squared magnitude response.
+Setting <strong class="groops-config-element">inFrequencyDomain</strong> to true applies the transfer function of the filter to the DFT of the input and synthesizes the result, i.e.:
+\[
+  y_n = \mathcal{F}^{-1}\{H\cdot\mathcal{F}\{x_n\}\}.
+\]This is equivalent to setting <strong class="groops-config-element">padType</strong> to <strong class="groops-config-element">periodic</strong>.</p><p>To reduce warmup effects, the input time series can be padded by chosing a <strong class="groops-config-element">padType</strong>:
+<ul>
+
+<li><strong class="groops-config-element">none</strong>: no padding is applied
+</li><li>
+<strong class="groops-config-element">zero</strong>: zeros are appended at the beginning and end of the input time series
+</li><li>
+<strong class="groops-config-element">constant</strong>: the beginning of the input time series is padded with the first value, the end is padded with the last value
+</li><li>
+<strong class="groops-config-element">periodic</strong>: periodic continuation of the input time series (i.,e. the beginning is padded with the last epochs and the end is padded with the first epochs)
+</li><li>
+<strong class="groops-config-element">symmetric</strong>: beginning and end are reflected around the first and last epoch respectively
+</li></ul>
+
+</p>
+
+<h2>MovingAverage</h2><p>
+Moving average (boxcar) filter. For odd lengths, this filter is symmetric and has therefore no phase shift. For even lengths, a phase shift of half a cycle is introduced.</p><p>\[
+  y_n = \sum_{k=-\lfloor\frac{P}{2}\rfloor}^{\lfloor\frac{P}{2}\rfloor} \frac{1}{P}x_{n-k}
+\]</p><p></p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">length</div></div></td><td>uint</td><td>number of epochs in averaging operator</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inFrequencyDomain</div></div></td><td>boolean</td><td>apply filter in frequency domain</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>Median</h2><p>
+Moving median filter of length $n$. The filter output at epoch $k$ is the median of the set start at $k-n/2$ to $k+n/2$.
+The filter length $n$ should be uneven to avoid a phase shift.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">length</div></div></td><td>uint</td><td>length of the moving window [epochs]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>Derivative</h2><p>
+Symmetric MA filter for numerical differentiation using polynomial approximation. The input time series is approximated by a moving polynomial of degree <strong class="groops-config-element">polynomialDegree</strong>, by solving
+\[
+  \begin{bmatrix} x(t_k+\tau_0) \\ \vdots \\ x(t_k+\tau_M) \end{bmatrix}
+  =
+  \begin{bmatrix}
+  1      & \tau_0 & \tau_0^2 & \cdots & \tau_0^M \\
+  \vdots & \vdots & \vdots   &        & \vdots   \\
+  1      & \tau_M & \tau_M^2 & \cdots & \tau_M^M \\
+  \end{bmatrix}%^{-1}
+  \begin{bmatrix}
+  a_0 \\ \vdots \\ a_M
+  \end{bmatrix}
+  \qquad\text{with}\quad
+  \tau_j =  (j-M/2)\cdot \Delta t,
+\]for each time step $t_k$ ($\Delta t$ is the <strong class="groops-config-element">sampling</strong> of the time series).
+The filter coefficients for the $k$-th derivative are obtained by taking the appropriate row of the inverse coefficient matrix $\mathbf{W}$:
+\[
+  b_n = \prod_{i=0}^{k-1} (k-i) \mathbf{w}_{2,:}.
+\]The <strong class="groops-config-element">polynomialDegree</strong> shoud be even if no phase shift should be introduced.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">polynomialDegree</div></div></td><td>uint</td><td>degree of approximation polynomial</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">derivative</div></div></td><td>uint</td><td>take kth derivative</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sampling</div></div></td><td>double</td><td>assumed time step between points</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>Integral</h2><p>
+Numerical integration using polynomial approximation.
+The input time series is approximated by a moving polynomial of degree <strong class="groops-config-element">polynomialDegree</strong>
+by solving
+\[
+  \begin{bmatrix} x(t_k+\tau_0) \\ \vdots \\ x(t_k+\tau_M) \end{bmatrix}
+  =
+  \begin{bmatrix}
+  1      & \tau_0 & \tau_0^2 & \cdots & \tau_0^M \\
+  \vdots & \vdots & \vdots   &        & \vdots   \\
+  1      & \tau_M & \tau_M^2 & \cdots & \tau_M^M \\
+  \end{bmatrix}%^{-1}
+  \begin{bmatrix}
+  a_0 \\ \vdots \\ a_M
+  \end{bmatrix}
+  \qquad\text{with}\quad
+  \tau_j =  (j-M/2)\cdot \Delta t,
+\]for each time step $t_k$ ($\Delta t$ is the <strong class="groops-config-element">sampling</strong> of the time series).
+The numerical integral for each time step $t_k$ is approximated by the center interval of the estimated polynomial.</p><p><figure><img class="figure" style="width:70%;" src="../figures/DigitalFilter_integral.png" alt="DigitalFilter_integral"><figcaption class="center">Figure: Numerical integration by polynomial approximation.</figcaption></figure></p><p><strong class="groops-config-element">polynomialDegree</strong> should be even to avoid a phase shift.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">polynomialDegree</div></div></td><td>uint</td><td>degree of approximation polynomial</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sampling</div></div></td><td>double</td><td>assumed time step between points</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>Correlation</h2><p>
+Correlation ($\rho$) of <strong class="groops-config-element">corr</strong> is introduced into the time series:
+\[
+  y_n = \rho\cdot y_{n-1} + \sqrt{1-\rho^2}x_n.
+\]</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">correlation</div></div></td><td>double</td><td>correlation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">backwardDirection</div></div></td><td>boolean</td><td>apply filter in backward direction</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inFrequencyDomain</div></div></td><td>boolean</td><td>apply filter in frequency domain</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>GraceLowpass</h2><p>
+Low pass and differentation filter as used for GRACE KBR and ACC data in the Level1A processing.</p><p><figure><img class="figure" style="width:80%;" src="../figures/DigitalFilter_graceLowpass.png" alt="DigitalFilter_graceLowpass"><figcaption class="center">Figure: Amplitude response of the low pass filter used in the L1A processing.</figcaption></figure>
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">rawDataRate</div></div></td><td>double</td><td>sampling frequency in Hz (fs).</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">convolutionNumber</div></div></td><td>uint</td><td>number of self convolutions of the filter kernel</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">fitInterval</div></div></td><td>double</td><td>length of the filter kernel [seconds]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">lowPassBandwith</div></div></td><td>double</td><td>target low pass bandwidth</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">normFrequency</div></div></td><td>double</td><td>norm filter at this frequency [Hz] (default: GRACE dominant (J2) signal frequency)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">reduceQuadraticFit</div></div></td><td>boolean</td><td>remove->filter->restore quadratic fit</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">derivative</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">derivative1st</div></div></td><td></td><td>range rate</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">derivative2nd</div></div></td><td></td><td>range acceleration</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inFrequencyDomain</div></div></td><td>boolean</td><td>apply filter in frequency domain</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>Butterworth</h2><p>
+Digital implementation of the Butterworth filter. The design of the filter is done by modifying the analog (continuous time) transfer function, which is
+then transformed into the digital domain by using the bilinear transform. The filter coefficients are then determined by a least squares adjustment in time domain.</p><p>The <strong class="groops-config-element">filterType</strong> can be <strong class="groops-config-element">lowpass</strong>, <strong class="groops-config-element">highpass</strong>, where one cutoff frequency has to be specified, and <strong class="groops-config-element">bandpass</strong> and <strong class="groops-config-element">bandstop</strong> where to cutoff frequencies have to be specified.
+Cutoff frequencies must be given as normalized frequency $w_n = f/f_{\text{nyq}}$. For a cutoff frequency of 30 mHz for a time series sampled with 5 seconds gives a normalized frequency of $0.03/0.1 = 0.3$.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">order</div></div></td><td>uint</td><td>filter order</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">type</div></div></td><td>choice</td><td>filter type</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">lowpass</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">Wn</div></div></td><td>double</td><td>normalized cutoff frequency (f_c / f_nyq)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">highpass</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">Wn</div></div></td><td>double</td><td>normalized cutoff frequency (f_c / f_nyq)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">bandpass</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">Wn1</div></div></td><td>double</td><td>lower normalized cutoff frequency (f_c / f_nyq)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">Wn2</div></div></td><td>double</td><td>upper normalized cutoff frequency (f_c / f_nyq)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">bandstop</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">Wn1</div></div></td><td>double</td><td>lower normalized cutoff frequency (f_c / f_nyq)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">Wn2</div></div></td><td>double</td><td>upper normalized cutoff frequency (f_c / f_nyq)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">backwardDirection</div></div></td><td>boolean</td><td>apply filter in backward direction</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inFrequencyDomain</div></div></td><td>boolean</td><td>apply filter in frequency domain</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>File</h2><p>
+Read filter coefficients of \eqref{digitalFilterType:arma} from a coefficient file.
+One column might define the index $n$
+of the coefficients $a_n$ and $b_n$ in the other columns.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileMatrix</div></div></td><td>filename</td><td>matrix with filter coefficients</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">index</div></div></td><td>expression</td><td>index of coefficients (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">bn</div></div></td><td>expression</td><td>MA coefficients (moving average) (input columns are named data0, data1, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">an</div></div></td><td>expression</td><td>AR coefficients (autoregressive) (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">backwardDirection</div></div></td><td>boolean</td><td>apply filter in backward direction</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inFrequencyDomain</div></div></td><td>boolean</td><td>apply filter in frequency domain</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>Wavelet</h2><p>
+Filter representation of a wavelet.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileWavelet</div></div></td><td>filename</td><td>wavelet coefficients</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">type</div></div></td><td>choice</td><td>filter type</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">lowpass</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">highpass</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">level</div></div></td><td>uint</td><td>compute filter for specific decomposition level</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">backwardDirection</div></div></td><td>boolean</td><td>apply filter in backward direction</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inFrequencyDomain</div></div></td><td>boolean</td><td>apply filter in frequency domain</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>Notch</h2><p>
+Implemented after Christian Siemes' dissertation, page 106.</p><p><figure><img class="figure" style="width:60%;" src="../figures/DigitalFilter_notch.png" alt="DigitalFilter_notch"><figcaption class="center">Figure: Amplitude response of a notch filter of order three with default settings.</figcaption></figure>
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">notchFrequency</div></div></td><td>double</td><td>normalized notch frequency w_n = (f_n/f_nyq)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">bandWidth</div></div></td><td>double</td><td>bandwidth at -3db. Quality factor of filter Q = w_n/bw</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">backwardDirection</div></div></td><td>boolean</td><td>apply filter in backward direction</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inFrequencyDomain</div></div></td><td>boolean</td><td>apply filter in frequency domain</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>Decorrelation</h2><p>
+Moving average decorrelation filter based on eigendecomposition of a Toeplitz covariance matrix.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileCovarianceFunction</div></div></td><td>filename</td><td>covariance function of time series</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inFrequencyDomain</div></div></td><td>boolean</td><td>apply filter in frequency domain</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>TimeLag</h2><p>
+Lag operator in digital filter representation.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">lag</div></div></td><td>int</td><td>lag epochs: 1 (lag); -1 (lead)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inFrequencyDomain</div></div></td><td>boolean</td><td>apply filter in frequency domain</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">padType</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">none</div></div></td><td></td><td>no padding is applied</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">zero</div></div></td><td></td><td>zero padding</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">constant</div></div></td><td></td><td>pad using first and last value</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">periodic</div></div></td><td></td><td>periodic continuation of matrix</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">symmetric</div></div></td><td></td><td>symmetric continuation around the matrix edges</td></tr>
+</table>
+
+<h2>ReduceFilterOutput</h2><p>
+Removes the filtered signal from the input, i.e. the input is passed
+through a <a class="groops-class" href="digitalFilterType.html">digitalFilter</a> with a frequency response of $1-H(f)$.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">filter</div></div></td><td><a href="digitalFilterType.html">digitalFilter</a></td><td>remove filter output from input signal</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

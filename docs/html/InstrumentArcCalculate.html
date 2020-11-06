@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - InstrumentArcCalculate</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>InstrumentArcCalculate</h1><p>
+
+This program manipulates the data columns every arc of an <a class="groops-file" href="fileFormat_instrument.html">instrument file</a> similar to
+<a class="groops-program" href="FunctionsCalculate.html">FunctionsCalculate</a>, see there for more details.
+If several <a class="groops-class" href="fileFormat_instrument.html">inputfileInstrument</a>s are given the data columns are copied side by side.
+For this the instrument files must be synchronized (see <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>). For the data
+columns the standard data variables are available, see <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>.
+For the time column (MJD) a variable <code>epoch</code> (together with <code>epochmean</code>, <code>epochmin</code>, &hellip; )
+is defined additionally.</p><p>The content of <a class="groops-class" href="fileFormat_instrument.html">outputfileInstrument</a> is controlled by <strong class="groops-config-element">outColumn</strong>.
+The number of <strong class="groops-config-element">outColumn</strong> must agree with the selected <a class="groops-class" href="instrumentTypeType.html">outType</a>.
+The algorithm to compute the output is as follows:
+The expressions in <strong class="groops-config-element">outColumn</strong> are evaluated once for each epoch of the input.
+The variables <code>data0</code>, <code>data1</code>, &hellip; are replaced by the according values from the input columns before.
+If no <strong class="groops-config-element">outColumn</strong> are specified all input columns are used instead directly.
+The <a class="groops-class" href="instrumentTypeType.html">instrument type</a> can be specifed with <strong class="groops-config-element">outType</strong> and must be agree with the number of columns.</p><p>An extra <strong class="groops-config-element">statistics</strong> file can be generated with one mid epoch per arc. For the computation of the <strong class="groops-config-element">outColumn</strong> values
+all <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a> are available (e.g. <code>epochmin</code>, <code>data0mean</code>, <code>data1std</code>, &hellip; )
+inclusively the <strong class="groops-config-element">constant</strong>s and estimated <strong class="groops-config-element">parameter</strong>s but without the <code>data0</code>, <code>data1</code>, &hellip; itself.
+The variables and the numbering of the columns refers to the <a class="groops-class" href="fileFormat_instrument.html">outputfileInstrument</a>.</p><p>See also <a class="groops-program" href="FunctionsCalculate.html">FunctionsCalculate</a>, <a class="groops-program" href="MatrixCalculate.html">MatrixCalculate</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileInstrument</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfileInstrument</div></div></td><td>filename</td><td>data columns are appended to the right</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">constant</div></div></td><td>expression</td><td>define a constant by name=value</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">parameter</div></div></td><td>expression</td><td>define a parameter by name[=value]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">leastSquares</div></div></td><td>expression</td><td>try to minimize the expression by adjustment of the parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">removalCriteria</div></div></td><td>expression</td><td>row is removed if one criterion evaluates true.</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outType</div></div></td><td><a href="instrumentTypeType.html">instrumentType</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">outColumn</div></div></td><td>expression</td><td>expression of output columns, extra 'epoch' variable</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">statistics</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">outputfileInstrument</div></div></td><td>filename</td><td>instrument file with mid epoch per arc, data columns are user defined</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset-unbounded">outColumn</div></div></td><td>expression</td><td>expression to compute statistics columns, data* are from outColumn</td></tr>
+</table>
+This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.
+
+        </div>
+    </main>
+</body>
+</html>

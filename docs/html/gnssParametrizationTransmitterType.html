@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - gnssParametrizationTransmitterType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="gnssParametrizationTransmitterType">GnssParametrizationTransmitter</h1><p></p><p>Definition and parametrization of GNSS satelllite constellations. For precise point positioning (PPP) the
+constellations are held fixed and no additional parameters are set up. In case of
+<a class="groops-ref" href="cookbook.gnssNetwork.html">GNSS satellite orbit determination</a> orbits, clock errors, and signal biases
+are usually estimated.</p><p>A list of satellite PRNs (i.e for GPS: G01, G02, G03, ...) must be provided via
+<a class="groops-class" href="fileFormat_stringList.html">inputfileTransmitterList</a>. Satellite system codes follow the
+<a href="ftp://igs.org/pub/data/format/rinex304.pdf">RINEX 3 definition</a>, see <a class="groops-ref" href="gnssType.html">GnssType</a>.
+All input and output files except <a class="groops-class" href="fileFormat_gnssAntennaDefinition.html">inputfileAntennaDefinition</a>,
+<a class="groops-class" href="fileFormat_gnssReceiverDefinition.html">inputfileReceiverDefinition</a>, and
+<a class="groops-class" href="fileFormat_stringList.html">outputfileUsedTransmitterList</a> are read/written for each satellite.
+The file name is interpreted as a template with the variable <code>{prn}</code> being replaced by the satellite PRN.</p><p>In case of PPP precise orbits must be provided via <a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational</a>.
+Otherwise, dynamic orbits can be estimated by setting <strong class="groops-config-element">estimateOrbit:dynamic</strong>, with
+<a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational</a> coming from
+<a class="groops-ref" href="cookbook.gnssNetwork.html#orbitIntegration">orbit integration</a>.
+The <a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration</a> must include at least those
+parameters that were estimated in <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a>.
+Additional <strong class="groops-config-element">stochasticPulse</strong> parameters can be set up to reduce orbit mismodeling.</p><p>Precise satellite clock errors have to be provided via <a class="groops-class" href="fileFormat_instrument.html">inputfileClock</a> in case of PPP.
+Otherwise, they can be estimated via <strong class="groops-config-element">estimateClockError</strong>, either <strong class="groops-config-element">epochWise</strong> or based
+on a <strong class="groops-config-element">noiseModel</strong>. In this case it is enough to provide approximate clock errors (e.g. from broadcast ephemeris)
+via <a class="groops-class" href="fileFormat_instrument.html">inputfileClock</a>. The clock datum can be defined via a zero-mean constraint over all satellites
+of a constellation using <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>. This constraint is applied per epoch.</p><p>Signal biases for code and phase observations have to be provided via <a class="groops-class" href="fileFormat_gnssSignalBias.html">inputfileSignalBias</a>
+in case of PPP. Otherwise they can be estimated by setting <strong class="groops-config-element">estimateCodeBias</strong>=<code>yes</code> and
+<strong class="groops-config-element">estimatePhaseBias</strong>=<code>yes</code>, in which case no a priori signal biases are needed.</p><p>Antenna center offsets and variations can be estimated by defining <a class="groops-class" href="gnssParametrizationAntennaType.html">antennaCenter</a>.
+It is possible to estimate patterns for each individual satellite or grouped by satellite block.
+Since it is not possible to estimate, for example, antenna center offets based on a single day, they are usually hard-constrained
+to their a priori value. This can be done by adding <a class="groops-class" href="gnssParametrizationConstraintsType.html">constraints</a> in <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>.</p><p>Input files used in all systems:
+<ul>
+
+  <li><a class="groops-class" href="fileFormat_gnssStationInfo.html">inputfileTransmitterInfo</a>:
+        Created via <a class="groops-program" href="GnssAntex2AntennaDefinition.html">GnssAntex2AntennaDefinition</a> or <a class="groops-program" href="GnssStationInfoCreate.html">GnssStationInfoCreate</a>.
+  </li><li>
+<a class="groops-class" href="fileFormat_gnssAntennaDefinition.html">inputfileAntennaDefinition</a>:
+        Created via <a class="groops-program" href="GnssAntex2AntennaDefinition.html">GnssAntex2AntennaDefinition</a> or <a class="groops-program" href="GnssAntennaDefinitionCreate.html">GnssAntennaDefinitionCreate</a>.
+  </li><li>
+<a class="groops-class" href="fileFormat_gnssReceiverDefinition.html">inputfileReceiverDefinition</a>:
+        Created via <a class="groops-program" href="GnssReceiverDefinitionCreate.html">GnssReceiverDefinitionCreate</a> in case you want to define which signal
+        types a satellite transmits.
+  </li><li>
+<a class="groops-class" href="fileFormat_gnssSignalBias.html">inputfileSignalBias</a>: Converted via (TODO: SinexBias2GnssSignalBias) or estimated via <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>.
+  </li><li>
+<a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational</a>:
+        Integrated via <a class="groops-program" href="PreprocessingVariationalEquation.html">PreprocessingVariationalEquation</a> and <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a>,
+        created via (TODO: GnssVariationalCreate), or output of <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>.
+  </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileClock</a>:
+        Converted via <a class="groops-program" href="GnssClockRinex2InstrumentClock.html">GnssClockRinex2InstrumentClock</a> or <a class="groops-program" href="GnssRinexNavigation2OrbitClock.html">GnssRinexNavigation2OrbitClock</a> or
+        output of <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>.
+</li></ul>
+</p><p>See also <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a> and <a class="groops-program" href="GnssSimulateReceiver.html">GnssSimulateReceiver</a>.
+</p>
+
+<h2 id="gps">GPS</h2><p></p><p>Since GPS block IIF satellites are affected by time-variable signal biases
+(see Montenbruck et al. 2011, DOI: <a href="https://doi.org/10.1007/s10291-011-0232-x">10.1007/s10291-011-0232-x</a>),
+a <strong class="groops-config-element">biasModel</strong> can be set up for phase observations on the L5 frequency
+by defining <a class="groops-class" href="gnssType.html">type</a>=<code>L5*G</code> and an appropriate
+<a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration</a>.
+The resulting <a class="groops-class" href="fileFormat_instrument.html">outputfileBias</a> contains the time-variable part of the
+respective bias evaluated at each epoch, while the constant part is included in
+<a class="groops-class" href="fileFormat_gnssSignalBias.html">outputfileSignalBias</a>. In case of PPP the time-variable
+part can then be provided via <strong class="groops-config-element">timeVariableBias</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTransmitterList</div></div></td><td>filename</td><td>ascii file with transmitter PRNs, used to loop variable {prn}</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTransmitterInfo</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAntennaDefintion</div></div></td><td>filename</td><td>phase centers and variations (ANTEX)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileReceiverDefintion</div></div></td><td>filename</td><td>transmitted signal types</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileVariational</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileUsedTransmitterList</div></div></td><td>filename</td><td>ascii file with PRNs</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateOrbit</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">dynamic</div></div></td><td>sequence</td><td>initial state and model parameters are estimated (in CRF)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileVariational</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileOrbit</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileParameters</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationAcceleration</div></div></td><td><a href="parametrizationAccelerationType.html">parametrizationAcceleration</a></td><td>orbit force parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">stochasticPulse</div></div></td><td>sequence</td><td>[mum/s] parametrization of stochastic pulses</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config optional">onlyEclipsing</div></div></td><td>boolean</td><td>only apply stochastic pulses to eclipsing satellites</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">minEstimableEpochsRatio</div></div></td><td>double</td><td>drop satellites with lower ratio of estimable epochs to total epochs</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateCodeBias</div></div></td><td>boolean</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimatePhaseBias</div></div></td><td>boolean</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">supportsIntegerAmbiguities</div></div></td><td>boolean</td><td>receiver tracks full cycle integer ambiguities</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">biasModel</div></div></td><td>sequence</td><td>estimate time-variable signal bias</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">type</div></div></td><td><a href="gnssType.html">gnssType</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset-unbounded">parametrizationTemporal</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">timeVariableBias</div></div></td><td>sequence</td><td>a priori time-variable signal bias</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">inputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available; instrument file with bias [m]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">type</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>bias type</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateClockError</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">epochWise</div></div></td><td>sequence</td><td>clock error is estimated for each epoch</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">noiseModel</div></div></td><td>sequence</td><td>clock errors are estimated based on a noise model</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileClockNoiseModel</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">estimateVarianceFactor</div></div></td><td>boolean</td><td>via Variance Component Estimation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">clockModel</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">antennaCenter</div></div></td><td><a href="gnssParametrizationAntennaType.html">gnssParametrizationAntenna</a></td><td>estimate antenna center variations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">integrationDegree</div></div></td><td>uint</td><td>integration of forces by polynomial approximation of degree n</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">interpolationDegree</div></div></td><td>uint</td><td>for orbit interpolation and velocity calculation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">disableShadowEpochs</div></div></td><td>boolean</td><td>disable epochs if satellite is in Earth's/Moon's shadow</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">disablePostShadowRecoveryEpochs</div></div></td><td>boolean</td><td>disable epochs if satellite is in post-shadow recovery maneuver (e.g. GPS block IIA)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">eclipse</div></div></td><td><a href="eclipseType.html">eclipse</a></td><td>eclipse model used to determine if a satellite is in Earth's shadow</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">noAntennaPatternFound</div></div></td><td>choice</td><td>what should happen is no antenna pattern is found for an observation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">ignoreObservation</div></div></td><td></td><td>ignore observation if no matching pattern is found</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">useNearestFrequency</div></div></td><td></td><td>use pattern of nearest frequency if no matching pattern is found</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">throwException</div></div></td><td></td><td>throw exception if no matching pattern is found</td></tr>
+</table>
+
+<h2 id="glonass">GLONASS</h2><p>
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTransmitterList</div></div></td><td>filename</td><td>ascii file with transmitter PRNs, used to loop variable {prn}</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTransmitterInfo</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAntennaDefintion</div></div></td><td>filename</td><td>phase centers and variations (ANTEX)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileReceiverDefintion</div></div></td><td>filename</td><td>transmitted signal types</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileVariational</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileUsedTransmitterList</div></div></td><td>filename</td><td>ascii file with PRNs</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateOrbit</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">dynamic</div></div></td><td>sequence</td><td>initial state and model parameters are estimated (in CRF)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileVariational</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileOrbit</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileParameters</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationAcceleration</div></div></td><td><a href="parametrizationAccelerationType.html">parametrizationAcceleration</a></td><td>orbit force parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">stochasticPulse</div></div></td><td>sequence</td><td>[mum/s] parametrization of stochastic pulses</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config optional">onlyEclipsing</div></div></td><td>boolean</td><td>only apply stochastic pulses to eclipsing satellites</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">minEstimableEpochsRatio</div></div></td><td>double</td><td>drop satellites with lower ratio of estimable epochs to total epochs</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateCodeBias</div></div></td><td>boolean</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimatePhaseBias</div></div></td><td>boolean</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">supportsIntegerAmbiguities</div></div></td><td>boolean</td><td>receiver tracks full cycle integer ambiguities</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">biasModel</div></div></td><td>sequence</td><td>estimate time-variable signal bias</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">type</div></div></td><td><a href="gnssType.html">gnssType</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset-unbounded">parametrizationTemporal</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">timeVariableBias</div></div></td><td>sequence</td><td>a priori time-variable signal bias</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">inputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available; instrument file with bias [m]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">type</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>bias type</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateClockError</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">epochWise</div></div></td><td>sequence</td><td>clock error is estimated for each epoch</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">noiseModel</div></div></td><td>sequence</td><td>clock errors are estimated based on a noise model</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileClockNoiseModel</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">estimateVarianceFactor</div></div></td><td>boolean</td><td>via Variance Component Estimation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">clockModel</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">antennaCenter</div></div></td><td><a href="gnssParametrizationAntennaType.html">gnssParametrizationAntenna</a></td><td>estimate antenna center variations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">integrationDegree</div></div></td><td>uint</td><td>integration of forces by polynomial approximation of degree n</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>for orbit interpolation and velocity calculation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">disableShadowEpochs</div></div></td><td>boolean</td><td>disable epochs if satellite is in Earth's/Moon's shadow</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">eclipse</div></div></td><td><a href="eclipseType.html">eclipse</a></td><td>eclipse model used to determine if a satellite is in Earth's shadow</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">noAntennaPatternFound</div></div></td><td>choice</td><td>what should happen is no antenna pattern is found for an observation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">ignoreObservation</div></div></td><td></td><td>ignore observation if no matching pattern is found</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">useNearestFrequency</div></div></td><td></td><td>use pattern of nearest frequency if no matching pattern is found</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">throwException</div></div></td><td></td><td>throw exception if no matching pattern is found</td></tr>
+</table>
+
+<h2 id="galileo">Galileo</h2><p>
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTransmitterList</div></div></td><td>filename</td><td>ascii file with transmitter PRNs, used to loop variable {prn}</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTransmitterInfo</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAntennaDefintion</div></div></td><td>filename</td><td>phase centers and variations (ANTEX)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileReceiverDefintion</div></div></td><td>filename</td><td>transmitted signal types</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileVariational</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileUsedTransmitterList</div></div></td><td>filename</td><td>ascii file with PRNs</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateOrbit</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">dynamic</div></div></td><td>sequence</td><td>initial state and model parameters are estimated (in CRF)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileVariational</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileOrbit</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileParameters</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationAcceleration</div></div></td><td><a href="parametrizationAccelerationType.html">parametrizationAcceleration</a></td><td>orbit force parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">stochasticPulse</div></div></td><td>sequence</td><td>[mum/s] parametrization of stochastic pulses</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config optional">onlyEclipsing</div></div></td><td>boolean</td><td>only apply stochastic pulses to eclipsing satellites</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">minEstimableEpochsRatio</div></div></td><td>double</td><td>drop satellites with lower ratio of estimable epochs to total epochs</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateCodeBias</div></div></td><td>boolean</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimatePhaseBias</div></div></td><td>boolean</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">supportsIntegerAmbiguities</div></div></td><td>boolean</td><td>receiver tracks full cycle integer ambiguities</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">biasModel</div></div></td><td>sequence</td><td>estimate time-variable signal bias</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">type</div></div></td><td><a href="gnssType.html">gnssType</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset-unbounded">parametrizationTemporal</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">timeVariableBias</div></div></td><td>sequence</td><td>a priori time-variable signal bias</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">inputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available; instrument file with bias [m]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">type</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>bias type</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateClockError</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">epochWise</div></div></td><td>sequence</td><td>clock error is estimated for each epoch</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">noiseModel</div></div></td><td>sequence</td><td>clock errors are estimated based on a noise model</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileClockNoiseModel</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">estimateVarianceFactor</div></div></td><td>boolean</td><td>via Variance Component Estimation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">clockModel</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">antennaCenter</div></div></td><td><a href="gnssParametrizationAntennaType.html">gnssParametrizationAntenna</a></td><td>estimate antenna center variations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">integrationDegree</div></div></td><td>uint</td><td>integration of forces by polynomial approximation of degree n</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">interpolationDegree</div></div></td><td>uint</td><td>for orbit interpolation and velocity calculation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">disableShadowEpochs</div></div></td><td>boolean</td><td>disable epochs if satellite is in Earth's/Moon's shadow</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">eclipse</div></div></td><td><a href="eclipseType.html">eclipse</a></td><td>eclipse model used to determine if a satellite is in Earth's shadow</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">noAntennaPatternFound</div></div></td><td>choice</td><td>what should happen is no antenna pattern is found for an observation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">ignoreObservation</div></div></td><td></td><td>ignore observation if no matching pattern is found</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">useNearestFrequency</div></div></td><td></td><td>use pattern of nearest frequency if no matching pattern is found</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">throwException</div></div></td><td></td><td>throw exception if no matching pattern is found</td></tr>
+</table>
+
+<h2 id="beidou">BeiDou</h2><p>
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTransmitterList</div></div></td><td>filename</td><td>ascii file with transmitter PRNs, used to loop variable {prn}</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTransmitterInfo</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAntennaDefintion</div></div></td><td>filename</td><td>phase centers and variations (ANTEX)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileReceiverDefintion</div></div></td><td>filename</td><td>transmitted signal types</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileVariational</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileUsedTransmitterList</div></div></td><td>filename</td><td>ascii file with PRNs</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateOrbit</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">dynamic</div></div></td><td>sequence</td><td>initial state and model parameters are estimated (in CRF)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileVariational</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileOrbit</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileParameters</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationAcceleration</div></div></td><td><a href="parametrizationAccelerationType.html">parametrizationAcceleration</a></td><td>orbit force parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">stochasticPulse</div></div></td><td>sequence</td><td>[mum/s] parametrization of stochastic pulses</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config optional">onlyEclipsing</div></div></td><td>boolean</td><td>only apply stochastic pulses to eclipsing satellites</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">minEstimableEpochsRatio</div></div></td><td>double</td><td>drop satellites with lower ratio of estimable epochs to total epochs</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateCodeBias</div></div></td><td>boolean</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimatePhaseBias</div></div></td><td>boolean</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">supportsIntegerAmbiguities</div></div></td><td>boolean</td><td>receiver tracks full cycle integer ambiguities</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">biasModel</div></div></td><td>sequence</td><td>estimate time-variable signal bias</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileBias</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">type</div></div></td><td><a href="gnssType.html">gnssType</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset-unbounded">parametrizationTemporal</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">timeVariableBias</div></div></td><td>sequence</td><td>a priori time-variable signal bias</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">inputfileSignalBias</div></div></td><td>filename</td><td>variable {prn} available; instrument file with bias [m]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">type</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>bias type</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateClockError</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">epochWise</div></div></td><td>sequence</td><td>clock error is estimated for each epoch</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">noiseModel</div></div></td><td>sequence</td><td>clock errors are estimated based on a noise model</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">outputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileClockNoiseModel</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">estimateVarianceFactor</div></div></td><td>boolean</td><td>via Variance Component Estimation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">clockModel</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">antennaCenter</div></div></td><td><a href="gnssParametrizationAntennaType.html">gnssParametrizationAntenna</a></td><td>estimate antenna center variations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">integrationDegree</div></div></td><td>uint</td><td>integration of forces by polynomial approximation of degree n</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">interpolationDegree</div></div></td><td>uint</td><td>for orbit interpolation and velocity calculation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">disableShadowEpochs</div></div></td><td>boolean</td><td>disable epochs if satellite is in Earth's/Moon's shadow</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">eclipse</div></div></td><td><a href="eclipseType.html">eclipse</a></td><td>eclipse model used to determine if a satellite is in Earth's shadow</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">noAntennaPatternFound</div></div></td><td>choice</td><td>what should happen is no antenna pattern is found for an observation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">ignoreObservation</div></div></td><td></td><td>ignore observation if no matching pattern is found</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">useNearestFrequency</div></div></td><td></td><td>use pattern of nearest frequency if no matching pattern is found</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">throwException</div></div></td><td></td><td>throw exception if no matching pattern is found</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,70 @@
+\section{Autoregressive Models}\label{fundamentals.autoregressiveModel}
+A multivariate (or vector) autoregressive model is one possible representation of a random process.
+It specifies, that the output at epoch $t$ depends on the $p$ previous epochs, where $p$ is denoted process order,
+plus a stochastic term.
+In the following, finite order vector autoregressive - VAR($p$) in short - models as implemented in GROOPS will be described.
+
+\subsection{Definition}
+
+A finite order VAR($p$) model is defined as
+\begin{equation}
+  \mathbf{y}_e(t_i) = \sum_{k=1}^p \mathbf{\Phi}^{(p)}_k\mathbf{y}_e(t_{i-k}) + \mathbf{w}(t_i),
+  \hspace{5pt} \mathbf{w}(t_i) \sim \mathcal{N}(0, \mathbf{\Sigma}^{(p)}_\mathbf{w}),
+\end{equation}
+where $\mathbf{y}_e(t_i)$ are realizations of a random vector process
+Subtracting the right hand side and substituting the stochastic term $-\mathbf{w}(t_i)$ with the residual $\mathbf{v}(t_i)$ gives us
+\begin{equation}
+  \mathbf{0}  = \mathbf{y}_e(t_i) - \sum_{k=1}^p \mathbf{\Phi}^{(p)}_k\mathbf{y}_e(t_{i-k}) + \mathbf{v}(t_i)
+\end{equation}
+which can be used as pseudo-observation equations in the determination of the parameters $\mathbf{y}_e(t_i)$.
+In matrix notation this reads
+\begin{equation}
+  0 =
+  \begin{bmatrix}
+    \mathbf{I} & -\mathbf{\Phi}^{(p)}_1 & \cdots & -\mathbf{\Phi}^{(p)}_p \\
+  \end{bmatrix}
+  \begin{bmatrix}
+    \mathbf{y}_e(t_i) \\
+    \mathbf{y}_e(t_{i-1}) \\
+    \vdots \\
+    \mathbf{y}_e(t_{i-p}) \\
+  \end{bmatrix}
+  + \mathbf{v}(t_i).
+\end{equation}
+After rearranging the vectors $\mathbf{x}_t$ to have ascending time stamps
+\begin{equation}
+  0 =
+  \begin{bmatrix}
+    -\mathbf{\Phi}^{(p)}_p & \cdots & -\mathbf{\Phi}^{(p)}_1 & \mathbf{I} \\
+  \end{bmatrix}
+  \begin{bmatrix}
+    \mathbf{y}_e(t_{i-p}) \\
+    \vdots \\
+    \mathbf{y}_e(t_{i-1}) \\
+    \mathbf{y}_e(t_i) \\
+  \end{bmatrix}
+  + \mathbf{v}(t_i)
+\end{equation}
+For practical purposes, the residuals above are further decorrelated using the
+inverse square root of the white noise covariance matrix, leading to
+\begin{equation}
+  \bar{\mathbf{v}}(t_i) = \underbrace{\mathbf{\Sigma}^{(p)^{-\frac{1}{2}}}_\mathbf{w}}_{=\mathbf{W}}\mathbf{v}(t_i), \hspace{25pt}  \bar{\mathbf{v}}(t_i) \sim \mathcal{N}(0, \mathbf{I}).
+\end{equation}
+The used square root is in principle arbitrary, but should satisfy $\mathbf{W}^T\mathbf{W} = \mathbf{\Sigma}^{(p)}_\mathbf{w} $.
+This means that both eigendecomposition based roots and Cholesky factors can be used.
+After the applying the matrix from the left, we arrive at the observation equations
+\begin{equation}
+  0 =
+  \begin{bmatrix}
+    -\mathbf{W}\mathbf{\Phi}^{(p)}_p & \cdots & -\mathbf{W}\mathbf{\Phi}^{(p)}_1 & \mathbf{W} \\
+  \end{bmatrix}
+  \begin{bmatrix}
+    \mathbf{y}_e(t_{i-p}) \\
+    \vdots \\
+    \mathbf{y}_e(t_{i-1}) \\
+    \mathbf{y}_e(t_i) \\
+  \end{bmatrix}
+  + \bar{\mathbf{v}}(t_i)
+\end{equation}
+which yields fully decorrelated residuals.
+Currenty, VAR($p$) models are saved to a single  file which contains this matrix.

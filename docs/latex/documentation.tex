@@ -1,0 +1,155 @@
+\documentclass[10pt,twoside,titlepage]{report}
+\usepackage[utf8x]{inputenc}
+\usepackage[fleqn]{amsmath}
+\usepackage{array}
+\usepackage{varwidth}
+\usepackage{ltablex}
+\usepackage{vmargin}
+\usepackage{fancyhdr}
+\usepackage[pdftex,pagebackref=true,unicode]{hyperref}
+\usepackage[pdftex]{graphicx}
+\pdfcompresslevel=9
+\hypersetup{colorlinks=true,linkcolor=[rgb]{0.01176,0.38039,0.67058},urlcolor=[rgb]{0.01176,0.38039,0.67058}}
+
+% Style
+% -----
+\parindent0mm
+\parskip2ex plus1ex minus1ex
+\frenchspacing
+\sloppy
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{1}
+\setpapersize{A4}
+\setmarginsrb{2.5cm}{1cm}{2cm}{2cm}{8mm}{15mm}{5mm}{15mm}
+
+\pagestyle{fancy}
+\addtolength{\headwidth}{0.7cm}
+\renewcommand{\chaptermark}[1]{\markboth{\slshape\thechapter.\ #1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\slshape\thesection.\ #1}}
+\fancyhead[L,R]{\slshape\thepage}
+\fancyhead[LO]{\slshape\nouppercase{\rightmark}}
+\fancyhead[RE]{\slshape\nouppercase{\leftmark}}
+\cfoot{}
+
+\fancypagestyle{plain}{%
+\pagestyle{fancy}
+\fancyhead[RO]{\slshape\thepage}
+\fancyhead[LE]{\slshape\thepage}
+\fancyhead[LO]{}
+\fancyhead[RE]{}
+}
+
+% Config table style
+% ------------------
+\newcolumntype{N}{>{\begin{varwidth}{6cm}}l<{\end{varwidth}}} % Name column (with max. width of 6cm)
+\newcolumntype{T}{l}                                          % Type column
+\newcolumntype{A}{X}                                          % Annotation column
+
+% Commands
+% --------
+\newcommand{\config}[1]{\protect\includegraphics[width=0.9em]{element.pdf}\,\textbf{#1}}
+\newcommand{\configClass}[2]{\protect\includegraphics[width=0.9em]{element.pdf}\,\hyperref[#2]{\textbf{#1}}}
+\newcommand{\configFile}[2]{\protect\includegraphics[width=0.9em]{element.pdf}\,\hyperref[general.fileFormat:#2]{\textbf{#1}}}
+\newcommand{\program}[1]{\protect\includegraphics[width=0.9em]{program.pdf}\,\hyperref[#1]{\textbf{#1}}}
+\newcommand{\file}[2]{\protect\includegraphics[height=1.7ex]{file.pdf}\,\hyperref[general.fileFormat:#2]{#1}}
+\newcommand{\reference}[2]{\hyperref[#2]{#1~(\ref{#2})}}
+\newcommand{\M}[1]{\mathbf{#1}}
+
+% \fig{position}{width as fraction of textwidth}{filename}{label}{caption}
+% ------------------------------------------------------------------------
+\newcommand{\fig}[5]{%
+\begin{figure}[#1]%
+\centering%
+\includegraphics*[width=#2\textwidth]{#3}%
+\caption{#5}\label{#4}%
+\end{figure}%
+}
+
+%=========================================
+
+\begin{document}
+\hfuzz=5000pt
+\vfuzz=5000pt
+\hbadness=10000
+\vbadness=10000
+
+\graphicspath{{../figures/}}
+
+%---------------------------- title page ------------------------------------
+\thispagestyle{empty}
+\begin{center}
+\vspace*{6cm}
+\begin{figure}[!h]
+\centering
+\includegraphics*[width=0.75\textwidth]{groops_banner}
+\end{figure}
+\vspace*{0.2cm}
+{\huge\sf Gravity Recovery Object Oriented Programming System} \\
+\vspace*{2cm}
+{\huge\sf Documentation} \\
+\vspace*{2cm}
+{\Large\sf GitHub repository: \url{https://github.com/groops-devs/groops}}
+\end{center}
+
+\newpage
+\clearpage{\pagestyle{empty}} %\cleardoublepage}%
+%\pagenumbering{Roman}
+\tableofcontents%
+\clearpage{\pagestyle{empty}\cleardoublepage\clearpage}
+
+\chapter{General information}
+GROOPS is a software toolkit for gravity field recovery, GNSS processing, and statistical analysis of time series and spatial data.
+Parts of GROOPS originate from developments in the Astronomical, Physical and Mathematical Geodesy Group
+at the University of Bonn, Germany.
+Since 2010 it is developed and maintained at Graz University of Technology, Austria.
+
+This chapter details file formats and basic concepts for using GROOPS and its GUI.
+\input{general.configFiles}
+\clearpage
+\input{general.parser}
+\clearpage
+\input{general.loopsAndConditions}
+\clearpage
+\input{general.constants}
+\clearpage
+\input{general.parallelization}
+\clearpage
+\input{general.gui}
+\clearpage
+\input{general.fileFormat}
+\input{general.fileFormat.auto}
+\clearpage
+
+\chapter{Mathematical fundamentals}
+This chapter describes the methods and mathematical fundamentals used throughout GROOPS.
+\input{fundamentals.robustLeastSquares}
+\clearpage
+\input{fundamentals.basisSplines}
+\clearpage
+\input{fundamentals.autoregressiveModel}
+
+\chapter{Cookbook}\label{general.cookbook}
+This chapter presents recipes to explore the GROOPS feature set.
+\input{cookbook.instrument}
+\clearpage
+\input{cookbook.gnssNetwork}
+\clearpage
+\input{cookbook.gnssPpp}
+\clearpage
+\input{cookbook.kinematicOrbit}
+\clearpage
+\input{cookbook.gravityFieldPod}
+\clearpage
+\input{cookbook.gravityFieldGrace}
+\clearpage
+\input{cookbook.regionalGeoid}
+
+\chapter{Programs}\label{programType}
+This chapter details programs included in GROOPS, describing what they are and what they do. For usage examples see the cookbook in Chapter~\ref{general.cookbook}.
+\input{programs.auto}
+
+\chapter{Classes}\label{classes}
+This chapter details classes included in GROOPS, describing what they are and what they do. For usage examples see the cookbook in Chapter~\ref{general.cookbook}.
+\input{classes.auto}
+
+\end{document}

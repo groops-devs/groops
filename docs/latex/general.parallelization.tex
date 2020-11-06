@@ -1,0 +1,18 @@
+\section{Parallelization}\label{general.parallelization}
+If GROOPS is compiled with the
+\href{https://en.wikipedia.org/wiki/Message_Passing_Interface}{Message Passing Interface} (MPI),
+most GROOPS \reference{programs}{programType} can be run in parallel on multiple processor cores.
+Processing on computer clusters with distributed memory is also supported.
+
+Many loops are parallelized by computing each loop step at a different core.
+Usually the first node distributes the work load, assigns loop steps to different cores,
+and is not participating on the actual loop computation. This means running
+GROOPS with only two nodes has no advantages in almost all cases.
+Non-parallel parts and \reference{programs}{programType} without parallel support
+are executed at the first node only.
+
+Large systems of \file{normal equations}{normalEquation}, which are divided into blocks,
+are distributed over the nodes to reduce the memory consumption on each single node.
+
+As all nodes may read and write files (at least reading the \reference{config files}{general.configFiles})
+the required part of the file system must be available on all participating computers.

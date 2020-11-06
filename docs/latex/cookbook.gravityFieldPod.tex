@@ -1,0 +1,43 @@
+\section{Gravity field determination from precise orbit data (POD)}\label{cookbook.gravityFieldPod}
+
+This cookbook chapter describes exemplarily the steps for determining the monthly gravity variations from precise orbit data (POD).
+
+\subsection{Step 1: Preperation of data}
+
+Following data have to be prepared monthly with an adequate sampling, e.g. 10 s using
+\program{InstrumentConcatenate}:
+\begin{itemize}
+  \item Precise (kinematic) orbit data
+  \item 3x3 covariance matrices data
+  \item Initial orbit data used for precise orbit determination
+  \item Star camera data
+  \item Accelerometer data
+\end{itemize}
+Reduced sampling can be achieved by \program{InstrumentReduceSampling}. If the satellite mission does not provide any required
+accelerometer data, these data can be generated via \program{SimulateAccelerometer}.
+
+For satellite missions with less knowledge about the acting forces, it make sense to consider more than one state vector within an orbit revolution.
+Otherwise the accuracy of the estimated parameters will decrease. This implies that shorter arcs are necessary. The assignment of the kinematic orbit
+data as well as the 3x3 covariance matrices data to the arcs can be done with \program{InstrumentSynchronize}.
+
+\subsection{Step 2: Conversion of the background gravity field}
+\program{Gravityfield2SphericalHarmonicsVector} converts the static respectively background gravity field into spherical harmonics.
+
+\subsection{Step 3: Preprocessing POD}
+For determining the accuracies and weights of the kinematic orbits it is sufficient to make a least-square estimation with only certain parameters, due
+to the fact that some parameters do not influence the estimation of the accuracies and weights.
+This estimation is done with \program{PreprocessingPod}. Additional this program determines the temporal correlation of the kinematic orbit positions
+x,y and z. If short arcs are used the setting \configClass{observation:podIntegral}{observationType:podIntegral} shall be used. This setting
+considers the frictional forces by means of a macro model as well as the conservative and non-conservative forces.
+
+\subsection{Step 4: Solving of normal equations system}
+\program{NormalsSolverVCE} sets up the observation equations and summarized them to a normal equations system. The subsequent least-square estimation delivers
+the parameters surcharges.
+
+\subsection{Step 5: Determination of the estimated gravity field parameters}
+The estimated parameters result from the re-addition of the background field, which is done in \program{MatrixCalculate}.
+
+\subsection{Step 6: Conversion of the gravity field parameters}
+\program{Gravityfield2PotentialCoefficients} converts the gravity field parameters into spherical harmonics.
+
+% =============================================================

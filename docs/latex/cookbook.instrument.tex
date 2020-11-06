@@ -1,0 +1,122 @@
+\section{Instrument data handling}\label{cookbook.instrument}
+
+GROOPS provides functions and programs to read/write, preprocess, analyze and visualize uniformly and non-uniformly sampled instrument data.
+This includes tools for filter design and analysis, re-sampling, smoothing, detrending, and power spectrum estimation.
+This tutorial goes through exemplary steps for data handling procedures.
+
+\subsection{Reading data}
+
+\begin{itemize}
+\item GROOPS is able to read and convert relevant data from various LEO and GNSS satellites. Instrument files need to be converted into the respective GROOPS format using conversion programs.Depending on the content of the input file, the data is stored with a specific \configClass{instrument type}{instrumentTypeType}. User also has the option to change the type later on with \program{InstrumentSetType}.
+
+\item Multiple files can be concatenated to one file using \program{InstrumentConcatenate}. Using this program, it is also possible to sort the epochs, remove the duplicates and NaN values.
+\item \emph{Example: Concatenating instrument files}
+  \begin{itemize}
+  \item Create three successively daily sinusoidal signals with \program{TimeSeriesCreate} and set their type to MISCVALUE with \program{InstrumentSetType}. In this example, each data set has an overlap of 1 hour with their following dataset.
+  \item Merge all datasets to one single file with \program{InstrumentConcatenate}.
+  \fig{!ht}{0.8}{instrumentDataHandeling_concatenating}{fig:instrumentDataHandeling_concatenating}{Example 1: Concatenating instrument files into one dataset.}
+  \end{itemize}
+ \item Many measurements involve data collected asynchronously by multiple sensors with different sampling. Use \program{InstrumentSynchronize} for a continuous harmonization of the data over time or segmentation of the data into arcs.
+\end{itemize}
+
+\subsection{Preprocessing}
+Real-world data is often incomplete, inconsistent, and/or lacking in certain behaviors or trends, and is likely to contain many errors. Data preprocessing is a proven method of resolving such issues. Following steps are usually required to be taken:
+
+\begin{itemize}
+\item Gross outlier removal:
+  \begin{itemize}
+  \item Create reference values to compare the input data with. Depending on the instrument type, this can be done by simulation programs such as \program{SimulateAccelerometer} or \program{SimulateStarCamera}. If no reference data is available, the outlier detection is based on the data itself. If needed, synchronize the reference data file and the input data with \program{InstrumentSynchronize}.
+
+  \item In case of star camera data, compute the differences between the input data and the reference data with \program{InstrumentStarCameraMultiply}.
+
+  \item Set a threshold for outlier detection in \program{InstrumentRemoveEpochsByCriteria}. The threshold is defined empirically according to the accuracy characteristics of each data products. If the differences exceed a predefined threshold, the corresponding epochs are removed. An arbitrary margin can be defined to additionally remove epochs before and after the identified outliers. It is also possible to remove epochs at specific times using \program{InstrumentRemoveEpochsByTimes}.
+  \item Missing epochs can be filled by reference data with \program{InstrumentConcatenate}.
+  \item It is also possible to interpolate the missing epochs with \program{InstrumentResample}.
+  \item \emph{Example: Removing outliers in a synthetic data.}
+  \begin{itemize}
+  \item Create a sinusoidal signal with an amplitude of 1.0 using \program{TimeSeriesCreate} and set its type to MISCVALUE with \program{InstrumentSetType}.
+  \item Add zero-mean, white Gaussian noise with a standard deviation of 0.1 with \program{NoiseInstrument}. Interpret this data as a real measurement file.
+  \item Set the threshold criteria to 0.2 in \program{InstrumentRemoveEpochsByCriteria} and remove the outliers and their nearest epochs in 20 second interval.
+  \item Fill the data gaps with \program{InstrumentResample}.
+  \fig{!ht}{0.8}{instrumentDataHandeling_outlierRemoval}{fig:instrumentDataHandeling_outlierRemoval}{Example 2: Removing gross outliers.}
+  \end{itemize}
+  \end{itemize}
+
+
+\item Downsampling:
+  \begin{itemize}
+  \item If the sampling is irregular use \program{InstrumentResample} to make the sampling equidistant.
+  \item Use \program{InstrumentSynchronize} to divide the data at gaps into arcs.
+  \item Apply a lowpass filter (e.g. Butterworth) with the Nyquist frequency of the target sampling as cutoff with \program{InstrumentFilter}. Apply the filter in both directions to avoid phase shifts.
+  \item Use \program{InstrumentReduceSampling} to down-sample the data.
+  \end{itemize}
+
+\item Calibration:
+  \begin{itemize}
+  \item For a general instrument file, \program{InstrumentDetrend} subtracts offsets or linear/nonlinear trends from the input data. This can be achieved also with \program{FunctionsCalculate} or \program{InstrumentArcCalculate} by applying determined calibration factors or solving a least-square adjustment.
+  \item For accelerometer data, \program{InstrumentAccelerometerEstimateBiasScale} is designed to estimate and subtract complex biases or scales with respect to simulated accelerometer data. If a thruster file is given, the corresponding epochs are eliminated during estimation process.
+  \item \emph{Example: GRACE-C accelerometer calibration}
+  \begin{itemize}
+  \item For one particular date, read and convert Level-1B GRACE-C orbit, star camera, accelerometer, and thruster data with \program{GraceL1b2Orbit}, \program{GraceL1b2StarCamera}, \program{GraceL1b2Accelerometer}, and \program{GraceL1b2Thruster} respectively. It is also required to read the macro-model data of the satellite using the related information in the official document and convert it to GROOPS format with \program{SatelliteModelCreate}.
+  \item Use \program{SimulateAccelerometer} to generate simulated accelerations due to non-gravitational force models including: \configClass{miscAccelerations:atmosphericDrag}{miscAccelerationsType:atmosphericDrag}, \configClass{miscAccelerations:solarRadiationPressure}{miscAccelerationsType:solarRadiationPressure}, and \configClass{miscAccelerations:albedo}{miscAccelerationsType:albedo}.
+  \item Calibrate the real measurements with a daily constant accelerometer bias by choosing a constant parameter per axis in \configClass{parametrizationAcceleration:accBias}{parametrizationAccelerationType:accBias}.
+  \fig{!ht}{0.8}{instrumentDataHandeling_calibration}{fig:instrumentDataHandeling_calibration}{Example 3: Calibrating GRACE-C ACT1B data.}
+  \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\subsection{Statistical analysis}
+\begin{itemize}
+\item \program{InstrumentStatisticsTimeSeries} returns statistics for one or more instrument files. \program{InstrumentArcCalculate} is also able to generate a \config{statistics} file with one mid epoch per arc.
+\end{itemize}
+
+\subsection{Spectral analysis}
+Spectral analysis studies the frequency spectrum contained in discrete, uniformly sampled data. The Fourier transform is a tool that reveals frequency components of a signal by representing it in frequency space. The Power Spectral Density (PSD) is a measurement of the energy at each frequency.
+
+\begin{itemize}
+\item If the sampling is irregular use \program{InstrumentResample} to make the sampling equidistant.
+\item Use \program{Instrument2PowerSpectralDensity} to compute PSD.
+\item If covariance function of a dataset is available, use \program{CovarianceFunction2PowerSpectralDensity}.
+\item \emph{Example: Spectral analysis of a synthetic signal.}
+  \begin{itemize}
+  \item Create a sinusoidal signal with an amplitude of 1.0 using \program{TimeSeriesCreate} and set its type to MISCVALUE with \program{InstrumentSetType}. Interpret this data as a simulation data file.
+  \item Add zero-mean, white Gaussian noise with a standard deviation of 0.1 with \program{NoiseInstrument}. Interpret this data as a real measurement file.
+  \item Compute PSD of the simulated and measurement data and represent the results with \program{PlotGraph}.
+  \fig{!ht}{0.8}{instrumentDataHandeling_psd}{fig:instrumentDataHandeling_psd}{Example 4: Spectral analysis of a synthetic signal.}
+  \end{itemize}
+\end{itemize}
+
+\subsection{Data visualization}
+\begin{itemize}
+\item Argument of latitude plot
+Plotting instrument data as a function of satellite position in orbit and time reveals features related to the orbit geometry or environmental conditions. For circular orbits, the position of  satellite can be specified by the argument of latitude.
+\begin{itemize}
+\item Synchronize the instrument data file with the related orbit data using \program{InstrumentSynchronize}.
+\item Use \program{Orbit2ArgumentOfLatitude} to compute argument of latitude at each epoch.
+\item Plot the instrument data versus argument of latitude and time with \program{PlotGraph}.
+\item \emph{Example: Argument of latitude representation of GRACE-C eclipse factors}
+  \begin{itemize}
+  \item Compute eclipse factors at each epoch of GRACE-C orbit at an arbitrary time using \program{Orbit2EclipseFactor}.
+  \item Synchronize the eclipse factor data file with the related orbit data using \program{InstrumentSynchronize}.
+  \item Use \program{Orbit2ArgumentOfLatitude} to compute argument of latitude at each epoch and visualize the results with \program{PlotGraph}.
+  \fig{!ht}{0.8}{instrumentDataHandeling_aol}{fig:instrumentDataHandeling_aol}{Example 5: GRACE-C eclipse factors represented in argument of latitude plot.}
+  \end{itemize}
+\end{itemize}
+
+\item Ground-track plot
+Plotting instrument data with respect to the satellite ground track is useful to identify any features of geophysical origin in the data.
+\begin{itemize}
+\item Synchronize the instrument data file with the related orbit data using \program{InstrumentSynchronize}.
+\item Use \program{Orbit2Groundtracks} to map instrument data to satellite ground-track.
+\item Visualize the output with \program{PlotMap}.
+\item \emph{Example 6: Ground-track representation of GRACE-C eclipse factors}
+  \begin{itemize}
+  \item Compute eclipse factors at each epoch of GRACE-C orbit at an arbitrary time using \program{Orbit2EclipseFactor}.
+  \item Synchronize the eclipse factor data file with the related orbit data using \program{InstrumentSynchronize}.
+  \item Use \program{Orbit2Groundtracks} to generate the gridded data. Each grid value represents the mean value of eclipse factor over the instrument time period (1 month).  visualize the results with \program{PlotMap}.
+  \end{itemize}
+  \fig{!ht}{0.8}{instrumentDataHandeling_groundTrack}{fig:instrumentDataHandeling_groundTrack}{Example 6: GRACE-C eclipse factors represented in ground-track plot.}
+\end{itemize}
+
+\end{itemize}
+%% =============================================================

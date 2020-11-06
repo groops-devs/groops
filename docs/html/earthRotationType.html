@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - earthRotationType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="earthRotationType">EarthRotation</h1><p>
+This class realize the transformation between a terestrial
+reference frame (TRF) and a celestial reference frame (CRF).
+</p>
+
+<h2 id="file">File</h2><p>
+This class realize the transformation by interpolation from file.
+This file can be created with <a class="groops-program" href="EarthOrientationParameterTimeSeries.html">EarthOrientationParameterTimeSeries</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileEOP</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>for polynomial interpolation</td></tr>
+</table>
+
+<h2>Iers2010</h2><p>
+This class realize the transformation according to the IERS2010 conventions
+given by the <em>International Earth Rotation and Reference Systems Service</em> (IERS).
+A file with the earth orientation parameter is needed (<a class="groops-class" href="fileFormat_earthOrientationParameter.html">inputfileEOP</a>).
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileEOP</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">truncatedNutation</div></div></td><td>boolean</td><td>use truncated nutation model (IAU2006B)</td></tr>
+</table>
+
+<h2 id="iers2010b">Iers2010b</h2><p>
+This class realize the transformation according to the IERS2010 conventions
+given by the <em>International Earth Rotation and Reference Systems Service</em> (IERS).
+A file with the earth orientation parameter is needed (<a class="groops-class" href="fileFormat_earthOrientationParameter.html">inputfileEOP</a>).
+Includes additional high-frequency EOP models (<a class="groops-class" href="fileFormat_doodsonEarthOrientationParameter.html">inputfileDoodsonEOP</a>).
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileEOP</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileDoodsonEOP</div></div></td><td>filename</td><td></td></tr>
+</table>
+
+<h2>Iers2003</h2><p>
+This class realize the transformation according to IERS2003 conventions
+given by the <em>International Earth Rotation and Reference Systems Service</em> (IERS).
+A file with the earth orientation parameter is needed (<a class="groops-class" href="fileFormat_earthOrientationParameter.html">inputfileEOP</a>).</p><p>The following subroutines are used:
+<ul>
+
+<li>BPN2000.f,
+</li><li>
+ERA2000.f,
+</li><li>
+pmsdnut.f,
+</li><li>
+POM2000.f,
+</li><li>
+SP2000.f,
+</li><li>
+T2C2000.f,
+</li><li>
+XYS2000A.f
+</li></ul>
+
+from <a href="ftp://maia.usno.navy.mil/conv2000/chapter5/" target="_blank">ftp://maia.usno.navy.mil/conv2000/chapter5/</a> and
+<ul>
+
+<li>orthoeop.f
+</li></ul>
+
+from <a href="ftp://maia.usno.navy.mil/conv2000/chapter8/" target="_blank">ftp://maia.usno.navy.mil/conv2000/chapter8/</a>
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileEOP</div></div></td><td>filename</td><td></td></tr>
+</table>
+
+<h2>Iers1996</h2><p>
+Very old.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileEOP</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileNutation</div></div></td><td>filename</td><td></td></tr>
+</table>
+
+<h2>Gmst</h2><p>
+The transformation is realized as rotation about the z-axis.
+The angle ist given by the Greenwich Mean Siderial Time (GMST).
+<pre>
+  Double Tu0 = (timeUTC.mjdInt()-51544.5)/36525.0;</p><p>  Double GMST0 = (6.0/24 + 41.0/(24*60) + 50.54841/(24*60*60))
+               + (8640184.812866/(24*60*60))*Tu0
+               + (0.093104/(24*60*60))*Tu0*Tu0
+               + (-6.2e-6/(24*60*60))*Tu0*Tu0*Tu0;
+  Double r = 1.002737909350795 + 5.9006e-11*Tu0 - 5.9e-15*Tu0*Tu0;
+  GMST = fmod(2*PI*(GMST0 + r * timeUTC.mjdMod()), 2*PI);
+</pre>
+</p>
+
+<h2>Earth Rotation Angle (ERA)</h2><p>
+The transformation is realized as rotation about the z-axis.
+The angle ist given by the Earth Rotation Angle (ERA).
+</p>
+
+<h2>Z-Axis</h2><p>
+The transformation is realized as rotation about the z-axis.
+You must specify the angle (<strong class="groops-config-element">initialAngle</strong>) at <strong class="groops-config-element">time0</strong> and
+the angular velocity (<strong class="groops-config-element">angularVelocity</strong>).
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">initialAngle</div></div></td><td>double</td><td>Angle at time0 [rad]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">angularVelocity</div></div></td><td>double</td><td>[rad/s]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">time0</div></div></td><td>time</td><td></td></tr>
+</table>
+
+<h2>StarCamera</h2><p>
+This class reads quaternions from an instrument file and interpolates to the given time stamp.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStarCamera</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>degree of interpolation polynomial</td></tr>
+</table>
+
+<h2>MoonRotation</h2><p>
+This class realizes the transformation between the moon-fixed system
+(Principal Axis System (PA) or Mean Earth System (ME))
+and the ICRS according to the JPL ephemeris file.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileEphemerides</div></div></td><td>filename</td><td>librations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">moonfixedSystem</div></div></td><td>choice</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">PA</div></div></td><td></td><td>Principal Axis System</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">ME</div></div></td><td></td><td>Mean Earth System</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

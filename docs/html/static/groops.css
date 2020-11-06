@@ -1,0 +1,168 @@
+/* -- general alignment ---------------------------------------------------- */
+
+.center {
+   text-align: center;
+}
+
+.top-buffer {
+    margin-top: 1.0em;
+}
+
+.list-group {
+    list-style-position: inside;
+}
+
+/* -- icon styles ---------------------------------------------------- */
+
+img.figure {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+img.groopsIcon {
+  height: 1.2em;
+  vertical-align: middle;
+}
+
+img.logo {
+    height: 1.5em;
+    vertical-align: middle;
+  }
+
+/* -- table styles ---------------------------------------------------- */
+
+div.config {
+    background-size: 1.2em;
+    background-position: center left;
+    background-repeat: no-repeat;
+    padding-left: 1.5em;
+}
+
+div.optional {
+    background-image: url("element.svg");
+}
+
+div.mustset {
+    background-image: url("element-mustset.svg");
+}
+
+div.mustset-unbounded {
+    background-image: url("element-mustset-unbounded.svg");
+}
+
+div.optional-unbounded {
+    background-image: url("element-unbounded.svg");
+}
+
+div.config-tree {
+    background-image: url("connector.svg");
+    background-repeat: no-repeat;
+}
+
+div.depth-0 {
+    background: none;
+    padding-left: 0.0em;
+}
+
+div.depth-1 {
+    padding-left: 1.6em;
+    background-position: center left 0.1em;
+}
+
+div.depth-2 {
+    padding-left: 3.2em;
+    background-position: center left 1.7em;
+}
+
+div.depth-3 {
+    padding-left: 4.8em;
+    background-position: center left 3.3em;
+}
+
+div.depth-4 {
+    padding-left: 6.4em;
+    background-position: center left 4.9em;
+}
+
+div.depth-5 {
+    padding-left: 8.0em;
+    background-position: center left 6.5em;
+}
+
+td {
+    padding: 3px !important;
+}
+
+/* -- inline icons ---------------------------------------------------- */
+
+.groops-program
+{
+   background-image: url("program.svg");
+   background-repeat: no-repeat;
+   background-position: center left;
+   background-size: 1.0em;
+   padding-left: 1.2em;
+   font-weight: bold;
+}
+
+.groops-class
+{
+   background-image: url("element.svg");
+   background-repeat: no-repeat;
+   background-position: center left;
+   background-size: 1.0em;
+   padding-left: 1.2em;
+   font-weight: bold;
+}
+
+.groops-config-element
+{
+   background-image: url("element.svg");
+   background-repeat: no-repeat;
+   background-position: center left;
+   background-size: 1.0em;
+   padding-left: 1.2em;
+   font-weight: bold;
+}
+
+.groops-file
+{
+   background-image: url("file.svg");
+   background-repeat: no-repeat;
+   background-position: center left;
+   background-size: 1.0em;
+   padding-left: 1.1em;
+   font-weight: bold;
+}
+
+.groops-ref
+{
+}
+
+/* -- search box ---------------------------------------------------- */
+
+div.faded {
+    height: 5em;
+    overflow-y: hidden;
+}
+
+div.faded:after {
+  content  : "";
+  position : absolute;
+  z-index  : 1;
+  bottom   : 0;
+  left     : 0;
+  pointer-events   : none;
+  background-image : linear-gradient(to bottom,
+                    rgba(255,255,255, 0),
+                    rgba(255,255,255, 1) 90%);
+  width    : 100%;
+  height   : 3em;
+}
+
+div.search-result {
+    min-height: 5em;
+}
+
+/* -- end ------------------------------------------------------------- */

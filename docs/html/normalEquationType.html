@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - normalEquationType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="normalEquationType">NormalEquation</h1><p>
+This class provides a system of normal equations.
+This total system is the weighted sum of individual normals.
+\[
+ \M N_{total} =  \sum_{k=1} \frac{1}{\sigma_k^2}\M N_k
+ \qquad\text{and}\qquad
+\M n_{total} = \sum_{k=1} \frac{1}{\sigma_k^2} \M n_k.
+\]The normals do not need to have the same dimension. The dimension
+of the total combined system is chosen to cover all individual systems.
+For each normal a <strong class="groops-config-element">startIndex</strong> is required which indicates
+the position of the first unknown of the individual normal within the
+combined parameter vector.</p><p>The $\sigma_k$ of the relative weights are defined by <strong class="groops-config-element">aprioriSigma</strong>
+in a first step. If an apriori solution <a class="groops-class" href="fileFormat_matrix.html">inputfileApproxSolution</a> is
+given or the normals are solved iteratively the weights are determined by means
+of variance compoment estimation (VCE), see <a class="groops-program" href="NormalsSolverVCE.html">NormalsSolverVCE</a>:
+\[
+\sigma_k^2 =
+\frac{\M e_k^T\M P\M e_k}
+{n_k-\frac{1}{\sigma_k^2}\text{trace}\left(\M N_k\M N_{total}^{-1}\right)},
+\]where $n_k$ is the number of observations. The square sum of the residuals
+is calculated by
+\[
+\M e_k^T\M P\M e_k = \M x^T\M N_k\M x - 2\M n_k^T\M x + \M l_k^T\M P_k\M l_k.
+\]The system of normal equations can be solved with several right hand sides at once. But
+only one right hand side, which can be selected with the index <strong class="groops-config-element">rightHandSide</strong>
+(counting from zero), can be used to compute the variance factors.
+The combined normal $\M N_{total}$ and the solution $\M x$ are taken from the previous
+iteration step. In case of <a class="groops-class" href="normalEquationType.html#designVCE">DesignVCE</a> the algorithm
+is a little bit different as described below.
+</p>
+
+<h2 id="design">Design</h2><p>
+This class acculumates normal equations from observation equations.
+The class <a class="groops-class" href="observationType.html">observation</a> computes
+the linearized and decorrelated equation system for each arc $i$:
+\[
+\M l_i  = \M A_i \M x + \M B_i \M y_i + \M e_i.
+\]The arc depending parameters $\M y_i$ are eliminated and the system of normal
+equations is acculumated according to
+\[
+ \M N = \sum_{i=1}^m \M A_i^T  \M A_i
+ \qquad\text{and}\qquad
+\M n = \sum_{i=1}^m \M A_i^T \M l_i.
+\]</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">observation</div></div></td><td><a href="observationType.html">observation</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">aprioriSigma</div></div></td><td>double</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startIndex</div></div></td><td>uint</td><td>add this normals at index of total matrix (counting from 0)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileArcList</div></div></td><td>filename</td><td>to accelerate computation</td></tr>
+</table>
+
+<h2 id="designVCE">DesignVCE</h2><p>
+This class acculumates normal equations from observation equations.
+The class <a class="groops-class" href="observationType.html">observation</a> computes
+the linearized and decorrelated equation system for each arc $i$:
+\[
+\M l_i  = \M A_i \M x + \M B_i \M y_i + \M e_i.
+\]The arc depending parameters $\M y_i$ are eliminated and the system of normal
+equations is acculumated according to
+\[
+ \M N =  \sum_{i=1} \frac{1}{\sigma_i^2}\M A_i^T  \M A_i
+ \qquad\text{and}\qquad
+\M n = \sum_{i=1} \frac{1}{\sigma_i^2} \M A_i^T \M l_i.
+\]The variance $\sigma_i^2$ of each individual arc is determined by
+\[
+\sigma_i^2 =
+\frac{(\M l_i-\M A_i\M x)^T(\M l_i-\M A_i\M x)}
+{n_i-\frac{1}{\sigma_i^2}\text{trace}\left(\M A_i^T  \M A_i\M N_{total}^{-1}\right)},
+\]where $n_i$ is the number of observations. If an apriori solution is not given at the first
+iteration step a zero vector is assumed.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">observation</div></div></td><td><a href="observationType.html">observation</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startIndex</div></div></td><td>uint</td><td>add this normals at index of total matrix (counting from 0)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileArcList</div></div></td><td>filename</td><td>to accelerate computation</td></tr>
+</table>
+
+<h2 id="file">File</h2><p>
+Reads a system of normal equations from file <a class="groops-class" href="fileFormat_normalEquation.html">inputfileNormalEquation</a>
+as generated by e.g. <a class="groops-program" href="NormalsBuild.html">NormalsBuild</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileNormalEquation</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">aprioriSigma</div></div></td><td>double</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startIndex</div></div></td><td>uint</td><td>add this normals at index of total matrix (counting from 0)</td></tr>
+</table>
+
+<h2 id="regularization">Regularization</h2><p>
+Set up a system of normal equations
+\[
+\M N = \M R
+\qquad\text{and}\qquad
+\M n = \M R \M b,
+\]where $\M R$ is a diagonal matrix whose elements are given as a vector by
+<a class="groops-class" href="fileFormat_matrix.html">inputfileDiagonalMatrix</a> and $\M b$ is the right hand side towards which will
+be regularized. It can be given by <a class="groops-class" href="fileFormat_matrix.html">inputfileBiasVector</a>.
+The diagonal matrix can be generated with <a class="groops-program" href="NormalsRegularizationBorders.html">NormalsRegularizationBorders</a>,
+<a class="groops-program" href="NormalsRegularizationSphericalHarmonics.html">NormalsRegularizationSphericalHarmonics</a>, or <a class="groops-program" href="MatrixCalculate.html">MatrixCalculate</a>.
+If $\M R$ is not given a unit matrix is assumed.
+The right hand side $\M b$ may be generated with <a class="groops-program" href="Gravityfield2SphericalHarmonicsVector.html">Gravityfield2SphericalHarmonicsVector</a>.
+If $\M b$ is not given a zero vector is assumed.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileDiagonalMatrix</div></div></td><td>filename</td><td>Vector with the diagonal elements of the weight matrix</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileBias</div></div></td><td>filename</td><td>Matrix with right hand sides</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">aprioriSigma</div></div></td><td>double</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startIndex</div></div></td><td>uint</td><td>regularization of parameters starts at this index (counting from 0)</td></tr>
+</table>
+
+<h2>RegularizationGeneralized</h2><p></p><p>Generalized regularization which is represented by the observation equation
+\[
+\mathbf{x}_0 = \mathbf{I} \mathbf{x} + \mathbf{v}, \mathbf{v} \sim \mathcal{N}(0, \sum_k \sigma^2_k \mathbf{V}_k).
+\]
+There are no requirements for partial covariance matrices $\mathbf{V}_k$ except for them being symmetric.
+The accumulated covariance matrix $\sum_k \sigma^2_k \mathbf{V}_k$ must be positive definite however.
+The variance components $\sigma^2_k$ are estimated during the adjustment process and are assumed to be positive.
+All <a class="groops-class" href="fileFormat_matrix.html">inputfilePartialCovarianceMatrix</a> must be of same size
+and must match the dimension of <a class="groops-class" href="fileFormat_matrix.html">inputfileBiasMatrix</a>
+(if provided, otherwise a zero vector of appropriate dimensions is created).</p><p>The parameter <strong class="groops-config-element">aprioriSigma</strong> determines the initial variance factor for the partial covariance matrices. Either one $\sigma_0$ can be
+supplied or one for each $\mathbf{V}_k$.</p><p>The regularization matrix can be applied to a subset of parameters by adjusting <strong class="groops-config-element">startIndex</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfilePartialCovarianceMatrix</div></div></td><td>filename</td><td>symmetric matrix (sum of all matrices must be positive definite)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileBiasMatrix</div></div></td><td>filename</td><td>bias vector (default: zero vector)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">aprioriSigma</div></div></td><td>double</td><td>apriori sigmas for initial iteration (default: 1.0)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startIndex</div></div></td><td>uint</td><td>regularization of parameters starts at this index (counting from 0)</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

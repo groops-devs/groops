@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - GnssProcessing</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>GnssProcessing</h1><p>
+
+This program processes GNSS observations. The primary use cases are:
+<ul>
+
+  <li><a class="groops-ref" href="cookbook.gnssNetwork.html">GNSS satellite orbit determination and station network analysis</a>
+  </li><li>
+<a class="groops-ref" href="cookbook.kinematicOrbit.html">Kinematic orbit determination of LEO satellites</a>
+  </li><li>
+<a class="groops-ref" href="cookbook.gnssPpp.html">GNSS precise point positioning (PPP)</a>
+</li></ul>
+</p><p>One or more GNSS constellations must be defined via <a class="groops-class" href="gnssParametrizationTransmitterType.html">transmitter</a>.
+Receivers such as ground station networks or Low Earth Orbit (LEO) satellites can be defined via <a class="groops-class" href="gnssParametrizationReceiverType.html">receiver</a>.</p><p>Earth rotation parameters (ERPs) can be estimated via <a class="groops-class" href="gnssParametrizationEarthRotationType.html">earthRotation</a>.</p><p>Constraints can be added to the normal equation system via <a class="groops-class" href="gnssParametrizationConstraintsType.html">constraints</a> in case there are no direct constraint options
+in the respective config element (e.g. <strong class="groops-config-element">noNetRotationSigma</strong> in <a class="groops-class" href="gnssParametrizationReceiverType.html#stationNetwork">receiver:stationNetwork</a>).
+For details on possible additional constraints see <a class="groops-class" href="gnssParametrizationReceiverType.html#stationNetwork">receiver:stationNetwork</a> (tropospheric parameters),
+<a class="groops-class" href="gnssParametrizationTransmitterType.html">transmitter</a> (antenna center offsets), or <a class="groops-class" href="gnssParametrizationEarthRotationType.html">earthRotation</a> (dUT1).</p><p>The processing flow is controlled via a list of <a class="groops-class" href="gnssProcessingStepType.html">processingSteps</a>.
+Each step is processed consecutively. Some steps allow the selection of parameters, epochs, or the normal equation structure,
+which affects all subsequent steps.</p><p>If the program is run on multiple processes in <a class="groops-ref" href="general.parallelization.html">parallel</a>, <strong class="groops-config-element">parallelIntervals</strong>=<code>yes</code> distributes the
+defined <a class="groops-class" href="timeSeriesType.html">intervals</a> over all processes. Otherwise the intervals are processed consecutively while the
+<a class="groops-class" href="gnssParametrizationReceiverType.html">receiver</a>s (stations or LEO satellites) are distributed over the processes.</p><p>See also <a class="groops-program" href="GnssSimulateReceiver.html">GnssSimulateReceiver</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileParameterName</div></div></td><td>filename</td><td>parameter names</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">intervals</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>each interval is processed independently</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">parallelIntervals</div></div></td><td>boolean</td><td>parallelize intervals instead of receivers per interval</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>defines epochs within intervals</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">timeMargin</div></div></td><td>double</td><td>[seconds] margin to consider two times identical</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">transmitter</div></div></td><td><a href="gnssParametrizationTransmitterType.html">gnssParametrizationTransmitter</a></td><td>constellation of GNSS satellites</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">receiver</div></div></td><td><a href="gnssParametrizationReceiverType.html">gnssParametrizationReceiver</a></td><td>ground station network or LEO satellite</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ionosphere</div></div></td><td><a href="gnssParametrizationIonosphereType.html">gnssParametrizationIonosphere</a></td><td>ionosphere settings</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">earthRotation</div></div></td><td><a href="gnssParametrizationEarthRotationType.html">gnssParametrizationEarthRotation</a></td><td>Earth rotation and EOP estimation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">gravityField</div></div></td><td><a href="gnssParametrizationGravityFieldType.html">gnssParametrizationGravityField</a></td><td>gravity field estimation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ambiguities</div></div></td><td><a href="gnssParametrizationAmbiguitiesType.html">gnssParametrizationAmbiguities</a></td><td>ambiguity resolution settings</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">constraints</div></div></td><td><a href="gnssParametrizationConstraintsType.html">gnssParametrizationConstraints</a></td><td>additional constraints</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">processingStep</div></div></td><td><a href="gnssProcessingStepType.html">gnssProcessingStep</a></td><td>steps are processed consecutively</td></tr>
+</table>
+This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.
+
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,3 @@
+set(SOURCES ${SOURCES}
+external/hwm/hwm14.f90
+)

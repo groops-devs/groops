@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - gridType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="gridType">Grid</h1><p>
+This class generates a set of grid points. In a first step, the grid
+is always generated globally, with <a class="groops-class" href="borderType.html">border</a> a regional
+subset of points can be extracted from the global grid. The parameters
+<strong class="groops-config-element">R</strong> and <strong class="groops-config-element">inverseFlattening</strong> define the shape of the ellipsoid
+on which the grid is generated. In case <strong class="groops-config-element">inverseFlattening</strong> is
+chosen as zero, a sphere is used. With <strong class="groops-config-element">height</strong> the distance of
+the points above the ellipsoid can be defined. In addition to the location
+of the points, weights are assigned to each of the points. These weights
+can be regarded as the surface element associated with each grid point.
+</p>
+
+<h2>Geograph</h2><p>
+The geographical grid is an equal-angular point distribution with points
+located along meridians and along circles of latitude. <strong class="groops-config-element">deltaLambda</strong>
+denotes the angular difference between adjacent points along meridians and
+<strong class="groops-config-element">deltaPhi</strong> describes the angular difference between adjacent points
+along circles of latitude. The point setting results as follows:
+\[
+\lambda_i=\frac{\Delta\lambda}{2}+i\cdot\Delta\lambda\qquad\mbox{with}\qquad 0\leq i< \frac{360^\circ}{\Delta\lambda},
+\]\[
+\varphi_j=-90^\circ+\frac{\Delta\varphi}{2}+j\cdot\Delta\varphi\qquad\mbox{with}\qquad 0\leq j<\frac{180^\circ}{\Delta\varphi}.
+\]The number of grid points can be determined by
+\[
+I=\frac{360^\circ}{\Delta\lambda}\cdot\frac{180^\circ}{\Delta\varphi}.
+\]The weights are calculated according to
+\[
+w_i=\int\limits_{\lambda_i-\frac{\Delta\lambda}{2}}^{\lambda_i+\frac{\Delta\lambda}{2}}\int\limits_{\vartheta_i-\frac{\Delta\vartheta}{2}}^{\vartheta_i+\frac{\Delta\vartheta}{2}}=2\cdot\Delta\lambda\sin(\Delta\vartheta)\sin(\vartheta_i).
+\]</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">deltaLambda</div></div></td><td>angle</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">deltaPhi</div></div></td><td>angle</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">height</div></div></td><td>double</td><td>ellipsoidal height expression (variables 'height', 'L', 'B')</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">R</div></div></td><td>double</td><td>major axsis of the ellipsoid/sphere</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inverseFlattening</div></div></td><td>double</td><td>flattening of the ellipsoid, 0: sphere</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">border</div></div></td><td><a href="borderType.html">border</a></td><td></td></tr>
+</table>
+
+<h2>TriangleVertex</h2><p>
+The zeroth level of densification
+coincides with the 12 icosahedron vertices, as displayed in the upper left part
+of Fig. <a href="fig.html#triangle_grid">fig:triangle_grid</a>. Then, depending on the envisaged densification,
+each triangle edge is divided into $n$ parts, illustrated in the upper right
+part of Fig. <a href="fig.html#triangle_grid">fig:triangle_grid</a>. The new nodes on the edges are then connected
+by arcs of great circles parallel to the triangle edges. The intersections of
+each three corresponding parallel lines become nodes of the densified grid as well.
+As in case of a spherical triangle those three connecting lines do not exactly
+intersect in one point, the center of the resulting triangle is used as location
+for the new node (lower left part of Fig. <a href="fig.html#triangle_grid">fig:triangle_grid</a>). The lower right
+side of Fig. <a href="fig.html#triangle_grid">fig:triangle_grid</a> finally shows the densified triangle vertex
+grid for a level of $n=3$. The number of grid points in dependence of the chosen
+level of densification can be calculated by
+\[\label{eq:numberVertex}
+I=10\cdot(n+1)^2+2.
+\]
+<figure><img class="figure" style="width:60%;" src="../figures/icogrid.png" alt="icogrid"><figcaption class="center">Figure: TriangleVertex grid.</figcaption></figure>
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">level</div></div></td><td>uint</td><td>division of icosahedron, point count = 10*(n+1)**2+2</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">R</div></div></td><td>double</td><td>major axsis of the ellipsoid/sphere</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inverseFlattening</div></div></td><td>double</td><td>flattening of the ellipsoid, 0: sphere</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">border</div></div></td><td><a href="borderType.html">border</a></td><td></td></tr>
+</table>
+
+<h2>TriangleCenter</h2><p>
+The points of the zeroth level are located at the centers of the icosahedron triangles.
+To achieve a finer grid, each of the triangles is divided into four smaller triangles by
+connecting the midpoints of the triangle edges. The refined grid points are again located
+at the center of the triangles. Subsequently, the triangles can be further densified up to
+the desired level of densification $n$, which is defined by <strong class="groops-config-element">level</strong>.</p><p>The number of global grid points for a certain level can be determined by
+\[\label{eq:numberCenter}
+I=20\cdot 4^n.
+\]Thus the quantity of grid points depends exponentially on the level $n$, as with
+every additional level the number of grid points quadruplicates.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">level</div></div></td><td>uint</td><td>division of icosahedron, point count = 5*4**(n+1)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">R</div></div></td><td>double</td><td>major axsis of the ellipsoid/sphere</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inverseFlattening</div></div></td><td>double</td><td>flattening of the ellipsoid, 0: sphere</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">border</div></div></td><td><a href="borderType.html">border</a></td><td></td></tr>
+</table>
+
+<h2>Gauss</h2><p>
+ The grid features equiangular spacing along circles of latitude with
+ <strong class="groops-config-element">parallelsCount</strong> defining the number $L$ of the parallels.
+\[
+\Delta\lambda=\frac{\pi}{L}\qquad\Rightarrow\qquad\lambda_i=\frac{\Delta\lambda}{2}+i\cdot\Delta\lambda\qquad\mbox{with}\qquad 0\leq i< 2L.
+\]Along the meridians the points are located at $L$ parallels at
+the $L$ zeros $\vartheta_j$ of the Legendre polynomial of degree $L$,
+\[
+P_L(\cos\vartheta_j)=0.
+\]Consequently, the number of grid points sums up to
+\[
+I=2\cdot L^2.
+\]The weights can be calculated according to
+\[
+w_i(L)=\Delta\lambda\frac{2}{(1-t_i^2)(P'_{L}(\cos(\vartheta _i)))^2},\label{weights}
+\]</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">parallelsCount</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">R</div></div></td><td>double</td><td>major axsis of the ellipsoid/sphere</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inverseFlattening</div></div></td><td>double</td><td>flattening of the ellipsoid, 0: sphere</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">border</div></div></td><td><a href="borderType.html">border</a></td><td></td></tr>
+</table>
+
+<h2>Reuter</h2><p>
+The Reuter grid features equi-distant spacing along the meridians determined
+by the control parameter $\gamma$ according to
+\[
+\Delta\vartheta=\frac{\pi}{\gamma}\qquad\Rightarrow\vartheta_j=j\Delta\vartheta,\qquad\mbox{with}\qquad 1\leq j\leq \gamma-1.
+\]Thus $\gamma+1$ denotes the number of points per meridian, as the two poles
+are included in the point distribution as well. Along the circles of latitude,
+the number of grid points decreases with increasing latitude in order to achieve
+an evenly distributed point pattern. This number is chosen, so that the points
+along each circle of latitude have the same spherical distance as two adjacent
+latitudes. The resulting relationship is given by
+\[\label{eq:sphericalDistance}
+\Delta\vartheta=\arccos\left( \cos^2\vartheta_j+\sin^2\vartheta_j\cos\Delta\lambda_j\right).
+\]The left hand side of this equation is the spherical distance between adjacent
+latitudes, the right hand side stands for the spherical distance between two points
+with the same polar distance $\vartheta_j$ and a longitudinal difference of
+$\Delta\lambda_i$. This longitudinal distance can be adjusted depending on
+$\vartheta_j$ to fulfill Eq. \eqref{eq:sphericalDistance}. The resulting
+formula for $\Delta\lambda_i$ is
+\[\label{eq:deltaLambdai}
+\Delta\lambda_j=\arccos\left( \frac{\sin\Delta\vartheta -\cos^2\vartheta_j}{\sin^2\vartheta_j}\right).
+\]The number of points $\gamma_j$ for each circle of latitude can then be determined by
+\[\label{eq:gammai}
+\gamma_j=\left[ \frac{2\pi}{\Delta\lambda_j}\right] .
+\]Here the Gauss bracket $[x]$ specifies the largest integer equal to or less than $x$.
+The longitudes are subsequently determined by
+\[
+\lambda_{ij}=\frac{\Delta\lambda_j}{2}+i\cdot(2\pi/\gamma_j),\qquad \mbox{with\qquad}0\leq i< \gamma_j.
+\]The number of grid points can be estimated by
+\[\label{eq:numberReuter}
+I=\leq 2+\frac{4}{\pi}\gamma^2,
+\]The $\leq$ results from the fact that the $\gamma_j$ are restricted to integer values.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">gamma</div></div></td><td>uint</td><td>number of parallels</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">height</div></div></td><td>double</td><td>ellipsoidal height</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">R</div></div></td><td>double</td><td>major axsis of the ellipsoid/sphere</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inverseFlattening</div></div></td><td>double</td><td>flattening of the ellipsoid, 0: sphere</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">border</div></div></td><td><a href="borderType.html">border</a></td><td></td></tr>
+</table>
+
+<h2>Corput</h2><p>
+This kind of grid distributes an arbitrarily chosen number of $I$ points
+(defined by <strong class="groops-config-element">globalPointsCount</strong>) following a recursive, quasi random sequence.
+In longitudinal direction the pattern follows
+\[
+\Delta\lambda=\frac{2\pi}{I}\qquad\Rightarrow\qquad\frac{\Delta\lambda}{2}+\lambda_i=i\cdot\Delta\lambda\qquad\mbox{with}\qquad 1\leq i\leq I.
+\]This implies that every grid point features a unique longitude, with equi-angular
+longitudinal differences.</p><p>The polar distance in the form $t_i=\cos\vartheta_i$ for each point is determined
+by the following recursive sequence:
+<ul>
+
+<li>Starting from an interval $t\in[-1,1]$.
+</li><li>
+If $I=1$, then the midpoint of the interval is returned as result of
+the sequence, and the sequence is terminated.
+</li><li>
+If the number of points is uneven, the  midpoint is included into the list of $t_i$.
+</li><li>
+Subsequently, the interval is bisected into an upper and lower half,
+       and the sequence is called for both halves.
+</li><li>
+$t$ from upper and lower half are alternately sorted into the list of $t_i$.
+</li><li>
+The polar distances are calculated by
+\[
+\vartheta_i=\arccos\, t_i.
+\]</li></ul>
+
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">globalPointsCount</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">height</div></div></td><td>double</td><td>ellipsoidal height</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">R</div></div></td><td>double</td><td>major axsis of the ellipsoid/sphere</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inverseFlattening</div></div></td><td>double</td><td>flattening of the ellipsoid, 0: sphere</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">border</div></div></td><td><a href="borderType.html">border</a></td><td></td></tr>
+</table>
+
+<h2>Driscoll</h2><p>
+The Driscoll-Healy grid, has equiangular spacing along the meridians as well
+as along the circles of latitude. In longitudinal direction (along the parallels),
+these angular differences for a given <strong class="groops-config-element">dimension</strong> $L$ coincide with those
+described for the corresponding geographical grid and Gauss grid. Along the meridians,
+the size of the latitudinal differences is half the size compared to the geographical
+grid. This results in the following point pattern,
+\[
+\begin{split}
+\Delta\lambda=\frac{\pi}{L}\qquad&\Rightarrow\qquad\lambda_i=\frac{\Delta\lambda}{2}+i\cdot\Delta\lambda\qquad&\mbox{with}\qquad 0\leq i< 2L, \\
+\Delta\vartheta=\frac{\pi}{2L}\qquad&\Rightarrow\qquad\vartheta_j=j\cdot\Delta\vartheta\qquad&\mbox{with}\qquad 1\leq j\leq 2L.
+\end{split}
+\]Consequently, the number of grid points is
+\[
+I=4\cdot L^2.
+\]The weights are given by
+\[
+w_i=\Delta\lambda\frac{4}{2L}\sin(\vartheta_i)\sum_{l=0}^{L-1}\frac{\sin\left[ (2l+1)\;\vartheta_i\right] }{2l+1}.
+\]</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">dimension</div></div></td><td>uint</td><td>number of parallels = 2*dimension</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">height</div></div></td><td>double</td><td>ellipsoidal height</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">R</div></div></td><td>double</td><td>major axsis of the ellipsoid/sphere</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inverseFlattening</div></div></td><td>double</td><td>flattening of the ellipsoid, 0: sphere</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">border</div></div></td><td><a href="borderType.html">border</a></td><td></td></tr>
+</table>
+
+<h2>SinglePoint</h2><p>
+Creates one single point.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">L</div></div></td><td>angle</td><td>longitude</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">B</div></div></td><td>angle</td><td>latitude</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">height</div></div></td><td>double</td><td>ellipsoidal height</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">area</div></div></td><td>double</td><td>associated area element on unit sphere</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">R</div></div></td><td>double</td><td>major axsis of the ellipsoid/sphere</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inverseFlattening</div></div></td><td>double</td><td>flattening of the ellipsoid, 0: sphere</td></tr>
+</table>
+
+<h2>SinglePointCartesian</h2><p>
+Creates one single point.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">x</div></div></td><td>double</td><td>[m]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">y</div></div></td><td>double</td><td>[m]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">z</div></div></td><td>double</td><td>[m]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">area</div></div></td><td>double</td><td>associated area element on unit sphere</td></tr>
+</table>
+
+<h2 id="file">File</h2><p>
+In this class grid is read from a file, which is given by <a class="groops-class" href="fileFormat_griddedData.html">inputfileGrid</a>.
+A corresponding file can be generated with <a class="groops-program" href="GriddedDataCreate.html">GriddedDataCreate</a> or with <a class="groops-program" href="Matrix2GriddedData.html">Matrix2GriddedData</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileGrid</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">border</div></div></td><td><a href="borderType.html">border</a></td><td></td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

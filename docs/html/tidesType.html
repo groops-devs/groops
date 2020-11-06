@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - tidesType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="tidesType">Tides</h1><p>
+This class computes functionals of the time depending tide potential,
+e.g potential, acceleration or gravity gradients.</p><p>If several instances of the class are given the results are summed up.
+Before summation every single result is multiplicated by a <strong class="groops-config-element">factor</strong>.
+To get the difference between two ocean tide models you must choose one factor by 1
+and the other by -1. To get the mean of two models just set each factor to 0.5.
+</p>
+
+<h2 id="astronomicalTide">AstronomicalTide</h2><p>
+This class computes the tide generating potential (TGP) of sun, moon
+and planets (Mercury, Venus, Mars, Jupiter, Saturn).
+It takes into account the flattening of the Earth (At the moment only at the acceleration level).</p><p>The computed result is multiplied with <strong class="groops-config-element">factor</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">useMoon</div></div></td><td>boolean</td><td>TGP of moon</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">useSun</div></div></td><td>boolean</td><td>TGP of sun</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">usePlanets</div></div></td><td>boolean</td><td>TGP of planets</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">useEarth</div></div></td><td>boolean</td><td>TGP of Earth</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">c20Earth</div></div></td><td>double</td><td>J2 flattening of the Earth</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+</table>
+
+<h2 id="earthTide">EarthTide</h2><p>
+This class computes the earth tide according to the IERS2003 conventions.
+The values of solid Earth tide external potential Love numbers and
+the frequency dependent corrections of these values are given in the file
+<a class="groops-class" href="fileFormat_earthTide.html">inputfileEarthtide</a>. The effect of the permanent tide is removed if
+<strong class="groops-config-element">includePermanentTide</strong> is set to false.</p><p>The computed result is multiplied with <strong class="groops-config-element">factor</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileEarthtide</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">includePermanentTide</div></div></td><td>boolean</td><td>results in FALSE: zero tide, TRUE: tide free gravity field</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+</table>
+
+<h2 id="poleTide">PoleTide</h2><p>
+The potential coefficients of the solid Earth pole tide according to the
+IERS2003 conventions are given by
+\[
+\begin{split}
+\Delta c_{21} &= s\cdot(m_1 + o\cdot m_2), \\
+\Delta s_{21} &= s\cdot(m_2 - o\cdot m_1),
+\end{split}
+\]with $s$ is the <strong class="groops-config-element">scale</strong>, $o$ is the <strong class="groops-config-element">outPhase</strong> and
+$(m_1,m_2)$ are the wobble variables in seconds of arc.
+They are related to the polar motion variables $(x_p,y_p)$ according to
+\[
+\begin{split}
+m_1 &=  (x_p - \bar{x}_p), \\
+m_2 &= -(y_p - \bar{y}_p),
+\end{split}
+\]The mean pole $(\bar{x}_p, \bar{y}_p)$ is approximated by a polynomial
+read from <a class="groops-class" href="fileFormat_meanPolarMotion.html">inputfileMeanPole</a>.</p><p>The displacment is calculated with
+\[
+\begin{split}
+S_r          &= -v\sin2\vartheta(m_1\cos\lambda+m_2\sin\lambda),\\
+S_\vartheta &= -h\cos2\vartheta(m_1\cos\lambda+m_2\sin\lambda),\\
+S_\lambda   &=  h\cos\vartheta(m_1\sin\lambda-m_2\cos\lambda),
+\end{split}
+\]where $h$ is the <strong class="groops-config-element">horizontalDisplacement</strong>
+and $v$ is the <strong class="groops-config-element">verticalDisplacement</strong>.</p><p>The computed result is multiplied with <strong class="groops-config-element">factor</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">scale</div></div></td><td>double</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outPhase</div></div></td><td>double</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileMeanPole</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">horizontalDisplacement</div></div></td><td>double</td><td>[m]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">verticalDisplacement</div></div></td><td>double</td><td>[m]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+</table>
+
+<h2 id="oceanPoleTide">OceanPoleTide</h2><p>
+The ocean pole tide is generated by the centrifugal effect of polar motion on the oceans.
+The potential coefficients of this effect is given by
+IERS2003 conventions are given by
+\[
+\begin{Bmatrix}
+\Delta c_{nm}  \\
+\Delta s_{nm}
+\end{Bmatrix}=
+\begin{Bmatrix}
+c_{nm}^R  \\
+s_{nm}^R
+\end{Bmatrix}
+(m_1\gamma^R+m_2\gamma^I)+
+\begin{Bmatrix}
+c_{nm}^I  \\
+s_{nm}^I
+\end{Bmatrix}
+(m_2\gamma^R-m_1\gamma^I)
+\]where the coefficients are read from file <a class="groops-class" href="fileFormat_oceanPoleTide.html">inputfileOceanPole</a>,
+$\gamma=\gamma^R+i\gamma^I$ is given by <strong class="groops-config-element">gammaReal</strong> and
+<strong class="groops-config-element">gammaImaginary</strong> and $(m_1,m_2)$ are the wobble variables in radians.
+They are related to the polar motion variables $(x_p,y_p)$ according to
+\[
+\begin{split}
+m_1 &=  (x_p - \bar{x}_p), \\
+m_2 &= -(y_p - \bar{y}_p),
+\end{split}
+\]The mean pole $(\bar{x}_p, \bar{y}_p)$ is approximated by a polynomial
+read from <a class="groops-class" href="fileFormat_meanPolarMotion.html">inputfileMeanPole</a>.</p><p>The computed result is multiplied with <strong class="groops-config-element">factor</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOceanPole</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">gammaReal</div></div></td><td>double</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">gammaImaginary</div></div></td><td>double</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileMeanPole</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+</table>
+
+<h2 id="doodsonHarmonicTide">DoodsonHarmonicTide</h2><p>
+The time variable potential of ocean tides is given by a fourier expansion
+\[
+V(\M x,t) = \sum_{f} V_f^c(\M x)\cos(\Theta_f(t)) + V_f^s(\M x)\sin(\Theta_f(t)),
+\]where $V_f^c(\M x)$ and $V_f^s(\M x)$ are spherical harmonics expansions and are
+read from the file <a class="groops-class" href="fileFormat_doodsonHarmonic.html">inputfileDoodsonHarmonic</a>.
+If set the expansion is limited in the range between <strong class="groops-config-element">minDegree</strong>
+and <strong class="groops-config-element">maxDegree</strong> inclusivly.
+$\Theta_f(t)$ are the arguments of the tide constituents $f$:
+\[
+\Theta_f(t) = \sum_{i=1}^6 n_f^i\beta_i(t),
+\]where $\beta_i(t)$ are the Doodson's fundamental arguments ($\tau,s,h,p,N',p_s$)
+and $n_f^i$ are the Doodson multipliers for the term at frequency $f$.</p><p>The major constituents given by <a class="groops-class" href="fileFormat_doodsonHarmonic.html">inputfileDoodsonHarmonic</a> can be used to
+interpolate minor tidal constituents using the file <a class="groops-class" href="fileFormat_admittance.html">inputfileAdmittance</a>.
+This file can be created with <a class="groops-program" href="DoodsonHarmonicsCalculateAdmittance.html">DoodsonHarmonicsCalculateAdmittance</a>.</p><p>After the interpolation step a selection of the computed constituents can be
+choosen by <a class="groops-class" href="doodson.html">selectDoodson</a>. Only these constiuents are considered for the results.
+If no <a class="groops-class" href="doodson.html">selectDoodson</a> is set all constituents will be used. The constituents can
+be coded as Doodson number (e.g. 255.555) or as names intoduced by Darwin (e.g. M2).</p><p>The computed result is multiplied with <strong class="groops-config-element">factor</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTides</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileAdmittance</div></div></td><td>filename</td><td>interpolation of minor constituents</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">selectDoodson</div></div></td><td><a href="doodson.html">doodson</a></td><td>consider only these constituents, code number (e.g. 255.555) or darwin name (e.g. M2)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxDegree</div></div></td><td>uint</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">nodeCorr</div></div></td><td>uint</td><td>nodal corrections: 0-no corr, 1-IHO, 2-Schureman</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+</table>
+
+<h2 id="centrifugal">Centrifugal</h2><p>
+Computes the centrifugal potential in a rotating system
+\[
+V(\M r, t) = \frac{1}{2} (\M\omega(t)\times\M r)^2.
+\]The current rotation vector $\M\omega(t)$ is computed from the
+<a class="groops-class" href="earthRotationType.html">earthRotation</a>
+provided by the calling program.
+The computed result is multiplied with <strong class="groops-config-element">factor</strong>.</p><p>Be careful, the centrifugal potential is not harmonic.
+Convolution with a harmonic kernel (e.g. to compute gravity
+anomalies) is not meaningful.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+</table>
+
+<h2>SolidMoonTide</h2><p>
+This class computes the solid moon tide according to the IERS2010 conventions.
+The values of solid Moon tide external potential Love numbers are given and
+there are no frequency dependent corrections of these values.
+The computed result is multiplied with <strong class="groops-config-element">factor</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">k20</div></div></td><td>double</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">k30</div></div></td><td>double</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

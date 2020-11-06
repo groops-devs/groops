@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - doodson</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="doodson">Doodson</h1><p>
+This is a string which describes a tidal frequency either coded as Doodson number
+or using Darwin´s name, e.g. <code>255.555</code> or <code>M2</code>.</p><p>The following names are defined:
+<ul>
+
+<li><code>055.565</code>: <code>om1</code>  </li><li>
+<code>055.575</code>: <code>om2</code>     </li><li>
+<code>056.554</code>: <code>sa</code>
+</li><li>
+<code>056.555</code>: <code>sa</code>   </li><li>
+<code>057.555</code>: <code>ssa</code>     </li><li>
+<code>058.554</code>: <code>sta</code>
+</li><li>
+<code>063.655</code>: <code>msm</code>  </li><li>
+<code>065.455</code>: <code>mm</code>      </li><li>
+<code>073.555</code>: <code>msf</code>
+</li><li>
+<code>075.555</code>: <code>mf</code>   </li><li>
+<code>083.655</code>: <code>mstm</code>    </li><li>
+<code>085.455</code>: <code>mtm</code>
+</li><li>
+<code>093.555</code>: <code>msq</code>  </li><li>
+<code>093.555</code>: <code>msqm</code>    </li><li>
+<code>125.755</code>: <code>2q1</code>
+</li><li>
+<code>127.555</code>: <code>sig1</code> </li><li>
+<code>127.555</code>: <code>sigma1</code>  </li><li>
+<code>135.655</code>: <code>q1</code>
+</li><li>
+<code>137.455</code>: <code>ro1</code>  </li><li>
+<code>137.455</code>: <code>rho1</code>    </li><li>
+<code>145.555</code>: <code>o1</code>
+</li><li>
+<code>147.555</code>: <code>tau1</code> </li><li>
+<code>155.655</code>: <code>m1</code>      </li><li>
+<code>157.455</code>: <code>chi1</code>
+</li><li>
+<code>162.556</code>: <code>pi1</code>  </li><li>
+<code>163.555</code>: <code>p1</code>      </li><li>
+<code>164.555</code>: <code>s1</code>
+</li><li>
+<code>165.555</code>: <code>k1</code>   </li><li>
+<code>166.554</code>: <code>psi1</code>    </li><li>
+<code>167.555</code>: <code>fi1</code>
+</li><li>
+<code>167.555</code>: <code>phi1</code> </li><li>
+<code>173.655</code>: <code>the1</code>    </li><li>
+<code>173.655</code>: <code>theta1</code>
+</li><li>
+<code>175.455</code>: <code>j1</code>   </li><li>
+<code>183.555</code>: <code>so1</code>     </li><li>
+<code>185.555</code>: <code>oo1</code>
+</li><li>
+<code>195.455</code>: <code>v1</code>   </li><li>
+<code>225.855</code>: <code>3n2</code>     </li><li>
+<code>227.655</code>: <code>eps2</code>
+</li><li>
+<code>235.755</code>: <code>2n2</code>  </li><li>
+<code>237.555</code>: <code>mu2</code>     </li><li>
+<code>237.555</code>: <code>mi2</code>
+</li><li>
+<code>245.655</code>: <code>n2</code>   </li><li>
+<code>247.455</code>: <code>nu2</code>     </li><li>
+<code>247.455</code>: <code>ni2</code>
+</li><li>
+<code>253.755</code>: <code>gam2</code> </li><li>
+<code>254.556</code>: <code>alf2</code>    </li><li>
+<code>255.555</code>: <code>m2</code>
+</li><li>
+<code>256.554</code>: <code>bet2</code> </li><li>
+<code>257.555</code>: <code>dlt2</code>    </li><li>
+<code>263.655</code>: <code>la2</code>
+</li><li>
+<code>263.655</code>: <code>lmb2</code> </li><li>
+<code>263.655</code>: <code>lambda2</code> </li><li>
+<code>265.455</code>: <code>l2</code>
+</li><li>
+<code>271.557</code>: <code>2t2</code>  </li><li>
+<code>272.556</code>: <code>t2</code>      </li><li>
+<code>273.555</code>: <code>s2</code>
+</li><li>
+<code>274.554</code>: <code>r2</code>   </li><li>
+<code>275.555</code>: <code>k2</code>      </li><li>
+<code>283.655</code>: <code>ksi2</code>
+</li><li>
+<code>285.455</code>: <code>eta2</code> </li><li>
+<code>355.555</code>: <code>m3</code>      </li><li>
+<code>381.555</code>: <code>t3</code>
+</li><li>
+<code>382.555</code>: <code>s3</code>   </li><li>
+<code>383.555</code>: <code>r3</code>      </li><li>
+<code>435.755</code>: <code>n4</code>
+</li><li>
+<code>445.655</code>: <code>mn4</code>  </li><li>
+<code>455.555</code>: <code>m4</code>      </li><li>
+<code>473.555</code>: <code>ms4</code>
+</li><li>
+<code>491.555</code>: <code>s4</code>   </li><li>
+<code>655.555</code>: <code>m6</code>      </li><li>
+<code>855.555</code>: <code>m8</code>
+</li></ul>
+
+</p>
+
+        </div>
+    </main>
+</body>
+</html>

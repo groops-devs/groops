@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - Classes</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>Classes</h1>
+<p>This reference manual details classes included in GROOPS, describing what they are and what they do.
+      For usage examples see the cookbook in the <a href="index.html">documentation overview</a>.</p>
+<p><ul>
+<li><a href="autoregressiveModelSequenceType.html">autoregressiveModelSequence</a></li>
+<li><a href="borderType.html">border</a></li>
+<li><a href="conditionType.html">condition</a></li>
+<li><a href="covariancePodType.html">covariancePod</a></li>
+<li><a href="covarianceSstType.html">covarianceSst</a></li>
+<li><a href="digitalFilterType.html">digitalFilter</a></li>
+<li><a href="doodson.html">doodson</a></li>
+<li><a href="earthRotationType.html">earthRotation</a></li>
+<li><a href="eclipseType.html">eclipse</a></li>
+<li><a href="ephemeridesType.html">ephemerides</a></li>
+<li><a href="forcesType.html">forces</a></li>
+<li><a href="gnssAntennaDefintionListType.html">gnssAntennaDefintionList</a></li>
+<li><a href="gnssParametrizationAmbiguitiesType.html">gnssParametrizationAmbiguities</a></li>
+<li><a href="gnssParametrizationAntennaType.html">gnssParametrizationAntenna</a></li>
+<li><a href="gnssParametrizationConstraintsType.html">gnssParametrizationConstraints</a></li>
+<li><a href="gnssParametrizationEarthRotationType.html">gnssParametrizationEarthRotation</a></li>
+<li><a href="gnssParametrizationGravityFieldType.html">gnssParametrizationGravityField</a></li>
+<li><a href="gnssParametrizationIonosphereType.html">gnssParametrizationIonosphere</a></li>
+<li><a href="gnssParametrizationReceiverType.html">gnssParametrizationReceiver</a></li>
+<li><a href="gnssParametrizationTransmitterType.html">gnssParametrizationTransmitter</a></li>
+<li><a href="gnssProcessingStepType.html">gnssProcessingStep</a></li>
+<li><a href="gnssType.html">gnssType</a></li>
+<li><a href="gravityfieldType.html">gravityfield</a></li>
+<li><a href="gridType.html">grid</a></li>
+<li><a href="instrumentTypeType.html">instrumentType</a></li>
+<li><a href="kernelType.html">kernel</a></li>
+<li><a href="loopType.html">loop</a></li>
+<li><a href="magnetosphereType.html">magnetosphere</a></li>
+<li><a href="matrixGeneratorType.html">matrixGenerator</a></li>
+<li><a href="miscAccelerationsType.html">miscAccelerations</a></li>
+<li><a href="noiseGeneratorType.html">noiseGenerator</a></li>
+<li><a href="normalEquationType.html">normalEquation</a></li>
+<li><a href="observationType.html">observation</a></li>
+<li><a href="orbitPropagatorType.html">orbitPropagator</a></li>
+<li><a href="parameterNamesType.html">parameterNames</a></li>
+<li><a href="parameterSelectorType.html">parameterSelector</a></li>
+<li><a href="parametrizationAccelerationType.html">parametrizationAcceleration</a></li>
+<li><a href="parametrizationGnssAntennaType.html">parametrizationGnssAntenna</a></li>
+<li><a href="parametrizationGravityType.html">parametrizationGravity</a></li>
+<li><a href="parametrizationSatelliteTrackingType.html">parametrizationSatelliteTracking</a></li>
+<li><a href="parametrizationTemporalType.html">parametrizationTemporal</a></li>
+<li><a href="planetType.html">planet</a></li>
+<li><a href="plotAxisType.html">plotAxis</a></li>
+<li><a href="plotColorType.html">plotColor</a></li>
+<li><a href="plotColorbarType.html">plotColorbar</a></li>
+<li><a href="plotGraphLayerType.html">plotGraphLayer</a></li>
+<li><a href="plotLegendType.html">plotLegend</a></li>
+<li><a href="plotLineType.html">plotLine</a></li>
+<li><a href="plotMapLayerType.html">plotMapLayer</a></li>
+<li><a href="plotMapProjectionType.html">plotMapProjection</a></li>
+<li><a href="plotSymbolType.html">plotSymbol</a></li>
+<li><a href="podRightSideType.html">podRightSide</a></li>
+<li><a href="sggRightSideType.html">sggRightSide</a></li>
+<li><a href="sphericalHarmonicsFilterType.html">sphericalHarmonicsFilter</a></li>
+<li><a href="sphericalHarmonicsNumberingType.html">sphericalHarmonicsNumbering</a></li>
+<li><a href="sstRightSideType.html">sstRightSide</a></li>
+<li><a href="thermosphereType.html">thermosphere</a></li>
+<li><a href="tidesType.html">tides</a></li>
+<li><a href="timeSeriesType.html">timeSeries</a></li>
+<li><a href="troposphereType.html">troposphere</a></li>
+</ul></p>
+
+        </div>
+    </main>
+</body>
+</html>

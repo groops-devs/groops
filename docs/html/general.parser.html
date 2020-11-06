@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - Parser</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1 id="general.parser">Parsers and variables</h1><p>
+The XML configuration input is evaluated by two parsers. In a first step a text parser is applied.
+In the second step mathematical expressions are resolved to a number. Basic data types in the
+global section serve as input variables for the parsers.</p><p><h2 id="expression">Mathematical expression parser</h2><p>
+In all input fields that accept numbers (int, uint, double, angle, time) numerical
+expressions are also allowed. Values from the global section can be used as variables. The following
+operations are defined:
+<ul>
+
+<li>Constants:    <code>pi</code>, <code>rho=180/pi</code>, <code>nan</code>
+</li><li>
+Mathematical: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>^</code>
+</li><li>
+Comparison:   <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>></code>, <code>>=</code>, result is 1 or 0
+</li><li>
+Logical:      not <code>!</code>, and <code>&&</code>, <code>||</code>, or <code>isnan()</code>, result is 1 or 0
+</li><li>
+Functions:    <code>sqrt()</code>, <code>exp()</code>,
+                    <code>sin()</code>,  <code>cos()</code>, <code>tan()</code>,
+                    <code>asin()</code>,  <code>acos()</code>,  <code>atan()</code>,
+                    <code>abs()</code>,  <code>round()</code>,  <code>ceil()</code>,  <code>floor()</code>,
+</li><li>
+Functions with 2 arguments: <code>atan2(,)</code>, <code>min(,)</code>, <code>max(,)</code>, <code>mod(,)</code>
+</li><li>
+Functions with 3 arguments: <code>date2mjd(year, month, day)</code>
+</li><li>
+Condition: <code>if(,,)</code>: If the first argument is true (not 0), the second argument is evalutated, otherwise the third.
+</li></ul>
+</p><p>
+<h2 id="text">Text parser</h2><p>
+Before the mathematical expression parser evaluates the expression, a simple text parser is applied.
+The text parser is used for all input fields (also file names). It scans the text for terms like
+<code>{variable}</code> and replaces it by the text content of the <code>variable</code> defined in the global section.</p><p>The text parser also evaluates terms in the form <code>{expression:format}</code> and replaces it by a formated
+output. The <code>format</code> contains the text to be written as output.
+It can contain embedded format specifiers that are replaced by the value of the expression
+and formated as requested (also multiple times). In the following, the resulting formated output is given in the
+brackets for an expression with the example value of 57493.8:
+<ul>
+
+<li><code>%i</code>: Integer [57494]
+</li><li>
+<code>%f</code>: Decimal floating point [57493.800000]
+</li><li>
+<code>%e</code>: Scientific notation [5.749380e+04]
+</li><li>
+<code>%g</code>: Use the shortest representation: <code>%e</code> or <code>%f</code> [57493.8]
+</li><li>
+<code>%c</code>: Interpret number as ASCII character
+</li><li>
+<code>%%</code>: Write a single literal <code>%</code> character
+</li></ul>
+
+The following specifiers interpret the value of the expression as MJD (modified Julian date):
+<ul>
+
+<li><code>%y</code>: Four digit year [2016]
+</li><li>
+<code>%Y</code>: Two digit year [16]
+</li><li>
+<code>%m</code>: Month [04]
+</li><li>
+<code>%d</code>: Day of month [15]
+</li><li>
+<code>%H</code>: Hour [19]
+</li><li>
+<code>%M</code>: Minute [12]
+</li><li>
+<code>%S</code>: Second [00]
+</li><li>
+<code>%D</code>: Date (same as <code>%y-%m-%d</code>) [2016-04-15]
+</li><li>
+<code>%T</code>: Time (same as <code>%H-%M-%S</code>) [19-12-00]
+</li><li>
+<code>%W</code>: GPS week [1892]
+</li><li>
+<code>%w</code>: Day of GPS week (0..6) [5]
+</li><li>
+<code>%O</code>: Day of year (1..366)
+</li></ul>
+
+The format can be specified further with <code>%[width][.precision]specifier</code>,
+where <code>[width]</code> is the minimum number of characters to be printed.
+If the value to be printed is shorter than this number, the result is padded with blank spaces
+(or zeros if <code>[width]</code> starts with a zero).
+The <code>[.precision]</code> defines the number of digits after the period (for <code>%g</code> the number of
+significant digits instead).</p><p>Example:
+Two variables <strong class="groops-config-element">time</strong>=<code>57493+19/24+12/1440</code> and <strong class="groops-config-element">satellite</strong>=<code>swarm</code> are
+set in the global section. The <strong class="groops-config-element">inputfile</strong>=<code>data/{time:%y}/{satellite}_{time:%D}.dat</code>
+is expanded to <code>"data/2016/swarm_2016-04-15.dat"</code>.</p><p>Example:
+The variable <strong class="groops-config-element">x</strong>=<code>3+5</code> is set in the global section.
+The expression <strong class="groops-config-element">number</strong>=<code>2*x</code> is evaluated by the expression parser to <code>=16</code>.
+In contrast if we use brackets like in <strong class="groops-config-element">number</strong>=<code>2*{x}</code> the expression is first evaluated
+by the text parser to <code>"2*3+5"</code> and the expression parser now gives the result <code>=11</code>.</p><p>
+<h2 id="dataVariables">Variables for data</h2><p>
+Some programs (e.g. <a class="groops-program" href="FunctionsCalculate.html">FunctionsCalculate</a>, <a class="groops-program" href="InstrumentArcCalculate.html">InstrumentArcCalculate</a>,
+<a class="groops-program" href="GriddedDataCalculate.html">GriddedDataCalculate</a>, or the plot programs)
+read data (<a class="groops-file" href="fileFormat_matrix.html">matrix</a>) or <a class="groops-file" href="fileFormat_griddedData.html">gridded data</a>
+and evaluate input/output expressions for each data row.
+For these kind of expressions additional variables are automatically defined for each data column
+(<code>X</code> stands for the data column number: $0\ldots n$):
+<ul>
+
+<li><code>index</code>: the row number, starting with zero
+</li><li>
+<code>dataX</code>: the value itself
+</li><li>
+<code>dataXcount</code>: number of rows
+</li><li>
+<code>dataXmin</code>
+</li><li>
+<code>dataXmax</code>
+</li><li>
+<code>dataXrms</code>: root mean square
+</li><li>
+<code>dataXstd</code>: standard deviation
+</li><li>
+<code>dataXmedian</code>
+</li><li>
+<code>dataXmad</code>: median absolute deviation
+</li><li>
+<code>dataXstep</code>: the minimal difference between two neighboring data points in the column
+</li></ul>
+
+For <a class="groops-file" href="fileFormat_griddedData.html">gridded data</a> input the following variables are additionally defined for each data point:
+<ul>
+
+<li><code>longitude</code> in degrees
+</li><li>
+<code>latitude</code> in degrees
+</li><li>
+<code>height</code> in meters
+</li><li>
+<code>cartesianX</code> coordinate in meters
+</li><li>
+<code>cartesianY</code> coordinate in meters
+</li><li>
+<code>cartesianZ</code> coordinate in meters
+</li><li>
+<code>area</code> of the unit sphere
+</li><li>
+<code>dataXwmean</code>: area-weighted mean
+</li><li>
+<code>dataXwrms</code>: area-weighted root mean square
+</li><li>
+<code>dataXwstd</code>: area-weighted standard deviation
+</li></ul>
+</p><p></p>
+
+</p>
+
+        </div>
+    </main>
+</body>
+</html>
