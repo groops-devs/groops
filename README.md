@@ -35,7 +35,7 @@ After a successful installation our [Documentation](https://groops-devs.github.i
 is the perfect way to get familiar with the different features of GROOPS.
 
 GROOPS depends on a few data files such as Earth rotation, Love numbers, and wavelet coefficients.
-You can download an initial set that is regularly updated from [our FTP server](ftp://ftp.tugraz.at/outgoing/ITSG/groops/data/).
+You can download an initial set that is regularly updated from [our FTP server](https://ftp.tugraz.at/outgoing/ITSG/groops/data/).
 
 ## Releases and Contributing
 
