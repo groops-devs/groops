@@ -1752,7 +1752,7 @@ void Tree::mouseMoveEvent(QMouseEvent *event)
     }
 
     // is position not over an item?
-    TreeItem *item = dynamic_cast<TreeItem*>(itemAt(event->pos()));
+    TreeItem *item = dynamic_cast<TreeItem*>(itemAt(dragStartPosition));
     if(!item)
     {
       QTreeWidget::mouseMoveEvent(event);  // the orginal event handler
