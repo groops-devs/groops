@@ -9407,6 +9407,7 @@
 			<xs:appinfo>rename: ArcSynchronize = InstrumentSynchronize</xs:appinfo>
 			<xs:appinfo>rename: SimulateLocalLevelFrame = LocalLevelFrame2StarCamera</xs:appinfo>
 			<xs:appinfo>rename: KernelComputeCoefficients = Kernel2Coefficients</xs:appinfo>
+			<xs:appinfo>rename: KernelDegreeVariances = RadialBasisSplines2KernelCoefficients</xs:appinfo>
 			<xs:appinfo>rename: InstrumentCreateTimeSeries = TimeSeriesCreate</xs:appinfo>
 			<xs:appinfo>rename: NormalsParameterSelection2IndexVector = ParameterSelection2IndexVector</xs:appinfo>
 			<xs:appinfo>rename: InstrumentOrbit2ArgumentOfLatitude = Orbit2ArgumentOfLatitude</xs:appinfo>
@@ -14820,44 +14821,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="KernelDegreeVariances">
-				<xs:annotation>
-					<xs:documentation>Kernel/Covariance-function from gravity field accuracies, if not given from signal (cnm,snm), if not given from kaulas rule</xs:documentation>
-					<xs:appinfo>tag: Misc</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileCoefficients" type="filename"/>
-						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>use sigmas, if not given use signal (cnm,snm), if not given use kaulas rule</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="minDegree" type="uint" default="2"/>
-						<xs:element name="maxDegree" type="uint" minOccurs="0"/>
-						<xs:element name="GM" type="double" minOccurs="0" default="3.986004415e+14">
-							<xs:annotation>
-								<xs:documentation>Geocentric gravitational constant</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="R" type="double" minOccurs="0" default="6378136.3">
-							<xs:annotation>
-								<xs:documentation>reference radius</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="kaulaPower" type="double" minOccurs="0" default="2">
-							<xs:annotation>
-								<xs:documentation>sigma = kaulaFactor/degree^kaulaPower</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="kaulaFactor" type="double" minOccurs="0" default="1e-5">
-							<xs:annotation>
-								<xs:documentation>sigma = kaulaFactor/degree^kaulaPower</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="KernelEvaluate">
 				<xs:annotation>
 					<xs:documentation>Compute kernel values for distant angles</xs:documentation>
@@ -15024,6 +14987,44 @@
 						<xs:element name="R" type="double" minOccurs="0" default="6378136.3">
 							<xs:annotation>
 								<xs:documentation>reference radius</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="RadialBasisSplines2KernelCoefficients">
+				<xs:annotation>
+					<xs:documentation>Kernel/Covariance-function from gravity field accuracies, if not given from signal (cnm,snm), if not given from kaulas rule</xs:documentation>
+					<xs:appinfo>tag: Misc</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileCoefficients" type="filename"/>
+						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>use sigmas, if not given use signal (cnm,snm), if not given use kaulas rule</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="minDegree" type="uint" default="2"/>
+						<xs:element name="maxDegree" type="uint" minOccurs="0"/>
+						<xs:element name="GM" type="double" minOccurs="0" default="3.986004415e+14">
+							<xs:annotation>
+								<xs:documentation>Geocentric gravitational constant</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="R" type="double" minOccurs="0" default="6378136.3">
+							<xs:annotation>
+								<xs:documentation>reference radius</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="kaulaPower" type="double" minOccurs="0" default="2">
+							<xs:annotation>
+								<xs:documentation>sigma = kaulaFactor/degree^kaulaPower</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="kaulaFactor" type="double" minOccurs="0" default="1e-5">
+							<xs:annotation>
+								<xs:documentation>sigma = kaulaFactor/degree^kaulaPower</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>

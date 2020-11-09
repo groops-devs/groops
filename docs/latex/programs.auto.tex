@@ -4307,40 +4307,6 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
-\subsection{KernelDegreeVariances}\label{KernelDegreeVariances}
-This program calculates the coefficients $k_n$ of a \configClass{kernel:coefficients}{kernelType:coefficients} according to
-\begin{equation}
-  k_n = \frac{GM}{4\pi R}\frac{\sigma_n}{\sqrt{2n+1}}.
-\end{equation}
-from a given \configClass{gravityfield}{gravityfieldType},
-with \config{R} and \config{GM} describing the reference radius and the geocentric constant, respectively.
-The $\sigma_n$
-stand for the gravity field accuracies (from degree \config{minDegree} to \config{maxDegree}), if they are given.
-If no accuracies are provided, the $\sigma_n$
-represent the square root of the degree variances of the gravity field.
-If \config{maxDegree} excedes the maximum degree given by \configClass{gravityfield}{gravityfieldType},
-the higher degrees are complemented by Kaula's rule
-The output of the coefficients is given in the file  \configFile{outputfileCoefficients}{matrix}.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileCoefficients & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt use sigmas, if not given use signal (cnm,snm), if not given use kaulas rule\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~kaulaPower & \hfuzz=500pt double & \hfuzz=500pt sigma = kaulaFactor/degree\textasciicircum{}kaulaPower\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~kaulaFactor & \hfuzz=500pt double & \hfuzz=500pt sigma = kaulaFactor/degree\textasciicircum{}kaulaPower\\
-\hline
-\end{tabularx}
-
-\clearpage
-%==================================
 \subsection{KernelEvaluate}\label{KernelEvaluate}
 Compute \configClass{kernel}{kernelType} values for distant angles.
 The main purpose is for visualization with \program{PlotGraph}.
@@ -4464,6 +4430,40 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{RadialBasisSplines2KernelCoefficients}\label{RadialBasisSplines2KernelCoefficients}
+This program calculates the coefficients $k_n$ of a \configClass{kernel:coefficients}{kernelType:coefficients} according to
+\begin{equation}
+  k_n = \frac{GM}{4\pi R}\frac{\sigma_n}{\sqrt{2n+1}}.
+\end{equation}
+from a given \configClass{gravityfield}{gravityfieldType},
+with \config{R} and \config{GM} describing the reference radius and the geocentric constant, respectively.
+The $\sigma_n$
+stand for the gravity field accuracies (from degree \config{minDegree} to \config{maxDegree}), if they are given.
+If no accuracies are provided, the $\sigma_n$
+represent the square root of the degree variances of the gravity field.
+If \config{maxDegree} excedes the maximum degree given by \configClass{gravityfield}{gravityfieldType},
+the higher degrees are complemented by Kaula's rule
+The output of the coefficients is given in the file  \configFile{outputfileCoefficients}{matrix}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileCoefficients & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt use sigmas, if not given use signal (cnm,snm), if not given use kaulas rule\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~kaulaPower & \hfuzz=500pt double & \hfuzz=500pt sigma = kaulaFactor/degree\textasciicircum{}kaulaPower\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~kaulaFactor & \hfuzz=500pt double & \hfuzz=500pt sigma = kaulaFactor/degree\textasciicircum{}kaulaPower\\
 \hline
 \end{tabularx}
 
