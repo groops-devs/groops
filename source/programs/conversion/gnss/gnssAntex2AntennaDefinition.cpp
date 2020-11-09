@@ -133,7 +133,7 @@ void GnssAntex2AntennaDefinition::run(Config &config)
       UInt azimutCount = 0;
       Double dazi = String::toDouble(line.substr(2, 6));
       if(dazi!=0)
-        azimutCount = static_cast<UInt>(360./dazi)+1;
+        azimutCount = static_cast<UInt>(360./dazi);
       getLine(file, line, label);
 
       testLabel(label, "ZEN1 / ZEN2 / DZEN");
@@ -251,12 +251,13 @@ void GnssAntex2AntennaDefinition::run(Config &config)
 
         // Azimut dependent values
         getLine(file, line, label);
-        for(UInt z=0; z<azimutCount; z++)
-        {
-          for(UInt s=0; s<zenCount; s++)
-            if(!setZero) antenna->pattern.at(i).pattern(z,s) = 1e-3 * String::toDouble(line.substr(8+8*s, 8));
-          getLine(file, line, label);
-        }
+        if(azimutCount)
+          for(UInt z=0; z<azimutCount+1; z++)
+          {
+            for(UInt s=0; s<zenCount; s++)
+              if(!setZero) antenna->pattern.at(i).pattern(z%azimutCount,s) = 1e-3 * String::toDouble(line.substr(8+8*s, 8));
+            getLine(file, line, label);
+          }
 
         testLabel(label, "END OF FREQUENCY");
         getLine(file, line, label);
