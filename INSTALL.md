@@ -51,7 +51,7 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
 
 1. Download the MSYS2 installer and follow the [installation guide](https://www.msys2.org/#installation).
 
-2. Close and reopen the MSYS2 64-bit terminal through the `Start Menu > MSYS2 MinGW 64-bit`.
+2. **Important**: Before closing the installer uncheck *Run MSYS2 64bit now* and click *Finish*. Then start the **MSYS2 MinGW 64-bit** terminal through `Start Menu > MSYS2 MinGW 64-bit`.
 
 3. Install compilers, cmake, expat, OpenBLAS, and LAPACK:
     ```
