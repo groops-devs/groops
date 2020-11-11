@@ -315,7 +315,6 @@ void PlotBasics::read(Config &config, const std::string &nameProgram_, const Fil
       readConfig(config, "transparent",    transparent,    Config::DEFAULT,  "1",   "make background transparent");
       readConfig(config, "dpi",            dpi,            Config::DEFAULT,  "300", "use this resolution when rasterizing postscript file");
       readConfig(config, "removeFiles",    removeFiles,    Config::DEFAULT,  "1",   "remove .gmt and script files");
-      readConfig(config, "viewPlot",       view,           Config::DEFAULT,  "0",   "starts a viewer");
       endSequence(config);
     }
     if(isCreateSchema(config))
@@ -436,9 +435,6 @@ Bool PlotBasics::runScript() const
 #endif
     ss<<fileNameScript().stripDirectory();
     System::exec(ss.str());
-
-    if(view)
-      System::exec("xdg-open "+fileNamePlot.str());
 
     if(removeFiles)
       System::remove(fileNameScript().directory());

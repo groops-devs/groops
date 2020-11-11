@@ -174,7 +174,6 @@ public:
   Bool        transparent;
   UInt        dpi;
   Bool        removeFiles;
-  Bool        view;
   std::string optionsString;
 
   void read(Config &config, const std::string &nameProgram_, const FileName &fileNamePlot_, const std::string &title_,
