@@ -84,13 +84,17 @@ void SettingsCommandDialog::readCommandList(QSettings *settings, QStringList &la
     labelList    = settings->value("execute/commandLabels").toStringList();
     commandList  = settings->value("execute/commands").toStringList();
     if(labelList.size() != commandList.size())
-      throw(Exception("size mismatch"));
+      throw(Exception("size mismatch between command labels and commands"));
     if(labelList.isEmpty())
     {
       labelList<<"groops (Windows)"<<"groops (KDE)"<<"groops (GNOME)";
+      labelList<<"groopsMpi (Windows, 4 processes)"<<"groopsMpi (KDE, 4 processes)"<<"groopsMpi (GNOME, 4 processes)";
       commandList<<"cd /d %w && groops.exe %f";
       commandList<<"konsole --workdir %w -e bash -ic \"groops %f; bash\"";
       commandList<<"gnome-terminal --working-directory=%w -x bash -ic \"groops %f; bash\"";
+      commandList<<"cd /d %w && mpiexec -n 4 groopsMPI.exe %f";
+      commandList<<"konsole --workdir %w -e bash -ic \"mpiexec -n 4 groopsMPI %f; bash\"";
+      commandList<<"gnome-terminal --working-directory=%w -x bash -ic \"mpiexec -n 4 groopsMPI %f; bash\"";
       settings->setValue("execute/commandLabels", labelList);
       settings->setValue("execute/commands",      commandList);
     }

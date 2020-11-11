@@ -103,6 +103,12 @@ Multiple commands can be set up, with the option to choose one of them in the ru
 Linux (KDE): <code>konsole --workdir %w -e bash -ic "groops %f; bash"</code>
 	</li><li>
 Linux (GNOME): <code>gnome-terminal --working-directory=%w -x bash -ic "groops %f; bash"</code>
+	</li><li>
+Windows, MPI with 4 processes: <code>cd /d %w && mpiexec -n 4 groopsMPI.exe %f</code>
+	</li><li>
+Linux (KDE), MPI with 4 processes: <code>konsole --workdir %w -e bash -ic "mpiexec -n 4 groopsMPI %f; bash"</code>
+	</li><li>
+Linux (GNOME), MPI with 4 processes: <code>gnome-terminal --working-directory=%w -x bash -ic "mpiexec -n 4 groopsMPI %f; bash"</code>
 </li></ul>
 </p><p><h2>Basic features</h2><p></p><p>Most basic features used to manipulate a config element are accessible via the context menu,
 for example attributing <a class="groops-ref" href="general.loopsAndConditions.html">loops and conditions</a> or setting an element global.

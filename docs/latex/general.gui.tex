@@ -47,6 +47,9 @@ Example commands:
 	\item Windows: \verb|cd /d %w && groops.exe %f|
 	\item Linux (KDE): \verb|konsole --workdir %w -e bash -ic "groops %f; bash"|
 	\item Linux (GNOME): \verb|gnome-terminal --working-directory=%w -x bash -ic "groops %f; bash"|
+	\item Windows, MPI with 4 processes: \verb|cd /d %w && mpiexec -n 4 groopsMPI.exe %f|
+	\item Linux (KDE), MPI with 4 processes: \verb|konsole --workdir %w -e bash -ic "mpiexec -n 4 groopsMPI %f; bash"|
+	\item Linux (GNOME), MPI with 4 processes: \verb|gnome-terminal --working-directory=%w -x bash -ic "mpiexec -n 4 groopsMPI %f; bash"|
 \end{itemize}
 
 \subsection{Basic features}
