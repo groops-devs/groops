@@ -10,17 +10,6 @@
 */
 /***********************************************/
 
-// for options
-#ifdef _WIN32
-#include <io.h>
-#else
-#ifdef _GNU_SOURCE
-#include <getopt.h>
-#else
-#include <unistd.h>
-#endif
-#endif
-
 #include <QtDebug>
 #include <QtWidgets>
 #include <QApplication>
