@@ -9,7 +9,7 @@
 }
 
 !defined(OBJ_DIR, var) {
-  OBJ_DIR=$$GROOPS_DIR/obj/gui
+  OBJ_DIR=build
 }
 
 !defined(DESTDIR, var) {
