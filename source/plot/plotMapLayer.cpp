@@ -103,7 +103,7 @@ PlotMapLayerGrid::PlotMapLayerGrid(Config &config)
     {
       std::vector<Angle>  lambda, phi;
       std::vector<Double> radius;
-      if(!grid.isRectangle(lambda, phi, radius))
+      if(!grid.isRectangle(lambda, phi, radius) || (lambda.size() < 2))
         throw(Exception("'increment' must be set for non rectangular grids"));
       increment = lambda.at(1)-lambda.at(0);
     }

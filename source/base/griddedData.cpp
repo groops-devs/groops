@@ -53,7 +53,7 @@ Bool GriddedData::isRectangle(std::vector<Angle> &lambda, std::vector<Angle> &ph
 {
   try
   {
-    if(points.size() <= 1)
+    if(points.size())
       return FALSE;
 
     const Angle  phi1 = points.at(0).phi();
@@ -99,17 +99,23 @@ Bool GriddedData::computeArea()
     if(!isRectangle(lambda, phi, radius)) // || !std::is_sorted(phi.begin(), phi.end()) || !std::is_sorted(lambda.begin(), lambda.end()))
       return FALSE;
 
-    Vector dx(lambda.size());
-    dx(0) = std::fabs(lambda.at(1)-lambda.at(0));
-    for(UInt i=1; i<lambda.size()-1; i++)
-      dx(i) = 0.5*std::fabs(lambda.at(i+1)-lambda.at(i-1));
-    dx(dx.rows()-1) = std::fabs(lambda.at(lambda.size()-1)-lambda.at(lambda.size()-2));
+    Vector dx(lambda.size(), 2*PI);
+    if(lambda.size() > 1)
+    {
+      dx(0) = std::fabs(lambda.at(1)-lambda.at(0));
+      for(UInt i=1; i<lambda.size()-1; i++)
+        dx(i) = 0.5*std::fabs(lambda.at(i+1)-lambda.at(i-1));
+      dx(dx.rows()-1) = std::fabs(lambda.at(lambda.size()-1)-lambda.at(lambda.size()-2));
+    }
 
-    Vector dy(phi.size());
-    dy(0) = std::fabs(std::cos(phi.at(0)) * 2*std::sin(0.5*(phi.at(0)-phi.at(1))));
-    for(UInt i=1; i<phi.size()-1; i++)
-      dy(i) = std::fabs(std::cos(phi.at(i)) * (std::sin(0.5*(phi.at(i)-phi.at(i+1)))+std::sin(0.5*(phi.at(i-1)-phi.at(i)))));
-    dy(dy.rows()-1) = std::fabs(std::cos(phi.at(phi.size()-1)) * 2*std::sin(0.5*(phi.at(phi.size()-2)-phi.at(phi.size()-1))));
+    Vector dy(phi.size(), 2.);
+    if(phi.size() > 1)
+    {
+      dy(0) = std::fabs(std::cos(phi.at(0)) * 2*std::sin(0.5*(phi.at(0)-phi.at(1))));
+      for(UInt i=1; i<phi.size()-1; i++)
+        dy(i) = std::fabs(std::cos(phi.at(i)) * (std::sin(0.5*(phi.at(i)-phi.at(i+1)))+std::sin(0.5*(phi.at(i-1)-phi.at(i)))));
+      dy(dy.rows()-1) = std::fabs(std::cos(phi.at(phi.size()-1)) * 2*std::sin(0.5*(phi.at(phi.size()-2)-phi.at(phi.size()-1))));
+    }
 
     areas.resize(points.size());
     for(UInt z=0; z<phi.size(); z++)
@@ -168,19 +174,27 @@ void GriddedDataRectangular::geocentric(std::vector<Angle> &lambda, std::vector<
     // areas elements
     // -------------
     const UInt cols = lambda.size();
-    dLambda.resize(cols);
-    dLambda.at(0) = std::fabs(lambda.at(1)-lambda.at(0));
-    for(UInt s=1; s<cols-1; s++)
-      dLambda.at(s) = std::fabs(0.5*(lambda.at(s+1)-lambda.at(s-1)));
-    dLambda.at(cols-1) = std::fabs(lambda.at(cols-1)-lambda.at(cols-2));
+    dLambda.clear();
+    dLambda.resize(cols, 2*PI);
+    if(cols > 1)
+    {
+      dLambda.at(0) = std::fabs(lambda.at(1)-lambda.at(0));
+      for(UInt s=1; s<cols-1; s++)
+        dLambda.at(s) = std::fabs(0.5*(lambda.at(s+1)-lambda.at(s-1)));
+      dLambda.at(cols-1) = std::fabs(lambda.at(cols-1)-lambda.at(cols-2));
+    }
 
     // \int_{B0-dB/2}^{B0+dB/2} cosB dB = cosB0 * 2*sin(dB/2)
     const UInt rows = phi.size();
-    dPhi.resize(rows);
-    dPhi.at(0) = std::fabs(2*std::sin((phi.at(0)-phi.at(1))/2));
-    for(UInt i=1; i<rows-1; i++)
-      dPhi.at(i) = std::fabs(2*std::sin((phi.at(i-1)-phi.at(i+1))/4));
-    dPhi.at(rows-1) = std::fabs(2*std::sin((phi.at(rows-2)-phi.at(rows-1))/2));
+    dPhi.clear();
+    dPhi.resize(rows, 2.);
+    if(rows > 1)
+    {
+      dPhi.at(0) = std::fabs(2*std::sin((phi.at(0)-phi.at(1))/2));
+      for(UInt i=1; i<rows-1; i++)
+        dPhi.at(i) = std::fabs(2*std::sin((phi.at(i-1)-phi.at(i+1))/4));
+      dPhi.at(rows-1) = std::fabs(2*std::sin((phi.at(rows-2)-phi.at(rows-1))/2));
+    }
   }
   catch(std::exception &e)
   {
