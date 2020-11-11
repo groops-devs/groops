@@ -19,6 +19,7 @@
 #include "classes/parametrizationAcceleration/parametrizationAccelerationAccBias.h"
 #include "classes/parametrizationAcceleration/parametrizationAccelerationAccScaleFactors.h"
 #include "classes/parametrizationAcceleration/parametrizationAccelerationGnssSolarRadiation.h"
+#include "classes/parametrizationAcceleration/parametrizationAccelerationThermosphericDensity.h"
 #include "classes/parametrizationAcceleration/parametrizationAccelerationModelScale.h"
 #include "classes/parametrizationAcceleration/parametrizationAcceleration.h"
 
@@ -29,6 +30,7 @@ GROOPS_REGISTER_CLASS(ParametrizationAcceleration, "parametrizationAccelerationT
                       ParametrizationAccelerationAccBias,
                       ParametrizationAccelerationAccScaleFactors,
                       ParametrizationAccelerationGnssSolarRadiation,
+                      ParametrizationAccelerationThermosphericDensity,
                       ParametrizationAccelerationModelScale)
 
 GROOPS_RENAMED_CLASS(parameterSatelliteType, parametrizationAccelerationType, date2time(2020, 6, 3))
@@ -52,6 +54,8 @@ ParametrizationAcceleration::ParametrizationAcceleration(Config &config, const s
         parameter.push_back(new ParametrizationAccelerationAccScaleFactors(config));
       if(readConfigChoiceElement(config, "gnssSolarRadiation",        type, "GNSS solar radiation pressure model"))
         parameter.push_back(new ParametrizationAccelerationGnssSolarRadiation(config));
+      if(readConfigChoiceElement(config, "thermosphericDensity",      type, "thermospheric density along the orbit"))
+        parameter.push_back(new ParametrizationAccelerationThermosphericDensity(config));
       if(readConfigChoiceElement(config, "modelScale",                type, "model scale factor."))
         parameter.push_back(new ParametrizationAccelerationModelScale(config));
       endChoice(config);

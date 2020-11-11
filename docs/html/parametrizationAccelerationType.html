@@ -133,6 +133,21 @@ GNSS solar radiation pressure model.
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">eclipse</div></div></td><td><a href="eclipseType.html">eclipse</a></td><td></td></tr>
 </table>
 
+<h2 id="thermosphericDensity">ThermosphericDensity</h2><p>
+Estimate the thermospheric density along the orbit using a satllite macro model.
+An optional thermospheric model can be used to compute temperature and wind.
+The temperature is used to estimate variable drag and lift coefficients, otherwise a constant drag coefficient is used.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">thermosphere</div></div></td><td><a href="thermosphereType.html">thermosphere</a></td><td>for wind and temperature</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">earthRotation</div></div></td><td>double</td><td>[rad/s]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">considerTemperature</div></div></td><td>boolean</td><td>compute drag and lift, otherwise simple drag coefficient is used</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">considerWind</div></div></td><td>boolean</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">temporalDensity</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>parameters along orbit</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">perArc</div></div></td><td>boolean</td><td></td></tr>
+</table>
+
 <h2 id="modelScale">ModelScale</h2><p>
 Estimate a scale factor for a given model.
 </p>

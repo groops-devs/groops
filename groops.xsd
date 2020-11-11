@@ -6726,6 +6726,37 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="thermosphericDensity">
+				<xs:annotation>
+					<xs:documentation>thermospheric density along the orbit</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="thermosphere" type="thermosphereType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>for wind and temperature</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="earthRotation" type="double" minOccurs="0" default="7.29211585531e-5">
+							<xs:annotation>
+								<xs:documentation>[rad/s]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="considerTemperature" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>compute drag and lift, otherwise simple drag coefficient is used</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="considerWind" type="boolean" minOccurs="0" default="1"/>
+						<xs:element name="temporalDensity" type="parametrizationTemporalType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>parameters along orbit</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="perArc" type="boolean" minOccurs="0" default="0"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="modelScale">
 				<xs:annotation>
 					<xs:documentation>model scale factor.</xs:documentation>

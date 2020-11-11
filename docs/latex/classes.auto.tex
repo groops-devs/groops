@@ -5153,6 +5153,27 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
+\subsection{ThermosphericDensity}\label{parametrizationAccelerationType:thermosphericDensity}
+Estimate the thermospheric density along the orbit using a satllite macro model.
+An optional thermospheric model can be used to compute temperature and wind.
+The temperature is used to estimate variable drag and lift coefficients, otherwise a constant drag coefficient is used.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~thermosphere & \hfuzz=500pt \hyperref[thermosphereType]{thermosphere} & \hfuzz=500pt for wind and temperature\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt double & \hfuzz=500pt [rad/s]\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~considerTemperature & \hfuzz=500pt boolean & \hfuzz=500pt compute drag and lift, otherwise simple drag coefficient is used\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~considerWind & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~temporalDensity & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt parameters along orbit\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~perArc & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+
 \subsection{ModelScale}\label{parametrizationAccelerationType:modelScale}
 Estimate a scale factor for a given model.
 
