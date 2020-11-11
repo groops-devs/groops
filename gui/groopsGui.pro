@@ -23,7 +23,7 @@
 QT += xml
 QT += widgets
 
-CONFIG += -c++14
+CONFIG += c++14
 
 TEMPLATE = app
 
