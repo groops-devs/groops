@@ -748,7 +748,7 @@ void Documentation::writeHtml(const FileName &directoryName)
     // --------------
     auto writeSearchIndex = [&](const std::string &fileName, const std::string &name, const std::string &search, const std::string &table, const std::string &displayText)
     {
-      documentationSearchIndex<<"'"<<fileName<<"': { 'name': '"<<name;
+      documentationSearchIndex<<"'"<<fileName<<"': { 'name': '"<<name<<"', 'key': '"<<fileName;
       documentationSearchIndex<<"', 'description': '" <<String::trim(String::replaceAll(search,      {{"\n", " "}, {"\\", "\\\\"}, {"\'", "\\'"}}));
       documentationSearchIndex<<"', 'config_table': '"<<String::trim(String::replaceAll(table,       {{"\n", " "}, {"\\", "\\\\"}, {"\'", "\\'"}}));
       documentationSearchIndex<<"', 'display_text': '"<<String::trim(String::replaceAll(displayText, {{"\n", " "}, {"\\", "\\\\"}, {"\'", "\\'"}}));

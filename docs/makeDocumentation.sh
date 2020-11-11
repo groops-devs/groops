@@ -7,7 +7,7 @@ pdflatex -interaction=nonstopmode documentation.tex >/dev/null
 pdflatex -interaction=nonstopmode documentation.tex >/dev/null
 pdflatex -interaction=nonstopmode documentation.tex | grep -a1 -e "^!" -e "Warning"
 cd ..
-ln -f -s latex/documentation.pdf
+mv latex/documentation.pdf .
 
 echo "make source code docu (doxygen)"
 cd source

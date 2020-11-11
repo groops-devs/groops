@@ -1,7 +1,7 @@
 /** Global variables */
 
 var idx = lunr(function () {
-              this.ref('name')
+              this.ref('key')
               this.field('name')
               this.field('display_text')
               this.field('description')
@@ -131,7 +131,7 @@ function parseSearchTerms(rawInput)
 
 /** HTML template for a search result box */
 var templateSearchResult = '<div class="card border-light mb-3" style="{{style}}"><div class="card-header">' +
-                           '<a href="{{name}}.html">{{name}}</a>' +
+                           '<a href="{{key}}.html">{{name}}</a>' +
                            '<span class="badge badge-primary float-right" onclick="expandSearchBox(\'search:{{name}}\');">+</span></div>' +
                            '<div id="search:{{name}}" class="card-body search-result faded"><p>{{{content}}}</p></div></div>'
 
@@ -189,7 +189,7 @@ function startSearch() {
 
         var fullText = documents[results[i].ref].display_text
 
-        var data = {'name': results[i].ref, 'content':  fullText/*documents[results[i].ref].description*/, 'style': (i>=wrapThreshold) ? 'display: none;' : ''}
+        var data = {'name': documents[results[i].ref].name, 'key': results[i].ref,'content':  fullText/*documents[results[i].ref].description*/, 'style': (i>=wrapThreshold) ? 'display: none;' : ''}
         var renderedSearchResult = Mustache.render(templateSearchResult, data)
 
         list.insertAdjacentHTML('beforeend', renderedSearchResult)
