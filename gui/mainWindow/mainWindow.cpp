@@ -342,12 +342,12 @@ void MainWindow::helpAbout()
 {
   QMessageBox::about(this, tr("About GROOPS GUI"),
                      tr("<h2>GROOPS Graphical User Interface</h2>"
-                            "<p>Gravity Recovery Object Oriented Programming System"
-                            "<p>Torsten Mayer-G&uuml;rr"
-                            "<br>Wolfgang Mayer-G&uuml;rr"
-                            "<br>Sebastian Strasser"
-                            "<p>GitHub repository: <a href=\"https://github.com/groops-devs/groops\">https://github.com/groops-devs/groops</a></p>"
-                            "<p>Icons: <a href=\"https://github.com/google/material-design-icons\">Google Material Design</a></p>"));
+                        "<p>Gravity Recovery Object Oriented Programming System"
+                        "<p>Torsten Mayer-G&uuml;rr"
+                        "<br>Wolfgang Mayer-G&uuml;rr"
+                        "<br>Sebastian Strasser"
+                        "<p>GitHub repository: <a href=\"https://github.com/groops-devs/groops\">https://github.com/groops-devs/groops</a></p>"
+                        "<p>This GUI application uses the <a href=\"https://www.qt.io\">Qt framework</a> and Google's <a href=\"https://github.com/google/material-design-icons\">Material design icons</a>.</p>"));
 }
 
 /***********************************************/
