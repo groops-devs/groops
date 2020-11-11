@@ -51,7 +51,10 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
 
 1. Download the MSYS2 installer and follow the [installation guide](https://www.msys2.org/#installation).
 
-2. **Important**: Before closing the installer uncheck *Run MSYS2 64bit now* and click *Finish*. Then start the **MSYS2 MinGW 64-bit** terminal through `Start Menu > MSYS2 MinGW 64-bit`.
+2. **Important**: After successful installation, close the MSYS2 terminal from step 1 and open the **MSYS2 MinGW 64-bit terminal**
+    through `Start Menu > MSYS2 64-bit > MSYS2 MinGW 64-bit`.
+
+    The command prompt in the terminal window should now read `username@hostname MINGW64`.
 
 3. Install compilers, cmake, expat, OpenBLAS, and LAPACK:
     ```
@@ -65,12 +68,12 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
 
 5. *(Optional)* Download and install liberfa:
 
-    6.1. Install the `tar` utility and required build tool:
+    5.1. Install the `tar` utility and required build tool:
     ```
     pacman -S tar make
     ```
 
-    6.2. Download and build the ERFA library:
+    5.2. Download and build the ERFA library:
     ```
     mkdir -p /c/groops/lib && cd /c/groops/lib
     wget https://github.com/liberfa/erfa/releases/download/v1.7.0/erfa-1.7.0.tar.gz
@@ -83,9 +86,9 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
 
 6. *(Optional)* Install Microsoft MPI:
 
-    7.1 Download and install the [Microsoft MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi).
+    6.1 Download and install the [Microsoft MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi).
 
-    7.2 Install the MSYS2 `msmpi` package:
+    6.2 Install the MSYS2 `msmpi` package:
     ```
     pacman -S mingw-w64-x86_64-msmpi
     ```
