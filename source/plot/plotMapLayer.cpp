@@ -174,6 +174,7 @@ class PlotMapLayerPoints : public PlotMapLayer
 {
   PlotLinePtr   line;
   PlotSymbolPtr symbol;
+  Bool greatCircle;
 
 public:
   PlotMapLayerPoints(Config &config);
@@ -194,6 +195,7 @@ PlotMapLayerPoints::PlotMapLayerPoints(Config &config)
     readConfig(config, "value",                exprValue,    Config::OPTIONAL, "data0", "expression to compute color (input columns are named data0, data1, ...)");
     readConfig(config, "symbol",               symbol,       Config::OPTIONAL, "1",     "");
     readConfig(config, "line",                 line,         Config::OPTIONAL, "",      "style of connecting lines");
+    readConfig(config, "drawLineAsGreatCircle",greatCircle,  Config::DEFAULT,  "1",     "draw connecting lines as great circles (otherwise, a straight line is drawn instead)");
     if(isCreateSchema(config)) return;
 
     // tests
@@ -240,7 +242,11 @@ std::string PlotMapLayerPoints::scriptEntry() const
   {
     std::stringstream ss;
     if(line)
-      ss<<"gmt psxy -bi"<<2+data.columns()<<"d "<<dataFileName<<" -J -R -W"<<line->str()<<" -O -K >> groopsPlot.ps"<<std::endl;
+    {
+      ss<<"gmt psxy -bi"<<2+data.columns()<<"d "<<dataFileName<<" -J -R -W"<<line->str();
+      if(!greatCircle) ss<<" -A";
+      ss<<" -O -K >> groopsPlot.ps"<<std::endl;
+    }
     if(symbol)
       ss<<"gmt psxy -bi"<<2+data.columns()<<"d "<<dataFileName<<" -J -R -S"<<symbol->str()<<" -O -K >> groopsPlot.ps"<<std::endl;
     return ss.str();
@@ -458,6 +464,7 @@ class PlotMapLayerPolygon : public PlotMapLayer
   PlotLinePtr          line;
   PlotColorPtr         fillColor;
   Double               value;
+  Bool                 greatCircle;
 
 public:
   PlotMapLayerPolygon(Config &config);
@@ -480,6 +487,7 @@ PlotMapLayerPolygon::PlotMapLayerPolygon(Config &config)
     readConfig(config, "line",             line,      Config::OPTIONAL, "solid", "style of border lines");
     readConfig(config, "fillColor",        fillColor, Config::OPTIONAL, "", "polygon fill color (no fill color: determine from value if given, else: no fill)");
     readConfig(config, "value",            value,     Config::OPTIONAL, "", "value to compute fill color from a colorbar (ignored if a fillColor is given)");
+    readConfig(config, "drawLineAsGreatCircle", greatCircle, Config::DEFAULT, "1", "draw connecting lines as great circles (otherwise, a straight line is drawn instead)");
     if(isCreateSchema(config)) return;
 
     // tests
@@ -546,13 +554,15 @@ std::string PlotMapLayerPolygon::scriptEntry() const
   try
   {
     std::stringstream ss;
-    //ss<<"gmt psclip "<<dataFileName<<" -J -R -O -K >> groopsPlot.ps"<<std::endl;
-    ss<<"gmt psxy "<<dataFileName<<" -A -L -J -R";
+    ss<<"gmt psxy "<<dataFileName<<" -L -J -R";
     if(fillColor) ss<<" -G"<<fillColor->str();
     else if(!std::isnan(value)) ss<<" -CgroopsPlot.cpt";
-    if(line) ss<<" -W"<<line->str();
+    if(line)
+    {
+      ss<<" -W"<<line->str();
+      if(!greatCircle) ss<<" -A";
+    }
     ss<<" -O -K >> groopsPlot.ps"<<std::endl;
-    //ss<<"gmt psclip -C -O -K >> groopsPlot.ps"<<std::endl;
 
     return ss.str();
   }

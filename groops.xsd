@@ -8074,6 +8074,11 @@
 								<xs:documentation>style of connecting lines</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="drawLineAsGreatCircle" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>draw connecting lines as great circles (otherwise, a straight line is drawn instead)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -8180,6 +8185,11 @@
 						<xs:element name="value" type="double" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>value to compute fill color from a colorbar (ignored if a fillColor is given)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="drawLineAsGreatCircle" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>draw connecting lines as great circles (otherwise, a straight line is drawn instead)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
