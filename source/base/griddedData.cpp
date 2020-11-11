@@ -53,7 +53,7 @@ Bool GriddedData::isRectangle(std::vector<Angle> &lambda, std::vector<Angle> &ph
 {
   try
   {
-    if(points.size())
+    if(!points.size())
       return FALSE;
 
     const Angle  phi1 = points.at(0).phi();
