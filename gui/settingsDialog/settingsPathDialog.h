@@ -39,6 +39,7 @@ public:
  ~SettingsPathDialog();
 
 public slots:
+  void clickedSchemaChange();
   void clickedSchemaAdd();
   void clickedSchemaRemove();
   void clickedTemplateFile();

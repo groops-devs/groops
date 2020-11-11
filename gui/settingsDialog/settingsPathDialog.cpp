@@ -63,8 +63,40 @@ SettingsPathDialog::~SettingsPathDialog()
 
 void SettingsPathDialog::schemaListChanged()
 {
+   ui->buttonSchemaChange->setEnabled(ui->listSchema->count() > 0);
    ui->buttonSchemaRemove->setEnabled(ui->listSchema->count() > 1);
 }
+
+/***********************************************/
+
+void SettingsPathDialog::clickedSchemaChange()
+{
+  QListWidgetItem *item = ui->listSchema->currentItem();
+  if(!item)
+    return;
+
+  QString name = QFileDialog::getOpenFileName(this, tr("Change Schema File - GROOPS"),
+                                              item->text(), tr("XML Schema files (*.xsd)"));
+  if(!name.isEmpty() && !ui->listSchema->findItems(name, Qt::MatchFixedString).size())
+  {
+    // validate XSD schema file
+    if(!Schema::validateSchema(name))
+    {
+      QMessageBox::StandardButton button =
+        QMessageBox::critical(this , tr("Change Schema File - GROOPS"),
+                              tr("File '%1' seems not to be a valid XSD schema. Try another file?").arg(name),
+                              QMessageBox::Ok | QMessageBox::Cancel);
+      if(button == QMessageBox::Ok)
+        clickedSchemaChange();
+      return;
+    }
+
+    item->setText(name);
+    ui->listSchema->sortItems();
+    ui->listSchema->setItemSelected(item, true);
+  }
+}
+
 
 /***********************************************/
 
@@ -88,6 +120,7 @@ void SettingsPathDialog::clickedSchemaAdd()
 
     ui->listSchema->addItem(name);
     ui->listSchema->sortItems();
+    ui->listSchema->setItemSelected(ui->listSchema->findItems(name, Qt::MatchFixedString).at(0), true);
   }
 }
 
