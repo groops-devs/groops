@@ -46,7 +46,8 @@
 #include "settingsDialog/settingsPathDialog.h"
 #include "tree/tree.h"
 #ifdef _WIN32
-#define NOMINMAX
+#undef  NOMINMAX
+#define NOMINMAX 1
 #include "windows.h"
 #endif
 
@@ -67,11 +68,7 @@ Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *workspace) :
     this->_undoStack        = new QUndoStack(this);
     this->workspace         = workspace;
 
-    #ifndef _WIN32
-    std::setlocale(LC_NUMERIC, "en_US.UTF-8"); // force . as decimal separator (QLocale behavior is strange)
-    #else
-    setlocale(LC_NUMERIC, "american_usa");
-    #endif
+    setlocale(LC_NUMERIC, "en_US.UTF-8"); // force . as decimal separator (QLocale behavior is strange)
 
     // init QTreeWidget
     // ----------------

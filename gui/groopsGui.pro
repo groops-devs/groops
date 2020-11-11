@@ -25,6 +25,8 @@ QT += widgets
 
 CONFIG += c++14
 
+win32:RC_ICONS += resources/groops.ico
+
 TEMPLATE = app
 
 INCLUDEPATH += $$GROOPS_DIR/source
