@@ -34,8 +34,9 @@ on the [Installation page](https://github.com/groops-devs/groops/blob/main/INSTA
 After a successful installation our [Documentation](https://groops-devs.github.io/groops/html/index.html)
 is the perfect way to get familiar with the different features of GROOPS.
 
-GROOPS depends on a few data files such as Earth rotation, Love numbers, and wavelet coefficients.
-You can download an initial set that is regularly updated from [our FTP server](https://ftp.tugraz.at/outgoing/ITSG/groops/data/).
+GROOPS depends on data files such as Earth rotation, Love numbers, and wavelet coefficients.
+An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/outgoing/ITSG/groops/).
+You can choose between downloading the data directory or a single [zip file](https://ftp.tugraz.at/outgoing/ITSG/groops/data.zip) with the same content.
 
 ## Releases and Contributing
 
@@ -69,5 +70,5 @@ Since 2010 it is developed and maintained at Graz University of Technology, Aust
 Here is a list of current and past contributors:
 
 [Torsten Mayer-Guerr](https://github.com/tmayerguerr), Annette Eicker, Daniel Rieser, Norbert Zehentner,
-Christian Pock, Matthias Ellmer, Beate Koch, [Andreas Kvas](https://github.com/akvas), Saniya Behzadpour,
+Christian Pock, [Matthias Ellmer](https://github.com/x49), Beate Koch, [Andreas Kvas](https://github.com/akvas), Saniya Behzadpour,
 [Sebastian Strasser](https://github.com/sestras), Sandro Krauss, Barbara Suesser-Rechberger
