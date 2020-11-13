@@ -17322,7 +17322,7 @@
 						</xs:element>
 						<xs:element name="earthRotation" type="earthRotationType"/>
 						<xs:element name="ephemerides" type="ephemeridesType" minOccurs="0" default="jpl"/>
-						<xs:element name="gradientfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="gradientfield" type="gravityfieldType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>low order field to estimate the change of the gravity by position adjustement</xs:documentation>
 							</xs:annotation>

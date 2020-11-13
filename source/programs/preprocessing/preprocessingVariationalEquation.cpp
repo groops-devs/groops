@@ -125,7 +125,7 @@ void PreprocessingVariationalEquation::run(Config &config)
     }
     readConfig(config, "earthRotation",     earthRotation,     Config::MUSTSET,  "",    "");
     readConfig(config, "ephemerides",       ephemerides,       Config::OPTIONAL, "jpl", "");
-    readConfig(config, "gradientfield",     gradientfield,     Config::DEFAULT,  "",    "low order field to estimate the change of the gravity by position adjustement");
+    readConfig(config, "gradientfield",     gradientfield,     Config::MUSTSET,  "",    "low order field to estimate the change of the gravity by position adjustement");
     readConfig(config, "integrationDegree", integrationDegree, Config::DEFAULT,  "7",   "integration of forces by polynomial approximation of degree n");
     if(readConfigSequence(config, "useEnke", Config::OPTIONAL, "1", "integrate differential forces to an elliptical reference trajectory"))
     {
