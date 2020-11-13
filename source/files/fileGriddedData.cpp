@@ -38,19 +38,25 @@ template<> void save(OutArchive &ar, const GriddedData &x)
     // areas elements
     // -------------
     const UInt cols = lambda.size();
-    std::vector<Double> dLambda(cols);
-    dLambda.at(0) = std::fabs(lambda.at(1)-lambda.at(0));
-    for(UInt s=1; s<cols-1; s++)
-      dLambda.at(s) = std::fabs(0.5*(lambda.at(s+1)-lambda.at(s-1)));
-    dLambda.at(cols-1) = std::fabs(lambda.at(cols-1)-lambda.at(cols-2));
+    std::vector<Double> dLambda(cols, 2*PI);
+    if(dLambda.size() > 1)
+    {
+      dLambda.at(0) = std::fabs(lambda.at(1)-lambda.at(0));
+      for(UInt s=1; s<cols-1; s++)
+        dLambda.at(s) = std::fabs(0.5*(lambda.at(s+1)-lambda.at(s-1)));
+      dLambda.at(cols-1) = std::fabs(lambda.at(cols-1)-lambda.at(cols-2));
+    }
 
     // \int_{B0-dB/2}^{B0+dB/2} cosB dB = cosB0 * 2*sin(dB/2)
     const UInt rows = phi.size();
-    std::vector<Double> dPhi(rows);
-    dPhi.at(0) = std::fabs(2*std::sin((phi.at(0)-phi.at(1))/2));
-    for(UInt i=1; i<rows-1; i++)
-      dPhi.at(i) = std::fabs(2*std::sin((phi.at(i-1)-phi.at(i+1))/4));
-    dPhi.at(rows-1) = std::fabs(2*std::sin((phi.at(rows-2)-phi.at(rows-1))/2));
+    std::vector<Double> dPhi(rows, 2);
+    if(dPhi.size() > 1)
+    {
+      dPhi.at(0) = std::fabs(2*std::sin((phi.at(0)-phi.at(1))/2));
+      for(UInt i=1; i<rows-1; i++)
+        dPhi.at(i) = std::fabs(2*std::sin((phi.at(i-1)-phi.at(i+1))/4));
+      dPhi.at(rows-1) = std::fabs(2*std::sin((phi.at(rows-2)-phi.at(rows-1))/2));
+    }
 
     // compare with given areas
     if(x.areas.size())
