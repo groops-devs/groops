@@ -861,7 +861,7 @@ std::string PlotMapLayerBlueMarble::scriptEntry() const
       ss<<"gmt grdmath "<<dataFileName<<" "<<amplitude<<" MUL = "<<dataFileName<<std::endl;
     }
 
-    ss<<"gmt grdimage "<<fileNameChannels<<"\\?red "<<fileNameChannels<<"\\?green "<<fileNameChannels<<"\\?blue";
+    ss<<"gmt grdimage "<<fileNameChannels<<"\?red "<<fileNameChannels<<"\?green "<<fileNameChannels<<"\?blue";
     if(!illuminate)
       ss<<" -I"<<brightness;
     else
