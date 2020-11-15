@@ -100,7 +100,7 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
     mingw32-make.exe
     ```
 
-8. Make sure to also read the [post-installation steps](#windows-post-installation-steps)
+8. Make sure to also read the [post-installation steps](#windows-post-installation-steps).
 
 ### Graphical User Interface (GUI)
 
