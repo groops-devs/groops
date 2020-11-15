@@ -100,7 +100,7 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
     mingw32-make.exe
     ```
 
-8. Make sure to also read the [post-installation steps](#windows-post-installation-steps).
+8. Make sure to also read the [post-installation steps](#windows-post-installation-steps)
 
 ### Graphical User Interface (GUI)
 
@@ -261,6 +261,32 @@ sudo apt-get install gmt gmt-gshhg
 
 7. Make sure to also read the [post-installation steps](#linux-post-installation-steps).
 
+#### Graphical User Interface (GUI)
+
+The GROOPS GUI depends on Qt packages.
+To install the required packages, run:
+```
+sudo zypper install libqt5-qtbase-devel
+```
+Then, change into the `gui` directory and compile the source code:
+```
+cd $HOME/groops/gui
+qmake-qt5
+make
+```
+
+#### Generic Mapping Tools (GMT)
+
+The OpenSUSE packages for the Generic Mapping Tools are available in the `GEO` repository
+(change OpenSUSE release version if necessary):
+```
+sudo zypper addrepo http://download.opensuse.org/repositories/Application:/Geo/openSUSE_Leap_15.2/ GEO
+```
+Then install the packages:
+```
+sudo zypper install GMT GMT-doc GMT-coastlines
+```
+
 ### Arch Linux
 
 GROOPS is packaged for the [Arch User Repository](https://wiki.archlinux.org/index.php/Arch_User_Repository).
@@ -271,7 +297,6 @@ The easiest way to do this is through an [AUR helper](https://wiki.archlinux.org
 for example, you can install GROOPS and the GUI by executing
 ```
 yay -S groops-git groopsgui-git
-
 ```
 
 If you want to develop for GROOPS, a manual installation is preferrable:
@@ -306,32 +331,26 @@ If you want to develop for GROOPS, a manual installation is preferrable:
     ```
 8. Make sure to also read the [post-installation steps](#linux-post-installation-steps).
 
-
+```
 #### Graphical User Interface (GUI)
 
 The GROOPS GUI depends on Qt packages.
 To install the required packages, run:
 ```
-sudo zypper install libqt5-qtbase-devel
+sudo pacman  -S qt5-base
 ```
 Then, change into the `gui` directory and compile the source code:
 ```
 cd $HOME/groops/gui
-qmake-qt5
+qmake
 make
 ```
 
 #### Generic Mapping Tools (GMT)
 
-The OpenSUSE packages for the Generic Mapping Tools are available in the `GEO` repository
-(change OpenSUSE release version if necessary):
-```
-sudo zypper addrepo http://download.opensuse.org/repositories/Application:/Geo/openSUSE_Leap_15.2/ GEO
-```
-Then install the packages:
-```
-sudo zypper install GMT GMT-doc GMT-coastlines
-```
+The Generic Mapping Tools are available from the [Arch User Repository](https://wiki.archlinux.org/index.php/Arch_User_Repository).
+Install the [gmt6](https://aur.archlinux.org/packages/gmt6) and [gmt-coast](https://aur.archlinux.org/packages/gmt-coast) packages.
+
 
 ### Linux post-installation steps
 
