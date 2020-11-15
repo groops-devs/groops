@@ -261,6 +261,52 @@ sudo apt-get install gmt gmt-gshhg
 
 7. Make sure to also read the [post-installation steps](#linux-post-installation-steps).
 
+### Arch Linux
+
+GROOPS is packaged for the [Arch User Repository](https://wiki.archlinux.org/index.php/Arch_User_Repository).
+You can install the [groops-git](https://aur.archlinux.org/packages/groops-git/) package providing the core GROOPS executables,
+and the [groopsgui-git](https://aur.archlinux.org/packages/groopsgui-git/) package providing the GUI and documentation.
+
+The easiest way to do this is through an [AUR helper](https://wiki.archlinux.org/index.php/AUR_helpers). If you are using `yay`,
+for example, you can install GROOPS and the GUI by executing
+```
+yay -S groops-git groopsgui-git
+
+```
+
+If you want to develop for GROOPS, a manual installation is preferrable:
+
+1. First, make sure your system is up to date:
+    ```
+    sudo pacman -Syu
+    ```
+2. Install dependencies and build tools:
+    ```
+    sudo pacman -S git cmake gcc gcc-gfortran bash expat lapack zlib
+    ```
+3. *(Optional)* Install the NetCDF development package:
+    ```
+    sudo pacman -S netcdf-cxx
+    ```
+4. *(Optional)* Install liberfa development packages. liberfa is available as an [AUR package](https://aur.archlinux.org/packages/erfa/).
+
+5. *(Optional)* Install an MPI development package, eg. `openmpi`:
+    ```
+    sudo pacman -S openmpi
+    ```
+6. Fetch the GROOPS git repository:
+    ```
+    git clone https://github.com/groops-devs/groops.git
+    ```
+7. Create the build directory and compile GROOPS, Adjust the paths if you checked out the GROOPS git repository to a different directory.
+    ```
+    mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
+    cmake ..
+    make
+    ```
+8. Make sure to also read the [post-installation steps](#linux-post-installation-steps).
+
+
 #### Graphical User Interface (GUI)
 
 The GROOPS GUI depends on Qt packages.
