@@ -331,7 +331,6 @@ If you want to develop for GROOPS, a manual installation is preferrable:
     ```
 8. Make sure to also read the [post-installation steps](#linux-post-installation-steps).
 
-```
 #### Graphical User Interface (GUI)
 
 The GROOPS GUI depends on Qt packages.
