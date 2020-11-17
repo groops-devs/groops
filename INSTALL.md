@@ -7,6 +7,7 @@ This guide provides step-by-step instructions for compiling and running GROOPS f
 - [Linux](#linux)
     - [Ubuntu](#ubuntu)
     - [OpenSUSE](#opensuse)
+    - [Arch Linux](#arch-linux)
 
 ## Overview
 
@@ -96,8 +97,9 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
 7. Create the build directory and compile GROOPS:
     ```
     mkdir /c/groops/source/build && cd /c/groops/source/build
-    cmake.exe .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+    cmake.exe .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="C:\groops"
     mingw32-make.exe
+    mingw32-make.exe install
     ```
 
 8. Make sure to also read the [post-installation steps](#windows-post-installation-steps).
@@ -192,8 +194,9 @@ This installation guide assumes that the GROOPS source code is located in `$HOME
 6. Create the build directory and compile GROOPS:
     ```
     mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/groops
     make
+    make install
     ```
 
 7. Make sure to also read the [post-installation steps](#linux-post-installation-steps).
@@ -255,8 +258,9 @@ sudo apt-get install gmt gmt-gshhg
 6. Create the build directory and compile GROOPS:
     ```
     mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
-    cmake ..
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/groops
     make
+    make install
     ```
 
 7. Make sure to also read the [post-installation steps](#linux-post-installation-steps).
@@ -286,6 +290,67 @@ Then install the packages:
 ```
 sudo zypper install GMT GMT-doc GMT-coastlines
 ```
+
+### Arch Linux
+
+GROOPS is packaged for the [Arch User Repository](https://wiki.archlinux.org/index.php/Arch_User_Repository).
+You can install the [groops-git](https://aur.archlinux.org/packages/groops-git/) package providing the core GROOPS executables,
+and the [groopsgui-git](https://aur.archlinux.org/packages/groopsgui-git/) package providing the GUI and documentation.
+
+The easiest way to do this is through an [AUR helper](https://wiki.archlinux.org/index.php/AUR_helpers). If you are using `yay`,
+for example, you can install GROOPS and the GUI by executing:
+```
+yay -S groops-git groopsgui-git
+```
+
+If you want to develop for GROOPS, a manual installation is preferable.
+This installation guide assumes that the GROOPS source code is located in `$HOME/groops`.
+
+1. First, make sure your system is up to date:
+    ```
+    sudo pacman -Syu
+    ```
+2. Install dependencies and build tools:
+    ```
+    sudo pacman -S cmake gcc gcc-gfortran expat lapack zlib
+    ```
+3. *(Optional)* Install the NetCDF development package:
+    ```
+    sudo pacman -S netcdf-cxx
+    ```
+4. *(Optional)* Install liberfa development packages. liberfa is available as an [AUR package](https://aur.archlinux.org/packages/erfa/).
+
+5. *(Optional)* Install an MPI development package, for example `openmpi`:
+    ```
+    sudo pacman -S openmpi
+    ```
+6. Create the build directory and compile GROOPS.
+    ```
+    mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/groops
+    make
+    make install
+    ```
+7. Make sure to also read the [post-installation steps](#linux-post-installation-steps).
+
+#### Graphical User Interface (GUI)
+
+The GROOPS GUI depends on Qt packages.
+To install the required packages, run:
+```
+sudo pacman -S qt5-base
+```
+Then, change into the `gui` directory and compile the source code:
+```
+cd $HOME/groops/gui
+qmake
+make
+```
+
+#### Generic Mapping Tools (GMT)
+
+The Generic Mapping Tools are available from the [Arch User Repository](https://wiki.archlinux.org/index.php/Arch_User_Repository).
+Install the [gmt6](https://aur.archlinux.org/packages/gmt6) and [gmt-coast](https://aur.archlinux.org/packages/gmt-coast) packages:
 
 ### Linux post-installation steps
 

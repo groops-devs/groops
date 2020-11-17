@@ -53,7 +53,8 @@ endif()
 
 add_executable(groops ${SOURCES} ${PROJECT_SOURCE_DIR}/parallel/parallelSingle.cpp)
 target_link_libraries(groops ${BASE_LIBRARIES})
-set_target_properties(groops PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../bin")
+
+install(TARGETS groops DESTINATION bin)
 
 # =========================================
 
@@ -61,7 +62,7 @@ find_package(MPI COMPONENTS CXX)
 if(MPI_FOUND)
   include_directories(${MPI_CXX_INCLUDE_PATH})
   add_executable(groopsMPI ${SOURCES} ${PROJECT_SOURCE_DIR}/parallel/parallelCluster.cpp)
-  set_target_properties(groopsMPI PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../bin")
+
   target_link_libraries(groopsMPI ${BASE_LIBRARIES} ${MPI_CXX_LIBRARIES})
   if(MPI_COMPILE_FLAGS)
     set_target_properties(groopsMPI PROPERTIES COMPILE_FLAGS "${MPI_CXX_COMPILE_FLAGS}")
@@ -69,6 +70,7 @@ if(MPI_FOUND)
   if(MPI_LINK_FLAGS)
     set_target_properties(groopsMPI PROPERTIES LINK_FLAGS "${MPI_CXX_LINK_FLAGS}")
   endif()
+  install(TARGETS groopsMPI DESTINATION bin)
 else()
   message(WARNING "A GROOPS executable for MPI parallel computing will *NOT* be created.")
 endif()
