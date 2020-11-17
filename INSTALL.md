@@ -97,8 +97,9 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
 7. Create the build directory and compile GROOPS:
     ```
     mkdir /c/groops/source/build && cd /c/groops/source/build
-    cmake.exe .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+    cmake.exe .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="C:\groops"
     mingw32-make.exe
+    mingw32-make.exe install
     ```
 
 8. Make sure to also read the [post-installation steps](#windows-post-installation-steps).
@@ -193,8 +194,9 @@ This installation guide assumes that the GROOPS source code is located in `$HOME
 6. Create the build directory and compile GROOPS:
     ```
     mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/groops
     make
+    make install
     ```
 
 7. Make sure to also read the [post-installation steps](#linux-post-installation-steps).
@@ -256,8 +258,9 @@ sudo apt-get install gmt gmt-gshhg
 6. Create the build directory and compile GROOPS:
     ```
     mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/groops
     make
+    make install
     ```
 
 7. Make sure to also read the [post-installation steps](#linux-post-installation-steps).
@@ -317,15 +320,16 @@ This installation guide assumes that the GROOPS source code is located in `$HOME
     ```
 4. *(Optional)* Install liberfa development packages. liberfa is available as an [AUR package](https://aur.archlinux.org/packages/erfa/).
 
-5. *(Optional)* Install an MPI development package, eg. `openmpi`:
+5. *(Optional)* Install an MPI development package, for example `openmpi`:
     ```
     sudo pacman -S openmpi
     ```
 6. Create the build directory and compile GROOPS.
     ```
     mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/groops
     make
+    make install
     ```
 7. Make sure to also read the [post-installation steps](#linux-post-installation-steps).
 
