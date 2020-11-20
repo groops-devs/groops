@@ -79,7 +79,7 @@ void InstrumentEstimateEmpiricalCovariance::run(Config &config)
       if(data.rows() < fileNameOut.size()) return;
       countEpochs += data.rows();
 
-      rankKUpdate(1, data.column(startData+1, dim).trans(), covarianceMatrix.at(0)); // x_{t-h}*x_{t}^T
+      rankKUpdate(1, data.column(startData+1, dim), covarianceMatrix.at(0)); // x_{t-h}*x_{t}^T
       for(UInt h=1; h<fileNameOut.size(); h++)
         matMult(1., data.slice(0, startData+1, data.rows()-h, dim).trans(), data.slice(h, startData+1, data.rows()-h, dim), covarianceMatrix.at(h)); // x_{t-h}*x_{t}^T
     }); // forEach
