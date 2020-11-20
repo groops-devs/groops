@@ -34,22 +34,22 @@ Loop over list of strings.
 * @see Loop */
 class LoopManualList : public Loop
 {
-  std::string nameString, nameIndex, nameCount;
+  std::string              nameString, nameIndex, nameCount;
   std::vector<std::string> strings;
+  UInt                     index;
 
 public:
   LoopManualList(Config &config);
 
-  UInt count() const override;
-  void init(VariableList &varList) override;
-  void setValues(VariableList &varList) override;
+  UInt count() const override {return strings.size();}
+  Bool iteration(VariableList &varList) override;
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopManualList::LoopManualList(Config &config) : Loop()
+inline LoopManualList::LoopManualList(Config &config)
 {
   try
   {
@@ -57,6 +57,9 @@ inline LoopManualList::LoopManualList(Config &config) : Loop()
     readConfig(config, "variableLoopString", nameString, Config::OPTIONAL,  "loopString", "name of the variable to be replaced");
     readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL,  "",           "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL,  "",           "variable with total number of iterations");
+    if(isCreateSchema(config)) return;
+
+    index = 0;
   }
   catch(std::exception &e)
   {
@@ -66,34 +69,19 @@ inline LoopManualList::LoopManualList(Config &config) : Loop()
 
 /***********************************************/
 
-inline UInt LoopManualList::count() const
+inline Bool LoopManualList::iteration(VariableList &varList)
 {
-  return strings.size();
+  if(index >= count())
+    return FALSE;
+
+  if(!nameString.empty()) addVariable(nameString, strings.at(index), varList);
+  if(!nameIndex.empty())  addVariable(nameIndex,  index,             varList);
+  if(!nameCount.empty())  addVariable(nameCount,  count(),           varList);
+
+  index++;
+  return TRUE;
 }
 
 /***********************************************/
-
-inline void LoopManualList::init(VariableList &varList)
-{
-  if(index == NULLINDEX)
-  {
-    if(!nameString.empty()) addVariable(nameString, varList);
-    if(!nameIndex.empty())  addVariable(nameIndex,  varList);
-    if(!nameCount.empty())  addVariable(nameCount,  varList);
-  }
-  index = 0;
-}
-
-/***********************************************/
-
-inline void LoopManualList::setValues(VariableList &varList)
-{
-  if(!nameString.empty()) varList[nameString]->setValue(strings.at(index));
-  if(!nameIndex.empty())  varList[nameIndex]->setValue(index);
-  if(!nameCount.empty())  varList[nameCount]->setValue(count());
-}
-
-/***********************************************/
-
 
 #endif

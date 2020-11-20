@@ -34,34 +34,33 @@ Loop over nested loops. First \config{loop} is outermost loop, every subsequent 
 * @see Loop */
 class LoopLoop : public Loop
 {
-   std::string nameIndex/*, nameCount*/;
-   std::vector<LoopPtr> loops;
-
-   void skipEmpty(VariableList varList);
+  std::vector<LoopConfig> loopConfigs;
+  std::vector<LoopPtr>    loops;
+  UInt                    index;
+  std::string             nameIndex;
 
 public:
   LoopLoop(Config &config);
 
   UInt count() const override;
-  void init(VariableList &varList) override;
-  void setValues(VariableList &varList) override;
-  void next(VariableList &varList) override;
-  Bool finished() const override;
+  Bool iteration(VariableList &varList) override;
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopLoop::LoopLoop(Config &config) : Loop()
+inline LoopLoop::LoopLoop(Config &config)
 {
   try
   {
-    readConfig(config, "loop", loops, Config::MUSTSET,   "", "subloop");
-    readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL,  "", "variable with index of current iteration (starts with zero)");
-    //readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL,  "", "variable with total number of iterations"); // should not be used since count is generated dynamically during iterations
+    readConfig(config, "loop",               loopConfigs, Config::MUSTSET,  "", "subloop");
+    readConfig(config, "variableLoopIndex",  nameIndex,   Config::OPTIONAL, "", "variable with index of current iteration (starts with zero)");
     if(isCreateSchema(config))
       return;
+
+    loops.resize(loopConfigs.size());
+    index = 0;
   }
   catch(std::exception &e)
   {
@@ -73,98 +72,47 @@ inline LoopLoop::LoopLoop(Config &config) : Loop()
 
 inline UInt LoopLoop::count() const
 {
-  return index;
-}
-
-/***********************************************/
-
-inline void LoopLoop::init(VariableList &varList)
-{
-  try
-  {
-    if(index == NULLINDEX)
-    {
-      if(!nameIndex.empty())  addVariable(nameIndex,  varList);
-      //if(!nameCount.empty())  addVariable(nameCount,  varList);
-    }
-    index = 0;
-
-    for(auto loop : loops)
-    {
-      loop->init(varList);
-      if(loop->finished())
-        break;
-      loop->setValues(varList);
-    }
-
-    skipEmpty(varList);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-inline void LoopLoop::setValues(VariableList &varList)
-{
+  UInt count = 1;
   for(auto loop : loops)
-    loop->setValues(varList);
-
-  if(!nameIndex.empty())  varList[nameIndex]->setValue(index);
-  //if(!nameCount.empty())  varList[nameCount]->setValue(count());
+    if(loop)
+      count *= loop->count();
+  return std::max(index, count);
 }
 
 /***********************************************/
 
-inline void LoopLoop::next(VariableList &varList)
+inline Bool LoopLoop::iteration(VariableList &varList)
 {
   try
   {
-    loops.back()->next(varList);
-    skipEmpty(varList);
-    index++;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-inline Bool LoopLoop::finished() const
-{
-  return loops.front()->finished();
-}
-
-/***********************************************/
-
-inline void LoopLoop::skipEmpty(VariableList varList)
-{
-  try
-  {
-    while(!loops.front()->finished() && loops.back()->finished())
+    std::function<Bool(UInt)> initLoop = [&](UInt i) -> Bool
     {
-      for(UInt i = loops.size(); i --> 0; )
-      {
-        loops.at(i)->next(varList);
-        if(loops.at(i)->finished())
-          continue;
+      loops.at(i) = loopConfigs.at(i).read(varList);
+      while(loops.at(i)->iteration(varList))
+        if((i+1 >= loops.size()) || initLoop(i+1))
+          return TRUE;
+      return FALSE;
+    };
 
-        for(UInt j = i+1; j < loops.size(); j++)
+    if(index == 0)
+    {
+      if(!nameIndex.empty())
+        addVariable(nameIndex, index, varList);
+      index++;
+      return initLoop(0);
+    }
+
+    for(UInt i=loops.size(); i-->0;)
+      while(loops.at(i)->iteration(varList))
+        if((i+1 >= loops.size()) || initLoop(i+1))
         {
-          loops.at(j-1)->setValues(varList);
-          loops.at(j)->init(varList);
+          if(!nameIndex.empty())
+            varList[nameIndex]->setValue(index);
+          index++;
+          return TRUE;
         }
 
-        if(!loops.back()->finished())
-          return;
-        else
-          break;
-      }
-    }
+    return FALSE;
   }
   catch(std::exception &e)
   {

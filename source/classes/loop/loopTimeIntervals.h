@@ -36,30 +36,35 @@ Loop over the intervals between points in time.
 class LoopTimeIntervals : public Loop
 {
   std::string       nameTimeStart, nameTimeEnd, nameIndex, nameCount;
-  std::vector<Time> timesInterval;
-  TimeSeriesPtr     timesIntervalPtr;
+  std::vector<Time> times;
+  UInt              index;
 
 public:
   LoopTimeIntervals(Config &config);
 
-  UInt count() const override;
-  void init(VariableList &varList) override;
-  void setValues(VariableList &varList) override;
+  UInt count() const override {return times.size()-1;}
+  Bool iteration(VariableList &varList) override;
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopTimeIntervals::LoopTimeIntervals(Config &config) : Loop()
+inline LoopTimeIntervals::LoopTimeIntervals(Config &config)
 {
   try
   {
+    TimeSeriesPtr timesIntervalPtr;
+
     readConfig(config, "timeIntervals",         timesIntervalPtr, Config::MUSTSET,   "",            "loop is called for every interval");
     readConfig(config, "variableLoopTimeStart", nameTimeStart,    Config::OPTIONAL,  "loopTime",    "variable with starting time of each interval");
     readConfig(config, "variableLoopTimeEnd",   nameTimeEnd,      Config::OPTIONAL,  "loopTimeEnd", "variable with ending time of each interval");
     readConfig(config, "variableLoopIndex",     nameIndex,        Config::OPTIONAL,  "",            "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",     nameCount,        Config::OPTIONAL,  "",            "variable with total number of iterations");
+    if(isCreateSchema(config)) return;
+
+    times = timesIntervalPtr->times();
+    index = 0;
   }
   catch(std::exception &e)
   {
@@ -69,35 +74,18 @@ inline LoopTimeIntervals::LoopTimeIntervals(Config &config) : Loop()
 
 /***********************************************/
 
-inline UInt LoopTimeIntervals::count() const
+inline Bool LoopTimeIntervals::iteration(VariableList &varList)
 {
-  return timesInterval.size()-1;
-}
+  if(index >= count())
+    return FALSE;
 
-/***********************************************/
+  if(!nameTimeStart.empty()) addVariable(nameTimeStart, times.at(index).mjd(),   varList);
+  if(!nameTimeEnd.empty())   addVariable(nameTimeEnd,   times.at(index+1).mjd(), varList);
+  if(!nameIndex.empty())     addVariable(nameIndex,     index,                   varList);
+  if(!nameCount.empty())     addVariable(nameCount,     count(),                 varList);
 
-inline void LoopTimeIntervals::init(VariableList &varList)
-{
-  timesInterval = timesIntervalPtr->times();
-
-  if(index == NULLINDEX)
-  {
-    if(!nameTimeStart.empty()) addVariable(nameTimeStart, varList);
-    if(!nameTimeEnd.empty())   addVariable(nameTimeEnd,   varList);
-    if(!nameIndex.empty())     addVariable(nameIndex,     varList);
-    if(!nameCount.empty())     addVariable(nameCount,     varList);
-  }
-  index = 0;
-}
-
-/***********************************************/
-
-inline void LoopTimeIntervals::setValues(VariableList &varList)
-{
-  if(!nameTimeStart.empty()) varList[nameTimeStart]->setValue(timesInterval.at(index).mjd());
-  if(!nameTimeEnd.empty())   varList[nameTimeEnd]->setValue(timesInterval.at(index+1).mjd());
-  if(!nameIndex.empty())     varList[nameIndex]->setValue(index);
-  if(!nameCount.empty())     varList[nameCount]->setValue(count());
+  index++;
+  return TRUE;
 }
 
 /***********************************************/

@@ -34,32 +34,38 @@ Loop over sequence of numbers.
 * @see Loop */
 class LoopUniformSampling : public Loop
 {
-  std::string nameNumber, nameIndex, nameCount;
+  std::string         nameNumber, nameIndex, nameCount;
   std::vector<Double> numbers;
-  Double rangeStart, rangeEnd, sampling;
+  UInt                index;
 
 public:
   LoopUniformSampling(Config &config);
 
-  UInt count() const override;
-  void init(VariableList &varList) override;
-  void setValues(VariableList &varList) override;
+  UInt count() const override {return numbers.size();}
+  Bool iteration(VariableList &varList) override;
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopUniformSampling::LoopUniformSampling(Config &config) : Loop()
+inline LoopUniformSampling::LoopUniformSampling(Config &config)
 {
   try
   {
+    Double rangeStart, rangeEnd, sampling;
+
     readConfig(config, "rangeStart",         rangeStart, Config::MUSTSET,   "",           "start of range");
     readConfig(config, "rangeEnd",           rangeEnd,   Config::MUSTSET,   "",           "end of range (inclusive)");
     readConfig(config, "sampling",           sampling,   Config::MUSTSET,   "",           "sampling");
     readConfig(config, "variableLoopNumber", nameNumber, Config::OPTIONAL,  "loopNumber", "name of the variable to be replaced");
     readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL,  "",           "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL,  "",           "variable with total number of iterations");
+    if(isCreateSchema(config)) return;
+
+    for(UInt i=0; rangeStart+i*sampling<=rangeEnd; i++)
+      numbers.push_back(rangeStart + i*sampling);
+    index = 0;
   }
   catch(std::exception &e)
   {
@@ -69,35 +75,17 @@ inline LoopUniformSampling::LoopUniformSampling(Config &config) : Loop()
 
 /***********************************************/
 
-inline UInt LoopUniformSampling::count() const
+inline Bool LoopUniformSampling::iteration(VariableList &varList)
 {
-  return numbers.size();
-}
+  if(index >= count())
+    return FALSE;
 
-/***********************************************/
+  if(!nameNumber.empty()) addVariable(nameNumber, numbers.at(index), varList);
+  if(!nameIndex.empty())  addVariable(nameIndex,  index,             varList);
+  if(!nameCount.empty())  addVariable(nameCount,  count(),           varList);
 
-inline void LoopUniformSampling::init(VariableList &varList)
-{
-  numbers.clear();
-  for(UInt i=0; rangeStart+i*sampling<=rangeEnd; i++)
-    numbers.push_back(rangeStart + i * sampling);
-
-  if(index == NULLINDEX)
-  {
-    if(!nameNumber.empty()) addVariable(nameNumber, varList);
-    if(!nameIndex.empty())  addVariable(nameIndex,  varList);
-    if(!nameCount.empty())  addVariable(nameCount,  varList);
-  }
-  index = 0;
-}
-
-/***********************************************/
-
-inline void LoopUniformSampling::setValues(VariableList &varList)
-{
-  if(!nameNumber.empty()) varList[nameNumber]->setValue(numbers.at(index));
-  if(!nameIndex.empty())  varList[nameIndex]->setValue(index);
-  if(!nameCount.empty())  varList[nameCount]->setValue(count());
+  index++;
+  return TRUE;
 }
 
 /***********************************************/

@@ -224,11 +224,12 @@ XmlNodePtr Config::getChildWithLoopCheck(const std::string &name, Bool remove)
 {
   try
   {
-    // finish old loop
-    // ---------------
-    if(stack.top().loopPtr && stack.top().loopPtr->finished())
+    // finish old iteration
+    // --------------------
+    if(stack.top().loopPtr && stack.top().loopNext && !stack.top().loopPtr->iteration(varList))
     {
-      varList = stack.top().loopVarListOld; // restore old varList
+      varList     = stack.top().loopVarListOld; // restore old varList
+      stack.top().xmlNode->getChild(stack.top().xmlLastChild->getName());
       stack.top().loopPtr = LoopPtr(nullptr);
     }
 
@@ -264,10 +265,9 @@ XmlNodePtr Config::getChildWithLoopCheck(const std::string &name, Bool remove)
       // init loop
       stack.top().loopVarListOld = varList;
       stack.top().loopPtr        = loopPtr;
-      stack.top().loopPtr->init(varList);
-
-      if(loopPtr->finished()) // empty loop?
+      if(!stack.top().loopPtr->iteration(varList)) // empty loop?
       {
+        stack.top().loopNext = TRUE;
         stack.top().xmlNode->getChild(name); // remove child
         return getChild(name, remove);       // node disabled -> try next element
       }
@@ -277,15 +277,7 @@ XmlNodePtr Config::getChildWithLoopCheck(const std::string &name, Bool remove)
     // --------------------
     if(stack.top().xmlLastChild->getName() != name)
       throw(Exception("loop error"));
-
-    stack.top().loopPtr->setValues(varList);
-    if(remove)
-    {
-      stack.top().loopPtr->next(varList);
-      // loop finished? -> remove child from config
-      if(stack.top().loopPtr->finished())
-        stack.top().xmlNode->getChild(name);
-    }
+    stack.top().loopNext = remove;
     return stack.top().xmlLastChild->clone();
   }
   catch(std::exception &e)
@@ -344,6 +336,86 @@ Bool Config::getConfigValue(const std::string &name, const std::string &type, Co
 
 /***********************************************/
 
+Bool Config::getConfigValue(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, Config &conf)
+{
+  try
+  {
+    if(createSchema)
+    {
+      xselement(name, type, mustSet, ONCE, defaultValue, annotation);
+      return FALSE;
+    }
+
+    XmlNodePtr xmlNode = XmlNode::create(name);
+    XmlNodePtr child   = getChild(name);
+    if(child)
+      xmlNode->addChild(child);
+    else if(mustSet == MUSTSET)
+      throw(Exception("config element '"+currentNodeName()+"' must contain '"+name+"'"));
+
+    // make copy
+    conf.push(xmlNode, Config::SEQUENCE, currentNodeName());
+    conf.createSchema = FALSE;
+    conf.global       = global;
+    conf.varList      = varList;
+
+    return child != nullptr;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW_EXTRA("'"+name+"'", e)
+  }
+}
+
+/***********************************************/
+
+Bool Config::getUnboundedConfigValues(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, Config &conf)
+{
+  try
+  {
+    if(createSchema)
+    {
+      xselement(name, type, mustSet, UNBOUNDED, defaultValue, annotation);
+      return FALSE;
+    }
+
+    // finish old iteration
+    // --------------------
+    if(stack.top().loopPtr && stack.top().loopNext && !stack.top().loopPtr->iteration(varList))
+    {
+      varList     = stack.top().loopVarListOld; // restore old varList
+      stack.top().xmlNode->getChild(stack.top().xmlLastChild->getName());
+      stack.top().loopPtr = LoopPtr(nullptr);
+    }
+
+    if(stack.top().loopPtr)
+      throw(Exception("Unexpected loop attribute"));
+
+    XmlNodePtr xmlNode = XmlNode::create(name);
+    for(;;)
+    {
+      XmlNodePtr child = stack.top().xmlNode->getChild(name);
+      if(!child)
+        break;
+      xmlNode->addChild(child);
+    }
+
+    // make copy
+    conf.push(xmlNode, Config::SEQUENCE, currentNodeName());
+    conf.createSchema = FALSE;
+    conf.global       = global;
+    conf.varList      = varList;
+
+    return TRUE;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW_EXTRA("'"+name+"'", e)
+  }
+}
+
+/***********************************************/
+
 void Config::notEmptyWarning()
 {
   try
@@ -356,6 +428,25 @@ void Config::notEmptyWarning()
       while(stack.top().xmlNode->hasChildren())
         logWarning<<"  name = "<<stack.top().xmlNode->getNextChild()->getName()<<Log::endl;
     }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+std::string Config::copy(Config &config, const VariableList &variableList)
+{
+  try
+  {
+    config.push(stack.top().xmlNode->clone(), Config::SEQUENCE, currentNodeName());
+    config.createSchema = FALSE;
+    config.global       = global;
+    config.varList      = varList;
+    config.varList     += variableList;
+    return stack.top().xmlNode->getName();
   }
   catch(std::exception &e)
   {
@@ -622,6 +713,74 @@ XmlNodePtr Config::table()
 }
 
 /***********************************************/
+/***********************************************/
+
+void ProgramConfig::run(VariableList &variableList)
+{
+  try
+  {
+    Config config;
+    const std::string name = copy(config, variableList);
+
+    std::string type;
+    while(readConfigChoice(config, name, type, OPTIONAL, "", ""))
+    {
+      for(auto &renamed : Program::RenamedProgram::renamedList())
+        renameDeprecatedChoice(config, type, renamed.oldName, renamed.newName, renamed.time);
+
+      for(auto &program : Program::Program::programList())
+        if(readConfigChoiceElement(config, program->name(), type, ""))
+        {
+          std::string comment;
+          StackNode top = stack.top();
+          stack.pop(); // coment is given in <program> not in <choiceElement>
+          XmlAttrPtr attr = stack.top().xmlNode->getAttribute("comment");
+          if(attr)
+            comment = attr->getText();
+          stack.push(top);
+
+          if(comment.empty())
+            logStatus<<"--- "<<program->name()<<" ---"<<Log::endl;
+          else
+          {
+            Bool resolved;
+            comment = StringParser::parse("comment", comment, getVarList(), resolved);
+            logStatus<<"--- "<<program->name()<<" ("<<comment<<") ---"<<Log::endl;
+          }
+          Parallel::barrier();
+          program->run(config);
+          break;
+        }
+
+      endChoice(config);
+    }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+LoopPtr LoopConfig::read(VariableList &variableList)
+{
+  try
+  {
+    Config config;
+    const std::string name = copy(config, variableList);
+    LoopPtr loop;
+    readConfig(config, name, loop, MUSTSET, "", "");
+    return loop;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
 /*** Functions *********************************/
 /***********************************************/
 
@@ -802,89 +961,6 @@ void endChoice(Config &config)
 }
 
 /***********************************************/
-/***********************************************/
-
-void programRun(Config &config)
-{
-  try
-  {
-    if(isCreateSchema(config))
-      throw(Exception("modus of config is createSchema"));
-
-    // save current state and push copy
-    Config::StackNode *stackNode = &config.stack.top();
-    config.push(config.stack.top().xmlNode->clone(), Config::SEQUENCE, config.currentNodeName());
-
-    try
-    {
-      const auto programList = Program::Program::programList();
-      const auto renamedList = Program::RenamedProgram::renamedList();
-
-      std::string type;
-      while(readConfigChoice(config, "program", type, Config::OPTIONAL, "", ""))
-      {
-        for(auto &renamed : renamedList)
-          renameDeprecatedChoice(config, type, renamed.oldName, renamed.newName, renamed.time);
-
-        for(UInt i=0; i<Program::Program::programList().size(); i++)
-          if(readConfigChoiceElement(config, programList.at(i)->name(), type, ""))
-          {
-            std::string comment;
-            Config::StackNode top = config.stack.top();
-            config.stack.pop(); // coment is given in <program> not in <choiceElement>
-            XmlAttrPtr attr = config.stack.top().xmlNode->getAttribute("comment");
-            if(attr)
-              comment = attr->getText();
-            config.stack.push(top);
-
-            if(comment.empty())
-              logStatus<<"--- "<<programList.at(i)->name()<<" ---"<<Log::endl;
-            else
-            {
-              Bool resolved;
-              comment = StringParser::parse("comment", comment, config.getVarList(), resolved);
-              logStatus<<"--- "<<programList.at(i)->name()<<" ("<<comment<<") ---"<<Log::endl;
-            }
-            Parallel::barrier();
-            Program::Program::programList().at(i)->run(config);
-            break;
-          }
-
-        endChoice(config);
-      }
-    }
-    catch(std::exception &/*e*/)
-    {
-      // restore old state
-      while(!config.stack.empty() && (&config.stack.top() != stackNode))
-        config.pop();
-      throw;
-    }
-
-    // pop copy to restore old state
-    config.pop();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-void programRemove(Config &config)
-{
-  try
-  {
-    while(config.getChild("program"));
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
 /*** Read Simple Elements **********************/
 /***********************************************/
 
@@ -1016,6 +1092,22 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssType &va
   if(found)
     var = GnssType(text);
   return found;
+}
+
+/***********************************************/
+
+// read Program
+template<> Bool readConfig(Config &config, const std::string &name, ProgramConfig &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
+{
+  return config.getUnboundedConfigValues(name, "programType", mustSet, defaultValue, annotation, var);
+}
+
+/***********************************************/
+
+// read Loop
+template<> Bool readConfig(Config &config, const std::string &name, LoopConfig &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
+{
+  return config.getConfigValue(name, "loopType", mustSet, defaultValue, annotation, var);
 }
 
 /***********************************************/

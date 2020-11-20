@@ -39,30 +39,25 @@ void IfPrograms::run(Config &config)
 {
   try
   {
-    ConditionPtr conditionPtr;
+    ConditionPtr  conditionPtr;
+    ProgramConfig programs;
 
     renameDeprecatedConfig(config, "programme", "program", date2time(2020, 6, 3));
 
-    readConfig(config, "condition", conditionPtr, Config::MUSTSET, "", "");
-    if(isCreateSchema(config))
-    {
-      config.xselement("program", "programType", Config::DEFAULT,  Config::UNBOUNDED, "", "");
-      return;
-    }
+    readConfig(config, "condition", conditionPtr, Config::MUSTSET,  "", "");
+    readConfig(config, "program",   programs,     Config::OPTIONAL, "", "");
+    if(isCreateSchema(config)) return;
 
-    // =============================================
-
-    if(conditionPtr->condition(config.getVarList()))
+    auto varList = config.getVarList();
+    if(conditionPtr->condition(varList))
     {
       logInfo<<"  condition is true."<<Log::endl;
-      programRun(config);
+      programs.run(varList);
     }
     else
     {
       logInfo<<"  condition is false."<<Log::endl;
     }
-
-    programRemove(config);
   }
   catch(std::exception &e)
   {

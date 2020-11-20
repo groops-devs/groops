@@ -38,16 +38,15 @@ void GroupPrograms::run(Config &config)
 {
   try
   {
+    ProgramConfig programs;
+
     renameDeprecatedConfig(config, "programme", "program", date2time(2020, 6, 3));
 
-    if(isCreateSchema(config))
-    {
-      config.xselement("program", "programType", Config::DEFAULT,  Config::UNBOUNDED, "", "");
-      return;
-    }
+    readConfig(config, "program", programs, Config::OPTIONAL, "", "");
+    if(isCreateSchema(config)) return;
 
-    programRun(config);
-    programRemove(config);
+    auto varList = config.getVarList();
+    programs.run(varList);
   }
   catch(std::exception &e)
   {

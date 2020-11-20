@@ -34,34 +34,36 @@ Loop over receivers or antennas in a GNSS station/transmitter info \file{file}{g
 * @see Loop */
 class LoopFileGnssStationInfo : public Loop
 {
-  std::string nameName, nameSerial, nameInfo, nameTimeStart, nameTimeEnd, nameIndex, nameCount;
-  Bool        useAntennas;
-  FileName    fileName;
+  std::string     nameName, nameSerial, nameInfo, nameTimeStart, nameTimeEnd, nameIndex, nameCount;
+  Bool            useAntennas;
   GnssStationInfo info;
+  UInt            index;
 
 public:
   LoopFileGnssStationInfo(Config &config);
 
-  UInt count() const override;
-  void init(VariableList &varList) override;
-  void setValues(VariableList &varList) override;
+  UInt count() const override {return (useAntennas ? info.antenna.size() : info.receiver.size());}
+  Bool iteration(VariableList &varList) override;
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopFileGnssStationInfo::LoopFileGnssStationInfo(Config &config) : Loop()
+inline LoopFileGnssStationInfo::LoopFileGnssStationInfo(Config &config)
 {
   try
   {
+    FileName    fileName;
     std::string choice;
 
     readConfig(config, "inputfileGnssStationInfo", fileName, Config::MUSTSET, "", "station/transmitter info file");
-    readConfigChoice(config, "infoType", choice, Config::MUSTSET, "", "info to loop over");
-    if(readConfigChoiceElement(config, "antenna",  choice, "loop over antennas"))  useAntennas = TRUE;
-    if(readConfigChoiceElement(config, "receiver", choice, "loop over receivers")) useAntennas = FALSE;
-    endChoice(config);
+    if(readConfigChoice(config, "infoType", choice, Config::MUSTSET, "", "info to loop over"))
+    {
+      if(readConfigChoiceElement(config, "antenna",  choice, "loop over antennas"))  useAntennas = TRUE;
+      if(readConfigChoiceElement(config, "receiver", choice, "loop over receivers")) useAntennas = FALSE;
+      endChoice(config);
+    }
     readConfig(config, "variableLoopName",      nameName,            Config::OPTIONAL,  "loopName",      "variable with antenna/receiver name");
     readConfig(config, "variableLoopSerial",    nameSerial,          Config::OPTIONAL,  "loopSerial",    "variable with antenna/receiver serial");
     readConfig(config, "variableLoopInfo",      nameInfo,            Config::OPTIONAL,  "loopInfo",      "variable with radome (antenna) or version (receiver)");
@@ -69,6 +71,10 @@ inline LoopFileGnssStationInfo::LoopFileGnssStationInfo(Config &config) : Loop()
     readConfig(config, "variableLoopTimeEnd",   nameTimeEnd,         Config::OPTIONAL,  "loopTimeEnd",   "variable with antenna/receiver end time");
     readConfig(config, "variableLoopIndex",     nameIndex,           Config::OPTIONAL,  "",              "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",     nameCount,           Config::OPTIONAL,  "",              "variable with total number of iterations");
+    if(isCreateSchema(config)) return;
+
+    readFileGnssStationInfo(fileName, info);
+    index = 0;
   }
   catch(std::exception &e)
   {
@@ -78,41 +84,21 @@ inline LoopFileGnssStationInfo::LoopFileGnssStationInfo(Config &config) : Loop()
 
 /***********************************************/
 
-inline UInt LoopFileGnssStationInfo::count() const
+inline Bool LoopFileGnssStationInfo::iteration(VariableList &varList)
 {
-  return (useAntennas ? info.antenna.size() : info.receiver.size());
-}
+  if(index >= count())
+    return FALSE;
 
-/***********************************************/
+  if(!nameName.empty())      addVariable(nameName,      useAntennas ? info.antenna.at(index).name            : info.receiver.at(index).name,            varList);
+  if(!nameSerial.empty())    addVariable(nameSerial,    useAntennas ? info.antenna.at(index).serial          : info.receiver.at(index).serial,          varList);
+  if(!nameInfo.empty())      addVariable(nameInfo,      useAntennas ? info.antenna.at(index).radome          : info.receiver.at(index).version,         varList);
+  if(!nameTimeStart.empty()) addVariable(nameTimeStart, useAntennas ? info.antenna.at(index).timeStart.mjd() : info.receiver.at(index).timeStart.mjd(), varList);
+  if(!nameTimeEnd.empty())   addVariable(nameTimeEnd,   useAntennas ? info.antenna.at(index).timeEnd.mjd()   : info.receiver.at(index).timeEnd.mjd(),   varList);
+  if(!nameIndex.empty())     addVariable(nameIndex,     index,   varList);
+  if(!nameCount.empty())     addVariable(nameCount,     count(), varList);
 
-inline void LoopFileGnssStationInfo::init(VariableList &varList)
-{
-  readFileGnssStationInfo(fileName(varList), info);
-
-  if(index == NULLINDEX)
-  {
-    if(!nameName.empty())      addVariable(nameName,      varList);
-    if(!nameSerial.empty())    addVariable(nameSerial,    varList);
-    if(!nameInfo.empty())      addVariable(nameInfo,      varList);
-    if(!nameTimeStart.empty()) addVariable(nameTimeStart, varList);
-    if(!nameTimeEnd.empty())   addVariable(nameTimeEnd,   varList);
-    if(!nameIndex.empty())     addVariable(nameIndex,     varList);
-    if(!nameCount.empty())     addVariable(nameCount,     varList);
-  }
-  index = 0;
-}
-
-/***********************************************/
-
-inline void LoopFileGnssStationInfo::setValues(VariableList &varList)
-{
-  if(!nameName.empty())      varList[nameName]->setValue(     useAntennas ? info.antenna.at(index).name            : info.receiver.at(index).name);
-  if(!nameSerial.empty())    varList[nameSerial]->setValue(   useAntennas ? info.antenna.at(index).serial          : info.receiver.at(index).serial);
-  if(!nameInfo.empty())      varList[nameInfo]->setValue(     useAntennas ? info.antenna.at(index).radome          : info.receiver.at(index).version);
-  if(!nameTimeStart.empty()) varList[nameTimeStart]->setValue(useAntennas ? info.antenna.at(index).timeStart.mjd() : info.receiver.at(index).timeStart.mjd());
-  if(!nameTimeEnd.empty())   varList[nameTimeEnd]->setValue(  useAntennas ? info.antenna.at(index).timeEnd.mjd()   : info.receiver.at(index).timeEnd.mjd());
-  if(!nameIndex.empty())     varList[nameIndex]->setValue(index);
-  if(!nameCount.empty())     varList[nameCount]->setValue(count());
+  index++;
+  return TRUE;
 }
 
 /***********************************************/

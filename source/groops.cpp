@@ -241,8 +241,9 @@ int main(int argc, char *argv[])
 
       logInfo<<"Config file: <"<<configFileName<<">"<<Log::endl;
       Config config(configFileName, commandlineGlobals);
-      programRun(config);
-      programRemove(config);
+      ProgramConfig programs;
+      readConfig(config, "program", programs, Config::OPTIONAL, "", "");
+      programs.run(config.getVarList());
       workDone = TRUE;
     }
 

@@ -38,28 +38,29 @@ class LoopFileAscii : public Loop
 {
   std::string nameString, nameIndex, nameCount;
   std::vector<std::string> strings;
-  std::vector<FileName> fileName;
-  UInt startIndex;
-  UInt countElements;
-  Bool sort;
-  Bool removeDuplicates;
+  UInt index;
 
 public:
   LoopFileAscii(Config &config);
 
-  UInt count() const override;
-  void init(VariableList &varList) override;
-  void setValues(VariableList &varList) override;
+  UInt count() const override {return strings.size();}
+  Bool iteration(VariableList &varList) override;
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopFileAscii::LoopFileAscii(Config &config) : Loop(), startIndex(0), countElements(MAX_UINT)
+inline LoopFileAscii::LoopFileAscii(Config &config)
 {
   try
   {
+    std::vector<FileName> fileName;
+    UInt startIndex;
+    UInt countElements;
+    Bool sort;
+    Bool removeDuplicates;
+
     readConfig(config, "inputfile",          fileName,         Config::MUSTSET,   "",           "simple ASCII file with strings (separated by whitespace)");
     readConfig(config, "sort",               sort,             Config::DEFAULT,   "0",          "sort entries alphabetically (ascending)");
     readConfig(config, "removeDuplicates",   removeDuplicates, Config::DEFAULT,   "0",          "remove duplicate entries (order is preserved)");
@@ -68,31 +69,12 @@ inline LoopFileAscii::LoopFileAscii(Config &config) : Loop(), startIndex(0), cou
     readConfig(config, "variableLoopString", nameString,       Config::OPTIONAL, "loopString", "name of the variable to be replaced");
     readConfig(config, "variableLoopIndex",  nameIndex,        Config::OPTIONAL, "",           "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,        Config::OPTIONAL, "",           "variable with total number of iterations");
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
+    if(isCreateSchema(config)) return;
 
-/***********************************************/
-
-inline UInt LoopFileAscii::count() const
-{
-  return strings.size();
-}
-
-/***********************************************/
-
-inline void LoopFileAscii::init(VariableList &varList)
-{
-  try
-  {
-    strings.clear();
     for(UInt i=0; i<fileName.size(); i++)
     {
       std::vector<std::string> str;
-      readFileStringList(fileName.at(i)(varList), str);
+      readFileStringList(fileName.at(i), str);
       strings.insert(strings.end(), str.begin(), str.end());
     }
 
@@ -102,19 +84,13 @@ inline void LoopFileAscii::init(VariableList &varList)
     if(removeDuplicates)
     {
       std::unordered_set<std::string> set;
-      auto end = std::copy_if(strings.begin(), strings.end(), strings.begin(), [&set](auto &s){ return set.insert(s).second; });
+      auto end = std::copy_if(strings.begin(), strings.end(), strings.begin(), [&set](auto &s) {return set.insert(s).second;});
       strings.erase(end, strings.end());
     }
 
     strings.erase(strings.begin(), strings.begin()+std::min(startIndex, strings.size()));
     strings.erase(strings.begin()+std::min(countElements, strings.size()), strings.end());
 
-    if(index == NULLINDEX)
-    {
-      if(!nameString.empty()) addVariable(nameString, varList);
-      if(!nameIndex.empty())  addVariable(nameIndex,  varList);
-      if(!nameCount.empty())  addVariable(nameCount,  varList);
-    }
     index = 0;
   }
   catch(std::exception &e)
@@ -125,11 +101,17 @@ inline void LoopFileAscii::init(VariableList &varList)
 
 /***********************************************/
 
-inline void LoopFileAscii::setValues(VariableList &varList)
+inline Bool LoopFileAscii::iteration(VariableList &varList)
 {
-  if(!nameString.empty()) varList[nameString]->setValue(strings.at(index));
-  if(!nameIndex.empty())  varList[nameIndex]->setValue(index);
-  if(!nameCount.empty())  varList[nameCount]->setValue(count());
+  if(index >= count())
+    return FALSE;
+
+  if(!nameString.empty()) addVariable(nameString, strings.at(index), varList);
+  if(!nameIndex.empty())  addVariable(nameIndex,  index,             varList);
+  if(!nameCount.empty())  addVariable(nameCount,  count(),           varList);
+
+  index++;
+  return TRUE;
 }
 
 /***********************************************/

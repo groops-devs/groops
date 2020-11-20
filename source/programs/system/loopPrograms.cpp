@@ -48,45 +48,37 @@ void LoopPrograms::run(Config &config)
 {
   try
   {
-    LoopPtr loopPtr;
-    Bool    continueAfterError;
-    Bool    parallelLoops;
+    LoopPtr       loopPtr;
+    Bool          continueAfterError;
+    Bool          parallelLoops;
+    ProgramConfig programs;
 
     renameDeprecatedConfig(config, "programme", "program", date2time(2020, 6, 3));
 
     readConfig(config, "loop",               loopPtr,            Config::MUSTSET,  "",  "subprograms are called for every loop");
     readConfig(config, "continueAfterError", continueAfterError, Config::DEFAULT,  "0", "continue with next loop after error, otherwise throw exception");
     readConfig(config, "parallelLoops",      parallelLoops,      Config::DEFAULT,  "0", "parallelize loops instead of programs");
-    if(isCreateSchema(config))
-    {
-      config.xselement("program", "programType", Config::DEFAULT,  Config::UNBOUNDED, "", "");
-      return;
-    }
+    readConfig(config, "program",            programs,           Config::OPTIONAL, "", "");
+    if(isCreateSchema(config)) return;
 
     logStatus<<"Run programs"<<Log::endl;
-    auto varListOriginal = config.getVarList();
-    loopPtr->init(config.getVarList());
+    auto varList = config.getVarList();
 
     // lambda
     // ------
     auto loopRun = [&]()
     {
-      auto varListOld = config.getVarList();
       try
       {
-        programRun(config);
+        auto varListTmp = varList;
+        programs.run(varListTmp);
       }
       catch(std::exception &e)
       {
         if(!continueAfterError)
-        {
-          programRemove(config);
-          config.getVarList() = varListOriginal;
           throw;
-        }
         logError<<e.what()<<"  continue..."<<Log::endl;
       }
-      config.getVarList() = varListOld;
     };
     // -----------------
 
@@ -101,67 +93,62 @@ void LoopPrograms::run(Config &config)
         continueAfterError = FALSE;
       }
 
+      UInt iter = 0;
       logTimerStart;
-      for(UInt i=0; !loopPtr->finished(); i++)
+      while(loopPtr->iteration(varList))
       {
-        logStatus<<"=== "<<i+1<<". loop ==="<<Log::endl;
-        logTimerLoop(i, loopPtr->count());
-        loopPtr->setValues(config.getVarList());
+        logStatus<<"=== "<<iter+1<<". loop ==="<<Log::endl;
+        logTimerLoop(iter++, loopPtr->count());
         loopRun();
-        loopPtr->next(config.getVarList());
       }
       logTimerLoopEnd(loopPtr->count());
+      return;
     }
-    else if(Parallel::isMaster())
+
+    auto comm = Parallel::setDefaultCommunicator(Parallel::selfCommunicator());
+    if(Parallel::isMaster(comm))
     {
       // parallel version: master node
       // -----------------------------
+      UInt iter = 0;
       logTimerStart;
-      for(UInt i=0; !loopPtr->finished(); i++)
+      while(loopPtr->iteration(varList))
       {
-        logTimerLoop(i, loopPtr->count());
-        loopPtr->setValues(config.getVarList());
-
+        logTimerLoop(iter, loopPtr->count());
         UInt process;
-        Parallel::receive(process, NULLINDEX); // which process needs work?
-        Parallel::send(i, process);            // send new loop number to be computed at process
-        loopPtr->next(config.getVarList());
+        Parallel::receive(process, NULLINDEX, comm); // which process needs work?
+        Parallel::send(iter++, process, comm);       // send new loop number to be computed at process
       }
       // send to all processes the end signal (NULLINDEX)
-      for(UInt i=1; i<Parallel::size(); i++)
+      for(UInt i=1; i<Parallel::size(comm); i++)
       {
         UInt process;
-        Parallel::receive(process, NULLINDEX); // which process needs work?
-        Parallel::send(NULLINDEX, process);    // end signal
+        Parallel::receive(process, NULLINDEX, comm); // which process needs work?
+        Parallel::send(NULLINDEX, process, comm);    // end signal
       }
-      Parallel::barrier();
+      Parallel::barrier(comm);
       logTimerLoopEnd(loopPtr->count());
     }
     else
     {
       // clients
       // -------
-      Parallel::send(Parallel::myRank(), 0);
+      Parallel::send(Parallel::myRank(comm), 0, comm);
       UInt k=0;
       for(;;)
       {
         UInt i;
-        Parallel::receive(i, 0);
+        Parallel::receive(i, 0, comm);
         if(i==NULLINDEX)
           break;
-        for(; k<i; k++) // step to current loop number
-          loopPtr->next(config.getVarList());
-        loopPtr->setValues(config.getVarList());
-        auto comm = Parallel::setDefaultCommunicator(Parallel::selfCommunicator());
+        for(; k<=i; k++) // step to current loop number
+          loopPtr->iteration(varList);
         loopRun();
-        Parallel::setDefaultCommunicator(comm);
-        Parallel::send(Parallel::myRank(), 0);
+        Parallel::send(Parallel::myRank(comm), 0, comm);
       }
-      Parallel::barrier();
+      Parallel::barrier(comm);
     }
-
-    programRemove(config);
-    config.getVarList() = varListOriginal;
+    Parallel::setDefaultCommunicator(comm);
   }
   catch(std::exception &e)
   {

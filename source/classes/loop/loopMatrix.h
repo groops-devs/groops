@@ -38,81 +38,56 @@ data variables of the matrix are available, see~\reference{dataVariables}{genera
 class LoopMatrix : public Loop
 {
   Matrix       A;
-  mutable VariableList varListMatrix;
-  std::vector<ExpressionVariablePtr> variableExpr;
-  std::string nameIndex, nameCount;
-
-  FileName fileName;
-  ExpressionVariablePtr variableStartRow;
-  ExpressionVariablePtr variableCountRows;
-  Bool transpose;
+  std::vector<ExpressionVariablePtr> variables;
+  std::string  nameIndex, nameCount;
+  VariableList varListConfig, varListMatrix;
+  UInt         index;
 
 public:
   LoopMatrix(Config &config);
 
-  UInt count() const override;
-  void init(VariableList &varList) override;
-  void setValues(VariableList &varList) override;
+  UInt count() const override {return A.rows();}
+  Bool iteration(VariableList &varList) override;
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopMatrix::LoopMatrix(Config &config) : Loop()
+inline LoopMatrix::LoopMatrix(Config &config)
 {
   try
   {
-    readConfig(config, "inputfile",          fileName,          Config::MUSTSET,   "",                 "");
-    readConfig(config, "transpose",          transpose,         Config::DEFAULT,   "0",                "effectively loop over columns");
-    readConfig(config, "startRow",           variableStartRow,  Config::DEFAULT,   "0",                "start at this row (variable: rows)");
-    readConfig(config, "countRows",          variableCountRows, Config::DEFAULT,   "rows",             "use this many rows (variable: rows)");
-    readConfig(config, "variableLoop",       variableExpr,      Config::MUSTSET,   "loopNumber=data0", "define a variable by name = expression (input columns are named data0, data1, ...)");
-    readConfig(config, "variableLoopIndex",  nameIndex,         Config::OPTIONAL, "",                 "variable with index of current iteration (starts with zero)");
-    readConfig(config, "variableLoopCount",  nameCount,         Config::OPTIONAL, "",                 "variable with total number of iterations");
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
+    FileName              fileName;
+    ExpressionVariablePtr startRow, countRows;
+    Bool                  transpose;
 
-/***********************************************/
+    readConfig(config, "inputfile",          fileName,  Config::MUSTSET,  "",                 "");
+    readConfig(config, "transpose",          transpose, Config::DEFAULT,  "0",                "effectively loop over columns");
+    readConfig(config, "startRow",           startRow,  Config::DEFAULT,  "0",                "start at this row (variable: rows)");
+    readConfig(config, "countRows",          countRows, Config::DEFAULT,  "rows",             "use this many rows (variable: rows)");
+    readConfig(config, "variableLoop",       variables, Config::MUSTSET,  "loopNumber=data0", "define a variable by name = expression (input columns are named data0, data1, ...)");
+    readConfig(config, "variableLoopIndex",  nameIndex, Config::OPTIONAL, "",                 "variable with index of current iteration (starts with zero)");
+    readConfig(config, "variableLoopCount",  nameCount, Config::OPTIONAL, "",                 "variable with total number of iterations");
+    if(isCreateSchema(config)) return;
 
-inline UInt LoopMatrix::count() const
-{
-  return A.rows();
-}
-
-/***********************************************/
-
-inline void LoopMatrix::init(VariableList &varList)
-{
-  try
-  {
-    varListMatrix = varList;
-
-    readFileMatrix(fileName(varList), A);
+    readFileMatrix(fileName, A);
     if(transpose)
       A = A.trans();
 
-    addVariable("rows", A.rows(), varListMatrix);
-    A = A.row(static_cast<UInt>(variableStartRow->evaluate(varListMatrix)), static_cast<UInt>(variableCountRows->evaluate(varListMatrix)));
+    varListConfig = config.getVarList();
+    addVariable("rows", A.rows(), varListConfig);
+    A = A.row(static_cast<UInt>(startRow->evaluate(varListConfig)), static_cast<UInt>(countRows->evaluate(varListConfig)));
 
-    if(index == NULLINDEX)
-    {
-      for(UInt i=0; i<variableExpr.size(); i++)
-      {
-        variableExpr.at(i)->parseVariableName(varListMatrix); // get real variable names, otherwise all named 'variableLoop'
-        addVariable(variableExpr.at(i)->name(), varList);
-      }
-      std::set<std::string> usedVariables;
-      for(UInt i=0; i<variableExpr.size(); i++)
-        variableExpr.at(i)->usedVariables(varListMatrix, usedVariables);
-      addDataVariables(A, varListMatrix, usedVariables);
-      if(!nameIndex.empty()) addVariable(nameIndex, varList);
-      if(!nameCount.empty()) addVariable(nameCount, varList);
-    }
+    for(auto &variable : variables)
+      variable->parseVariableName(varListConfig); // get real variable names, otherwise all named 'variableLoop'
+    for(auto &variable : variables)
+      addVariable(variable->name(), varListConfig);
+    std::set<std::string> usedVariables;
+    for(auto &variable : variables)
+      variable->usedVariables(varListConfig, usedVariables);
+    addDataVariables(A, varListMatrix, usedVariables);
+
     index = 0;
   }
   catch(std::exception &e)
@@ -123,13 +98,23 @@ inline void LoopMatrix::init(VariableList &varList)
 
 /***********************************************/
 
-inline void LoopMatrix::setValues(VariableList &varList)
+inline Bool LoopMatrix::iteration(VariableList &varList)
 {
+  if(index >= count())
+    return FALSE;
+
   evaluateDataVariables(A, index, varListMatrix);
-  for(UInt i=0; i<variableExpr.size(); i++)
-    varList[variableExpr.at(i)->name()]->setValue(variableExpr.at(i)->evaluate(varListMatrix));
-  if(!nameIndex.empty())  varList[nameIndex]->setValue(index);
-  if(!nameCount.empty())  varList[nameCount]->setValue(count());
+  auto varListTmp = varListConfig;
+  varListTmp     += varList;
+  varListTmp     += varListMatrix;
+
+  for(auto &variable : variables)
+    addVariable(variable->name(), variable->evaluate(varListTmp), varList);
+  if(!nameIndex.empty()) addVariable(nameIndex, index,   varList);
+  if(!nameCount.empty()) addVariable(nameCount, count(), varList);
+
+  index++;
+  return TRUE;
 }
 
 /***********************************************/

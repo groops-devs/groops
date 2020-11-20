@@ -38,74 +38,50 @@ class LoopCommandOutput : public Loop
 {
   std::string              nameString, nameIndex, nameCount;
   std::vector<std::string> strings;
-  std::vector<FileName>    command;
-  Bool                     silently;
+  UInt                     index;
 
 public:
   LoopCommandOutput(Config &config);
 
-  UInt count() const override;
-  void init(VariableList &varList) override;
-  void setValues(VariableList &varList) override;
+  UInt count() const override {return strings.size();}
+  Bool iteration(VariableList &varList) override;
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopCommandOutput::LoopCommandOutput(Config &config) : Loop()
+inline LoopCommandOutput::LoopCommandOutput(Config &config)
 {
   try
   {
+    std::vector<FileName> command;
+    Bool                  silently;
+
     readConfig(config, "command",            command,    Config::MUSTSET,   "",            "each output line becomes a loop iteration");
     readConfig(config, "silently",           silently,   Config::DEFAULT,   "0",           "without showing the output.");
     readConfig(config, "variableLoopString", nameString, Config::OPTIONAL, "loopCommand", "name of the variable to be replaced");
     readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL, "",            "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL, "",            "variable with total number of iterations");
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
+    if(isCreateSchema(config)) return;
 
-/***********************************************/
-
-inline UInt LoopCommandOutput::count() const
-{
-  return strings.size();
-}
-
-/***********************************************/
-
-inline void LoopCommandOutput::init(VariableList &varList)
-{
-  try
-  {
-    strings.clear();
     if(Parallel::isMaster())
     {
       UInt count = 0;
       for(UInt i=0; i<command.size(); i++)
       {
-        if(!System::exec(command.at(i)(varList), strings))
-          throw(Exception("Command \""+command.at(i)(varList).str()+"\" exited with error"));
+        if(!System::exec(command.at(i), strings))
+          throw(Exception("Command \""+command.at(i).str()+"\" exited with error"));
         if(!silently)
           for(const auto &str : strings)
             logInfo<<str<<Log::endl;
         if(strings.size() == count)
-          logWarning<<"Command \""+command.at(i)(varList).str()+"\" returned no output"<<Log::endl;
+          logWarning<<"Command \""+command.at(i).str()+"\" returned no output"<<Log::endl;
         count = strings.size();
       } // for(i)
     }
     Parallel::broadCast(strings);
 
-    if(index == NULLINDEX)
-    {
-      if(!nameString.empty()) addVariable(nameString, varList);
-      if(!nameIndex.empty())  addVariable(nameIndex,  varList);
-      if(!nameCount.empty())  addVariable(nameCount,  varList);
-    }
     index = 0;
   }
   catch(std::exception &e)
@@ -116,11 +92,17 @@ inline void LoopCommandOutput::init(VariableList &varList)
 
 /***********************************************/
 
-inline void LoopCommandOutput::setValues(VariableList &varList)
+inline Bool LoopCommandOutput::iteration(VariableList &varList)
 {
-  if(!nameString.empty()) varList[nameString]->setValue(strings.at(index));
-  if(!nameIndex.empty())  varList[nameIndex]->setValue(index);
-  if(!nameCount.empty())  varList[nameCount]->setValue(count());
+  if(index >= count())
+    return FALSE;
+
+  if(!nameString.empty()) addVariable(nameString, strings.at(index), varList);
+  if(!nameIndex.empty())  addVariable(nameIndex,  index,             varList);
+  if(!nameCount.empty())  addVariable(nameCount,  count(),           varList);
+
+  index++;
+  return TRUE;
 }
 
 /***********************************************/

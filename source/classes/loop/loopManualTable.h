@@ -45,16 +45,15 @@ public:
 
 private:
   std::vector<CellVector>  rows;
-  std::vector<CellVector>  columns;
   std::vector<std::string> nameString;
   std::string              nameIndex, nameCount;
+  UInt                     index;
 
 public:
   LoopManualTable(Config &config);
 
-  UInt count() const override;
-  void init(VariableList &varList) override;
-  void setValues(VariableList &varList) override;
+  UInt count() const override {return rows.size();}
+  Bool iteration(VariableList &varList) override;
 };
 
 /***********************************************/
@@ -72,64 +71,44 @@ template<> Bool readConfig(Config &config, const std::string &name, LoopManualTa
 
 /***********************************************/
 
-inline LoopManualTable::LoopManualTable(Config &config) : Loop()
+inline LoopManualTable::LoopManualTable(Config &config)
 {
   try
   {
+    std::vector<CellVector> columns;
+
     std::string choice;
-    readConfigChoice(config, "table",  choice, Config::MUSTSET, "", "define table by rows/columns");
-    if(readConfigChoiceElement(config, "rowWise",    choice, "define table by rows"))
-      readConfig(config, "row",              rows,       Config::MUSTSET,   "",           "define table by rows");
-    if(readConfigChoiceElement(config, "columnWise", choice, "define table by columns"))
-      readConfig(config, "column",           columns,    Config::MUSTSET,   "",           "define table by columns");
-    endChoice(config);
+    if(readConfigChoice(config, "table", choice, Config::MUSTSET, "", "define table by rows/columns"))
+    {
+      if(readConfigChoiceElement(config, "rowWise",    choice, "define table by rows"))
+        readConfig(config, "row",    rows,    Config::MUSTSET, "", "define table by rows");
+      if(readConfigChoiceElement(config, "columnWise", choice, "define table by columns"))
+        readConfig(config, "column", columns, Config::MUSTSET, "", "define table by columns");
+      endChoice(config);
+    }
     readConfig(config, "variableLoopString", nameString, Config::MUSTSET,   "loopString", "1. variable name for the 1. column, next variable name for the 2. column, ... ");
     readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL,  "",           "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL,  "",           "variable with total number of iterations");
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
+    if(isCreateSchema(config)) return;
 
-/***********************************************/
+    // transpose columns
+    for(UInt i=0; i<columns.size(); i++)
+      for(UInt k=0; k<columns.at(i).cells.size(); k++)
+      {
+        rows.resize(k+1);
+        rows.at(k).cells.push_back(columns.at(i).cells.at(k));
+      }
 
-inline UInt LoopManualTable::count() const
-{
-  return (columns.size() ? columns.at(0).cells.size() : rows.size());
-}
-
-/***********************************************/
-
-inline void LoopManualTable::init(VariableList &varList)
-{
-  try
-  {
-    if(rows.size() > 1 || columns.size() > 1)
-    {
-      const UInt rowCount    = (columns.size() ? columns.at(0).cells.size() : rows.size());
-      const UInt columnCount = (rows.size()    ? rows.at(0).cells.size()    : columns.size());
-      if(nameString.size()>columnCount)
-        throw(Exception("More variables than columns in the table"));
-      for(UInt i = 1; i < rows.size(); i++)
-        if(rows.at(i).cells.size() != columnCount)
-          throw(Exception("Varying number of columns in the table"));
-      for(UInt i = 1; i < columns.size(); i++)
-        if(columns.at(i).cells.size() != rowCount)
-          throw(Exception("Varying number of rows in the table"));
-    }
-
-    if(index == NULLINDEX)
-    {
-      for(UInt i=0; i<nameString.size(); i++)
-        if(!nameString.at(i).empty())
-          addVariable(nameString.at(i), varList);
-      if(!nameIndex.empty()) addVariable(nameIndex, varList);
-      if(!nameCount.empty()) addVariable(nameCount, varList);
-    }
     index = 0;
-  }
+    if(rows.size() > 1)
+    {
+      if(nameString.size() > rows.at(0).cells.size())
+        throw(Exception("More variables than columns in the table"));
+      for(UInt i=1; i<rows.size(); i++)
+        if(rows.at(i).cells.size() != rows.at(0).cells.size())
+          throw(Exception("Varying number of columns in the table"));
+     }
+   }
   catch(std::exception &e)
   {
     GROOPS_RETHROW(e)
@@ -138,20 +117,20 @@ inline void LoopManualTable::init(VariableList &varList)
 
 /***********************************************/
 
-inline void LoopManualTable::setValues(VariableList &varList)
+inline Bool LoopManualTable::iteration(VariableList &varList)
 {
+  if(index >= count())
+    return FALSE;
+
   for(UInt i=0; i<nameString.size(); i++)
     if(!nameString.at(i).empty())
-    {
-      if(rows.size())
-        varList[nameString.at(i)]->setValue(rows.at(index).cells.at(i));
-      else if(columns.size())
-        varList[nameString.at(i)]->setValue(columns.at(i).cells.at(index));
-    }
-  if(!nameIndex.empty())  varList[nameIndex]->setValue(index);
-  if(!nameCount.empty())  varList[nameCount]->setValue(count());
-}
+      addVariable(nameString.at(i), rows.at(index).cells.at(i), varList);
+  if(!nameIndex.empty()) addVariable(nameIndex, index,   varList);
+  if(!nameCount.empty()) addVariable(nameCount, count(), varList);
 
+  index++;
+  return TRUE;
+}
 
 /***********************************************/
 

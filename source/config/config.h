@@ -50,6 +50,13 @@ public:
   /** @brief Gives the parsed content of the node with @a name. */
   Bool getConfigValue(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, Double &v);
 
+  /** @brief Removes the node with @a name from @a config and stores it in @a conf. */
+  Bool getConfigValue(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, Config &conf);
+
+  /** @brief Removes all nodes with @a name from @a config and stores it in @a conf.
+  * Number of elements is unknown as loops and conditions are not evaluated.  */
+  Bool getUnboundedConfigValues(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, Config &conf);
+
   /** @brief Get the current global variable list. */
   VariableList &getVarList() {return varList;}
 
@@ -74,7 +81,7 @@ public:
   /** @brief nested name of current xmlNode. */
   std::string currentNodeName() const;
 
-private:
+protected:
   // Internal class
   class StackNode
   {
@@ -84,6 +91,7 @@ private:
     XmlNodePtr   xmlNode;        // complex node with children
     XmlNodePtr   xmlLastChild;   // last processed child
     LoopPtr      loopPtr;
+    Bool         loopNext;       // move to next iteration before
     VariableList loopVarListOld; // varList without loop variables
 
     StackNode(XmlNodePtr _xmlNode, ComplexType _type, const std::string &_name) : name(_name), type(_type), xmlNode(_xmlNode) {}
@@ -103,6 +111,7 @@ private:
   XmlNodePtr   getChild(const std::string &name, Bool remove=TRUE);
   XmlNodePtr   getChildWithLoopCheck(const std::string &name, Bool remove=TRUE);
   void         notEmptyWarning();
+  std::string  copy(Config &config, const VariableList &variableList);
 
   // schema mode
   XmlNodePtr   createSchemaNode(const std::string &name);
@@ -121,8 +130,30 @@ public:
   friend Bool readConfigChoice(Config &config, const std::string &name, std::string &choice, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
   friend Bool readConfigChoiceElement(Config &config, const std::string &name, const std::string &choice, const std::string &annotation);
   friend void endChoice(Config &config);
-  friend void programRun(Config &config);
-  friend void programRemove(Config &config);
+};
+
+/***** CLASS ***********************************/
+
+/** @brief Config elements of a program.
+* It can be read with @a readConfig().
+* The config is evaluated and the is program executed with @a run().
+* @ingroup config */
+class ProgramConfig : public Config
+{
+public:
+  void run(VariableList &variableList);
+};
+
+/***** CLASS ***********************************/
+
+/** @brief Config elements of a loop.
+* It can be read with @a readConfig().
+* The config is evaluated with @a read().
+* @ingroup config */
+class LoopConfig : public Config
+{
+public:
+  LoopPtr read(VariableList &variableList);
 };
 
 /***** FUNCTIONS ***********************************/
@@ -173,14 +204,6 @@ Bool readConfigChoiceElement(Config &config, const std::string &name, const std:
 * Must be called only if the @a readConfigChoice return TRUE before.
 * @ingroup config */
 void endChoice(Config &config);
-
-/** @brief Run the programs given in the @a config.
-* @ingroup config */
-void programRun(Config &config);
-
-/** @brief Remove the programs given in the @a config.
-* @ingroup config */
-void programRemove(Config &config);
 
 /** @brief Reads a variable from @a config.
 * If @a name is in the @a config, the value is set in @a var and TRUE is returned.

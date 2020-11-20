@@ -37,28 +37,33 @@ class LoopTimeSeries : public Loop
 {
   std::string       nameTime, nameIndex, nameCount;
   std::vector<Time> times;
-  TimeSeriesPtr     timeSeriesPtr;
+  UInt              index;
 
 public:
   LoopTimeSeries(Config &config);
 
-  UInt count() const override;
-  void init(VariableList &varList) override;
-  void setValues(VariableList &varList) override;
+  UInt count() const override {return times.size();}
+  Bool iteration(VariableList &varList) override;
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopTimeSeries::LoopTimeSeries(Config &config) : Loop()
+inline LoopTimeSeries::LoopTimeSeries(Config &config)
 {
   try
   {
+    TimeSeriesPtr timeSeriesPtr;
+
     readConfig(config, "timeSeries",        timeSeriesPtr, Config::MUSTSET,   "",         "loop is called for every point in time");
     readConfig(config, "variableLoopTime",  nameTime,      Config::OPTIONAL,  "loopTime", "variable with time of each loop");
     readConfig(config, "variableLoopIndex", nameIndex,     Config::OPTIONAL,  "",         "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount", nameCount,     Config::OPTIONAL,  "",         "variable with total number of iterations");
+    if(isCreateSchema(config)) return;
+
+    times = timeSeriesPtr->times();
+    index = 0;
   }
   catch(std::exception &e)
   {
@@ -68,33 +73,17 @@ inline LoopTimeSeries::LoopTimeSeries(Config &config) : Loop()
 
 /***********************************************/
 
-inline UInt LoopTimeSeries::count() const
+inline Bool LoopTimeSeries::iteration(VariableList &varList)
 {
-  return times.size();
-}
+  if(index >= count())
+    return FALSE;
 
-/***********************************************/
+  if(!nameTime.empty())  addVariable(nameTime,  times.at(index).mjd(), varList);
+  if(!nameIndex.empty()) addVariable(nameIndex, index,                 varList);
+  if(!nameCount.empty()) addVariable(nameCount, count(),               varList);
 
-inline void LoopTimeSeries::init(VariableList &varList)
-{
-  times = timeSeriesPtr->times();
-
-  if(index == NULLINDEX)
-  {
-    if(!nameTime.empty())  addVariable(nameTime,  varList);
-    if(!nameIndex.empty()) addVariable(nameIndex, varList);
-    if(!nameCount.empty()) addVariable(nameCount, varList);
-  }
-  index = 0;
-}
-
-/***********************************************/
-
-inline void LoopTimeSeries::setValues(VariableList &varList)
-{
-  if(!nameTime.empty())  varList[nameTime]->setValue(times.at(index).mjd());
-  if(!nameIndex.empty()) varList[nameIndex]->setValue(index);
-  if(!nameCount.empty()) varList[nameCount]->setValue(count());
+  index++;
+  return TRUE;
 }
 
 /***********************************************/

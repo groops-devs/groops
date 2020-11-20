@@ -49,29 +49,16 @@ typedef std::shared_ptr<Loop> LoopPtr;
 * An instance of this class can be created with @ref readConfig. */
 class Loop
 {
-protected:
-  UInt index;
-
-Loop() : index(NULLINDEX) {}
-
 public:
   /// Destructor.
   virtual ~Loop() {}
 
-  /** @brief Returns total number of iterations. */
+  /** @brief Returns the approximate total number of iterations. */
   virtual UInt count() const = 0;
 
-  /** @brief Initializes loop and adds variables to @p varList. Must be called before other methods. */
-  virtual void init(VariableList &varList) = 0;
-
-  /** @brief Sets values of loop variables in @p varList for current iteration. */
-  virtual void setValues(VariableList &varList) = 0;
-
-  /** @brief Advances loop to the next iteration. */
-  virtual void next(VariableList &/*varList*/) { index++; }
-
-  /** @brief Returns TRUE if loop has finished, FALSE otherwise. */
-  virtual Bool finished() const { return index >= count(); }
+  /** @brief Sets values of loop variables in @p varList for current iteration.
+  * @return valid iteration step? */
+  virtual Bool iteration(VariableList &varList) = 0;
 
   /** @brief creates an derived instance of this class. */
   static LoopPtr create(Config &config, const std::string &name);
