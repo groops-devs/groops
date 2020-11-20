@@ -1505,6 +1505,15 @@ VariableList &VariableList::operator=(const VariableList &x)
 
 /***********************************************/
 
+VariableList &VariableList::operator+=(const VariableList &x)
+{
+  for(const auto &var : x)
+    addVariable(var.second);
+  return *this;
+}
+
+/***********************************************/
+
 ExpressionVariablePtr VariableList::operator[](const std::string &name)
 {
   try

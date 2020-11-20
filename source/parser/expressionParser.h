@@ -213,6 +213,9 @@ public:
   /// Assignement.
   VariableList &operator=(const VariableList &x);
 
+  /// Concatenate.
+  VariableList &operator+=(const VariableList &x);
+
   ExpressionVariablePtr operator[](const std::string &name);
   ExpressionVariablePtr find(const std::string &name) const;
   ExpressionVariablePtr addVariable(ExpressionVariablePtr var);
