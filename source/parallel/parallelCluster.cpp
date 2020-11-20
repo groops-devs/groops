@@ -53,6 +53,7 @@ void init(int argc, char *argv[])
   {
     MPI_Init(&argc, &argv);
     MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
+    commDefault = globalCommunicator();
   }
   catch(std::exception &e)
   {
@@ -80,9 +81,7 @@ void abort()
 
 inline MPI_Comm getComm(CommunicatorPtr comm)
 {
-  if(comm!=nullptr)
-    return comm->comm;
-  return (commDefault!=nullptr) ? commDefault->comm : MPI_COMM_WORLD;
+  return (comm != nullptr) ? comm->comm : commDefault->comm;
 }
 
 /***********************************************/
@@ -117,8 +116,17 @@ CommunicatorPtr defaultCommunicator()
 
 CommunicatorPtr setDefaultCommunicator(CommunicatorPtr comm)
 {
-  std::swap(commDefault, comm);
-  return comm;
+  try
+  {
+    if(comm == nullptr)
+      throw(Exception("null pointer"));
+    std::swap(commDefault, comm);
+    return comm;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
 
 /***********************************************/
