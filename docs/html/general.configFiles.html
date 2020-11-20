@@ -132,7 +132,16 @@ new config files in the GUI. See section <a class="groops-ref" href="general.gui
 for details on how to set up a template file.</p><p>It is also possible to import global sections from other config files by providing them as <strong class="groops-config-element">inputfileGlobal</strong>.
 Global elements defined in the config file itself overwrite those with the same name imported from other config files.
 This functionality allows the definition of a set of global variables in a single file that is then imported into multiple
-other config files, which can be useful in larger scenarios/projects.
+other config files, which can be useful in larger scenarios/projects.</p><p>Global elements can be manipulated when running a config file by passing the argument <code>--global &lt;name>=&lt;value></code>.
+For example, running the command
+<pre>
+  groops --global timeStart=58849 --global satellite=swarm config.xml
+</pre>
+runs the config file <code>config.xml</code> but replaces the values of the global elements <code>timeStart</code>
+and <code>satellite</code> with <code>58849</code> and <code>swarm</code>, respectively. If a global element passed as
+an argument does not already exist in the config file, it will be added with the type <code>string</code>.
+Only the basic data types listed above are supported. This feature can be useful when running GROOPS
+from the command line or from an external script file.
 </p>
 
         </div>

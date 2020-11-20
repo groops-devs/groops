@@ -62,3 +62,14 @@ It is also possible to import global sections from other config files by providi
 Global elements defined in the config file itself overwrite those with the same name imported from other config files.
 This functionality allows the definition of a set of global variables in a single file that is then imported into multiple
 other config files, which can be useful in larger scenarios/projects.
+
+Global elements can be manipulated when running a config file by passing the argument \verb|--global <name>=<value>|.
+For example, running the command
+\begin{verbatim}
+  groops --global timeStart=58849 --global satellite=swarm config.xml
+\end{verbatim}
+runs the config file \verb|config.xml| but replaces the values of the global elements \verb|timeStart|
+and \verb|satellite| with \verb|58849| and \verb|swarm|, respectively. If a global element passed as
+an argument does not already exist in the config file, it will be added with the type \verb|string|.
+Only the basic data types listed above are supported. This feature can be useful when running GROOPS
+from the command line or from an external script file.
