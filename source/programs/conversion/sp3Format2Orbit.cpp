@@ -5,6 +5,7 @@
 * @brief Read IGS orbits from SP3 format.
 *
 * @author Torsten Mayer-Guerr
+* @author Sebastian Strasser
 * @date 2019-10-25
 *
 */
@@ -81,11 +82,8 @@ void Sp3Format2Orbit::run(Config &config)
         TimeSystem timeSystem = GPS;
         Time time;
         Bool positionRecord = FALSE;
-        for(;;)
+        while(std::getline(file, line))
         {
-          std::string line;
-          std::getline(file, line);
-
           // Header
           // ------
           if(String::startsWith(line, "#") ||   // first 2 lines
