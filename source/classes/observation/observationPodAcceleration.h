@@ -76,13 +76,14 @@ public:
   ObservationPodAcceleration(Config &config);
  ~ObservationPodAcceleration() {}
 
-  UInt parameterCount()        const;
-  UInt gravityParameterCount() const {return parametrization->parameterCount();}
-  UInt rightSideCount()        const {return rhs.size();}
-  UInt arcCount()              const {return orbitFile.arcCount();}
+  Bool setInterval(const Time &timeStart, const Time &timeEnd) override;
+  UInt parameterCount()        const override;
+  UInt gravityParameterCount() const override {return parametrization->parameterCount();}
+  UInt rightSideCount()        const override {return rhs.size();}
+  UInt arcCount()              const override {return orbitFile.arcCount();}
   void parameterName(std::vector<ParameterName> &name) const;
 
-  void observation(UInt arc, Matrix &l, Matrix &A, Matrix &B);
+  void observation(UInt arc, Matrix &l, Matrix &A, Matrix &B) override;
 };
 
 /***********************************************/

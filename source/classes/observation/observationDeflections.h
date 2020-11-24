@@ -65,13 +65,14 @@ public:
   ObservationDeflections(Config &config);
  ~ObservationDeflections() {}
 
-  UInt parameterCount()          const {return parametrization->parameterCount();}
-  UInt gravityParameterCount()   const {return parametrization->parameterCount();}
-  UInt rightSideCount()          const {return 1;}
-  UInt arcCount()                const {return (points.size()+obsPerArc-1)/obsPerArc;}
-  void parameterName(std::vector<ParameterName> &name) const {parametrization->parameterName(name);}
+  Bool setInterval(const Time &timeStart, const Time &timeEnd) override {return parametrization->setInterval(timeStart, timeEnd);}
+  UInt parameterCount()        const override {return parametrization->parameterCount();}
+  UInt gravityParameterCount() const override {return parametrization->parameterCount();}
+  UInt rightSideCount()        const override {return 1;}
+  UInt arcCount()              const override {return (points.size()+obsPerArc-1)/obsPerArc;}
+  void parameterName(std::vector<ParameterName> &name) const override {parametrization->parameterName(name);}
 
-  void observation(UInt arcNo, Matrix &l, Matrix &A, Matrix &B);
+  void observation(UInt arcNo, Matrix &l, Matrix &A, Matrix &B) override;
 };
 
 /***********************************************/

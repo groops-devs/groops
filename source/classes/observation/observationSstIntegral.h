@@ -50,13 +50,14 @@ public:
   ObservationSstIntegral(Config &config);
  ~ObservationSstIntegral() {}
 
-  UInt parameterCount()          const {return observationMisc->parameterCount();}
-  UInt gravityParameterCount()   const {return observationMisc->gravityParameterCount();}
-  UInt rightSideCount()          const {return observationMisc->rightSideCount();}
-  UInt arcCount()                const {return observationMisc->arcCount();}
-  void parameterName(std::vector<ParameterName> &name) const {observationMisc->parameterName(name);}
+  Bool setInterval(const Time &timeStart, const Time &timeEnd) override {return observationMisc->setInterval(timeStart, timeEnd);}
+  UInt parameterCount()          const override {return observationMisc->parameterCount();}
+  UInt gravityParameterCount()   const override {return observationMisc->gravityParameterCount();}
+  UInt rightSideCount()          const override {return observationMisc->rightSideCount();}
+  UInt arcCount()                const override {return observationMisc->arcCount();}
+  void parameterName(std::vector<ParameterName> &name) const override {observationMisc->parameterName(name);}
 
-  void observation(UInt arc, Matrix &l, Matrix &A, Matrix &B);
+  void observation(UInt arc, Matrix &l, Matrix &A, Matrix &B) override;
 };
 
 /***********************************************/

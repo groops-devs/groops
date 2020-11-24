@@ -91,6 +91,23 @@ ObservationPodAcceleration::ObservationPodAcceleration(Config &config)
 
 /***********************************************/
 
+Bool ObservationPodAcceleration::setInterval(const Time &timeStart, const Time &timeEnd)
+{
+  try
+  {
+    Bool change = FALSE;
+    change = parametrization->setInterval(timeStart, timeEnd)             || change;
+    change = parametrizationAcceleration->setInterval(timeStart, timeEnd) || change;
+    return change;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
 UInt ObservationPodAcceleration::parameterCount() const
 {
   return parametrization->parameterCount() + parametrizationAcceleration->parameterCount();

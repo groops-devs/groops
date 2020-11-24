@@ -81,13 +81,14 @@ public:
   ObservationStationLoading(Config &config);
  ~ObservationStationLoading() {}
 
-  UInt parameterCount()          const {return gravityParameterCount() + 3*estimateTranslation + estimateScale + 3*estimateRotation;}
-  UInt gravityParameterCount()   const {return parametrization->parameterCount();}
-  UInt rightSideCount()          const {return 1;}
-  UInt arcCount()                const {return 1;}
-  void parameterName(std::vector<ParameterName> &name) const;
+  Bool setInterval(const Time &timeStart, const Time &timeEnd) override {return parametrization->setInterval(timeStart, timeEnd);}
+  UInt parameterCount()          const override {return gravityParameterCount() + 3*estimateTranslation + estimateScale + 3*estimateRotation;}
+  UInt gravityParameterCount()   const override {return parametrization->parameterCount();}
+  UInt rightSideCount()          const override {return 1;}
+  UInt arcCount()                const override {return 1;}
+  void parameterName(std::vector<ParameterName> &name) const override;
 
-  void observation(UInt arcNo, Matrix &l, Matrix &A, Matrix &B);
+  void observation(UInt arcNo, Matrix &l, Matrix &A, Matrix &B) override;
 };
 
 /***********************************************/

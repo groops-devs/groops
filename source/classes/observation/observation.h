@@ -83,9 +83,14 @@ class Observation
 public:
   virtual ~Observation() {}
 
+  /** @brief Estimate parameter in the given interval only.
+  * Change result of @a parameterCount(), @a gravityParameterCount(), @a parameterName().
+  * @return TRUE if parameters are changed */
+  virtual Bool setInterval(const Time &timeStart, const Time &timeEnd) = 0;
+
   /** @brief Number of unknown parameters.
   * This is the column count of the design matrix @a A. */
-  virtual UInt parameterCount() const=0;
+  virtual UInt parameterCount() const = 0;
 
   /** @brief Number of Gravityfield parameters.
   * The parameterCount of Representation.
@@ -109,8 +114,7 @@ public:
   * @param arcNo Index of the arc to be computedNummer [0, arcCount)
   * @param[out] l Observation vector (multiple vectors/columns possible)
   * @param[out] A Design matrix for common parameters.
-  * @param[out] B Design matrix for arc related parameters.
-  */
+  * @param[out] B Design matrix for arc related parameters. */
   virtual void observation(UInt arcNo, Matrix &l, Matrix &A, Matrix &B) = 0;
 
   /** @brief creates an derived instance of this class. */
