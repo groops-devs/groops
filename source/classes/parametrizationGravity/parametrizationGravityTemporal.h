@@ -49,7 +49,7 @@ class ParametrizationGravityTemporal : public ParametrizationGravityBase
 public:
   ParametrizationGravityTemporal(Config &config);
 
-  void setInterval(const Time &timeStart, const Time &timeEnd) override;
+  Bool setInterval(const Time &timeStart, const Time &timeEnd) override;
   UInt parameterCount() const override {return spatial->parameterCount() * temporal->parameterCount();}
   void parameterName(std::vector<ParameterName> &name) const override;
   void field          (const Time &time, const Vector3d &point, const Kernel &kernel, MatrixSliceRef A) const override;

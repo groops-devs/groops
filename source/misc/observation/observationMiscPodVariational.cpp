@@ -69,12 +69,15 @@ ObservationMiscPodVariational::ObservationMiscPodVariational(Config &config)
 
 /***********************************************/
 
-void ObservationMiscPodVariational::setInterval(const Time &timeStart, const Time &timeEnd)
+Bool ObservationMiscPodVariational::setInterval(const Time &timeStart, const Time &timeEnd)
 {
   try
   {
-    parameterGravity->setInterval(timeStart, timeEnd);
-    parameterAcceleration->setInterval(timeStart, timeEnd);
+    Bool change = FALSE;
+    change = parameterGravity->setInterval(timeStart, timeEnd)      || change;
+    change = parameterAcceleration->setInterval(timeStart, timeEnd) || change;
+    if(!change)
+      return FALSE;
     variationalEquation.computeIndices();
 
     // count parameters
@@ -83,6 +86,8 @@ void ObservationMiscPodVariational::setInterval(const Time &timeStart, const Tim
     gravityCount    = variationalEquation.parameterCountGravity();
     idxGravity      = 0;
     idxState        = gravityCount;
+
+    return change;
   }
   catch(std::exception &e)
   {

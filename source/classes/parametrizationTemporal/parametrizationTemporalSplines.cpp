@@ -88,14 +88,17 @@ void ParametrizationTemporalSplines::computeIntervals(const std::vector<Time> &t
 
 /***********************************************/
 
-void ParametrizationTemporalSplines::setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc)
+Bool ParametrizationTemporalSplines::setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc)
 {
   try
   {
+    const UInt idxStartOld = idxStart;
+    const UInt idxEndOld   = idxEnd;
+
     if((timeEnd<=times.at(0)) || (timeStart>=times.back()))
     {
       idxStart = idxEnd = 0; // time interval outside spline nodal points
-      return;
+      return (idxStartOld != idxStart) || (idxEndOld != idxEnd);
     }
 
     if(estimatePerArc && !isInterval)
@@ -108,6 +111,8 @@ void ParametrizationTemporalSplines::setInterval(const Time &timeStart, const Ti
     idxEnd = idxStart;
     while((idxEnd<idEpochStart.size()) && (times.at(idEpochStart.at(idxEnd))<timeEnd))
       idxEnd++;
+
+    return (idxStartOld != idxStart) || (idxEndOld != idxEnd);
   }
   catch(std::exception &e)
   {

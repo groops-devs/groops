@@ -107,13 +107,17 @@ ObservationMiscSstVariational::ObservationMiscSstVariational(Config &config)
 
 /***********************************************/
 
-void ObservationMiscSstVariational::setInterval(const Time &timeStart, const Time &timeEnd)
+Bool ObservationMiscSstVariational::setInterval(const Time &timeStart, const Time &timeEnd)
 {
   try
   {
-    parameterGravity->setInterval(timeStart, timeEnd);
-    parameterAcceleration1->setInterval(timeStart, timeEnd);
-    parameterAcceleration2->setInterval(timeStart, timeEnd);
+    Bool change = FALSE;
+    change = parameterGravity->setInterval(timeStart, timeEnd)       || change;
+    change = parameterAcceleration1->setInterval(timeStart, timeEnd) || change;
+    change = parameterAcceleration2->setInterval(timeStart, timeEnd) || change;
+    change = parameterSst->setInterval(timeStart, timeEnd)           || change;
+    if(!change)
+      return FALSE;
     variationalEquation1.computeIndices();
     variationalEquation2.computeIndices();
 
@@ -128,6 +132,8 @@ void ObservationMiscSstVariational::setInterval(const Time &timeStart, const Tim
     idxState1   = countAParameter; countAParameter += state1Count;
     idxState2   = countAParameter; countAParameter += state2Count;
     idxSstPara  = countAParameter; countAParameter += parameterSst->parameterCount();
+
+    return change;
   }
   catch(std::exception &e)
   {

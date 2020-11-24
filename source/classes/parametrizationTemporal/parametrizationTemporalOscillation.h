@@ -45,7 +45,7 @@ class ParametrizationTemporalOscillation : public ParametrizationTemporalBase
 public:
   ParametrizationTemporalOscillation(Config &config);
 
-  void setInterval(const Time &/*timeStart*/, const Time &/*timeEnd*/, Bool /*estimatePerArc*/) {}
+  Bool setInterval(const Time &/*timeStart*/, const Time &/*timeEnd*/, Bool /*estimatePerArc*/) {return FALSE;};
   UInt parameterCount() const  {return 2*timePeriod.size();}
   void parameterName(std::vector<ParameterName> &name) const;
   void factors(const Time &time, UInt startIndex, std::vector<UInt> &index, std::vector<Double> &factor) const;

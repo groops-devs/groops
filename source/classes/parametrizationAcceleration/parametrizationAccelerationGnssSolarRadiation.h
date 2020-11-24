@@ -47,7 +47,7 @@ public:
   ParametrizationAccelerationGnssSolarRadiation(Config &config);
 
   Bool isPerArc() const override {return perArc;}
-  void setInterval(const Time &/*timeStart*/, const Time &/*timeEnd*/) override {}
+  Bool setInterval(const Time &/*timeStart*/, const Time &/*timeEnd*/) override {return FALSE;}
   UInt parameterCount() const override {return countParameter;}
   void parameterName(std::vector<ParameterName> &name) const override;
 

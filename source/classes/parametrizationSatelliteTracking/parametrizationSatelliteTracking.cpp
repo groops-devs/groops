@@ -108,14 +108,17 @@ void ParametrizationSatelliteTracking::computeIndicies()
 
 /***********************************************/
 
-void ParametrizationSatelliteTracking::setInterval(const Time &timeStart, const Time &timeEnd)
+Bool ParametrizationSatelliteTracking::setInterval(const Time &timeStart, const Time &timeEnd)
 {
   try
   {
+    Bool change = FALSE;
     for(UInt i=0; i<parameter.size(); i++)
       if(!parameter.at(i)->isPerArc())
-        parameter.at(i)->setInterval(timeStart, timeEnd);
-    computeIndicies();
+        change = parameter.at(i)->setInterval(timeStart, timeEnd) || change;
+    if(change)
+      computeIndicies();
+    return change;
   }
   catch(std::exception &e)
   {
@@ -125,14 +128,17 @@ void ParametrizationSatelliteTracking::setInterval(const Time &timeStart, const 
 
 /***********************************************/
 
-void ParametrizationSatelliteTracking::setIntervalArc(const Time &timeStart, const Time &timeEnd)
+Bool ParametrizationSatelliteTracking::setIntervalArc(const Time &timeStart, const Time &timeEnd)
 {
   try
   {
+    Bool change = FALSE;
     for(UInt i=0; i<parameter.size(); i++)
       if(parameter.at(i)->isPerArc())
-        parameter.at(i)->setInterval(timeStart, timeEnd);
-    computeIndicies();
+        change = parameter.at(i)->setInterval(timeStart, timeEnd) || change;
+    if(change)
+      computeIndicies();
+    return change;
   }
   catch(std::exception &e)
   {

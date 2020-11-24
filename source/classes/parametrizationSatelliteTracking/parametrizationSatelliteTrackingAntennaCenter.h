@@ -44,7 +44,7 @@ public:
   ParametrizationSatelliteTrackingAntennaCenter(Config &config);
 
   Bool isPerArc() const {return FALSE;}
-  void setInterval(const Time &/*timeStart*/, const Time &/*timeEnd*/) {}
+  Bool setInterval(const Time &/*timeStart*/, const Time &/*timeEnd*/) {return FALSE;}
   UInt parameterCount() const {return estimate1x+estimate1y+estimate1z+estimate2x+estimate2y+estimate2z;}
   void parameterName(std::vector<ParameterName> &name) const;
   void compute(UInt sstType, const std::vector<Time> &time, const Vector &sst0,

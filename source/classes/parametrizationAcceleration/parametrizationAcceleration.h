@@ -67,13 +67,15 @@ public:
  ~ParametrizationAcceleration();
 
   /** @brief Estimate parameter in the given interval only.
-  * Change result of @a parameterCount(), @a parameterName(). */
-  void setInterval(const Time &timeStart, const Time &timeEnd);
+  * Change result of @a parameterCount(), @a parameterName().
+  * @return TRUE if parameters are changed */
+  Bool setInterval(const Time &timeStart, const Time &timeEnd);
 
   /** @brief Set the interval for the estimation arc related parameters.
   * Must be called at the beginning of every new arc.
-  * Can change result of @a parameterCountArc(), @a parameterNameArc(). */
-  void setIntervalArc(const Time &timeStart, const Time &timeEnd);
+  * Can change result of @a parameterCountArc(), @a parameterNameArc().
+  * @return TRUE if parameters are changed */
+  Bool setIntervalArc(const Time &timeStart, const Time &timeEnd);
 
   /** @brief Number of unknown parameters.
   * This is the column count of the design matrix @a A. */
@@ -133,7 +135,7 @@ class ParametrizationAccelerationBase
 public:
 virtual ~ParametrizationAccelerationBase() {}
 virtual Bool isPerArc() const = 0;
-virtual void setInterval(const Time &timeStart, const Time &timeEnd) = 0;
+virtual Bool setInterval(const Time &timeStart, const Time &timeEnd) = 0;
 virtual UInt parameterCount() const = 0;
 virtual void parameterName(std::vector<ParameterName> &name) const = 0;
 virtual void compute(SatelliteModelPtr satellite, const Time &time, const Vector3d &position, const Vector3d &velocity,

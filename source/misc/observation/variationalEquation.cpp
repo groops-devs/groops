@@ -117,8 +117,8 @@ void VariationalEquation::setArc(VariationalEquationArc &arc)
 
     if(parameterAcceleration)
     {
-      parameterAcceleration->setIntervalArc(arc.times.at(0), arc.times.back()+medianSampling(arc.times));
-      computeIndices();
+      if(parameterAcceleration->setIntervalArc(arc.times.at(0), arc.times.back()+medianSampling(arc.times)))
+        computeIndices();
     }
 
     initIntegration();

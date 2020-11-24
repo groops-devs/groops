@@ -45,7 +45,7 @@ public:
   ParametrizationAccelerationPerRevolution(Config &config);
 
   Bool isPerArc() const override {return perArc;}
-  void setInterval(const Time &timeStart, const Time &timeEnd)override ;
+  Bool setInterval(const Time &timeStart, const Time &timeEnd) override;
   UInt parameterCount() const override {return 2*order*countAxis*(idxEnd-idxStart);}
   void parameterName(std::vector<ParameterName> &name) const override;
   void compute(SatelliteModelPtr satellite, const Time &time, const Vector3d &position, const Vector3d &velocity,
@@ -88,16 +88,21 @@ inline ParametrizationAccelerationPerRevolution::ParametrizationAccelerationPerR
 
 /***********************************************/
 
-void ParametrizationAccelerationPerRevolution::setInterval(const Time &timeStart, const Time &timeEnd)
+Bool ParametrizationAccelerationPerRevolution::setInterval(const Time &timeStart, const Time &timeEnd)
 {
   try
   {
+    const UInt idxStartOld = idxStart;
+    const UInt idxEndOld   = idxEnd;
+
     idxStart = 0;
     while((idxStart+1<times.size()) && (timeStart>=times.at(idxStart+1)))
       idxStart++;
     idxEnd = idxStart;
     while((idxEnd<times.size()-1) && (timeEnd>times.at(idxEnd)))
       idxEnd++;
+
+    return (idxStartOld != idxStart) || (idxEndOld != idxEnd);
   }
   catch(std::exception &e)
   {

@@ -30,8 +30,8 @@ ParametrizationTemporalConstant::ParametrizationTemporalConstant(Config &config)
     isInterval = (times.size() != 0);
     if(!isInterval)
       times = {Time(), date2time(2500,1,1)};
-    idxStart   = 0;
-    idxEnd = times.size()-1;
+    idxStart = 0;
+    idxEnd   = times.size()-1;
   }
   catch(std::exception &e)
   {
@@ -41,10 +41,13 @@ ParametrizationTemporalConstant::ParametrizationTemporalConstant(Config &config)
 
 /***********************************************/
 
-void ParametrizationTemporalConstant::setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc)
+Bool ParametrizationTemporalConstant::setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc)
 {
   try
   {
+    const UInt idxStartOld = idxStart;
+    const UInt idxEndOld   = idxEnd;
+
     if(estimatePerArc && !isInterval)
       times = {timeStart, timeEnd};
 
@@ -54,6 +57,8 @@ void ParametrizationTemporalConstant::setInterval(const Time &timeStart, const T
     idxEnd = idxStart;
     while((idxEnd<times.size()-1) && (timeEnd>times.at(idxEnd)))
       idxEnd++;
+
+    return (idxStartOld != idxStart) || (idxEndOld != idxEnd);
   }
   catch(std::exception &e)
   {

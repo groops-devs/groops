@@ -53,7 +53,7 @@ public:
   ObservationMiscPodVariational(Config &config);
  ~ObservationMiscPodVariational() {}
 
-  void setInterval(const Time &timeStart, const Time &timeEnd);
+  Bool setInterval(const Time &timeStart, const Time &timeEnd);
   UInt parameterCount()          const {return countAParameter;}
   UInt gravityParameterCount()   const {return gravityCount;}
   UInt rightSideCount()          const {return 1;}

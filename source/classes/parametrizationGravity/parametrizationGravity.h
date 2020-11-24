@@ -69,8 +69,9 @@ public:
  ~ParametrizationGravity();
 
   /** @brief Estimate parameter in the given interval only.
-  * Change result of @a parameterCount(), @a parameterName(). */
-  void setInterval(const Time &timeStart, const Time &timeEnd);
+  * Change result of @a parameterCount(), @a parameterName().
+  * @return TRUE if parameters are changed */
+  Bool setInterval(const Time &timeStart, const Time &timeEnd);
 
   /** @brief Number of parameters.
   * This is the column count of the design matrix. */
@@ -164,7 +165,7 @@ class ParametrizationGravityBase
 public:
   virtual ~ParametrizationGravityBase() {}
 
-  virtual void setInterval(const Time &/*timeStart*/, const Time &/*timeEnd*/) {}
+  virtual Bool setInterval(const Time &/*timeStart*/, const Time &/*timeEnd*/) {return FALSE;}
   virtual UInt parameterCount() const = 0;
   virtual void parameterName(std::vector<ParameterName> &name) const = 0;
   virtual void field          (const Time &time, const Vector3d &point, const Kernel &kernel, MatrixSliceRef A) const = 0;

@@ -132,13 +132,17 @@ ObservationMiscSstIntegral::ObservationMiscSstIntegral(Config &config)
 
 /***********************************************/
 
-void ObservationMiscSstIntegral::setInterval(const Time &timeStart, const Time &timeEnd)
+Bool ObservationMiscSstIntegral::setInterval(const Time &timeStart, const Time &timeEnd)
 {
   try
   {
-    parameterGravity->setInterval(timeStart, timeEnd);
-    parameterAcceleration1->setInterval(timeStart, timeEnd);
-    parameterAcceleration2->setInterval(timeStart, timeEnd);
+    Bool change = FALSE;
+    change = parameterGravity->setInterval(timeStart, timeEnd)       || change;
+    change = parameterAcceleration1->setInterval(timeStart, timeEnd) || change;
+    change = parameterAcceleration2->setInterval(timeStart, timeEnd) || change;
+    change = parameterSst->setInterval(timeStart, timeEnd)           || change;
+    if(!change)
+      return FALSE;
 
     // count parameters
     // ----------------
@@ -153,6 +157,7 @@ void ObservationMiscSstIntegral::setInterval(const Time &timeStart, const Time &
       idxBound1 = countAParameter; countAParameter += 6*countArc; // 2 boundary pos. (x,y,z).
       idxBound2 = countAParameter; countAParameter += 6*countArc; // 2 boundary pos. (x,y,z).
     }
+    return change;
   }
   catch(std::exception &e)
   {

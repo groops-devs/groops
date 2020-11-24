@@ -46,7 +46,7 @@ public:
 
   virtual ~ObservationMiscSst() {}
 
-  virtual void setInterval(const Time &timeStart, const Time &timeEnd) = 0;
+  virtual Bool setInterval(const Time &timeStart, const Time &timeEnd) = 0;
   virtual UInt parameterCount()          const = 0;
   virtual UInt gravityParameterCount()   const = 0;
   virtual UInt rightSideCount()          const = 0;

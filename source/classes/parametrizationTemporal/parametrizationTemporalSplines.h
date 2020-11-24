@@ -55,7 +55,7 @@ class ParametrizationTemporalSplines : public ParametrizationTemporalBase
 public:
   ParametrizationTemporalSplines(Config &config);
 
-  void setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc);
+  Bool setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc);
   UInt parameterCount() const {return idxEnd-idxStart;}
   void factors(const Time &time, UInt startIndex, std::vector<UInt> &index, std::vector<Double> &factor) const;
   void parameterName(std::vector<ParameterName> &name) const;

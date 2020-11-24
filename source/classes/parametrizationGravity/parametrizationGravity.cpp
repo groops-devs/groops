@@ -95,11 +95,14 @@ void ParametrizationGravity::computeIndices()
 
 /***********************************************/
 
-void ParametrizationGravity::setInterval(const Time &timeStart, const Time &timeEnd)
+Bool ParametrizationGravity::setInterval(const Time &timeStart, const Time &timeEnd)
 {
+  Bool change = FALSE;
   for(UInt i=0; i<parametrizations.size(); i++)
-    parametrizations.at(i)->setInterval(timeStart, timeEnd);
-  computeIndices();
+    change = parametrizations.at(i)->setInterval(timeStart, timeEnd) || change;
+  if(change)
+    computeIndices();
+  return change;
 }
 
 /***********************************************/

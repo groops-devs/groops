@@ -44,10 +44,13 @@ ParametrizationTemporalPolynomial::ParametrizationTemporalPolynomial(Config &con
 
 /***********************************************/
 
-void ParametrizationTemporalPolynomial::setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc)
+Bool ParametrizationTemporalPolynomial::setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc)
 {
   try
   {
+    const UInt idxStartOld = idxStart;
+    const UInt idxEndOld   = idxEnd;
+
     if(estimatePerArc && !isInterval)
       times = {timeStart, timeEnd};
 
@@ -57,6 +60,8 @@ void ParametrizationTemporalPolynomial::setInterval(const Time &timeStart, const
     idxEnd = idxStart;
     while((idxEnd<times.size()-1) && (timeEnd>times.at(idxEnd)))
       idxEnd++;
+
+    return (idxStartOld != idxStart) || (idxEndOld != idxEnd);
   }
   catch(std::exception &e)
   {

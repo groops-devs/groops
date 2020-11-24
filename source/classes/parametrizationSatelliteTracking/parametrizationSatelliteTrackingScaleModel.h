@@ -45,7 +45,7 @@ public:
   ParametrizationSatelliteTrackingScaleModel(Config &config);
 
   Bool isPerArc() const {return perArc;}
-  void setInterval(const Time &timeStart, const Time &timeEnd);
+  Bool setInterval(const Time &timeStart, const Time &timeEnd);
   UInt parameterCount() const {return temporal->parameterCount();}
   void parameterName(std::vector<ParameterName> &name) const;
   void compute(UInt sstType, const std::vector<Time> &time, const Vector &sst0,
@@ -77,11 +77,11 @@ inline ParametrizationSatelliteTrackingScaleModel::ParametrizationSatelliteTrack
 
 /***********************************************/
 
-void ParametrizationSatelliteTrackingScaleModel::setInterval(const Time &timeStart, const Time &timeEnd)
+Bool ParametrizationSatelliteTrackingScaleModel::setInterval(const Time &timeStart, const Time &timeEnd)
 {
   try
   {
-    temporal->setInterval(timeStart, timeEnd, perArc);
+    return temporal->setInterval(timeStart, timeEnd, perArc);
   }
   catch(std::exception &e)
   {

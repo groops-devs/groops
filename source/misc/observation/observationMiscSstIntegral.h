@@ -72,7 +72,7 @@ public:
   ObservationMiscSstIntegral(Config &config);
  ~ObservationMiscSstIntegral() {}
 
-  void setInterval(const Time &timeStart, const Time &timeEnd) override;
+  Bool setInterval(const Time &timeStart, const Time &timeEnd) override;
   UInt parameterCount()          const override {return countAParameter;}
   UInt gravityParameterCount()   const override {return gravityCount;}
   UInt rightSideCount()          const override {return rhs.size();}

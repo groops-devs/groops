@@ -44,7 +44,7 @@ class ParametrizationTemporalTrend : public ParametrizationTemporalBase
 public:
   ParametrizationTemporalTrend(Config &config);
 
-  void setInterval(const Time &/*timeStart*/, const Time &/*timeEnd*/, Bool /*estimatePerArc*/) {}
+  Bool setInterval(const Time &/*timeStart*/, const Time &/*timeEnd*/, Bool /*estimatePerArc*/) {return FALSE;}
   UInt parameterCount() const {return 1;}
   void parameterName(std::vector<ParameterName> &name) const;
   void factors(const Time &time, UInt startIndex, std::vector<UInt> &index, std::vector<Double> &factor) const;

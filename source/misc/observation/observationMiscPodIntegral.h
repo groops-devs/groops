@@ -64,7 +64,7 @@ public:
   ObservationMiscPodIntegral(Config &config);
  ~ObservationMiscPodIntegral() {}
 
-  void setInterval(const Time &timeStart, const Time &timeEnd);
+  Bool setInterval(const Time &timeStart, const Time &timeEnd);
   UInt parameterCount()          const {return countAParameter;}
   UInt gravityParameterCount()   const {return parameterGravity->parameterCount();}
   UInt rightSideCount()          const {return rhs.size();}

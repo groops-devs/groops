@@ -90,15 +90,18 @@ ParametrizationTemporal::~ParametrizationTemporal()
 
 /***********************************************/
 
-void ParametrizationTemporal::setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc)
+Bool ParametrizationTemporal::setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc)
 {
   try
   {
     if(timeStart>=timeEnd)
       throw(Exception("wrong time interval: "+timeStart.dateTimeStr()+" - "+timeEnd.dateTimeStr()));
 
+    Bool change = FALSE;
     for(UInt i=0; i<representation.size(); i++)
-      representation.at(i)->setInterval(timeStart, timeEnd, estimatePerArc);
+      change = representation.at(i)->setInterval(timeStart, timeEnd, estimatePerArc) || change;
+    if(!change)
+      return FALSE;
 
     // count parameter
     parameterCount_ = 0;
@@ -108,6 +111,8 @@ void ParametrizationTemporal::setInterval(const Time &timeStart, const Time &tim
       index.at(i) = parameterCount_;
       parameterCount_ += representation.at(i)->parameterCount();
     }
+
+    return change;
   }
   catch(std::exception &e)
   {

@@ -63,8 +63,9 @@ public:
 
   /** @brief Estimate parameter in the given interval only.
   * Interval is defined as [@a timeStart, @a timeEnd).
-  * Change result of @a parameterCount(), @a parameterName(). */
-  void setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc=FALSE);
+  * Change result of @a parameterCount(), @a parameterName().
+  * @return TRUE if parameters are changed */
+  Bool setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc=FALSE);
 
   /** @brief number of parameters. */
   UInt parameterCount() const {return parameterCount_;}
@@ -120,7 +121,7 @@ class ParametrizationTemporalBase
 {
 public:
 virtual ~ParametrizationTemporalBase() {}
-virtual void setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc) = 0;
+virtual Bool setInterval(const Time &timeStart, const Time &timeEnd, Bool estimatePerArc) = 0;
 virtual UInt parameterCount() const = 0;
 virtual void factors(const Time &time, UInt startIndex, std::vector<UInt> &index, std::vector<Double> &factor) const = 0;
 virtual void parameterName(std::vector<ParameterName> &name) const = 0;

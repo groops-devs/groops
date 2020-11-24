@@ -66,12 +66,14 @@ public:
   ~ParametrizationSatelliteTracking();
 
   /** @brief Estimate parameter in the given interval only.
-  * Change result of @a parameterCount(), @a parameterName(). */
-  void setInterval(const Time &timeStart, const Time &timeEnd);
+  * Change result of @a parameterCount(), @a parameterName().
+  * @return TRUE if parameters are changed */
+  Bool setInterval(const Time &timeStart, const Time &timeEnd);
 
   /** @brief Initialize arc.
-  * Must be called at the beginning of every new arc. */
-  void setIntervalArc(const Time &timeStart, const Time &timeEnd);
+  * Must be called at the beginning of every new arc.
+  * @return TRUE if parameters are changed */
+  Bool setIntervalArc(const Time &timeStart, const Time &timeEnd);
 
   /** @brief Number of unknown parameters.
   * This is the column count of the design matrix @a A. */
@@ -135,7 +137,7 @@ class ParametrizationSatelliteTrackingBase
 public:
 virtual ~ParametrizationSatelliteTrackingBase() {}
 virtual Bool isPerArc() const = 0;
-virtual void setInterval(const Time &timeStart, const Time &timeEnd) = 0;
+virtual Bool setInterval(const Time &timeStart, const Time &timeEnd) = 0;
 virtual UInt parameterCount()    const = 0;
 virtual void parameterName(std::vector<ParameterName> &name) const = 0;
 virtual void compute(UInt sstType, const std::vector<Time> &time, const Vector &sst0,

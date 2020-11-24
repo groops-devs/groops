@@ -43,7 +43,7 @@ public:
   ParametrizationAccelerationModelScale(Config &config);
 
   Bool isPerArc() const override {return perArc;}
-  void setInterval(const Time &timeStart, const Time &timeEnd) override {temporal->setInterval(timeStart, timeEnd, perArc);}
+  Bool setInterval(const Time &timeStart, const Time &timeEnd) override {return temporal->setInterval(timeStart, timeEnd, perArc);}
   UInt parameterCount() const override {return temporal->parameterCount();}
   void parameterName(std::vector<ParameterName> &name) const override;
   void compute(SatelliteModelPtr satellite, const Time &time, const Vector3d &position, const Vector3d &velocity,

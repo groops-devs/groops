@@ -40,11 +40,11 @@ ParametrizationGravityTemporal::ParametrizationGravityTemporal(Config &config)
 
 /***********************************************/
 
-void ParametrizationGravityTemporal::setInterval(const Time &timeStart, const Time &timeEnd)
+Bool ParametrizationGravityTemporal::setInterval(const Time &timeStart, const Time &timeEnd)
 {
   try
   {
-    temporal->setInterval(timeStart, timeEnd);
+    return temporal->setInterval(timeStart, timeEnd);
   }
   catch(std::exception &e)
   {
