@@ -130,6 +130,27 @@ times the parameter count of <a class="groops-class" href="parametrizationGravit
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrizationTemporal</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td></td></tr>
 </table>
 
+<h2>LinearTransformation</h2><p>
+Parametrization of the gravity field on the basis of a linear transformation of a source parametrization.
+The linear transformation changes the original solution space represented by
+<a class="groops-class" href="parametrizationGravityType.html">pararametrizationGravitySource</a> from
+\[
+  \mathbf{l} = \mathbf{A}\mathbf{x} + \mathbf{e}
+\]to
+\[
+  \mathbf{l} = \mathbf{A}\mathbf{F}\mathbf{y} + \mathbf{e}
+\]through the linear transformation $\mathbf{x}=\mathbf{F}\mathbf{y}$.
+It follows that the rows of the matrix $\mathbf{F}$ in <a class="groops-file" href="fileFormat_matrix.html">inputfileTransformationMatrix</a> coincides with
+the number of parameters in <a class="groops-class" href="parametrizationGravityType.html">pararametrizationGravitySource</a>.
+The new parameter count is given by the number of columns in $\mathbf{F}$ and may be smaller, equal or larger
+than the original parameter count.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrizationGravitySource</div></div></td><td><a href="parametrizationGravityType.html">parametrizationGravity</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTransformationMatrix</div></div></td><td>filename</td><td>transformation matrix from target to source parametrization (rows of this matrix must coincide with the parameter count of the source parametrization)</td></tr>
+</table>
+
 <h2>EarthquakeOscillation</h2><p>
 This class is used to estimate the earthquake oscillation function parameters,
 i.e. $C_{nlm}$, $\omega_{nlm}$, and $P_{nlm}$.

@@ -5346,6 +5346,35 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
+\subsection{LinearTransformation}
+Parametrization of the gravity field on the basis of a linear transformation of a source parametrization.
+The linear transformation changes the original solution space represented by
+\configClass{pararametrizationGravitySource}{parametrizationGravityType} from
+\begin{equation}
+  \mathbf{l} = \mathbf{A}\mathbf{x} + \mathbf{e}
+\end{equation}
+to
+\begin{equation}
+  \mathbf{l} = \mathbf{A}\mathbf{F}\mathbf{y} + \mathbf{e}
+\end{equation}
+through the linear transformation $\mathbf{x}=\mathbf{F}\mathbf{y}$.
+It follows that the rows of the matrix $\mathbf{F}$ in \file{inputfileTransformationMatrix}{matrix} coincides with
+the number of parameters in \configClass{pararametrizationGravitySource}{parametrizationGravityType}.
+The new parameter count is given by the number of columns in $\mathbf{F}$ and may be smaller, equal or larger
+than the original parameter count.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrizationGravitySource & \hfuzz=500pt \hyperref[parametrizationGravityType]{parametrizationGravity} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransformationMatrix & \hfuzz=500pt filename & \hfuzz=500pt transformation matrix from target to source parametrization (rows of this matrix must coincide with the parameter count of the source parametrization)\\
+\hline
+\end{tabularx}
+
+
 \subsection{EarthquakeOscillation}
 This class is used to estimate the earthquake oscillation function parameters,
 i.e. $C_{nlm}$, $\omega_{nlm}$, and $P_{nlm}$.

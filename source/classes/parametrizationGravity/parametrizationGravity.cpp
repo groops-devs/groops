@@ -19,6 +19,7 @@
 #include "classes/parametrizationGravity/parametrizationGravitySphericalHarmonics.h"
 #include "classes/parametrizationGravity/parametrizationGravityRadialBasis.h"
 #include "classes/parametrizationGravity/parametrizationGravityTemporal.h"
+#include "classes/parametrizationGravity/parametrizationGravityLinearTransformation.h"
 #include "classes/parametrizationGravity/parametrizationGravityEarthquakeOscillation.h"
 #include "classes/parametrizationGravity/parametrizationGravity.h"
 
@@ -28,6 +29,7 @@ GROOPS_REGISTER_CLASS(ParametrizationGravity, "parametrizationGravityType",
                       ParametrizationGravitySphericalHarmonics,
                       ParametrizationGravityRadialBasis,
                       ParametrizationGravityTemporal,
+                      ParametrizationGravityLinearTransformation,
                       ParametrizationGravityEarthquakeOscillation)
 
 GROOPS_RENAMED_CLASS(representationType, parametrizationGravityType, date2time(2020, 6, 3))
@@ -43,12 +45,14 @@ ParametrizationGravity::ParametrizationGravity(Config &config, const std::string
     std::string type;
     while(readConfigChoice(config, name, type, Config::OPTIONAL, "", "parametrization of the gravity field"))
     {
-      if(readConfigChoiceElement(config, "sphericalHarmonics", type, "potential coefficents!"))
+      if(readConfigChoiceElement(config, "sphericalHarmonics",   type, "potential coefficents!"))
         parametrizations.push_back(new ParametrizationGravitySphericalHarmonics(config));
-      if(readConfigChoiceElement(config, "radialBasis",        type, "harmonic radial basis functions"))
+      if(readConfigChoiceElement(config, "radialBasis",          type, "harmonic radial basis functions"))
         parametrizations.push_back(new ParametrizationGravityRadialBasis(config));
-      if(readConfigChoiceElement(config, "temporal",           type, "time variable gravity field"))
+      if(readConfigChoiceElement(config, "temporal",             type, "time variable gravity field"))
         parametrizations.push_back(new ParametrizationGravityTemporal(config));
+      if(readConfigChoiceElement(config, "linearTransformation", type, "linear transformation of a original parameters"))
+        parametrizations.push_back(new ParametrizationGravityLinearTransformation(config));
       if(readConfigChoiceElement(config, "earthquakeOscillation", type, "earthquake oscillation parameters"))
         parametrizations.push_back(new ParametrizationGravityEarthquakeOscillation(config));
       endChoice(config);
