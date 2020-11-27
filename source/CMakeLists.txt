@@ -4,7 +4,7 @@ project(GROOPS LANGUAGES CXX Fortran)
 
 set(CMAKE_CXX_STANDARD 14)
 include_directories(${PROJECT_SOURCE_DIR})
-set(SOURCES)
+
 include(sourcesCXX.txt)
 include(sourcesF77.txt)
 include(sourcesF90.txt)
@@ -21,12 +21,18 @@ include(sourcesF90.txt)
 # =========================================
 
 find_package(EXPAT  REQUIRED)
+include_directories(${EXPAT_INCLUDE_DIRS})
 find_package(BLAS   REQUIRED)
 find_package(LAPACK REQUIRED)
-set(BASE_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${EXPAT_LIBRARIES} stdc++fs )
+
+add_library(groopscore OBJECT ${SOURCES})
+
+set(BASE_LIBRARIES ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES} ${EXPAT_LIBRARIES} stdc++fs)
 
 find_library(LIB_ERFA erfa)
 if(LIB_ERFA)
+  find_path(ERFA_INCLUDE_DIR NAMES erfa.h)
+  include_directories(${ERFA_INCLUDE_DIR})
   set(BASE_LIBRARIES ${BASE_LIBRARIES} ${LIB_ERFA})
 else()
   add_definitions(-DNOLIB_ERFA)
@@ -35,6 +41,8 @@ endif()
 
 find_library(LIB_Z z)
 if(LIB_Z)
+  find_path(ZLIB_INCLUDE_DIR NAMES zlib.h)
+  include_directories(${ZLIB_INCLUDE_DIR})
   set(BASE_LIBRARIES ${BASE_LIBRARIES} ${LIB_Z})
 else()
   add_definitions(-DNOLIB_Z)
@@ -43,6 +51,8 @@ endif()
 
 find_library(LIB_NETCDF netcdf)
 if(LIB_NETCDF)
+  find_path(NETCDF_INCLUDE_DIR NAMES netcdf.h)
+  include_directories(${NETCDF_INCLUDE_DIR})
   set(BASE_LIBRARIES ${BASE_LIBRARIES} ${LIB_NETCDF})
 else()
   add_definitions(-DNOLIB_NETCDF)
@@ -51,7 +61,7 @@ endif()
 
 # =========================================
 
-add_executable(groops ${SOURCES} ${PROJECT_SOURCE_DIR}/parallel/parallelSingle.cpp)
+add_executable(groops ${PROJECT_SOURCE_DIR}/parallel/parallelSingle.cpp $<TARGET_OBJECTS:groopscore>)
 target_link_libraries(groops ${BASE_LIBRARIES})
 
 install(TARGETS groops DESTINATION bin)
@@ -61,7 +71,7 @@ install(TARGETS groops DESTINATION bin)
 find_package(MPI COMPONENTS CXX)
 if(MPI_FOUND)
   include_directories(${MPI_CXX_INCLUDE_PATH})
-  add_executable(groopsMPI ${SOURCES} ${PROJECT_SOURCE_DIR}/parallel/parallelCluster.cpp)
+  add_executable(groopsMPI ${PROJECT_SOURCE_DIR}/parallel/parallelCluster.cpp $<TARGET_OBJECTS:groopscore>)
 
   target_link_libraries(groopsMPI ${BASE_LIBRARIES} ${MPI_CXX_LIBRARIES})
   if(MPI_COMPILE_FLAGS)

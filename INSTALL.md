@@ -98,7 +98,7 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
     ```
     mkdir /c/groops/source/build && cd /c/groops/source/build
     cmake.exe .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="C:\groops"
-    mingw32-make.exe
+    mingw32-make.exe -j4
     mingw32-make.exe install
     ```
 
@@ -195,7 +195,7 @@ This installation guide assumes that the GROOPS source code is located in `$HOME
     ```
     mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/groops
-    make
+    make -j4
     make install
     ```
 
@@ -259,7 +259,7 @@ sudo apt-get install gmt gmt-gshhg
     ```
     mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/groops
-    make
+    make -j4
     make install
     ```
 
@@ -328,7 +328,7 @@ This installation guide assumes that the GROOPS source code is located in `$HOME
     ```
     mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/groops
-    make
+    make -j4
     make install
     ```
 7. Make sure to also read the [post-installation steps](#linux-post-installation-steps).

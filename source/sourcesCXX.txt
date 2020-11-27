@@ -1,4 +1,4 @@
-set(SOURCES ${SOURCES}
+set(SOURCES
 base/constants.cpp
 base/doodson.cpp
 base/ellipsoid.cpp
