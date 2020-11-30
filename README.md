@@ -13,11 +13,32 @@ computing environments for resource intensive tasks.
 For an easy and intuitive setup of complex workflows, GROOPS contains a graphical
 user interface where configuration files can be created and edited.
 
+- [Citing](#citing-groops)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
 - [Releases and Contributing](#releases-and-contributing)
 - [License](#license)
 - [Contributors](#contributors)
+
+## Citing GROOPS
+
+If you use data sets computed with GROOPS in a publication or publish the data itself, you can pay us back by citing our reference paper.
+A [preprint](https://doi.org/10.1002/essoar.10505041.1) is available on the ESSOAr which can be cited as:
+
+*Mayer-Gürr, T., Behzadpour, S., Eicker, A., Ellmer, M., Koch, B., Krauss, S., Pock, C., Rieser, D., Strasser, S., Suesser-Rechberger, B., Zehentner, N.,  Kvas, A. (2020). GROOPS: A software toolkit for gravity field recovery and GNSS processing. Earth and Space Science Open Archive, 8. https://doi.org/10.1002/essoar.10505041.1*
+
+```
+@article{10.1002/essoar.10505041.1,
+  author = {Mayer-Gürr, Torsten and Behzadpour, Saniya and Eicker, Annette and Ellmer, Matthias and Koch, Beate and
+  Krauss, Sandro and Pock, Christian and Rieser, Daniel and Strasser, Sebastian and Suesser-Rechberger, Barbara and
+  Zehentner, Norbert and Kvas, Andreas},
+  title = {{GROOPS}: A software toolkit for gravity field recovery and {GNSS} processing},
+  journal = {Earth and Space Science Open Archive},
+  pages = {8},
+  year = {2020},
+  DOI = {10.1002/essoar.10505041.1}
+}
+```
 
 ## Installation
 
