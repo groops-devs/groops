@@ -785,12 +785,12 @@ void MatrixDistributed::choleskyInverse(Bool timing, UInt startBlock, UInt count
 
           loopBlockRow(z, {z+1, i}, [&](UInt s, UInt zs)
           {
-            if(isMyRank(zs))
+            const UInt si = index(s,i);
+            if(si != NULLINDEX)
             {
-              const UInt si = index(s,i);
-              if(si != NULLINDEX)
+              const UInt zi = setBlock(z, i);
+              if(isMyRank(zs))
               {
-                const UInt zi = setBlock(z, i);
                 if(_N[zi].size() == 0)
                   _N[zi] = Matrix(blockSize(z), blockSize(i));
                 matMult(1.,  _N[zs],  _N[si], _N[zi]);

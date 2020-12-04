@@ -131,7 +131,7 @@ public:
   Matrix       &N(UInt i, UInt k);       //!< Returns a writable reference to block (@a i, @a k). Throws an exception if the block is not assigned to a process.
   const Matrix &N(UInt i, UInt k) const; //!< Returns a read only reference to block (@a i, @a k). Throws an exception if the block is not assigned to a process.
 
-  /// Deallocate all matrix blocks (on the corresponding parent processes). The matrix structure is kept intact.
+  /// Fill all matrix blocks with zero.
   void setNull();
 
   /// Reduce block (@a i, @a k) on its parent process. After the operation, the memory on all other processes is freed.
