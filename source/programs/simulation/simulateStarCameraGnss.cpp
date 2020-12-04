@@ -2,262 +2,181 @@
 /**
 * @file simulateStarCameraGnss.cpp
 *
-* @brief Simulate star camera data for GNSS satellites using nominal orientation or an attitude model.
+* @brief Simulates star camera data for a GNSS satellite based on an attitude model.
 *
 * @author Sebastian Strasser
-* @date 2016-07-14
+* @date 2020-11-02
 */
 /***********************************************/
 
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program simulates \file{star camera}{instrument} measurements at each satellite position.
-The resulting rotation matrices rotate from body frame to inertial frame.
+This program simulates \file{star camera}{instrument} measurements at each satellite position
+of \configFile{inputfileOrbit}{instrument}.
+The resulting rotation matrices rotate from body frame to inertial frame. The body frame refers
+to the IGS-specific (not the manufacturer-specific) body frame, as described by
+\href{https://doi.org/10.1016/j.asr.2015.06.019}{Montenbruck et al. (2015)}.
+The \configFile{inputfileOrbit}{instrument} must contain velocities
+(use \program{OrbitAddVelocityAndAcceleration} if needed).
 
-The nominal orientation is simulated to be z-axis towards the center of Earth, y-axis is along solar panel axis,
-and x-axis forms a right hand system (points roughly towards the sun).
+Information about the attitude mode(s) used by the GNSS satellite may be provided via
+\configFile{inputfileAttitudeInfo}{instrument}. This file can be created with
+\program{GnssAttitudeInfoCreate}. It contains one or more time-dependent entries,
+each defining the default attitude mode, the attitude modes used around orbit noon and
+midnight, and some parameters required by the various modes.
+If no \configFile{inputfileAttitudeInfo}{instrument} is selected, the program defaults
+to a nominal yaw-steering attitude model.
+A sufficiently high \config{modelingResolution} ensures that the attitude behavior is modeled properly
+at all times.
 
-GPS attitude model: Kouba (2009), 'A simplified yaw-attitude model for eclipsing GPS satellites' \url{https://doi.org/10.1007/s10291-008-0092-1}
+The attitude behavior is defined by the respective mode. Here is a list of the supported
+modes with a brief explanation and references:
+\begin{itemize}
+\item \textbf{nominalYawSteering}:
+      Yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse) [1]
+\item \textbf{orbitNormal}:
+      Keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G) [1]
+\item \textbf{catchUpYawSteering}:
+      Yaw at maximum yaw rate to catch up to nominal yaw angle (e.g. GPS-* (noon), GPS-IIR (midnight)) [2, 3]
+\item \textbf{shadowMaxYawSteeringAndRecovery}:
+      Yaw at maximum yaw rate from shadow start to end, recover after shadow (e.g. GPS-IIA (midnight)) [2]
+\item \textbf{shadowMaxYawSteeringAndStop}:
+      Yaw at maximum yaw rate from shadow start until nominal yaw angle at shadow end is reached,
+      then stop (e.g. GLO-M (midnight)) [4]
+\item \textbf{shadowConstantYawSteering}:
+      Yaw at constant yaw rate from shadow start to end (e.g. GPS-IIF (midnight)) [3]
+\item \textbf{centeredMaxYawSteering}:
+      Yaw at maximum yaw rate centered around noon/midnight (e.g. QZS-2I, GLO-M (noon)) [4, 8]
+\item \textbf{smoothedYawSteering1}:
+      Yaw based on an auxiliary Sun vector for a smooth yaw maneuver (e.g. GAL-1) [5]
+\item \textbf{smoothedYawSteering2}:
+      Yaw based on a modified yaw-steering law for a smooth yaw maneuver (e.g. GAL-2, BDS-3M, BDS-3I) [5, 6]
+\item \textbf{betaDependentOrbitNormal}:
+      Switch to orbit normal mode if below beta angle threshold (e.g. BDS-2M, BDS-2I, QZS-1) [7, 8]
+\end{itemize}
 
-Galileo attitude model: \url{https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata}
+\fig{!hb}{0.9}{gnssAttitudeModes}{fig:gnssAttitudeModes1}{Overview of attitude modes used by GNSS satellites}
 
-See also \program{GnssAntex2AntennaDefinition} and \program{GnssYawBias2Instrument}.
+See \program{GnssAttitudeInfoCreate} for more details on which satellite uses which attitude modes
+and the required parameters for each mode.
+
+References for the attitude modes:
+\begin{enumerate}
+\item \href{https://doi.org/10.1016/j.asr.2015.06.019}{Montenbruck et al. (2015)}
+\item \href{https://doi.org/10.1007/s10291-008-0092-1}{Kouba (2009)}
+\item \href{https://doi.org/10.1007/s10291-016-0562-9}{Kuang et al. (2017)}
+\item \href{https://doi.org/10.1016/j.asr.2010.09.007}{Dilssner et al. (2011)}
+\item \url{https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata#3}
+\item \href{https://doi.org/10.1007/s10291-018-0783-1}{Wang et al. (2018)}
+\item \href{https://doi.org/10.1017/S0373463318000103}{Li et al. (2018)}
+\item \url{https://qzss.go.jp/en/technical/qzssinfo/index.html}
+\end{enumerate}
 )";
 
 /***********************************************/
 
 #include "programs/program.h"
 #include "base/kepler.h"
-#include "files/fileMatrix.h"
-#include "files/fileInstrument.h"
-#include "files/fileGnssStationInfo.h"
-#include "classes/ephemerides/ephemerides.h"
+#include "base/polynomial.h"
 #include "classes/eclipse/eclipse.h"
+#include "classes/ephemerides/ephemerides.h"
+#include "files/fileInstrument.h"
 
 /***** CLASS ***********************************/
 
-/** @brief Simulate star camera data for GNSS satellites using nominal orientation or an attitude model.
+/** @brief Simulates star camera data for a GNSS satellite based on an attitude model.
 * @ingroup programsGroup */
 class SimulateStarCameraGnss
 {
-public:
-  void run(Config &config);
+  enum AttitudeMode
+  {
+    NOMINAL_YAW_STEERING = 0,
+    ORBIT_NORMAL = 1,                         // e.g. BDS-2G, BDS-3G, QZS-2G
+    CATCH_UP_YAW_STEERING = 2,                // e.g. GPS-* (noon), GPS-IIR (midnight)
+    SHADOW_MAX_YAW_STEERING_AND_RECOVERY = 3, // e.g. GPS-IIA (midnight)
+    SHADOW_MAX_YAW_STEERING_AND_STOP = 4,     // e.g. GLO-M (midnight)
+    SHADOW_CONSTANT_YAW_STEERING = 5,         // e.g. GPS-IIF (midnight)
+    CENTERED_MAX_YAW_STEERING = 6,            // e.g. QZS-2I, GLO-M (noon)
+    SMOOTHED_YAW_STEERING_1 = 7,              // e.g. GAL-1
+    SMOOTHED_YAW_STEERING_2 = 8,              // e.g. GAL-2, BDS-3M, BDS-3I
+    BETA_DEPENDENT_ORBIT_NORMAL = 9           // e.g. BDS-2M, BDS-2I, QZS-1
+  };
 
-private:
-  Matrix yawRates;
+  class AttitudeInfo
+  {
+  public:
+    Time         timeStart;
+    AttitudeMode defaultMode;
+    AttitudeMode midnightMode;
+    AttitudeMode noonMode;
+    Double       maxYawRate;
+    Double       yawBias;
+    Double       midnightBetaThreshold;
+    Double       noonBetaThreshold;
+    Double       activationThreshold;
+    Double       maxManeuverTime;
 
-  /// Helper class used for computation of true satellite attitude
+    AttitudeInfo(const Time &time, const Vector &data)
+    {
+      timeStart             = time;
+      defaultMode           = AttitudeMode(data(0));
+      midnightMode          = AttitudeMode(data(1));
+      noonMode              = AttitudeMode(data(2));
+      maxYawRate            = DEG2RAD*std::fabs(data(3));
+      yawBias               = DEG2RAD*data(4);
+      midnightBetaThreshold = DEG2RAD*std::fabs(data(5));
+      noonBetaThreshold     = DEG2RAD*std::fabs(data(6));
+      activationThreshold   = DEG2RAD*std::fabs(data(7));
+      maxManeuverTime       = std::fabs(data(8));
+    }
+  };
+
   class Epoch
   {
   public:
     Time     time;
-    Double   yawNominal;
-    Double   yawTrue;
-    Double   yawRateNominal;
-    Double   yawRateTrue;
-    Double   yawBias;
-    Double   mu;
-    Double   beta;
-    Double   shadowFactor;
+    Double   yawAngle;
+    Double   yawRate;
+    Double   orbitAngle;
+    Double   betaAngle;
     Vector3d pos;
     Vector3d vel;
     Vector3d posSun;
 
-    Epoch() : yawNominal(0), yawTrue(0), yawRateNominal(0), yawRateTrue(0), yawBias(0), mu(0), beta(0), shadowFactor(0) {}
+    Epoch() : yawAngle(0), yawRate(0), orbitAngle(0), betaAngle(0) {}
   };
 
-  /// GNSS block number
-  enum GnssBlock
-  {
-    UNKNOWN    = 0,
-    GPS_I      = 1,
-    GPS_II     = 2,
-    GPS_IIA    = 3,
-    GPS_IIR    = 4,
-    GPS_IIRA   = 5,
-    GPS_IIRB   = 6,
-    GPS_IIRM   = 7,
-    GPS_IIF    = 8,
-    GPS_IIIA   = 9,
-    GLONASS    = 101,
-    GLONASS_M  = 102,
-    GLONASS_K1 = 103,
-    GALILEO_1  = 201,
-    GALILEO_2  = 202
-//    COMPASS   = 301
-  };
+  EphemeridesPtr ephemerides;
+  EclipsePtr     eclipse;
+  std::vector<Epoch>        epochs;
+  std::vector<AttitudeInfo> attitudeInfos;
 
-  /** @brief Convert GNSS block from string to enum. */
-  static GnssBlock string2block(const std::string &string)
-  {
-    if(string == "BLOCK I")
-      return GPS_I;
-    else if(string == "BLOCK II")
-      return GPS_II;
-    else if(string == "BLOCK IIA")
-      return GPS_IIA;
-    else if(string == "BLOCK IIR-A")
-      return GPS_IIRA;
-    else if(string == "BLOCK IIR-B")
-      return GPS_IIRB;
-    else if(string == "BLOCK IIR-M")
-      return GPS_IIRM;
-    else if(string == "BLOCK IIF")
-      return GPS_IIF;
-    else if(string == "BLOCK IIIA")
-      return GPS_IIIA;
-    else if(string == "GLONASS")
-      return GLONASS;
-    else if(string == "GLONASS-M")
-      return GLONASS_M;
-    else if(string == "GLONASS-K1")
-      return GLONASS_K1;
-    else if(string == "GALILEO-1")
-      return GALILEO_1;
-    else if(string == "GALILEO-2")
-      return GALILEO_2;
-    else
-      throw(Exception("cannot convert string to GnssBlock: " + string));
-  }
+  // helper methods
+  Double       wrapAngle(Double angle) const;  ///< Returns angle wrapped to [-PI, PI).
+  Rotary3d     orbitNormal2crf(const Vector3d &posSat, const Vector3d &velSat) const;
+  AttitudeInfo getAttitudeInfo(const Time &time) const;
+  Epoch        createDefaultEpoch(const Time &time, const Vector3d &posSat, const Vector3d &velSat) const;
+  Bool         findShadowBoundaries(UInt idMidnightEpoch, Epoch &shadowStart, Epoch &shadowEnd) const;
+  UInt         catchUpYawAngle(const Epoch startEpoch, Double maxYawRate, Bool backwards=FALSE);
 
-  /** @brief Convert GNSS block from enum to string. */
-  static std::string block2string(GnssBlock block)
-  {
-    if(block == GPS_I)
-      return "BLOCK I";
-    else if(block == GPS_II)
-      return "BLOCK II";
-    else if(block == GPS_IIA)
-      return "BLOCK IIA";
-    else if(block == GPS_IIRA)
-      return "BLOCK IIR-A";
-    else if(block == GPS_IIRB)
-      return "BLOCK IIR-B";
-    else if(block == GPS_IIRM)
-      return "BLOCK IIR-M";
-    else if(block == GPS_IIF)
-      return "BLOCK IIF";
-    else if(block == GPS_IIIA)
-      return "BLOCK IIIA";
-    else if(block == GLONASS)
-      return "GLONASS";
-    else if(block == GLONASS_M)
-      return "GLONASS-M";
-    else if(block == GLONASS_K1)
-      return "GLONASS-K1";
-    else if(block == GALILEO_1)
-      return "GALILEO-1";
-    else if(block == GALILEO_2)
-      return "GALILEO-2";
-    else
-      throw(Exception("cannot convert GnssBlock to string: " + block%"%i"s));
-  }
+  // attitude mode methods
+  void modelNominalYawSteering(Epoch &epoch) const;
+  void modelOrbitNormal(Epoch &epoch, const AttitudeInfo &attitudeInfo) const;
+  UInt modelCatchUpYawSteering(UInt idEpoch, const AttitudeInfo &attitudeInfo);
+  UInt modelShadowMaxYawSteeringAndRecovery(UInt idEpoch, const AttitudeInfo &attitudeInfo);
+  UInt modelShadowMaxYawSteeringAndStop(UInt idEpoch, const AttitudeInfo &attitudeInfo);
+  UInt modelShadowConstantYawSteering(UInt idEpoch);
+  UInt modelCenteredMaxYawSteering(UInt idEpoch, const AttitudeInfo &attitudeInfo);
+  UInt modelSmoothedYawSteering1(UInt idEpoch);
+  UInt modelSmoothedYawSteering2(UInt idEpoch, const AttitudeInfo &attitudeInfo);
+  UInt modelBetaDependentOrbitNormal(UInt idEpoch, const AttitudeInfo &attitudeInfo);
 
-  /** @brief Computes nominal satellite orientation.
-   *  Nominal attitude: z towards Earth, y along solar panel axis, x roughly towards sun (y cross z). */
-  static Rotary3d orientationNominal(const Vector3d &posSat, const Vector3d &posSun);
-
-  /** @brief Computes ECOM DYB satellite orientation.
-   *  ECOM attitude: x (d) towards Sun, y along solar panel axis, z (b) roughly towards Earth (d cross y). */
-  static Rotary3d orientationEcom(const Vector3d &posSat, const Vector3d &posSun);
-
-  /** @brief Computes nominal satellite orientation for a full arc.
-   *  Nominal attitude: z towards Earth, y along solar panel axis, x roughly towards sun (y cross z). */
-  static StarCameraArc orientationArcNominal(const OrbitArc &orbitArc, EphemeridesPtr ephemerides);
-
-  /**
-   * @brief Models attitude for noon/midnight turns, shadow crossings, and post-shadow maneuvers based on attitude model by Kouba (2009).
-   * 'True' attitude: z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z).
-   * @param orbitArc             Orbit arc (must contain position and velocity data).
-   * @param svn                  Space vehicle number (e.g. G023).
-   * @param block                GNSS satellite block.
-   * @param yawBiasArc           Yaw bias data.
-   * @param eclipse              eclipse model.
-   * @param shadowBuffer         [seconds] pre/post orbit time period to look for missing shadow entries/exits.
-   * @param shadowThreshold      Shadow scaling factor for finding exact shadow entry/exit times, between 0 (shadow) and 1 (sun).
-   * @return Star camera arc (rotation matrix per epoch).
-   */
-  StarCameraArc orientationArcKouba2009(const OrbitArc &orbitArc, const std::string &svn, GnssBlock block, const MiscValueArc &yawBiasArc, EphemeridesPtr ephemerides, EclipsePtr eclipse, Double shadowBuffer, Double shadowThreshold) const;
-
-  /**
-   * @brief Models attitude for noon/midnight turns based on GLONASS M attitude law derived by Dilssner et al. (2011).
-   * 'True' attitude: z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z).
-   * Source: F. Dilssner, T. Springer, G. Gienger, J. Dow. The GLONASS-M satellite yaw-attitude model. Adv. Space Res., 47 (1) (2011), pp. 160-171, 10.1016/j.asr.2010.09.007
-   * @param orbitArc             Orbit arc (must contain position and velocity data).
-   * @param block                GNSS satellite block.
-   * @param eclipse              eclipse model.
-   * @param shadowBuffer         [seconds] pre/post orbit time period to look for missing shadow entries/exits.
-   * @param shadowThreshold      Shadow scaling factor for finding exact shadow entry/exit times, between 0 (shadow) and 1 (sun).
-   * @return Star camera arc (rotation matrix per epoch).
-   */
-  static StarCameraArc orientationArcGlonassM(const OrbitArc &orbitArc, GnssBlock block, EphemeridesPtr ephemerides, EclipsePtr eclipse, Double shadowBuffer, Double shadowThreshold);
-
-  /**
-   * @brief Models attitude for noon/midnight turns based on official Galileo attitude law.
-   * 'True' attitude: z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z).
-   * Source: https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata
-   * @param orbitArc          Orbit arc (must contain position and velocity data).
-   * @param integrationLimit  [seconds] pre orbit time period to look for last switch to modified attitude law
-   * @return Star camera arc (rotation matrix per epoch).
-   */
-  static StarCameraArc orientationArcGalileo1(const OrbitArc &orbitArc, EphemeridesPtr ephemerides, Double integrationLimit);
-  static StarCameraArc orientationArcGalileo2(const OrbitArc &orbitArc, EphemeridesPtr ephemerides, Double integrationLimit);
-
-  /** @brief Computes nominal yaw angle, nominal yaw rate, sun angle (beta) and orbit angle (mu). */
-  static void computeYaw(Epoch &epoch);
-
-  /** @brief Computes yaw angle during noon/midnight turns and post-shadow recovery maneuvers where the satellite can't keep up with the nominal yaw rate. Returns TRUE if it catches up, FALSE otherwise. */
-  /**
-   * @brief catchUpYaw
-   * @param epochStart
-   * @param epochs
-   * @param yawRateHardwareMax Maximum hardware yaw rate of the satellite.
-   * @param allowYawReversal   TRUE to allow yaw reversal (e.g. IIA post-shadow maneuver), FALSE to keep current yaw direction (e.g.
-   * @return TRUE if yaw angle has caught up with nominal value, FALSE otherwise.
-   */
-  static Bool catchUpYaw(const Epoch epochStart, std::vector<Epoch> &epochs, Double yawRateHardwareMax, Bool allowYawReversal);
-
-  /** @brief Polynomial interpolation of velocities from positions. */
-  static void interpolateVelocity(OrbitArc &arc, UInt interpolationDegree);
-
-  /**
-   * @brief Find exact epoch of shadow entry/exit by Kepler integration.
-   * @param epochStart            Start epoch of integration (time, pos, vel).
-   * @param integrationStep       Kepler integration step size in [seconds] (can be negative).
-   * @param integrationLimit      Kepler integration limit in [seconds] (used as absolute value).
-   * @param eclipse               eclipse model.
-   * @param findShadowEntry       TRUE = find shadow entry, FALSE = find shadow exit
-   * @param shadowFactorThreshold Shadow scaling factor for entry/exit determination (must be between 0 and 1).
-   * @param[out] epoch            Epoch of shadow entry/exit.
-   * @return TRUE if shadow entry/exit was found, FALSE otherwise.
-   */
-  static Bool findShadowBoundary(const Epoch &epochStart, Double integrationStep, Double integrationLimit,
-                                 EphemeridesPtr ephemerides, EclipsePtr eclipse, Bool findShadowEntry, Double shadowFactorThreshold, const MiscValueArc &yawBiasArc, Epoch &epoch);
-
-  /**
-   * @brief Find exact epoch of noon/midnight turn start by Kepler integration.
-   * @param epochStart            Start epoch of integration (time, pos, vel).
-   * @param integrationStep       Kepler integration step size in [seconds] (can be negative).
-   * @param integrationLimit      Kepler integration limit in [seconds] (used as absolute value).
-   * @param yawRateHardwareMax    Maximum hardware yaw rate of the satellite.
-   * @param yawBiasArc            Yaw bias data.
-   * @param[out] epoch            Epoch of noon/midnight turn start.
-   * @return TRUE if noon/midnight turn was found, FALSE otherwise.
-   */
-  static Bool findNoonMidnightTurnStart(EphemeridesPtr ephemerides, const Epoch &epochStart, Double integrationStep, Double integrationLimit, Double yawRateHardwareMax,
-                                        const MiscValueArc &yawBiasArc, Epoch &epoch);
-
-  /** @brief Returns yaw bias at @p time. */
-  static Double yawBias(const Time &time, const MiscValueArc &yawBiasArc);
-
-  /** @brief Returns @p angle wrapped to [-PI, PI]. */
-  static Double wrapAngle(Double angle);
-
-  static Bool blockIsIn(GnssBlock block, const std::vector<GnssBlock> &blockList) { return std::find(blockList.begin(), blockList.end(), block) != blockList.end(); }
+public:
+  void run(Config &config);
 };
 
-GROOPS_REGISTER_PROGRAM(SimulateStarCameraGnss, SINGLEPROCESS, "Simulate star camera data for GNSS satellites using nominal orientation or an attitude model.", Simulation, Gnss, Instrument)
+GROOPS_REGISTER_PROGRAM(SimulateStarCameraGnss, SINGLEPROCESS, "Simulates star camera data for a GNSS satellite based on an attitude model.", Simulation, Gnss, Instrument)
 
 /***********************************************/
 
@@ -265,360 +184,130 @@ void SimulateStarCameraGnss::run(Config &config)
 {
   try
   {
-    FileName       fileNameOutStarCamera, fileNameInOrbit, fileNameTransmitterInfo, fileNameYawBias, fileNameYawRates;
-    std::string    attitudeModelChoice;
-    Double         shadowBuffer = 3600;
-    Double         shadowThreshold = 0.5;
-    UInt           interpolationDegree = 8;
-    EphemeridesPtr ephemerides;
-    EclipsePtr     eclipse;
+    FileName fileNameStarCamera, fileNameOrbit, fileNameAttitudeInfo;
+    Double   modelingResolution;
+    UInt     interpolationDegree;
 
-    readConfig(config,          "outputfileStarCamera", fileNameOutStarCamera,     Config::MUSTSET, "", "rotation from body frame to inertial frame");
-    readConfig(config,          "inputfileOrbit",       fileNameInOrbit,           Config::MUSTSET, "", "position defines the orientation of the satellite at each epoch");
-    if(readConfigChoice(config, "attitudeModel",        attitudeModelChoice,       Config::MUSTSET, "", "GNSS satellite attitude model"))
-    {
-      readConfigChoiceElement(config,    "nominal",   attitudeModelChoice, "Nominal attitude: z towards Earth, y along solar panel axis, x roughly towards sun (y cross z)");
-      readConfigChoiceElement(config,    "ecom",      attitudeModelChoice, "ECOM attitude: x (d) towards Sun, y along solar panel axis, z (b) roughly towards Earth (d cross y)");
-      if(readConfigChoiceElement(config, "Kouba2009", attitudeModelChoice, "True attitude based on model by Kouba (2009): z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)"))
-      {
-        readConfig(config, "inputfileTransmitterInfo", fileNameTransmitterInfo,  Config::MUSTSET,  "{groopsDataDir}/gnss/transmitterGps/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "GNSS satellite info file");
-        readConfig(config, "inputfileYawBias",         fileNameYawBias,          Config::MUSTSET,  "{groopsDataDir}/gnss/transmitterGps/yawBias/yawBias.{prn}.txt", "yaw bias instrument file");
-        readConfig(config, "inputfileYawRates",        fileNameYawRates,         Config::DEFAULT,  "{groopsDataDir}/gnss/transmitterGps/yawRates.gps.txt", "yaw rate per SVN in [deg/s]");
-        readConfig(config, "shadowBuffer",             shadowBuffer,             Config::DEFAULT,  "3600", "[seconds] pre/post orbit time period to look for missing shadow entries/exits");
-        readConfig(config, "shadowThreshold",          shadowThreshold,          Config::DEFAULT,  "0.5",  "shadow scaling factor for finding exact shadow entry/exit times, between 0 (shadow) and 1 (sun)");
-        readConfig(config, "interpolationDegree",      interpolationDegree,      Config::DEFAULT,  "8",    "Polynomial degree for velocity interpolation, must be even!");
-      }
-      if(readConfigChoiceElement(config, "glonass", attitudeModelChoice, "True attitude based on official Galileo attitude law: z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)"))
-      {
-        readConfig(config, "inputfileTransmitterInfo", fileNameTransmitterInfo,  Config::MUSTSET,  "{groopsDataDir}/gnss/transmitterGlonass/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "GNSS satellite info file");
-        readConfig(config, "shadowBuffer",             shadowBuffer,             Config::DEFAULT,  "3600", "[seconds] pre orbit time period to look for last switch to modified attitude law");
-        readConfig(config, "shadowThreshold",          shadowThreshold,          Config::DEFAULT,  "0.5",  "shadow scaling factor for finding exact shadow entry/exit times, between 0 (shadow) and 1 (sun)");
-        readConfig(config, "interpolationDegree",      interpolationDegree,      Config::DEFAULT,  "8",    "Polynomial degree for velocity interpolation, must be even!");
-      }
-      if(readConfigChoiceElement(config, "galileo", attitudeModelChoice, "True attitude based on official Galileo attitude law: z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)"))
-      {
-        readConfig(config, "inputfileTransmitterInfo", fileNameTransmitterInfo,  Config::MUSTSET,  "{groopsDataDir}/gnss/transmitterGalileo/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "GNSS satellite info file");
-        readConfig(config, "shadowBuffer",             shadowBuffer,             Config::DEFAULT,  "3600", "[seconds] pre orbit time period to look for last switch to modified attitude law");
-        readConfig(config, "interpolationDegree",      interpolationDegree,      Config::DEFAULT,  "8",    "Polynomial degree for velocity interpolation, must be even!");
-      }
-      endChoice(config);
-    }
-    readConfig(config, "ephemerides", ephemerides, Config::MUSTSET, "", "");
-    readConfig(config, "eclipse",     eclipse,     Config::MUSTSET, "", "model to determine if satellite is in Earth's shadow");
+    readConfig(config, "outputfileStarCamera",  fileNameStarCamera,   Config::MUSTSET,  "",  "rotation from body frame to CRF");
+    readConfig(config, "inputfileOrbit",        fileNameOrbit,        Config::MUSTSET,  "",  "attitude is modeled based on this orbit");
+    readConfig(config, "inputfileAttitudeInfo", fileNameAttitudeInfo, Config::OPTIONAL, "",  "attitude modes used by the satellite and respective parameters");
+    readConfig(config, "interpolationDegree",   interpolationDegree,  Config::DEFAULT,  "7", "polynomial degree for orbit interpolation");
+    readConfig(config, "modelingResolution",    modelingResolution,   Config::DEFAULT,  "1", "[s] resolution for attitude model evaluation");
+    readConfig(config, "ephemerides",           ephemerides,          Config::MUSTSET,  "",  "");
+    readConfig(config, "eclipse",               eclipse,              Config::MUSTSET,  "",  "model to determine if satellite is in Earth's shadow");
     if(isCreateSchema(config)) return;
 
-    std::list<Arc> arcListOut;
+    logStatus<<"read orbit file <"<<fileNameOrbit<<">"<<Log::endl;
+    OrbitArc orbitArc = InstrumentFile::read(fileNameOrbit);
+    if(orbitArc.size() && orbitArc.at(0).velocity.r()==0.)
+      throw(Exception("orbit does not contain velocity data"));
 
-    // create star camera data for nominal or ECOM attitude
-    // ----------------------------------------------------
-    if(attitudeModelChoice == "nominal" || attitudeModelChoice == "ecom")
+    if(fileNameAttitudeInfo.empty())
     {
-      logStatus << "read orbit and generate star camera data" << Log::endl;
-      InstrumentFile  orbitFile(fileNameInOrbit);
-      UInt arcCount = orbitFile.arcCount();
-      UInt epochCount = 0;
-
-      for(UInt arcNo=0; arcNo<arcCount; arcNo++)
-      {
-        OrbitArc orbit = orbitFile.readArc(arcNo);
-        UInt posCount  = orbit.size();
-
-        StarCameraArc arc;
-        for(UInt i=0; i<posCount; i++)
-        {
-          StarCameraEpoch epoch;
-          epoch.time   = orbit.at(i).time;
-          if(attitudeModelChoice == "ecom")
-            epoch.rotary = orientationEcom(orbit.at(i).position, ephemerides->position(orbit.at(i).time, Ephemerides::SUN));
-          else
-            epoch.rotary = orientationNominal(orbit.at(i).position, ephemerides->position(orbit.at(i).time, Ephemerides::SUN));
-          arc.push_back(epoch);
-          epochCount++;
-        }
-        arcListOut.push_back(arc);
-      }
-
-      if(epochCount == 0)
-        throw(Exception("empty input orbit"));
+      logStatus<<"no attitude info provided, using nominal yaw-steering attitude"<<Log::endl;
+      attitudeInfos.push_back(AttitudeInfo(Time(), Vector(9)));
+    }
+    else
+    {
+      logStatus<<"read attitude info from file <"<<fileNameAttitudeInfo<<">"<<Log::endl;
+      MiscValuesArc arc = InstrumentFile::read(fileNameAttitudeInfo);
+      for(auto epoch : arc)
+        attitudeInfos.push_back(AttitudeInfo(epoch.time, epoch.data()));
     }
 
-    // create star camera data for attitude model by Kouba (2009)
-    // ----------------------------------------------------------
-    else if(attitudeModelChoice == "Kouba2009" || attitudeModelChoice == "glonass" || attitudeModelChoice == "galileo")
+    // increase sampling and compute beta angle, orbit angle, and yaw angle/rate from default attitude mode for all epochs
+    const std::vector<Time> timesOrbit = orbitArc.times();
+    const Time deltaTime = seconds2time(std::fabs(modelingResolution));
+    std::vector<Time> times;
+    for(UInt i=0; timesOrbit.front()+i*deltaTime<=timesOrbit.back(); i++)
+      times.push_back(timesOrbit.front() + i*deltaTime);
+    Polynomial polynomial(interpolationDegree);
     {
-      if(shadowThreshold < 0 || shadowThreshold > 1)
-        throw(Exception("shadow threshold must be between 0 (shadow) and 1 (sun): " + shadowThreshold%"%f"s));
+      Matrix positionVelocity = polynomial.interpolate(times, timesOrbit, orbitArc.matrix().column(1, 6), 1);
+      for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
+        epochs.push_back(createDefaultEpoch(times.at(idEpoch), Vector3d(positionVelocity.slice(idEpoch, 0, 1, 3)), Vector3d(positionVelocity.slice(idEpoch, 3, 1, 3))));
+    }
 
-      if(interpolationDegree%2 != 0)
-        throw(Exception("interpolation degree must be even"));
-
-      // read orbit arc by arc to remember arc structure for output starCamera file
-      logStatus << "read orbit file <" << fileNameInOrbit << ">" << Log::endl;
-      InstrumentFile  orbitFile(fileNameInOrbit);
-      OrbitArc orbitArc;
-      std::vector<std::vector<Time>> timesOrbitArcOriginal;
-      for(UInt arcNo = 0; arcNo < orbitFile.arcCount(); arcNo++)
+    // Kepler-integrate forwards and backwards in time to consider maneuvers at orbit boundaries
+    auto keplerExtend = [&](const Time &timeStart, const Vector3d &posStart, const Vector3d &velStart, Double integrationStep, Double integrationLimit)
+    {
+      Kepler kepler(timeStart, posStart, velStart);
+      for(UInt i=1; (i-1)*std::fabs(integrationStep)<=std::fabs(integrationLimit); i++)
       {
-        OrbitArc arc = orbitFile.readArc(arcNo);
-        orbitArc.append(arc);
-        timesOrbitArcOriginal.push_back(arc.times());
+        Time time = timeStart + seconds2time(i*integrationStep);
+        Vector3d pos, vel;
+        kepler.orbit(time, pos, vel);
+        epochs.push_back(createDefaultEpoch(time, pos, vel));
+        times.push_back(time);
       }
-      if(!orbitArc.size())
-        throw(Exception("empty input orbit"));
+    };
+    keplerExtend(orbitArc.front().time, orbitArc.front().position, orbitArc.front().velocity, -deltaTime.seconds(), getAttitudeInfo(orbitArc.front().time).maxManeuverTime);
+    keplerExtend(orbitArc.back().time,  orbitArc.back().position,  orbitArc.back().velocity,   deltaTime.seconds(), getAttitudeInfo(orbitArc.back().time).maxManeuverTime);
+    std::sort(epochs.begin(), epochs.end(), [](auto &e1, auto &e2){ return e1.time<e2.time; });
+    std::sort(times.begin(), times.end());
 
-      // sort and remove duplicate epochs
-      orbitArc.sort();
-      for(UInt i = 1; i < orbitArc.size(); i++)
-        if(orbitArc.at(i).time == orbitArc.at(i-1).time)
-          orbitArc.remove(i--);
-
-      // interpolate velocities if necessary
-      if(orbitArc.at(0).velocity.r() == 0 || orbitArc.at(orbitArc.size()-1).velocity.r() == 0)
+    // model transitions caused by change of default attitude mode
+    AttitudeMode previousDefaultMode = getAttitudeInfo(epochs.front().time).defaultMode;
+    for(UInt idEpoch=1; idEpoch<epochs.size(); idEpoch++)
+    {
+      const AttitudeInfo attitudeInfo = getAttitudeInfo(epochs.at(idEpoch).time);
+      if(attitudeInfo.defaultMode!=previousDefaultMode)
       {
-        logStatus << "velocity data missing, interpolating from orbit" << Log::endl;
-        interpolateVelocity(orbitArc, interpolationDegree);
-      }
-
-      logStatus << "read transmitter info file <" << fileNameTransmitterInfo << ">" << Log::endl;
-      GnssStationInfo transmitterInfo;
-      readFileGnssStationInfo(fileNameTransmitterInfo, transmitterInfo);
-
-      // find SVN and GNSS block of satellite
-      std::string svn;
-      GnssBlock   block = UNKNOWN;
-      UInt idAnt = transmitterInfo.findAntenna(orbitArc.times().at(0));
-      if(idAnt != NULLINDEX)
-      {
-        svn   = transmitterInfo.antenna.at(idAnt).serial;
-        block = string2block(transmitterInfo.antenna.at(idAnt).name);
-      }
-      if(svn.empty() || block == UNKNOWN)
-        throw(Exception("satellite not found in transmitter info file"));
-
-      StarCameraArc starCameraArc;
-      if(attitudeModelChoice == "Kouba2009")
-      {
-        logStatus << "read yaw bias file <" << fileNameYawBias << ">" << Log::endl;
-        MiscValueArc yawBiasArc = InstrumentFile::read(fileNameYawBias);
-        if(!yawBiasArc.size())
-          throw(Exception("yaw bias file is empty"));
-
-        if(!fileNameYawRates.empty())
+        if(attitudeInfo.maxYawRate>0.)
         {
-          logStatus << "read yaw rates file <" << fileNameYawRates << ">" << Log::endl;
-          readFileMatrix(fileNameYawRates, yawRates);
+          epochs.at(idEpoch-1).yawRate = wrapAngle(epochs.at(idEpoch).yawAngle-epochs.at(idEpoch-1).yawAngle)>=0 ? attitudeInfo.maxYawRate : -attitudeInfo.maxYawRate;
+          catchUpYawAngle(epochs.at(idEpoch-1), attitudeInfo.maxYawRate);
         }
-
-        starCameraArc = orientationArcKouba2009(orbitArc, svn, block, yawBiasArc, ephemerides, eclipse, shadowBuffer, shadowThreshold);
-      }
-      else if(attitudeModelChoice == "glonass")
-      {
-        starCameraArc = orientationArcGlonassM(orbitArc, block, ephemerides, eclipse, shadowBuffer, shadowThreshold);
-      }
-      else if(attitudeModelChoice == "galileo")
-      {
-        if(block == GALILEO_1)
-          starCameraArc = orientationArcGalileo1(orbitArc, ephemerides, shadowBuffer);
-        else if(block == GALILEO_2)
-          starCameraArc = orientationArcGalileo2(orbitArc, ephemerides, shadowBuffer);
         else
-        {
-          logWarning << "no attitude model implemented for "+svn+" ("+block2string(block)+"), using nominal attitude" << Log::endl;
-          starCameraArc = orientationArcNominal(orbitArc, ephemerides);
-        }
+          logWarning<<"default attitude mode change at "<<epochs.at(idEpoch-1).time.dateTimeStr()<<" but unable to model transition because maxYawRate data is missing"<<Log::endl;
       }
+      previousDefaultMode = attitudeInfo.defaultMode;
+    }
 
-      // recover input orbit arc structure for output starCamera file
-      for(UInt i = 0; i < timesOrbitArcOriginal.size(); i++)
+    // apply specific attitude modes for noon and midnight
+    for(UInt idEpoch=0; idEpoch<epochs.size(); idEpoch++)
+    {
+      const AttitudeInfo attitudeInfo = getAttitudeInfo(epochs.at(idEpoch).time);
+      const AttitudeMode attitudeMode = std::fabs(epochs.at(idEpoch).orbitAngle)<=PI/2 ? attitudeInfo.midnightMode : attitudeInfo.noonMode;
+      if(attitudeMode==attitudeInfo.defaultMode)
+        continue; // same as default mode => nothing to adjust
+
+      switch(attitudeMode)
       {
-        StarCameraArc arc(starCameraArc);
-        arc.synchronize(timesOrbitArcOriginal.at(i));
-        arcListOut.push_back(arc);
+        case NOMINAL_YAW_STEERING:                 modelNominalYawSteering(epochs.at(idEpoch));                           break;
+        case ORBIT_NORMAL:                         modelOrbitNormal(epochs.at(idEpoch), attitudeInfo);                    break;
+        case CATCH_UP_YAW_STEERING:                idEpoch = modelCatchUpYawSteering(idEpoch, attitudeInfo);              break;
+        case SHADOW_MAX_YAW_STEERING_AND_RECOVERY: idEpoch = modelShadowMaxYawSteeringAndRecovery(idEpoch, attitudeInfo); break;
+        case SHADOW_MAX_YAW_STEERING_AND_STOP:     idEpoch = modelShadowMaxYawSteeringAndStop(idEpoch, attitudeInfo);     break;
+        case SHADOW_CONSTANT_YAW_STEERING:         idEpoch = modelShadowConstantYawSteering(idEpoch);                     break;
+        case CENTERED_MAX_YAW_STEERING:            idEpoch = modelCenteredMaxYawSteering(idEpoch, attitudeInfo);          break;
+        case SMOOTHED_YAW_STEERING_1:              idEpoch = modelSmoothedYawSteering1(idEpoch);                          break;
+        case SMOOTHED_YAW_STEERING_2:              idEpoch = modelSmoothedYawSteering2(idEpoch, attitudeInfo);            break;
+        case BETA_DEPENDENT_ORBIT_NORMAL:          idEpoch = modelBetaDependentOrbitNormal(idEpoch, attitudeInfo);        break;
+        default: throw(Exception(attitudeMode%"unknown attitude mode: %i"s));
       }
     }
 
-    logStatus << "write star camera file <" << fileNameOutStarCamera << ">" << Log::endl;
-    InstrumentFile::write(fileNameOutStarCamera, arcListOut);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-Rotary3d SimulateStarCameraGnss::orientationNominal(const Vector3d &posSat, const Vector3d &posSun)
-{
-  try
-  {
-    Vector3d z = normalize(-posSat);
-    Vector3d x = normalize(posSun - posSat);
-    Vector3d y = normalize(crossProduct(z,x));
-    return Rotary3d(crossProduct(y,z), y);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-Rotary3d SimulateStarCameraGnss::orientationEcom(const Vector3d &posSat, const Vector3d &posSun)
-{
-  try
-  {
-    Vector3d d = normalize(posSun - posSat);
-    return Rotary3d(d, crossProduct(normalize(-posSat), d));
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-StarCameraArc SimulateStarCameraGnss::orientationArcNominal(const OrbitArc &orbitArc, EphemeridesPtr ephemerides)
-{
-  try
-  {
-    StarCameraArc arc;
-    for(UInt i=0; i<orbitArc.size(); i++)
+    // Compute output star camera data
+    Matrix quaternions(times.size(), 4);
+    for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
     {
-      StarCameraEpoch epoch;
-      epoch.time   = orbitArc.at(i).time;
-      epoch.rotary = orientationNominal(orbitArc.at(i).position, ephemerides->position(orbitArc.at(i).time, Ephemerides::SUN));
-      arc.push_back(epoch);
+      copy(rotaryZ(-Angle(epochs.at(idEpoch).yawAngle)).quaternion().trans(), quaternions.row(idEpoch));
+      if(idEpoch>0 && inner(quaternions.row(idEpoch), quaternions.row(idEpoch-1))<0.)
+        quaternions.row(idEpoch) *= -1; // ensure same sign for correct interpolation
     }
-    return arc;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-StarCameraArc SimulateStarCameraGnss::orientationArcGlonassM(const OrbitArc &orbitArc, GnssBlock block, EphemeridesPtr ephemerides, EclipsePtr eclipse, Double shadowBuffer, Double shadowThreshold)
-{
-  try
-  {
-    // Nominal maximum hardware yaw rate
-    Double yawRateHardwareMax = 0;
-    if(block == GLONASS_M)
-      yawRateHardwareMax = 0.25*DEG2RAD;
-
-    std::vector<Time> times = orbitArc.times();
-    std::vector<Epoch> epoch(times.size());
-
-    // Nominal yaw and yaw rate
-    for(UInt k = 0; k < times.size(); k++)
-    {
-      epoch.at(k).time    = times.at(k);
-      epoch.at(k).pos     = orbitArc.at(k).position;
-      epoch.at(k).vel     = orbitArc.at(k).velocity;
-      epoch.at(k).posSun  = ephemerides->position(times.at(k), Ephemerides::SUN);
-      computeYaw(epoch.at(k));
-    }
-
-    // =============================================
-
-    // Attitude correction for noon/midnight turns
-    // -------------------------------------------
-
-    // Find noon/midnight turn starts
-//    std::vector<Epoch> turnStart;
-//    Epoch epochTurn;
-//    for(UInt k = 0; k < times.size()-1; k++)
-//      if(std::fabs(epoch.at(k).yawRateTrue) < yawRateHardwareMax && std::fabs(epoch.at(k+1).yawRateTrue) >= yawRateHardwareMax)
-//        if(findNoonMidnightTurnStart(ephemerides, epoch.at(k), 1, (epoch.at(k+1).time-epoch.at(k).time).seconds(), yawRateHardwareMax, yawBiasArc, epochTurn))
-//          turnStart.push_back(epochTurn);
-
-//    // Find missing noon/midnight turn start if satellite is already potentially in noon/midnight turn when interval starts
-//    if(turnStart.size() && findNoonMidnightTurnStart(ephemerides, epoch.at(0), -1, shadowBuffer, yawRateHardwareMax, yawBiasArc, epochTurn))
-//        turnStart.insert(turnStart.begin(), epochTurn);
-
-//    // Compute true yaw angle during noon/midnight turns
-//    for(UInt i = 0; i < turnStart.size(); i++)
-//      catchUpYaw(turnStart.at(i), epoch, yawRateHardwareMax, FALSE);
-
-    // =============================================
-
-    // Attitude correction for Block II/IIA and Block IIF shadow crossings
-    // -------------------------------------------------------------------
-
-    if(block == GLONASS_M)
-    {
-      std::vector<Epoch> shadowStart, shadowEnd;
-
-      for(UInt k = 0; k < times.size(); k++)
-        epoch.at(k).shadowFactor = eclipse ? eclipse->factor(epoch.at(k).time, epoch.at(k).pos, ephemerides) : 1.;
-
-      // Find start and end epochs of shadow crossings
-      Epoch epochShadow;
-      for(UInt k = 0; k < times.size()-1; k++)
-      {
-        // check for shadow entry
-        if(epoch.at(k).shadowFactor >= shadowThreshold && epoch.at(k+1).shadowFactor < shadowThreshold)
-          if(findShadowBoundary(epoch.at(k), 1, (epoch.at(k+1).time-epoch.at(k).time).seconds(), ephemerides, eclipse, TRUE, shadowThreshold, MiscValueArc(), epochShadow))
-            shadowStart.push_back(epochShadow);
-
-        // check for shadow exit
-        if(epoch.at(k).shadowFactor < shadowThreshold && epoch.at(k+1).shadowFactor >= shadowThreshold)
-          if(findShadowBoundary(epoch.at(k), 1, (epoch.at(k+1).time-epoch.at(k).time).seconds(), ephemerides, eclipse, FALSE, shadowThreshold, MiscValueArc(), epochShadow))
-            shadowEnd.push_back(epochShadow);
-      }
-
-      // Find missing shadow exit if satellite is still in shadow when interval ends
-      if(shadowStart.size() && (!shadowEnd.size() || (shadowEnd.size() && shadowEnd.back().time < shadowStart.back().time)))
-        if(findShadowBoundary(epoch.back(), 1, shadowBuffer, ephemerides, eclipse, FALSE, shadowThreshold, MiscValueArc(), epochShadow))
-          shadowEnd.push_back(epochShadow);
-
-      // Find missing shadow entry if satellite is already in shadow when interval starts
-      if(shadowEnd.size() && (!shadowStart.size() || (shadowStart.size() && shadowEnd.at(0).time < shadowStart.at(0).time)))
-        if(findShadowBoundary(epoch.at(0), -1, shadowBuffer, ephemerides, eclipse, TRUE, shadowThreshold, MiscValueArc(), epochShadow))
-          shadowStart.insert(shadowStart.begin(), epochShadow);
-
-      if(shadowStart.size() != shadowEnd.size())
-        throw(Exception("number of shadow entries and exits not equal: " + shadowStart.size()%"%i"s + " != " + shadowEnd.size()%"%i"s));
-
-      // Compute true yaw angle during shadow crossings
-      for(UInt i = 0; i < shadowStart.size(); i++)
-      {
-        // Yaw rate at shadow start and during shadow crossing
-        shadowStart.at(i).yawRateTrue = (shadowStart.at(i).yawRateNominal >= 0 ? yawRateHardwareMax : -yawRateHardwareMax);
-
-        // Yaw angle during shadow crossing
-        for(UInt k = 0; k < times.size(); k++)
-          if(times.at(k) > shadowStart.at(i).time && times.at(k) <= shadowEnd.at(i).time)
-          {
-//            epoch.at(k).yawTrue     = wrapAngle(shadowStart.at(i).yawTrue + shadowStart.at(i).yawRateTrue*(times.at(k)-shadowStart.at(i).time).seconds());
-//            epoch.at(k).yawRateTrue = shadowStart.at(i).yawRateTrue;
-            epoch.at(k).yawTrue     = shadowEnd.at(i).yawNominal;
-            epoch.at(k).yawRateTrue = 0;
-          }
-        catchUpYaw(shadowStart.at(i), epoch, yawRateHardwareMax, FALSE);
-      }
-    } // end if(block == GLONASS_M)
-    else
-      logWarning << "no attitude model implemented for block "+block2string(block)+", using nominal attitude" << Log::endl;
-
-    // =============================================
-
-    // Compute corrected orientation
+    quaternions = polynomial.interpolate(timesOrbit, times, quaternions, 1);
     StarCameraArc starCameraArc;
-    for(UInt k = 0; k < times.size(); k++)
+    for(UInt idEpoch=0; idEpoch<timesOrbit.size(); idEpoch++)
     {
       StarCameraEpoch starCameraEpoch;
-      starCameraEpoch.time   = times.at(k);
-      starCameraEpoch.rotary = orientationNominal(epoch.at(k).pos, epoch.at(k).posSun) * rotaryZ(-Angle(epoch.at(k).yawTrue - epoch.at(k).yawNominal));
+      starCameraEpoch.time   = timesOrbit.at(idEpoch);
+      starCameraEpoch.rotary = orbitNormal2crf(orbitArc.at(idEpoch).position, orbitArc.at(idEpoch).velocity) * Rotary3d(quaternions.row(idEpoch).trans());
       starCameraArc.push_back(starCameraEpoch);
     }
 
-    return starCameraArc;
+    logStatus<<"write star camera file <"<<fileNameStarCamera<<">"<<Log::endl;
+    InstrumentFile::write(fileNameStarCamera, starCameraArc);
   }
   catch(std::exception &e)
   {
@@ -628,81 +317,24 @@ StarCameraArc SimulateStarCameraGnss::orientationArcGlonassM(const OrbitArc &orb
 
 /***********************************************/
 
-StarCameraArc SimulateStarCameraGnss::orientationArcGalileo1(const OrbitArc &orbitArc, EphemeridesPtr ephemerides, Double integrationLimit)
+Double SimulateStarCameraGnss::wrapAngle(Double angle) const
+{
+  while(angle>= PI) angle -= 2*PI;
+  while(angle< -PI) angle += 2*PI;
+
+  return angle;
+}
+
+/***********************************************/
+
+Rotary3d SimulateStarCameraGnss::orbitNormal2crf(const Vector3d &posSat, const Vector3d &velSat) const
 {
   try
   {
-    auto computePsi = [](const Vector3d &S)
-    {
-      const Double denom = std::sqrt(1. - S.z()*S.z());
-      return std::atan2(S.y()/denom, S.x()/denom);
-    };
+    Vector3d r = normalize(posSat);
+    Vector3d n = normalize(crossProduct(posSat, velSat));
 
-    auto computeValues = [&](const Time &time, const Vector3d &pos, const Vector3d &vel, Vector3d &S0, Rotary3d &orbitalReferenceSystem)
-    {
-      const Vector3d r = normalize(pos);
-      const Vector3d v = normalize(vel);
-      const Vector3d n = crossProduct(r, v);  // orbit normal vector
-
-      orbitalReferenceSystem = Rotary3d(crossProduct(-r, n), -n);
-      S0 = orbitalReferenceSystem.inverseRotate(normalize(ephemerides->position(time, Ephemerides::SUN) - pos));
-    };
-
-    StarCameraArc starCameraArc;
-
-    Vector3d S0LastSwitch, S0LastEpoch;
-    for(UInt idEpoch = 0; idEpoch < orbitArc.size(); idEpoch++)
-    {
-      Vector3d S0;
-      Rotary3d orbitalReferenceSystem;
-      computeValues(orbitArc.at(idEpoch).time, orbitArc.at(idEpoch).position, orbitArc.at(idEpoch).velocity, S0, orbitalReferenceSystem);
-      Double psi = computePsi(S0);
-
-      const Double sinBetaX = std::sin(15.0*DEG2RAD);
-      const Double sinBetaY = std::sin(2.0*DEG2RAD);
-
-      if(std::fabs(S0.x()) < sinBetaX && std::fabs(S0.y()) < sinBetaY)
-      {
-        // find S0 for last switch to modified yaw steering law
-        if(idEpoch == 0) // already using modified yaw steering law at initial epoch => find last switch by extrapolating backwards using Kepler orbit
-        {
-          Kepler kepler(orbitArc.at(idEpoch).time, orbitArc.at(idEpoch).position, orbitArc.at(idEpoch).velocity);
-
-          const Double integrationStep = -1;
-          for(UInt i = 0; std::fabs(i*integrationStep) <= std::fabs(integrationLimit)+1; i++)
-          {
-            const Time time = orbitArc.at(idEpoch).time + seconds2time(i*integrationStep);
-            Vector3d pos, vel, S0;
-            Rotary3d orbitalReferenceSystem;
-            kepler.orbit(time, pos, vel);
-            computeValues(time, pos, vel, S0, orbitalReferenceSystem);
-
-            if(std::fabs(S0.x()) > sinBetaX || std::fabs(S0.y()) > sinBetaY)
-            {
-              S0LastSwitch = S0;
-              break;
-            }
-          }
-        }
-        else if(std::fabs(S0LastEpoch.x()) > sinBetaX || std::fabs(S0LastEpoch.y()) > sinBetaY)
-          S0LastSwitch = S0;
-
-        const Double Gamma = (S0LastSwitch.y() < 0 ? -1 : 1);
-        const Double SHy = 0.5*(sinBetaY*Gamma + S0.y()) + 0.5*(sinBetaY*Gamma - S0.y()) * std::cos(PI*std::fabs(S0.x())/sinBetaX);
-        const Vector3d SH(S0.x(), SHy, std::sqrt(1. - S0.x()*S0.x() - SHy*SHy)*(S0.z() < 0 ? -1 : 1));
-
-        psi = computePsi(SH);
-      }
-
-      S0LastEpoch = S0;
-
-      StarCameraEpoch starCameraEpoch;
-      starCameraEpoch.time   = orbitArc.at(idEpoch).time;
-      starCameraEpoch.rotary = orbitalReferenceSystem * rotaryZ(-Angle(psi));
-      starCameraArc.push_back(starCameraEpoch);
-    }
-
-    return starCameraArc;
+    return Rotary3d(crossProduct(-n, -r), -n);
   }
   catch(std::exception &e)
   {
@@ -712,82 +344,14 @@ StarCameraArc SimulateStarCameraGnss::orientationArcGalileo1(const OrbitArc &orb
 
 /***********************************************/
 
-StarCameraArc SimulateStarCameraGnss::orientationArcGalileo2(const OrbitArc &orbitArc, EphemeridesPtr ephemerides, Double integrationLimit)
+SimulateStarCameraGnss::AttitudeInfo SimulateStarCameraGnss::getAttitudeInfo(const Time &time) const
 {
   try
   {
-    auto computeValues = [ephemerides](const Time &time, const Vector3d &pos, const Vector3d &vel, Double &beta, Double &epsilon, Double &psi, Rotary3d &orbitalReferenceSystem)
-    {
-      const Vector3d r = normalize(pos);
-      const Vector3d v = normalize(vel);
-      const Vector3d n = crossProduct(r, v);  // orbit normal vector
-      const Vector3d s = normalize(ephemerides->position(time, Ephemerides::SUN));
-
-      beta = std::acos(inner(normalize(crossProduct(v, r)), s)) - PI/2;
-      epsilon = std::acos(inner(r, crossProduct(n, crossProduct(n, s))));
-      if(epsilon > PI/2)
-        epsilon = PI - epsilon;
-
-      psi = std::atan2(inner(-s, n), inner(-s, crossProduct(r, n)));
-      orbitalReferenceSystem = Rotary3d(crossProduct(-r, n), -n);
-    };
-
-    StarCameraArc starCameraArc;
-
-    Double psiLastSwitch = 0;
-    Time   timeLastSwitch;
-    Double epsilonLastEpoch = 0;
-    for(UInt idEpoch = 0; idEpoch < orbitArc.size(); idEpoch++)
-    {
-      Double beta, epsilon, psi;
-      Rotary3d orbitalReferenceSystem;
-      computeValues(orbitArc.at(idEpoch).time, orbitArc.at(idEpoch).position, orbitArc.at(idEpoch).velocity, beta, epsilon, psi, orbitalReferenceSystem);
-
-      if(std::fabs(beta) < 4.1*DEG2RAD && std::fabs(epsilon) < 10.0*DEG2RAD)
-      {
-        // find time and psi at last switch to modified yaw steering law
-        if(idEpoch == 0) // already using modified yaw steering law at initial epoch => find last switch by extrapolating backwards using Kepler orbit
-        {
-          Kepler kepler(orbitArc.at(idEpoch).time, orbitArc.at(idEpoch).position, orbitArc.at(idEpoch).velocity);
-
-          const Double integrationStep = -1;
-          for(UInt i = 0; std::fabs(i*integrationStep) <= std::fabs(integrationLimit)+1; i++)
-          {
-            const Time time = orbitArc.at(idEpoch).time + seconds2time(i*integrationStep);
-            Vector3d pos, vel;
-            Double   beta, epsilon, psi;
-            Rotary3d orbitalReferenceSystem;
-            kepler.orbit(time, pos, vel);
-            computeValues(time, pos, vel, beta, epsilon, psi, orbitalReferenceSystem);
-
-            if(std::fabs(epsilon) >= 10.0*DEG2RAD)
-            {
-              psiLastSwitch  = psi;
-              timeLastSwitch = time;
-              break;
-            }
-          }
-        }
-        else if(std::fabs(epsilonLastEpoch) >= 10.0*DEG2RAD)
-        {
-          psiLastSwitch = psi;
-          timeLastSwitch = orbitArc.at(idEpoch).time;
-        }
-
-        const Double offset = (psiLastSwitch < 0 ? -PI/2 : PI/2);
-        const Double tMod   = (orbitArc.at(idEpoch).time - timeLastSwitch).seconds();
-        psi = offset + (psiLastSwitch - offset) * std::cos(2*PI/5656 * tMod);
-      }
-
-      epsilonLastEpoch = epsilon;
-
-      StarCameraEpoch starCameraEpoch;
-      starCameraEpoch.time   = orbitArc.at(idEpoch).time;
-      starCameraEpoch.rotary = orbitalReferenceSystem * rotaryZ(-Angle(psi));
-      starCameraArc.push_back(starCameraEpoch);
-    }
-
-    return starCameraArc;
+    auto iter = std::find_if(attitudeInfos.rbegin(), attitudeInfos.rend(), [&](auto info){ return info.timeStart<=time; });
+    if(iter==attitudeInfos.rend())
+      throw(Exception("no attitude modes found for "+time.dateTimeStr()));
+    return *iter;
   }
   catch(std::exception &e)
   {
@@ -797,231 +361,110 @@ StarCameraArc SimulateStarCameraGnss::orientationArcGalileo2(const OrbitArc &orb
 
 /***********************************************/
 
-// Based on [Kouba (2009), A simplified yaw-attitude model for eclipsing GPS satellites] and IGS Repro 2 updates
-StarCameraArc SimulateStarCameraGnss::orientationArcKouba2009(const OrbitArc &orbitArc, const std::string &svn, GnssBlock block,
-                                                           const MiscValueArc &yawBiasArc, EphemeridesPtr ephemerides, EclipsePtr eclipse, Double shadowBuffer, Double shadowThreshold) const
+SimulateStarCameraGnss::Epoch SimulateStarCameraGnss::createDefaultEpoch(const Time &time, const Vector3d &posSat, const Vector3d &velSat) const
 {
   try
   {
-    std::vector<Time> times = orbitArc.times();
-    std::vector<Epoch> epoch(times.size());
-
-    // Nominal yaw and yaw rate
-    for(UInt k = 0; k < times.size(); k++)
-    {
-      epoch.at(k).time    = times.at(k);
-      epoch.at(k).pos     = orbitArc.at(k).position;
-      epoch.at(k).vel     = orbitArc.at(k).velocity;
-      epoch.at(k).posSun  = ephemerides->position(times.at(k), Ephemerides::SUN);
-      epoch.at(k).yawBias = yawBias(times.at(k), yawBiasArc);
-      computeYaw(epoch.at(k));
-    }
-
-    // =============================================
-
-    if(blockIsIn(block, {GPS_II, GPS_IIA, GPS_IIR, GPS_IIRA, GPS_IIRB, GPS_IIRM, GPS_IIF}))
-    {
-      // Nominal maximum hardware yaw rate
-      Double yawRateHardwareMax = 0;
-      if(blockIsIn(block, {GPS_II, GPS_IIA}))
-        yawRateHardwareMax = 0.12*DEG2RAD;
-      if(blockIsIn(block, {GPS_IIR, GPS_IIRA, GPS_IIRB, GPS_IIRM}))
-        yawRateHardwareMax = 0.20*DEG2RAD;
-      if(block == GPS_IIF)
-        yawRateHardwareMax = 0.11*DEG2RAD;
-
-      // Search for estimated maximum hardware yaw rate
-      if(yawRates.size())
-      {
-        UInt svnInt = std::atoi(svn.substr(1).c_str());
-        for(UInt i = 0; i < yawRates.rows(); i++)
-          if(yawRates(i,0) == svnInt)
-          {
-            yawRateHardwareMax = yawRates(i,1)*DEG2RAD;
-            break;
-          }
-      }
-
-      // =============================================
-
-      // Attitude correction for noon/midnight turns
-      // -------------------------------------------
-
-      // Find noon/midnight turn starts
-      std::vector<Epoch> turnStart;
-      Epoch epochTurn;
-      for(UInt k = 0; k < times.size()-1; k++)
-        if(std::fabs(epoch.at(k).yawRateTrue) < yawRateHardwareMax && std::fabs(epoch.at(k+1).yawRateTrue) >= yawRateHardwareMax)
-          if(findNoonMidnightTurnStart(ephemerides, epoch.at(k), 1, (epoch.at(k+1).time-epoch.at(k).time).seconds(), yawRateHardwareMax, yawBiasArc, epochTurn))
-            turnStart.push_back(epochTurn);
-
-      // Find missing noon/midnight turn start if satellite is already potentially in noon/midnight turn when interval starts
-      if(turnStart.size() && findNoonMidnightTurnStart(ephemerides, epoch.at(0), -1, shadowBuffer, yawRateHardwareMax, yawBiasArc, epochTurn))
-          turnStart.insert(turnStart.begin(), epochTurn);
-
-      // Compute true yaw angle during noon/midnight turns
-      for(UInt i = 0; i < turnStart.size(); i++)
-        catchUpYaw(turnStart.at(i), epoch, yawRateHardwareMax, FALSE);
-
-      // =============================================
-
-      // Attitude correction for Block II/IIA and Block IIF shadow crossings
-      // -------------------------------------------------------------------
-
-      if(blockIsIn(block, {GPS_II, GPS_IIA, GPS_IIF}))
-      {
-        std::vector<Epoch> shadowStart, shadowEnd;
-
-        for(UInt k = 0; k < times.size(); k++)
-          epoch.at(k).shadowFactor = eclipse ? eclipse->factor(epoch.at(k).time, epoch.at(k).pos, ephemerides) : 1.;
-
-        // Find start and end epochs of shadow crossings
-        Epoch epochShadow;
-        for(UInt k = 0; k < times.size()-1; k++)
-        {
-          // check for shadow entry
-          if(epoch.at(k).shadowFactor >= shadowThreshold && epoch.at(k+1).shadowFactor < shadowThreshold)
-            if(findShadowBoundary(epoch.at(k), 1, (epoch.at(k+1).time-epoch.at(k).time).seconds(), ephemerides, eclipse, TRUE, shadowThreshold, yawBiasArc, epochShadow))
-              shadowStart.push_back(epochShadow);
-
-          // check for shadow exit
-          if(epoch.at(k).shadowFactor < shadowThreshold && epoch.at(k+1).shadowFactor >= shadowThreshold)
-            if(findShadowBoundary(epoch.at(k), 1, (epoch.at(k+1).time-epoch.at(k).time).seconds(), ephemerides, eclipse, FALSE, shadowThreshold, yawBiasArc, epochShadow))
-              shadowEnd.push_back(epochShadow);
-        }
-
-        // Find missing shadow exit if satellite is still in shadow when interval ends
-        if(shadowStart.size() && (!shadowEnd.size() || (shadowEnd.size() && shadowEnd.back().time < shadowStart.back().time)))
-          if(findShadowBoundary(epoch.back(), 1, shadowBuffer, ephemerides, eclipse, FALSE, shadowThreshold, yawBiasArc, epochShadow))
-            shadowEnd.push_back(epochShadow);
-
-        // Find missing shadow entry if satellite is already in shadow when interval starts
-        if(shadowEnd.size() && (!shadowStart.size() || (shadowStart.size() && shadowEnd.at(0).time < shadowStart.at(0).time)))
-          if(findShadowBoundary(epoch.at(0), -1, shadowBuffer, ephemerides, eclipse, TRUE, shadowThreshold, yawBiasArc, epochShadow))
-            shadowStart.insert(shadowStart.begin(), epochShadow);
-
-        if(shadowStart.size() != shadowEnd.size())
-          throw(Exception("number of shadow entries and exits not equal: " + shadowStart.size()%"%i"s + " != " + shadowEnd.size()%"%i"s));
-
-        // Compute true yaw angle during shadow crossings
-        for(UInt i = 0; i < shadowStart.size(); i++)
-        {
-          // Yaw rate at shadow start and during shadow crossing
-          if(blockIsIn(block, {GPS_II, GPS_IIA}))
-            shadowStart.at(i).yawRateTrue = (yawBias(shadowStart.at(i).time, yawBiasArc) >= 0 ? yawRateHardwareMax : -yawRateHardwareMax);
-          if(block == GPS_IIF)
-            shadowStart.at(i).yawRateTrue = wrapAngle(shadowEnd.at(i).yawTrue-shadowStart.at(i).yawTrue) / (shadowEnd.at(i).time-shadowStart.at(i).time).seconds();
-
-          // Yaw angle during shadow crossing
-          for(UInt k = 0; k < times.size(); k++)
-            if(times.at(k) > shadowStart.at(i).time && times.at(k) <= shadowEnd.at(i).time)
-            {
-              epoch.at(k).yawTrue     = wrapAngle(shadowStart.at(i).yawTrue + shadowStart.at(i).yawRateTrue*(times.at(k)-shadowStart.at(i).time).seconds());
-              epoch.at(k).yawRateTrue = shadowStart.at(i).yawRateTrue;
-            }
-
-          // Yaw angle at shadow exit
-          shadowEnd.at(i).yawTrue = wrapAngle(shadowStart.at(i).yawTrue + shadowStart.at(i).yawRateTrue*(shadowEnd.at(i).time-shadowStart.at(i).time).seconds());
-
-          // Block II/IIA post-shadow recovery maneuver
-          if(blockIsIn(block, {GPS_II, GPS_IIA}))
-            catchUpYaw(shadowEnd.at(i), epoch, yawRateHardwareMax, TRUE);
-        }
-      } // end if(block == GPS_II || block == GPS_IIA || block == GPS_IIF)
-    }
-    else
-      logWarning << "no attitude model implemented for "+svn+" ("+block2string(block)+"), using nominal attitude" << Log::endl;
-
-    // =============================================
-
-    // Compute corrected orientation
-    StarCameraArc starCameraArc;
-    for(UInt k = 0; k < times.size(); k++)
-    {
-      StarCameraEpoch starCameraEpoch;
-      starCameraEpoch.time   = times.at(k);
-      starCameraEpoch.rotary = orientationNominal(epoch.at(k).pos, epoch.at(k).posSun) * rotaryZ(-Angle(epoch.at(k).yawTrue - epoch.at(k).yawNominal));
-      starCameraArc.push_back(starCameraEpoch);
-    }
-
-    return starCameraArc;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-// Based on [Kouba (2009), A simplified yaw-attitude model for eclipsing GPS satellites]
-void SimulateStarCameraGnss::computeYaw(Epoch &epoch)
-{
-  try
-  {
-    // Orbit angle rate
-    Double muRate = epoch.vel.r()/epoch.pos.r();
+    Epoch epoch;
+    epoch.time   = time;
+    epoch.pos    = posSat;
+    epoch.vel    = velSat;
+    epoch.posSun = ephemerides->position(epoch.time, Ephemerides::SUN);
 
     // Argument of latitude of satellite and sun
-    Vector3d z  = normalize(crossProduct(epoch.pos, epoch.vel));
-    Vector3d x  = normalize(crossProduct(Vector3d(0,0,1), z));
-    Vector3d y  = crossProduct(z, x);
-    Double   u  = atan2(inner(epoch.pos,y), inner(epoch.pos,x));
-    Double   u0 = atan2(inner(epoch.posSun,y), inner(epoch.posSun,x));
+    const Vector3d z  = normalize(crossProduct(epoch.pos, epoch.vel));
+    const Vector3d x  = normalize(crossProduct(Vector3d(0,0,1), z));
+    const Vector3d y  = crossProduct(z, x);
+    const Double   u  = std::atan2(inner(epoch.pos, y), inner(epoch.pos, x));
+    const Double   u0 = std::atan2(inner(epoch.posSun, y), inner(epoch.posSun, x));
 
-    // Orbit angle (mu, [0..360°], 0° = midnight) and sun angle (beta, [-90..90°], 0° = sun in sat orbit plane)
-    epoch.mu   = std::fmod(2*PI + (u - u0 + PI), 2*PI);
-    epoch.beta = std::acos(inner(-z, epoch.posSun)/epoch.posSun.r()) - PI/2;
+    epoch.orbitAngle = wrapAngle(u - u0 + PI);
+    epoch.betaAngle  = std::acos(inner(-z, epoch.posSun)/epoch.posSun.r()) - PI/2;
 
-    // Noon turn reversal for small positive beta angles (if yaw bias > 0, II/IIA) or small negative beta angles (if yaw bias < 0, IIF)
-    Double betaBias = 0;
-    if(std::fabs(epoch.beta) < std::fabs(epoch.yawBias)*DEG2RAD && epoch.yawBias*epoch.beta > 0)
-      betaBias = -epoch.yawBias*DEG2RAD;
+    const AttitudeInfo attitudeInfo = getAttitudeInfo(time);
+    if(attitudeInfo.defaultMode==NOMINAL_YAW_STEERING)
+      modelNominalYawSteering(epoch);
+    else if(attitudeInfo.defaultMode==ORBIT_NORMAL)
+      modelOrbitNormal(epoch, attitudeInfo);
+    else
+      throw(Exception("only nominal yaw-steering mode or orbit normal mode are supported as default attitude modes"));
 
-    // Lambda function for yaw and yaw rate computation
-    auto compute = [&] (Double beta, Double &yaw, Double &yawRate)
+    return epoch;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+Bool SimulateStarCameraGnss::findShadowBoundaries(UInt idMidnightEpoch, Epoch &shadowStart, Epoch &shadowEnd) const
+{
+  try
+  {
+    if(eclipse->factor(epochs.at(idMidnightEpoch).time, epochs.at(idMidnightEpoch).pos, ephemerides)>0.)
+      return FALSE; // satellite never entered full shadow
+
+    auto isOutsideShadow = [&](auto &epoch){ return eclipse->factor(epoch.time, epoch.pos, ephemerides)>0.; };
+
+    auto iterEnd = std::find_if(epochs.begin()+idMidnightEpoch+1, epochs.end(), isOutsideShadow);
+    if(iterEnd==epochs.end())
+      return FALSE;
+
+    auto iterStart = std::find_if(std::make_reverse_iterator(epochs.begin()+idMidnightEpoch), epochs.rend(), isOutsideShadow);
+    if(iterStart==epochs.rend())
+      return FALSE;
+
+    shadowStart = *(iterStart-1);
+    shadowEnd   = *(iterEnd-1);
+    return TRUE;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+UInt SimulateStarCameraGnss::catchUpYawAngle(const Epoch startEpoch, Double maxYawRate, Bool backwards)
+{
+  try
+  {
+    const Double startYawRate = (startEpoch.yawRate>=0 ? maxYawRate : -maxYawRate);
+    Double previousYawAngleDiff = 0.;
+    auto hasCaughtUpYaw = [&](UInt idEpoch)
     {
-      // Nominal yaw angle and yaw rate
-      yaw     = std::atan2(-std::tan(beta), std::sin(epoch.mu));
-      yawRate = muRate * std::tan(beta)*std::cos(epoch.mu) / (std::sin(epoch.mu)*std::sin(epoch.mu) + std::tan(beta)*std::tan(beta));
+      Double yawAngle     = wrapAngle(startEpoch.yawAngle + startYawRate*(epochs.at(idEpoch).time-startEpoch.time).seconds());
+      Double yawAngleDiff = wrapAngle(epochs.at(idEpoch).yawAngle - yawAngle);
+
+      // Stop once true yaw angle catches up with nominal yaw angle
+      if(((previousYawAngleDiff>0. && yawAngleDiff<0.) || (previousYawAngleDiff<0. && yawAngleDiff>0.)) && std::fabs(yawAngleDiff-previousYawAngleDiff)<PI)
+        return TRUE;
+
+      previousYawAngleDiff        = yawAngleDiff;
+      epochs.at(idEpoch).yawAngle = yawAngle;
+      epochs.at(idEpoch).yawRate  = startYawRate;
+
+      return FALSE;
     };
 
-    compute(epoch.beta,          epoch.yawNominal, epoch.yawRateNominal);
-    compute(epoch.beta+betaBias, epoch.yawTrue,    epoch.yawRateTrue);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-Bool SimulateStarCameraGnss::catchUpYaw(const Epoch epochStart, std::vector<Epoch> &epochs, Double yawRateHardwareMax, Bool allowYawReversal)
-{
-  try
-  {
-    std::vector<Double> yawDiff(epochs.size());
-    for(UInt k = 1; k < epochs.size(); k++)
+    UInt idStartEpoch = std::distance(epochs.begin(), std::find_if(epochs.begin(), epochs.end(), [&](auto &epoch){ return epoch.time>startEpoch.time; }));
+    if(backwards)
     {
-      if(epochs.at(k).time <= epochStart.time)
-        continue;
-
-      Double yawReversalFactor = (yawDiff.at(k-1) < 0 ? -1. : 1.);
-      Double yawRate = allowYawReversal ? yawReversalFactor*yawRateHardwareMax : epochStart.yawRateTrue;
-      Double yawNew = wrapAngle(epochStart.yawTrue + yawRate*(epochs.at(k).time-epochStart.time).seconds());
-      Double yawDiffNew = wrapAngle(epochs.at(k).yawTrue - yawNew);
-
-      // Stop if true yaw angle catches up with nominal yaw angle (or is numerically identical)
-      if((yawDiff.at(k-1) > 0 && yawDiffNew < 0) || (yawDiff.at(k-1) < 0 && yawDiffNew > 0) || std::fabs(yawDiffNew) < 1e-5*DEG2RAD)
-        return TRUE;
-
-      yawDiff.at(k)            = yawDiffNew;
-      epochs.at(k).yawTrue     = yawNew;
-      epochs.at(k).yawRateTrue = yawRate;
+      for(UInt idEpoch=idStartEpoch+1; idEpoch-->0;)
+        if(hasCaughtUpYaw(idEpoch))
+          return idEpoch;
+    }
+    else
+    {
+      for(UInt idEpoch=idStartEpoch; idEpoch<epochs.size(); idEpoch++)
+        if(hasCaughtUpYaw(idEpoch))
+          return idEpoch;
     }
 
-    return FALSE;
+    return backwards ? 0 : epochs.size();
   }
   catch(std::exception &e)
   {
@@ -1031,149 +474,103 @@ Bool SimulateStarCameraGnss::catchUpYaw(const Epoch epochStart, std::vector<Epoc
 
 /***********************************************/
 
-void SimulateStarCameraGnss::interpolateVelocity(OrbitArc &arc, UInt interpolationDegree)
+void SimulateStarCameraGnss::modelNominalYawSteering(Epoch &epoch) const
 {
   try
   {
-    UInt idx = 0;
-    for(UInt idEpoch=0; idEpoch<arc.size(); idEpoch++)
-    {
-      // find optimal interval
-      // ---------------------
-      while((idx+interpolationDegree < arc.size()) && (arc.at(idx+interpolationDegree).time < arc.at(idEpoch).time))
-        idx++;
-      if(idx+interpolationDegree >= arc.size())
-        break;
+    epoch.yawAngle = wrapAngle(std::atan2(-std::tan(epoch.betaAngle), std::sin(epoch.orbitAngle)));
+    epoch.yawRate  = epoch.vel.r()/epoch.pos.r() * std::tan(epoch.betaAngle)*std::cos(epoch.orbitAngle) /
+                     (std::sin(epoch.orbitAngle)*std::sin(epoch.orbitAngle) + std::tan(epoch.betaAngle)*std::tan(epoch.betaAngle));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
 
-      UInt   idxOpt   = MAX_UINT;
-      Double deltaOpt = 1e99;
-      while((idx+interpolationDegree < arc.size()) && (arc.at(idx).time <= arc.at(idEpoch).time))
-      {
-        // interpolation point should be in the mid of the interval
-        // => search minimum of the difference of the time before and after the interpolation point
-        const Double delta = std::fabs(((arc.at(idx+interpolationDegree).time-arc.at(idEpoch).time)-(arc.at(idEpoch).time-arc.at(idx).time)).seconds());
-        if(delta <= deltaOpt)
+/***********************************************/
+
+void SimulateStarCameraGnss::modelOrbitNormal(Epoch &epoch, const AttitudeInfo &attitudeInfo) const
+{
+  try
+  {
+    epoch.yawAngle = wrapAngle(attitudeInfo.yawBias);
+    epoch.yawRate  = 0.;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+UInt SimulateStarCameraGnss::modelCatchUpYawSteering(UInt idEpoch, const AttitudeInfo &attitudeInfo)
+{
+  try
+  {
+    if(attitudeInfo.maxYawRate==0.)
+      throw(Exception("required data missing for model: CATCH_UP_YAW_STEERING (maxYawRate)"));
+
+    // check if maximum yaw rate is exceeded between current and next epoch
+    if(idEpoch+1<epochs.size() && std::fabs(epochs.at(idEpoch).yawRate)<=attitudeInfo.maxYawRate && std::fabs(epochs.at(idEpoch+1).yawRate)>attitudeInfo.maxYawRate)
+    {
+      Epoch startEpoch = epochs.at(idEpoch+1);
+
+      // consider anomalous turns at low beta angle for satellites with yaw bias
+      if(attitudeInfo.yawBias!=0. && std::fabs(startEpoch.betaAngle)<std::fabs(attitudeInfo.yawBias) && attitudeInfo.yawBias*startEpoch.betaAngle>0.)
+        startEpoch.yawRate = (startEpoch.betaAngle-attitudeInfo.yawBias)>=0. ? -attitudeInfo.maxYawRate : attitudeInfo.maxYawRate;
+
+      return catchUpYawAngle(startEpoch, attitudeInfo.maxYawRate);
+    }
+
+    return idEpoch;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+UInt SimulateStarCameraGnss::modelShadowMaxYawSteeringAndRecovery(UInt idEpoch, const AttitudeInfo &attitudeInfo)
+{
+  try
+  {
+    if(attitudeInfo.maxYawRate==0.)
+      throw(Exception("required data missing for model: SHADOW_MAX_YAW_STEERING_AND_RECOVERY (maxYawRate)"));
+
+    // check if satellite crosses midnight between current and next epoch
+    if(std::fabs(epochs.at(idEpoch).orbitAngle)<=PI/2 && idEpoch+1<epochs.size() && epochs.at(idEpoch).orbitAngle<0. && epochs.at(idEpoch+1).orbitAngle>=0)
+    {
+      Epoch shadowStart, shadowEnd;
+      if(!findShadowBoundaries(idEpoch, shadowStart, shadowEnd))
+        return idEpoch; // cannot model maneuver without knowing shadow start and end
+
+      // shadow maneuver
+      Double startYawRate = 0.;
+      if(attitudeInfo.yawBias>0.)
+        startYawRate = attitudeInfo.maxYawRate;
+      else if(attitudeInfo.yawBias<0.)
+        startYawRate = -attitudeInfo.maxYawRate;
+      else
+        startYawRate = (shadowStart.yawRate>=0. ? attitudeInfo.maxYawRate : -attitudeInfo.maxYawRate);
+      for(auto &&epoch : epochs)
+        if(epoch.time>=shadowStart.time && epoch.time<=shadowEnd.time)
         {
-          idxOpt   = idx;
-          deltaOpt = delta;
-        }
-        idx++;
-      }
-      idx = idxOpt;
-
-      // polynomial interpolation
-      // ------------------------
-      Matrix A(interpolationDegree+1, interpolationDegree+1);
-      for(UInt k=0; k<interpolationDegree+1; k++)
-      {
-        const Double factor = (arc.at(idx+k).time-arc.at(idEpoch).time).seconds();
-        A(0,k) = 1.0;
-        for(UInt n=1; n<=interpolationDegree; n++)
-          A(n,k) = factor * A(n-1,k);
-      }
-      Matrix coeff(interpolationDegree+1, 1);
-      coeff(1, 0) = 1.; // velocity
-      solveInPlace(A, coeff);
-
-      arc.at(idEpoch).velocity = Vector3d();
-      for(UInt k=0; k<coeff.rows(); k++)
-        arc.at(idEpoch).velocity += coeff(k,0) * arc.at(idx+k).position;
-    }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-Bool SimulateStarCameraGnss::findShadowBoundary(const Epoch &epochStart, Double integrationStep, Double integrationLimit,
-                                                EphemeridesPtr ephemerides, EclipsePtr eclipse, Bool findShadowEntry, Double shadowFactorThreshold, const MiscValueArc &yawBiasArc, Epoch &epoch)
-{
-  try
-  {
-    if(shadowFactorThreshold < 0 || shadowFactorThreshold > 1)
-      throw(Exception("shadow factor threshold must be between 0 (shadow) and 1 (sun): " + shadowFactorThreshold%"%f"s));
-
-    if(integrationStep == 0)
-      throw(Exception("integration step can't be zero"));
-
-    // shadow threshold crossing check (see below) has to be reversed for backwards integration
-    if(integrationStep < 0)
-      findShadowEntry = !findShadowEntry;
-
-    epoch = Epoch();
-    Kepler kepler(epochStart.time, epochStart.pos, epochStart.vel);
-
-    for(UInt i = 0; std::fabs(i*integrationStep) <= std::fabs(integrationLimit)+1; i++)
-    {
-      epoch.time         = epochStart.time + seconds2time(i*integrationStep);
-      kepler.orbit(epoch.time, epoch.pos, epoch.vel);
-      epoch.posSun       = ephemerides->position(epoch.time, Ephemerides::SUN);
-      epoch.shadowFactor = eclipse ? eclipse->factor(epoch.time, epoch.pos, ephemerides) : 1.;
-
-      if(( findShadowEntry && epoch.shadowFactor <= shadowFactorThreshold) ||
-         (!findShadowEntry && epoch.shadowFactor >= shadowFactorThreshold))
-      {
-        epoch.yawBias = yawBiasArc.size() ? yawBias(epoch.time, yawBiasArc) : 0;
-        computeYaw(epoch);
-        return TRUE;
-      }
-    }
-
-    return FALSE;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-Bool SimulateStarCameraGnss::findNoonMidnightTurnStart(EphemeridesPtr ephemerides, const Epoch &epochStart, Double integrationStep, Double integrationLimit,
-                                                       Double yawRateHardwareMax, const MiscValueArc &yawBiasArc, Epoch &epoch)
-{
-  try
-  {
-    if(integrationStep == 0)
-      throw(Exception("integration step cannot be zero"));
-
-    Double yawRatePrevious = 0;
-    Kepler kepler(epochStart.time, epochStart.pos, epochStart.vel);
-    std::vector<Epoch> epochs;
-
-    for(UInt i = 0; std::fabs(i*integrationStep) <= std::fabs(integrationLimit)+1; i++)
-    {
-      epoch = Epoch();
-      epoch.time   = epochStart.time + seconds2time(i*integrationStep);
-      epoch.posSun = ephemerides->position(epoch.time, Ephemerides::SUN);
-      kepler.orbit(epoch.time, epoch.pos, epoch.vel);
-      epoch.yawBias = yawBias(epoch.time, yawBiasArc);
-      computeYaw(epoch);
-      epochs.push_back(epoch);
-
-      if((integrationStep > 0 && std::fabs(epoch.yawRateTrue) >= yawRateHardwareMax && std::fabs(yawRatePrevious) <  yawRateHardwareMax) || // forward integration
-         (integrationStep < 0 && std::fabs(epoch.yawRateTrue) <  yawRateHardwareMax && std::fabs(yawRatePrevious) >= yawRateHardwareMax))   // backward integration
-      {
-        epoch.yawRateTrue = (epoch.yawRateTrue >= 0 ? yawRateHardwareMax : -yawRateHardwareMax);
-
-        // ignore turn start if the turn maneuver ends before epochStart
-        if(integrationStep < 0)
-        {
-          std::reverse(epochs.begin(), epochs.end());
-          if(catchUpYaw(epoch, epochs, yawRateHardwareMax, FALSE))
-            return FALSE;
+          epoch.yawAngle = wrapAngle(shadowStart.yawAngle + startYawRate*(epoch.time-shadowStart.time).seconds());
+          epoch.yawRate = startYawRate;
         }
 
-        return TRUE;
-      }
-
-      yawRatePrevious = epoch.yawRateTrue;
+      // post-shadow recovery maneuver
+      const Double shadowEndNominalYawAngle = shadowEnd.yawAngle;
+      shadowEnd.yawAngle = wrapAngle(shadowStart.yawAngle + startYawRate*(shadowEnd.time-shadowStart.time).seconds());
+      shadowEnd.yawRate  = wrapAngle(shadowEnd.yawAngle-shadowEndNominalYawAngle)>=0 ? -attitudeInfo.maxYawRate : attitudeInfo.maxYawRate;
+      return catchUpYawAngle(shadowEnd, attitudeInfo.maxYawRate);
     }
 
-    return FALSE;
+    return idEpoch;
   }
   catch(std::exception &e)
   {
@@ -1183,16 +580,32 @@ Bool SimulateStarCameraGnss::findNoonMidnightTurnStart(EphemeridesPtr ephemeride
 
 /***********************************************/
 
-Double SimulateStarCameraGnss::yawBias(const Time &time, const MiscValueArc &yawBiasArc)
+UInt SimulateStarCameraGnss::modelShadowMaxYawSteeringAndStop(UInt idEpoch, const AttitudeInfo &attitudeInfo)
 {
   try
   {
-    std::vector<Time> times = yawBiasArc.times();
-    for(UInt i = times.size(); i --> 0; )
-      if(time >= times.at(i))
-        return yawBiasArc.at(i).value;
+    if(attitudeInfo.maxYawRate==0.)
+      throw(Exception("required data missing for model: SHADOW_MAX_YAW_STEERING_AND_STOP (maxYawRate)"));
 
-    throw(Exception("no yaw bias found for time: " + time.dateTimeStr()));
+    // check if satellite crosses midnight between current and next epoch
+    if(std::fabs(epochs.at(idEpoch).orbitAngle)<=PI/2 && idEpoch+1<epochs.size() && epochs.at(idEpoch).orbitAngle<0. && epochs.at(idEpoch+1).orbitAngle>=0)
+    {
+      Epoch shadowStart, shadowEnd;
+      if(!findShadowBoundaries(idEpoch, shadowStart, shadowEnd))
+        return idEpoch; // cannot model maneuver without knowing shadow start and end
+
+      // shadow maneuver
+      for(UInt i=0; i<epochs.size(); i++)
+        if(epochs.at(i).time>shadowStart.time && epochs.at(i).time<=shadowEnd.time)
+        {
+          epochs.at(i).yawAngle = shadowEnd.yawAngle;
+          epochs.at(i).yawRate = 0.;
+          idEpoch = i;
+        }
+      catchUpYawAngle(shadowStart, attitudeInfo.maxYawRate);
+    }
+
+    return idEpoch;
   }
   catch(std::exception &e)
   {
@@ -1202,14 +615,187 @@ Double SimulateStarCameraGnss::yawBias(const Time &time, const MiscValueArc &yaw
 
 /***********************************************/
 
-Double SimulateStarCameraGnss::wrapAngle(Double angle)
+UInt SimulateStarCameraGnss::modelShadowConstantYawSteering(UInt idEpoch)
 {
   try
   {
-    while(angle >  PI) angle -= 2*PI;
-    while(angle < -PI) angle += 2*PI;
+    // check if satellite crosses midnight between current and next epoch
+    if(std::fabs(epochs.at(idEpoch).orbitAngle)<=PI/2 && idEpoch+1<epochs.size() && epochs.at(idEpoch).orbitAngle<0. && epochs.at(idEpoch+1).orbitAngle>=0)
+    {
+      Epoch shadowStart, shadowEnd;
+      if(!findShadowBoundaries(idEpoch, shadowStart, shadowEnd))
+        return idEpoch; // cannot model maneuver without knowing shadow start and end
 
-    return angle;
+      // shadow maneuver
+      const Double startYawRate = wrapAngle(shadowEnd.yawAngle-shadowStart.yawAngle)/(shadowEnd.time-shadowStart.time).seconds();
+      for(UInt i=0; i<epochs.size(); i++)
+        if(epochs.at(i).time>=shadowStart.time && epochs.at(i).time<=shadowEnd.time)
+        {
+          epochs.at(i).yawAngle = wrapAngle(shadowStart.yawAngle + startYawRate*(epochs.at(i).time-shadowStart.time).seconds());
+          epochs.at(i).yawRate  = startYawRate;
+          idEpoch = i;
+        }
+    }
+
+    return idEpoch;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+UInt SimulateStarCameraGnss::modelCenteredMaxYawSteering(UInt idEpoch, const AttitudeInfo &attitudeInfo)
+{
+  try
+  {
+    if(attitudeInfo.maxYawRate==0.)
+      throw(Exception("required data missing for model: CENTERED_MAX_YAW_STEERING (maxYawRate)"));
+
+    if(std::fabs(epochs.at(idEpoch).orbitAngle)<=PI/2) // satellite is in midnight half of the orbit
+    {
+      Bool hasCrossedMidnight = idEpoch+1<epochs.size() && wrapAngle(epochs.at(idEpoch).orbitAngle)<0. &&  wrapAngle(epochs.at(idEpoch+1).orbitAngle)>=0;
+      Bool isModeActive = attitudeInfo.midnightBetaThreshold==0. || std::abs(epochs.at(idEpoch).betaAngle)<attitudeInfo.midnightBetaThreshold;
+      if(!hasCrossedMidnight || !isModeActive)
+        return idEpoch;
+    }
+    else // satellite is in noon half of the orbit
+    {
+      Bool hasCrossedNoon = idEpoch+1<epochs.size() && wrapAngle(epochs.at(idEpoch).orbitAngle+PI)<0. &&  wrapAngle(epochs.at(idEpoch+1).orbitAngle+PI)>=0;
+      Bool isModeActive = attitudeInfo.noonBetaThreshold==0. || std::abs(epochs.at(idEpoch).betaAngle)<attitudeInfo.noonBetaThreshold;
+      if(!hasCrossedNoon || !isModeActive)
+        return idEpoch;
+    }
+
+    catchUpYawAngle(epochs.at(idEpoch+1), attitudeInfo.maxYawRate, TRUE/*backwards*/);
+    return catchUpYawAngle(epochs.at(idEpoch+1), attitudeInfo.maxYawRate);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+UInt SimulateStarCameraGnss::modelSmoothedYawSteering1(UInt idEpoch)
+{
+  try
+  {
+    const Double sinBetaX = std::sin(15.0*DEG2RAD);
+    const Double sinBetaY = std::sin(2.0*DEG2RAD);
+
+    auto computeS0 = [&](const Epoch &epoch) { return orbitNormal2crf(epoch.pos, epoch.vel).inverseRotate(normalize(epoch.posSun-epoch.pos)); };
+    auto isInAuxiliaryRegion = [&](const Vector3d &S0) { return std::fabs(S0.x())<sinBetaX && std::fabs(S0.y())<sinBetaY; };
+
+    if(idEpoch+1<epochs.size() && isInAuxiliaryRegion(computeS0(epochs.at(idEpoch+1))) && !isInAuxiliaryRegion(computeS0(epochs.at(idEpoch))))
+    {
+      const Double Gamma = (computeS0(epochs.at(idEpoch+1)).y()<0 ? -1 : 1);
+      for(UInt i=idEpoch+2; i<epochs.size(); i++)
+      {
+        const Vector3d S0 = computeS0(epochs.at(i));
+        if(!isInAuxiliaryRegion(S0))
+          return i;
+
+        const Double SHy = 0.5*(sinBetaY*Gamma + S0.y()) + 0.5*(sinBetaY*Gamma - S0.y()) * std::cos(PI*std::fabs(S0.x())/sinBetaX);
+        const Vector3d SH(S0.x(), SHy, std::sqrt(1. - S0.x()*S0.x() - SHy*SHy)*(S0.z()<0 ? -1 : 1));
+        const Double denom = std::sqrt(1. - SH.z()*SH.z());
+        epochs.at(i).yawAngle = std::atan2(SH.y()/denom, SH.x()/denom);
+      }
+    }
+
+    return idEpoch;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+UInt SimulateStarCameraGnss::modelSmoothedYawSteering2(UInt idEpoch, const AttitudeInfo &attitudeInfo)
+{
+  try
+  {
+    if(attitudeInfo.activationThreshold==0. || attitudeInfo.maxManeuverTime==0. ||
+       (std::fabs(epochs.at(idEpoch).orbitAngle<=PI/2 ? attitudeInfo.midnightBetaThreshold : attitudeInfo.noonBetaThreshold))==0.)
+      throw(Exception("required data missing for model: SMOOTHED_YAW_STEERING_2 (betaThreshold, activationThreshold, maxManeuverTime)"));
+
+    auto isUsingModifiedLaw = [&](const Epoch &epoch)
+    {
+      Vector3d n = crossProduct(epoch.pos, epoch.vel);
+      Double epsilon = std::acos(inner(normalize(epoch.pos), normalize(crossProduct(n, crossProduct(n, epoch.posSun)))));
+      if(epsilon>PI/2)
+        epsilon = PI - epsilon;
+
+      if(std::fabs(epochs.at(idEpoch).orbitAngle)<=PI/2) // satellite is in midnight half of the orbit
+        return std::fabs(epochs.at(idEpoch).betaAngle)<attitudeInfo.midnightBetaThreshold && std::fabs(epsilon)<attitudeInfo.activationThreshold;
+      else // satellite is in noon half of the orbit
+        return std::fabs(epochs.at(idEpoch).betaAngle)<attitudeInfo.noonBetaThreshold && std::fabs(epsilon)<attitudeInfo.activationThreshold;
+    };
+
+    if(idEpoch+1<epochs.size() && isUsingModifiedLaw(epochs.at(idEpoch+1)) && !isUsingModifiedLaw(epochs.at(idEpoch)))
+      for(UInt i = idEpoch+2; i<epochs.size(); i++)
+      {
+        if(!isUsingModifiedLaw(epochs.at(i)))
+          return idEpoch;
+
+        const Double offset = (epochs.at(idEpoch+1).yawAngle<0 ? -PI/2 : PI/2);
+        const Double tMod   = (epochs.at(i).time - epochs.at(idEpoch+1).time).seconds();
+        epochs.at(i).yawAngle = offset + (epochs.at(idEpoch+1).yawAngle - offset) * std::cos(2*PI/attitudeInfo.maxManeuverTime * tMod);
+      }
+
+    return idEpoch;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+UInt SimulateStarCameraGnss::modelBetaDependentOrbitNormal(UInt idEpoch, const AttitudeInfo &attitudeInfo)
+{
+  try
+  {
+    if(attitudeInfo.maxYawRate==0. ||attitudeInfo.activationThreshold==0. || attitudeInfo.maxManeuverTime==0. ||
+       (std::fabs(epochs.at(idEpoch).orbitAngle<=PI/2 ? attitudeInfo.midnightBetaThreshold : attitudeInfo.noonBetaThreshold))==0.)
+      throw(Exception("required data missing for model: BETA_DEPENDENT_ORBIT_NORMAL (maxYawRate, betaThreshold, activationThreshold, maxManeuverTime)"));
+
+    auto isBelowBetaThreshold = [&](auto &epoch)
+    {
+      return std::fabs(epoch.betaAngle)<(std::fabs(epoch.orbitAngle)<=PI/2 ? attitudeInfo.midnightBetaThreshold : attitudeInfo.noonBetaThreshold);
+    };
+    auto isBelowYawThreshold = [&](auto &epoch) { return std::fabs(wrapAngle(epoch.yawAngle+attitudeInfo.yawBias))<=attitudeInfo.activationThreshold; };
+
+    if(idEpoch+1<epochs.size() && isBelowBetaThreshold(epochs.at(idEpoch)) && !isBelowYawThreshold(epochs.at(idEpoch)) && isBelowYawThreshold(epochs.at(idEpoch+1)))
+    {
+      UInt idEpochEnd = idEpoch+1;
+      for(UInt i=idEpoch+1; i<epochs.size(); i++)
+      {
+        if(!isBelowBetaThreshold(epochs.at(i)))
+          break;
+        if(isBelowYawThreshold(epochs.at(i)))
+          idEpochEnd = i;
+      }
+      if((epochs.at(idEpochEnd).time-epochs.at(idEpoch+1).time).seconds()*attitudeInfo.maxYawRate<attitudeInfo.activationThreshold)
+        return idEpoch; // period in orbit normal mode would be shorter than period required for transition
+
+      const Double yawRateEntry = (wrapAngle(epochs.at(idEpoch).yawAngle-attitudeInfo.yawBias)>=0.)    ? -attitudeInfo.maxYawRate :  attitudeInfo.maxYawRate;
+      const Double yawRateExit  = (wrapAngle(epochs.at(idEpochEnd).yawAngle-attitudeInfo.yawBias)>=0.) ?  attitudeInfo.maxYawRate : -attitudeInfo.maxYawRate;
+      for(UInt i=idEpoch+1; i<=idEpochEnd; i++)
+        modelOrbitNormal(epochs.at(i), attitudeInfo);
+      epochs.at(idEpoch).yawRate = yawRateEntry;
+      catchUpYawAngle(epochs.at(idEpoch), attitudeInfo.maxYawRate);
+      epochs.at(idEpochEnd).yawRate = yawRateExit;
+      return catchUpYawAngle(epochs.at(idEpochEnd), attitudeInfo.maxYawRate);
+    }
+
+    return idEpoch;
   }
   catch(std::exception &e)
   {

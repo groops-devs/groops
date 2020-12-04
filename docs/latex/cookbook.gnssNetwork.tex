@@ -33,6 +33,7 @@ Satellite metadata:
   \item \file{Antenna definition}{gnssAntennaDefinition}\textbf{*}: antenna center variations
   \item \file{Receiver definition}{gnssReceiverDefinition}\textbf{*}: transmitted signal types (recommended)
   \item \file{Satellite macro model}{satelliteModel}\textbf{*}: box-wing model, mass, antenna thrust
+  \item \file{Attitude info}{instrument}\textbf{*}: attitude modes and parameters
 \end{itemize}
 
 Station metadata:
@@ -122,12 +123,14 @@ Add \configClass{parametrizationAcceleration:gnssSolarRadiation}{parametrization
 and select the \href{https://doi.org/10.1007/s00190-015-0814-4}{ECOM2} parameters to be estimated.
 The resulting variational equations file contains the updated orbit and derivatives.
 
-It is recommended to perform the steps above in a \reference{loop}{general.loopsAndConditions} over all satellites/PRNs
-using \program{LoopPrograms}. Since \program{PreprocessingVariationalEquation} requires an
-\configFile{inputfileSatelliteModel}{satelliteModel}, which is generally defined for a specific satellite/SVN or block,
-\program{GnssPrn2SvnBlockVariables} can be used before \program{PreprocessingVariationalEquation} to define
+It is recommended to perform the steps above in a \reference{loop}{general.loopsAndConditions} over all
+satellites/PRNs using \program{LoopPrograms}. Since \program{PreprocessingVariationalEquation} requires an
+\configFile{inputfileSatelliteModel}{satelliteModel} and \program{SimulateStarCameraGnss} requires an
+\configFile{inputfileAttitudeInfo}{instrument}, both of which are generally defined for a specific satellite/SVN
+or block, \program{GnssPrn2SvnBlockVariables} can be used before these programs to define
 \reference{variables}{general.parser} for SVN and block based on the PRN.
-These variables are then available in \configFile{inputfileSatelliteModel}{satelliteModel}.
+These variables are then available in \configFile{inputfileSatelliteModel}{satelliteModel} and
+\configFile{inputfileAttitudeInfo}{instrument}.
 
 \subsection{GNSS processing}\label{cookbook.gnssNetwork:processing}
 
@@ -301,12 +304,12 @@ Finally, all stations can be processed together with all satellite parameters.
 
 Let's start with the core network.
 \begin{itemize}
-  \item \configClass{processingStep:selectNormalsBlockStructure}{gnssProcessingStepType:selectNormalsBlockStructure}: 
+  \item \configClass{processingStep:selectNormalsBlockStructure}{gnssProcessingStepType:selectNormalsBlockStructure}:
       block structure for normal equations (different values may be more computationally efficient depending on the platform)
   \begin{itemize}
     \item \config{defaultBlockSizeInterval}=\verb|512|
     \item \config{defaultBlockSizeAmbiguity}=\verb|256|
-    \item \config{keepEpochNormalsinMemory}=\verb|no| (in case your platform has limited memory, otherwise \verb|yes|)  
+    \item \config{keepEpochNormalsinMemory}=\verb|no| (in case your platform has limited memory, otherwise \verb|yes|)
   \end{itemize}
   \item \configClass{processingStep:selectParameters}{gnssProcessingStepType:selectParameters}: parameters
         for least squares adjustment (TEC biases cannot be estimated together with signal biases)

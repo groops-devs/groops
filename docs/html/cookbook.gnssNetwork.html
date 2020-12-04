@@ -99,6 +99,8 @@ file types and programs for information on how to create these files manually.</
 <a class="groops-file" href="fileFormat_gnssReceiverDefinition.html">Receiver definition</a><b>*</b>: transmitted signal types (recommended)
   </li><li>
 <a class="groops-file" href="fileFormat_satelliteModel.html">Satellite macro model</a><b>*</b>: box-wing model, mass, antenna thrust
+  </li><li>
+<a class="groops-file" href="fileFormat_instrument.html">Attitude info</a><b>*</b>: attitude modes and parameters
 </li></ul>
 </p><p>Station metadata:
 <ul>
@@ -206,12 +208,14 @@ least squares adjustment. This adjustment usually includes additional empirical 
 pressure to improve the orbit fit.
 Add <a class="groops-class" href="parametrizationAccelerationType.html#gnssSolarRadiation">parametrizationAcceleration:gnssSolarRadiation</a>
 and select the <a href="https://doi.org/10.1007/s00190-015-0814-4">ECOM2</a> parameters to be estimated.
-The resulting variational equations file contains the updated orbit and derivatives.</p><p>It is recommended to perform the steps above in a <a class="groops-ref" href="general.loopsAndConditions.html">loop</a> over all satellites/PRNs
-using <a class="groops-program" href="LoopPrograms.html">LoopPrograms</a>. Since <a class="groops-program" href="PreprocessingVariationalEquation.html">PreprocessingVariationalEquation</a> requires an
-<a class="groops-class" href="fileFormat_satelliteModel.html">inputfileSatelliteModel</a>, which is generally defined for a specific satellite/SVN or block,
-<a class="groops-program" href="GnssPrn2SvnBlockVariables.html">GnssPrn2SvnBlockVariables</a> can be used before <a class="groops-program" href="PreprocessingVariationalEquation.html">PreprocessingVariationalEquation</a> to define
+The resulting variational equations file contains the updated orbit and derivatives.</p><p>It is recommended to perform the steps above in a <a class="groops-ref" href="general.loopsAndConditions.html">loop</a> over all
+satellites/PRNs using <a class="groops-program" href="LoopPrograms.html">LoopPrograms</a>. Since <a class="groops-program" href="PreprocessingVariationalEquation.html">PreprocessingVariationalEquation</a> requires an
+<a class="groops-class" href="fileFormat_satelliteModel.html">inputfileSatelliteModel</a> and <a class="groops-program" href="SimulateStarCameraGnss.html">SimulateStarCameraGnss</a> requires an
+<a class="groops-class" href="fileFormat_instrument.html">inputfileAttitudeInfo</a>, both of which are generally defined for a specific satellite/SVN
+or block, <a class="groops-program" href="GnssPrn2SvnBlockVariables.html">GnssPrn2SvnBlockVariables</a> can be used before these programs to define
 <a class="groops-ref" href="general.parser.html">variables</a> for SVN and block based on the PRN.
-These variables are then available in <a class="groops-class" href="fileFormat_satelliteModel.html">inputfileSatelliteModel</a>.</p><p><h2 id="processing">GNSS processing</h2><p></p><p>Once all metadata and data are prepared and the orbits are integrated, the actual GNSS processing can begin.
+These variables are then available in <a class="groops-class" href="fileFormat_satelliteModel.html">inputfileSatelliteModel</a> and
+<a class="groops-class" href="fileFormat_instrument.html">inputfileAttitudeInfo</a>.</p><p><h2 id="processing">GNSS processing</h2><p></p><p>Once all metadata and data are prepared and the orbits are integrated, the actual GNSS processing can begin.
 Use <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a> and define the <a class="groops-class" href="gnssParametrizationTransmitterType.html">transmitter</a>
 constellations, a <a class="groops-class" href="gnssParametrizationReceiverType.html#stationNetwork">receiver:stationNetwork</a>, and
 the list of <a class="groops-class" href="gnssProcessingStepType.html">processingSteps</a>.</p><p>Since this program is very complex, an overview of the most important settings used for the example
@@ -453,7 +457,7 @@ other (non-core) stations can be processed individually (including IAR) while ke
 Finally, all stations can be processed together with all satellite parameters.</p><p>Let's start with the core network.
 <ul>
 
-  <li><a class="groops-class" href="gnssProcessingStepType.html#selectNormalsBlockStructure">processingStep:selectNormalsBlockStructure</a>: 
+  <li><a class="groops-class" href="gnssProcessingStepType.html#selectNormalsBlockStructure">processingStep:selectNormalsBlockStructure</a>:
       block structure for normal equations (different values may be more computationally efficient depending on the platform)
   <ul>
 
@@ -462,7 +466,7 @@ Finally, all stations can be processed together with all satellite parameters.</
     </li><li>
 <strong class="groops-config-element">defaultBlockSizeAmbiguity</strong>=<code>256</code>
     </li><li>
-<strong class="groops-config-element">keepEpochNormalsinMemory</strong>=<code>no</code> (in case your platform has limited memory, otherwise <code>yes</code>)  
+<strong class="groops-config-element">keepEpochNormalsinMemory</strong>=<code>no</code> (in case your platform has limited memory, otherwise <code>yes</code>)
   </li></ul>
 
   <li><a class="groops-class" href="gnssProcessingStepType.html#selectParameters">processingStep:selectParameters</a>: parameters
