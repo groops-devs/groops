@@ -86,11 +86,13 @@ inline SphericalHarmonics SphericalHarmonicsFilterMatrix::filter(const Spherical
     UInt idx = 0;
     for(UInt n=0; n<=maxDegree; n++)
     {
-      if(idxC[n][0]!=NULLINDEX) x(idxC[n][0]) = xDegreeWise(idx++);
+      if(idxC[n][0]!=NULLINDEX) x(idxC[n][0]) = xDegreeWise(idx);
+      idx++;
       for(UInt m=1; m<=n; m++)
       {
-        if(idxC[n][m]!=NULLINDEX) x(idxC[n][m]) = xDegreeWise(idx++);
-        if(idxS[n][m]!=NULLINDEX) x(idxS[n][m]) = xDegreeWise(idx++);
+        if(idxC[n][m]!=NULLINDEX) x(idxC[n][m]) = xDegreeWise(idx);
+        if(idxS[n][m]!=NULLINDEX) x(idxS[n][m]) = xDegreeWise(idx + 1);
+        idx += 2;
       }
     }
 
