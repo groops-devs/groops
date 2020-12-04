@@ -238,6 +238,7 @@ programs/gnss/gnssAntennaDefinition2ParameterVector.cpp
 programs/gnss/gnssAntennaDefinition2Skyplot.cpp
 programs/gnss/gnssAntennaDefinitionCreate.cpp
 programs/gnss/gnssAntennaNormalsConstraint.cpp
+programs/gnss/gnssAttitudeInfoCreate.cpp
 programs/gnss/gnssBiasClockAlignment.cpp
 programs/gnss/gnssEstimateClockShift.cpp
 programs/gnss/gnssGlonassFrequencyNumberUpdate.cpp
