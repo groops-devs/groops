@@ -1,6 +1,6 @@
 /***********************************************/
 /**
-* @file parametrizationLinearTransformation.h
+* @file parametrizationGravityLinearTransformation.h
 *
 * @brief Gravity field parametrization based on the linear transformation of another parametrizationGravity.
 * @see ParametrizationGravity
