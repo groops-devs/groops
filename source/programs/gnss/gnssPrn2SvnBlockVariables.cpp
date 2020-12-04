@@ -2,7 +2,7 @@
 /**
 * @file gnssPrn2SvnBlockVariables.cpp
 *
-* @brief Create variable of SVN and block for a GNSS PRN at a specific time.
+* @brief Create variables containing SVN and block based on a transmitter info file of a GNSS satellite/PRN and a specified time.
 *
 * @author Torsten Mayer-Guerr
 * @date 2017-03-14
@@ -12,7 +12,9 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Create \reference{variables}{general.parser} containing SVN and block for a GNSS PRN at a specific \config{time}.
+Create \reference{variables}{general.parser} containing SVN and block based on an
+\configFile{inputfileTransmitterInfo}{gnssStationInfo} of a GNSS satellite/PRN and
+a specified \config{time}.
 )";
 
 /***********************************************/
@@ -22,7 +24,7 @@ Create \reference{variables}{general.parser} containing SVN and block for a GNSS
 
 /***** CLASS ***********************************/
 
-/** @brief Create variable of SVN and block for a GNSS PRN at a specific time.
+/** @brief Create variables containing SVN and block based on a transmitter info file of a GNSS satellite/PRN and a specified time.
 * @ingroup programsGroup */
 class GnssPrn2SvnBlockVariables
 {
@@ -30,7 +32,7 @@ public:
   void run(Config &config);
 };
 
-GROOPS_REGISTER_PROGRAM(GnssPrn2SvnBlockVariables, PARALLEL, "Create variable of SVN and block for a GNSS PRN at a specific time.", Gnss)
+GROOPS_REGISTER_PROGRAM(GnssPrn2SvnBlockVariables, PARALLEL, "Create variables containing SVN and block based on a transmitter info file of a GNSS satellite/PRN and a specified time.", Gnss)
 
 /***********************************************/
 
@@ -44,8 +46,8 @@ void GnssPrn2SvnBlockVariables::run(Config &config)
 
     readConfig(config, "variableSVN",              nameSVN,                 Config::OPTIONAL,  "svn",   "name of the SVN variable");
     readConfig(config, "variableBlock",            nameBlock,               Config::OPTIONAL,  "block", "name of the satellites block variable");
-    readConfig(config, "inputfileTransmitterInfo", fileNameTransmitterInfo, Config::MUSTSET,   "{groopsDataDir}/gnss/transmitterGPS/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "used for GNSS PRN-to-SVN/model relation");
-    readConfig(config, "time",                     time,                    Config::MUSTSET,   "", "used for GNSS PRN-to-SVN/model relation");
+    readConfig(config, "inputfileTransmitterInfo", fileNameTransmitterInfo, Config::MUSTSET,   "",      "used for GNSS PRN-to-SVN/model relation");
+    readConfig(config, "time",                     time,                    Config::MUSTSET,   "",      "used for GNSS PRN-to-SVN/model relation");
     if(isCreateSchema(config)) return;
 
     logStatus<<"read transmitter info file <"<<fileNameTransmitterInfo<<">"<<Log::endl;
