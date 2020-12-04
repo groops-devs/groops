@@ -68,13 +68,13 @@ inline std::vector<UInt> ParameterSelectorNames::indexVector(const std::vector<P
   try
   {
     std::vector<UInt> vector;
+    auto iter = parameterNames.begin(); // assume ordered list to accelerate search
     for(const auto &name : requestedNames)
     {
-      auto iter = std::find(parameterNames.begin(), parameterNames.end(), name);
-      if(iter == parameterNames.end())
-        vector.push_back(NULLINDEX);
-      else
-        vector.push_back(std::distance(parameterNames.begin(), iter));
+      iter = std::find(iter, parameterNames.end(), name);
+      if(iter == parameterNames.end()) // not found? -> restart search from begin
+        iter = std::find(parameterNames.begin(), parameterNames.end(), name);
+      vector.push_back((iter != parameterNames.end()) ? std::distance(parameterNames.begin(), iter) : NULLINDEX);
     }
 
     return vector;
