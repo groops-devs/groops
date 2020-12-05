@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - GnssAttitudeInfoCreate</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>GnssAttitudeInfoCreate</h1><p>
+
+Creates attitude info file (<a class="groops-file" href="fileFormat_instrument.html">Instrument(MISCVALUES)</a>)
+used by <a class="groops-program" href="SimulateStarCameraGnss.html">SimulateStarCameraGnss</a>. One or more <strong class="groops-config-element">attitudeInfo</strong>s can be specified.
+They are valid from <strong class="groops-config-element">timeStart</strong> until the start of the subsequent <strong class="groops-config-element">attitudeInfo</strong>.
+<strong class="groops-config-element">maxManeuverTime</strong> is used by <a class="groops-program" href="SimulateStarCameraGnss.html">SimulateStarCameraGnss</a> to look
+for ongoing orbit maneuvers before/after the given orbit that might affect the attitude at
+the beginning or end of a given orbit.</p><p><figure><img class="figure" style="width:90%;" src="../figures/gnssAttitudeModes.png" alt="gnssAttitudeModes"><figcaption class="center">Figure: Overview of attitude modes used by GNSS satellites</figcaption></figure></p><p>Here is a list of GNSS satellite types for which the attitude behavior is known and their
+respective attitude modes and required parameters:
+<ul>
+
+<li><b>GPS-II/IIA</b> [1]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: shadowMaxYawSteeringAndRecovery
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: catchUpYawSteering
+  </li><li>
+<strong class="groops-config-element">maxYawRate</strong>: 0.12 deg/s
+  </li><li>
+<strong class="groops-config-element">yawBias</strong>: 0.5 deg
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 2 h
+</li></ul>
+
+<li><b>GPS-IIR/IIR-M</b> [1]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: catchUpYawSteering
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: catchUpYawSteering
+  </li><li>
+<strong class="groops-config-element">maxYawRate</strong>: 0.2 deg/s
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 30 min
+</li></ul>
+
+<li><b>GPS-IIF</b> [2]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: shadowConstantYawSteering
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: catchUpYawSteering
+  </li><li>
+<strong class="groops-config-element">maxYawRate</strong>: 0.11 deg/s
+  </li><li>
+<strong class="groops-config-element">yawBias</strong>: -0.7 deg
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 1.5 h
+</li></ul>
+
+<li><b>GLO-M</b> [3]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: shadowMaxYawSteeringAndStop
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: centeredMaxYawSteering
+  </li><li>
+<strong class="groops-config-element">maxYawRate</strong>: 0.25 deg/s
+  </li><li>
+<strong class="groops-config-element">noonBetaThreshold</strong>: 2 deg
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 1.5 h
+</li></ul>
+
+<li><b>GAL-1</b> [4]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: smoothedYawSteering1
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: smoothedYawSteering1
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 1.5 h
+</li></ul>
+
+<li><b>GAL-2</b> [4]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: smoothedYawSteering2
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: smoothedYawSteering2
+  </li><li>
+<strong class="groops-config-element">midnightBetaThreshold</strong>: 4.1 deg
+  </li><li>
+<strong class="groops-config-element">noonBetaThreshold</strong>: 4.1 deg
+  </li><li>
+<strong class="groops-config-element">activationThreshold</strong>: 10 deg
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 5656 s
+</li></ul>
+
+<li><b>BDS-2G/3G</b> [5, 6]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: orbitNormal
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: orbitNormal
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: orbitNormal
+</li></ul>
+
+<li><b>BDS-2I</b> [5]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: betaDependentOrbitNormal
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: betaDependentOrbitNormal
+  </li><li>
+<strong class="groops-config-element">maxYawRate</strong>: 0.085 deg/s
+  </li><li>
+<strong class="groops-config-element">midnightBetaThreshold</strong>: 4 deg
+  </li><li>
+<strong class="groops-config-element">noonBetaThreshold</strong>: 4 deg
+  </li><li>
+<strong class="groops-config-element">activationThreshold</strong>: 5 deg
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 24 h
+</li></ul>
+
+<li><b>BDS-2M</b> [5]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: betaDependentOrbitNormal
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: betaDependentOrbitNormal
+  </li><li>
+<strong class="groops-config-element">maxYawRate</strong>: 0.159 deg/s
+  </li><li>
+<strong class="groops-config-element">midnightBetaThreshold</strong>: 4 deg
+  </li><li>
+<strong class="groops-config-element">noonBetaThreshold</strong>: 4 deg
+  </li><li>
+<strong class="groops-config-element">activationThreshold</strong>: 5 deg
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 13 h
+</li></ul>
+
+<li><b>BDS-3I/3SI</b> [6]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: smoothedYawSteering2
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: smoothedYawSteering2
+  </li><li>
+<strong class="groops-config-element">midnightBetaThreshold</strong>: 3 deg
+  </li><li>
+<strong class="groops-config-element">noonBetaThreshold</strong>: 3 deg
+  </li><li>
+<strong class="groops-config-element">activationThreshold</strong>: 6 deg
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 5740 s
+</li></ul>
+
+<li><b>BDS-3M/3SM</b> [6]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: smoothedYawSteering2
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: smoothedYawSteering2
+  </li><li>
+<strong class="groops-config-element">midnightBetaThreshold</strong>: 3 deg
+  </li><li>
+<strong class="groops-config-element">noonBetaThreshold</strong>: 3 deg
+  </li><li>
+<strong class="groops-config-element">activationThreshold</strong>: 6 deg
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 3090 s
+</li></ul>
+
+<li><b>QZS-1</b> [7]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: betaDependentOrbitNormal
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: betaDependentOrbitNormal
+  </li><li>
+<strong class="groops-config-element">maxYawRate</strong>: 0.01 deg/s
+  </li><li>
+<strong class="groops-config-element">yawBias</strong>: 180 deg
+  </li><li>
+<strong class="groops-config-element">midnightBetaThreshold</strong>: 20 deg
+  </li><li>
+<strong class="groops-config-element">noonBetaThreshold</strong>: 20 deg
+  </li><li>
+<strong class="groops-config-element">activationThreshold</strong>: 18.5 deg
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 24 h
+</li></ul>
+
+<li><b>QZS-2G</b> [7]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: orbitNormal
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: orbitNormal
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: orbitNormal
+  </li><li>
+<strong class="groops-config-element">yawBias</strong>: 180 deg
+</li></ul>
+
+<li><b>QZS-2I</b> [7]
+<ul>
+
+  </li><li>
+<strong class="groops-config-element">defaultMode</strong>: nominalYawSteering
+  </li><li>
+<strong class="groops-config-element">midnightMode</strong>: centeredMaxYawSteering
+  </li><li>
+<strong class="groops-config-element">noonMode</strong>: centeredMaxYawSteering
+  </li><li>
+<strong class="groops-config-element">maxYawRate</strong>: 0.055 deg/s
+  </li><li>
+<strong class="groops-config-element">midnightBetaThreshold</strong>: 5 deg
+  </li><li>
+<strong class="groops-config-element">noonBetaThreshold</strong>: 5 deg
+  </li><li>
+<strong class="groops-config-element">maxManeuverTime</strong>: 1.5 h
+</li></ul>
+
+</ul></p><p>Some specific satellites may deviate in their attitude behavior or parameters
+(e.g. G013-G040, R713, C005, C015, C017, J001).</p><p>References for the attitude behavior information:
+<ol>
+
+<li><a href="https://doi.org/10.1007/s10291-008-0092-1">Kouba (2009)</a>
+</li><li>
+<a href="https://doi.org/10.1007/s10291-016-0562-9">Kuang et al. (2017)</a>
+</li><li>
+<a href="https://doi.org/10.1016/j.asr.2010.09.007">Dilssner et al. (2011)</a>
+</li><li>
+<a href="https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata#3" target="_blank">https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata#3</a>
+</li><li>
+<a href="https://doi.org/10.1007/s10291-018-0783-1">Wang et al. (2018)</a>
+</li><li>
+<a href="https://doi.org/10.1017/S0373463318000103">Li et al. (2018)</a>
+</li><li>
+<a href="https://qzss.go.jp/en/technical/qzssinfo/index.html" target="_blank">https://qzss.go.jp/en/technical/qzssinfo/index.html</a>
+</li></ol>
+
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileAttitudeInfo</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">attitudeInfo</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">timeStart</div></div></td><td>time</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">defaultMode</div></div></td><td>choice</td><td>default attitude mode</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">nominalYawSteering</div></div></td><td></td><td>yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">orbitNormal</div></div></td><td></td><td>keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">midnightMode</div></div></td><td>choice</td><td>attitude mode for maneuvers around orbit midnight</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">nominalYawSteering</div></div></td><td></td><td>yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">orbitNormal</div></div></td><td></td><td>keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">catchUpYawSteering</div></div></td><td></td><td>yaw at maximum yaw rate to catch up to nominal yaw angle (e.g. GPS-* (noon), GPS-IIR (midnight))</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">shadowMaxYawSteeringAndRecovery</div></div></td><td></td><td>yaw at maximum yaw rate from shadow start to end, recover after shadow (e.g. GPS-IIA (midnight))</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">shadowMaxYawSteeringAndStop</div></div></td><td></td><td>yaw at maximum yaw rate from shadow start until nominal yaw angle at shadow end is reached, then stop (e.g. GLO-M (midnight))</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">shadowConstantYawSteering</div></div></td><td></td><td>yaw at constant yaw rate from shadow start to end (e.g. GPS-IIF (midnight))</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">centeredMaxYawSteering</div></div></td><td></td><td>yaw at maximum yaw rate centered around noon/midnight (e.g. QZS-2I, GLO-M (noon))</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">smoothedYawSteering1</div></div></td><td></td><td>yaw based on an auxiliary Sun vector for a smooth yaw maneuver (e.g. GAL-1)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">smoothedYawSteering2</div></div></td><td></td><td>yaw based on a modified yaw-steering law for a smooth yaw maneuver (e.g. GAL-2, BDS-3M, BDS-3I)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">betaDependentOrbitNormal</div></div></td><td></td><td>switch to orbit normal mode if below beta angle threshold (e.g. BDS-2M, BDS-2I, QZS-1)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">noonMode</div></div></td><td>choice</td><td>attitude mode for maneuvers around orbit noon</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">nominalYawSteering</div></div></td><td></td><td>yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">orbitNormal</div></div></td><td></td><td>keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">catchUpYawSteering</div></div></td><td></td><td>yaw at maximum yaw rate to catch up to nominal yaw angle (e.g. GPS-* (noon), GPS-IIR (midnight))</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">centeredMaxYawSteering</div></div></td><td></td><td>yaw at maximum yaw rate centered around noon/midnight (e.g. QZS-2I, GLO-M (noon))</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">smoothedYawSteering1</div></div></td><td></td><td>yaw based on an auxiliary Sun vector for a smooth yaw maneuver (e.g. GAL-1)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">smoothedYawSteering2</div></div></td><td></td><td>yaw based on a modified yaw-steering law for a smooth yaw maneuver (e.g. GAL-2, BDS-3M, BDS-3I)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">betaDependentOrbitNormal</div></div></td><td></td><td>switch to orbit normal mode if below beta angle threshold (e.g. BDS-2M, BDS-2I, QZS-1)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">maxYawRate</div></div></td><td>double</td><td>[degree/s] maximum yaw rate of the satellite</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">yawBias</div></div></td><td>double</td><td>[degree] yaw bias applied in satellite attitude control system</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">midnightBetaThreshold</div></div></td><td>double</td><td>[degree] limit midnight maneuver to this absolute angle of the Sun above/below the satellite orbital plane</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">noonBetaThreshold</div></div></td><td>double</td><td>[degree] limit noon maneuver to this absolute angle of the Sun above/below the satellite orbital plane</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">activationThreshold</div></div></td><td>double</td><td>[degree] limit maneuver to this yaw/Earth-spacecraft-Sun angle (depending on mode)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">maxManeuverTime</div></div></td><td>double</td><td>[s] maximum duration of maneuver or maximum maneuver lookup time before/after orbit start/end</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

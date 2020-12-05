@@ -10167,6 +10167,177 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="GnssAttitudeInfoCreate">
+				<xs:annotation>
+					<xs:documentation>Creates attitude info file used by SimulateStarCameraGnss.</xs:documentation>
+					<xs:appinfo>tag: Gnss</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileAttitudeInfo" type="filename"/>
+						<xs:element name="attitudeInfo" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="timeStart" type="time" default="0"/>
+									<xs:element name="defaultMode" default="nominalYawSteering">
+										<xs:annotation>
+											<xs:documentation>default attitude mode</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:choice>
+												<xs:element name="nominalYawSteering">
+													<xs:annotation>
+														<xs:documentation>yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="orbitNormal">
+													<xs:annotation>
+														<xs:documentation>keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:choice>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="midnightMode" default="nominalYawSteering">
+										<xs:annotation>
+											<xs:documentation>attitude mode for maneuvers around orbit midnight</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:choice>
+												<xs:element name="nominalYawSteering">
+													<xs:annotation>
+														<xs:documentation>yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="orbitNormal">
+													<xs:annotation>
+														<xs:documentation>keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="catchUpYawSteering">
+													<xs:annotation>
+														<xs:documentation>yaw at maximum yaw rate to catch up to nominal yaw angle (e.g. GPS-* (noon), GPS-IIR (midnight))</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="shadowMaxYawSteeringAndRecovery">
+													<xs:annotation>
+														<xs:documentation>yaw at maximum yaw rate from shadow start to end, recover after shadow (e.g. GPS-IIA (midnight))</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="shadowMaxYawSteeringAndStop">
+													<xs:annotation>
+														<xs:documentation>yaw at maximum yaw rate from shadow start until nominal yaw angle at shadow end is reached, then stop (e.g. GLO-M (midnight))</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="shadowConstantYawSteering">
+													<xs:annotation>
+														<xs:documentation>yaw at constant yaw rate from shadow start to end (e.g. GPS-IIF (midnight))</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="centeredMaxYawSteering">
+													<xs:annotation>
+														<xs:documentation>yaw at maximum yaw rate centered around noon/midnight (e.g. QZS-2I, GLO-M (noon))</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="smoothedYawSteering1">
+													<xs:annotation>
+														<xs:documentation>yaw based on an auxiliary Sun vector for a smooth yaw maneuver (e.g. GAL-1)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="smoothedYawSteering2">
+													<xs:annotation>
+														<xs:documentation>yaw based on a modified yaw-steering law for a smooth yaw maneuver (e.g. GAL-2, BDS-3M, BDS-3I)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="betaDependentOrbitNormal">
+													<xs:annotation>
+														<xs:documentation>switch to orbit normal mode if below beta angle threshold (e.g. BDS-2M, BDS-2I, QZS-1)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:choice>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="noonMode" default="nominalYawSteering">
+										<xs:annotation>
+											<xs:documentation>attitude mode for maneuvers around orbit noon</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:choice>
+												<xs:element name="nominalYawSteering">
+													<xs:annotation>
+														<xs:documentation>yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="orbitNormal">
+													<xs:annotation>
+														<xs:documentation>keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="catchUpYawSteering">
+													<xs:annotation>
+														<xs:documentation>yaw at maximum yaw rate to catch up to nominal yaw angle (e.g. GPS-* (noon), GPS-IIR (midnight))</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="centeredMaxYawSteering">
+													<xs:annotation>
+														<xs:documentation>yaw at maximum yaw rate centered around noon/midnight (e.g. QZS-2I, GLO-M (noon))</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="smoothedYawSteering1">
+													<xs:annotation>
+														<xs:documentation>yaw based on an auxiliary Sun vector for a smooth yaw maneuver (e.g. GAL-1)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="smoothedYawSteering2">
+													<xs:annotation>
+														<xs:documentation>yaw based on a modified yaw-steering law for a smooth yaw maneuver (e.g. GAL-2, BDS-3M, BDS-3I)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="betaDependentOrbitNormal">
+													<xs:annotation>
+														<xs:documentation>switch to orbit normal mode if below beta angle threshold (e.g. BDS-2M, BDS-2I, QZS-1)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:choice>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="maxYawRate" type="double" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[degree/s] maximum yaw rate of the satellite</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="yawBias" type="double" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[degree] yaw bias applied in satellite attitude control system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="midnightBetaThreshold" type="double" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[degree] limit midnight maneuver to this absolute angle of the Sun above/below the satellite orbital plane</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="noonBetaThreshold" type="double" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[degree] limit noon maneuver to this absolute angle of the Sun above/below the satellite orbital plane</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="activationThreshold" type="double" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[degree] limit maneuver to this yaw/Earth-spacecraft-Sun angle (depending on mode)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="maxManeuverTime" type="double" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[s] maximum duration of maneuver or maximum maneuver lookup time before/after orbit start/end</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GnssBiasClockAlignment">
 				<xs:annotation>
 					<xs:documentation>Align GNSS transmitter clocks to reference clocks and adjust related receiver signal biases as well as GLONASS transmitter biases.</xs:documentation>
@@ -10339,7 +10510,7 @@
 			</xs:element>
 			<xs:element name="GnssPrn2SvnBlockVariables">
 				<xs:annotation>
-					<xs:documentation>Create variable of SVN and block for a GNSS PRN at a specific time.</xs:documentation>
+					<xs:documentation>Create variables containing SVN and block based on a transmitter info file of a GNSS satellite/PRN and a specified time.</xs:documentation>
 					<xs:appinfo>tag: Gnss</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -10354,7 +10525,7 @@
 								<xs:documentation>name of the satellites block variable</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitterGPS/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
+						<xs:element name="inputfileTransmitterInfo" type="filename">
 							<xs:annotation>
 								<xs:documentation>used for GNSS PRN-to-SVN/model relation</xs:documentation>
 							</xs:annotation>
@@ -18183,7 +18354,7 @@
 			</xs:element>
 			<xs:element name="SimulateStarCameraGnss">
 				<xs:annotation>
-					<xs:documentation>Simulate star camera data for GNSS satellites using nominal orientation or an attitude model.</xs:documentation>
+					<xs:documentation>Simulates star camera data for a GNSS satellite based on an attitude model.</xs:documentation>
 					<xs:appinfo>tag: Simulation</xs:appinfo>
 					<xs:appinfo>tag: Gnss</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
@@ -18192,124 +18363,28 @@
 					<xs:sequence>
 						<xs:element name="outputfileStarCamera" type="filename">
 							<xs:annotation>
-								<xs:documentation>rotation from body frame to inertial frame</xs:documentation>
+								<xs:documentation>rotation from body frame to CRF</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileOrbit" type="filename">
 							<xs:annotation>
-								<xs:documentation>position defines the orientation of the satellite at each epoch</xs:documentation>
+								<xs:documentation>attitude is modeled based on this orbit</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="attitudeModel">
+						<xs:element name="inputfileAttitudeInfo" type="filename" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>GNSS satellite attitude model</xs:documentation>
+								<xs:documentation>attitude modes used by the satellite and respective parameters</xs:documentation>
 							</xs:annotation>
-							<xs:complexType>
-								<xs:choice>
-									<xs:element name="nominal">
-										<xs:annotation>
-											<xs:documentation>Nominal attitude: z towards Earth, y along solar panel axis, x roughly towards sun (y cross z)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="ecom">
-										<xs:annotation>
-											<xs:documentation>ECOM attitude: x (d) towards Sun, y along solar panel axis, z (b) roughly towards Earth (d cross y)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="Kouba2009">
-										<xs:annotation>
-											<xs:documentation>True attitude based on model by Kouba (2009): z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)</xs:documentation>
-										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitterGps/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
-													<xs:annotation>
-														<xs:documentation>GNSS satellite info file</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="inputfileYawBias" type="filename" default="{groopsDataDir}/gnss/transmitterGps/yawBias/yawBias.{prn}.txt">
-													<xs:annotation>
-														<xs:documentation>yaw bias instrument file</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="inputfileYawRates" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/transmitterGps/yawRates.gps.txt">
-													<xs:annotation>
-														<xs:documentation>yaw rate per SVN in [deg/s]</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="shadowBuffer" type="double" minOccurs="0" default="3600">
-													<xs:annotation>
-														<xs:documentation>[seconds] pre/post orbit time period to look for missing shadow entries/exits</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="shadowThreshold" type="double" minOccurs="0" default="0.5">
-													<xs:annotation>
-														<xs:documentation>shadow scaling factor for finding exact shadow entry/exit times, between 0 (shadow) and 1 (sun)</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="8">
-													<xs:annotation>
-														<xs:documentation>Polynomial degree for velocity interpolation, must be even!</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-									<xs:element name="glonass">
-										<xs:annotation>
-											<xs:documentation>True attitude based on official Galileo attitude law: z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)</xs:documentation>
-										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitterGlonass/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
-													<xs:annotation>
-														<xs:documentation>GNSS satellite info file</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="shadowBuffer" type="double" minOccurs="0" default="3600">
-													<xs:annotation>
-														<xs:documentation>[seconds] pre orbit time period to look for last switch to modified attitude law</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="shadowThreshold" type="double" minOccurs="0" default="0.5">
-													<xs:annotation>
-														<xs:documentation>shadow scaling factor for finding exact shadow entry/exit times, between 0 (shadow) and 1 (sun)</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="8">
-													<xs:annotation>
-														<xs:documentation>Polynomial degree for velocity interpolation, must be even!</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-									<xs:element name="galileo">
-										<xs:annotation>
-											<xs:documentation>True attitude based on official Galileo attitude law: z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)</xs:documentation>
-										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitterGalileo/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
-													<xs:annotation>
-														<xs:documentation>GNSS satellite info file</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="shadowBuffer" type="double" minOccurs="0" default="3600">
-													<xs:annotation>
-														<xs:documentation>[seconds] pre orbit time period to look for last switch to modified attitude law</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="8">
-													<xs:annotation>
-														<xs:documentation>Polynomial degree for velocity interpolation, must be even!</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-								</xs:choice>
-							</xs:complexType>
+						</xs:element>
+						<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="7">
+							<xs:annotation>
+								<xs:documentation>polynomial degree for orbit interpolation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="modelingResolution" type="double" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>[s] resolution for attitude model evaluation</xs:documentation>
+							</xs:annotation>
 						</xs:element>
 						<xs:element name="ephemerides" type="ephemeridesType"/>
 						<xs:element name="eclipse" type="eclipseType">

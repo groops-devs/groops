@@ -550,6 +550,206 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{GnssAttitudeInfoCreate}\label{GnssAttitudeInfoCreate}
+Creates attitude info file (\file{Instrument(MISCVALUES)}{instrument})
+used by \program{SimulateStarCameraGnss}. One or more \config{attitudeInfo}s can be specified.
+They are valid from \config{timeStart} until the start of the subsequent \config{attitudeInfo}.
+\config{maxManeuverTime} is used by \program{SimulateStarCameraGnss} to look
+for ongoing orbit maneuvers before/after the given orbit that might affect the attitude at
+the beginning or end of a given orbit.
+
+\fig{!hb}{0.9}{gnssAttitudeModes}{fig:gnssAttitudeModes2}{Overview of attitude modes used by GNSS satellites}
+
+Here is a list of GNSS satellite types for which the attitude behavior is known and their
+respective attitude modes and required parameters:
+\begin{itemize}
+\item \textbf{GPS-II/IIA} [1]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: shadowMaxYawSteeringAndRecovery
+  \item \config{noonMode}: catchUpYawSteering
+  \item \config{maxYawRate}: 0.12~deg/s
+  \item \config{yawBias}: 0.5~deg
+  \item \config{maxManeuverTime}: 2~h
+\end{itemize}
+\item \textbf{GPS-IIR/IIR-M} [1]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: catchUpYawSteering
+  \item \config{noonMode}: catchUpYawSteering
+  \item \config{maxYawRate}: 0.2~deg/s
+  \item \config{maxManeuverTime}: 30~min
+\end{itemize}
+\item \textbf{GPS-IIF} [2]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: shadowConstantYawSteering
+  \item \config{noonMode}: catchUpYawSteering
+  \item \config{maxYawRate}: 0.11~deg/s
+  \item \config{yawBias}: -0.7~deg
+  \item \config{maxManeuverTime}: 1.5~h
+\end{itemize}
+\item \textbf{GLO-M} [3]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: shadowMaxYawSteeringAndStop
+  \item \config{noonMode}: centeredMaxYawSteering
+  \item \config{maxYawRate}: 0.25~deg/s
+  \item \config{noonBetaThreshold}: 2~deg
+  \item \config{maxManeuverTime}: 1.5~h
+\end{itemize}
+\item \textbf{GAL-1} [4]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: smoothedYawSteering1
+  \item \config{noonMode}: smoothedYawSteering1
+  \item \config{maxManeuverTime}: 1.5~h
+\end{itemize}
+\item \textbf{GAL-2} [4]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: smoothedYawSteering2
+  \item \config{noonMode}: smoothedYawSteering2
+  \item \config{midnightBetaThreshold}: 4.1~deg
+  \item \config{noonBetaThreshold}: 4.1~deg
+  \item \config{activationThreshold}: 10~deg
+  \item \config{maxManeuverTime}: 5656~s
+\end{itemize}
+\item \textbf{BDS-2G/3G} [5, 6]
+\begin{itemize}
+  \item \config{defaultMode}: orbitNormal
+  \item \config{midnightMode}: orbitNormal
+  \item \config{noonMode}: orbitNormal
+\end{itemize}
+\item \textbf{BDS-2I} [5]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: betaDependentOrbitNormal
+  \item \config{noonMode}: betaDependentOrbitNormal
+  \item \config{maxYawRate}: 0.085~deg/s
+  \item \config{midnightBetaThreshold}: 4~deg
+  \item \config{noonBetaThreshold}: 4~deg
+  \item \config{activationThreshold}: 5~deg
+  \item \config{maxManeuverTime}: 24~h
+\end{itemize}
+\item \textbf{BDS-2M} [5]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: betaDependentOrbitNormal
+  \item \config{noonMode}: betaDependentOrbitNormal
+  \item \config{maxYawRate}: 0.159~deg/s
+  \item \config{midnightBetaThreshold}: 4~deg
+  \item \config{noonBetaThreshold}: 4~deg
+  \item \config{activationThreshold}: 5~deg
+  \item \config{maxManeuverTime}: 13~h
+\end{itemize}
+\item \textbf{BDS-3I/3SI} [6]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: smoothedYawSteering2
+  \item \config{noonMode}: smoothedYawSteering2
+  \item \config{midnightBetaThreshold}: 3~deg
+  \item \config{noonBetaThreshold}: 3~deg
+  \item \config{activationThreshold}: 6~deg
+  \item \config{maxManeuverTime}: 5740~s
+\end{itemize}
+\item \textbf{BDS-3M/3SM} [6]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: smoothedYawSteering2
+  \item \config{noonMode}: smoothedYawSteering2
+  \item \config{midnightBetaThreshold}: 3~deg
+  \item \config{noonBetaThreshold}: 3~deg
+  \item \config{activationThreshold}: 6~deg
+  \item \config{maxManeuverTime}: 3090~s
+\end{itemize}
+\item \textbf{QZS-1} [7]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: betaDependentOrbitNormal
+  \item \config{noonMode}: betaDependentOrbitNormal
+  \item \config{maxYawRate}: 0.01~deg/s
+  \item \config{yawBias}: 180~deg
+  \item \config{midnightBetaThreshold}: 20~deg
+  \item \config{noonBetaThreshold}: 20~deg
+  \item \config{activationThreshold}: 18.5~deg
+  \item \config{maxManeuverTime}: 24~h
+\end{itemize}
+\item \textbf{QZS-2G} [7]
+\begin{itemize}
+  \item \config{defaultMode}: orbitNormal
+  \item \config{midnightMode}: orbitNormal
+  \item \config{noonMode}: orbitNormal
+  \item \config{yawBias}: 180~deg
+\end{itemize}
+\item \textbf{QZS-2I} [7]
+\begin{itemize}
+  \item \config{defaultMode}: nominalYawSteering
+  \item \config{midnightMode}: centeredMaxYawSteering
+  \item \config{noonMode}: centeredMaxYawSteering
+  \item \config{maxYawRate}: 0.055~deg/s
+  \item \config{midnightBetaThreshold}: 5~deg
+  \item \config{noonBetaThreshold}: 5~deg
+  \item \config{maxManeuverTime}: 1.5~h
+\end{itemize}
+\end{itemize}
+
+Some specific satellites may deviate in their attitude behavior or parameters
+(e.g. G013-G040, R713, C005, C015, C017, J001).
+
+References for the attitude behavior information:
+\begin{enumerate}
+\item \href{https://doi.org/10.1007/s10291-008-0092-1}{Kouba (2009)}
+\item \href{https://doi.org/10.1007/s10291-016-0562-9}{Kuang et al. (2017)}
+\item \href{https://doi.org/10.1016/j.asr.2010.09.007}{Dilssner et al. (2011)}
+\item \url{https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata#3}
+\item \href{https://doi.org/10.1007/s10291-018-0783-1}{Wang et al. (2018)}
+\item \href{https://doi.org/10.1017/S0373463318000103}{Li et al. (2018)}
+\item \url{https://qzss.go.jp/en/technical/qzssinfo/index.html}
+\end{enumerate}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileAttitudeInfo & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~attitudeInfo & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~defaultMode & \hfuzz=500pt choice & \hfuzz=500pt default attitude mode\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~nominalYawSteering & \hfuzz=500pt  & \hfuzz=500pt yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~orbitNormal & \hfuzz=500pt  & \hfuzz=500pt keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~midnightMode & \hfuzz=500pt choice & \hfuzz=500pt attitude mode for maneuvers around orbit midnight\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~nominalYawSteering & \hfuzz=500pt  & \hfuzz=500pt yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~orbitNormal & \hfuzz=500pt  & \hfuzz=500pt keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~catchUpYawSteering & \hfuzz=500pt  & \hfuzz=500pt yaw at maximum yaw rate to catch up to nominal yaw angle (e.g. GPS-* (noon), GPS-IIR (midnight))\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~shadowMaxYawSteeringAndRecovery & \hfuzz=500pt  & \hfuzz=500pt yaw at maximum yaw rate from shadow start to end, recover after shadow (e.g. GPS-IIA (midnight))\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~shadowMaxYawSteeringAndStop & \hfuzz=500pt  & \hfuzz=500pt yaw at maximum yaw rate from shadow start until nominal yaw angle at shadow end is reached, then stop (e.g. GLO-M (midnight))\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~shadowConstantYawSteering & \hfuzz=500pt  & \hfuzz=500pt yaw at constant yaw rate from shadow start to end (e.g. GPS-IIF (midnight))\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~centeredMaxYawSteering & \hfuzz=500pt  & \hfuzz=500pt yaw at maximum yaw rate centered around noon/midnight (e.g. QZS-2I, GLO-M (noon))\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~smoothedYawSteering1 & \hfuzz=500pt  & \hfuzz=500pt yaw based on an auxiliary Sun vector for a smooth yaw maneuver (e.g. GAL-1)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~smoothedYawSteering2 & \hfuzz=500pt  & \hfuzz=500pt yaw based on a modified yaw-steering law for a smooth yaw maneuver (e.g. GAL-2, BDS-3M, BDS-3I)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~betaDependentOrbitNormal & \hfuzz=500pt  & \hfuzz=500pt switch to orbit normal mode if below beta angle threshold (e.g. BDS-2M, BDS-2I, QZS-1)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~noonMode & \hfuzz=500pt choice & \hfuzz=500pt attitude mode for maneuvers around orbit noon\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~nominalYawSteering & \hfuzz=500pt  & \hfuzz=500pt yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~orbitNormal & \hfuzz=500pt  & \hfuzz=500pt keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~catchUpYawSteering & \hfuzz=500pt  & \hfuzz=500pt yaw at maximum yaw rate to catch up to nominal yaw angle (e.g. GPS-* (noon), GPS-IIR (midnight))\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~centeredMaxYawSteering & \hfuzz=500pt  & \hfuzz=500pt yaw at maximum yaw rate centered around noon/midnight (e.g. QZS-2I, GLO-M (noon))\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~smoothedYawSteering1 & \hfuzz=500pt  & \hfuzz=500pt yaw based on an auxiliary Sun vector for a smooth yaw maneuver (e.g. GAL-1)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~smoothedYawSteering2 & \hfuzz=500pt  & \hfuzz=500pt yaw based on a modified yaw-steering law for a smooth yaw maneuver (e.g. GAL-2, BDS-3M, BDS-3I)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~betaDependentOrbitNormal & \hfuzz=500pt  & \hfuzz=500pt switch to orbit normal mode if below beta angle threshold (e.g. BDS-2M, BDS-2I, QZS-1)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~maxYawRate & \hfuzz=500pt double & \hfuzz=500pt [degree/s] maximum yaw rate of the satellite\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~yawBias & \hfuzz=500pt double & \hfuzz=500pt [degree] yaw bias applied in satellite attitude control system\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~midnightBetaThreshold & \hfuzz=500pt double & \hfuzz=500pt [degree] limit midnight maneuver to this absolute angle of the Sun above/below the satellite orbital plane\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~noonBetaThreshold & \hfuzz=500pt double & \hfuzz=500pt [degree] limit noon maneuver to this absolute angle of the Sun above/below the satellite orbital plane\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~activationThreshold & \hfuzz=500pt double & \hfuzz=500pt [degree] limit maneuver to this yaw/Earth-spacecraft-Sun angle (depending on mode)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~maxManeuverTime & \hfuzz=500pt double & \hfuzz=500pt [s] maximum duration of maneuver or maximum maneuver lookup time before/after orbit start/end\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{GnssBiasClockAlignment}\label{GnssBiasClockAlignment}
 This program can be used to absolutely align GNSS transmitter clocks to reference clocks (i.e. broadcast clocks).
 Each 'group' of \config{transmitter}s, usually a system like GPS or Galileo, is aligned individually by a constant shift over all transmitters.
@@ -640,7 +840,9 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssPrn2SvnBlockVariables}\label{GnssPrn2SvnBlockVariables}
-Create \reference{variables}{general.parser} containing SVN and block for a GNSS PRN at a specific \config{time}.
+Create \reference{variables}{general.parser} containing SVN and block based on an
+\configFile{inputfileTransmitterInfo}{gnssStationInfo} of a GNSS satellite/PRN and
+a specified \config{time}.
 
 
 \keepXColumns
@@ -6308,17 +6510,66 @@ This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{SimulateStarCameraGnss}\label{SimulateStarCameraGnss}
-This program simulates \file{star camera}{instrument} measurements at each satellite position.
-The resulting rotation matrices rotate from body frame to inertial frame.
+This program simulates \file{star camera}{instrument} measurements at each satellite position
+of \configFile{inputfileOrbit}{instrument}.
+The resulting rotation matrices rotate from body frame to inertial frame. The body frame refers
+to the IGS-specific (not the manufacturer-specific) body frame, as described by
+\href{https://doi.org/10.1016/j.asr.2015.06.019}{Montenbruck et al. (2015)}.
+The \configFile{inputfileOrbit}{instrument} must contain velocities
+(use \program{OrbitAddVelocityAndAcceleration} if needed).
 
-The nominal orientation is simulated to be z-axis towards the center of Earth, y-axis is along solar panel axis,
-and x-axis forms a right hand system (points roughly towards the sun).
+Information about the attitude mode(s) used by the GNSS satellite may be provided via
+\configFile{inputfileAttitudeInfo}{instrument}. This file can be created with
+\program{GnssAttitudeInfoCreate}. It contains one or more time-dependent entries,
+each defining the default attitude mode, the attitude modes used around orbit noon and
+midnight, and some parameters required by the various modes.
+If no \configFile{inputfileAttitudeInfo}{instrument} is selected, the program defaults
+to a nominal yaw-steering attitude model.
+A sufficiently high \config{modelingResolution} ensures that the attitude behavior is modeled properly
+at all times.
 
-GPS attitude model: Kouba (2009), 'A simplified yaw-attitude model for eclipsing GPS satellites' \url{https://doi.org/10.1007/s10291-008-0092-1}
+The attitude behavior is defined by the respective mode. Here is a list of the supported
+modes with a brief explanation and references:
+\begin{itemize}
+\item \textbf{nominalYawSteering}:
+      Yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse) [1]
+\item \textbf{orbitNormal}:
+      Keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G) [1]
+\item \textbf{catchUpYawSteering}:
+      Yaw at maximum yaw rate to catch up to nominal yaw angle (e.g. GPS-* (noon), GPS-IIR (midnight)) [2, 3]
+\item \textbf{shadowMaxYawSteeringAndRecovery}:
+      Yaw at maximum yaw rate from shadow start to end, recover after shadow (e.g. GPS-IIA (midnight)) [2]
+\item \textbf{shadowMaxYawSteeringAndStop}:
+      Yaw at maximum yaw rate from shadow start until nominal yaw angle at shadow end is reached,
+      then stop (e.g. GLO-M (midnight)) [4]
+\item \textbf{shadowConstantYawSteering}:
+      Yaw at constant yaw rate from shadow start to end (e.g. GPS-IIF (midnight)) [3]
+\item \textbf{centeredMaxYawSteering}:
+      Yaw at maximum yaw rate centered around noon/midnight (e.g. QZS-2I, GLO-M (noon)) [4, 8]
+\item \textbf{smoothedYawSteering1}:
+      Yaw based on an auxiliary Sun vector for a smooth yaw maneuver (e.g. GAL-1) [5]
+\item \textbf{smoothedYawSteering2}:
+      Yaw based on a modified yaw-steering law for a smooth yaw maneuver (e.g. GAL-2, BDS-3M, BDS-3I) [5, 6]
+\item \textbf{betaDependentOrbitNormal}:
+      Switch to orbit normal mode if below beta angle threshold (e.g. BDS-2M, BDS-2I, QZS-1) [7, 8]
+\end{itemize}
 
-Galileo attitude model: \url{https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata}
+\fig{!hb}{0.9}{gnssAttitudeModes}{fig:gnssAttitudeModes1}{Overview of attitude modes used by GNSS satellites}
 
-See also \program{GnssAntex2AntennaDefinition} and \program{GnssYawBias2Instrument}.
+See \program{GnssAttitudeInfoCreate} for more details on which satellite uses which attitude modes
+and the required parameters for each mode.
+
+References for the attitude modes:
+\begin{enumerate}
+\item \href{https://doi.org/10.1016/j.asr.2015.06.019}{Montenbruck et al. (2015)}
+\item \href{https://doi.org/10.1007/s10291-008-0092-1}{Kouba (2009)}
+\item \href{https://doi.org/10.1007/s10291-016-0562-9}{Kuang et al. (2017)}
+\item \href{https://doi.org/10.1016/j.asr.2010.09.007}{Dilssner et al. (2011)}
+\item \url{https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata#3}
+\item \href{https://doi.org/10.1007/s10291-018-0783-1}{Wang et al. (2018)}
+\item \href{https://doi.org/10.1017/S0373463318000103}{Li et al. (2018)}
+\item \url{https://qzss.go.jp/en/technical/qzssinfo/index.html}
+\end{enumerate}
 
 
 \keepXColumns
@@ -6326,27 +6577,11 @@ See also \program{GnssAntex2AntennaDefinition} and \program{GnssYawBias2Instrume
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt rotation from body frame to inertial frame\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt position defines the orientation of the satellite at each epoch\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~attitudeModel & \hfuzz=500pt choice & \hfuzz=500pt GNSS satellite attitude model\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~nominal & \hfuzz=500pt  & \hfuzz=500pt Nominal attitude: z towards Earth, y along solar panel axis, x roughly towards sun (y cross z)\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~ecom & \hfuzz=500pt  & \hfuzz=500pt ECOM attitude: x (d) towards Sun, y along solar panel axis, z (b) roughly towards Earth (d cross y)\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~Kouba2009 & \hfuzz=500pt sequence & \hfuzz=500pt True attitude based on model by Kouba (2009): z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt GNSS satellite info file\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileYawBias & \hfuzz=500pt filename & \hfuzz=500pt yaw bias instrument file\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileYawRates & \hfuzz=500pt filename & \hfuzz=500pt yaw rate per SVN in [deg/s]\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~shadowBuffer & \hfuzz=500pt double & \hfuzz=500pt [seconds] pre/post orbit time period to look for missing shadow entries/exits\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~shadowThreshold & \hfuzz=500pt double & \hfuzz=500pt shadow scaling factor for finding exact shadow entry/exit times, between 0 (shadow) and 1 (sun)\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt Polynomial degree for velocity interpolation, must be even!\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~glonass & \hfuzz=500pt sequence & \hfuzz=500pt True attitude based on official Galileo attitude law: z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt GNSS satellite info file\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~shadowBuffer & \hfuzz=500pt double & \hfuzz=500pt [seconds] pre orbit time period to look for last switch to modified attitude law\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~shadowThreshold & \hfuzz=500pt double & \hfuzz=500pt shadow scaling factor for finding exact shadow entry/exit times, between 0 (shadow) and 1 (sun)\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt Polynomial degree for velocity interpolation, must be even!\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~galileo & \hfuzz=500pt sequence & \hfuzz=500pt True attitude based on official Galileo attitude law: z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt GNSS satellite info file\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~shadowBuffer & \hfuzz=500pt double & \hfuzz=500pt [seconds] pre orbit time period to look for last switch to modified attitude law\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt Polynomial degree for velocity interpolation, must be even!\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt rotation from body frame to CRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt attitude is modeled based on this orbit\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAttitudeInfo & \hfuzz=500pt filename & \hfuzz=500pt attitude modes used by the satellite and respective parameters\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt polynomial degree for orbit interpolation\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~modelingResolution & \hfuzz=500pt double & \hfuzz=500pt [s] resolution for attitude model evaluation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~eclipse & \hfuzz=500pt \hyperref[eclipseType]{eclipse} & \hfuzz=500pt model to determine if satellite is in Earth's shadow\\
 \hline

@@ -71,33 +71,84 @@
         <div id="content" class="container">
             <h1>SimulateStarCameraGnss</h1><p>
 
-This program simulates <a class="groops-file" href="fileFormat_instrument.html">star camera</a> measurements at each satellite position.
-The resulting rotation matrices rotate from body frame to inertial frame.</p><p>The nominal orientation is simulated to be z-axis towards the center of Earth, y-axis is along solar panel axis,
-and x-axis forms a right hand system (points roughly towards the sun).</p><p>GPS attitude model: Kouba (2009), 'A simplified yaw-attitude model for eclipsing GPS satellites' <a href="https://doi.org/10.1007/s10291-008-0092-1" target="_blank">https://doi.org/10.1007/s10291-008-0092-1</a></p><p>Galileo attitude model: <a href="https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata" target="_blank">https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata</a></p><p>See also <a class="groops-program" href="GnssAntex2AntennaDefinition.html">GnssAntex2AntennaDefinition</a> and <a class="groops-program" href="GnssYawBias2Instrument.html">GnssYawBias2Instrument</a>.
+This program simulates <a class="groops-file" href="fileFormat_instrument.html">star camera</a> measurements at each satellite position
+of <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>.
+The resulting rotation matrices rotate from body frame to inertial frame. The body frame refers
+to the IGS-specific (not the manufacturer-specific) body frame, as described by
+<a href="https://doi.org/10.1016/j.asr.2015.06.019">Montenbruck et al. (2015)</a>.
+The <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a> must contain velocities
+(use <a class="groops-program" href="OrbitAddVelocityAndAcceleration.html">OrbitAddVelocityAndAcceleration</a> if needed).</p><p>Information about the attitude mode(s) used by the GNSS satellite may be provided via
+<a class="groops-class" href="fileFormat_instrument.html">inputfileAttitudeInfo</a>. This file can be created with
+<a class="groops-program" href="GnssAttitudeInfoCreate.html">GnssAttitudeInfoCreate</a>. It contains one or more time-dependent entries,
+each defining the default attitude mode, the attitude modes used around orbit noon and
+midnight, and some parameters required by the various modes.
+If no <a class="groops-class" href="fileFormat_instrument.html">inputfileAttitudeInfo</a> is selected, the program defaults
+to a nominal yaw-steering attitude model.
+A sufficiently high <strong class="groops-config-element">modelingResolution</strong> ensures that the attitude behavior is modeled properly
+at all times.</p><p>The attitude behavior is defined by the respective mode. Here is a list of the supported
+modes with a brief explanation and references:
+<ul>
+
+<li><b>nominalYawSteering</b>:
+      Yaw to keep solar panels aligned to Sun (e.g. most GNSS satellites outside eclipse) [1]
+</li><li>
+<b>orbitNormal</b>:
+      Keep fixed yaw angle, for example point X-axis in flight direction (e.g. BDS-2G, BDS-3G, QZS-2G) [1]
+</li><li>
+<b>catchUpYawSteering</b>:
+      Yaw at maximum yaw rate to catch up to nominal yaw angle (e.g. GPS-* (noon), GPS-IIR (midnight)) [2, 3]
+</li><li>
+<b>shadowMaxYawSteeringAndRecovery</b>:
+      Yaw at maximum yaw rate from shadow start to end, recover after shadow (e.g. GPS-IIA (midnight)) [2]
+</li><li>
+<b>shadowMaxYawSteeringAndStop</b>:
+      Yaw at maximum yaw rate from shadow start until nominal yaw angle at shadow end is reached,
+      then stop (e.g. GLO-M (midnight)) [4]
+</li><li>
+<b>shadowConstantYawSteering</b>:
+      Yaw at constant yaw rate from shadow start to end (e.g. GPS-IIF (midnight)) [3]
+</li><li>
+<b>centeredMaxYawSteering</b>:
+      Yaw at maximum yaw rate centered around noon/midnight (e.g. QZS-2I, GLO-M (noon)) [4, 8]
+</li><li>
+<b>smoothedYawSteering1</b>:
+      Yaw based on an auxiliary Sun vector for a smooth yaw maneuver (e.g. GAL-1) [5]
+</li><li>
+<b>smoothedYawSteering2</b>:
+      Yaw based on a modified yaw-steering law for a smooth yaw maneuver (e.g. GAL-2, BDS-3M, BDS-3I) [5, 6]
+</li><li>
+<b>betaDependentOrbitNormal</b>:
+      Switch to orbit normal mode if below beta angle threshold (e.g. BDS-2M, BDS-2I, QZS-1) [7, 8]
+</li></ul>
+</p><p><figure><img class="figure" style="width:90%;" src="../figures/gnssAttitudeModes.png" alt="gnssAttitudeModes"><figcaption class="center">Figure: Overview of attitude modes used by GNSS satellites</figcaption></figure></p><p>See <a class="groops-program" href="GnssAttitudeInfoCreate.html">GnssAttitudeInfoCreate</a> for more details on which satellite uses which attitude modes
+and the required parameters for each mode.</p><p>References for the attitude modes:
+<ol>
+
+<li><a href="https://doi.org/10.1016/j.asr.2015.06.019">Montenbruck et al. (2015)</a>
+</li><li>
+<a href="https://doi.org/10.1007/s10291-008-0092-1">Kouba (2009)</a>
+</li><li>
+<a href="https://doi.org/10.1007/s10291-016-0562-9">Kuang et al. (2017)</a>
+</li><li>
+<a href="https://doi.org/10.1016/j.asr.2010.09.007">Dilssner et al. (2011)</a>
+</li><li>
+<a href="https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata#3" target="_blank">https://www.gsc-europa.eu/support-to-developers/galileo-satellite-metadata#3</a>
+</li><li>
+<a href="https://doi.org/10.1007/s10291-018-0783-1">Wang et al. (2018)</a>
+</li><li>
+<a href="https://doi.org/10.1017/S0373463318000103">Li et al. (2018)</a>
+</li><li>
+<a href="https://qzss.go.jp/en/technical/qzssinfo/index.html" target="_blank">https://qzss.go.jp/en/technical/qzssinfo/index.html</a>
+</li></ol>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileStarCamera</div></div></td><td>filename</td><td>rotation from body frame to inertial frame</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit</div></div></td><td>filename</td><td>position defines the orientation of the satellite at each epoch</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">attitudeModel</div></div></td><td>choice</td><td>GNSS satellite attitude model</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">nominal</div></div></td><td></td><td>Nominal attitude: z towards Earth, y along solar panel axis, x roughly towards sun (y cross z)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">ecom</div></div></td><td></td><td>ECOM attitude: x (d) towards Sun, y along solar panel axis, z (b) roughly towards Earth (d cross y)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">Kouba2009</div></div></td><td>sequence</td><td>True attitude based on model by Kouba (2009): z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileTransmitterInfo</div></div></td><td>filename</td><td>GNSS satellite info file</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileYawBias</div></div></td><td>filename</td><td>yaw bias instrument file</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">inputfileYawRates</div></div></td><td>filename</td><td>yaw rate per SVN in [deg/s]</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">shadowBuffer</div></div></td><td>double</td><td>[seconds] pre/post orbit time period to look for missing shadow entries/exits</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">shadowThreshold</div></div></td><td>double</td><td>shadow scaling factor for finding exact shadow entry/exit times, between 0 (shadow) and 1 (sun)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>Polynomial degree for velocity interpolation, must be even!</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">glonass</div></div></td><td>sequence</td><td>True attitude based on official Galileo attitude law: z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileTransmitterInfo</div></div></td><td>filename</td><td>GNSS satellite info file</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">shadowBuffer</div></div></td><td>double</td><td>[seconds] pre orbit time period to look for last switch to modified attitude law</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">shadowThreshold</div></div></td><td>double</td><td>shadow scaling factor for finding exact shadow entry/exit times, between 0 (shadow) and 1 (sun)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>Polynomial degree for velocity interpolation, must be even!</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">galileo</div></div></td><td>sequence</td><td>True attitude based on official Galileo attitude law: z towards Earth, y along solar panel axis (adjusted for yaw maneuvers), x roughly towards sun (y cross z)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileTransmitterInfo</div></div></td><td>filename</td><td>GNSS satellite info file</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">shadowBuffer</div></div></td><td>double</td><td>[seconds] pre orbit time period to look for last switch to modified attitude law</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>Polynomial degree for velocity interpolation, must be even!</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileStarCamera</div></div></td><td>filename</td><td>rotation from body frame to CRF</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit</div></div></td><td>filename</td><td>attitude is modeled based on this orbit</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileAttitudeInfo</div></div></td><td>filename</td><td>attitude modes used by the satellite and respective parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>polynomial degree for orbit interpolation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">modelingResolution</div></div></td><td>double</td><td>[s] resolution for attitude model evaluation</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">eclipse</div></div></td><td><a href="eclipseType.html">eclipse</a></td><td>model to determine if satellite is in Earth's shadow</td></tr>
 </table>
