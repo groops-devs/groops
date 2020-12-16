@@ -12,7 +12,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Write GNSS Earth orientation parameters to \href{https://lists.igs.org/pipermail/igsmail/1998/003315.html}{IGS ERP file format}.
+Write GNSS Earth orientation parameters to \href{https://files.igs.org/pub/data/format/erp.txt}{IGS ERP file format}.
 
 Requires polar motion, polar motion rate, dUT1 and LOD parameters in the solution
 vector \configFile{inputfileSolution}{matrix} and their sigmas in \configFile{inputfileSigmax}{matrix}.

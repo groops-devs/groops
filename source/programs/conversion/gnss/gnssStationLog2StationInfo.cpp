@@ -13,10 +13,10 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Converts \href{ftp://igs.org/pub/station/general/blank.log}{IGS station log format} to \configFile{outputfileStationInfo}{gnssStationInfo}.
+Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} to \configFile{outputfileStationInfo}{gnssStationInfo}.
 
 If \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition} is provided, station log data is cross-checked with the given antenna definitions.
-Cross-checking station log data with a \href{http://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file} is also
+Cross-checking station log data with a \href{https://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file} is also
 possible by providing \config{inputfileSinex}. Any failed checks result in warnings in the output log.
 )";
 

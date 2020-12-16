@@ -19024,7 +19024,7 @@
 								<xs:documentation>program and source for applied differential code bias</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="phaseCenterVariations" type="string" default="GROOPS            igs14.atx @ ftp.igs.org ">
+						<xs:element name="phaseCenterVariations" type="string" default="GROOPS            igs14.atx @ files.igs.org ">
 							<xs:annotation>
 								<xs:documentation>program and source for applied phase center variations</xs:documentation>
 							</xs:annotation>

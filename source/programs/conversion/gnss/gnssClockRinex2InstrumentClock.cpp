@@ -14,7 +14,7 @@
 #define DOCSTRING docstring
 static const char *docstring =
 R"(
-This program converts clocks from the \href{ftp://igs.org/pub/data/format/rinex_clock304.txt}{IGS clock RINEX format},
+This program converts clocks from the \href{https://files.igs.org/pub/data/format/rinex_clock304.txt}{IGS clock RINEX format},
 which contains the clocks of all satellites and stations in a single file,
 into an \file{instrument file (MISCVALUE)}{instrument} for each \config{identifier}
 (satellite and/or station).

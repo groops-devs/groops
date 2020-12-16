@@ -14,7 +14,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Writes orbits to \href{ftp://igs.org/pub/data/format/sp3d.pdf}{SP3 format}.
+Writes orbits to \href{https://files.igs.org/pub/data/format/sp3d.pdf}{SP3 format}.
 
 SP3 orbits are usually given in the terrestrial reference frame (TRF), so providing \configClass{earthRotation}{earthRotationType}
 automatically rotates the orbits from the celestial reference frame (CRF) to the TRF.

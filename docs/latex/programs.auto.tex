@@ -6896,7 +6896,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssAntex2AntennaDefinition}\label{GnssAntex2AntennaDefinition}
-Converts metadata and antenna definitions from the \href{https://kb.igs.org/hc/en-us/articles/216104678-ANTEX-format-description}{IGS ANTEX format}.
+Converts metadata and antenna definitions from the \href{https://files.igs.org/pub/data/format/antex14.txt}{IGS ANTEX format}.
 to \configFile{transmitterInfo}{gnssStationInfo}, \configFile{antennaDefinition}{gnssAntennaDefinition}, \configFile{svnBlockTable}{stringTable},
 and \configFile{transmitterList}{stringList} files for the respective GNSS and for the list of ground station antennas.
 
@@ -6963,7 +6963,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssClock2ClockRinex}\label{GnssClock2ClockRinex}
-Converts GNSS clocks from GROOPS format to \href{ftp://igs.org/pub/data/format/rinex_clock304.txt}{IGS clock RINEX format}.
+Converts GNSS clocks from GROOPS format to \href{https://files.igs.org/pub/data/format/rinex_clock304.txt}{IGS clock RINEX format}.
 Clocks can be provided via \config{satelliteData} and/or \config{stationData}.
 Observed signal types are inferred from \configFile{inputfileSignalBias}{gnssSignalBias}.
 Satellites/stations used as clock references can be provided via \config{referenceClock}.
@@ -7000,7 +7000,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssClockRinex2InstrumentClock}\label{GnssClockRinex2InstrumentClock}
-This program converts clocks from the \href{ftp://igs.org/pub/data/format/rinex_clock304.txt}{IGS clock RINEX format},
+This program converts clocks from the \href{https://files.igs.org/pub/data/format/rinex_clock304.txt}{IGS clock RINEX format},
 which contains the clocks of all satellites and stations in a single file,
 into an \file{instrument file (MISCVALUE)}{instrument} for each \config{identifier}
 (satellite and/or station).
@@ -7022,7 +7022,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssEop2IgsErp}\label{GnssEop2IgsErp}
-Write GNSS Earth orientation parameters to \href{https://lists.igs.org/pipermail/igsmail/1998/003315.html}{IGS ERP file format}.
+Write GNSS Earth orientation parameters to \href{https://files.igs.org/pub/data/format/erp.txt}{IGS ERP file format}.
 
 Requires polar motion, polar motion rate, dUT1 and LOD parameters in the solution
 vector \configFile{inputfileSolution}{matrix} and their sigmas in \configFile{inputfileSigmax}{matrix}.
@@ -7156,7 +7156,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssRinexNavigation2OrbitClock}\label{GnssRinexNavigation2OrbitClock}
-Evaluates orbit and clock parameters from \href{ftp://ftp.igs.org/pub/data/format/rinex304.pdf}{RINEX navigation file} \config{inputfileRinex}
+Evaluates orbit and clock parameters from \href{https://files.igs.org/pub/data/format/rinex304.pdf}{RINEX navigation file} \config{inputfileRinex}
 at epochs given by \configClass{timeSeries}{timeSeriesType} and writes them to \configFile{outputfileOrbit}{instrument} and
 \configFile{outputfileClock}{instrument}, respectively.
 
@@ -7177,7 +7177,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssSignalBias2SinexBias}\label{GnssSignalBias2SinexBias}
-Convert \file{GNSS signal biases}{gnssSignalBias} from GROOPS format to \href{ftp://igs.org/pub/data/format/sinex_bias_100.pdf}{IGS SINEX Bias format}.
+Convert \file{GNSS signal biases}{gnssSignalBias} from GROOPS format to \href{https://files.igs.org/pub/data/format/sinex_bias_100.pdf}{IGS SINEX Bias format}.
 Biases can be provided via \config{transmitterBiases} and/or \config{receiverBiases}.
 Phase biases without attribute (e.g. \verb|L1*|) are automatically expanded so each code
 bias has a corresponding phase bias
@@ -7239,7 +7239,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssSinexBias2SignalBias}\label{GnssSinexBias2SignalBias}
-Converts GNSS signal biases from \href{ftp://igs.org/pub/data/format/sinex_bias_100.pdf}{IGS SINEX Bias format}
+Converts GNSS signal biases from \href{https://files.igs.org/pub/data/format/sinex_bias_100.pdf}{IGS SINEX Bias format}
 to \file{GnssSignalBias format}{gnssSignalBias}.
 
 Only satellite observable-specific signal biases (OSB) are supported at the moment.
@@ -7264,10 +7264,10 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssStationLog2StationInfo}\label{GnssStationLog2StationInfo}
-Converts \href{ftp://igs.org/pub/station/general/blank.log}{IGS station log format} to \configFile{outputfileStationInfo}{gnssStationInfo}.
+Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} to \configFile{outputfileStationInfo}{gnssStationInfo}.
 
 If \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition} is provided, station log data is cross-checked with the given antenna definitions.
-Cross-checking station log data with a \href{http://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file} is also
+Cross-checking station log data with a \href{https://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file} is also
 possible by providing \config{inputfileSinex}. Any failed checks result in warnings in the output log.
 
 
@@ -7286,7 +7286,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssTroposphere2TropoSinex}\label{GnssTroposphere2TropoSinex}
-Convert GNSS troposphere data from GROOPS format to \href{http://twg.igs.org/documents/sinex_tro_v2.00.pdf}{IGS SINEX TRO} format.
+Convert GNSS troposphere data from GROOPS format to \href{https://files.igs.org/pub/data/format/sinex_tro_v2.00.pdf}{IGS SINEX TRO} format.
 
 Specification of the station list is done via \config{inputfileStationList}.
 \config{inputfileTroposphereData} needs the troposphere data provided from \program{GnssProcessing}.
@@ -8500,7 +8500,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{Orbit2Sp3Format}\label{Orbit2Sp3Format}
-Writes orbits to \href{ftp://igs.org/pub/data/format/sp3d.pdf}{SP3 format}.
+Writes orbits to \href{https://files.igs.org/pub/data/format/sp3d.pdf}{SP3 format}.
 
 SP3 orbits are usually given in the terrestrial reference frame (TRF), so providing \configClass{earthRotation}{earthRotationType}
 automatically rotates the orbits from the celestial reference frame (CRF) to the TRF.
@@ -8592,11 +8592,11 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{RinexObservation2GnssReceiver}\label{RinexObservation2GnssReceiver}
-Converts \href{ftp://ftp.igs.org/pub/data/format/rinex304.pdf}{RINEX} or
+Converts \href{https://files.igs.org/pub/data/format/rinex304.pdf}{RINEX} or
 \href{http://terras.gsi.go.jp/ja/crx2rnx.html}{Compact RINEX} files to
 \file{GnssReceiver Instrument file}{instrument}.
 
-In case of \href{ftp://igs.org/pub/data/format/rinex211.txt}{RINEX v2.x} observation files
+In case of \href{https://files.igs.org/pub/data/format/rinex211.txt}{RINEX v2.x} observation files
 containing GLONASS satellites, a mapping from PRN
 to frequency number must be provided via \config{inputfileMatrixPrn2FrequencyNumber}
 in the form of a \file{matrix file}{matrix} with columns: GLONASS PRN, mjdStart, mjdEnd, frequencyNumber.
@@ -8800,7 +8800,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{SinexMetadata2SatelliteModel}\label{SinexMetadata2SatelliteModel}
-Create \configFile{outputfileSatelliteModel}{satelliteModel} from \href{http://mgex.igs.org/IGS_MGEX_Metadata.php}{IGS SINEX metadata format}.
+Create \configFile{outputfileSatelliteModel}{satelliteModel} from \href{https://www.igs.org/mgex/metadata/#metadata}{IGS SINEX metadata format}.
 
 If \configFile{inputfileSatelliteModel}{satelliteModel} is provided it is used as a basis and values are updated from the metadata file.
 
@@ -8822,7 +8822,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{Sp3Format2Orbit}\label{Sp3Format2Orbit}
-Read IGS orbits from \href{ftp://igs.org/pub/data/format/sp3d.pdf}{SP3 format}
+Read IGS orbits from \href{https://files.igs.org/pub/data/format/sp3d.pdf}{SP3 format}
 and write an \file{instrument file (ORBIT)}{instrument}.
 The additional \config{outputfileClock} is an \file{instrument file (MISCVALUE)}{instrument}
 and \config{outputfileCovariance} is an \file{instrument file (COVARIANCE3D)}{instrument}.

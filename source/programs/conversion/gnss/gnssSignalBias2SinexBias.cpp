@@ -12,7 +12,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Convert \file{GNSS signal biases}{gnssSignalBias} from GROOPS format to \href{ftp://igs.org/pub/data/format/sinex_bias_100.pdf}{IGS SINEX Bias format}.
+Convert \file{GNSS signal biases}{gnssSignalBias} from GROOPS format to \href{https://files.igs.org/pub/data/format/sinex_bias_100.pdf}{IGS SINEX Bias format}.
 Biases can be provided via \config{transmitterBiases} and/or \config{receiverBiases}.
 Phase biases without attribute (e.g. \verb|L1*|) are automatically expanded so each code
 bias has a corresponding phase bias

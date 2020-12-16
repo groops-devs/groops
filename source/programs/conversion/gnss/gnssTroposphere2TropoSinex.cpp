@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Convert GNSS troposphere data from GROOPS format to \href{http://twg.igs.org/documents/sinex_tro_v2.00.pdf}{IGS SINEX TRO} format.
+Convert GNSS troposphere data from GROOPS format to \href{https://files.igs.org/pub/data/format/sinex_tro_v2.00.pdf}{IGS SINEX TRO} format.
 
 Specification of the station list is done via \config{inputfileStationList}.
 \config{inputfileTroposphereData} needs the troposphere data provided from \program{GnssProcessing}.

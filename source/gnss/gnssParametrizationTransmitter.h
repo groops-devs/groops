@@ -26,7 +26,7 @@ are usually estimated.
 
 A list of satellite PRNs (i.e for GPS: G01, G02, G03, ...) must be provided via
 \configFile{inputfileTransmitterList}{stringList}. Satellite system codes follow the
-\href{ftp://igs.org/pub/data/format/rinex304.pdf}{RINEX 3 definition}, see \reference{GnssType}{gnssType}.
+\href{https://files.igs.org/pub/data/format/rinex304.pdf}{RINEX 3 definition}, see \reference{GnssType}{gnssType}.
 All input and output files except \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition},
 \configFile{inputfileReceiverDefinition}{gnssReceiverDefinition}, and
 \configFile{outputfileUsedTransmitterList}{stringList} are read/written for each satellite.

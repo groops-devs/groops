@@ -14,7 +14,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Read IGS orbits from \href{ftp://igs.org/pub/data/format/sp3d.pdf}{SP3 format}
+Read IGS orbits from \href{https://files.igs.org/pub/data/format/sp3d.pdf}{SP3 format}
 and write an \file{instrument file (ORBIT)}{instrument}.
 The additional \config{outputfileClock} is an \file{instrument file (MISCVALUE)}{instrument}
 and \config{outputfileCovariance} is an \file{instrument file (COVARIANCE3D)}{instrument}.

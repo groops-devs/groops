@@ -12,7 +12,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Converts GNSS clocks from GROOPS format to \href{ftp://igs.org/pub/data/format/rinex_clock304.txt}{IGS clock RINEX format}.
+Converts GNSS clocks from GROOPS format to \href{https://files.igs.org/pub/data/format/rinex_clock304.txt}{IGS clock RINEX format}.
 Clocks can be provided via \config{satelliteData} and/or \config{stationData}.
 Observed signal types are inferred from \configFile{inputfileSignalBias}{gnssSignalBias}.
 Satellites/stations used as clock references can be provided via \config{referenceClock}.
@@ -230,7 +230,7 @@ void GnssClock2ClockRinex::run(Config &config)
     readConfig(config, "institution",           institution,     Config::MUSTSET,   "TUG (TU Graz)", "name of agency (for first line)");
     readConfig(config, "analysisCenter",        analysisCenter,  Config::MUSTSET,   "TUG  Graz University of Technology (TU Graz), Austria", "name of analysis center");
     readConfig(config, "differentialCodeBias",  dcb,             Config::OPTIONAL,  "GROOPS            OSB co-estimated in LSA (see bias file)", "program and source for applied differential code bias");
-    readConfig(config, "phaseCenterVariations", pcv,             Config::MUSTSET,   "GROOPS            igs14.atx @ ftp.igs.org ", "program and source for applied phase center variations");
+    readConfig(config, "phaseCenterVariations", pcv,             Config::MUSTSET,   "GROOPS            igs14.atx @ files.igs.org ", "program and source for applied phase center variations");
     readConfig(config, "referenceClock",        referenceClocks, Config::MUSTSET,   "", "identifier of reference satellite/station");
     readConfig(config, "referenceFrame",        referenceFrame,  Config::MUSTSET,   "IGS14", "terrestrial reference frame for the stations");
     if(isCreateSchema(config)) return;

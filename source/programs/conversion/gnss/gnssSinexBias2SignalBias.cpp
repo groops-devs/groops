@@ -12,7 +12,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Converts GNSS signal biases from \href{ftp://igs.org/pub/data/format/sinex_bias_100.pdf}{IGS SINEX Bias format}
+Converts GNSS signal biases from \href{https://files.igs.org/pub/data/format/sinex_bias_100.pdf}{IGS SINEX Bias format}
 to \file{GnssSignalBias format}{gnssSignalBias}.
 
 Only satellite observable-specific signal biases (OSB) are supported at the moment.

@@ -24,7 +24,7 @@ A GnssType string consists of six parts (type, frequency, attribute, system, PRN
 represented by seven characters.
 \begin{itemize}
 \item The first three characters (representing type, frequency, and attribute) correspond to the observation codes of the
-      \href{ftp://igs.org/pub/data/format/rinex304.pdf}{RINEX 3 definition}.
+      \href{https://files.igs.org/pub/data/format/rinex304.pdf}{RINEX 3 definition}.
 \item The satellite system character also follows the RINEX 3 definition:
       \begin{itemize}
         \item \verb|G| = GPS
