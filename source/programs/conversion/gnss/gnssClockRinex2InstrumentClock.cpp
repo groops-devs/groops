@@ -152,7 +152,7 @@ void GnssClockRinex2InstrumentClock::readFile(const FileName &fileName, std::vec
 
     // read data
     // ---------
-    UInt v3Offset = (fileVersion >= 3. ? 5 : 0);
+    UInt v3Offset = (fileVersion >= 3.04 ? 5 : 0);
     while(std::getline(file, line))
     {
       std::string lineID = line.substr(0,7+v3Offset);
