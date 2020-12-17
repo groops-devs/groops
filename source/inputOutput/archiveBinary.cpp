@@ -227,14 +227,17 @@ void InArchiveBinary::load(Doodson &x)
 
 void OutArchiveBinary::save(const GnssType &x)
 {
-  save(x.type);
+  UInt64 y = static_cast<UInt64>(x.type);
+  stream.write(reinterpret_cast<const char*>(&y), sizeof(UInt64));
 }
 
 /***********************************************/
 
 void InArchiveBinary::load(GnssType &x)
 {
-  load(x.type);
+  UInt64 y;
+  stream.read(reinterpret_cast<char*>(&y), sizeof(UInt64));
+  x.type = y;
 }
 
 /***********************************************/
