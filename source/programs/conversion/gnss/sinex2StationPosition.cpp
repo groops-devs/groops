@@ -49,7 +49,7 @@ class Sinex2StationPosition
     Vector3d position;
     Vector3d velocity;
 
-    bool operator<(const Interval &other) { return timeStart < other.timeStart; }
+    Bool operator<(const Interval &other) const { return timeStart < other.timeStart; }
   };
 
   class Station
