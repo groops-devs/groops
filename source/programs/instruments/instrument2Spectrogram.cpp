@@ -104,7 +104,7 @@ void Instrument2Spectrogram::run(Config &config)
       {
         std::vector<std::complex<Double>> f = Fourier::fft(signal.column(k));
         for(UInt i=0; i<f.size(); i++)
-          spectrogram(idx+i, 2+k) = std::fabs(f.at(i))*std::sqrt(sampling/f.size());
+          spectrogram(idx+i, 2+k) = std::abs(f.at(i))*std::sqrt(sampling/f.size());
       }
     });
     Parallel::reduceSum(spectrogram);
