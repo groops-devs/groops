@@ -26,9 +26,8 @@ via \configClass{noiseObervation}{noiseGeneratorType} and \configClass{noiseCloc
 interpreted as a factor that is multiplied to the accuracy derived from the accuracy pattern of the respective observation type
 (see \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition} in \configClass{receiver}{gnssParametrizationReceiverType}).
 
-If the program is run on multiple processes in \reference{parallel}{general.parallelization}, \config{parallelIntervals}=\verb|yes| distributes the
-defined \configClass{intervals}{timeSeriesType} over all processes. Otherwise the intervals are processed consecutively while the
-\configClass{receiver}{gnssParametrizationReceiverType}s (stations or LEO satellites) are distributed over the processes.
+If the program is run on multiple processes the \configClass{receiver}{gnssParametrizationReceiverType}s
+(stations or LEO satellites) are distributed over the processes.
 )";
 
 /***********************************************/
@@ -56,43 +55,34 @@ defined \configClass{intervals}{timeSeriesType} over all processes. Otherwise th
 * @ingroup programsGroup */
 class GnssSimulateReceiver
 {
-  FileName                           fileNameReceiver, fileNameClock;
-  std::vector<Time>                  timeSeries, timesInterval;
-  VariableList                       fileNameVariableList;
-  Double                             marginSeconds;
-  Gnss                               gnss;
-  GnssParametrizationIonospherePtr   gnssIonosphere;
-  std::vector<GnssType>              typesObs;
-  NoiseGeneratorPtr                  noiseClock, noiseObs;
-  std::mt19937_64                    generator; // for ambiguities
-  std::uniform_int_distribution<Int> ambiguityRandom;
-
-  void computeInterval(UInt idInterval, Parallel::CommunicatorPtr comm);
   Bool computeObservation(const Gnss::Receiver &receiver, const Gnss::Transmitter &transmitter, GnssParametrizationIonospherePtr ionosphere,
                           UInt idEpoch, const std::vector<GnssType> &types, Double &phaseWindupOld,
                           Vector &obs, Vector &sigma);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssSimulateReceiver, PARALLEL, "GNSS receiver simulation", Gnss, Simulation)
 
 /***********************************************/
 
-void GnssSimulateReceiver::run(Config &config)
+void GnssSimulateReceiver::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
-    TimeSeriesPtr                                  timeSeriesPtr, timesIntervalPtr;
+    FileName                                       fileNameReceiver, fileNameClock;
+    TimeSeriesPtr                                  timeSeriesPtr;
+    Double                                         marginSeconds;
     std::vector<GnssParametrizationTransmitterPtr> gnssTransmitters;
     std::vector<GnssParametrizationReceiverPtr>    gnssReceivers;
+    GnssParametrizationIonospherePtr               gnssIonosphere;
     GnssParametrizationEarthRotationPtr            gnssEarthRotation;
-    Bool                                           parallelIntervals;
+    NoiseGeneratorPtr                              noiseClock, noiseObs;
+    std::vector<GnssType>                          typesObs;
 
     readConfig(config, "outputfileGnssReceiver",  fileNameReceiver,  Config::MUSTSET,  "gnssReceiver_{loopTime:%D}.{station}.dat.gz", "simulated observations");
     readConfig(config, "outputfileClock",         fileNameClock,     Config::OPTIONAL, "clock_{loopTime:%D}.{station}.dat", "simulated receiver clock errors");
-    readConfig(config, "intervals",               timesIntervalPtr,  Config::OPTIONAL, "",    "each interval is processed independently");
     readConfig(config, "timeSeries",              timeSeriesPtr,     Config::MUSTSET,  "",    "defines epochs within intervals");
     readConfig(config, "timeMargin",              marginSeconds,     Config::DEFAULT,  "0.1", "[seconds] margin to consider two times identical");
     readConfig(config, "transmitter",             gnssTransmitters,  Config::MUSTSET,  "",    "constellation of GNSS satellites");
@@ -102,33 +92,25 @@ void GnssSimulateReceiver::run(Config &config)
     readConfig(config, "observationType",         typesObs,          Config::MUSTSET,  "",    "simulated observation types");
     readConfig(config, "noiseObservation",        noiseObs,          Config::DEFAULT,  "",    "[-] noise is multplied with type accuracy pattern of receiver");
     readConfig(config, "noiseClockReceiver",      noiseClock,        Config::DEFAULT,  "",    "[m] noise added to the simulated receiver clock");
-    readConfig(config, "parallelIntervals",       parallelIntervals, Config::DEFAULT,  "1",   "parallelize intervals instead of receivers per interval");
     if(isCreateSchema(config)) return;
 
     // ============================
 
     // init random phase ambiguities
     std::random_device randomDevice;
-    generator.seed(randomDevice()+1234*Parallel::myRank());
-    ambiguityRandom = std::uniform_int_distribution<Int>(-10000, 10000);
+    std::mt19937_64 generator; // for ambiguities
+    generator.seed(randomDevice());
+    auto ambiguityRandom = std::uniform_int_distribution<Int>(-10000, 10000);
 
-    // ============================
-
-    // init time intervals
-    // -------------------
-    timeSeries = timeSeriesPtr->times();
-    if(timesIntervalPtr)
-      timesInterval = timesIntervalPtr->times();
-    if(timesInterval.size()==0)
-    {
-      timesInterval.push_back(timeSeries.at(0));
-      timesInterval.push_back(timeSeries.back()+seconds2time(1));
-    }
-
-    addTimeVariables(fileNameVariableList);
-    addVariable("station", fileNameVariableList);
 
     std::sort(typesObs.begin(), typesObs.end());
+
+    std::vector<Time> times = timeSeriesPtr->times();
+    if(!times.size())
+    {
+      logWarning<<"empty interval"<<Log::endl;
+      return;
+    }
 
     // ============================
 
@@ -155,64 +137,20 @@ void GnssSimulateReceiver::run(Config &config)
     }
 
     logInfo<<"Init GNSS"<<Log::endl;
+    Gnss gnss;
     gnss.init(receivers, transmitters, parametrizations, gnssIonosphere, gnssEarthRotation, GnssParametrizationGravityFieldPtr(), GnssParametrizationAmbiguitiesPtr());
+    gnss.initInterval(Gnss::ANALYSIS_RAW, times, seconds2time(marginSeconds), comm);
 
     logInfo<<"  transmitter: "<<transmitters.size()<<Log::endl;
     logInfo<<"  receiver:    "<<receivers.size()<<Log::endl;
 
     // ============================
 
-    logStatus<<"compute intervals"<<Log::endl;
-    if(parallelIntervals)
-    {
-      Parallel::forEach(timesInterval.size()-1, [this](UInt idInterval) {computeInterval(idInterval, Parallel::selfCommunicator());});
-    }
-    else
-    {
-      for(UInt idInterval=0; idInterval<timesInterval.size()-1; idInterval++)
-        computeInterval(idInterval, nullptr); // use all processes for each interval
-    }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-void GnssSimulateReceiver::computeInterval(UInt idInterval, Parallel::CommunicatorPtr comm)
-{
-  try
-  {
-    logStatus<<"================================================================"<<Log::endl;
-    logStatus<<idInterval+1<<". "<<timesInterval.at(idInterval).dateTimeStr()<<" - "<<timesInterval.at(idInterval+1).dateTimeStr()<<Log::endl;
-    evaluateTimeVariables(idInterval, timesInterval.at(idInterval), timesInterval.at(idInterval+1), fileNameVariableList);
-
-    // init time series
-    // ----------------
-    std::vector<Time> times;
-    for(UInt i=0; i<timeSeries.size(); i++)
-      if(timeSeries.at(i).isInInterval(timesInterval.at(idInterval), timesInterval.at(idInterval+1)))
-        times.push_back(timeSeries.at(i));
-
-    if(!times.size())
-    {
-      logWarning<<"empty interval"<<Log::endl;
-      return;
-    }
-
-    // init the GNSS system
-    // --------------------
-    Gnss::AnalysisType analysisType = Gnss::ANALYSIS_RAW;
-    gnss.initInterval(analysisType, times, seconds2time(marginSeconds), comm);
-
-
-    // ==========================================
-
     // compute station wise solutions
     // ------------------------------
     logStatus<<"simulate observations"<<Log::endl;
+    VariableList fileNameVariableList;
+    addVariable("station", fileNameVariableList);
     for(UInt idRecv=0; idRecv<gnss.receiver.size(); idRecv++)
       if(gnss.receiver.at(idRecv)->useable())
       {

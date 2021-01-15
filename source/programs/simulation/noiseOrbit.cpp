@@ -31,14 +31,14 @@ See \configClass{noiseGenerator}{noiseGeneratorType} for details on noise option
 class NoiseOrbit
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NoiseOrbit, PARALLEL, "add noise to orbit postions and velocities", Simulation, Noise, Instrument)
 
 /***********************************************/
 
-void NoiseOrbit::run(Config &config)
+void NoiseOrbit::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -85,11 +85,11 @@ void NoiseOrbit::run(Config &config)
         orbit.at(i).velocity += rot.rotate(Vector3d(epsVel(i,0), epsVel(i,1), epsVel(i,2)));
       }
       return orbit;
-    });
+    }, comm);
 
     // Save
     // ----
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write orbit data to file <"<<outName<<">"<<Log::endl;
       InstrumentFile::write(outName, arcList);

@@ -430,7 +430,7 @@ void Documentation::writeLatex(const FileName &directoryName)
         }
 
         Config config;
-        programList.at(i)->run(config);
+        programList.at(i)->run(config, Parallel::selfCommunicator());
         docu.file<<"\\subsection{"<<programList.at(i)->name()<<"}\\label{"<<programList.at(i)->name()<<"}";
         docu.writeText(programList.at(i)->documentation());
         docu.writeConfigTable(config);
@@ -902,7 +902,7 @@ void Documentation::writeHtml(const FileName &directoryName)
       doc.ss<<R"(<h1>)"<<name<<R"(</h1><p>)"<<std::endl;
       doc.writeText(programList.at(i)->documentation());
       Config config;
-      programList.at(i)->run(config);
+      programList.at(i)->run(config, Parallel::selfCommunicator());
       doc.writeConfigTable(config);
       if(!programList.at(i)->isSingleProcess())
         doc.ss<<R"(This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.)"<<std::endl;

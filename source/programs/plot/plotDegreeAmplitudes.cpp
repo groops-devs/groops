@@ -39,14 +39,14 @@ This is a convenience program with meaningful default values. The same plots can
 class PlotDegreeAmplitudes
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(PlotDegreeAmplitudes, SINGLEPROCESS, "Plot Degree Amplitudes", Plot, Gravityfield, PotentialCoefficients)
 
 /***********************************************/
 
-void PlotDegreeAmplitudes::run(Config &config)
+void PlotDegreeAmplitudes::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

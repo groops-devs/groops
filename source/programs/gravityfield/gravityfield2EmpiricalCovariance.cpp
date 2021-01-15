@@ -58,14 +58,14 @@ The result is computed:
 class Gravityfield2EmpiricalCovariance
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2EmpiricalCovariance, SINGLEPROCESS, "Estimate a empircal covariance function from time series", Gravityfield, Covariance)
 
 /***********************************************/
 
-void Gravityfield2EmpiricalCovariance::run(Config &config)
+void Gravityfield2EmpiricalCovariance::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -121,11 +121,8 @@ void Gravityfield2EmpiricalCovariance::run(Config &config)
 
     logStatus<<"estimate covariance covariance function in each interval"<<Log::endl;
     UInt countTotal = 0;
-    logTimerStart;
-    for(UInt idInterval=0; idInterval<timesInterval.size()-1; idInterval++)
+    Single::forEach(timesInterval.size()-1, [&](UInt idInterval)
     {
-      logTimerLoop(idInterval, timesInterval.size()-1);
-
       // init time series
       // ----------------
       std::vector<Time> times;
@@ -185,8 +182,7 @@ void Gravityfield2EmpiricalCovariance::run(Config &config)
       countTotal += count;
       if(removeMean)
         countTotal -= 1;
-    } // for(idInterval)
-    logTimerLoopEnd(timesInterval.size()-1);
+    });
 
     // ============================
 

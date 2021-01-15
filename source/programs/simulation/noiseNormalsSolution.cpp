@@ -43,7 +43,7 @@ $\M W$ is the cholesky upper triangle matrix of the normal matrix $\M N=\M W^T\M
 class NoiseNormalsSolution
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NoiseNormalsSolution, PARALLEL, "Create a correlated error vector from a system of normal equations.", Simulation, Noise, NormalEquation)
@@ -51,7 +51,7 @@ GROOPS_RENAMED_PROGRAM(NormalsSimulateNoise, NoiseNormalsSolution, date2time(202
 
 /***********************************************/
 
-void NoiseNormalsSolution::run(Config &config)
+void NoiseNormalsSolution::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -71,7 +71,7 @@ void NoiseNormalsSolution::run(Config &config)
 
     if(useEVD)
     {
-      if(!Parallel::isMaster())
+      if(!Parallel::isMaster(comm))
         return;
 
       Matrix N;
@@ -104,7 +104,7 @@ void NoiseNormalsSolution::run(Config &config)
     MatrixDistributed normal;
     Matrix n;
     NormalEquationInfo info;
-    readFileNormalEquation(normalsName, info, normal, n);
+    readFileNormalEquation(normalsName, info, normal, n, comm);
     logInfo<<"  number of parameters: "<<normal.parameterCount()<<Log::endl;
 
     Matrix rhs = noise->noise(n.rows(), sampleCount);
@@ -117,7 +117,7 @@ void NoiseNormalsSolution::run(Config &config)
 
     // save to file
     // ------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write noise vectors to file <"<<outName<<">"<<Log::endl;
       writeFileMatrix(outName, rhs);

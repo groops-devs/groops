@@ -33,14 +33,14 @@ private:
                                const std::vector<std::string> &globalAttributes) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceAccelerometer2L1bAscii, SINGLEPROCESS, "Convert GROOPS accelerometer files to the GRACE SDS L1B ASCII format.", Conversion)
 
 /***********************************************/
 
-void GraceAccelerometer2L1bAscii::run(Config &config)
+void GraceAccelerometer2L1bAscii::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

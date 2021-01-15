@@ -33,7 +33,7 @@ The data of \configFile{inputfileInstrument}{instrument} are appended as values 
 class Orbit2ArgumentOfLatitude
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Orbit2ArgumentOfLatitude, PARALLEL, "Argument of latitude.", Orbit, Instrument)
@@ -41,7 +41,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentOrbit2ArgumentOfLatitude, Orbit2ArgumentOfLatit
 
 /***********************************************/
 
-void Orbit2ArgumentOfLatitude::run(Config &config)
+void Orbit2ArgumentOfLatitude::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -92,11 +92,11 @@ void Orbit2ArgumentOfLatitude::run(Config &config)
       }
 
       return Arc(orbit.times(), A);
-    });
+    }, comm);
 
     // write results
     // -------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write argument of latitude to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

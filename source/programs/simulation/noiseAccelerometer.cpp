@@ -30,14 +30,14 @@ See \configClass{noiseGenerator}{noiseGeneratorType} for details on noise genera
 class NoiseAccelerometer
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NoiseAccelerometer, PARALLEL, "add noise and bias to accelerometer data", Simulation, Noise, Instrument)
 
 /***********************************************/
 
-void NoiseAccelerometer::run(Config &config)
+void NoiseAccelerometer::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -68,9 +68,9 @@ void NoiseAccelerometer::run(Config &config)
       for(UInt i=0; i<acc.size(); i++)
         acc.at(i).acceleration += bias + Vector3d(eX(i), eY(i), eZ(i));
       return acc;
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write accelerometer data to file <"<<accelerometerOutName<<">"<<Log::endl;
       InstrumentFile::write(accelerometerOutName, arcList);

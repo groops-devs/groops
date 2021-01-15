@@ -52,14 +52,14 @@ class GnssRinexNavigation2OrbitClock
   Bool testLabel(const std::string &labelInLine, const std::string &label, Bool optional=TRUE) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssRinexNavigation2OrbitClock, SINGLEPROCESS, "Convert RINEX navigation file (e.g. broadcast ephemeris) to orbit and clock files.", Conversion, Gnss, Instrument)
 
 /***********************************************/
 
-void GnssRinexNavigation2OrbitClock::run(Config &config)
+void GnssRinexNavigation2OrbitClock::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

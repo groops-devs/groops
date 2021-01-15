@@ -45,14 +45,14 @@ See also \program{GriddedData2TimeSeries}.
 class TimeSeries2GriddedData
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(TimeSeries2GriddedData, SINGLEPROCESS, "Write time series as gridded data for each epoch", Grid, TimeSeries)
 
 /***********************************************/
 
-void TimeSeries2GriddedData::run(Config &config)
+void TimeSeries2GriddedData::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

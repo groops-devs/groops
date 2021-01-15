@@ -52,7 +52,7 @@ To get acess to all values the coresponding type must be repeated in \configClas
 class GnssResiduals2Skyplot
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssResiduals2Skyplot, SINGLEPROCESS, "Convert residuals into griddedData format for plotting", Gnss, Grid)
@@ -60,7 +60,7 @@ GROOPS_RENAMED_PROGRAM(GnssResiduals2GriddedData, GnssResiduals2Skyplot, date2ti
 
 /***********************************************/
 
-void GnssResiduals2Skyplot::run(Config &config)
+void GnssResiduals2Skyplot::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -34,7 +34,7 @@ If \config{applyXi} the Doodson-Warburg phase correction (see IERS conventions) 
 class PotentialCoefficients2DoodsonHarmonics
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 
   class Constituent
   {
@@ -61,7 +61,7 @@ template<> Bool readConfig(Config &config, const std::string &name, PotentialCoe
 
 /***********************************************/
 
-void PotentialCoefficients2DoodsonHarmonics::run(Config &config)
+void PotentialCoefficients2DoodsonHarmonics::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

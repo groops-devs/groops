@@ -43,14 +43,14 @@ See also \program{KalmanBuildNormals}, \program{KalmanFilter} and\program{Kalman
 class KalmanSmootherLeastSquares
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(KalmanSmootherLeastSquares, PARALLEL, "Smoothed time variable gravity field by least squares adjustment", KalmanFilter, NormalEquation)
 
 /***********************************************/
 
-void KalmanSmootherLeastSquares::run(Config &config)
+void KalmanSmootherLeastSquares::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -91,16 +91,14 @@ void KalmanSmootherLeastSquares::run(Config &config)
       blockIndex.push_back(blockIndex.back() + stateCount);
 
     MatrixDistributed normals;
-    normals.initEmpty(blockIndex);
+    normals.initEmpty(blockIndex, comm);
     Vector rhs(blockIndex.back());
 
     // each process reads the normals it requires for filling the main diagonal
     Double lPlSum = 0.0;
     UInt obsCountSum = 0;
-    logTimerStart;
-    for(UInt k = 0; k<epochCount; k++)
+    Single::forEach(epochCount, [&](UInt k)
     {
-      logTimerLoop(k, epochCount);
       normals.setBlock(k, k);
       if(normals.isMyRank(k, k))
       {
@@ -113,40 +111,35 @@ void KalmanSmootherLeastSquares::run(Config &config)
         catch(std::exception &/*e*/)
         {
           logWarning<<"Unable to read normal equation from <"<<fileNameNormals.at(k)<<">"<<Log::endl;
-          continue;
+          return;
         }
         lPlSum += info.lPl(0);
         obsCountSum += info.observationCount;
         copy(satelliteNormals, normals.N(k, k));
         copy(satelliteRightHandSide, rhs.row(k*stateCount, stateCount));
       }
-    }
-    logTimerLoopEnd(epochCount);
+    });
 
-    Parallel::reduceSum(lPlSum);
-    Parallel::reduceSum(obsCountSum);
-    Parallel::reduceSum(rhs);
-    Parallel::broadCast(rhs);
+    Parallel::reduceSum(lPlSum, 0, comm);
+    Parallel::reduceSum(obsCountSum, 0, comm);
+    Parallel::reduceSum(rhs, 0, comm);
+    Parallel::broadCast(rhs, 0, comm);
 
     // add process normals
     // -------------------
     logStatus<<"add normals of pseudo-observations"<<Log::endl;
     auto index = arSequence->distributedNormalsBlockIndex(epochCount);
-
-    logTimerStart;
-    for(UInt k=0; k<index.size(); k++)
+    Single::forEach(index.size(), [&](UInt k)
     {
-      logTimerLoop(k, index.size());
       normals.setBlock(index[k].first, index[k].second);
       if(normals.isMyRank(index[k].first, index[k].second))
         arSequence->distributedNormalsBlock(normals.blockCount(), index[k].first, index[k].second, normals.N(index[k].first, index[k].second));
-    }
-    logTimerLoopEnd(index.size());
+    });
 
     logStatus<<"solve normal equation system"<<Log::endl;
-    Parallel::barrier();
+    Parallel::barrier(comm);
     Matrix x = normals.solve(rhs, TRUE/*timing*/); // normals now holds Cholesky R
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
       logInfo<<"  a posteriori sigma = "<<sqrt((lPlSum-inner(x,rhs))/obsCountSum)<<Log::endl;
 
     if(!fileNameSigmax.empty() || !fileNameCovariance.empty())
@@ -154,19 +147,19 @@ void KalmanSmootherLeastSquares::run(Config &config)
       logStatus<<"compute sparse inverse of normal equations"<<Log::endl;
       normals.cholesky2SparseInverse();
     }
-    Parallel::barrier();
+    Parallel::barrier(comm);
 
     // write results to disk
     // ---------------------
     for(UInt k=0; k<epochCount; k++)
     {
-      if(Parallel::isMaster())
+      if(Parallel::isMaster(comm))
       {
         logStatus<<"write solution vector to <"<< fileNameSolution.at(k) <<">."<<Log::endl;
         writeFileMatrix(fileNameSolution.at(k), x.row(k*stateCount, stateCount));
       }
 
-      if( (fileNameSigmax.size()>0) && normals.isMyRank(k, k) )
+      if((fileNameSigmax.size()>0) && normals.isMyRank(k, k))
       {
         Vector sigmax(normals.N(k,k).rows());
         for(UInt l = 0; l<sigmax.rows(); l++)
@@ -174,7 +167,7 @@ void KalmanSmootherLeastSquares::run(Config &config)
         writeFileMatrix(fileNameSigmax.at(k), sigmax);
       }
 
-      if( (fileNameCovariance.size()>0) && normals.isMyRank(k, k) )
+      if((fileNameCovariance.size()>0) && normals.isMyRank(k, k))
         writeFileMatrix(fileNameCovariance.at(k), normals.N(k, k));
     }
   }

@@ -211,7 +211,7 @@ public:
     Double       maxManeuverTime;
   };
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssAttitudeInfoCreate, SINGLEPROCESS, "Creates attitude info file used by SimulateStarCameraGnss.", Gnss, Instrument)
@@ -277,7 +277,7 @@ static Bool readConfig(Config &config, const std::string &name, GnssAttitudeInfo
 
 /***********************************************/
 
-void GnssAttitudeInfoCreate::run(Config &config)
+void GnssAttitudeInfoCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

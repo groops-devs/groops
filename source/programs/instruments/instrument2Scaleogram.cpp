@@ -41,7 +41,7 @@ See \configClass{digitalFilter}{digitalFilterType} for details.
 class Instrument2Scaleogram
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Instrument2Scaleogram, SINGLEPROCESS, "Compute scalogram and detail levels of an instrument file.", Instrument, Statistics)
@@ -49,7 +49,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentComputeScaleogram, Instrument2Scaleogram, date2
 
 /***********************************************/
 
-void Instrument2Scaleogram::run(Config& config)
+void Instrument2Scaleogram::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

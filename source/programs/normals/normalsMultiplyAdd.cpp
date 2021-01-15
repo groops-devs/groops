@@ -47,14 +47,14 @@ As the normal matrix itself is not modified, rewriting of the matrix can be disa
 class NormalsMultiplyAdd
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NormalsMultiplyAdd, PARALLEL, "n += alpha*N*x", NormalEquation)
 
 /***********************************************/
 
-void NormalsMultiplyAdd::run(Config &config)
+void NormalsMultiplyAdd::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -78,12 +78,12 @@ void NormalsMultiplyAdd::run(Config &config)
     MatrixDistributed normal;
     Matrix n;
     NormalEquationInfo info;
-    readFileNormalEquation(normalsName, info, normal, n);
+    readFileNormalEquation(normalsName, info, normal, n, comm);
     logInfo<<"  number of parameters:       "<<normal.parameterCount()<<Log::endl;
     logInfo<<"  number of right hand sides: "<<info.lPl.rows()<<Log::endl;
 
     Matrix x;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       readFileMatrix(xName, x);
       if((x.rows() != n.rows()) || (x.columns() != n.columns()))
@@ -97,7 +97,7 @@ void NormalsMultiplyAdd::run(Config &config)
     // ==================================
 
     logStatus<<"multiply normal matrix"<<Log::endl;
-    Parallel::broadCast(x);
+    Parallel::broadCast(x, 0, comm);
     x *= factor;
     Matrix Nx(x.rows(), x.columns());
     for(UInt i=0; i<normal.blockCount(); i++)
@@ -111,9 +111,9 @@ void NormalsMultiplyAdd::run(Config &config)
           matMult(1., normal.N(i,k).trans(), x.row(normal.blockIndex(i), normal.blockSize(i)), Nx.row(normal.blockIndex(k), normal.blockSize(k)));
         }
     }
-    Parallel::reduceSum(Nx);
+    Parallel::reduceSum(Nx, 0, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       for(UInt i=0; i<info.lPl.rows(); i++)
         info.lPl(i) += 2.*inner(x.column(i), n.column(i)) + inner(x.column(i), Nx.column(i));
@@ -125,10 +125,10 @@ void NormalsMultiplyAdd::run(Config &config)
     // write normal equations
     // ----------------------
     logStatus<<"write normal equations to <"<<outName<<">"<<Log::endl;
-    if( (normalsName==outName) || !writeMatrix )
+    if((normalsName==outName) || !writeMatrix)
     {
       logStatus<<"(only the information file and the right hand sides)"<<Log::endl;
-      if(Parallel::isMaster())
+      if(Parallel::isMaster(comm))
         writeFileNormalEquation(outName, info, n);
     }
     else

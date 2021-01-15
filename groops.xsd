@@ -10550,19 +10550,9 @@
 								<xs:documentation>parameter names</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="intervals" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>each interval is processed independently</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="parallelIntervals" type="boolean" minOccurs="0" default="1">
-							<xs:annotation>
-								<xs:documentation>parallelize intervals instead of receivers per interval</xs:documentation>
-							</xs:annotation>
-						</xs:element>
 						<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>defines epochs within intervals</xs:documentation>
+								<xs:documentation>defines observation epochs</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="timeMargin" type="double" minOccurs="0" default="0.1">
@@ -10764,11 +10754,6 @@
 								<xs:documentation>simulated receiver clock errors</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="intervals" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>each interval is processed independently</xs:documentation>
-							</xs:annotation>
-						</xs:element>
 						<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>defines epochs within intervals</xs:documentation>
@@ -10812,11 +10797,6 @@
 						<xs:element name="noiseClockReceiver" type="noiseGeneratorType" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>[m] noise added to the simulated receiver clock</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="parallelIntervals" type="boolean" minOccurs="0" default="1">
-							<xs:annotation>
-								<xs:documentation>parallelize intervals instead of receivers per interval</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -18540,13 +18520,24 @@
 			</xs:element>
 			<xs:element name="GroupPrograms">
 				<xs:annotation>
-					<xs:documentation>Runs programs in group.</xs:documentation>
+					<xs:documentation>Runs programs in group and can catch errors.</xs:documentation>
 					<xs:appinfo>rename: programme = program</xs:appinfo>
 					<xs:appinfo>tag: System</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="program" type="programType" minOccurs="0" maxOccurs="unbounded"/>
+						<xs:element name="catchErrors" minOccurs="0">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="errorProgram" type="programType" minOccurs="0" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>executed if an error occured</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -18559,7 +18550,16 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="condition" type="conditionType"/>
-						<xs:element name="program" type="programType" minOccurs="0" maxOccurs="unbounded"/>
+						<xs:element name="program" type="programType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>executed if condition evaluates to true</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="elseProgram" type="programType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>executed if condition evaluates to false</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -18567,23 +18567,30 @@
 				<xs:annotation>
 					<xs:documentation>Runs programs mutiple times.</xs:documentation>
 					<xs:appinfo>rename: programme = program</xs:appinfo>
+					<xs:appinfo>rename: parallelLoops = processCountPerLoopStep</xs:appinfo>
+					<xs:appinfo>rename: processCountPerLoopStep = processCountPerIteration</xs:appinfo>
 					<xs:appinfo>tag: System</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="loop" type="loopType">
 							<xs:annotation>
-								<xs:documentation>subprograms are called for every loop</xs:documentation>
+								<xs:documentation>subprograms are called for every iteration</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="continueAfterError" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
-								<xs:documentation>continue with next loop after error, otherwise throw exception</xs:documentation>
+								<xs:documentation>continue with next iteration after error, otherwise throw exception</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="parallelLoops" type="boolean" minOccurs="0" default="0">
+						<xs:element name="processCountPerIteration" type="uint" minOccurs="0" default="0">
 							<xs:annotation>
-								<xs:documentation>parallelize loops instead of programs</xs:documentation>
+								<xs:documentation>0: use all processes for each iteration</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="parallelLog" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>write to screen/log file from all processing nodes in parallelized loops</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="program" type="programType" minOccurs="0" maxOccurs="unbounded"/>

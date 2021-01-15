@@ -49,14 +49,14 @@ class GriddedTopography2PotentialCoefficients
   void computeCoefficientsRow(UInt row);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GriddedTopography2PotentialCoefficients, PARALLEL, "Estimate potential coefficients from digital terrain models", Grid, PotentialCoefficients)
 
 /***********************************************/
 
-void GriddedTopography2PotentialCoefficients::run(Config &config)
+void GriddedTopography2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -77,7 +77,7 @@ void GriddedTopography2PotentialCoefficients::run(Config &config)
     readConfig(config, "R",                        R,               Config::DEFAULT,  STRING_DEFAULT_R,  "reference radius");
     if(isCreateSchema(config)) return;
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       // read rectangular grid
       // ---------------------
@@ -115,15 +115,15 @@ void GriddedTopography2PotentialCoefficients::run(Config &config)
           rLower(z,s) = radius.at(z) + expressionLower->evaluate(varList);
           rho(z,s)    = expressionRho->evaluate(varList);
         }
-    } // if(Parallel::isMaster())
+    } // if(Parallel::isMaster(comm))
 
-    Parallel::broadCast(rUpper);
-    Parallel::broadCast(rLower);
-    Parallel::broadCast(rho);
-    Parallel::broadCast(lambda);
-    Parallel::broadCast(phi);
-    Parallel::broadCast(dLambda);
-    Parallel::broadCast(dPhi);
+    Parallel::broadCast(rUpper,  0, comm);
+    Parallel::broadCast(rLower,  0, comm);
+    Parallel::broadCast(rho,     0, comm);
+    Parallel::broadCast(lambda,  0, comm);
+    Parallel::broadCast(phi,     0, comm);
+    Parallel::broadCast(dLambda, 0, comm);
+    Parallel::broadCast(dPhi,    0, comm);
     rows = phi.size();
     cols = lambda.size();
 
@@ -148,15 +148,15 @@ void GriddedTopography2PotentialCoefficients::run(Config &config)
     if(isExterior) snmExt = Matrix(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
     if(isInterior) cnmInt = Matrix(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
     if(isInterior) snmInt = Matrix(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
-    Parallel::forEach(phi.size(), [this](UInt i){computeCoefficientsRow(i);});
-    if(isExterior) Parallel::reduceSum(cnmExt);
-    if(isExterior) Parallel::reduceSum(snmExt);
-    if(isInterior) Parallel::reduceSum(cnmInt);
-    if(isInterior) Parallel::reduceSum(snmInt);
+    Parallel::forEach(phi.size(), [this](UInt i){computeCoefficientsRow(i);}, comm);
+    if(isExterior) Parallel::reduceSum(cnmExt, 0, comm);
+    if(isExterior) Parallel::reduceSum(snmExt, 0, comm);
+    if(isInterior) Parallel::reduceSum(cnmInt, 0, comm);
+    if(isInterior) Parallel::reduceSum(snmInt, 0, comm);
 
     // save potential coefficients
     // ---------------------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       if(!fileNameOutExterior.empty())
       {

@@ -33,14 +33,14 @@ Simulates \file{star camera data}{instrument} of the two GRACE satellites.
 class SimulateStarCameraGrace
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SimulateStarCameraGrace, SINGLEPROCESS, "Simulates the orientation of the two GRACE satellites.", Simulation, Instrument)
 
 /***********************************************/
 
-void SimulateStarCameraGrace::run(Config &config)
+void SimulateStarCameraGrace::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

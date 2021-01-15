@@ -44,14 +44,14 @@ precompute Earth rotation with a low temporal resolution (e.g. 10 min) and reuse
 class EarthOrientationParameterTimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(EarthOrientationParameterTimeSeries, PARALLEL, "Time series of EOP", Misc, TimeSeries)
 
 /***********************************************/
 
-void EarthOrientationParameterTimeSeries::run(Config &config)
+void EarthOrientationParameterTimeSeries::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -67,10 +67,10 @@ void EarthOrientationParameterTimeSeries::run(Config &config)
     logStatus<<"Computing Earth rotation"<<Log::endl;
     std::vector<Time> times = timeSeries->times();
     Matrix A(times.size(), 9);
-    Parallel::forEach(times.size(), [&](UInt i) {earthRotation->earthOrientationParameter(times.at(i), A(i,1), A(i,2), A(i,3), A(i,4), A(i,5), A(i,6), A(i,7), A(i,8));});
-    Parallel::reduceSum(A);
+    Parallel::forEach(times.size(), [&](UInt i) {earthRotation->earthOrientationParameter(times.at(i), A(i,1), A(i,2), A(i,3), A(i,4), A(i,5), A(i,6), A(i,7), A(i,8));}, comm);
+    Parallel::reduceSum(A, 0, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"writing EOP to file <"<<fileNameEOP<<">"<<Log::endl;
       InstrumentFile::write(fileNameEOP, Arc(times, A));

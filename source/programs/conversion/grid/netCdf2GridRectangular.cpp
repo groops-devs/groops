@@ -32,14 +32,14 @@ See also \program{NetCdfInfo}, \program{GridRectangular2NetCdf}.
 class NetCdf2GridRectangular
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NetCdf2GridRectangular, SINGLEPROCESS, "Convert COARDS compliant grids to GROOPS rectangular grid", Conversion, Grid)
 
 /***********************************************/
 
-void NetCdf2GridRectangular::run(Config &config)
+void NetCdf2GridRectangular::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -98,10 +98,8 @@ void NetCdf2GridRectangular::run(Config &config)
 
     // data variables
     // --------------
-    logTimerStart;
-    for(UInt idEpoch=0; idEpoch<epochs.size(); idEpoch++)
+    Single::forEach(epochs.size(), [&](UInt idEpoch)
     {
-      logTimerLoop(idEpoch, epochs.size());
       fileNameVariableList[loopVar]->setValue(epochs.at(idEpoch).mjd());
 
       grid.values.clear();
@@ -136,8 +134,7 @@ void NetCdf2GridRectangular::run(Config &config)
       }
 
       writeFileGriddedData(outName(fileNameVariableList), grid);
-    }
-    logTimerLoopEnd(epochs.size());
+    });
 #endif
   }
   catch(std::exception &e)

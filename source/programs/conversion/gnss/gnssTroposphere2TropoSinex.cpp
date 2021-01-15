@@ -52,14 +52,14 @@ class GnssTroposphere2TropoSinex
   std::string SiteEccentricity(const std::vector<GnssStationInfo> &stationInfos, const Time &timeRef);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssTroposphere2TropoSinex, SINGLEPROCESS, "Convert GNSS troposphere data from GROOPS format to SINEX_TRO format.", Conversion, Gnss)
 
 /***********************************************/
 
-void GnssTroposphere2TropoSinex::run(Config &config)
+void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

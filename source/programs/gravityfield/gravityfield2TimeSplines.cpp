@@ -44,14 +44,14 @@ use the fast \program{PotentialCoefficients2BlockMeanTimeSplines} instead.
 class Gravityfield2TimeSplines
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2TimeSplines, SINGLEPROCESS, "Estimate splines in time domain from a time variable gravity field", Gravityfield, TimeSplines)
 
 /***********************************************/
 
-void Gravityfield2TimeSplines::run(Config &config)
+void Gravityfield2TimeSplines::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -89,14 +89,10 @@ void Gravityfield2TimeSplines::run(Config &config)
     SphericalHarmonics shc = gravityfield->sphericalHarmonics(timesObs.front(), maxDegree, minDegree, GM, R);
     maxDegree = shc.maxDegree();
     Matrix sample(timesObs.size(), (maxDegree+1)*(maxDegree+1));
-
-    logTimerStart;
-    for(UInt i=0; i<timesObs.size(); i++)
+    Single::forEach(timesObs.size(), [&](UInt i)
     {
-      logTimerLoop(i,timesObs.size());
       copy(gravityfield->sphericalHarmonics(timesObs.at(i), maxDegree, minDegree, GM, R).x().trans(), sample.row(i));
-    }
-    logTimerLoopEnd(timesObs.size());
+    });
 
     // remove temporal mean
     if(removeMean)

@@ -68,7 +68,7 @@ inline NoiseGeneratorWhite::NoiseGeneratorWhite(Config &config)
     else
     {
       std::random_device randomDevice;
-      generator.seed(randomDevice()+1234*Parallel::myRank());
+      generator.seed(randomDevice());
     }
   }
   catch(std::exception &e)

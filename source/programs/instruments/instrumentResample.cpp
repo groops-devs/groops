@@ -121,7 +121,7 @@ public:
   };
 
   static Vector predictByPolynomialFit(const std::vector<Time> &timesOld, const_MatrixSliceRef dataOld, const Time &resamplingTime, UInt polynomialDegree);
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentResample, SINGLEPROCESS, "Resample data to given time series using polynomial prediction or least squares polynomial fit.", Instrument)
@@ -136,7 +136,7 @@ template<> Bool readConfig(Config &config, const std::string &name, InstrumentRe
 
 /***********************************************/
 
-void InstrumentResample::run(Config &config)
+void InstrumentResample::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -231,12 +231,8 @@ Arc InstrumentResample::ResamplerPolynomial::resample(Arc &arcOld, const std::ve
     const Time extrapolationDistance = seconds2time(maxExtrapolationDistance);
 
     auto searchStart = timesOld.begin();
-
-    logTimerStart;
-    for(UInt i=0; i<resamplingTimes.size(); i++)
+    Single::forEach(resamplingTimes.size(), [&](UInt i)
     {
-      logTimerLoop(i, resamplingTimes.size());
-
       const Time resamplingTime = resamplingTimes.at(i);
 
       // data point search space for potential polynomials
@@ -278,7 +274,7 @@ Arc InstrumentResample::ResamplerPolynomial::resample(Arc &arcOld, const std::ve
       }
 
       if(optimalStart == searchEnd)
-        continue; // no valid polynomial found
+        return; // no valid polynomial found
 
       // polynomial prediction
       Vector data = predictByPolynomialFit(std::vector<Time>(optimalStart, optimalStart+polynomialDegree+1),
@@ -293,8 +289,7 @@ Arc InstrumentResample::ResamplerPolynomial::resample(Arc &arcOld, const std::ve
       epoch->setData(data);
       arcNew.push_back(*epoch);
       delete epoch;
-    }
-    logTimerLoopEnd(resamplingTimes.size());
+    });
 
     return arcNew;
   }
@@ -320,12 +315,8 @@ Arc InstrumentResample::ResamplerLeastSquares::resample(Arc &arcOld, const std::
     const Time extrapolationDistance = seconds2time(maxExtrapolationDistance);
 
     auto searchStart = timesOld.begin();
-
-    logTimerStart;
-    for(UInt i=0; i<resamplingTimes.size(); i++)
+    Single::forEach(resamplingTimes.size(), [&](UInt i)
     {
-      logTimerLoop(i, resamplingTimes.size());
-
       const Time resamplingTime = resamplingTimes.at(i);
 
       searchStart    = std::lower_bound(searchStart, timesOld.end(), resamplingTime-dataPointDistance); // first epoch greater or equal than search interval
@@ -336,12 +327,12 @@ Arc InstrumentResample::ResamplerLeastSquares::resample(Arc &arcOld, const std::
 
       UInt count = deltaTime.size();
       if(count < (this->polynomialDegree+1)) // not enough points
-        continue;
+        return;
 
       // check if we are extrapolating and if so if we are allowed to
       if( (deltaTime.back() < Time(0, 0) && (deltaTime.back()+extrapolationDistance) < Time(0, 0) ) || // all points are before resamplingTime and we are too far away or
           (Time(0, 0) < deltaTime.front() && (extrapolationDistance-deltaTime.front()) < Time(0, 0)) )         // all points are after resamplingTime and we are too far away
-            continue;
+            return;
 
       // polynomial adjustment
       Vector data = predictByPolynomialFit(std::vector<Time>(searchStart, searchEnd),
@@ -354,8 +345,7 @@ Arc InstrumentResample::ResamplerLeastSquares::resample(Arc &arcOld, const std::
       epoch->setData(data);
       arcNew.push_back(*epoch);
       delete epoch;
-    }
-    logTimerLoopEnd(resamplingTimes.size());
+    });
 
     return arcNew;
   }

@@ -65,12 +65,8 @@ public:
   /// Constructor.
   GnssParametrizationIonosphere(Config &config, const std::string &name);
 
-  /// Destructor.
-  virtual ~GnssParametrizationIonosphere() {}
-
   // Realization of Gnss::Parametrization
   // ------------------------------------
-  void   initIntervalEarly(Gnss::AnalysisType analysisType, const std::vector<Time> &times, const Time &timeMargin, Parallel::CommunicatorPtr comm) override;
   void   initParameter(Gnss::NormalEquationInfo &normalEquationInfo) override;
   void   aprioriParameter(const Gnss::NormalEquationInfo &normalEquationInfo, MatrixSliceRef x0) const override;
   Bool   isDesignMatrix(const Gnss::NormalEquationInfo &normalEquationInfo, UInt idRecv, UInt idTrans, UInt idEpoch) const override;

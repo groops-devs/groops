@@ -49,14 +49,14 @@ See also \program{InstrumentArcStatistics}, \program{InstrumentStatisticsTimeSer
 class InstrumentArcCrossStatistics
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentArcCrossStatistics, PARALLEL, "Compute RMS of an instrument time series or differences", Instrument, Statistics)
 
 /***********************************************/
 
-void InstrumentArcCrossStatistics::run(Config &config)
+void InstrumentArcCrossStatistics::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -113,9 +113,9 @@ void InstrumentArcCrossStatistics::run(Config &config)
         row(0, 1+i) = (removeMean) ? func(sliceA-mean(sliceA), sliceB-mean(sliceB)) : func(sliceA, sliceB);
       }
       return row;
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       // copy rows to matrix
       rows.erase(std::remove_if(rows.begin(), rows.end(), [](const Matrix &A) {return !A.size();}), rows.end());

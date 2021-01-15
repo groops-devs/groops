@@ -31,14 +31,14 @@ The resulting rotation matrices rotate from satellite frame to inertial frame.
 class SimulateStarCamera
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SimulateStarCamera, PARALLEL, "simulate star camera data. orientation of the satellite is (x: along track, y: cross track, z: not exact radial)", Simulation, Instrument)
 
 /***********************************************/
 
-void SimulateStarCamera::run(Config &config)
+void SimulateStarCamera::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -73,9 +73,9 @@ void SimulateStarCamera::run(Config &config)
         arc.push_back(epoch);
       }
       return arc;
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write star camera data to file <"<<starCameraName<<">"<<Log::endl;
       InstrumentFile::write(starCameraName, arcList);

@@ -35,7 +35,7 @@ The data of \configFile{inputfileInstrument}{instrument} are appended as values 
 class Orbit2Groundtracks
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Orbit2Groundtracks, SINGLEPROCESS, "groundtracks of a satellite as gridded data.", Orbit, Instrument, Grid)
@@ -43,7 +43,7 @@ GROOPS_RENAMED_PROGRAM(ArcGroundtracks, Orbit2Groundtracks, date2time(2020, 05, 
 
 /***********************************************/
 
-void Orbit2Groundtracks::run(Config &config)
+void Orbit2Groundtracks::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

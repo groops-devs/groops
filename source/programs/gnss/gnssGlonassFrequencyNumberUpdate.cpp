@@ -34,14 +34,14 @@ See also \program{GnssReceiverDefinitionCreate} and \program{GnssAntex2AntennaDe
 class GnssGlonassFrequencyNumberUpdate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssGlonassFrequencyNumberUpdate, SINGLEPROCESS, "Update/set GLONASS frequency number in transmitter info and receiver definition files.", Gnss)
 
 /***********************************************/
 
-void GnssGlonassFrequencyNumberUpdate::run(Config &config)
+void GnssGlonassFrequencyNumberUpdate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

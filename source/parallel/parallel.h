@@ -34,37 +34,26 @@ namespace Parallel
   class Communicator;
   typedef std::shared_ptr<Communicator> CommunicatorPtr;
 
-  /** @brief Must be called firstly in main. */
-  void init(int argc, char *argv[]);
+  /** @brief Must be called firstly in main.
+  * @return global communicator. */
+  CommunicatorPtr init(int argc, char *argv[]);
 
-  /** @brief Must be called at the end of main. */
-  void finalize();
-
-  /** @brief Best attempt to abort tasks in comm. */
-  void abort();
+  /** @brief Add an extra communcation channel to @p comm.
+  * @p recieve is called on main process, if the returned send function is called by an arbitrary process.
+  * This function is used for the log.
+  * Must be called by every process in @a comm. */
+  std::function<void(UInt type, const std::string &str)> addChannel(std::function<void(UInt type, const std::string &str)> recieve, CommunicatorPtr comm);
 
   // =========================================================
-
-  /** @brief The global communicator.
-  * Equivalent to MPI_COMM_WORLD. */
-  CommunicatorPtr globalCommunicator();
-
-  /** @brief The default communicator.
-  * It is used if comm is a nullptr. */
-  CommunicatorPtr defaultCommunicator();
-
-  /** @brief Set a new default communicator.
-  * @return the old communicator */
-  CommunicatorPtr setDefaultCommunicator(CommunicatorPtr comm);
 
   /** @brief Creates new communicators.
   * a new group is created for each different @a color.
   * the ranks in the groups are sorted by the @a key. */
-  CommunicatorPtr splitCommunicator(UInt color, UInt key, CommunicatorPtr comm=nullptr);
+  CommunicatorPtr splitCommunicator(UInt color, UInt key, CommunicatorPtr comm);
 
   /** @brief Creates new communicators.
   * Must be called by every process in @a comm. */
-  CommunicatorPtr createCommunicator(std::vector<UInt> ranks, CommunicatorPtr comm=nullptr);
+  CommunicatorPtr createCommunicator(std::vector<UInt> ranks, CommunicatorPtr comm);
 
   /** @brief The communicator that refers to the own process only. */
   CommunicatorPtr selfCommunicator();
@@ -72,34 +61,40 @@ namespace Parallel
   // =========================================================
 
   /** @brief Number of processes. */
-  UInt size(CommunicatorPtr comm=nullptr);
+  UInt size(CommunicatorPtr comm);
 
   /** @brief Process index. */
-  UInt myRank(CommunicatorPtr comm=nullptr);
+  UInt myRank(CommunicatorPtr comm);
 
   /** @brief Is ths the master process (rank==0)? */
-  inline Bool isMaster(CommunicatorPtr comm=nullptr) {return (myRank(comm) == 0);}
+  inline Bool isMaster(CommunicatorPtr comm) {return (myRank(comm) == 0);}
 
   /** @brief Blocks until all process have reached this routine. */
-  void barrier(CommunicatorPtr comm=nullptr);
+  void barrier(CommunicatorPtr comm);
+
+  /** @brief Distribute exceptions thrown in @p func by a single node to all nodes.
+  * Must be called by every process in @a comm.
+  * Exceptions causes memory leaks due to unfinished communications.
+  * Based on the idea: https://arxiv.org/abs/1804.04481 */
+  void broadCastExceptions(CommunicatorPtr comm, std::function<void(CommunicatorPtr)> func);
 
   // =========================================================
 
   /** @brief Send raw data @a x to process with rank @a process. */
-  void send(const Byte *x, UInt size, UInt process, CommunicatorPtr comm=nullptr);
+  void send(const Byte *x, UInt size, UInt process, CommunicatorPtr comm);
 
   /** @brief receive raw data @a x from prozess with rank @a process.
   * If @a process = NULLINDEX then receive from an arbitrary process. */
-  void receive(Byte *x, UInt size, UInt process, CommunicatorPtr comm=nullptr);
+  void receive(Byte *x, UInt size, UInt process, CommunicatorPtr comm);
 
   /** @brief Distribute raw data @a x at @a process to all other processes. */
-  void broadCast(Byte *x, UInt size, UInt process, CommunicatorPtr comm=nullptr);
+  void broadCast(Byte *x, UInt size, UInt process, CommunicatorPtr comm);
 
   // =========================================================
 
   /** @brief Send @a x to process with rank @a process. */
   ///@{
-  template<typename T> void send(const T &x, UInt process, CommunicatorPtr comm=nullptr);
+  template<typename T> void send(const T &x, UInt process, CommunicatorPtr comm);
   template<> void send(const UInt     &x, UInt process, CommunicatorPtr comm);
   template<> void send(const Double   &x, UInt process, CommunicatorPtr comm);
   template<> void send(const Bool     &x, UInt process, CommunicatorPtr comm);
@@ -114,7 +109,7 @@ namespace Parallel
   /** @brief receive @a x from prozess with rank @a process.
   * If @a process = NULLINDEX then receive from an arbitrary process. */
   ///@{
-  template<typename T> void receive(T &x, UInt process, CommunicatorPtr comm=nullptr);
+  template<typename T> void receive(T &x, UInt process, CommunicatorPtr comm);
   template<> void receive(UInt     &x, UInt process, CommunicatorPtr comm);
   template<> void receive(Double   &x, UInt process, CommunicatorPtr comm);
   template<> void receive(Bool     &x, UInt process, CommunicatorPtr comm);
@@ -128,7 +123,7 @@ namespace Parallel
 
   /** @brief Distribute @a x at @a process to all other processes. */
   ///@{
-  template<typename T> void broadCast(T &x, UInt process=0, CommunicatorPtr comm=nullptr);
+  template<typename T> void broadCast(T &x, UInt process, CommunicatorPtr comm);
   template<> void broadCast(UInt     &x, UInt process, CommunicatorPtr comm);
   template<> void broadCast(Double   &x, UInt process, CommunicatorPtr comm);
   template<> void broadCast(Bool     &x, UInt process, CommunicatorPtr comm);
@@ -142,18 +137,18 @@ namespace Parallel
 
   /** @brief Sum up @a x at all processes (also rank 0) and send the result to @a process. */
   ///@{
-  void reduceSum(UInt    &x, UInt process=0, CommunicatorPtr comm=nullptr);
-  void reduceSum(Double  &x, UInt process=0, CommunicatorPtr comm=nullptr);
-  void reduceSum(Bool    &x, UInt process=0, CommunicatorPtr comm=nullptr);
-  void reduceSum(Matrix  &x, UInt process=0, CommunicatorPtr comm=nullptr);
+  void reduceSum(UInt    &x, UInt process, CommunicatorPtr comm);
+  void reduceSum(Double  &x, UInt process, CommunicatorPtr comm);
+  void reduceSum(Bool    &x, UInt process, CommunicatorPtr comm);
+  void reduceSum(Matrix  &x, UInt process, CommunicatorPtr comm);
   ///@}
 
   /** @brief Find min/max of @a x at all processes (also rank 0) and send the result to @a process. */
   ///@{
-  void reduceMin(UInt   &x, UInt process=0, CommunicatorPtr comm=nullptr);
-  void reduceMin(Double &x, UInt process=0, CommunicatorPtr comm=nullptr);
-  void reduceMax(UInt   &x, UInt process=0, CommunicatorPtr comm=nullptr);
-  void reduceMax(Double &x, UInt process=0, CommunicatorPtr comm=nullptr);
+  void reduceMin(UInt   &x, UInt process, CommunicatorPtr comm);
+  void reduceMin(Double &x, UInt process, CommunicatorPtr comm);
+  void reduceMax(UInt   &x, UInt process, CommunicatorPtr comm);
+  void reduceMax(Double &x, UInt process, CommunicatorPtr comm);
   ///@}
 
   // =========================================================
@@ -162,40 +157,51 @@ namespace Parallel
   * Calls @a func(i) for every @a i in [0,count).
   * The different calls are distributed other the processes (without master).
   * @return The process number for @a i is returned (valid at master). */
-  template<typename T> std::vector<UInt> forEach(UInt count, T func, CommunicatorPtr comm=nullptr, Bool timing=TRUE);
+  template<typename T> std::vector<UInt> forEach(UInt count, T func, CommunicatorPtr comm, Bool timing=TRUE);
 
   /** @brief Parallelized loop.
   * Calls @a vec[i]=func(i) for every @a i in [0,vec.size()).
   * The different calls are distributed other the processes (without master).
   * The result in @a vec is only valid at master.
   * @return The process number for @a i is returned (valid at master). */
-  template<typename A, typename T> std::vector<UInt> forEach(std::vector<A> &vec, T func, CommunicatorPtr comm=nullptr, Bool timing=TRUE);
+  template<typename A, typename T> std::vector<UInt> forEach(std::vector<A> &vec, T func, CommunicatorPtr comm, Bool timing=TRUE);
 
   /** @brief Parallelized loop.
   * Calls @a func(i) for every @a i in [0,count).
   * The different calls are distributed other the processes (without master).
   * @return The process number for @a i is returned (valid at master). */
-  template<typename T> std::vector<UInt> forEachInterval(UInt count, const std::vector<UInt> &interval, T func, CommunicatorPtr comm=nullptr, Bool timing=TRUE);
+  template<typename T> std::vector<UInt> forEachInterval(UInt count, const std::vector<UInt> &interval, T func, CommunicatorPtr comm, Bool timing=TRUE);
 
   /** @brief Parallelized loop.
   * Calls @a vec[i]=func(i) for every @a i in [0,vec.size()).
   * The different calls are distributed other the processes (without master).
   * The result in @a vec is only valid at master.
   * @return The process number for @a i is returned (valid at master). */
-  template<typename A, typename T> std::vector<UInt> forEachInterval(std::vector<A> &vec, const std::vector<UInt> &interval, T func, CommunicatorPtr comm=nullptr, Bool timing=TRUE);
+  template<typename A, typename T> std::vector<UInt> forEachInterval(std::vector<A> &vec, const std::vector<UInt> &interval, T func, CommunicatorPtr comm, Bool timing=TRUE);
 
   /** @brief Parallelized loop.
   * Calls @a func(i) for every @a i in [0,count).
   * The different calls are distributed using @a processNo (without master).
   * The result in @a vec is only valid at master. */
-  template<typename T> void forEachProcess(UInt count, T func, const std::vector<UInt> &processNo, CommunicatorPtr comm=nullptr, Bool timing=TRUE);
+  template<typename T> void forEachProcess(UInt count, T func, const std::vector<UInt> &processNo, CommunicatorPtr comm, Bool timing=TRUE);
 
   /** @brief Parallelized loop.
   * Calls @a vec[i]=func(i) for every @a i in [0,vec.size()).
   * The different calls are distributed using @a processNo (without master).
   * The result in @a vec is only valid at master. */
-  template<typename A, typename T> void forEachProcess(std::vector<A> &vec, T func, const std::vector<UInt> &processNo, CommunicatorPtr comm=nullptr, Bool timing=TRUE);
+  template<typename A, typename T> void forEachProcess(std::vector<A> &vec, T func, const std::vector<UInt> &processNo, CommunicatorPtr comm, Bool timing=TRUE);
 } // end namespace Parallel
+
+/***********************************************/
+
+/** @brief Loop with timing.
+* @ingroup parallelGroup */
+namespace Single
+{
+  /** @brief loop with timing.
+  * Calls @a func(i) for every @a i in [0,count). */
+  template<typename T> void forEach(UInt count, T func, Bool timing=TRUE);
+} // end namespace Single
 
 /***********************************************/
 /***** INLINES ***********************************/
@@ -290,18 +296,18 @@ inline std::vector<UInt> Parallel::forEachInterval(UInt count, const std::vector
 
     // single process version
     // ----------------------
-    if(size(comm)<3)
+    if(size(comm) < 3)
     {
       // single process version
       if(isMaster(comm))
       {
-        if(timing) logTimerStart;
+        if(timing) Log::startTimer();
         for(UInt i=0; i<count; i++)
         {
-          if(timing) logTimerLoop(i,count);
+          if(timing) Log::loopTimer(i,count);
           func(i);
         }
-        if(timing) logTimerLoopEnd(count);
+        if(timing) Log::loopTimerEnd(count);
       }
       return processNo;
     }
@@ -318,7 +324,7 @@ inline std::vector<UInt> Parallel::forEachInterval(UInt count, const std::vector
 
       // master distributes the loop numbers
       UInt process, index;
-      if(timing) logTimerStart;
+      if(timing) Log::startTimer();
       for(UInt i=0; i<count; i++)
       {
         receive(process, NULLINDEX, comm); // which process needs work?
@@ -352,7 +358,7 @@ inline std::vector<UInt> Parallel::forEachInterval(UInt count, const std::vector
         countInInterval.at(idInterval)++;
         send(id, process, comm);       // send new loop number to be computed at process
         processNo.at(id) = process;
-        if(timing) logTimerLoop(i,count);
+        if(timing) Log::loopTimer(i, count, size(comm)-1);
       }
       // send to all processes the end signal (NULLINDEX)
       for(UInt i=1; i<size(comm); i++)
@@ -361,7 +367,7 @@ inline std::vector<UInt> Parallel::forEachInterval(UInt count, const std::vector
         receive(index,   process, comm);  // loop numer be computed at process
         send(NULLINDEX, process, comm);    // end signal
       }
-      if(timing) logTimerLoopEnd(count);
+      if(timing) Log::loopTimerEnd(count);
     }
     else // clients
     {
@@ -399,18 +405,18 @@ inline std::vector<UInt> Parallel::forEachInterval(std::vector<A> &vec, const st
 
     // single process version
     // ----------------------
-    if(size(comm)<3)
+    if(size(comm) < 3)
     {
       // single process version
       if(isMaster(comm))
       {
-        if(timing) logTimerStart;
+        if(timing) Log::startTimer();
         for(UInt i=0; i<vec.size(); i++)
         {
-          if(timing) logTimerLoop(i,vec.size());
+          if(timing) Log::loopTimer(i, vec.size());
           vec[i] = func(i);
         }
-        if(timing) logTimerLoopEnd(vec.size());
+        if(timing) Log::loopTimerEnd(vec.size());
       }
       return processNo;
     }
@@ -427,7 +433,7 @@ inline std::vector<UInt> Parallel::forEachInterval(std::vector<A> &vec, const st
 
       // master distributes the loop numbers
       UInt process, index;
-      if(timing) logTimerStart;
+      if(timing) Log::startTimer();
       for(UInt i=0; i<vec.size(); i++)
       {
         receive(process, NULLINDEX, comm); // which process needs work?
@@ -465,18 +471,18 @@ inline std::vector<UInt> Parallel::forEachInterval(std::vector<A> &vec, const st
         countInInterval.at(idInterval)++;
         send(id, process, comm);           // send new loop number to be computed at process
         processNo.at(id) = process;
-        if(timing) logTimerLoop(i,vec.size());
+        if(timing) Log::loopTimer(i, vec.size(), size(comm)-1);
       }
       // send to all processes the end signal (NULLINDEX)
       for(UInt i=1; i<size(comm); i++)
       {
-        receive(process, NULLINDEX, comm); // which process needs work?
-        receive(index,   process, comm);  // loop numer be computed at process
+        receive(process, NULLINDEX, comm);    // which process needs work?
+        receive(index,   process, comm);      // loop numer be computed at process
         if(index!=NULLINDEX)
           receive(vec[index], process, comm); // receive result
-        send(NULLINDEX, process, comm);    // end signal
+        send(NULLINDEX, process, comm);       // end signal
       }
-      if(timing) logTimerLoopEnd(vec.size());
+      if(timing) Log::loopTimerEnd(vec.size());
     }
     else // clients
     {
@@ -512,10 +518,10 @@ inline void Parallel::forEachProcess(UInt count, T func, const std::vector<UInt>
   try
   {
     UInt idx;
-    if(timing) logTimerStart;
+    if(timing) Log::startTimer();
     for(UInt i=0; i<count; i++)
     {
-      if(timing) logTimerLoop(i, count);
+      if(timing) Log::loopTimer(i, count, size(comm)-1);
       if(myRank(comm) == processNo.at(i))
       {
         func(i);
@@ -526,7 +532,7 @@ inline void Parallel::forEachProcess(UInt count, T func, const std::vector<UInt>
         receive(idx, NULLINDEX, comm);
       }
     } // for(i)
-    if(timing) logTimerLoopEnd(count);
+    if(timing) Log::loopTimerEnd(count);
     barrier(comm);
   }
   catch(std::exception &e)
@@ -543,10 +549,10 @@ inline void Parallel::forEachProcess(std::vector<A> &vec, T func, const std::vec
   try
   {
     UInt idx = 0;
-    if(timing) logTimerStart;
+    if(timing) Log::startTimer();
     for(UInt i=0; i<vec.size(); i++)
     {
-      if(timing) logTimerLoop(i, vec.size());
+      if(timing) Log::loopTimer(i, vec.size(), size(comm)-1);
       if(myRank(comm) == processNo.at(i))
       {
         vec[i] = func(i);
@@ -559,13 +565,37 @@ inline void Parallel::forEachProcess(std::vector<A> &vec, T func, const std::vec
         receive(vec[idx], processNo.at(idx), comm);
       }
     } // for(i)
-    if(timing) logTimerLoopEnd(vec.size());
+    if(timing) Log::loopTimerEnd(vec.size());
     barrier(comm);
   }
   catch(std::exception &e)
   {
     GROOPS_RETHROW(e)
   }
+}
+
+/***********************************************/
+/***********************************************/
+
+template<typename T>
+inline void Single::forEach(UInt count, T func, Bool timing)
+{
+{
+  try
+  {
+    if(timing) Log::startTimer();
+    for(UInt i=0; i<count; i++)
+    {
+      if(timing) Log::loopTimer(i, count);
+      func(i);
+    } // for(i)
+    if(timing) Log::loopTimerEnd(count);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
 }
 
 /***********************************************/

@@ -58,14 +58,14 @@ class InstrumentAccelerometerEstimateBiasScale
   void observationEquation(UInt arcNo, AccelerometerArc &acc, Vector &l, Matrix &A, Matrix &B);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentAccelerometerEstimateBiasScale, PARALLEL, "estimate accelerometer bias and scale.", Instrument)
 
 /***********************************************/
 
-void InstrumentAccelerometerEstimateBiasScale::run(Config &config)
+void InstrumentAccelerometerEstimateBiasScale::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -155,11 +155,11 @@ void InstrumentAccelerometerEstimateBiasScale::run(Config &config)
           rankKUpdate(1, A, N);
           matMult(1., A.trans(), l, n);
         }
-      });
-      Parallel::reduceSum(N);
-      Parallel::reduceSum(n);
+      }, comm);
+      Parallel::reduceSum(N, 0, comm);
+      Parallel::reduceSum(n, 0, comm);
 
-      if(Parallel::isMaster())
+      if(Parallel::isMaster(comm))
       {
         // regularize not used parameters
         // ------------------------------
@@ -174,8 +174,8 @@ void InstrumentAccelerometerEstimateBiasScale::run(Config &config)
           logStatus<<"write solution to <"<<solutionOutName<<">"<<Log::endl;
           writeFileMatrix(solutionOutName, x);
         }
-      } // if(Parallel::isMaster())
-      Parallel::broadCast(x);
+      } // if(Parallel::isMaster(comm))
+      Parallel::broadCast(x, 0, comm);
     }
 
     // Apply estimated parameters
@@ -202,9 +202,9 @@ void InstrumentAccelerometerEstimateBiasScale::run(Config &config)
       }
 
       return acc;
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write calibrated accelerometer file <"<<accelerometerOutName<<">"<<Log::endl;
       InstrumentFile::write(accelerometerOutName, arcList);

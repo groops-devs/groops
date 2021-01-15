@@ -69,14 +69,14 @@ class GnssNanu2Matrix
   Bool readNanuFile(const FileName &nanuFile, Outage &outage) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssNanu2Matrix, SINGLEPROCESS, "Convert NANU files to outage Matrix file per GPS PRN.", Conversion, Gnss)
 
 /***********************************************/
 
-void GnssNanu2Matrix::run(Config &config)
+void GnssNanu2Matrix::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -241,10 +241,8 @@ void GnssNanu2Matrix::run(Config &config)
 
     // write outages to matrix file per satellite and day
     logStatus << "write outage matrix files" << Log::endl;
-    logTimerStart;
-    for(UInt iSat = 0; iSat < nSat; iSat++)
+    Single::forEach(nSat, [&](UInt iSat)
     {
-      logTimerLoop(iSat, nSat);
       // generate map of daily outage periods
       std::map<Int,std::vector<Time>> timeStart, timeEnd;
       for(UInt i = 0; i < outages.at(iSat).size(); i++)
@@ -278,8 +276,7 @@ void GnssNanu2Matrix::run(Config &config)
         evaluateTimeVariables(idInterval, timesInterval.at(idInterval), timesInterval.at(idInterval+1), fileNameVariableList);
         writeFileMatrix(fileNameMatrix(fileNameVariableList).appendBaseName((iSat+1)%".G%02i"s), A);
       }
-    }
-    logTimerLoopEnd(nSat);
+    });
   }
   catch(std::exception &e)
   {

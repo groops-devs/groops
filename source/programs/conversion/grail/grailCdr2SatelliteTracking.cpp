@@ -42,14 +42,14 @@ class GrailCdr2SatelliteTracking
                 SatelliteTrackingArc &arcTemperature);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GrailCdr2SatelliteTracking, SINGLEPROCESS, "read CDR GRAIL data", Conversion, Instrument)
 
 /***********************************************/
 
-void GrailCdr2SatelliteTracking::run(Config &config)
+void GrailCdr2SatelliteTracking::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

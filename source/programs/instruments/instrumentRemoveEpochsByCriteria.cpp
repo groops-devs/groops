@@ -46,14 +46,14 @@ in a separate \configFile{outputfileInstrumentRemovedEpochs}{instrument}.
 class InstrumentRemoveEpochsByCriteria
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentRemoveEpochsByCriteria, SINGLEPROCESS, "Remove epochs which criteria defined through expressions", Instrument)
 
 /***********************************************/
 
-void InstrumentRemoveEpochsByCriteria::run(Config &config)
+void InstrumentRemoveEpochsByCriteria::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -114,10 +114,8 @@ void InstrumentRemoveEpochsByCriteria::run(Config &config)
     // -------------------
     std::vector<Time> times;
     logStatus<<"evaluate criteria"<<Log::endl;
-    logTimerStart;
-    for(UInt idEpoch=0; idEpoch<data.rows(); idEpoch++)
+    Single::forEach(data.rows(), [&](UInt idEpoch)
     {
-      logTimerLoop(idEpoch, data.rows());
       evaluateDataVariables(data, idEpoch, varList);
       for(UInt i=0; i<expressions.size(); i++)
         if(expressions.at(i)->evaluate(varList))
@@ -125,8 +123,7 @@ void InstrumentRemoveEpochsByCriteria::run(Config &config)
           times.push_back(arc.at(idEpoch).time);
           break;
         }
-    }
-    logTimerLoopEnd(data.rows());
+    });
 
     // ======================================================
 
@@ -137,20 +134,15 @@ void InstrumentRemoveEpochsByCriteria::run(Config &config)
     {
       logStatus<<"remove epochs (+/- "<<margin<<" sec) from instrument data"<<Log::endl;
       UInt idxTime = 0;
-
-      logTimerStart;
-      for(UInt i=0; i<arc.size(); i++)
+      Single::forEach(arc.size(), [&](UInt i)
       {
-        logTimerLoop(i, arc.size());
-
         while((idxTime < times.size()) && ((times.at(idxTime)-arc.at(i).time).seconds() < -margin))
           idxTime++;
         if((idxTime >= times.size()) || ((times.at(idxTime)-arc.at(i).time).seconds() > +margin))
           arcNew.push_back(arc.at(i));
         else
           arcEpochsForRemoval.push_back(arc.at(i));
-      }
-      logTimerLoopEnd(arc.size());
+      });
     }
     else
     {

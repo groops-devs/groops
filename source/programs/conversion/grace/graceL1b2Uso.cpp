@@ -30,14 +30,14 @@ For further information see \program{GraceL1b2Accelerometer}.
 class GraceL1b2Uso
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceL1b2Uso, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Instrument)
 
 /***********************************************/
 
-void GraceL1b2Uso::run(Config &config)
+void GraceL1b2Uso::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

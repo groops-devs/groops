@@ -178,16 +178,9 @@ the list of <a class="groops-class" href="gnssProcessingStepType.html">processin
 processing in this cookbook chapter follows. Only config elements that deviate from the default values are listed.
 For most input files the default value and annotation give a good hint of what is expected, so they are not
 listed here.</p><p>The first step is setting the processing sampling, in this example it is 30 seconds.
-The processing interval usually is a single 24-hour day.
-<ul>
-
-  <li><a class="groops-class" href="timeSeriesType.html#uniformSampling">intervals:uniformSampling</a> with <strong class="groops-config-element">timeStart</strong>=<code>&lt;mjd></code>,
-        <strong class="groops-config-element">timeEnd</strong>=<code>&lt;mjd>+1</code>, <strong class="groops-config-element">sampling</strong>=<code>1</code> (replace <code>&lt;mjd></code> with MJD of the day to process)
-  </li><li>
+The processing interval usually is a single 24-hour day,
 <a class="groops-class" href="timeSeriesType.html#uniformSampling">timeSeries:uniformSampling</a> with <strong class="groops-config-element">timeStart</strong>=<code>&lt;mjd></code>,
-        <strong class="groops-config-element">timeEnd</strong>=<code>&lt;mjd>+1</code>, <strong class="groops-config-element">sampling</strong>=<code>30/86400</code> (processing sampling)
-</li></ul>
-</p><p>Next define the GNSS constellations, in this case GPS and Galileo.
+<strong class="groops-config-element">timeEnd</strong>=<code>&lt;mjd>+1</code>, <strong class="groops-config-element">sampling</strong>=<code>30/86400</code> (processing sampling).</p><p>Next define the GNSS constellations, in this case GPS and Galileo.
 <ul>
 
   <li><a class="groops-class" href="gnssParametrizationTransmitterType.html#gps">transmitter:GPS</a>

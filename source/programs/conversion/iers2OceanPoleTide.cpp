@@ -31,14 +31,14 @@ and convert into \file{oceanPoleTide file}{oceanPoleTide}.
 class Iers2OceanPoleTide
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Iers2OceanPoleTide, SINGLEPROCESS, "Read ocean pole tide model", Conversion)
 
 /***********************************************/
 
-void Iers2OceanPoleTide::run(Config &config)
+void Iers2OceanPoleTide::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -44,14 +44,14 @@ class GnssSinexBias2SignalBias
   };
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssSinexBias2SignalBias, SINGLEPROCESS, "Converts GNSS signal biases from SINEX Bias format to GnssSignalBias format.", Conversion, Gnss)
 
 /***********************************************/
 
-void GnssSinexBias2SignalBias::run(Config &config)
+void GnssSinexBias2SignalBias::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

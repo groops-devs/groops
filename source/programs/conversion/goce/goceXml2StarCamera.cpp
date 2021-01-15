@@ -31,14 +31,14 @@ class GoceXml2StarCamera
   void readFileGoceStarCamera(const FileName &fileName, StarCameraArc &arc);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GoceXml2StarCamera, SINGLEPROCESS, "read ESA XML GOCE Data", Conversion, Instrument)
 
 /***********************************************/
 
-void GoceXml2StarCamera::run(Config &config)
+void GoceXml2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

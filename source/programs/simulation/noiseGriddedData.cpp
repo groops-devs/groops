@@ -30,14 +30,14 @@ See \configClass{noiseGenerator}{noiseGeneratorType} for details on noise genera
 class NoiseGriddedData
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NoiseGriddedData, SINGLEPROCESS, "add noise to gridded data", Simulation, Noise, Grid)
 
 /***********************************************/
 
-void NoiseGriddedData::run(Config &config)
+void NoiseGriddedData::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

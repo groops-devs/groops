@@ -225,7 +225,6 @@ void GnssParametrizationTransmitter::initIntervalTransmitter(Gnss::AnalysisType 
     for(auto &trans : transmitter)
     {
       trans->useAtAll = TRUE;
-      trans->use.clear();
       trans->use.resize(times.size(), TRUE);
       trans->signalBias = GnssSignalBias();
       trans->biasModel.clear();
@@ -233,8 +232,6 @@ void GnssParametrizationTransmitter::initIntervalTransmitter(Gnss::AnalysisType 
 
     VariableList fileNameVariableList;
     addVariable("prn", fileNameVariableList);
-    addTimeVariables(fileNameVariableList);
-    evaluateTimeVariables(0, times.at(0), times.back(), fileNameVariableList);
 
     // ===========================================================
 
@@ -548,7 +545,7 @@ void GnssParametrizationTransmitter::initIntervalTransmitter(Gnss::AnalysisType 
     // -----------------------------
     if(clockModel)
     {
-      clockModel->setInterval(times.front(), times.back()+medianSampling(times), TRUE);
+      clockModel->setInterval(times.front(), times.back(), TRUE);
       // move reference clocks to clock0
       for(auto &trans : transmitter)
         if(trans->useable())
@@ -568,7 +565,7 @@ void GnssParametrizationTransmitter::initIntervalTransmitter(Gnss::AnalysisType 
       model.x    = Vector(model.temporal->parameterCount());
       model.bias = Vector(times.size());
       model.indexParameter = Gnss::ParameterIndex();
-      model.temporal->setInterval(times.front(), times.back()+medianSampling(times), TRUE);
+      model.temporal->setInterval(times.front(), times.back(), TRUE);
     }
   }
   catch(std::exception &e)
@@ -633,8 +630,6 @@ void GnssParametrizationTransmitter::initIntervalLate(Gnss::AnalysisType /*analy
   {
     VariableList fileNameVariableList;
     addVariable("prn", fileNameVariableList);
-    addTimeVariables(fileNameVariableList);
-    evaluateTimeVariables(0, times.at(0), times.back(), fileNameVariableList);
 
     for(auto &trans : transmitter)
       if(trans->useable())
@@ -1321,8 +1316,6 @@ void GnssParametrizationTransmitter::writeResults(const Gnss::NormalEquationInfo
 
     VariableList fileNameVariableList;
     addVariable("prn", fileNameVariableList);
-    addTimeVariables(fileNameVariableList);
-    evaluateTimeVariables(0, times.at(0), times.back(), fileNameVariableList);
 
     // write used transmitter list
     // ---------------------------

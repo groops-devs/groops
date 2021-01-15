@@ -121,36 +121,32 @@ inline OrbitArc OrbitPropagatorStoermerCowell::integrateArc(OrbitEpoch startEpoc
     OrbitArc orbit = flip(warmup->integrateArc(startEpoch, -sampling, order, forces, satellite, earthRotation, ephemerides, FALSE));
 
     // Integrate remaining arc
-    if(timing) logTimerStart;
-    for (UInt k=1; k<posCount; k++)
+    Single::forEach(posCount-1, [&](UInt k)
     {
-      if(timing) logTimerLoop(k, posCount);
-
       // Predictor step
       // --------------
       OrbitEpoch epoch;
-      epoch.time     = orbit.at(k+order-2).time + sampling;
-      epoch.position += 2*orbit.at(k+order-2).position - orbit.at(k+order-3).position;
+      epoch.time     = orbit.at(k+order-1).time + sampling;
+      epoch.position += 2*orbit.at(k+order-1).position - orbit.at(k+order-2).position;
       for(UInt j=1; j<=order; j++) // Stoermer predictor
-        epoch.position += dt*dt * stoermer(j) * orbit.at(k+j-2).acceleration;
-      epoch.velocity += orbit.at(k+order-2).velocity;  // Adams-Bashforth for velocity component
+        epoch.position += dt*dt * stoermer(j) * orbit.at(k+j-1).acceleration;
+      epoch.velocity += orbit.at(k+order-1).velocity;  // Adams-Bashforth for velocity component
       for(UInt j=1; j<=order; j++)
-        epoch.velocity += dt * bashforth(j) * orbit.at(k+j-2).acceleration;
+        epoch.velocity += dt * bashforth(j) * orbit.at(k+j-1).acceleration;
       epoch.acceleration = acceleration(epoch, forces, satellite, earthRotation, ephemerides);
       orbit.push_back(epoch);
 
       // Corrector step
       // --------------
-      epoch.position = 2*orbit.at(k+order-2).position - orbit.at(k+order-3).position;
+      epoch.position = 2*orbit.at(k+order-1).position - orbit.at(k+order-2).position;
       for(UInt j=1; j<=order; j++) // Stoermer predictor
-        epoch.position += dt*dt * cowell(j) * orbit.at(k+j-1).acceleration;
-      epoch.velocity = orbit.at(k+order-2).velocity;  // Moulton corrector
+        epoch.position += dt*dt * cowell(j) * orbit.at(k+j).acceleration;
+      epoch.velocity = orbit.at(k+order-1).velocity;  // Moulton corrector
       for(UInt j=1; j<=order; j++)
-        epoch.velocity += dt * moulton(j) * orbit.at(k+j-1).acceleration;
+        epoch.velocity += dt * moulton(j) * orbit.at(k+j).acceleration;
       epoch.acceleration = acceleration(epoch, forces, satellite, earthRotation, ephemerides);
-      orbit.at(k+order-1) = epoch;
-    }
-    if(timing) logTimerLoopEnd(posCount);
+      orbit.at(k+order) = epoch;
+    }, timing);
 
     // remove warmup
     orbit.remove(0, order-1);

@@ -53,14 +53,14 @@ To visualize the results use \program{PlotGraph}.
 class Gravityfield2AreaMeanTimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2AreaMeanTimeSeries, PARALLEL, "generates a time series as mean values over an area from a time variable gravity field", Gravityfield, TimeSeries)
 
 /***********************************************/
 
-void Gravityfield2AreaMeanTimeSeries::run(Config &config)
+void Gravityfield2AreaMeanTimeSeries::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -117,7 +117,7 @@ void Gravityfield2AreaMeanTimeSeries::run(Config &config)
         for(UInt k=0; k<points.size(); k++)
           mean += areas.at(k) * gravityfield->field(times.at(i), points.at(k), *kernel);
         return mean;
-      });
+      }, comm);
 
       if(computeRms)
       {
@@ -128,14 +128,14 @@ void Gravityfield2AreaMeanTimeSeries::run(Config &config)
           for(UInt k=0; k<points.size(); k++)
             rms += areas.at(k) * pow(gravityfield->field(times.at(i), points.at(k), *kernel),2);
           return sqrt(rms);
-        });
+        }, comm);
       }
 
       if(computeSigma)
       {
         logStatus<<"compute accuracy"<<Log::endl;
         Vector B = areas; // B = linear function from spherical harmonics to block mean
-        Parallel::forEach(sigma, [&](UInt i) {return sqrt(inner(B, gravityfield->variance(times.at(i), points, *kernel) * B));});
+        Parallel::forEach(sigma, [&](UInt i) {return sqrt(inner(B, gravityfield->variance(times.at(i), points, *kernel) * B));}, comm);
       }
     }
 
@@ -152,7 +152,7 @@ void Gravityfield2AreaMeanTimeSeries::run(Config &config)
         if(B.rows() < x.rows())
           B = MiscGriddedData::synthesisSphericalHarmonicsMatrix(harm.maxDegree(), harm.GM(), harm.R(), points, kernel, harm.isInterior()).trans() * Vector(areas);
         return inner(B.row(0, x.rows()), x);
-      });
+      }, comm);
 
       if(computeRms)
       {
@@ -169,7 +169,7 @@ void Gravityfield2AreaMeanTimeSeries::run(Config &config)
               B.row(k) *= std::sqrt(areas.at(k));
           }
           return std::sqrt(quadsum(B.column(0, x.rows()) * x));
-        });
+        }, comm);
       }
 
       if(computeSigma)
@@ -191,11 +191,11 @@ logWarning<<"Variance propagation from spherical harmonics to AMV may be not cor
           for(UInt i=0; i<C.rows(); i++)
             sum += B(i)*C(i,0)*B(i);
           return sqrt(sum);
-        });
+        }, comm);
       }
     }
 
-    if(!Parallel::isMaster()) return;
+    if(!Parallel::isMaster(comm)) return;
 
     // remove (weigthed) temporal mean
     // -------------------------------

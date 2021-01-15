@@ -53,7 +53,7 @@ public:
     NetCdf::Variable       variable;
   };
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GridRectangular2NetCdf, SINGLEPROCESS, "Convert sequence of GridRectangular files to a netCDF file", Conversion, Grid)
@@ -110,7 +110,7 @@ template<> Bool readConfig(Config &config, const std::string &name, GridRectangu
 
 /***********************************************/
 
-void GridRectangular2NetCdf::run(Config &config)
+void GridRectangular2NetCdf::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

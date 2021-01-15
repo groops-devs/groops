@@ -29,14 +29,14 @@ Read ocean tide file in IERS format.
 class IersPotential2DoodsonHarmonics
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(IersPotential2DoodsonHarmonics, SINGLEPROCESS, "Read ocean tide file in IERS format", Conversion, DoodsonHarmonics)
 
 /***********************************************/
 
-void IersPotential2DoodsonHarmonics::run(Config &config)
+void IersPotential2DoodsonHarmonics::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -27,7 +27,7 @@ Create a \file{GNSS receiver definition file}{gnssReceiverDefinition}.
 class GnssReceiverDefinitionCreate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssReceiverDefinitionCreate, SINGLEPROCESS, "Create GNSS receiver definition file.", Gnss)
@@ -60,7 +60,7 @@ static Bool readConfig(Config &config, const std::string &name, GnssReceiverDefi
 
 /***********************************************/
 
-void GnssReceiverDefinitionCreate::run(Config &config)
+void GnssReceiverDefinitionCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

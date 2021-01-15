@@ -215,28 +215,12 @@ void GnssParametrizationReceiverStationNetwork::initIntervalReceiver(Gnss::Analy
 {
   try
   {
-    // delete old observations
-    for(auto &recv : receiver)
-    {
-      recv->free();
-      recv->posDisplacement.clear();
-      recv->dpos.clear();
-      recv->zenitDelayWet.clear();
-      recv->gradientX.clear();
-      recv->gradientY.clear();
-      recv->indexParameterEpoch.clear();
-      recv->indexParameterEpoch.resize(times.size(), Gnss::ParameterIndex());
-      recv->signalBias = GnssSignalBias();
-    }
-
-    // ===========================================================
-
     this->times = times;
+    for(auto &recv : receiver)
+      recv->indexParameterEpoch.resize(times.size(), Gnss::ParameterIndex());
 
     VariableList fileNameVariableList;
-    addTimeVariables(fileNameVariableList);
     addVariable("station", fileNameVariableList);
-    evaluateTimeVariables(0, times.at(0), times.back(), fileNameVariableList);
 
     // init stations (distributed)
     // ---------------------------
@@ -338,7 +322,7 @@ void GnssParametrizationReceiverStationNetwork::initIntervalReceiver(Gnss::Analy
 
     // troposphere
     // -----------
-    if(troposphere != nullptr)
+    if(troposphere)
     {
       logStatus<<"init troposphere"<<Log::endl;
       troposphere->init(positions);
@@ -364,6 +348,8 @@ void GnssParametrizationReceiverStationNetwork::initIntervalReceiver(Gnss::Analy
 
       tides->deformation(times, positions, rotEarth, gnss().earthRotation->earthRotation(), ephemerides, gravity, hn, ln, disp);
       gravityfield->deformation(times, positions, gravity, hn, ln, disp);
+      tides        = nullptr;
+      gravityfield = nullptr;
 
       // add displacements
       // -----------------
@@ -581,7 +567,7 @@ void GnssParametrizationReceiverStationNetwork::initIntervalReceiver(Gnss::Analy
     // -----------------------------
     if(parametrizationPosition)
     {
-      parametrizationPosition->setInterval(times.front(), times.back()+medianSampling(times), TRUE);
+      parametrizationPosition->setInterval(times.front(), times.back(), TRUE);
       const UInt countParameterPosition = 3*parametrizationPosition->parameterCount();
       for(UInt idRecv=0; idRecv<receiver.size(); idRecv++)
         receiver.at(idRecv)->xPos = Vector(countParameterPosition);
@@ -589,7 +575,7 @@ void GnssParametrizationReceiverStationNetwork::initIntervalReceiver(Gnss::Analy
 
     if(parametrizationTropoWet)
     {
-      parametrizationTropoWet->setInterval(times.front(), times.back()+medianSampling(times), TRUE);
+      parametrizationTropoWet->setInterval(times.front(), times.back(), TRUE);
       const UInt countParameterTropoWet = parametrizationTropoWet->parameterCount();
       for(UInt idRecv=0; idRecv<receiver.size(); idRecv++)
         receiver.at(idRecv)->xTropoWet = Vector(countParameterTropoWet);
@@ -597,7 +583,7 @@ void GnssParametrizationReceiverStationNetwork::initIntervalReceiver(Gnss::Analy
 
     if(parametrizationTropoGradient)
     {
-      parametrizationTropoGradient->setInterval(times.front(), times.back()+medianSampling(times), TRUE);
+      parametrizationTropoGradient->setInterval(times.front(), times.back(), TRUE);
       const UInt countParameterTropoGradient = 2*parametrizationTropoGradient->parameterCount();
       for(UInt idRecv=0; idRecv<receiver.size(); idRecv++)
         receiver.at(idRecv)->xTropoGradient = Vector(countParameterTropoGradient);
@@ -1277,9 +1263,7 @@ void GnssParametrizationReceiverStationNetwork::writeResults(const Gnss::NormalE
   try
   {
     VariableList fileNameVariableList;
-    addTimeVariables(fileNameVariableList);
     addVariable("station", fileNameVariableList);
-    evaluateTimeVariables(0, times.at(0), times.back(), fileNameVariableList);
 
     Vector useable(receiver.size());
     for(UInt idRecv=0; idRecv<receiver.size(); idRecv++)

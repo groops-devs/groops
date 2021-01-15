@@ -63,14 +63,14 @@ See also \program{FunctionsCalculate}, \program{InstrumentArcCalculate}, \progra
 class GriddedDataCalculate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GriddedDataCalculate, SINGLEPROCESS, "Calculate values of gridded data.", Grid)
 
 /***********************************************/
 
-void GriddedDataCalculate::run(Config &config)
+void GriddedDataCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

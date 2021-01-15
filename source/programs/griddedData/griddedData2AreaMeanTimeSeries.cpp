@@ -48,14 +48,14 @@ See also \program{Gravityfield2AreaMeanTimeSeries}.
 class GriddedData2AreaMeanTimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GriddedData2AreaMeanTimeSeries, SINGLEPROCESS, "generates a time series as mean values over an area from a list of grid files", Grid, TimeSeries)
 
 /***********************************************/
 
-void GriddedData2AreaMeanTimeSeries::run(Config &config)
+void GriddedData2AreaMeanTimeSeries::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -83,11 +83,8 @@ void GriddedData2AreaMeanTimeSeries::run(Config &config)
     std::vector<Vector> rms;
     std::vector<Time> gridTimes;
     UInt maxDataFields = 0;
-
-    logTimerStart;
-    for(UInt k = 0; k<times.size(); k++)
+    Single::forEach(times.size(), [&](UInt k)
     {
-      logTimerLoop(k, times.size());
       GriddedData grid;
       try
       {
@@ -96,7 +93,7 @@ void GriddedData2AreaMeanTimeSeries::run(Config &config)
       catch(std::exception &e)
       {
         logWarning<<e.what()<<Log::endl;
-        continue;
+        return;
       }
 
       maxDataFields = std::max(maxDataFields, grid.values.size());
@@ -137,8 +134,7 @@ void GriddedData2AreaMeanTimeSeries::run(Config &config)
           axpy(grid.areas.at(i) * factor, tmpRms, rms.back());
         }
       }
-    }
-    logTimerLoopEnd(times.size());
+    });
 
     // write file
     // ----------

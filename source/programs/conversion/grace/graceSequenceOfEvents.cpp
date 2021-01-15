@@ -33,14 +33,14 @@ The output is one arc of satellite data which can include data gaps.
 class GraceSequenceOfEvents
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceSequenceOfEvents, SINGLEPROCESS, "read GRACE SOE file", Conversion, Grace)
 
 /***********************************************/
 
-void GraceSequenceOfEvents::run(Config &config)
+void GraceSequenceOfEvents::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

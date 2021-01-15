@@ -101,14 +101,14 @@ class RinexObservation2GnssReceiver
   static Bool isGpsAntiSpoofingEnabled(const Time &time);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(RinexObservation2GnssReceiver, SINGLEPROCESS, "Converts RINEX or Compact RINEX files to GROOPS GnssReceiver Instrument file.", Conversion, Gnss, Instrument)
 
 /***********************************************/
 
-void RinexObservation2GnssReceiver::run(Config &config)
+void RinexObservation2GnssReceiver::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

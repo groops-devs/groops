@@ -49,14 +49,14 @@ See also: \program{PlotDegreeAmplitudes}, \program{PlotGraph}, \program{PlotMatr
 class PlotMap
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(PlotMap, SINGLEPROCESS, "Plot maps", Plot, Grid)
 
 /***********************************************/
 
-void PlotMap::run(Config &config)
+void PlotMap::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

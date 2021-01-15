@@ -39,15 +39,6 @@ NormalEquationRegularizationGeneralized::NormalEquationRegularizationGeneralized
     for(Double &s2 : sigma2)
       s2 *= s2;
 
-    if(Parallel::isMaster())
-    {
-      Matrix V;
-      readFileMatrix(fileNamesCovariance.front(), V);
-      paraCount = V.rows();
-
-    }
-    Parallel::broadCast(paraCount);
-
     if(!fileNameBias.empty())
      readFileMatrix(fileNameBias, bias);
     rhsCount = std::max(bias.columns(), static_cast<UInt>(1));
@@ -64,6 +55,15 @@ void NormalEquationRegularizationGeneralized::init(MatrixDistributed &normals, U
 {
   try
   {
+    if(Parallel::isMaster(normals.communicator()))
+    {
+      Matrix V;
+      readFileMatrix(fileNamesCovariance.front(), V);
+      paraCount = V.rows();
+
+    }
+    Parallel::broadCast(paraCount, 0, normals.communicator());
+
     // adjust right hand side
     // ----------------------
     if(!bias.size())
@@ -126,7 +126,7 @@ Bool NormalEquationRegularizationGeneralized::addNormalEquation(UInt rhsNo, cons
             if(i != k)
               matMult(1.0, N.N(i, k).trans(), x.row(N.blockIndex(i), N.blockSize(i)), y.row(N.blockIndex(k), N.blockSize(k)));
           }
-      Parallel::reduceSum(y);
+      Parallel::reduceSum(y, 0, N.communicator());
       return y;
     };
     // ----------------------------------------------
@@ -136,8 +136,8 @@ Bool NormalEquationRegularizationGeneralized::addNormalEquation(UInt rhsNo, cons
     {
       Matrix Se  = symMatMult(Sigma, bias.column(rhsNo) - x.slice(startIndex, rhsNo, paraCount, 1));
       Matrix SWz = symMatMult(Sigma, Wz);
-      Parallel::broadCast(Se);
-      Parallel::broadCast(SWz);
+      Parallel::broadCast(Se,  0, normals.communicator());
+      Parallel::broadCast(SWz, 0, normals.communicator());
 
       for(UInt j=0; j<V.size(); j++)
       {
@@ -155,17 +155,17 @@ Bool NormalEquationRegularizationGeneralized::addNormalEquation(UInt rhsNo, cons
             for(UInt z=0; z<Sigma.blockSize(i); z++)
               r -= V.at(j).N(i,i)(z,z) * Sigma.N(i,i)(z,z); // diagonal is accounted twice
         }
-        Parallel::reduceSum(r);
+        Parallel::reduceSum(r, 0, normals.communicator());
 
-        if(Parallel::isMaster())
+        if(Parallel::isMaster(normals.communicator()))
         {
           const Double sigma2Old = sigma2.at(j);
           sigma2.at(j) *= inner(Se, VSe)/(r-inner(SWz, VSWz));
           ready = ready && (std::fabs(std::sqrt(sigma2.at(j))-std::sqrt(sigma2Old))/std::sqrt(sigma2.at(j)) < 0.01);
         }
       }
-      Parallel::broadCast(sigma2);
-      Parallel::broadCast(ready);
+      Parallel::broadCast(sigma2, 0, normals.communicator());
+      Parallel::broadCast(ready,  0, normals.communicator());
     }
 
     // accumulate covariance matrix
@@ -183,7 +183,7 @@ Bool NormalEquationRegularizationGeneralized::addNormalEquation(UInt rhsNo, cons
 
     // accumulate right hand side
     Matrix Pl = symMatMult(Sigma, bias);
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(normals.communicator()))
     {
       axpy(1., Pl, n.row(startIndex, paraCount));
       for(UInt i=0; i<lPl.rows(); i++)
@@ -245,8 +245,8 @@ Vector NormalEquationRegularizationGeneralized::contribution(MatrixDistributed &
             contrib(startIndex+Sigma.blockIndex(k)+s) += inner(Sigma.N(i, k).column(s), C.column(s));
         }
     }
-    Parallel::reduceSum(contrib);
-    Parallel::broadCast(contrib);
+    Parallel::reduceSum(contrib, 0, Cov.communicator());
+    Parallel::broadCast(contrib, 0, Cov.communicator());
     return contrib;
   }
   catch(std::exception &e)

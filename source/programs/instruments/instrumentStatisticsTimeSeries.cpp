@@ -45,7 +45,7 @@ class InstrumentStatisticsTimeSeries
   static Double nanFunc(std::function<double(const_MatrixSliceRef A)> func, const_MatrixSliceRef A);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentStatisticsTimeSeries, SINGLEPROCESS, "Compute time series of statistics for intervals of instrument data.", Instrument, TimeSeries, Statistics)
@@ -68,7 +68,7 @@ Double InstrumentStatisticsTimeSeries::nanFunc(std::function<double(const_Matrix
 
 /***********************************************/
 
-void InstrumentStatisticsTimeSeries::run(Config &config)
+void InstrumentStatisticsTimeSeries::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

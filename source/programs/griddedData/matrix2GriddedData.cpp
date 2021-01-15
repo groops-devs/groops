@@ -34,7 +34,7 @@ see~\reference{dataVariables}{general.parser:dataVariables}.
 class Matrix2GriddedData
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Matrix2GriddedData, SINGLEPROCESS, "Read gridded data from matrix", Grid, Matrix)
@@ -42,7 +42,7 @@ GROOPS_RENAMED_PROGRAM(GridMatrix2GriddedData, Matrix2GriddedData, date2time(202
 
 /***********************************************/
 
-void Matrix2GriddedData::run(Config &config)
+void Matrix2GriddedData::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

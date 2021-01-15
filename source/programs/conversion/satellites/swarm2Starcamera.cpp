@@ -32,14 +32,14 @@ provided by the Goddard Space Flight Center (\url{http://cdf.gsfc.nasa.gov/}).
 class Swarm2Starcamera
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Swarm2Starcamera, SINGLEPROCESS, "read SWARM star camera data", Conversion, Instrument)
 
 /***********************************************/
 
-void Swarm2Starcamera::run(Config &config)
+void Swarm2Starcamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

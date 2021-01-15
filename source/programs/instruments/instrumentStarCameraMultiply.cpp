@@ -37,7 +37,7 @@ public:
     Bool     inverse;
   };
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentStarCameraMultiply, SINGLEPROCESS, "Mutiply instrument data with a factor and add them together", Instrument)
@@ -56,7 +56,7 @@ template<> Bool readConfig(Config &config, const std::string &name, InstrumentSt
 
 /***********************************************/
 
-void InstrumentStarCameraMultiply::run(Config &config)
+void InstrumentStarCameraMultiply::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -80,11 +80,9 @@ void InstrumentStarCameraMultiply::run(Config &config)
     UInt arcCount = instrumentFile.at(0)->arcCount();
     std::vector<Arc> arcList;
 
-    logTimerStart;
-    for(UInt arcNo=0; arcNo<arcCount; arcNo++)
+    Log::startTimer();
+    Single::forEach(arcCount, [&](UInt arcNo)
     {
-      logTimerLoop(arcNo, arcCount);
-
       StarCameraArc starCamera = instrumentFile.at(0)->readArc(arcNo);
       UInt epochCount = starCamera.size();
       if(data.at(0).inverse)
@@ -104,8 +102,7 @@ void InstrumentStarCameraMultiply::run(Config &config)
         }
       }
       arcList.push_back(starCamera);
-    }
-    logTimerLoopEnd(arcCount);
+    });
 
     // save file
     // ---------

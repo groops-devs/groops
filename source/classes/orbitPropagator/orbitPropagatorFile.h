@@ -71,11 +71,8 @@ inline OrbitArc OrbitPropagatorFile::integrateArc(OrbitEpoch startEpoch, Time sa
     OrbitArc orbitFile = InstrumentFile::read(fileNameOrbit);
 
     OrbitArc orbit;
-    if(timing) logTimerStart;
-    for(UInt k=0; k<posCount; k++)
+    Single::forEach(posCount, [&](UInt k)
     {
-      if(timing) logTimerLoop(k, posCount);
-
       const Time time = startEpoch.time + k*sampling;
       OrbitEpoch epoch;
       for(UInt i=0; i<orbitFile.size(); i++)
@@ -88,8 +85,7 @@ inline OrbitArc OrbitPropagatorFile::integrateArc(OrbitEpoch startEpoch, Time sa
         epoch.acceleration = acceleration(epoch, forces, satellite, earthRotation, ephemerides);
 
       orbit.push_back(epoch);
-    }
-    if(timing) logTimerLoopEnd(posCount);
+    }, timing);
 
     return orbit;
   }

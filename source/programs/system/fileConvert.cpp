@@ -56,7 +56,7 @@ Therefore it can be used to get an idea about the content of binary files.
 class FileConvert
 {
  public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(FileConvert, SINGLEPROCESS, "Converts GROOPS file between different file formats (ASCII, XML, binary).",
@@ -64,7 +64,7 @@ GROOPS_REGISTER_PROGRAM(FileConvert, SINGLEPROCESS, "Converts GROOPS file betwee
 
 /***********************************************/
 
-void FileConvert::run(Config &config)
+void FileConvert::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

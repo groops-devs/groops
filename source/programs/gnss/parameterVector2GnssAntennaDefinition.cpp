@@ -55,7 +55,7 @@ class ParameterVector2GnssAntennaDefinition
 {
 public:
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(ParameterVector2GnssAntennaDefinition, SINGLEPROCESS, "Update antenna definition from parametrization", Gnss)
@@ -63,7 +63,7 @@ GROOPS_RENAMED_PROGRAM(GnssRepresentation2AntennaDefinition, ParameterVector2Gns
 
 /***********************************************/
 
-void ParameterVector2GnssAntennaDefinition::run(Config &config)
+void ParameterVector2GnssAntennaDefinition::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

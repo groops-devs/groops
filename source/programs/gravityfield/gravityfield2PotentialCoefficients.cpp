@@ -33,14 +33,14 @@ and the Earth gravitational constant \config{GM}.
 class Gravityfield2PotentialCoefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2PotentialCoefficients, SINGLEPROCESS, "writes a gravity field to a file with potential coefficients", Gravityfield, PotentialCoefficients)
 
 /***********************************************/
 
-void Gravityfield2PotentialCoefficients::run(Config &config)
+void Gravityfield2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

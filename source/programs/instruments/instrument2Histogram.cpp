@@ -32,7 +32,7 @@ The other columns contain the histograms for each arc.
 class Instrument2Histogram
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Instrument2Histogram, PARALLEL, "compute a histogram from an instrument file", Instrument, Statistics)
@@ -40,7 +40,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentComputeHistogram, Instrument2Histogram, date2ti
 
 /***********************************************/
 
-void Instrument2Histogram::run(Config& config)
+void Instrument2Histogram::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -75,13 +75,13 @@ void Instrument2Histogram::run(Config& config)
       for(UInt k=0; k<data.rows(); k++)
         values.at(k) = data(k, selectData+1);
       return values;
-    });
-    Parallel::broadCast(arcWiseData);
+    }, comm);
+    Parallel::broadCast(arcWiseData, 0, comm);
 
     // determine bins
     // --------------
     std::vector<Double> bins;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       std::vector<Double> globalData;
       for(UInt arcNo=0; arcNo<arcWiseData.size(); arcNo++)
@@ -117,7 +117,7 @@ void Instrument2Histogram::run(Config& config)
         bins.push_back(bins.back() + (upperBound-lowerBound)/binCount);
       bins.back() = upperBound; // make sure upper bound is correct
     }
-    Parallel::broadCast(bins);
+    Parallel::broadCast(bins, 0, comm);
 
     // compute histogram
     // -----------------
@@ -143,11 +143,11 @@ void Instrument2Histogram::run(Config& config)
         for(UInt k = 1; k<bins.size()-1; k++)
           histogram(k, arcNo+1) += histogram(k-1, arcNo+1);
       }
-    });
-    Parallel::reduceSum(histogram);
+    }, comm);
+    Parallel::reduceSum(histogram, 0, comm);
 
     logStatus<<"write histogram to <"<<fileNameOut<<">"<<Log::endl;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       for(UInt k = 0; k<bins.size()-1; k++)
         histogram(k, 0) = bins.at(k);

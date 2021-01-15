@@ -28,14 +28,14 @@ with a division by \config{sampling} without remainder are kept (inside \config{
 class InstrumentReduceSampling
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentReduceSampling, SINGLEPROCESS, "reduce sampling of instrument data.", Instrument)
 
 /***********************************************/
 
-void InstrumentReduceSampling::run(Config &config)
+void InstrumentReduceSampling::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -55,12 +55,9 @@ void InstrumentReduceSampling::run(Config &config)
     UInt arcCount = inFile.arcCount();
     std::list<Arc> arcList;
 
-    logTimerStart;
     Double refTime=0;
-    for(UInt arcNo=0; arcNo<arcCount; arcNo++)
+    Single::forEach(arcCount, [&](UInt arcNo)
     {
-      logTimerLoop(arcNo, arcCount);
-
       std::vector<Time> times;
       Arc arc = inFile.readArc(arcNo);
       if(arcNo==0 && relative2FirstEpoch)
@@ -80,8 +77,7 @@ void InstrumentReduceSampling::run(Config &config)
       arc.synchronize(times, margin);
       if(arc.size()!=0)
         arcList.push_back(arc);
-    } // for(arc)
-    logTimerLoopEnd(arcCount);
+    });
 
     logStatus<<"write instrument data to <"<<outName<<">"<<Log::endl;
     InstrumentFile::write(outName, arcList);

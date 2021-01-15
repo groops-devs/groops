@@ -110,11 +110,8 @@ inline OrbitArc OrbitPropagatorPolynomial::integrateArc(OrbitEpoch startEpoch, T
     const Double dt = sampling.seconds();
     UInt maxCorrectors = 10;
 
-    if(timing) logTimerStart;
-    for(UInt k=1; k<posCount; k++)
+    Single::forEach(posCount-1, [&](UInt k)
     {
-      if(timing) logTimerLoop(k, posCount);
-
       // Integration: #shift epochs refinement, one new epoch prediction
       OrbitEpoch epoch;
       epoch.time = orbit.back().time + sampling;
@@ -127,25 +124,24 @@ inline OrbitArc OrbitPropagatorPolynomial::integrateArc(OrbitEpoch startEpoch, T
         correctorRepeatLoop = FALSE;
         for(UInt i=0; i<factorPos.rows(); i++)
         {
-          const Vector3d posOld = orbit.at(idx0+k+i).position;
-          orbit.at(idx0+k+i).position = orbit.at(idx0+k-1).position + (i+1)*dt * orbit.at(idx0+k-1).velocity;
-          orbit.at(idx0+k+i).velocity = orbit.at(idx0+k-1).velocity;
+          const Vector3d posOld = orbit.at(idx0+k+1+i).position;
+          orbit.at(idx0+k+1+i).position = orbit.at(idx0+k).position + (i+1)*dt * orbit.at(idx0+k).velocity;
+          orbit.at(idx0+k+1+i).velocity = orbit.at(idx0+k).velocity;
           for(UInt n=0; n<=degree; n++)
           {
-            orbit.at(idx0+k+i).position += dt*dt*factorPos(i,n) * orbit.at(idx0+k+n+shift-degree-1).acceleration;
-            orbit.at(idx0+k+i).velocity +=    dt*factorVel(i,n) * orbit.at(idx0+k+n+shift-degree-1).acceleration;
+            orbit.at(idx0+k+1+i).position += dt*dt*factorPos(i,n) * orbit.at(idx0+k+n+shift-degree).acceleration;
+            orbit.at(idx0+k+1+i).velocity +=    dt*factorVel(i,n) * orbit.at(idx0+k+n+shift-degree).acceleration;
           }
           // recompute forces
-          if((orbit.at(idx0+k+i).position-posOld).r()>epsilon)
+          if((orbit.at(idx0+k+1+i).position-posOld).r()>epsilon)
           {
-            orbit.at(idx0+k+i).acceleration = acceleration(orbit.at(idx0+k+i), forces, satellite, earthRotation, ephemerides);
+            orbit.at(idx0+k+1+i).acceleration = acceleration(orbit.at(idx0+k+1+i), forces, satellite, earthRotation, ephemerides);
             correctorRepeatLoop = corrector && TRUE;
             correctorIterations++;
           }
         }
       } while(correctorRepeatLoop && (correctorIterations < maxCorrectors));
-    }
-    if(timing) logTimerLoopEnd(posCount);
+    }, timing);
 
     // remove warmup and last epochs
     orbit.remove(0, degree-shift);

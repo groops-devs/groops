@@ -30,14 +30,14 @@ as \configFile{outputfileInstrument}{instrument} rotary matrices
 class InstrumentStarCamera2RotaryMatrix
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentStarCamera2RotaryMatrix, PARALLEL, "Compute rotary matrix", Instrument)
 
 /***********************************************/
 
-void InstrumentStarCamera2RotaryMatrix::run(Config &config)
+void InstrumentStarCamera2RotaryMatrix::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -63,9 +63,9 @@ void InstrumentStarCamera2RotaryMatrix::run(Config &config)
         arc.push_back(epoch);
       }
       return arc;
-    }); // forEach
+    }, comm); // forEach
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write rotary matrix to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

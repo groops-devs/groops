@@ -30,14 +30,14 @@ To apply Earth rotation use \program{InstrumentEarthRotation}.
 class InstrumentRotate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentRotate, PARALLEL, "Rotate instrument data into a new reference frame", Instrument)
 
 /***********************************************/
 
-void InstrumentRotate::run(Config &config)
+void InstrumentRotate::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -101,9 +101,9 @@ void InstrumentRotate::run(Config &config)
           throw(Exception("rotation for "+arc.getTypeName()+" not implemented"));
       }
       return arc;
-    }); // forEach
+    }, comm); // forEach
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write data to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

@@ -36,7 +36,7 @@ invalid epochs containing NaNs.
 class InstrumentConcatenate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentConcatenate, SINGLEPROCESS, "concatenate arcs from several files", Instrument)
@@ -44,7 +44,7 @@ GROOPS_RENAMED_PROGRAM(ArcConcatenate, InstrumentConcatenate, date2time(2020, 05
 
 /***********************************************/
 
-void InstrumentConcatenate::run(Config &config)
+void InstrumentConcatenate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -109,10 +109,8 @@ void InstrumentConcatenate::run(Config &config)
     {
       logStatus<<"search for NaNs"<<Log::endl;
       UInt removed=0;
-      logTimerStart;
-      for(UInt i=0; i<arc.size(); i++)
+      Single::forEach(arc.size(), [&](UInt i)
       {
-        logTimerLoop(i,arc.size());
         Vector data=arc.at(i).data();
         for(UInt j=0; j<data.rows(); j++)
           if(std::isnan(data.at(j)))
@@ -122,8 +120,7 @@ void InstrumentConcatenate::run(Config &config)
             i--;
             break;
           }
-      }
-      logTimerLoopEnd(arc.size());
+      });
       logInfo<<" "<<removed<<" epochs with NaN values removed!"<<Log::endl;
     }
 

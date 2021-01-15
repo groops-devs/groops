@@ -58,7 +58,7 @@ See also \program{Instrument2CovarianceFunctionVCE},
 class Instrument2PowerSpectralDensity
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Instrument2PowerSpectralDensity, PARALLEL, "Compute PSD from instrument files.", Instrument, Covariance)
@@ -67,7 +67,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentComputePsd, Instrument2PowerSpectralDensity, da
 
 /***********************************************/
 
-void Instrument2PowerSpectralDensity::run(Config &config)
+void Instrument2PowerSpectralDensity::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -85,7 +85,7 @@ void Instrument2PowerSpectralDensity::run(Config &config)
     Vector freqs;
     UInt   arcEpochCount;
     Double sampling = 1.0;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       std::vector<Time> times;
       Time maxArcLen;
@@ -105,8 +105,8 @@ void Instrument2PowerSpectralDensity::run(Config &config)
 
       freqs = Fourier::frequencies(arcEpochCount, sampling);
     }
-    Parallel::broadCast(freqs);
-    Parallel::broadCast(arcEpochCount);
+    Parallel::broadCast(freqs, 0, comm);
+    Parallel::broadCast(arcEpochCount, 0, comm);
 
     logStatus<<"compute PSD"<<Log::endl;
     Matrix PSD(freqs.rows(), dataCount+1);
@@ -143,10 +143,10 @@ void Instrument2PowerSpectralDensity::run(Config &config)
         for(UInt i=0; i<l.columns(); i++)
           PSD(k, i+1) += lPl(i) - quadsum(l.column(i));
       }
-    });
-    Parallel::reduceSum(PSD);
+    }, comm);
+    Parallel::reduceSum(PSD, 0, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       PSD *= sampling/arcCount; // PSD unit: input^2/Hz
       copy(freqs, PSD.column(0));

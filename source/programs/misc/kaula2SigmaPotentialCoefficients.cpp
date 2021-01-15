@@ -36,14 +36,14 @@ The standard deviations are written as formal errors of
 class Kaula2SigmaPotentialCoefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Kaula2SigmaPotentialCoefficients, SINGLEPROCESS, "Create variances according kaulas rule of thumb", Misc, PotentialCoefficients)
 
 /***********************************************/
 
-void Kaula2SigmaPotentialCoefficients::run(Config &config)
+void Kaula2SigmaPotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

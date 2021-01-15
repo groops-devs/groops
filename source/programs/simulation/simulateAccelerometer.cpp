@@ -33,14 +33,14 @@ For computation of non-conservative forces a \configFile{satelliteModel}{satelli
 class SimulateAccelerometer
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SimulateAccelerometer, PARALLEL, "simulate accelerometer data", Simulation, Instrument)
 
 /***********************************************/
 
-void SimulateAccelerometer::run(Config &config)
+void SimulateAccelerometer::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -94,9 +94,9 @@ void SimulateAccelerometer::run(Config &config)
         accelerometer.push_back(epoch);
       }
       return accelerometer;
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write accelerometer data to file <"<<fileNameAccelerometer<<">"<<Log::endl;
       InstrumentFile::write(fileNameAccelerometer, arcList);

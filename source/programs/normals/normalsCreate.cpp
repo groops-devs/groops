@@ -47,14 +47,14 @@ The variable \verb|observationCount| can be used, if it is set by a normal equat
 class NormalsCreate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NormalsCreate, SINGLEPROCESS, "create normal equations from calulated matrices", NormalEquation)
 
 /***********************************************/
 
-void NormalsCreate::run(Config &config)
+void NormalsCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

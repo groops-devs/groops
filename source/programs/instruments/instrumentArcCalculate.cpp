@@ -51,14 +51,14 @@ See also \program{FunctionsCalculate}, \program{MatrixCalculate}.
 class InstrumentArcCalculate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentArcCalculate, PARALLEL, "Instrument data calculation arc wise.", Instrument)
 
 /***********************************************/
 
-void InstrumentArcCalculate::run(Config &config)
+void InstrumentArcCalculate::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -204,11 +204,11 @@ void InstrumentArcCalculate::run(Config &config)
       }
 
       return Arc(timesOut, outData, type);
-    });
+    }, comm);
 
     // write results
     // -------------
-    if(!fileNameOut.empty() && Parallel::isMaster())
+    if(!fileNameOut.empty() && Parallel::isMaster(comm))
     {
       logStatus<<"write instrument data <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);
@@ -217,8 +217,8 @@ void InstrumentArcCalculate::run(Config &config)
 
     if(!fileNameStatistics.empty() && statistics.size())
     {
-      Parallel::reduceSum(statistics);
-      if(Parallel::isMaster())
+      Parallel::reduceSum(statistics, 0, comm);
+      if(Parallel::isMaster(comm))
       {
         logStatus<<"write statistics file <"<<fileNameStatistics<<">"<<Log::endl;
         InstrumentFile::write(fileNameStatistics, Arc(statistics));

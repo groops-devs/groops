@@ -33,14 +33,14 @@ A description of the format can be found under:
 class Jason2Starcamera
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Jason2Starcamera, SINGLEPROCESS, "read Jason star camera data", Conversion, Instrument)
 
 /***********************************************/
 
-void Jason2Starcamera::run(Config &config)
+void Jason2Starcamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

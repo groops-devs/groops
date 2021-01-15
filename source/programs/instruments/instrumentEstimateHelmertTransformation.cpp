@@ -52,7 +52,7 @@ public:
     void removeEpochsOutsideIntervals(const FileName &fileName, const std::vector<Time> &intervals, Arc &arc) const;
   };
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentEstimateHelmertTransformation, SINGLEPROCESS, "Compute RMS time series from instrument file(s).", Instrument, Gnss)
@@ -77,7 +77,7 @@ template<> Bool readConfig(Config &config, const std::string &name, InstrumentEs
 
 /***********************************************/
 
-void InstrumentEstimateHelmertTransformation::run(Config &config)
+void InstrumentEstimateHelmertTransformation::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -118,10 +118,8 @@ void InstrumentEstimateHelmertTransformation::run(Config &config)
     const UInt paramCount    = 3*estimateShift+estimateScale+3*estimateRotation;
     const UInt intervalCount = intervals.size() - 1;
     std::vector<Vector> helmertTimeSeries;
-    logTimerStart;
-    for(UInt idInterval = 0; idInterval < intervalCount; idInterval++)
+    Single::forEach(intervalCount, [&](UInt idInterval)
     {
-      logTimerLoop(idInterval, intervalCount);
       parametrization->setInterval(intervals.at(idInterval), intervals.at(idInterval+1));
       const UInt trendCount = parametrization->parameterCount();
 
@@ -132,7 +130,7 @@ void InstrumentEstimateHelmertTransformation::run(Config &config)
       if(epochCount == 0)
       {
         logWarning<<"No data found in interval "+intervals.at(idInterval).dateTimeStr()+" -> "+intervals.at(idInterval+1).dateTimeStr()+". continue with next interval"<<Log::endl;
-        continue;
+        return;
       }
 
       // check if interval is solvable
@@ -210,8 +208,7 @@ void InstrumentEstimateHelmertTransformation::run(Config &config)
             h.row(1+k*paramCount+3*estimateShift, paramCount-3*estimateShift) /= DEFAULT_R;
       }
       helmertTimeSeries.push_back(h);
-    }
-    logTimerLoopEnd(intervalCount);
+    });
 
     // save output files
     for(const auto &d : data)

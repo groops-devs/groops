@@ -29,7 +29,7 @@ The selected number of data columns must agree with the \configClass{type}{instr
 class InstrumentSetType
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentSetType, SINGLEPROCESS, "Reinterpret data columns of instrument file", Instrument, Matrix)
@@ -37,7 +37,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentMatrix2Instrument, InstrumentSetType, date2time
 
 /***********************************************/
 
-void InstrumentSetType::run(Config &config)
+void InstrumentSetType::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

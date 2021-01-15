@@ -38,14 +38,14 @@ To eliminate parameters without changing the result of the other parameters use 
 class NormalsReorder
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NormalsReorder, PARALLEL, "Reorder normal equations", NormalEquation)
 
 /***********************************************/
 
-void NormalsReorder::run(Config &config)
+void NormalsReorder::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -68,7 +68,7 @@ void NormalsReorder::run(Config &config)
     MatrixDistributed normal;
     Matrix rhs;
     NormalEquationInfo info;
-    readFileNormalEquation(inName, info, normal, rhs);
+    readFileNormalEquation(inName, info, normal, rhs, comm);
 
     std::vector<UInt> indexVector(normal.parameterCount());
     if(parameterSelector)

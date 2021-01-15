@@ -37,14 +37,14 @@ a decorrelation filter is computed which yields white noise when applied to colo
 class CovarianceFunction2DigitalFilter
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(CovarianceFunction2DigitalFilter, SINGLEPROCESS, "Digital filter coefficients from covariance function.", Covariance)
 
 /***********************************************/
 
-void CovarianceFunction2DigitalFilter::run(Config &config)
+void CovarianceFunction2DigitalFilter::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

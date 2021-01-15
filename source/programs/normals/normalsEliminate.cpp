@@ -63,14 +63,14 @@ See also \program{NormalsReorder}.
 class NormalsEliminate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NormalsEliminate, PARALLEL, "Eliminate parameters from a system of normal equations.", NormalEquation)
 
 /***********************************************/
 
-void NormalsEliminate::run(Config &config)
+void NormalsEliminate::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -93,7 +93,7 @@ void NormalsEliminate::run(Config &config)
     MatrixDistributed normal;
     Matrix rhs;
     NormalEquationInfo info;
-    readFileNormalEquation(inName, info, normal, rhs);
+    readFileNormalEquation(inName, info, normal, rhs, comm);
 
     // compute index vectors and block structure for remaining parameters
     std::vector<UInt> indexVector = parameterSelector->indexVector(info.parameterName);
@@ -144,8 +144,8 @@ void NormalsEliminate::run(Config &config)
         info.lPl(i) -= quadsum(rhs.slice(0, i, eliminationCount, 1)); // lPl = lPl - n1' N1^(-1) n1
       rhs = rhs.row(eliminationCount, rhs.rows()-eliminationCount);
     }
-    else if(Parallel::isMaster())
-      logWarning<<"no parameters eliminated"<<Log::endl;
+    else
+      logWarningOnce<<"no parameters eliminated"<<Log::endl;
 
     logStatus<<"write normal equations to <"<<outName<<">"<<Log::endl;
     writeFileNormalEquation(outName, info, normal, rhs);

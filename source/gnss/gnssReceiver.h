@@ -53,7 +53,7 @@ public:
 
   // public variables
   // ----------------
-  std::vector<Track*> track; //!< tracking phase observations
+  std::vector<TrackPtr> track; //!< tracking phase observations
 
 // ========================================================
 
@@ -259,7 +259,7 @@ void writeTracks(const FileName &fileName, VariableList varList, const Observati
 void deleteTrack(ObservationEquationList &eqn, UInt idTrack);
 
 /** @brief Split a @p track at @p idEpochSplit into two new tracks. Shortens the old track and returns the new track. Updates observation and observation equation @p eqn track assignments. */
-Track *splitTrack(ObservationEquationList &eqn, Gnss::Track *track, UInt idEpochSplit);
+TrackPtr splitTrack(ObservationEquationList &eqn, TrackPtr track, UInt idEpochSplit);
 
 /** @brief Removes tracks that never exceed @p minElevation (in radian). */
 void removeLowElevationTracks(ObservationEquationList &eqn, Angle minElevation);
@@ -292,7 +292,7 @@ static Matrix robustLeastSquares(Double huber, Double power,
 * @param windowSize Size of the moving window used for the TEC smoothness evaluation. If 0, TEC is not analyzed.
 * @param tecSigmaFactor Factor applied to moving standard deviation of AR model residuals to determine threshold for peak/outlier detection. */
 void cycleSlipsDetection(ObservationEquationList &eqnList, Double lambda, UInt windowSize, Double tecSigmaFactor);
-void cycleSlipsDetection(ObservationEquationList &eqnList, Track *track, Double lambda, UInt windowSize, Double tecSigmaFactor);
+void cycleSlipsDetection(ObservationEquationList &eqnList, TrackPtr track, Double lambda, UInt windowSize, Double tecSigmaFactor);
 
 /** @brief repair cycle slip differences at same frequencies (e.g. between C1CG and C1WG).
 * Allows to reduce the number of integer ambiguities.
@@ -336,14 +336,14 @@ public:
 class Gnss::Track
 {
 public:
-  ReceiverPtr           receiver;
-  TransmitterPtr        transmitter;
+  Receiver             *receiver;
+  Transmitter          *transmitter;
   UInt                  idEpochStart, idEpochEnd;
   std::vector<GnssType> types;
-  std::shared_ptr<Ambiguity> ambiguity;
+  Ambiguity            *ambiguity;
 
-  Track(ReceiverPtr _receiver, TransmitterPtr _transmitter, UInt _idEpochStart, UInt _idEpochEnd, const std::vector<GnssType> &_types) :
-    receiver(_receiver), transmitter(_transmitter), idEpochStart(_idEpochStart), idEpochEnd(_idEpochEnd), types(_types) {}
+  Track(Receiver *_receiver, Transmitter *_transmitter, UInt _idEpochStart, UInt _idEpochEnd, const std::vector<GnssType> &_types) :
+    receiver(_receiver), transmitter(_transmitter), idEpochStart(_idEpochStart), idEpochEnd(_idEpochEnd), types(_types), ambiguity(nullptr) {}
 
   UInt countObservations() const;
   void removeAmbiguitiesFromObservations(const std::vector<GnssType> &type, const std::vector<Double> &value);

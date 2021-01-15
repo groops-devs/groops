@@ -28,7 +28,7 @@ to TRF for postions given in \configFile{inputfileInstrument}{instrument} (first
 class LocalLevelFrame2StarCamera
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(LocalLevelFrame2StarCamera, PARALLEL, "Rotation from local level frame (ellipsoidal north, east, down) to TRF.", Instrument, Simulation)
@@ -36,7 +36,7 @@ GROOPS_RENAMED_PROGRAM(SimulateLocalLevelFrame, LocalLevelFrame2StarCamera, date
 
 /***********************************************/
 
-void LocalLevelFrame2StarCamera::run(Config &config)
+void LocalLevelFrame2StarCamera::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -72,9 +72,9 @@ void LocalLevelFrame2StarCamera::run(Config &config)
         scaArc.push_back(epoch);
       }
       return scaArc;
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write star camera data to file <"<<fileNameStarCamera<<">"<<Log::endl;
       InstrumentFile::write(fileNameStarCamera, arcList);

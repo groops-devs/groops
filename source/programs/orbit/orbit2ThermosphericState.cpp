@@ -34,7 +34,7 @@ The data of \configFile{inputfileInstrument}{instrument} are appended as values 
 class Orbit2ThermosphericState
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Orbit2ThermosphericState, PARALLEL, "Thermospheric state along orbit.", Orbit, Instrument)
@@ -42,7 +42,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentOrbit2ThermosphericState, Orbit2ThermosphericSt
 
 /***********************************************/
 
-void Orbit2ThermosphericState::run(Config &config)
+void Orbit2ThermosphericState::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -102,11 +102,11 @@ void Orbit2ThermosphericState::run(Config &config)
       }
 
       return Arc(orbit.times(), A);
-    });
+    }, comm);
 
     // write results
     // -------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write thermospheric state to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

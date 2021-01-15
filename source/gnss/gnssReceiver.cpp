@@ -26,7 +26,7 @@
 
 /***********************************************/
 
-Gnss::Receiver::Receiver()  : _gnss(nullptr), _idRecv(NULLINDEX), observationSampling(0), huber(2.5), huberPower(1.5)
+Gnss::Receiver::Receiver()  : _gnss(nullptr), _idRecv(NULLINDEX), useAtAll(FALSE), observationSampling(0), huber(2.5), huberPower(1.5)
 {
 }
 
@@ -49,10 +49,6 @@ void Gnss::Receiver::free()
 //         delete observations.at(idTrans).at(idEpoch);
 obsMem.clear();
     observations_.clear();
-
-    // delete tracks
-    for(UInt idTrack=0; idTrack<track.size(); idTrack++)
-      delete track.at(idTrack);
     track.clear();
 
     sigma0Type.clear();
@@ -1033,8 +1029,6 @@ void Gnss::Receiver::createTracks(UInt minObsCountPerTrack, const std::vector<Gn
   {
     // delete old tracks
     // -----------------
-    for(UInt idTrack=0; idTrack<track.size(); idTrack++)
-      delete track.at(idTrack);
     track.clear();
 
     for(UInt idTrans=0; idTrans<gnss().transmitter.size(); idTrans++)
@@ -1092,10 +1086,10 @@ void Gnss::Receiver::createTracks(UInt minObsCountPerTrack, const std::vector<Gn
         // define track
         if((countEpoch >= minObsCountPerTrack) && (typeFrequencies.size() >= 2))
         {
-          track.push_back(new Track(gnss().receiver.at(idRecv()), gnss().transmitter.at(idTrans), idEpochStart, idEpochEnd, types));
+          track.push_back(std::make_shared<Track>(gnss().receiver.at(idRecv()).get(), gnss().transmitter.at(idTrans).get(), idEpochStart, idEpochEnd, types));
           for(UInt idEpoch=idEpochStart; idEpoch<=idEpochEnd; idEpoch++)
             if(observation(idTrans, idEpoch))
-              observation(idTrans, idEpoch)->track = track.back();
+              observation(idTrans, idEpoch)->track = track.back().get();
         }
         else
         {
@@ -1179,7 +1173,6 @@ void Gnss::Receiver::deleteTrack(ObservationEquationList &eqnList, UInt idTrack)
       deleteObservation(track.at(idTrack)->transmitter->idTrans(), idEpoch);
       eqnList.deleteObservationEquation(track.at(idTrack)->transmitter->idTrans(), idEpoch);
     }
-    delete track.at(idTrack);
     track.erase(track.begin()+idTrack);
   }
   catch(std::exception &e)
@@ -1190,13 +1183,13 @@ void Gnss::Receiver::deleteTrack(ObservationEquationList &eqnList, UInt idTrack)
 
 /***********************************************/
 
-Gnss::Track *Gnss::Receiver::splitTrack(ObservationEquationList &eqnList, Gnss::Track *track, UInt idEpochSplit)
+Gnss::TrackPtr Gnss::Receiver::splitTrack(ObservationEquationList &eqnList, Gnss::TrackPtr track, UInt idEpochSplit)
 {
   try
   {
     // new track
     const UInt idTrans = track->transmitter->idTrans();
-    Track *trackNew = new Track(track->receiver, track->transmitter, idEpochSplit, track->idEpochEnd, track->types);
+    TrackPtr trackNew = std::make_shared<Track>(track->receiver, track->transmitter, idEpochSplit, track->idEpochEnd, track->types);
     this->track.push_back(trackNew);
 
     // shorten old track
@@ -1205,12 +1198,12 @@ Gnss::Track *Gnss::Receiver::splitTrack(ObservationEquationList &eqnList, Gnss::
     // connect observations to new track
     for(UInt idEpoch=trackNew->idEpochStart; idEpoch<=trackNew->idEpochEnd; idEpoch++)
       if(observation(idTrans, idEpoch))
-        observation(idTrans, idEpoch)->track = trackNew;
+        observation(idTrans, idEpoch)->track = trackNew.get();
 
     // connect observation equations to new track
     for(UInt idEpoch=trackNew->idEpochStart; idEpoch<=trackNew->idEpochEnd; idEpoch++)
       if(eqnList(idTrans, idEpoch))
-        eqnList(idTrans, idEpoch)->track = trackNew;
+        eqnList(idTrans, idEpoch)->track = trackNew.get();
 
     return trackNew;
   }
@@ -1291,7 +1284,7 @@ void Gnss::Receiver::trackOutlierDetection(const ObservationEquationList &eqnLis
 {
   try
   {
-    for(auto track : this->track)
+    for(auto &track : this->track)
     {
       const UInt idTrans      = track->transmitter->idTrans();
       const UInt idEpochStart = track->idEpochStart;
@@ -1589,7 +1582,7 @@ void Gnss::Receiver::cycleSlipsDetection(ObservationEquationList &eqnList, Doubl
 
 /***********************************************/
 
-void Gnss::Receiver::cycleSlipsDetection(ObservationEquationList &eqnList, Track *track, Double lambda, UInt windowSize, Double tecSigmaFactor)
+void Gnss::Receiver::cycleSlipsDetection(ObservationEquationList &eqnList, TrackPtr track, Double lambda, UInt windowSize, Double tecSigmaFactor)
 {
   try
   {

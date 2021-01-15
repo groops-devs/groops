@@ -34,7 +34,7 @@ with the common \reference{data variables}{general.parser:dataVariables} for gri
 class GriddedDataCreate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GriddedDataCreate, SINGLEPROCESS, "create a grid an write it to file", Grid)
@@ -42,7 +42,7 @@ GROOPS_RENAMED_PROGRAM(Grid2File, GriddedDataCreate, date2time(2020, 01, 28))
 
 /***********************************************/
 
-void GriddedDataCreate::run(Config &config)
+void GriddedDataCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

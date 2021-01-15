@@ -27,14 +27,14 @@ Creates the directory and parent directories as needed.
 class FileCreateDirectories
 {
  public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(FileCreateDirectories, SINGLEPROCESS, "Creates the directory and parent directories as needed.", System)
 
 /***********************************************/
 
-void FileCreateDirectories::run(Config &config)
+void FileCreateDirectories::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

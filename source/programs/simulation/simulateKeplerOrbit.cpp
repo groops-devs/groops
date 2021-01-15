@@ -31,14 +31,14 @@ starting from the given \config{integrationConstants}.
 class SimulateKeplerOrbit
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SimulateKeplerOrbit, SINGLEPROCESS, "compute Keplerian orbit", Simulation, Orbit, Instrument)
 
 /***********************************************/
 
-void SimulateKeplerOrbit::run(Config &config)
+void SimulateKeplerOrbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -100,16 +100,13 @@ void SimulateKeplerOrbit::run(Config &config)
     // -----------
     logStatus<<"computing"<<Log::endl;
     OrbitArc orbit;
-    logTimerStart;
-    for(UInt i=0; i<times.size(); i++)
+    Single::forEach(times.size(), [&](UInt i)
     {
-      logTimerLoop(i,times.size());
       OrbitEpoch epoch;
       epoch.time = times.at(i);
       kepler.orbit(times.at(i), epoch.position, epoch.velocity, epoch.acceleration);
       orbit.push_back(epoch);
-    }
-    logTimerLoopEnd(times.size());
+    });
 
     // write results
     // -------------

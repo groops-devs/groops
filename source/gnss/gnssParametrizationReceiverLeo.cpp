@@ -133,22 +133,9 @@ void GnssParametrizationReceiverLeo::initIntervalReceiver(Gnss::AnalysisType ana
 {
   try
   {
-    // delete old observations
-    free();
-    pos0.clear();
-    displacement.clear();
-    dpos.clear();
-    cov.clear();
-    vel.clear();
-    crf2sat.clear();
-    indexParameterEpoch.clear();
-    indexParameterEpoch.resize(times.size(), Gnss::ParameterIndex());
-    signalBias = GnssSignalBias();
-
-    // ===========================================================
-
     // init
     // ----
+    indexParameterEpoch.resize(times.size());
     if(Parallel::isMaster(comm))
     {
       initInterval(times);
@@ -159,12 +146,6 @@ void GnssParametrizationReceiverLeo::initIntervalReceiver(Gnss::AnalysisType ana
       vel.resize(times.size());
       crf2sat.resize(times.size());
     }
-
-    timeIntervalStart = times.front();
-    timeIntervalEnd   = times.back()+medianSampling(times);
-    VariableList fileNameVariableList;
-    addTimeVariables(fileNameVariableList);
-    evaluateTimeVariables(0, timeIntervalStart, timeIntervalEnd, fileNameVariableList);
 
     // test completeness of antennas
     for(const auto &antenna : stationInfo.antenna)
@@ -182,9 +163,9 @@ void GnssParametrizationReceiverLeo::initIntervalReceiver(Gnss::AnalysisType ana
     {
       try
       {
-        logStatus<<"read approx. orbit <"<<fileNameOrbit(fileNameVariableList)<<">"<<Log::endl;
-        InstrumentFile fileOrbit(fileNameOrbit(fileNameVariableList));
-        InstrumentFile fileStarCamera(fileNameStarCamera(fileNameVariableList));
+        logStatus<<"read approx. orbit <"<<fileNameOrbit<<">"<<Log::endl;
+        InstrumentFile fileOrbit(fileNameOrbit);
+        InstrumentFile fileStarCamera(fileNameStarCamera);
         InstrumentFile::checkArcCount({fileOrbit, fileStarCamera});
 
         UInt idEpoch = 0;
@@ -243,7 +224,7 @@ void GnssParametrizationReceiverLeo::initIntervalReceiver(Gnss::AnalysisType ana
     // code & phase biases
     // -------------------
     if(!fileNameSignalBias.empty())
-      readFileGnssSignalBias(fileNameSignalBias(fileNameVariableList), signalBias);
+      readFileGnssSignalBias(fileNameSignalBias, signalBias);
 
     // ===========================================================
 
@@ -253,8 +234,8 @@ void GnssParametrizationReceiverLeo::initIntervalReceiver(Gnss::AnalysisType ana
     {
       try
       {
-        logStatus<<"read GNSS receiver data <"<<fileNameObs(fileNameVariableList)<<">"<<Log::endl;
-        InstrumentFile fileReceiver(fileNameObs(fileNameVariableList));
+        logStatus<<"read GNSS receiver data <"<<fileNameObs<<">"<<Log::endl;
+        InstrumentFile fileReceiver(fileNameObs);
         readObservations(fileReceiver, useType, ignoreType, timeMargin);
       }
       catch(std::exception &e)
@@ -651,15 +632,11 @@ void GnssParametrizationReceiverLeo::writeResults(const Gnss::NormalEquationInfo
     if(!useable())
       return;
 
-    VariableList fileNameVariableList;
-    addTimeVariables(fileNameVariableList);
-    evaluateTimeVariables(0, timeIntervalStart, timeIntervalEnd, fileNameVariableList);
-
     // write kinematic orbits
     // ----------------------
     if(!fileNameOutOrbit.empty())
     {
-      logStatus<<"write orbit data <"<<fileNameOutOrbit(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
+      logStatus<<"write orbit data <"<<fileNameOutOrbit.appendBaseName(suffix)<<">"<<Log::endl;
       OrbitArc arc;
       for(UInt idEpoch : normalEquationInfo.idEpochs)
         if(useable(idEpoch))
@@ -671,14 +648,14 @@ void GnssParametrizationReceiverLeo::writeResults(const Gnss::NormalEquationInfo
           epoch.acceleration.x() = clockError(idEpoch)*LIGHT_VELOCITY;
           arc.push_back(epoch);
         }
-      InstrumentFile::write(fileNameOutOrbit(fileNameVariableList).appendBaseName(suffix), arc);
+      InstrumentFile::write(fileNameOutOrbit.appendBaseName(suffix), arc);
     }
 
     // Estimated clocks
     // ----------------
     if(!fileNameOutClock.empty())
     {
-      logStatus<<"write clock error <"<<fileNameOutClock(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
+      logStatus<<"write clock error <"<<fileNameOutClock.appendBaseName(suffix)<<">"<<Log::endl;
       MiscValueArc arc;
       for(UInt idEpoch : normalEquationInfo.idEpochs)
         if(useable(idEpoch))
@@ -694,14 +671,14 @@ void GnssParametrizationReceiverLeo::writeResults(const Gnss::NormalEquationInfo
         }
 
       if(arc.size())
-        InstrumentFile::write(fileNameOutClock(fileNameVariableList).appendBaseName(suffix), arc);
+        InstrumentFile::write(fileNameOutClock.appendBaseName(suffix), arc);
     }
 
     // write epoch covariance
     // ----------------------
     if(!fileNameOutCovariance.empty())
     {
-      logStatus<<"write epoch covariance data <"<<fileNameOutCovariance(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
+      logStatus<<"write epoch covariance data <"<<fileNameOutCovariance.appendBaseName(suffix)<<">"<<Log::endl;
       Covariance3dArc arc;
       for(UInt idEpoch : normalEquationInfo.idEpochs)
         if(useable(idEpoch))
@@ -711,27 +688,27 @@ void GnssParametrizationReceiverLeo::writeResults(const Gnss::NormalEquationInfo
           epoch.covariance = cov.at(idEpoch);
           arc.push_back(epoch);
         }
-      InstrumentFile::write(fileNameOutCovariance(fileNameVariableList).appendBaseName(suffix), arc);
+      InstrumentFile::write(fileNameOutCovariance.appendBaseName(suffix), arc);
     }
 
     // write residuals
     // ---------------
     if(!fileNameResiduals.empty())
     {
-      logStatus<<"write GNSS receiver residuals <"<<fileNameResiduals(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
-      InstrumentFile::write(fileNameResiduals(fileNameVariableList).appendBaseName(suffix), residuals(normalEquationInfo.idEpochs));
+      logStatus<<"write GNSS receiver residuals <"<<fileNameResiduals.appendBaseName(suffix)<<">"<<Log::endl;
+      InstrumentFile::write(fileNameResiduals.appendBaseName(suffix), residuals(normalEquationInfo.idEpochs));
     }
 
     // Signal bias
     // -----------
     if(!fileNameOutSignal.empty())
     {
-      logStatus<<"write signal bias to file <"<<fileNameOutSignal(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
+      logStatus<<"write signal bias to file <"<<fileNameOutSignal.appendBaseName(suffix)<<">"<<Log::endl;
       GnssSignalBias signalBias = this->signalBias;
       for(UInt idType=0; idType<signalBias.type.size(); idType++)
         if(signalBias.type.at(idType) == GnssType::PHASE)
           signalBias.bias.at(idType) = std::remainder(signalBias.bias.at(idType), LIGHT_VELOCITY/signalBias.type.at(idType).frequency());
-      writeFileGnssSignalBias(fileNameOutSignal(fileNameVariableList).appendBaseName(suffix), signalBias);
+      writeFileGnssSignalBias(fileNameOutSignal.appendBaseName(suffix), signalBias);
     }
   }
   catch(std::exception &e)

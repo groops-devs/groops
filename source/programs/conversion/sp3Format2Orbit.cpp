@@ -40,7 +40,7 @@ See also \program{Orbit2Sp3Format}.
 class Sp3Format2Orbit
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Sp3Format2Orbit, SINGLEPROCESS, "read IGS orbits from SP3 format", Conversion, Orbit, Covariance, Instrument)
@@ -49,7 +49,7 @@ GROOPS_RENAMED_PROGRAM(Igs2Orbit,     Sp3Format2Orbit, date2time(2020, 8, 4))
 
 /***********************************************/
 
-void Sp3Format2Orbit::run(Config &config)
+void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -206,10 +206,8 @@ void Sp3Format2Orbit::run(Config &config)
     {
       logStatus<<"rotation from TRF to CRF"<<Log::endl;
       UInt idxCov = 0;
-      logTimerStart;
-      for(UInt i=0; i<orbit.size(); i++)
+      Single::forEach(orbit.size(), [&](UInt i)
       {
-        logTimerLoop(i, orbit.size());
         const Rotary3d rotation = inverse(earthRotation->rotaryMatrix(orbit.at(i).time));
         const Vector3d omega    = earthRotation->rotaryAxis(orbit.at(i).time);
         orbit.at(i).position = rotation.rotate(orbit.at(i).position);
@@ -222,8 +220,7 @@ void Sp3Format2Orbit::run(Config &config)
           if((idxCov < cov.size()) && (cov.at(idxCov).time == orbit.at(i).time))
             cov.at(idxCov).covariance = rotation.rotate(cov.at(idxCov).covariance);
         }
-      }
-      logTimerLoopEnd(orbit.size());
+      });
     }
 
     // ==============================

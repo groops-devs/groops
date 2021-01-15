@@ -58,14 +58,14 @@ class PreprocessingGradiometer
   GradiometerArc computeArc(UInt arc);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(PreprocessingGradiometer, PARALLEL, "Estimate covariance function / arc weights.", Preprocessing)
 
 /***********************************************/
 
-void PreprocessingGradiometer::run(Config &config)
+void PreprocessingGradiometer::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -137,15 +137,15 @@ void PreprocessingGradiometer::run(Config &config)
       redundancy = Matrix(covLength, 6);
       sigmasNew  = Vector(arcCount);
       std::vector<Arc> arcList(arcCount);
-      Parallel::forEach(arcList, [this](UInt arcNo) {return computeArc(arcNo);});
-      Parallel::reduceSum(ePe);
-      Parallel::reduceSum(redundancy);
-      Parallel::reduceSum(sigmasNew);
+      Parallel::forEach(arcList, [this](UInt arcNo) {return computeArc(arcNo);}, comm);
+      Parallel::reduceSum(ePe,        0, comm);
+      Parallel::reduceSum(redundancy, 0, comm);
+      Parallel::reduceSum(sigmasNew,  0, comm);
 
       // sigmas per arc
       // --------------
       // median sigma per arc;
-      if(Parallel::isMaster())
+      if(Parallel::isMaster(comm))
       {
         sigmas = sigmasNew;
         Double sigma0 = Vce::meanSigma(sigmas);
@@ -159,20 +159,20 @@ void PreprocessingGradiometer::run(Config &config)
           writeFileMatrix(outSigmaName, sigmas);
         }
       }
-      Parallel::broadCast(sigmas);
+      Parallel::broadCast(sigmas, 0, comm);
 
       // estimate new PSD
       // ----------------
-      if(Parallel::isMaster())
+      if(Parallel::isMaster(comm))
       {
         Double maxFactor = 0;
         Vce::estimatePsd(ePe, redundancy, Psd, maxFactor);
         logInfo<<"  max. PSD adjustment factor: "<<maxFactor<<Log::endl;
-      } // if(Parallel::isMaster())
-      Parallel::broadCast(Psd);
+      } // if(Parallel::isMaster(comm))
+      Parallel::broadCast(Psd, 0, comm);
       copy(CosTransform * Psd, covFunc.column(1,Psd.columns())); // compute new covariance function
 
-      if(Parallel::isMaster() && !outCovName.empty())
+      if(Parallel::isMaster(comm) && !outCovName.empty())
       {
         logStatus<<"write covariance function file <"<<outCovName<<">"<<Log::endl;
         writeFileMatrix(outCovName, covFunc);
@@ -180,7 +180,7 @@ void PreprocessingGradiometer::run(Config &config)
 
       // gradiometer residuals
       // ---------------------
-      if(Parallel::isMaster() && !outResidualsName.empty())
+      if(Parallel::isMaster(comm) && !outResidualsName.empty())
       {
         logStatus<<"write gradiometer residuals file <"<<outResidualsName<<">"<<Log::endl;
         InstrumentFile::write(outResidualsName, arcList);

@@ -34,14 +34,14 @@ To solve the system of normal equations use \program{NormalsSolverVCE}.
 class NormalsBuild
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NormalsBuild, PARALLEL, "accumulate normal equations and write it to file", NormalEquation)
 
 /***********************************************/
 
-void NormalsBuild::run(Config &config)
+void NormalsBuild::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -58,7 +58,7 @@ void NormalsBuild::run(Config &config)
     if(isCreateSchema(config)) return;
 
     logStatus<<"init normal equations"<<Log::endl;
-    normals->init(blockSize);
+    normals->init(blockSize, comm);
     logInfo<<"  number of unknown parameters: "<<normals->parameterCount()<<Log::endl;
     logInfo<<"  number of right hand sides:   "<<normals->rightHandSideCount()<<Log::endl;
 

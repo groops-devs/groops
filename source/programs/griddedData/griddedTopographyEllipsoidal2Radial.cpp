@@ -28,20 +28,17 @@ Interpolate digital terrain models from ellipoidal heights to radial heights.
 class GriddedTopographyEllipsoidal2Radial
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GriddedTopographyEllipsoidal2Radial, PARALLEL, "Interpolate digital terrain models from ellipoidal heights to radial heights", Grid)
+GROOPS_REGISTER_PROGRAM(GriddedTopographyEllipsoidal2Radial, SINGLEPROCESS, "Interpolate digital terrain models from ellipoidal heights to radial heights", Grid)
 
 /***********************************************/
 
-void GriddedTopographyEllipsoidal2Radial::run(Config &config)
+void GriddedTopographyEllipsoidal2Radial::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
-    if(!Parallel::isMaster())
-      return;
-
     FileName fileNameOutGrid, fileNameInGrid;
 
     readConfig(config, "outputfileGriddedData", fileNameOutGrid, Config::MUSTSET, "", "");

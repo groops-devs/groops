@@ -32,13 +32,12 @@ A description of the format can be found under: \url{http://op.gfz-potsdam.de/ch
 * @ingroup programsConversionGroup */
 class TerraSarTandem2Orbit
 {
-  std::string satID;
-  EarthRotationPtr      earthRotation;
+  EarthRotationPtr earthRotation;
 
-  void readOrbit     (const FileName &fileName, std::vector<Time> &times, std::vector<Vector3d> &position, std::vector<Vector3d> &velocity, std::vector<Time> &timeSpan) const;
+  void readOrbit(const FileName &fileName, std::vector<Time> &times, std::vector<Vector3d> &position, std::vector<Vector3d> &velocity, std::vector<Time> &timeSpan) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(TerraSarTandem2Orbit, SINGLEPROCESS, "read TerraSar-X or Tandem-X orbits from the special CHORB format", Conversion, Orbit, Instrument)
@@ -46,7 +45,7 @@ GROOPS_RENAMED_PROGRAM(Tsxtdx2Orbit, Tsxtdx2Starcamera, date2time(2020, 8, 4))
 
 /***********************************************/
 
-void TerraSarTandem2Orbit::run(Config &config)
+void TerraSarTandem2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -99,23 +98,12 @@ void TerraSarTandem2Orbit::run(Config &config)
     // Daten speichern
     // ---------------
     orbitArc.sort();
-    logTimerStart;
-    for(UInt i=1;i<orbitArc.size();i++)
-    {
-      logTimerLoop(i, orbitArc.size());
-      if(orbitArc.at(i).time == orbitArc.at(i-1).time)
-      {
-        orbitArc.remove(i);
-        i--;
-      }
-    }
-    logTimerLoopEnd(orbitArc.size());
+    orbitArc.removeDuplicateEpochs(TRUE);
 
     if(!orbitName.empty())
     {
       logStatus<<"write orbit data to file <"<<orbitName<<">"<<Log::endl;
-      std::list<Arc> arcList; arcList.push_back(orbitArc);
-      InstrumentFile::write(orbitName, arcList);
+      InstrumentFile::write(orbitName, orbitArc);
     }
   }
   catch(std::exception &e)

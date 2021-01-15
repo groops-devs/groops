@@ -31,7 +31,7 @@ containing a time series.
 class TimeSeriesCreate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(TimeSeriesCreate, SINGLEPROCESS, "Create a time series", Misc, TimeSeries)
@@ -39,7 +39,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentCreateTimeSeries, TimeSeriesCreate, date2time(2
 
 /***********************************************/
 
-void TimeSeriesCreate::run(Config &config)
+void TimeSeriesCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

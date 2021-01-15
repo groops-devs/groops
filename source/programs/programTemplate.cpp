@@ -57,7 +57,7 @@ Example: \fig{!hb}{0.5}{regionalGeoidTopography}{fig:regionalGeoidTopographyTemp
 class ProgramTemplate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 // Give some tags of the program for description.
@@ -71,7 +71,7 @@ GROOPS_REGISTER_PROGRAM(ProgramTemplate, PARALLEL/*or SINGLEPROCESS*/, "short de
 
 /***********************************************/
 
-void ProgramTemplate::run(Config &config)
+void ProgramTemplate::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -89,26 +89,23 @@ void ProgramTemplate::run(Config &config)
     // -----------------
     logStatus<<"starting non parallel loop"<<Log::endl;
     std::vector<Double> result(count);
-    logTimerStart;
-    for(UInt i=0; i<count; i++)
+    Single::forEach(count, [&](UInt i)
     {
-      logTimerLoop(i,count);
       result.at(i) = compute(i);
-    }
-    logTimerLoopEnd(count);
+    });
 
     // same with paralleization
     // ------------------------
     logStatus<<"starting parallel loop"<<Log::endl;
-    Parallel::forEach(result, [&](UInt i) {return compute(i);});
+    Parallel::forEach(result, [&](UInt i) {return compute(i);}, comm);
     // or insertion of code directly as alternative:
-    Parallel::forEach(result, [](UInt i) {return i*i;});
+    Parallel::forEach(result, [](UInt i) {return i*i;}, comm);
     // for functions without return:
-    Parallel::forEach(count, [&](UInt i) {compute(i);});
+    Parallel::forEach(count, [&](UInt i) {compute(i);}, comm);
 
     // Write results
     // -------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"writing output file <"<<fileNameOut<<">"<<Log::endl;
       writeFileMatrix(fileNameOut, Vector(result));

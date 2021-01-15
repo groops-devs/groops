@@ -40,14 +40,14 @@ See also \program{GravityfieldCovariancesPropagation2GriddedData}, \program{Grav
 class Gravityfield2GridCovarianceMatrix
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2GridCovarianceMatrix, SINGLEPROCESS, "Covariance matrix of values of a gravity field on a grid.", Gravityfield)
 
 /***********************************************/
 
-void Gravityfield2GridCovarianceMatrix::run(Config &config)
+void Gravityfield2GridCovarianceMatrix::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

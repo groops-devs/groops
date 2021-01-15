@@ -77,12 +77,12 @@ void GnssParametrizationAmbiguities::initIntervalLate(Gnss::AnalysisType /*analy
         for(auto &track : recv->track)
         {
           AmbiguityPtr ambiguity  = std::make_shared<Ambiguity>();
-          ambiguity->track        = track;
+          ambiguity->track        = track.get();
           ambiguity->types        = Gnss::replaceCompositeSignals(track->types);
           ambiguity->T            = phaseDecorrelation(ambiguity->types, recv->wavelengthFactor());
           ambiguity->value        = Vector(ambiguity->T.columns());
           ambiguity->isInteger    = FALSE;
-          track->ambiguity = ambiguity;
+          track->ambiguity = ambiguity.get();
           ambiguities.push_back(ambiguity);
         }
   }
@@ -300,7 +300,7 @@ Bool GnssParametrizationAmbiguities::isDesignMatrix(const Gnss::NormalEquationIn
     const Gnss::Track *track = gnss().receiver.at(idRecv)->observation(idTrans, idEpoch)->track;
     if(!track || !track->ambiguity)
       return FALSE;
-    const AmbiguityPtr ambiguity = std::dynamic_pointer_cast<Ambiguity>(track->ambiguity);
+    const Ambiguity *ambiguity = dynamic_cast<Ambiguity*>(track->ambiguity);
     return (ambiguity->parameterIndex) && ambiguity->value.size();
   }
   catch(std::exception &e)
@@ -317,7 +317,7 @@ void GnssParametrizationAmbiguities::designMatrix(const Gnss::NormalEquationInfo
   {
     if((!eqn.track) || (!eqn.track->ambiguity))
       return;
-    AmbiguityPtr ambiguity = std::dynamic_pointer_cast<Ambiguity>(eqn.track->ambiguity);
+    const Ambiguity *ambiguity = dynamic_cast<Ambiguity*>(eqn.track->ambiguity);
     if(ambiguity->parameterIndex)
     {
       MatrixSlice Design(A.column(ambiguity->parameterIndex));

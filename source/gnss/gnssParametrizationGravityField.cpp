@@ -36,26 +36,9 @@ GnssParametrizationGravityField::GnssParametrizationGravityField(Config &config,
     renameDeprecatedConfig(config, "representation", "parametrization", date2time(2020, 6, 3));
     readConfig(config, "parametrization", parametrizationPtr, Config::MUSTSET, "", "gravity field parametrization");
     endSequence(config);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
+    if(isCreateSchema(config)) return;
 
-/***********************************************/
-
-GnssParametrizationGravityField::~GnssParametrizationGravityField()
-{
-}
-
-/***********************************************/
-
-void GnssParametrizationGravityField::initIntervalEarly(Gnss::AnalysisType /*analysisType*/, const std::vector<Time> &/*times*/, const Time &/*timeMargin*/, Parallel::CommunicatorPtr /*comm*/)
-{
-  try
-  {
-    this->x = Vector(parametrizationPtr->parameterCount());
+    x = Vector(parametrizationPtr->parameterCount());
   }
   catch(std::exception &e)
   {

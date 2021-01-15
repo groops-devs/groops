@@ -64,23 +64,20 @@ OrbitArc OrbitPropagatorGaussJackson::integrateArc(OrbitEpoch startEpoch, Time s
 
     // Propagate rest of orbit arc
     // ---------------------------
-    if(timing) logTimerStart;
-    for(UInt k=1; k<posCount; k++)
+    Single::forEach(posCount-1, [&](UInt k)
     {
-      if(timing) logTimerLoop(k, posCount);
-
-      secondSum += firstSum + 0.5*orbit.at(k+order-1).acceleration;
+      secondSum += firstSum + 0.5*orbit.at(k+order).acceleration;
 
       // Predict
       // -------
       OrbitEpoch epoch;
-      epoch.time     = orbit.at(k+order-1).time + sampling;
+      epoch.time     = orbit.at(k+order).time + sampling;
       epoch.position = dt*dt * secondSum; // eq. 88;
       for(UInt j=0; j<order+1; j++)
-        epoch.position += dt*dt * A(order+1, j) * orbit.at(k+j-1).acceleration;
-      epoch.velocity = dt * (firstSum + 0.5 * orbit.at(k+order-1).acceleration);
+        epoch.position += dt*dt * A(order+1, j) * orbit.at(k+j).acceleration;
+      epoch.velocity = dt * (firstSum + 0.5 * orbit.at(k+order).acceleration);
       for(UInt j=0; j<order+1; j++)
-        epoch.velocity += dt * B(order+1, j) * orbit.at(k+j-1).acceleration;
+        epoch.velocity += dt * B(order+1, j) * orbit.at(k+j).acceleration;
       epoch.acceleration = acceleration(epoch, forces, satellite, earthRotation, ephemerides);
       orbit.push_back(epoch);
 
@@ -89,15 +86,15 @@ OrbitArc OrbitPropagatorGaussJackson::integrateArc(OrbitEpoch startEpoch, Time s
       // Precompute the accelerations from epochs up until the predicted one
       Vector3d summedAccelerationsPosition;
       for(UInt j=0; j<order; j++)
-        summedAccelerationsPosition += A(order, j) * orbit.at(k+j).acceleration;
+        summedAccelerationsPosition += A(order, j) * orbit.at(k+j+1).acceleration;
       Vector3d summedAccelerationsVelocity;
       for(UInt j=0; j<order; j++)
-        summedAccelerationsVelocity += B(order, j) * orbit.at(k+j).acceleration;
+        summedAccelerationsVelocity += B(order, j) * orbit.at(k+j+1).acceleration;
 
       Vector3d firstSumOld = firstSum;
       for(UInt iter=0; iter<maxCorrectorIterations; iter++)
       {
-        firstSum = firstSumOld + 0.5 * (orbit.at(k+order-1).acceleration + epoch.acceleration);
+        firstSum = firstSumOld + 0.5 * (orbit.at(k+order).acceleration + epoch.acceleration);
 
         // Compute updated state, including accelerations due to current predicted/corrected epoch
         const OrbitEpoch epochOld = epoch;
@@ -108,9 +105,8 @@ OrbitArc OrbitPropagatorGaussJackson::integrateArc(OrbitEpoch startEpoch, Time s
           break;
       }
 
-      orbit.at(order+k) = epoch;
-    }
-    if(timing) logTimerLoopEnd(posCount);
+      orbit.at(order+k+1) = epoch;
+    }, timing);
 
     // remove warmup
     orbit.remove(0, order);

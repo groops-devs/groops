@@ -37,14 +37,14 @@ See also \program{GnssOrbex2StarCamera}.
 class GnssAttitude2Orbex
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssAttitude2Orbex, SINGLEPROCESS, "Convert attitude of GNSS satellites to ORBEX file format (quaternions).", Conversion, Gnss)
 
 /***********************************************/
 
-void GnssAttitude2Orbex::run(Config &config)
+void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

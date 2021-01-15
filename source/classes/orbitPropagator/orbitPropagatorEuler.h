@@ -55,18 +55,15 @@ inline OrbitArc OrbitPropagatorEuler::integrateArc(OrbitEpoch startEpoch, Time s
     orbit.push_back(startEpoch);
     const Double dt = sampling.seconds();
 
-    if(timing) logTimerStart;
-    for(UInt k=1; k<posCount; k++)
+    Single::forEach(posCount-1, [&](UInt k)
     {
-      if(timing) logTimerLoop(k, posCount);
       OrbitEpoch epoch;
-      epoch.time         = orbit.at(k-1).time + sampling;
-      epoch.position     = orbit.at(k-1).position + dt * orbit.at(k-1).velocity;
-      epoch.velocity     = orbit.at(k-1).velocity + dt * orbit.at(k-1).acceleration;
+      epoch.time         = orbit.at(k).time + sampling;
+      epoch.position     = orbit.at(k).position + dt * orbit.at(k).velocity;
+      epoch.velocity     = orbit.at(k).velocity + dt * orbit.at(k).acceleration;
       epoch.acceleration = acceleration(epoch, forces, satellite, earthRotation, ephemerides);
       orbit.push_back(epoch);
-    }
-    if(timing) logTimerLoopEnd(posCount);
+    }, timing);
 
     return orbit;
   }

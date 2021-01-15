@@ -32,14 +32,14 @@ class GoceXml2Orbit
   void readFileGoceOrbit(const FileName &fileName, OrbitArc &arc);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GoceXml2Orbit, SINGLEPROCESS, "read ESA XML GOCE Data", Conversion, Orbit, Instrument)
 
 /***********************************************/
 
-void GoceXml2Orbit::run(Config &config)
+void GoceXml2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -63,16 +63,13 @@ void GoceXml2Orbit::run(Config &config)
     if(earthRotation)
     {
       logStatus<<"rotation from TRF to CRF"<<Log::endl;
-      logTimerStart;
-      for(UInt i=0; i<orbit.size(); i++)
+      Single::forEach(orbit.size(), [&](UInt i)
       {
-        logTimerLoop(i,orbit.size());
         const Rotary3d rotation = inverse(earthRotation->rotaryMatrix(orbit.at(i).time));
         const Vector3d omega    = earthRotation->rotaryAxis(orbit.at(i).time);
         orbit.at(i).position = rotation.rotate(orbit.at(i).position);
         orbit.at(i).velocity = rotation.rotate(orbit.at(i).velocity) + crossProduct(omega, orbit.at(i).position);
-      }
-      logTimerLoopEnd(orbit.size());
+      });
     }
 
     logStatus<<"write orbit data to file <"<<outName<<">"<<Log::endl;

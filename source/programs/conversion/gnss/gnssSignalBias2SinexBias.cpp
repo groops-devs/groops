@@ -80,7 +80,7 @@ private:
   UInt countBiases(const std::vector<Data> &data) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssSignalBias2SinexBias, SINGLEPROCESS, "Convert GNSS signal biases from GROOPS format to IGS SINEX Bias format.", Conversion, Gnss)
@@ -308,7 +308,7 @@ UInt GnssSignalBias2SinexBias::countBiases(const std::vector<Data> &data) const
 
 /***********************************************/
 
-void GnssSignalBias2SinexBias::run(Config &config)
+void GnssSignalBias2SinexBias::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -71,11 +71,16 @@
         <div id="content" class="container">
             <h1>GroupPrograms</h1><p>
 
-Runs programs in a group. The sole purpose is to structure GROOPS config files.
+Runs <strong class="groops-config-element">program</strong>s in a group, which can be used to structure a config file.
+If <strong class="groops-config-element">catchErrors</strong> is enabled and an error occurs, the remaining <strong class="groops-config-element">program</strong>s
+are skipped and execution continues with <strong class="groops-config-element">errorProgram</strong>s, in case any are defined.
+Otherwise an exception is thrown.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">program</div></div></td><td>programType</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">catchErrors</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional-unbounded">errorProgram</div></div></td><td>programType</td><td>executed if an error occured</td></tr>
 </table>
 This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.
 

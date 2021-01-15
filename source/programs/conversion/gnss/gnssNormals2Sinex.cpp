@@ -52,7 +52,7 @@ public:
     std::string variablePrn;
   };
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssNormals2Sinex, SINGLEPROCESS, "Write GNSS data/metadata and normal equations to SINEX format.", Conversion, Gnss, NormalEquation)
@@ -73,7 +73,7 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssNormals2
 
 /***********************************************/
 
-void GnssNormals2Sinex::run(Config &config)
+void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

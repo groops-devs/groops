@@ -33,14 +33,14 @@ where $\M n_i$ is the (normalized) position. This implies that all points are pr
 class GriddedData2SphericalDistance
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GriddedData2SphericalDistance, SINGLEPROCESS, "spherical distance between all point pairs of two grids.", Grid, Matrix)
 
 /***********************************************/
 
-void GriddedData2SphericalDistance::run(Config &config)
+void GriddedData2SphericalDistance::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

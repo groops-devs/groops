@@ -88,7 +88,7 @@ class PreprocessingVariationalEquation
   Matrix approxInverse(Double deltaT, const std::vector<Tensor3d> &tensor, const_MatrixSliceRef x) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(PreprocessingVariationalEquation, PARALLEL, "Integrate Variational Equations.", Preprocessing, VariationalEquation)
@@ -96,7 +96,7 @@ GROOPS_REGISTER_PROGRAM(PreprocessingVariationalEquation, PARALLEL, "Integrate V
 /***********************************************/
 /***********************************************/
 
-void PreprocessingVariationalEquation::run(Config &config)
+void PreprocessingVariationalEquation::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -185,19 +185,19 @@ void PreprocessingVariationalEquation::run(Config &config)
     logStatus<<"integrate arcs"<<Log::endl;
     maxPosDiff = 0;
     std::vector<VariationalEquationArc> arcs(orbitFile.arcCount());
-    Parallel::forEach(arcs, [this](UInt arcNo) {return computeArc(arcNo);});
-    Parallel::reduceMax(maxPosDiff);
+    Parallel::forEach(arcs, [this](UInt arcNo) {return computeArc(arcNo);}, comm);
+    Parallel::reduceMax(maxPosDiff, 0, comm);
     logInfo<<"  max diff (orbit-reference orbit) "<<maxPosDiff<<" m"<<Log::endl;
 
     // write results
     // -------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write variational equation to file <"<<fileNameOutVariational<<">"<<Log::endl;
       writeFileVariationalEquation(fileNameOutVariational, satellite, arcs);
     }
 
-    if(Parallel::isMaster() && !fileNameOutOrbit.empty())
+    if(Parallel::isMaster(comm) && !fileNameOutOrbit.empty())
     {
       logStatus<<"write orbit to file <"<<fileNameOutOrbit<<">"<<Log::endl;
       std::list<Arc> arcList;

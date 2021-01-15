@@ -33,7 +33,7 @@ class GroopsAscii2Orbit
   void readFile(const FileName &fileName, OrbitArc &arcOrb, Covariance3dArc &arcCov);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GroopsAscii2Orbit, SINGLEPROCESS, "read Orbits given in groosp kinematic ASCII format", Conversion, Orbit, Covariance, Instrument)
@@ -41,7 +41,7 @@ GROOPS_RENAMED_PROGRAM(AsciiKinematic2OrbitCovariance, GroopsAscii2Orbit, date2t
 
 /***********************************************/
 
-void GroopsAscii2Orbit::run(Config &config)
+void GroopsAscii2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -106,15 +106,13 @@ void GroopsAscii2Orbit::run(Config &config)
     if(earthRotation)
     {
       logStatus<<"rotation from TRF to CRF"<<Log::endl;
-      logTimerStart;
-      for(UInt i=0; i<orbit.size(); i++)
+      Log::startTimer();
+      Single::forEach(orbit.size(), [&](UInt i)
       {
-        logTimerLoop(i, orbit.size());
         const Rotary3d rotation = inverse(earthRotation->rotaryMatrix(orbit.at(i).time));
         orbit.at(i).position = rotation.rotate(orbit.at(i).position);
         cov.at(i).covariance = rotation.rotate(cov.at(i).covariance);
-      }
-      logTimerLoopEnd(orbit.size());
+      });
     }
 
     if(!fileNameOrbit.empty())

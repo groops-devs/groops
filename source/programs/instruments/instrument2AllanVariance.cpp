@@ -37,7 +37,7 @@ where $m\tau_0$ is the averaging interval defined by the median sampling $\tau_0
 class Instrument2AllanVariance
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Instrument2AllanVariance, PARALLEL, "Compute Allan variance from instrument files.", Instrument, Covariance)
@@ -45,7 +45,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentComputeAllanVariance, Instrument2AllanVariance,
 
 /***********************************************/
 
-void Instrument2AllanVariance::run(Config &config)
+void Instrument2AllanVariance::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -61,7 +61,7 @@ void Instrument2AllanVariance::run(Config &config)
 
     UInt arcEpochCount, arcCount;
     Time sampling = seconds2time(1.0);
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       arcCount = instrumentFile.arcCount();
       std::vector<Time> times;
@@ -82,8 +82,8 @@ void Instrument2AllanVariance::run(Config &config)
       logInfo<<"  maximum arc length: "<<arcEpochCount<<" epochs"<<Log::endl;
       logInfo<<"  median sampling:    "<<sampling.seconds()<<" seconds"<<Log::endl;
     }
-    Parallel::broadCast(arcEpochCount);
-    Parallel::broadCast(arcCount);
+    Parallel::broadCast(arcEpochCount, 0, comm);
+    Parallel::broadCast(arcCount,      0, comm);
 
     logStatus<<"compute Allan variance"<<Log::endl;
     Matrix allanVariance(arcEpochCount/2, dataCount+1);
@@ -102,11 +102,11 @@ void Instrument2AllanVariance::run(Config &config)
             allanVariance(m, i) += factor * std::pow(data(n+2*m, i) - 2*data(n+m, i) + data(n, i), 2);
         samplesPerInterval(m)++;
       }
-    });
-    Parallel::reduceSum(allanVariance);
-    Parallel::reduceSum(samplesPerInterval);
+    }, comm);
+    Parallel::reduceSum(allanVariance, 0, comm);
+    Parallel::reduceSum(samplesPerInterval, 0, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       for(UInt m=1; m<allanVariance.rows(); m++)
       {

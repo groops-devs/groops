@@ -35,14 +35,14 @@ It also is possible to simply count the number of data points that were assigned
 class GriddedData2GriddedDataStatistics
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GriddedData2GriddedDataStatistics, SINGLEPROCESS, "Assign gridded data to grid points", Grid)
 
 /***********************************************/
 
-void GriddedData2GriddedDataStatistics::run(Config &config)
+void GriddedData2GriddedDataStatistics::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -111,11 +111,8 @@ void GriddedData2GriddedDataStatistics::run(Config &config)
     // Assign grid
     // -----------
     logStatus<<"assign grid"<<Log::endl;
-    logTimerStart;
-    for(UInt i=0; i<grid.points.size(); i++)
+    Single::forEach(grid.points.size(), [&](UInt i)
     {
-      logTimerLoop(i, grid.points.size());
-
       // find nearest neighbor
       UInt idx = 0;
       if(isRectangle)
@@ -162,8 +159,7 @@ void GriddedData2GriddedDataStatistics::run(Config &config)
           default: ;
         }
       }
-    }
-    logTimerLoopEnd(grid.points.size());
+    });
 
     // post computation
     // ----------------

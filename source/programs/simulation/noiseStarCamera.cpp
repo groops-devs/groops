@@ -30,14 +30,14 @@ See \configClass{noiseGenerator}{noiseGeneratorType} for details on noise option
 class NoiseStarCamera
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NoiseStarCamera, PARALLEL, "add noise to rotation observations", Simulation, Noise, Instrument)
 
 /***********************************************/
 
-void NoiseStarCamera::run(Config &config)
+void NoiseStarCamera::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -81,10 +81,10 @@ void NoiseStarCamera::run(Config &config)
         arc.push_back(epoch);
       }
       return arc;
-    }); // forEach
+    }, comm); // forEach
 
     logStatus<<"write star camera data to file <"<<outName<<">"<<Log::endl;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
       InstrumentFile::write(outName, arcList);
   }
   catch(std::exception &e)

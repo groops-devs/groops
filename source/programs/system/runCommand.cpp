@@ -30,14 +30,14 @@ distributed nodes, otherwise they are exceuted consecutively at master node only
 class RunCommand
 {
  public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(RunCommand, PARALLEL, "Execute system commands", System)
 
 /***********************************************/
 
-void RunCommand::run(Config &config)
+void RunCommand::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -70,8 +70,8 @@ void RunCommand::run(Config &config)
     };
 
     if(executeParallel)
-      Parallel::forEach(command.size(), run);
-    else if(Parallel::isMaster())
+      Parallel::forEach(command.size(), run, comm);
+    else if(Parallel::isMaster(comm))
       for(UInt i=0; i<command.size(); i++)
         run(i);
   }

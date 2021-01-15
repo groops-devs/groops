@@ -39,14 +39,14 @@ The corresponding pseudo observations can be computed with \program{Gravityfield
 class NormalsRegularizationSphericalHarmonics
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NormalsRegularizationSphericalHarmonics, SINGLEPROCESS, "diagonal regularization matrix from gravity field accuracies, if not given from signal (cnm,snm), if not given from kaulas rule", NormalEquation)
 
 /***********************************************/
 
-void NormalsRegularizationSphericalHarmonics::run(Config &config)
+void NormalsRegularizationSphericalHarmonics::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

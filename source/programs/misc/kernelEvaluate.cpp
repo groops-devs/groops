@@ -29,14 +29,14 @@ The main purpose is for visualization with \program{PlotGraph}.
 class KernelEvaluate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(KernelEvaluate, SINGLEPROCESS, "Compute kernel values for distant angles", Misc)
 
 /***********************************************/
 
-void KernelEvaluate::run(Config &config)
+void KernelEvaluate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -56,15 +56,12 @@ void KernelEvaluate::run(Config &config)
 
     const UInt count = static_cast<UInt>((maxv-minv)/sampling+1);
     Matrix A(count, 2);
-    logTimerStart;
-    for(UInt i=0; i<count; i++)
+    Single::forEach(count, [&](UInt i)
     {
-      logTimerLoop(i, count);
       const Double psi = std::min(Double(maxv), minv + i*Double(sampling));
       A(i,0) = psi*RAD2DEG;
       A(i,1) = kernel->kernel(Vector3d((R+H)*sin(psi), 0, (R+H)*cos(psi)), Vector3d(0, 0, R));
-    }
-    logTimerLoopEnd(count);
+    });
 
     logStatus<<"writing output file <"<<fileNameOut<<">"<<Log::endl;
     writeFileMatrix(fileNameOut, A);

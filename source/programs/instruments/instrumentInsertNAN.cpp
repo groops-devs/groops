@@ -30,14 +30,14 @@ either at specific \configClass{times}{timeSeriesType} or where gaps in the inst
 class InstrumentInsertNAN
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(InstrumentInsertNAN, SINGLEPROCESS, "Insert epochs with data NAN into instrument files", Instrument, Plot)
+GROOPS_REGISTER_PROGRAM(InstrumentInsertNAN, PARALLEL, "Insert epochs with data NAN into instrument files", Instrument, Plot)
 
 /***********************************************/
 
-void InstrumentInsertNAN::run(Config &config)
+void InstrumentInsertNAN::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -135,12 +135,12 @@ void InstrumentInsertNAN::run(Config &config)
       }
 
       return arc;
-    });
+    }, comm);
 
-    Parallel::reduceSum(total);
+    Parallel::reduceSum(total, 0, comm);
     logStatus<<"  inserted "<<total<<" NaNs"<<Log::endl;
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write instrument to file <"<<outputfileInstrument<<">"<<Log::endl;
       InstrumentFile::write(outputfileInstrument, arcList);

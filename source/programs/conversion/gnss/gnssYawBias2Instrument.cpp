@@ -53,14 +53,14 @@ class GnssYawBias2Instrument
   std::vector<YawBias> readYawBiasFile(FileName yawBiasFile) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssYawBias2Instrument, SINGLEPROCESS, "Convert yaw bias table from JPL to an InstrumentMisc file for a GPS PRN.", Conversion, Gnss)
 
 /***********************************************/
 
-void GnssYawBias2Instrument::run(Config &config)
+void GnssYawBias2Instrument::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

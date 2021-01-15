@@ -31,7 +31,7 @@ from the GRACE SDS format into \configFile{outputfileDoodsonHarmonics}{doodsonHa
 class GraceAod2DoodsonHarmonics
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceAod2DoodsonHarmonics, SINGLEPROCESS, "Convert AOD1B tides into DoodsonHarmonics.", Conversion, DoodsonHarmonics)
@@ -39,7 +39,7 @@ GROOPS_RENAMED_PROGRAM(GraceCsrAod2DoodsonHarmonics, GraceAod2DoodsonHarmonics, 
 
 /***********************************************/
 
-void GraceAod2DoodsonHarmonics::run(Config &config)
+void GraceAod2DoodsonHarmonics::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -29,14 +29,14 @@ See \configClass{noiseGenerator}{noiseGeneratorType} for details on noise genera
 class NoiseInstrument
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NoiseInstrument, PARALLEL, "add noise to instrument data", Simulation, Noise, Instrument)
 
 /***********************************************/
 
-void NoiseInstrument::run(Config &config)
+void NoiseInstrument::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -62,9 +62,9 @@ void NoiseInstrument::run(Config &config)
       countData   = std::min(countData, data.columns()-1-startData);
       data.column(1+startData, countData) += noiseGenerator->noise(data.rows(), countData);
       return Arc(arc.times(), data, arc.getType());
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write instrument data to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

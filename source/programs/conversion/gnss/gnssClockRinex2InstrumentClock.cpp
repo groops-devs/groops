@@ -37,7 +37,7 @@ class GnssClockRinex2InstrumentClock
   void readFile(const FileName &fileName, std::vector<std::string> identifier, std::vector<std::vector<Time>> &times, std::vector<std::vector<Double>> &clock) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssClockRinex2InstrumentClock, SINGLEPROCESS, "Convert GNSS clock RINEX files to single value instrument files for satellites or stations.", Conversion, Gnss, Instrument)
@@ -45,7 +45,7 @@ GROOPS_RENAMED_PROGRAM(Igs2InstrumentClock, GnssClockRinex2InstrumentClock, date
 
 /***********************************************/
 
-void GnssClockRinex2InstrumentClock::run(Config &config)
+void GnssClockRinex2InstrumentClock::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

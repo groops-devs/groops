@@ -86,18 +86,15 @@ inline OrbitArc OrbitPropagatorAdamsBashforthMoulton::integrateArc(OrbitEpoch st
     OrbitArc orbit = flip(warmup->integrateArc(startEpoch, -sampling, order, forces, satellite, earthRotation, ephemerides, FALSE));
 
     // Integrate remaining arc
-    if(timing) logTimerStart;
-    for(UInt k=1; k<posCount; k++)
+    Single::forEach(posCount-1, [&](UInt k)
     {
-      if(timing) logTimerLoop(k, posCount);
-
       // Predict using Adams-Bashforth
       OrbitEpoch epoch = orbit.back();
       epoch.time += sampling;
       for(UInt j=1; j<=order; j++)
-        epoch.position += dt * betaAB(j) * orbit.at(k+j-2).velocity;
+        epoch.position += dt * betaAB(j) * orbit.at(k+j-1).velocity;
       for(UInt j=1; j<=order; j++)
-        epoch.velocity += dt * betaAB(j) * orbit.at(k+j-2).acceleration;
+        epoch.velocity += dt * betaAB(j) * orbit.at(k+j-1).acceleration;
       epoch.acceleration = acceleration(epoch, forces, satellite, earthRotation, ephemerides);
       orbit.push_back(epoch);
 
@@ -107,14 +104,13 @@ inline OrbitArc OrbitPropagatorAdamsBashforthMoulton::integrateArc(OrbitEpoch st
         epoch = orbit.at(orbit.size()-2);
         epoch.time += sampling;
         for(UInt j=1; j<=order; j++)
-          epoch.position += dt * betaAM(j) * orbit.at(k+j-1).velocity;
+          epoch.position += dt * betaAM(j) * orbit.at(k+j).velocity;
         for(UInt j=1; j<=order; j++)
-          epoch.velocity += dt * betaAM(j) * orbit.at(k+j-1).acceleration;
+          epoch.velocity += dt * betaAM(j) * orbit.at(k+j).acceleration;
         epoch.acceleration = acceleration(epoch, forces, satellite, earthRotation, ephemerides);
-        orbit.at(k+order-1) = epoch;
+        orbit.at(k+order) = epoch;
       }
-    }
-    if(timing) logTimerLoopEnd(posCount);
+    }, timing);
 
     // remove warmup
     orbit.remove(0, order-1);

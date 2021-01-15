@@ -33,14 +33,14 @@ See also \program{NetCdfInfo}, \program{NetCdf2GridRectangular}.
 class NetCdf2PotentialCoefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NetCdf2PotentialCoefficients, PARALLEL, "Convert a NetCDF file to a sequence of PotentialCoefficients files", Conversion, Grid)
 
 /***********************************************/
 
-void NetCdf2PotentialCoefficients::run(Config &config)
+void NetCdf2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -77,7 +77,7 @@ void NetCdf2PotentialCoefficients::run(Config &config)
     GriddedDataRectangular grid;
     std::vector<Time> epochs(1);
     Matrix l;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       // open netCDF file
       // ----------------
@@ -109,10 +109,8 @@ void NetCdf2PotentialCoefficients::run(Config &config)
 
       // data variables
       // --------------
-      logTimerStart;
-      for(UInt idEpoch=0; idEpoch<epochs.size(); idEpoch++)
+      Single::forEach(epochs.size(), [&](UInt idEpoch)
       {
-        logTimerLoop(idEpoch, epochs.size());
         for(const std::string &name : dataName)
         {
           auto var  = file.variable(name);
@@ -146,12 +144,11 @@ void NetCdf2PotentialCoefficients::run(Config &config)
           else
             throw(Exception("variable <"+name+"> must have ("+latName+", "+lonName+") dimensions"));
         }
-      }
-      logTimerLoopEnd(epochs.size());
+      });
     }
     logStatus<<"distribute grid values"<<Log::endl;
-    Parallel::broadCast(grid);
-    Parallel::broadCast(l);
+    Parallel::broadCast(grid, 0, comm);
+    Parallel::broadCast(l, 0, comm);
 
     std::vector<Angle>  lambda, phi;
     std::vector<Double> radius, dLambda, dPhi;
@@ -203,15 +200,15 @@ void NetCdf2PotentialCoefficients::run(Config &config)
         rankKUpdate(weight, A, N.at(m));
         matMult(weight, A.trans(), l.row(i*lambda.size(), lambda.size()), n.at(m));
       }
-    });
+    }, comm);
 
     logStatus<<"solve normal equations"<<Log::endl;
     std::vector<Matrix> x;
     for(UInt m=0; m<maxDegree+1; m++)
     {
-      Parallel::reduceSum(N.at(m));
-      Parallel::reduceSum(n.at(m));
-      if(Parallel::isMaster())
+      Parallel::reduceSum(N.at(m), 0, comm);
+      Parallel::reduceSum(n.at(m), 0, comm);
+      if(Parallel::isMaster(comm))
       {
         for(UInt k=0; k<N.at(m).rows(); k++)
           if(N.at(m)(k, k) == 0.0)
@@ -221,7 +218,7 @@ void NetCdf2PotentialCoefficients::run(Config &config)
     }
 
     logStatus<<"write results to <"<<outName<<">"<<Log::endl;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       VariableList fileNameVariableList;
       addVariable(loopVar, fileNameVariableList);

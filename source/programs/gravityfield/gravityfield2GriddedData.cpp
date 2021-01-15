@@ -39,14 +39,14 @@ To visualize the results use \program{PlotMap}.
 class Gravityfield2GriddedData
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2GriddedData, PARALLEL, "values of a gravity field on a grid.", Gravityfield, Grid, Covariance)
 
 /***********************************************/
 
-void Gravityfield2GriddedData::run(Config &config)
+void Gravityfield2GriddedData::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -78,17 +78,17 @@ void Gravityfield2GriddedData::run(Config &config)
     logStatus<<"create values on grid"<<Log::endl;
     std::vector<Double> field(points.size());
     if(!convertToHarmonics) // All representations, all point distributions
-      Parallel::forEach(field, [&](UInt i){return gravityfield->field(time, points.at(i), *kernel);});
+      Parallel::forEach(field, [&](UInt i){return gravityfield->field(time, points.at(i), *kernel);}, comm);
     else // fast version
-      field = MiscGriddedData::synthesisSphericalHarmonics(gravityfield->sphericalHarmonics(time), points, kernel);
+      field = MiscGriddedData::synthesisSphericalHarmonics(gravityfield->sphericalHarmonics(time), points, kernel, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"save values to file <"<<fileNameGrid<<">"<<Log::endl;
       GriddedData griddedData(Ellipsoid(a,f), points, areas, {field});
       writeFileGriddedData(fileNameGrid, griddedData);
       MiscGriddedData::printStatistics(griddedData);
-    } // if(Parallel::isMaster())
+    } // if(Parallel::isMaster(comm))
   }
   catch(std::exception &e)
   {

@@ -78,7 +78,7 @@ public:
   Vector x;
   Double sigma0;
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 
   void buildNormals(UInt arcNo);
 };
@@ -88,7 +88,7 @@ GROOPS_REGISTER_PROGRAM(PreprocessingVariationalEquationOrbitFit, PARALLEL, "fit
 /***********************************************/
 /***********************************************/
 
-void PreprocessingVariationalEquationOrbitFit::run(Config &config)
+void PreprocessingVariationalEquationOrbitFit::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -148,17 +148,17 @@ void PreprocessingVariationalEquationOrbitFit::run(Config &config)
       obsCount     = 0;
       outlierCount = 0;
 
-      Parallel::forEach(podFile.arcCount(), [this](UInt arcNo) {buildNormals(arcNo);});
+      Parallel::forEach(podFile.arcCount(), [this](UInt arcNo) {buildNormals(arcNo);}, comm);
 
-      Parallel::reduceSum(N);
-      Parallel::reduceSum(n);
-      Parallel::reduceSum(lPl);
-      Parallel::reduceSum(obsCount);
-      Parallel::reduceSum(outlierCount);
+      Parallel::reduceSum(N,            0, comm);
+      Parallel::reduceSum(n,            0, comm);
+      Parallel::reduceSum(lPl,          0, comm);
+      Parallel::reduceSum(obsCount,     0, comm);
+      Parallel::reduceSum(outlierCount, 0, comm);
 
       // Estimate parameters
       // -------------------
-      if(Parallel::isMaster())
+      if(Parallel::isMaster(comm))
       {
         // Regularize unused parameters
         for(UInt i=0; i<N.rows(); i++)
@@ -172,16 +172,16 @@ void PreprocessingVariationalEquationOrbitFit::run(Config &config)
         logInfo<<"  outlier "<<outlierCount<<" of "<<obsCount<<" ("<<100.*outlierCount/obsCount<<"%)"<<Log::endl;
       }
 
-      Parallel::broadCast(outlierCount);
+      Parallel::broadCast(outlierCount, 0, comm);
       if((iter>0) && (outlierCount==0))
         break;
 
       logInfo<<"  parameter count = "<<variationalEquationFromFile.parameterCount()<<Log::endl;
-      Parallel::broadCast(x);
-      Parallel::broadCast(sigma0);
+      Parallel::broadCast(x, 0, comm);
+      Parallel::broadCast(sigma0, 0, comm);
     } // for(iter)
 
-    if(Parallel::isMaster() && !fileNameOutSolution.empty())
+    if(Parallel::isMaster(comm) && !fileNameOutSolution.empty())
     {
       logStatus<<"write solution to <"<<fileNameOutSolution<<">"<<Log::endl;
       writeFileMatrix(fileNameOutSolution, x);
@@ -196,11 +196,11 @@ void PreprocessingVariationalEquationOrbitFit::run(Config &config)
     // Improve orbits with estimated parameters
     // ----------------------------------------
     std::vector<VariationalEquationArc> arcs(variationalEquationFromFile.arcCount());
-    Parallel::forEach(arcs, [this](UInt arcNo) {return variationalEquationFromFile.refineVariationalEquationArc(arcNo, x);});
+    Parallel::forEach(arcs, [this](UInt arcNo) {return variationalEquationFromFile.refineVariationalEquationArc(arcNo, x);}, comm);
 
     // =============================================================================
 
-    if(Parallel::isMaster() && !fileNameOutVariational.empty())
+    if(Parallel::isMaster(comm) && !fileNameOutVariational.empty())
     {
       logStatus<<"write variational equation to file <"<<fileNameOutVariational<<">"<<Log::endl;
       writeFileVariationalEquation(fileNameOutVariational, variationalEquationFromFile.satellite(), arcs);
@@ -208,7 +208,7 @@ void PreprocessingVariationalEquationOrbitFit::run(Config &config)
 
     // =============================================
 
-    if(Parallel::isMaster() && !fileNameOutOrbit.empty())
+    if(Parallel::isMaster(comm) && !fileNameOutOrbit.empty())
     {
       logStatus<<"write orbit to file <"<<fileNameOutOrbit<<">"<<Log::endl;
       std::list<Arc> arcList;

@@ -31,20 +31,17 @@ The fine grid can be written, where the coarse grid values are additionally appe
 class GriddedDataReduceSampling
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GriddedDataReduceSampling, PARALLEL, "Generate coarse grid by computing mean values", Grid)
+GROOPS_REGISTER_PROGRAM(GriddedDataReduceSampling, SINGLEPROCESS, "Generate coarse grid by computing mean values", Grid)
 
 /***********************************************/
 
-void GriddedDataReduceSampling::run(Config &config)
+void GriddedDataReduceSampling::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
-    if(!Parallel::isMaster())
-      return;
-
     FileName fileNameOutCoarseGrid, fileNameOutFineGrid;
     FileName fileNameInFineGrid;
     UInt     numberRows, numberCols;

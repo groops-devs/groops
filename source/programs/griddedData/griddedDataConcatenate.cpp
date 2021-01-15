@@ -34,14 +34,14 @@ Identical points (within a \config{margin}) can be removed with \config{removeDu
 class GriddedDataConcatenate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GriddedDataConcatenate, SINGLEPROCESS, "Concatenate gridded data from several files", Grid)
 
 /***********************************************/
 
-void GriddedDataConcatenate::run(Config &config)
+void GriddedDataConcatenate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -67,11 +67,7 @@ inline Bool ConditionFileExist::condition(const VariableList &varList) const
 {
   try
   {
-    Bool result;
-    if(Parallel::isMaster())
-      result = System::exists(StringParser::parse(fileName, varList));
-    Parallel::broadCast(result);
-    return result;
+    return System::exists(StringParser::parse(fileName, varList));
   }
   catch(std::exception &e)
   {

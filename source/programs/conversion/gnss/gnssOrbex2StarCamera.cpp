@@ -34,14 +34,14 @@ See also \program{GnssAttitude2Orbex}.
 class GnssOrbex2StarCamera
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssOrbex2StarCamera, SINGLEPROCESS, "Converts satellite attitude from ORBEX to StarCamera format.", Conversion, Gnss, Instrument)
 
 /***********************************************/
 
-void GnssOrbex2StarCamera::run(Config &config)
+void GnssOrbex2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

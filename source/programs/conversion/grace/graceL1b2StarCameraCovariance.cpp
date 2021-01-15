@@ -29,14 +29,14 @@ for a GRACE satellite under consideration of the active camera heads and an a pr
 class GraceL1b2StarCameraCovariance
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceL1b2StarCameraCovariance, PARALLEL, "Covariance matrix from star camera flags", Conversion, Grace, Covariance, Instrument)
 
 /***********************************************/
 
-void GraceL1b2StarCameraCovariance::run(Config &config)
+void GraceL1b2StarCameraCovariance::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -109,9 +109,9 @@ void GraceL1b2StarCameraCovariance::run(Config &config)
         arc.push_back(epoch);
       }
       return arc;
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write covariance data to file <"<<fileNameCovariance<<">"<<Log::endl;
       InstrumentFile::write(fileNameCovariance, arcList);

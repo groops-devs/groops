@@ -30,7 +30,7 @@ and write them as \configFile{outputfileDoodsonEOP}{doodsonEarthOrientationParam
 class IersHighFrequentEop2DoodsonEop
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(IersHighFrequentEop2DoodsonEop, SINGLEPROCESS, "Read Diurnal and Subdiurnal Earth Orientation variations.", Conversion)
@@ -59,7 +59,7 @@ static Bool stripComments(std::istream &stream)
 
 /***********************************************/
 
-void IersHighFrequentEop2DoodsonEop::run(Config &config)
+void IersHighFrequentEop2DoodsonEop::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

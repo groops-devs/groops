@@ -39,14 +39,14 @@ See also \program{Gravityfield2PotentialCoefficientsTimeSeries}.
 class TimeSeries2PotentialCoefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(TimeSeries2PotentialCoefficients, SINGLEPROCESS, "write time series as potential coefficients for each epoch.", Misc, TimeSeries, PotentialCoefficients)
 
 /***********************************************/
 
-void TimeSeries2PotentialCoefficients::run(Config &config)
+void TimeSeries2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -43,14 +43,14 @@ See also \program{TimeSeries2GriddedData}, \program{Gravityfield2GriddedData}
 class Gravityfield2GriddedDataTimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2GriddedDataTimeSeries, PARALLEL, "time series of gridded gravity fields.", Gravityfield, Grid, TimeSeries)
 
 /***********************************************/
 
-void Gravityfield2GriddedDataTimeSeries::run(Config &config)
+void Gravityfield2GriddedDataTimeSeries::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -91,12 +91,12 @@ void Gravityfield2GriddedDataTimeSeries::run(Config &config)
         std::vector<Double> field = MiscGriddedData::synthesisSphericalHarmonics(gravityfield->sphericalHarmonics(times.at(i)), points, kernel, Parallel::selfCommunicator(), FALSE/*timing*/);
         copy(Vector(field).trans(), A.slice(i, 1, 1, field.size()));
       }
-    });
-    Parallel::reduceSum(A);
+    }, comm);
+    Parallel::reduceSum(A, 0, comm);
 
     // Write results
     // -------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write time series to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, Arc(times, A));

@@ -74,7 +74,7 @@ NormalEquation::NormalEquation(Config &config, const std::string &name)
 
 /***********************************************/
 
-void NormalEquation::init(UInt blockSize)
+void NormalEquation::init(UInt blockSize, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -92,7 +92,7 @@ void NormalEquation::init(UInt blockSize)
       throw(Exception("Cannot determine dimension of normals"));
 
     // init distributed normal matrix
-    normals.initEmpty(MatrixDistributed::computeBlockIndex(paraCount, blockSize));
+    normals.initEmpty(MatrixDistributed::computeBlockIndex(paraCount, blockSize), comm);
     n        = Matrix(paraCount, rhsCount);
     lPl      = Vector(rhsCount);
     obsCount = 0;
@@ -159,7 +159,7 @@ void NormalEquation::setApproximateSolution(const const_MatrixSlice &x0)
       throw(Exception("NormalEquation is not initialized"));
 
     x = x0;
-    Parallel::broadCast(x);
+    Parallel::broadCast(x, 0, normals.communicator());
 
     if((x.rows() != n.rows()) || (x.columns() != n.columns()))
       throw(Exception("dimension error"));
@@ -180,7 +180,7 @@ Bool NormalEquation::build(UInt rightHandSide)
       throw(Exception("NormalEquation is not initialized"));
 
     rhsNo = rightHandSide;
-    Parallel::broadCast(rhsNo);
+    Parallel::broadCast(rhsNo, 0, normals.communicator());
 
     // accumulate normals
     normals.setNull();
@@ -242,12 +242,12 @@ Matrix NormalEquation::solve()
       }
 
     x = normals.solve(n, TRUE/*timing*/);
-    Parallel::broadCast(x);
+    Parallel::broadCast(x, 0, normals.communicator());
 
     // N contains now the cholesky decomposition
     Wz = Vce::monteCarlo(x.rows(), 100);
     normals.triangularSolve(Wz);
-    Parallel::broadCast(Wz);
+    Parallel::broadCast(Wz, 0, normals.communicator());
 
     status = CHOLESKY;
     return x;
@@ -265,9 +265,9 @@ Double NormalEquation::aposterioriSigma()
   try
   {
     Double s;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(normals.communicator()))
       s = std::sqrt((lPl(rhsNo) - inner(x.column(rhsNo), n.column(rhsNo))) / (observationCount() - x.rows()));
-    Parallel::broadCast(s);
+    Parallel::broadCast(s, 0, normals.communicator());
     return s;
   }
   catch(std::exception &e)
@@ -288,8 +288,7 @@ Vector NormalEquation::sigmaParameter()
     Double sigma = aposterioriSigma();
     if((sigma <= 0) || std::isnan(sigma))
     {
-      if(Parallel::isMaster())
-        logWarning<<"sigma = "<<sigma<<" not applied to covariance matrix"<<Log::endl;
+      logWarningOnce<<"sigma = "<<sigma<<" not applied to covariance matrix"<<Log::endl;
       sigma = 1.;
     }
 
@@ -311,8 +310,8 @@ Vector NormalEquation::sigmaParameter()
             diagonal(normals.blockIndex(i)+z) += quadsum(N.row(z));
         }
     }
-    Parallel::reduceSum(diagonal);
-    Parallel::broadCast(diagonal);
+    Parallel::reduceSum(diagonal, 0, normals.communicator());
+    Parallel::broadCast(diagonal, 0, normals.communicator());
     for(UInt i=0; i<diagonal.rows(); i++)
       diagonal(i) = std::sqrt(diagonal(i));
 
@@ -341,8 +340,7 @@ void NormalEquation::writeCovariance(const FileName &fileName)
     Double sigma = aposterioriSigma();
     if((sigma <= 0) || std::isnan(sigma))
     {
-      if(Parallel::isMaster())
-        logWarning<<"sigma = "<<sigma<<" not applied to covariance matrix"<<Log::endl;
+      logWarningOnce<<"sigma = "<<sigma<<" not applied to covariance matrix"<<Log::endl;
       sigma = 1.;
     }
 

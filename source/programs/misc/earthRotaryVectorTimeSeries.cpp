@@ -39,14 +39,14 @@ The \file{instrument file}{instrument} (MISCVALUES) contains the elements at eac
 class EarthRotaryVectorTimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(EarthRotaryVectorTimeSeries, PARALLEL, "Time series of Earth's rotary axis", Misc, TimeSeries)
 
 /***********************************************/
 
-void EarthRotaryVectorTimeSeries::run(Config &config)
+void EarthRotaryVectorTimeSeries::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -78,10 +78,10 @@ void EarthRotaryVectorTimeSeries::run(Config &config)
       A(i,4) = axisDot.x();
       A(i,5) = axisDot.y();
       A(i,6) = axisDot.z();
-    });
-    Parallel::reduceSum(A);
+    }, comm);
+    Parallel::reduceSum(A, 0, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"writing time series to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, Arc(times, A));

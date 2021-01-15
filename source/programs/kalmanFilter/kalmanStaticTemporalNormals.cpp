@@ -133,7 +133,7 @@ high-frequency gravity and satellite specific parameters are eliminated.
 class KalmanStaticTemporalNormals
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 
 private:
   ObservationPtr    observation;
@@ -167,7 +167,7 @@ GROOPS_REGISTER_PROGRAM(KalmanStaticTemporalNormals, PARALLEL, "Combined normal 
 /***********************************************/
 /***********************************************/
 
-void KalmanStaticTemporalNormals::run(Config &config)
+void KalmanStaticTemporalNormals::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -340,7 +340,7 @@ void KalmanStaticTemporalNormals::run(Config &config)
     // =======================
 
     // reserve memory
-    normals.initEmpty(blockIndex);
+    normals.initEmpty(blockIndex, comm);
 
     // =======================
 
@@ -409,17 +409,17 @@ void KalmanStaticTemporalNormals::run(Config &config)
     {
       // compute observation equations
       // -----------------------------
-      Parallel::forEachInterval(arcCount, arcsInterval, [this](UInt arcNo) {computeArc(arcNo);});
+      Parallel::forEachInterval(arcCount, arcsInterval, [this](UInt arcNo) {computeArc(arcNo);}, comm);
 
       logStatus<<"compute right hand sides"<<Log::endl;
       if(computeRightHandSide)
       {
-        Parallel::reduceSum(lPl);
-        Parallel::reduceSum(obsCount);
+        Parallel::reduceSum(lPl,      0, comm);
+        Parallel::reduceSum(obsCount, 0, comm);
         for(UInt idxInterval=0; idxInterval<timesInterval.size()-1; idxInterval++)
-          Parallel::reduceSum(n.at(idxInterval));
+          Parallel::reduceSum(n.at(idxInterval), 0, comm);
 
-        if(Parallel::isMaster())
+        if(Parallel::isMaster(comm))
         {
           rhs = Matrix(normals.parameterCount(), lPl.rows());
 
@@ -457,7 +457,7 @@ void KalmanStaticTemporalNormals::run(Config &config)
 
       // collect system of normal equations
       // ----------------------------------
-      if(Parallel::size()>=3)
+      if(Parallel::size(comm)>=3)
       {
         logStatus<<"collect system of normal equations"<<Log::endl;
         // collect normals separated in each interval
@@ -466,16 +466,16 @@ void KalmanStaticTemporalNormals::run(Config &config)
           UInt color = NULLINDEX;
           if(N.at(turnIdx.at(turnNo)).at(idxInterval).size())
             color = 1;
-          Parallel::CommunicatorPtr comm = Parallel::splitCommunicator(color, Parallel::myRank());
-          if((comm!=nullptr) && (Parallel::size(comm)>1))
+          Parallel::CommunicatorPtr commNew = Parallel::splitCommunicator(color, Parallel::myRank(comm), comm);
+          if((commNew!=nullptr) && (Parallel::size(commNew)>1))
           {
             for(UInt i=turnIdx.at(turnNo); i<turnIdx.at(turnNo+1); i++)
             {
-              Parallel::reduceSum(N.at(i).at(idxInterval), 0, comm);
-              if(Parallel::myRank(comm) != 0)
+              Parallel::reduceSum(N.at(i).at(idxInterval), 0, commNew);
+              if(Parallel::myRank(commNew) != 0)
                 N.at(i).at(idxInterval) = Matrix();
             } // for(i=turnIdx)
-          } // if(comm!=nullptr)
+          } // if(commNew!=nullptr)
         }
       }
 
@@ -486,9 +486,9 @@ void KalmanStaticTemporalNormals::run(Config &config)
       for(UInt idxInterval=0; idxInterval<timesInterval.size()-1; idxInterval++)
       {
         if(N.at(turnIdx.at(turnNo)).at(idxInterval).size())
-          rankInterval.at(idxInterval) = Parallel::myRank();
-        Parallel::reduceSum(rankInterval.at(idxInterval));
-        Parallel::broadCast(rankInterval.at(idxInterval));
+          rankInterval.at(idxInterval) = Parallel::myRank(comm);
+        Parallel::reduceSum(rankInterval.at(idxInterval), 0, comm);
+        Parallel::broadCast(rankInterval.at(idxInterval), 0, comm);
       }
 
       // ==================================
@@ -502,7 +502,7 @@ void KalmanStaticTemporalNormals::run(Config &config)
         logTimerLoop(i-turnIdx.at(turnNo), turnIdx.at(turnNo+1)-turnIdx.at(turnNo));
 
         for(UInt idxInterval=0; idxInterval<timesInterval.size()-1; idxInterval++)
-          if(Parallel::myRank() == rankInterval.at(idxInterval))
+          if(Parallel::myRank(comm) == rankInterval.at(idxInterval))
           {
             if(N.at(i).at(idxInterval).size() == 0)
               N.at(i).at(idxInterval) = Matrix(normals.blockSize(blockIdxRow.at(i)), normals.blockSize(blockIdxCol.at(i)));
@@ -619,7 +619,7 @@ void KalmanStaticTemporalNormals::run(Config &config)
     if(countHighFrequencyParameters)
     {
       logStatus<<"normals of process dynamic"<<Log::endl;
-      if(Parallel::isMaster())
+      if(Parallel::isMaster(comm))
         obsCount += idxBlockHighFrequency.size() * countHighFrequencyParameters;
 
       for(UInt id=0; id<idxBlockHighFrequency.size(); id++)
@@ -652,8 +652,8 @@ void KalmanStaticTemporalNormals::run(Config &config)
           }
       }
     }
-    Parallel::reduceSum(countRegul);
-    if(Parallel::isMaster() && countRegul)
+    Parallel::reduceSum(countRegul, 0, comm);
+    if(Parallel::isMaster(comm) && countRegul)
       logWarning<<countRegul<<" parameters are not used"<<Log::endl;
 
     // eliminate interval & state parameters
@@ -663,7 +663,7 @@ void KalmanStaticTemporalNormals::run(Config &config)
       logStatus<<"eliminate interval parameters from normal equations"<<Log::endl;
       normals.cholesky(TRUE/*timing*/, 0, idxBlockStatic, TRUE/*collect*/);
       normals.triangularTransSolve(rhs, 0, idxBlockStatic);
-      if(Parallel::isMaster())
+      if(Parallel::isMaster(comm))
       {
         obsCount -= normals.blockIndex(idxBlockStatic);
         // lPl = lPl - n2^T N2^(-1) n2
@@ -679,7 +679,7 @@ void KalmanStaticTemporalNormals::run(Config &config)
     // ----------------------
     logStatus<<"write normal equations to <"<<fileNameNormals<<">"<<Log::endl;
     writeFileNormalEquation(fileNameNormals, NormalEquationInfo(paraName, lPl, obsCount), normals, rhs);
-    Parallel::barrier();
+    Parallel::barrier(comm);
     logStatus<<"finish"<<Log::endl;
   }
   catch(std::exception &e)
@@ -698,10 +698,10 @@ void KalmanStaticTemporalNormals::setNormalMatrix(Double factor, Matrix N, UInt 
 
     if(rankSource != normals.rank(idxRow, idxCol))
     {
-      if(Parallel::myRank() == rankSource)
-        Parallel::send(N, normals.rank(idxRow, idxCol));
-      if(Parallel::myRank() == normals.rank(idxRow, idxCol))
-        Parallel::receive(N, rankSource);
+      if(Parallel::myRank(normals.communicator()) == rankSource)
+        Parallel::send(N, normals.rank(idxRow, idxCol), normals.communicator());
+      if(Parallel::myRank(normals.communicator()) == normals.rank(idxRow, idxCol))
+        Parallel::receive(N, rankSource, normals.communicator());
     }
 
     if(normals.isMyRank(idxRow, idxCol))
@@ -735,13 +735,13 @@ void KalmanStaticTemporalNormals::reduceIntervalNormals(const std::vector<Double
 
     // reduce normals
     UInt color = ((normals.N(idxRow, idxCol).size()) ? 1 : NULLINDEX);
-    UInt key   = Parallel::myRank()+1;
+    UInt key   = Parallel::myRank(normals.communicator())+1;
     if(normals.isMyRank(idxRow, idxCol))
     {
       color = 1;
       key   = 0;
     }
-    Parallel::CommunicatorPtr comm = Parallel::splitCommunicator(color, key);
+    Parallel::CommunicatorPtr comm = Parallel::splitCommunicator(color, key, normals.communicator());
     if((comm != nullptr) && (Parallel::size(comm)>1))
       Parallel::reduceSum(normals.N(idxRow, idxCol), 0, comm);
     if(!normals.isMyRank(idxRow, idxCol))

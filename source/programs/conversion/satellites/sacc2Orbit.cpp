@@ -28,14 +28,14 @@ This program reads in SACC orbit data.
 class Sacc2Orbit
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Sacc2Orbit, SINGLEPROCESS, "read SACC orbit data", Conversion, Orbit, Instrument)
 
 /***********************************************/
 
-void Sacc2Orbit::run(Config &config)
+void Sacc2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

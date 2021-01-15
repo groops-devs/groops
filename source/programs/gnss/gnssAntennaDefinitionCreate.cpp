@@ -39,7 +39,7 @@ are sorted by names and duplicates are removed (first one is kept).
 class GnssAntennaDefinitionCreate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssAntennaDefinitionCreate, SINGLEPROCESS, "Create GNSS antenna definition file.", Gnss)
@@ -448,7 +448,7 @@ GnssAntennaDefintionListPtr GnssAntennaDefintionList::create(Config &config, con
 
 /***********************************************/
 
-void GnssAntennaDefinitionCreate::run(Config &config)
+void GnssAntennaDefinitionCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

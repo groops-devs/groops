@@ -43,14 +43,14 @@ where the initial conditions are assumed to be met at the end time of the \confi
 class SimulateOrbit
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SimulateOrbit, SINGLEPROCESS, "pure dynamical orbit integration", Simulation, Orbit, Instrument)
 
 /***********************************************/
 
-void SimulateOrbit::run(Config &config)
+void SimulateOrbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

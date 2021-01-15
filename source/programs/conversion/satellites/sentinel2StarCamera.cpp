@@ -30,14 +30,14 @@ This program reads in Sentinel-1/2/3 star camera data given in the special forma
 class Sentinel2StarCamera
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Sentinel2StarCamera, SINGLEPROCESS, "read Sentinel-1/2/3 star camera data", Conversion, Instrument)
 
 /***********************************************/
 
-void Sentinel2StarCamera::run(Config &config)
+void Sentinel2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

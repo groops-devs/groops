@@ -43,14 +43,14 @@ This program is useful e.g. to combine monthly GRACE solutions to one file.
 class PotentialCoefficients2BlockMeanTimeSplines
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(PotentialCoefficients2BlockMeanTimeSplines, SINGLEPROCESS, "write monthly potential coeffcients into one time spline file", Misc, PotentialCoefficients, TimeSplines)
 
 /***********************************************/
 
-void PotentialCoefficients2BlockMeanTimeSplines::run(Config &config)
+void PotentialCoefficients2BlockMeanTimeSplines::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -90,11 +90,8 @@ void PotentialCoefficients2BlockMeanTimeSplines::run(Config &config)
     std::vector<Matrix> cnmList(fileCount), snmList(fileCount);
     std::vector<Matrix> sigma2List(fileCount);
     std::vector<Bool>   isZero(fileCount, FALSE);
-    logTimerStart;
-    for(UInt i=0; i<fileCount; i++)
+    Single::forEach(fileCount, [&](UInt i)
     {
-      logTimerLoop(i,fileCount);
-
       SphericalHarmonics harm;
       try
       {
@@ -116,8 +113,7 @@ void PotentialCoefficients2BlockMeanTimeSplines::run(Config &config)
       cnmList.at(i)    = harm.cnm();
       snmList.at(i)    = harm.snm();
       sigma2List.at(i) = harm.sigma2x();
-    }
-    logTimerLoopEnd(fileCount);
+    });
 
     // interpolate missing data
     // ------------------------

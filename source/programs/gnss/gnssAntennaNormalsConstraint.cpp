@@ -65,7 +65,7 @@ public:
     Double   sigma;
   };
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssAntennaNormalsConstraint, SINGLEPROCESS, "Apply constraints to normals of antenna parametrization", Gnss)
@@ -116,7 +116,7 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssAntennaN
 
 /***********************************************/
 
-void GnssAntennaNormalsConstraint::run(Config &config)
+void GnssAntennaNormalsConstraint::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

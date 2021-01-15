@@ -37,14 +37,14 @@ class InstrumentRemoveEpochsByTimes
   InstrumentFile timeFile;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentRemoveEpochsByTimes, SINGLEPROCESS, "Remove epochs from instrument data", Instrument)
 
 /***********************************************/
 
-void InstrumentRemoveEpochsByTimes::run(Config &config)
+void InstrumentRemoveEpochsByTimes::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -90,12 +90,8 @@ void InstrumentRemoveEpochsByTimes::run(Config &config)
     {
       logStatus<<"remove epochs (+/- "<<margin<<" sec) from instrument data"<<Log::endl;
       UInt idxTime = 0;
-
-      logTimerStart;
-      for(UInt i=0; i<arc.size(); i++)
+      Single::forEach(arc.size(), [&](UInt i)
       {
-        logTimerLoop(i, arc.size());
-
         while((idxTime<times.size()) && (times.at(idxTime)+seconds2time(margin) < arc.at(i).time))
           idxTime++;
 
@@ -106,9 +102,7 @@ void InstrumentRemoveEpochsByTimes::run(Config &config)
           arcRemoved.push_back(arc.at(i));
         else
           arcNew.push_back(arc.at(i));
-      }
-      logTimerLoopEnd(arc.size());
-
+      });
       logInfo<<"  "<<arcRemoved.size()<<" epochs removed"<<Log::endl;
     }
     else

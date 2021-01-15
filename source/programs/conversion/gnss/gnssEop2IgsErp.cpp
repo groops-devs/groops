@@ -42,7 +42,7 @@ public:
     Time time;
   };
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssEop2IgsErp, SINGLEPROCESS, "Write GNSS Earth orientation parameters to IGS ERP file format.", Conversion, Gnss)
@@ -66,7 +66,7 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssEop2IgsE
 /***********************************************/
 
 
-void GnssEop2IgsErp::run(Config &config)
+void GnssEop2IgsErp::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

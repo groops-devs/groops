@@ -55,6 +55,7 @@ public:
   class NormalEquationInfo;
   class Parametrization;
 
+  typedef std::shared_ptr<Track>           TrackPtr;
   typedef std::shared_ptr<Receiver>        ReceiverPtr;
   typedef std::shared_ptr<Transmitter>     TransmitterPtr;
   typedef std::shared_ptr<Parametrization> ParametrizationPtr;

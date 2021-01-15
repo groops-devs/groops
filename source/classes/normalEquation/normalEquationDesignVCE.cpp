@@ -64,8 +64,7 @@ void NormalEquationDesignVCE::parameterNames(std::vector<ParameterName> &names) 
 
     for(UInt i=0; i<baseNames.size(); i++)
       if(!names.at(i+startIndex).combine(baseNames.at(i)))
-        if(Parallel::isMaster())
-          logWarning<<"Parameter names do not match at index "<<i+startIndex<<": '"<<names.at(i+startIndex).str()<<"' != '"<<baseNames.at(i).str()<<"'"<< Log::endl;
+        logWarningOnce<<"Parameter names do not match at index "<<i+startIndex<<": '"<<names.at(i+startIndex).str()<<"' != '"<<baseNames.at(i).str()<<"'"<< Log::endl;
   }
   catch(std::exception &e)
   {
@@ -165,13 +164,13 @@ Bool NormalEquationDesignVCE::addNormalEquation(UInt rhsNo, const const_MatrixSl
       }
 
       return sigma2;
-    });
+    }, normals.communicator());
 
     normals.reduceSum(FALSE);
-    Parallel::reduceSum(n);
-    Parallel::reduceSum(lPl);
-    Parallel::reduceSum(obsCount);
-    Parallel::broadCast(sigma2);
+    Parallel::reduceSum(n,        0, normals.communicator());
+    Parallel::reduceSum(lPl,      0, normals.communicator());
+    Parallel::reduceSum(obsCount, 0, normals.communicator());
+    Parallel::broadCast(sigma2,   0, normals.communicator());
 
     return (++iter >= 3); // ready after 2 iterations
   }
@@ -187,8 +186,7 @@ Vector NormalEquationDesignVCE::contribution(MatrixDistributed &Cov)
 {
   try
   {
-    if(Parallel::isMaster())
-      logWarning<<"In NormalEquationDesignVCE: contribution is not implemented"<<Log::endl;
+    logWarningOnce<<"In NormalEquationDesignVCE: contribution is not implemented"<<Log::endl;
     return Vector(Cov.dimension());
   }
   catch(std::exception &e)

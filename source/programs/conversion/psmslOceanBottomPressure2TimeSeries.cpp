@@ -32,7 +32,7 @@ In addition to the OBP measurements, the recorder position can be written to a \
 class PsmslOceanBottomPressure2TimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(PsmslOceanBottomPressure2TimeSeries, SINGLEPROCESS, "read ocean bottom pressure (OBP) time series in the PSMSL file format", Conversion)
@@ -40,7 +40,7 @@ GROOPS_RENAMED_PROGRAM(ReadOceanBottomPressurePSMSL, PsmslOceanBottomPressure2Ti
 
 /***********************************************/
 
-void PsmslOceanBottomPressure2TimeSeries::run(Config &config)
+void PsmslOceanBottomPressure2TimeSeries::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

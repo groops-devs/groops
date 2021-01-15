@@ -34,14 +34,14 @@ class GoceXmlEggNom1b
   void readAngularAcc    (XmlNodePtr &dataNode, AccelerometerArc  &arc);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GoceXmlEggNom1b, SINGLEPROCESS, "Read ESA XML GOCE Data", Conversion, Instrument)
 
 /***********************************************/
 
-void GoceXmlEggNom1b::run(Config &config)
+void GoceXmlEggNom1b::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

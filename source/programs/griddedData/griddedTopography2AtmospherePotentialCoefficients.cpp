@@ -59,14 +59,14 @@ class GriddedTopography2AtmospherePotentialCoefficients
   void computeCoefficientsRow(UInt row);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GriddedTopography2AtmospherePotentialCoefficients, PARALLEL, "Estimate interoir and exterior atmospheric potential coefficients above digital terrain models", Grid, PotentialCoefficients)
 
 /***********************************************/
 
-void GriddedTopography2AtmospherePotentialCoefficients::run(Config &config)
+void GriddedTopography2AtmospherePotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -87,7 +87,7 @@ void GriddedTopography2AtmospherePotentialCoefficients::run(Config &config)
     readConfig(config, "R",                        R,               Config::DEFAULT,  STRING_DEFAULT_R,  "reference radius");
     if(isCreateSchema(config)) return;
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       // read rectangular grid
       // ---------------------
@@ -118,15 +118,14 @@ void GriddedTopography2AtmospherePotentialCoefficients::run(Config &config)
           varList["area"]->setValue( dLambda.at(s)*dPhi.at(z)*cos(phi.at(z)) ); // area
           topo(z,s) = expressionLower->evaluate(varList);   //  Topography
         }
-    } // if(Parallel::isMaster())
+    } // if(Parallel::isMaster(comm))
 
-    Parallel::broadCast(topo);
-    Parallel::broadCast(radius);
-
-    Parallel::broadCast(lambda);
-    Parallel::broadCast(phi);
-    Parallel::broadCast(dLambda);
-    Parallel::broadCast(dPhi);
+    Parallel::broadCast(topo,    0, comm);
+    Parallel::broadCast(radius,  0, comm);
+    Parallel::broadCast(lambda,  0, comm);
+    Parallel::broadCast(phi,     0, comm);
+    Parallel::broadCast(dLambda, 0, comm);
+    Parallel::broadCast(dPhi,    0, comm);
     rows = phi.size();
     cols = lambda.size();
 
@@ -148,15 +147,15 @@ void GriddedTopography2AtmospherePotentialCoefficients::run(Config &config)
     snm = Matrix(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
     cnmInt = Matrix(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
     snmInt = Matrix(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
-    Parallel::forEach(phi.size(), [this](UInt i){computeCoefficientsRow(i);});
-    Parallel::reduceSum(cnm);
-    Parallel::reduceSum(snm);
-    Parallel::reduceSum(cnmInt);
-    Parallel::reduceSum(snmInt);
+    Parallel::forEach(phi.size(), [this](UInt i){computeCoefficientsRow(i);}, comm);
+    Parallel::reduceSum(cnm,    0, comm);
+    Parallel::reduceSum(snm,    0, comm);
+    Parallel::reduceSum(cnmInt, 0, comm);
+    Parallel::reduceSum(snmInt, 0, comm);
 
     // save potential coefficients
     // ---------------------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write exterior potential coefficients to file <"<<outName<<">"<<Log::endl;
       writeFileSphericalHarmonics(outName, SphericalHarmonics(GM, R, cnm, snm));

@@ -63,14 +63,14 @@ Plotted with \program{PlotGraph} with two \configClass{layer:linesAndPoints}{plo
 class InstrumentGnssReceiver2TimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentGnssReceiver2TimeSeries, SINGLEPROCESS, "Convert gnssReceiver file into instrument(MISCVLAUES) file", Gnss, TimeSeries, Residuals)
 
 /***********************************************/
 
-void InstrumentGnssReceiver2TimeSeries::run(Config &config)
+void InstrumentGnssReceiver2TimeSeries::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

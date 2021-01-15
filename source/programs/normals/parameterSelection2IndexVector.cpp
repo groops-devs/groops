@@ -38,7 +38,7 @@ either by cutting parameters or by inserting additional parameters.
 class ParameterSelection2IndexVector
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(ParameterSelection2IndexVector, SINGLEPROCESS, "Generate index vector from parameter selection.", NormalEquation)
@@ -46,7 +46,7 @@ GROOPS_RENAMED_PROGRAM(NormalsParameterSelection2IndexVector, ParameterSelection
 
 /***********************************************/
 
-void ParameterSelection2IndexVector::run(Config &config)
+void ParameterSelection2IndexVector::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

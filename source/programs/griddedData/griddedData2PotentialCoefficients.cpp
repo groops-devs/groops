@@ -70,20 +70,20 @@ class GriddedData2PotentialCoefficients
   Double                lPl;
 
 
-  SphericalHarmonics computeQuadrature(Bool isRectangle);
-  SphericalHarmonics computeLeastSquares(Bool isRectangle);
+  SphericalHarmonics computeQuadrature(Bool isRectangle, Parallel::CommunicatorPtr comm);
+  SphericalHarmonics computeLeastSquares(Bool isRectangle, Parallel::CommunicatorPtr comm);
   void               buildNormals(UInt i);
   void               buildNormalsFast(UInt i);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GriddedData2PotentialCoefficients, PARALLEL, "Estimate potential coefficients from gridded gravity field functionals", Grid, PotentialCoefficients)
 
 /***********************************************/
 
-void GriddedData2PotentialCoefficients::run(Config &config)
+void GriddedData2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -107,10 +107,10 @@ void GriddedData2PotentialCoefficients::run(Config &config)
     // -------------
     logStatus<<"read grid from file <"<<fileNameGrid<<">"<<Log::endl;
     readFileGriddedData(fileNameGrid, grid);
-    if(!grid.areas.size() && Parallel::isMaster())
-      logWarning<<"  no areas"<<Log::endl;
-    if(!grid.values.size() && Parallel::isMaster())
-      logWarning<<"  no values"<<Log::endl;
+    if(!grid.areas.size())
+      logWarningOnce<<"  no areas"<<Log::endl;
+    if(!grid.values.size())
+      logWarningOnce<<"  no values"<<Log::endl;
 
     // evaluate expression
     // -------------------
@@ -140,13 +140,13 @@ void GriddedData2PotentialCoefficients::run(Config &config)
 
     SphericalHarmonics harm;
     if(useLeastSquares)
-      harm = computeLeastSquares(isRectangle);
+      harm = computeLeastSquares(isRectangle, comm);
     else
-      harm = computeQuadrature(isRectangle);
+      harm = computeQuadrature(isRectangle, comm);
 
     // write potential coefficients
     // ----------------------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write potential coefficients to file <"<<fileNameOut<<">"<<Log::endl;
       writeFileSphericalHarmonics(fileNameOut, harm);
@@ -160,7 +160,7 @@ void GriddedData2PotentialCoefficients::run(Config &config)
 
 /***********************************************/
 
-SphericalHarmonics GriddedData2PotentialCoefficients::computeQuadrature(Bool /*isRectangle*/)
+SphericalHarmonics GriddedData2PotentialCoefficients::computeQuadrature(Bool /*isRectangle*/, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -177,9 +177,9 @@ SphericalHarmonics GriddedData2PotentialCoefficients::computeQuadrature(Bool /*i
         axpy((kn(n)* R/(4*PI*GM) * std::pow(grid.points.at(i).r()/R, n+1) * grid.values.at(0).at(i) * grid.areas.at(i)), Cnm.row(n), cnm.row(n));
         axpy((kn(n)* R/(4*PI*GM) * std::pow(grid.points.at(i).r()/R, n+1) * grid.values.at(0).at(i) * grid.areas.at(i)), Snm.row(n), snm.row(n));
       }
-    });
-    Parallel::reduceSum(cnm);
-    Parallel::reduceSum(snm);
+    }, comm);
+    Parallel::reduceSum(cnm, 0, comm);
+    Parallel::reduceSum(snm, 0, comm);
     return SphericalHarmonics(GM, R, cnm, snm);
   }
   catch(std::exception &e)
@@ -190,7 +190,7 @@ SphericalHarmonics GriddedData2PotentialCoefficients::computeQuadrature(Bool /*i
 
 /***********************************************/
 
-SphericalHarmonics GriddedData2PotentialCoefficients::computeLeastSquares(Bool isRectangle)
+SphericalHarmonics GriddedData2PotentialCoefficients::computeLeastSquares(Bool isRectangle, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -216,8 +216,8 @@ SphericalHarmonics GriddedData2PotentialCoefficients::computeLeastSquares(Bool i
     if(!isRectangle)
     {
       blocking = 100;
-      Parallel::forEach(grid.points.size()/blocking+1, [this](UInt i){buildNormals(i);});
-      Parallel::reduceSum(lPl);
+      Parallel::forEach(grid.points.size()/blocking+1, [this](UInt i){buildNormals(i);}, comm);
+      Parallel::reduceSum(lPl, 0, comm);
     }
     else
     {
@@ -237,18 +237,18 @@ SphericalHarmonics GriddedData2PotentialCoefficients::computeLeastSquares(Bool i
         }
       }
 
-      Parallel::forEach(phi.size(), [this](UInt i){buildNormalsFast(i);});
+      Parallel::forEach(phi.size(), [this](UInt i){buildNormalsFast(i);}, comm);
     } // if(isRectangle)
 
     for(UInt i=0; i<N.size(); i++)
     {
-      Parallel::reduceSum(N.at(i));
-      Parallel::reduceSum(n.at(i));
+      Parallel::reduceSum(N.at(i), 0, comm);
+      Parallel::reduceSum(n.at(i), 0, comm);
     }
 
     // solve normals
     // -------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"solve the system of equations"<<Log::endl;
       std::vector<Vector> x(2*maxDegree+1);

@@ -41,7 +41,7 @@ See also \program{ParameterVector2GnssAntennaDefinition}.
 class GnssAntennaDefinition2ParameterVector
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssAntennaDefinition2ParameterVector, SINGLEPROCESS, "Estimate parameters of an antenna parametrization to fit an antenna definition", Gnss)
@@ -49,7 +49,7 @@ GROOPS_RENAMED_PROGRAM(GnssAntennaDefinition2Representation, GnssAntennaDefiniti
 
 /***********************************************/
 
-void GnssAntennaDefinition2ParameterVector::run(Config &config)
+void GnssAntennaDefinition2ParameterVector::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

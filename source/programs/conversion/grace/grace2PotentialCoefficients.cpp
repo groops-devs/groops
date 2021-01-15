@@ -37,14 +37,14 @@ to auto-generate the file name.
 class Grace2PotentialCoefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Grace2PotentialCoefficients, SINGLEPROCESS, "read GRACE data", Conversion, Grace, PotentialCoefficients)
 
 /***********************************************/
 
-void Grace2PotentialCoefficients::run(Config &config)
+void Grace2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -40,14 +40,14 @@ for example in case the units of certain parameters don't match.
 class NormalsScale
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NormalsScale, PARALLEL, "Scales rows and columns of a normal equation system", NormalEquation)
 
 /***********************************************/
 
-void NormalsScale::run(Config &config)
+void NormalsScale::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -67,7 +67,7 @@ void NormalsScale::run(Config &config)
     MatrixDistributed normal;
     Matrix n;
     NormalEquationInfo info;
-    readFileNormalEquation(normalsName, info, normal, n);
+    readFileNormalEquation(normalsName, info, normal, n, comm);
     logInfo<<"  number of parameters:       "<<normal.parameterCount()<<Log::endl;
     logInfo<<"  number of right hand sides: "<<info.lPl.rows()<<Log::endl;
 
@@ -75,7 +75,7 @@ void NormalsScale::run(Config &config)
     Vector factor;
     readFileMatrix(factorName, factor);
 
-    if(Parallel::isMaster() && (factor.rows() != n.rows()))
+    if(Parallel::isMaster(comm) && (factor.rows() != n.rows()))
       throw(Exception("Dimension error factor("+factor.rows()%"%i) != n("s+n.rows()%"%i)"s));
 
     // ==================================
@@ -92,7 +92,7 @@ void NormalsScale::run(Config &config)
             N.column(s) *= factor(s+normal.blockIndex(k));
         }
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
       for(UInt z=0; z<n.rows(); z++)
         n.row(z) *= factor(z)*factor(z);
 

@@ -43,14 +43,14 @@ In the last step, each group is reconstructed back into time domain.
 class GraceSstResidualAnalysis
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceSstResidualAnalysis, SINGLEPROCESS, "Multiresolution analysis of GRACE SST residuals.", Grace)
 
 /***********************************************/
 
-void GraceSstResidualAnalysis::run(Config &config)
+void GraceSstResidualAnalysis::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

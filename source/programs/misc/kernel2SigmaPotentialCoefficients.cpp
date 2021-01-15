@@ -34,14 +34,14 @@ The coefficients are written as formal errors of \configFile{outputfilePotential
 class Kernel2SigmaPotentialCoefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Kernel2SigmaPotentialCoefficients, SINGLEPROCESS, "create variances of spherical harmonics by convolution a kernel with white noise", Misc, PotentialCoefficients)
 
 /***********************************************/
 
-void Kernel2SigmaPotentialCoefficients::run(Config &config)
+void Kernel2SigmaPotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

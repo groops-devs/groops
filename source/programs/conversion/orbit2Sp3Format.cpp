@@ -39,7 +39,7 @@ See also \program{Sp3Format2Orbit}.
 class Orbit2Sp3Format
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 
   class Satellite
   {
@@ -75,7 +75,7 @@ template<> Bool readConfig(Config &config, const std::string &name, Orbit2Sp3For
 
 /***********************************************/
 
-void Orbit2Sp3Format::run(Config &config)
+void Orbit2Sp3Format::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -158,10 +158,10 @@ void Orbit2Sp3Format::run(Config &config)
     }
 
     // satellite accuracy lines
-    for(UInt i = 0; i < lineCount; i++)
+    for(UInt i=0; i<lineCount; i++)
     {
       file<<"++       ";
-      for(UInt j = 0; j < satPerLine; j++)
+      for(UInt j=0; j<satPerLine; j++)
       {
         const UInt idSat = i*satPerLine+j;
         if(idSat < satellites.size() && satellites.at(i*satPerLine+j).orbitAccuracy > 0)
@@ -188,11 +188,8 @@ void Orbit2Sp3Format::run(Config &config)
         file<<"/* CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"<<std::endl;
     }
 
-    logTimerStart;
-    for(UInt i=0; i<times.size(); i++)
+    Single::forEach(times.size(), [&](UInt i)
     {
-      logTimerLoop(i, times.size());
-
       file<<"*  "<<times.at(i)%"%y %m %d %H %M %011.8S"s<<std::endl;
 
       Rotary3d rot;
@@ -258,8 +255,7 @@ void Orbit2Sp3Format::run(Config &config)
 
         satellite.idEpoch++;
       }
-    }
-    logTimerLoopEnd(times.size());
+    });
 
     file<<"EOF"<<std::endl;
   }

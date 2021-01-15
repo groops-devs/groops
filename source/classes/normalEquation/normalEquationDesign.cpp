@@ -65,8 +65,7 @@ void NormalEquationDesign::parameterNames(std::vector<ParameterName> &names) con
 
     for(UInt i=0; i<baseNames.size(); i++)
       if(!names.at(i+startIndex).combine(baseNames.at(i)))
-        if(Parallel::isMaster())
-          logWarning<<"Parameter names do not match at index "<<i+startIndex<<": '"<<names.at(i+startIndex).str()<<"' != '"<<baseNames.at(i).str()<<"'"<< Log::endl;
+        logWarningOnce<<"Parameter names do not match at index "<<i+startIndex<<": '"<<names.at(i+startIndex).str()<<"' != '"<<baseNames.at(i).str()<<"'"<< Log::endl;
   }
   catch(std::exception &e)
   {
@@ -165,22 +164,22 @@ Bool NormalEquationDesign::addNormalEquation(UInt rhsNo, const const_MatrixSlice
           matMult(1/sigma2, A.column(idxA1, cols1).trans(), A.column(idxA2, cols2), normals.N(i,k).slice(idxN1, idxN2, cols1, cols2));
         }
       }
-    });
+    }, normals.communicator());
 
     normals.reduceSum(FALSE);
-    Parallel::reduceSum(n);
-    Parallel::reduceSum(lPl);
-    Parallel::reduceSum(obsCount);
+    Parallel::reduceSum(n,        0, normals.communicator());
+    Parallel::reduceSum(lPl,      0, normals.communicator());
+    Parallel::reduceSum(obsCount, 0, normals.communicator());
 
     UInt ready = 0;
     if(quadsum(x0) > 0)
     {
-      Parallel::reduceSum(ePe);
-      Parallel::reduceSum(redundancy);
+      Parallel::reduceSum(ePe,        0, normals.communicator());
+      Parallel::reduceSum(redundancy, 0, normals.communicator());
       sigma2New = ePe/redundancy;
       ready = (std::fabs(sqrt(sigma2New)-std::sqrt(sigma2))/std::sqrt(sigma2New) < 0.01);
-      Parallel::broadCast(sigma2New);
-      Parallel::broadCast(ready);
+      Parallel::broadCast(sigma2New, 0, normals.communicator());
+      Parallel::broadCast(ready,     0, normals.communicator());
     }
 
     return ready;
@@ -197,8 +196,7 @@ Vector NormalEquationDesign::contribution(MatrixDistributed &Cov)
 {
   try
   {
-    if(Parallel::isMaster())
-      logWarning<<"In NormalEquationDesign: contribution is not implemented"<<Log::endl;
+    logWarningOnce<<"In NormalEquationDesign: contribution is not implemented"<<Log::endl;
     return Vector(Cov.dimension());
   }
   catch(std::exception &e)

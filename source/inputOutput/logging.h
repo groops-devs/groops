@@ -8,8 +8,7 @@
 * outputs "Text" on the screen
 * and "2007-10-03 11:49:35 Status Text" in the log file.
 * Only outputs from the main process are printed.
-* Next to logStatus there are also logInfo, logWarning, logError and logDebug(level).
-* logDebug messages are only output if setDebugLevel(level) is at least level.
+* Next to logStatus there are also logInfo, logWarning, logError.
 * IMPORTANT: Each output must end with Log::endl.
 *
 * @author Torsten Mayer-Guerr
@@ -23,72 +22,43 @@
 #define __GROOPS_LOGGING__
 
 #include "base/importStd.h"
-#include "inputOutput/file.h"
 
 /** @addtogroup inputOutputGroup */
 /// @{
 
-/***** CLASS ***********************************/
+/***** DEFINES *********************************/
 
-class  Log;
-extern Log logging;
-
-/**
-* @brief Screen and log file output.
-*
-* Calling logStatus<<"Text"<<Log::endl;
-* outputs "Text" on the screen
-* and "2007-10-03 11:49:35 Status Text" in the log file.
-* Only outputs from the main process are printed.
-* Next to logStatus there are also logInfo, logWarning, logError and logDebug(level).
-* logDebug messages are only output if setDebugLevel(level) is at least level.
-* IMPORTANT: Each output must end with Log::endl.
-*/
-class Log
-{
-public:
-  enum Type {STATUS, INFO, WARNING, ERROR};
-
-  Log();
- ~Log();
-
-  Log(const Log &) = delete;
-  Log &operator=(const Log &) = delete;
-
-  void setLogFile(const std::string &name);
-  void setSilent(Bool silent=TRUE);
-
-  // Timer
-  void   startTimer();
-  void   loopTimer(UInt idx, UInt count);
-  void   loopTimerEnd(UInt count);
-  Double seconds() const;
-  static std::string timeString(Double t);
-
-  // Internal functions
-  std::ostream &startLine(Type type=STATUS);
-  std::ostream &endLine(std::ostream &stream);
-  static std::ostream &endl(std::ostream &stream) {return logging.endLine(stream);}
-
-private:
-  std::stringstream ss, ssFile;
-  OutFile           file;
-  Bool              isLogfile;
-  Bool              silent;
-  Bool              printFile, printCout, printCerr;
-  std::stack<Time>  startTime; // Timer
-};
+#define logStatus               Log::status()
+#define logInfo                 Log::info()
+#define logWarning              Log::warning()
+#define logWarningOnce          Log::warningOnce()
+#define logError                Log::error()
+#define logTimerStart           Log::startTimer();
+#define logTimerLoop(idx,count) Log::loopTimer(idx, count);
+#define logTimerLoopEnd(count)  Log::loopTimerEnd(count);
 
 /***********************************************/
 
-#define logStatus       logging.startLine(Log::STATUS)
-#define logInfo         logging.startLine(Log::INFO)
-#define logWarning      logging.startLine(Log::WARNING)
-#define logError        logging.startLine(Log::ERROR)
+namespace Log
+{
+  std::function<void(UInt type, const std::string &str)> getRecieve();
+  void setSend(std::function<void(UInt type, const std::string &str)> send);
+  void setRank(UInt rank);
+  Bool enableOutput(Bool enable);
+  void setSilent(Bool silent);
+  void setLogFile(const std::string &name);
 
-#define logTimerStart           logging.startTimer();
-#define logTimerLoop(idx,count) logging.loopTimer(idx, count);
-#define logTimerLoopEnd(count)  logging.loopTimerEnd(count);
+  std::ostream &status();
+  std::ostream &info();
+  std::ostream &warningOnce();
+  std::ostream &warning();
+  std::ostream &error();
+  std::ostream &endl(std::ostream &stream);
+
+  void startTimer();
+  void loopTimer(UInt idx, UInt count, UInt processCount=1);
+  void loopTimerEnd(UInt count);
+}
 
 /***********************************************/
 

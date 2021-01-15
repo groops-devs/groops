@@ -55,8 +55,6 @@ private:
   FileName fileNameObs, fileNameOrbit, fileNameStarCamera;
   FileName fileNameSignalBias;
 
-  Time timeIntervalStart, timeIntervalEnd;
-
   GnssStationInfo stationInfo;  // antenna reference point, ...
   GnssSignalBias  signalBias;   // signal Bias (DCBs, ...)
 
@@ -94,7 +92,6 @@ private:
 
 public:
   GnssParametrizationReceiverLeo(Config &config);
-  virtual ~GnssParametrizationReceiverLeo() {}
 
   std::vector<Gnss::ParametrizationPtr> additionalParametrizations() const {return std::vector<Gnss::ParametrizationPtr>(antennaCenterVariations.begin(), antennaCenterVariations.end());}
 

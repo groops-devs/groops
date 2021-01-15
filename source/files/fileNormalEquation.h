@@ -91,8 +91,8 @@ void writeFileNormalEquation(const FileName &name, NormalEquationInfo info, cons
 void readFileNormalEquation(const FileName &name, NormalEquationInfo &info, Matrix &N, Matrix &n);
 
 /** @brief Write a system of normal equations.
-* Must be called on every process. */
-void readFileNormalEquation(const FileName &name, NormalEquationInfo &info, MatrixDistributed &normal, Matrix &n);
+* Must be called on every process in @p comm. */
+void readFileNormalEquation(const FileName &name, NormalEquationInfo &info, MatrixDistributed &normal, Matrix &n, Parallel::CommunicatorPtr comm);
 
 /** @brief Read a system of normal equations.
 * Only the information file, parameter name file and the right hand sides are read. */

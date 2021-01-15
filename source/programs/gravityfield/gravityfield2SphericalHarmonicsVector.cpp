@@ -40,14 +40,14 @@ with \configClass{gravityfield:fromParametrization}{gravityfieldType:fromParamet
 class Gravityfield2SphericalHarmonicsVector
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2SphericalHarmonicsVector, SINGLEPROCESS, "converts a gravity field to a solution vector with potential coeffcients", Gravityfield, Matrix)
 
 /***********************************************/
 
-void Gravityfield2SphericalHarmonicsVector::run(Config &config)
+void Gravityfield2SphericalHarmonicsVector::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

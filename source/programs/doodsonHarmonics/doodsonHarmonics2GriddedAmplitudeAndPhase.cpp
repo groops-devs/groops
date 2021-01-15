@@ -43,14 +43,14 @@ To visualize the results use \program{PlotMap}.
 class DoodsonHarmonics2GriddedAmplitudeAndPhase
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(DoodsonHarmonics2GriddedAmplitudeAndPhase, PARALLEL, "amplitude and phase of a harmonic tidal constituent on a grid.", DoodsonHarmonics, Grid)
 
 /***********************************************/
 
-void DoodsonHarmonics2GriddedAmplitudeAndPhase::run(Config &config)
+void DoodsonHarmonics2GriddedAmplitudeAndPhase::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -102,13 +102,13 @@ void DoodsonHarmonics2GriddedAmplitudeAndPhase::run(Config &config)
     // ------------------
     logStatus<<"create values on grid (cos, sin)"<<Log::endl;
     const std::vector<Vector3d> points = grid->points();
-    std::vector< std::vector<Double> > values(4); // ampl, phase, cos, sin
+    std::vector<std::vector<Double>> values(4); // ampl, phase, cos, sin
     values.at(0).resize(points.size());
     values.at(1).resize(points.size());
-    values.at(2) = MiscGriddedData::synthesisSphericalHarmonics(harmCos, points, kernel);
-    values.at(3) = MiscGriddedData::synthesisSphericalHarmonics(harmSin, points, kernel);
+    values.at(2) = MiscGriddedData::synthesisSphericalHarmonics(harmCos, points, kernel, comm);
+    values.at(3) = MiscGriddedData::synthesisSphericalHarmonics(harmSin, points, kernel, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       for(UInt i=0; i<points.size(); i++)
       {
@@ -124,7 +124,7 @@ void DoodsonHarmonics2GriddedAmplitudeAndPhase::run(Config &config)
       GriddedData griddedData(Ellipsoid(a,f), points, grid->areas(), values);
       writeFileGriddedData(fileNameGrid, griddedData);
       MiscGriddedData::printStatistics(griddedData);
-    } // if(Parallel::isMaster())
+    } // if(Parallel::isMaster(comm))
   }
   catch(std::exception &e)
   {

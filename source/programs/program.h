@@ -85,24 +85,13 @@ namespace Program\
     std::string       documentation()     const {return DOCSTRING;}\
     std::vector<Tags> tags()              const {return std::vector<Tags>{__VA_ARGS__};}\
     Bool              isSingleProcess()   const {return _parallel;}\
-    void              run(Config &config) const\
+    void              run(Config &config, Parallel::CommunicatorPtr comm) const\
     {\
-      auto commOld = ::Parallel::defaultCommunicator();\
-      if(::Parallel::isMaster() && isSingleProcess())\
-        ::Parallel::setDefaultCommunicator(::Parallel::selfCommunicator());\
-      if(::Parallel::isMaster() || !isSingleProcess())\
-      {\
-        try\
-        {\
-          ::_name tmp; tmp.run(config);\
-        }\
-        catch(std::exception &/*e*/)\
-        {\
-          ::Parallel::setDefaultCommunicator(commOld);\
-          throw;\
-        }\
-      }\
-      ::Parallel::setDefaultCommunicator(commOld);\
+      ::_name tmp;\
+      if(!isSingleProcess())\
+        tmp.run(config, comm);\
+      else if(::Parallel::isMaster(comm))\
+        tmp.run(config, ::Parallel::selfCommunicator());\
     }\
   };\
   static _Program##_name program##_name;\
@@ -144,7 +133,7 @@ public:
   virtual std::string       documentation()     const = 0;
   virtual std::vector<Tags> tags()              const = 0;
   virtual Bool              isSingleProcess()   const = 0;
-  virtual void              run(Config &config) const = 0;
+  virtual void              run(Config &config, Parallel::CommunicatorPtr comm) const = 0;
 
   static std::vector<Program*> programList(Program *program=nullptr);
   static void sortList(std::vector<Program*> &list);

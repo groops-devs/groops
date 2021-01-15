@@ -61,20 +61,6 @@ GnssParametrizationIonosphere::GnssParametrizationIonosphere(Config &config, con
 }
 
 /***********************************************/
-
-void GnssParametrizationIonosphere::initIntervalEarly(Gnss::AnalysisType /*analysisType*/, const std::vector<Time> &/*times*/, const Time &/*timeMargin*/, Parallel::CommunicatorPtr /*comm*/)
-{
-  try
-  {
-    VTEC = Matrix();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
 /***********************************************/
 
 // intersection point in ionosphere height

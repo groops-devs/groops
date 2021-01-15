@@ -32,14 +32,14 @@ The result is stored in \configFile{outputfileCorrelationMatrix}{matrix}.
 class CovarianceMatrix2Correlation
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(CovarianceMatrix2Correlation, PARALLEL, "compute the correlation matrix from a covariance matrix", Covariance)
 
 /***********************************************/
 
-void CovarianceMatrix2Correlation::run(Config &config)
+void CovarianceMatrix2Correlation::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

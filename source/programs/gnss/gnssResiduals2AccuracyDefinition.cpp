@@ -60,7 +60,7 @@ center variations in the processing.
 class GnssResiduals2AccuracyDefinition
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssResiduals2AccuracyDefinition, SINGLEPROCESS, "Compute accuracy definition from observation residuals", Gnss)
@@ -68,7 +68,7 @@ GROOPS_RENAMED_PROGRAM(GnssResiduals2AntennaDefinition, GnssResiduals2AccuracyDe
 
 /***********************************************/
 
-void GnssResiduals2AccuracyDefinition::run(Config &config)
+void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

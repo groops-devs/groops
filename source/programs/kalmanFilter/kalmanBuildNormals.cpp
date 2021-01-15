@@ -68,7 +68,7 @@ This program computes the input normals for \program{KalmanFilter} and \program{
 class KalmanBuildNormals
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 
 private:
   ObservationPtr    observation;
@@ -87,7 +87,7 @@ GROOPS_REGISTER_PROGRAM(KalmanBuildNormals, PARALLEL, "accumulate normals for su
 
 /***********************************************/
 
-void KalmanBuildNormals::run(Config &config)
+void KalmanBuildNormals::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -128,13 +128,13 @@ void KalmanBuildNormals::run(Config &config)
     n.resize(arcsInterval.size()-1);
     lPl.resize(arcsInterval.size()-1);
     obsCount.resize(arcsInterval.size()-1, 0);
-    Parallel::forEachInterval(arcCount, arcsInterval, [this](UInt arcNo) {return computeArc(arcNo);});
+    Parallel::forEachInterval(arcCount, arcsInterval, [this](UInt arcNo) {return computeArc(arcNo);}, comm);
 
     // =======================
 
     // collect system of normal equations
     // ----------------------------------
-    if(Parallel::size()>=3)
+    if(Parallel::size(comm)>=3)
     {
       logStatus<<"collect system of normal equations"<<Log::endl;
       for(UInt idxInterval=0; idxInterval<timesInterval.size()-1; idxInterval++)
@@ -143,14 +143,14 @@ void KalmanBuildNormals::run(Config &config)
         if(N.at(idxInterval).size())
           color = idxInterval;
 
-        Parallel::CommunicatorPtr comm = Parallel::splitCommunicator(color, Parallel::myRank());
-        if((comm!=nullptr) && (Parallel::size(comm)>1))
+        Parallel::CommunicatorPtr commSplit= Parallel::splitCommunicator(color, Parallel::myRank(comm), comm);
+        if(commSplit && (Parallel::size(commSplit)>1))
         {
-          Parallel::reduceSum(N.at(idxInterval),        0, comm);
-          Parallel::reduceSum(n.at(idxInterval),        0, comm);
-          Parallel::reduceSum(lPl.at(idxInterval),      0, comm);
-          Parallel::reduceSum(obsCount.at(idxInterval), 0, comm);
-          if(Parallel::myRank(comm) != 0)
+          Parallel::reduceSum(N.at(idxInterval),        0, commSplit);
+          Parallel::reduceSum(n.at(idxInterval),        0, commSplit);
+          Parallel::reduceSum(lPl.at(idxInterval),      0, commSplit);
+          Parallel::reduceSum(obsCount.at(idxInterval), 0, commSplit);
+          if(Parallel::myRank(commSplit) != 0)
           {
             N.at(idxInterval) = Matrix();
             n.at(idxInterval) = Matrix();
@@ -233,8 +233,6 @@ void KalmanBuildNormals::run(Config &config)
         logStatus<<"write normal equations to <"<<fileNameNormals(fileNameVariableList)<<">"<<Log::endl;
         writeFileNormalEquation(fileNameNormals(fileNameVariableList), normalInfo, N.at(idxInterval), n.at(idxInterval));
       } // for(idxInterval)
-
-    Parallel::barrier();
   }
   catch(std::exception &e)
   {

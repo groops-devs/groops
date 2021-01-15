@@ -12,10 +12,10 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts the output (neutral mass density,temperature) of an empirical thermosphere model (e.g. JB2008) on a given \configClass{grid}{gridType}. 
-Additionally, also the thermospheric winds estimated by using the horizontal wind model HWM 2014 can be assessed.  
+This program converts the output (neutral mass density,temperature) of an empirical thermosphere model (e.g. JB2008) on a given \configClass{grid}{gridType}.
+Additionally, also the thermospheric winds estimated by using the horizontal wind model HWM 2014 can be assessed.
 The time for the evaluation can be specified in \config{time}. The values will be saved together with points expressed as ellipsoidal coordinates
-(longitude, latitude, height) based on a reference ellipsoid with parameters \config{R} and \config{inverseFlattening}.    
+(longitude, latitude, height) based on a reference ellipsoid with parameters \config{R} and \config{inverseFlattening}.
 \fig{!hb}{1.0}{thermosphericState2GriddedData}{fig:thermosphericState2GriddedData}{JB2008 model in 300 km height at 2003-07-01 12:00.}
 )";
 
@@ -34,14 +34,14 @@ The time for the evaluation can be specified in \config{time}. The values will b
 class ThermosphericState2GriddedData
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(ThermosphericState2GriddedData, PARALLEL, "thermospheric state values", Misc, Grid)
 
 /***********************************************/
 
-void ThermosphericState2GriddedData::run(Config &config)
+void ThermosphericState2GriddedData::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -76,9 +76,9 @@ void ThermosphericState2GriddedData::run(Config &config)
       if(useLocalFrame)
         wind = localNorthEastUp(points.at(i), ellipsoid).inverseTransform(wind);
       return Vector({density, temperature, wind.x(), wind.y(), wind.z()});
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       // convert
       std::vector<std::vector<Double>> field(5, std::vector<Double>(points.size()));

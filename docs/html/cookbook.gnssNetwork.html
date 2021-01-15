@@ -224,18 +224,9 @@ For most input files the default value and annotation give a good hint of what i
 listed here.</p><p>The first step is setting the processing sampling, in this example it is 5 minutes. Alternatively, if observation
 preprocessing (outlier detection, cycle slip detection etc.) should be performed at full (i.e. 30-second) sampling,
 set <strong class="groops-config-element">sampling</strong>=<code>30/86400</code> and define a <a class="groops-class" href="gnssProcessingStepType.html#selectEpochs">processingStep:selectEpochs</a>
-which selects every 10th epoch. The processing interval usually is a single 24-hour day.
-<ul>
-
-  <li><a class="groops-class" href="timeSeriesType.html#uniformSampling">intervals:uniformSampling</a> with <strong class="groops-config-element">timeStart</strong>=<code>&lt;mjd></code>,
-        <strong class="groops-config-element">timeEnd</strong>=<code>&lt;mjd>+1</code>, <strong class="groops-config-element">sampling</strong>=<code>1</code> (replace <code>&lt;mjd></code> with MJD of the day to process)
-  </li><li>
-<strong class="groops-config-element">parallelIntervals</strong>=<code>no</code> (we only process a single interval and thus want to distribute stations to the parallel processes)
-  </li><li>
+which selects every 10th epoch. The processing interval usually is a single 24-hour day,
 <a class="groops-class" href="timeSeriesType.html#uniformSampling">timeSeries:uniformSampling</a> with <strong class="groops-config-element">timeStart</strong>=<code>&lt;mjd></code>,
-        <strong class="groops-config-element">timeEnd</strong>=<code>&lt;mjd>+1</code>, <strong class="groops-config-element">sampling</strong>=<code>5/1440</code> (processing sampling)
-</li></ul>
-</p><p>Next define the GNSS constellations, in this case GPS and Galileo.
+<strong class="groops-config-element">timeEnd</strong>=<code>&lt;mjd>+1</code>, <strong class="groops-config-element">sampling</strong>=<code>5/1440</code> (processing sampling).</p><p>Next define the GNSS constellations, in this case GPS and Galileo.
 <ul>
 
   <li><a class="groops-class" href="gnssParametrizationTransmitterType.html#gps">transmitter:GPS</a>

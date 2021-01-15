@@ -35,14 +35,14 @@ will be saved together with points expressed as ellipsoidal coordinates
 class Gravityfield2Gradients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2Gradients, PARALLEL, "Gradients from gravity field", Gravityfield)
 
 /***********************************************/
 
-void Gravityfield2Gradients::run(Config &config)
+void Gravityfield2Gradients::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -72,9 +72,9 @@ void Gravityfield2Gradients::run(Config &config)
     // ------------------
     logStatus<<"compute gradients"<<Log::endl;
     std::vector<Tensor3d> gradients(points.size());
-    Parallel::forEach(gradients, [&](UInt i){return gravityfield->gravityGradient(time, points.at(i));});
+    Parallel::forEach(gradients, [&](UInt i){return gravityfield->gravityGradient(time, points.at(i));}, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       // convert
       // -------
@@ -97,7 +97,7 @@ void Gravityfield2Gradients::run(Config &config)
       GriddedData griddedData(ellipsoid, points, areas, field);
       writeFileGriddedData(fileNameGrid, griddedData);
       MiscGriddedData::printStatistics(griddedData);
-    } // if(Parallel::isMaster())
+    } // if(Parallel::isMaster(comm))
   }
   catch(std::exception &e)
   {

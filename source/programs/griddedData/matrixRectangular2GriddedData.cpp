@@ -30,7 +30,7 @@ Read gridded data (matrix).
 class MatrixRectangular2GriddedData
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(MatrixRectangular2GriddedData, SINGLEPROCESS, "read gridded data (matrix)", Grid, Matrix)
@@ -38,7 +38,7 @@ GROOPS_RENAMED_PROGRAM(AsciiMatrix2GridRectangular, MatrixRectangular2GriddedDat
 
 /***********************************************/
 
-void MatrixRectangular2GriddedData::run(Config &config)
+void MatrixRectangular2GriddedData::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

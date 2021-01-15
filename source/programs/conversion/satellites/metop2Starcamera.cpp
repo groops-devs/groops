@@ -36,14 +36,14 @@ class Metop2Starcamera
   void fillStarCamera(StarCameraArc &starArc);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Metop2Starcamera, SINGLEPROCESS, "read MetOp star camera data", Conversion, Instrument)
 
 /***********************************************/
 
-void Metop2Starcamera::run(Config &config)
+void Metop2Starcamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -94,10 +94,8 @@ void Metop2Starcamera::readFileMetop(const FileName &fileName, StarCameraArc &st
     file.exceptions(std::ios::badbit|std::ios::failbit);
 
     //Daten einlesen, Headerzeilen werden hier direkt behandelt
-//    logTimerStart;
     for(UInt i=0; ; i++)
     {
-//      logTimerLoop(i, 259200);
       std::string line;
       try
       {
@@ -163,7 +161,6 @@ void Metop2Starcamera::readFileMetop(const FileName &fileName, StarCameraArc &st
       else if(lineID1 == "%eo")
         starArc.push_back(starEpoch);
     }  //for(UInt i=0; ; i++) Schleife über die zeilen des Files
-//    logTimerLoopEnd(259200);
   }
   catch(std::exception &e)
   {

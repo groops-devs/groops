@@ -420,13 +420,11 @@ void Config::notEmptyWarning()
 {
   try
   {
-    if(!Parallel::isMaster())
-      return;
     if(stack.top().xmlNode->hasChildren())
     {
-      logWarning<<"*** Warning: unknown variables in '"<<currentNodeName()<<"' (ignored):"<<Log::endl;
+      logWarningOnce<<"*** Warning: unknown variables in '"<<currentNodeName()<<"' (ignored):"<<Log::endl;
       while(stack.top().xmlNode->hasChildren())
-        logWarning<<"  name = "<<stack.top().xmlNode->getNextChild()->getName()<<Log::endl;
+        logWarningOnce<<"  name = "<<stack.top().xmlNode->getNextChild()->getName()<<Log::endl;
     }
   }
   catch(std::exception &e)
@@ -523,7 +521,7 @@ void Config::writeSchema(const std::string &fileName)
     {
       readConfigChoiceElement(config, program->name(), choice, program->description());
       const std::string name = config.stack.top().name;
-      program->run(config);
+      program->run(config, Parallel::selfCommunicator());
       if(name != config.stack.top().name)
         throw(Exception("In program "+program->name()+": Missing endSequence() or endChoice()?"));
       for(UInt idx : program->tags())
@@ -715,7 +713,7 @@ XmlNodePtr Config::table()
 /***********************************************/
 /***********************************************/
 
-void ProgramConfig::run(VariableList &variableList)
+void ProgramConfig::run(VariableList &variableList, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -739,6 +737,7 @@ void ProgramConfig::run(VariableList &variableList)
             comment = attr->getText();
           stack.push(top);
 
+          Parallel::barrier(comm);
           if(comment.empty())
             logStatus<<"--- "<<program->name()<<" ---"<<Log::endl;
           else
@@ -747,8 +746,8 @@ void ProgramConfig::run(VariableList &variableList)
             comment = StringParser::parse("comment", comment, getVarList(), resolved);
             logStatus<<"--- "<<program->name()<<" ("<<comment<<") ---"<<Log::endl;
           }
-          Parallel::barrier();
-          program->run(config);
+          program->run(config, comm);
+          Parallel::barrier(comm);
           break;
         }
 
@@ -806,8 +805,7 @@ void renameDeprecatedConfig(Config &config, const std::string &oldName, const st
       XmlNodePtr xmlChild = config.stack.top().xmlNode->findChild(oldName);
       if(!xmlChild)
         break;
-      if(Parallel::isMaster())
-        logWarning<<"In '"<<config.currentNodeName()<<"':"<<" config element '"<<oldName<<"' has new name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
+      logWarningOnce<<"In '"<<config.currentNodeName()<<"':"<<" config element '"<<oldName<<"' has new name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
       xmlChild->setName(newName);
     }
   }
@@ -831,8 +829,7 @@ void renameDeprecatedChoice(Config &config, std::string &type, const std::string
 
     if(type == oldName)
     {
-      if(Parallel::isMaster())
-        logWarning<<"'"<<config.currentNodeName()<<"':' has new choice name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
+      logWarningOnce<<"'"<<config.currentNodeName()<<"':' has new choice name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
       type = newName;
     }
   }

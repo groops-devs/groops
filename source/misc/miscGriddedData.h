@@ -45,7 +45,7 @@ namespace MiscGriddedData
   * @param comm   communicator for parallel computation.
   * @param timing start a loop timer for all grid points (only relevant for non-rectangular grids).
   * @return values at @a points (only valid at master). */
-  std::vector<Double> synthesisSphericalHarmonics(const SphericalHarmonics &harmonic, const std::vector<Vector3d> &points, KernelPtr kernel, Parallel::CommunicatorPtr comm=nullptr, Bool timing = TRUE);
+  std::vector<Double> synthesisSphericalHarmonics(const SphericalHarmonics &harmonic, const std::vector<Vector3d> &points, KernelPtr kernel, Parallel::CommunicatorPtr comm, Bool timing = TRUE);
 
   /** @brief Generates a linear functional for the synthesis of spherical harmonics coefficients on a grid.
   * This function generates a matrix A which represents the synthesis of a spherical harmonics vector x by matrix multiplication (y = Ax).

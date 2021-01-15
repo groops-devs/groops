@@ -65,13 +65,11 @@ void GnssParametrizationEarthRotation::initIntervalEarly(Gnss::AnalysisType /*an
 {
   try
   {
-    const Time medianSampling = ::medianSampling(times);
     this->times = times;
-    this->times.push_back(times.back()+medianSampling); // add additional epoch (i.e. midnight)
 
-    parametrizationPole->setInterval    (this->times.front(), this->times.back()+medianSampling, TRUE);
-    parametrizationNutation->setInterval(this->times.front(), this->times.back()+medianSampling, TRUE);
-    parametrizationUT1->setInterval     (this->times.front(), this->times.back()+medianSampling, TRUE);
+    parametrizationPole->setInterval    (this->times.front(), this->times.back(), TRUE);
+    parametrizationNutation->setInterval(this->times.front(), this->times.back(), TRUE);
+    parametrizationUT1->setInterval     (this->times.front(), this->times.back(), TRUE);
 
     // Matrix eop columns: xp, yp, sp, deltaUT, LOD, X, Y, S
     // -----------------------------------------------------

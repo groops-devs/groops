@@ -104,8 +104,9 @@ public:
   virtual ~NormalEquation();
 
   /** @brief Init systems of normal equations.
-  * @param blockSize normal matrix is divided into blocks, (0: only one block). */
-  void init(UInt blockSize);
+  * @param blockSize normal matrix is divided into blocks, (0: only one block).
+  * @param comm normal matrix is distributed over processes.  */
+  void init(UInt blockSize, Parallel::CommunicatorPtr comm);
 
   /** @brief Number of unknown parameters.
   * Dimension of the normal matrix N. */

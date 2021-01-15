@@ -31,14 +31,14 @@ See \configClass{noiseGenerator}{noiseGeneratorType} for details on noise option
 class NoiseTimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NoiseTimeSeries, SINGLEPROCESS, "generate random noise", Simulation, Noise, TimeSeries)
 
 /***********************************************/
 
-void NoiseTimeSeries::run(Config& config)
+void NoiseTimeSeries::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

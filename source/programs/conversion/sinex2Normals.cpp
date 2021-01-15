@@ -35,14 +35,14 @@ class Sinex2Normals
   Matrix normalsMatrix(Sinex::SinexSolutionMatrixPtr sinexSolutionMatrix) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Sinex2Normals, SINGLEPROCESS, "Convert SINEX to GROOPS normal equations.", Conversion, NormalEquation)
 
 /***********************************************/
 
-void Sinex2Normals::run(Config &config)
+void Sinex2Normals::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

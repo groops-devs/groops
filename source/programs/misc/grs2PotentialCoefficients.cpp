@@ -30,14 +30,14 @@ The default values creates the GRS80.
 class Grs2PotentialCoefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Grs2PotentialCoefficients, SINGLEPROCESS, "spherical harmonics from Geodetic Reference System (GRS)", Misc, PotentialCoefficients)
 
 /***********************************************/
 
-void Grs2PotentialCoefficients::run(Config &config)
+void Grs2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

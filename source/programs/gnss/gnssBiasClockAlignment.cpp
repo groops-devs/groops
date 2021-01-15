@@ -58,7 +58,7 @@ public:
     GnssSignalBias biases;
   };
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssBiasClockAlignment, SINGLEPROCESS, "Align GNSS transmitter clocks to reference clocks and adjust related receiver signal biases as well as GLONASS transmitter biases.", Gnss, Instrument)
@@ -93,7 +93,7 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssBiasCloc
 
 /***********************************************/
 
-void GnssBiasClockAlignment::run(Config &config)
+void GnssBiasClockAlignment::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -109,11 +109,8 @@ void GnssBiasClockAlignment::run(Config &config)
 
     logStatus<<"read transmitter input files"<<Log::endl;
     std::map<GnssType, std::vector<UInt>> group2DataIds;
-    logTimerStart;
-    for(UInt i = 0; i < transmitters.size(); i++)
+    Single::forEach(transmitters.size(), [&](UInt i)
     {
-      logTimerLoop(i, transmitters.size());
-
       Transmitter *trans = &transmitters.at(i);
       try
       {
@@ -126,14 +123,14 @@ void GnssBiasClockAlignment::run(Config &config)
       catch(std::exception &e)
       {
         logWarning<<e.what()<<" continue..."<<Log::endl;
-        continue;
+        return;
       }
 
       UInt idRecv = trans->info.findReceiver(trans->clockArc.at(trans->clockArc.size()/2).time);
       if(idRecv == NULLINDEX)
       {
         logWarning<<"no receiver info found in <"<<trans->inNameTransmitterInfo<<">, skipping satellite..."<<Log::endl;
-        continue;
+        return;
       }
 
       GnssReceiverInfo info = trans->info.receiver.at(idRecv);
@@ -141,16 +138,13 @@ void GnssBiasClockAlignment::run(Config &config)
       if(alignClocksByFreqNo && group == GnssType::GLONASS && !info.version.empty())
         group.setFrequencyNumber(std::stoi(info.version));
       group2DataIds[group].push_back(i);
-    }
-    logTimerLoopEnd(transmitters.size());
+    });
 
     if(receivers.size())
     {
       logStatus<<"read receiver input files"<<Log::endl;
-      logTimerStart;
-      for(UInt i = 0; i < receivers.size(); i++)
+      Single::forEach(receivers.size(), [&](UInt i)
       {
-        logTimerLoop(i, receivers.size());
         try
         {
           readFileGnssSignalBias(receivers.at(i).inNameBias, receivers.at(i).biases);
@@ -159,8 +153,7 @@ void GnssBiasClockAlignment::run(Config &config)
         {
           logWarning<<e.what()<<" continue..."<<Log::endl;
         }
-      }
-      logTimerLoopEnd(receivers.size());
+      });
     }
 
     // shift mean of transmitter clock diffs per group to receiver code biases

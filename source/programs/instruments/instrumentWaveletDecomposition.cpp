@@ -32,14 +32,14 @@ The \configFile{outputfileInstrument}{instrument} contains the decomposed levels
 class InstrumentWaveletDecomposition
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentWaveletDecomposition, SINGLEPROCESS, "Wavelet decomposition of an instrument file.", Instrument)
 
 /***********************************************/
 
-void InstrumentWaveletDecomposition::run(Config &config)
+void InstrumentWaveletDecomposition::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

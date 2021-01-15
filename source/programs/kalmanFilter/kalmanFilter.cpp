@@ -60,14 +60,14 @@ See also \program{KalmanBuildNormals}, \program{KalmanSmoother}.
 class KalmanFilter
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(KalmanFilter, SINGLEPROCESS, "Computes time variable gravity fields using Kalman filter approach", KalmanFilter, NormalEquation)
 
 /***********************************************/
 
-void KalmanFilter::run(Config &config)
+void KalmanFilter::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

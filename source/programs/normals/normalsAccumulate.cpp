@@ -31,14 +31,14 @@ This program is the simplified and fast version of the more general program \pro
 class NormalsAccumulate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NormalsAccumulate, SINGLEPROCESS, "accumulate normal equations and write to file", NormalEquation)
 
 /***********************************************/
 
-void NormalsAccumulate::run(Config &config)
+void NormalsAccumulate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

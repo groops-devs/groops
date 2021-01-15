@@ -28,14 +28,14 @@ This program checks \configFile{inputfileCovariance3d}{instrument}
 class InstrumentCovarianceCheck
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(InstrumentCovarianceCheck, SINGLEPROCESS, "Remove non invertible covariance matrices", Instrument, Covariance)
+GROOPS_REGISTER_PROGRAM(InstrumentCovarianceCheck, PARALLEL, "Remove non invertible covariance matrices", Instrument, Covariance)
 
 /***********************************************/
 
-void InstrumentCovarianceCheck::run(Config &config)
+void InstrumentCovarianceCheck::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -67,11 +67,11 @@ void InstrumentCovarianceCheck::run(Config &config)
         }
       }
       return arcNew;
-    });
-    Parallel::reduceSum(removed);
+    }, comm);
+    Parallel::reduceSum(removed, 0, comm);
     logInfo<<"  "<<removed<<" epochs removed"<<Log::endl;
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write covariance to file <"<<fileNameOut<<"> "<<Log::endl;
       InstrumentFile::write(fileNameOut, arcCov);

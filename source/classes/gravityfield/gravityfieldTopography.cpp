@@ -50,53 +50,40 @@ GravityfieldTopography::GravityfieldTopography(Config &config)
     cosPsiLine  /= DEFAULT_R*1e-3; if(cosPsiLine >PI) cosPsiLine  = PI; cosPsiLine  = std::cos(cosPsiLine);
     cosPsiMax   /= DEFAULT_R*1e-3; if(cosPsiMax  >PI) cosPsiMax   = PI; cosPsiMax   = std::cos(cosPsiMax);
 
-    if(Parallel::isMaster())
-    {
-      // read rectangular grid
-      // ---------------------
-      GriddedDataRectangular grid;
-      readFileGriddedData(gridName, grid);
-      std::vector<Double> radius;
-      grid.geocentric(lambda, phi, radius, dLambda, dPhi);
-      rows = phi.size();
-      cols = lambda.size();
-
-      // evaluate upper and lower height
-      // -------------------------------
-      auto varList = config.getVarList();
-      std::set<std::string> usedVariables;
-      expressionUpper->usedVariables(varList, usedVariables);
-      expressionLower->usedVariables(varList, usedVariables);
-      expressionRho  ->usedVariables(varList, usedVariables);
-      addDataVariables(grid, varList, usedVariables);
-      addVariable("area", varList);
-      expressionUpper->simplify(varList);
-      expressionLower->simplify(varList);
-      expressionRho  ->simplify(varList);
-
-      rLower = Matrix(rows,cols);
-      rUpper = Matrix(rows,cols);
-      rho    = Matrix(rows,cols);
-      for(UInt z=0; z<rows; z++)
-        for(UInt s=0; s<cols; s++)
-        {
-          evaluateDataVariables(grid, z, s, varList);
-          varList["area"]->setValue( dLambda.at(s)*dPhi.at(z)*std::cos(phi.at(z)) ); // area
-          rUpper(z,s) = radius.at(z) + expressionUpper->evaluate(varList);
-          rLower(z,s) = radius.at(z) + expressionLower->evaluate(varList);
-      	  rho(z,s)    = expressionRho->evaluate(varList);
-        }
-    } // if(Parallel::isMaster())
-
-    Parallel::broadCast(rUpper);
-    Parallel::broadCast(rLower);
-    Parallel::broadCast(rho);
-    Parallel::broadCast(lambda);
-    Parallel::broadCast(phi);
-    Parallel::broadCast(dLambda);
-    Parallel::broadCast(dPhi);
+    // read rectangular grid
+    // ---------------------
+    GriddedDataRectangular grid;
+    readFileGriddedData(gridName, grid);
+    std::vector<Double> radius;
+    grid.geocentric(lambda, phi, radius, dLambda, dPhi);
     rows = phi.size();
     cols = lambda.size();
+
+    // evaluate upper and lower height
+    // -------------------------------
+    auto varList = config.getVarList();
+    std::set<std::string> usedVariables;
+    expressionUpper->usedVariables(varList, usedVariables);
+    expressionLower->usedVariables(varList, usedVariables);
+    expressionRho  ->usedVariables(varList, usedVariables);
+    addDataVariables(grid, varList, usedVariables);
+    addVariable("area", varList);
+    expressionUpper->simplify(varList);
+    expressionLower->simplify(varList);
+    expressionRho  ->simplify(varList);
+
+    rLower = Matrix(rows,cols);
+    rUpper = Matrix(rows,cols);
+    rho    = Matrix(rows,cols);
+    for(UInt z=0; z<rows; z++)
+      for(UInt s=0; s<cols; s++)
+      {
+        evaluateDataVariables(grid, z, s, varList);
+        varList["area"]->setValue( dLambda.at(s)*dPhi.at(z)*std::cos(phi.at(z)) ); // area
+        rUpper(z,s) = radius.at(z) + expressionUpper->evaluate(varList);
+        rLower(z,s) = radius.at(z) + expressionLower->evaluate(varList);
+        rho(z,s)    = expressionRho->evaluate(varList);
+      }
 
     // precompute sin & cos terms
     // --------------------------
@@ -145,8 +132,8 @@ GravityfieldTopography::GravityfieldTopography(Config &config)
         testRectangle = FALSE;
       isLambdaAscending = ascending;
 
-      if(!testRectangle && Parallel::isMaster())
-        logWarning<<"Grid is not strictly ordered => acceleration of computation not possible"<<Log::endl;
+      if(!testRectangle)
+        logWarningOnce<<"Grid is not strictly ordered => acceleration of computation not possible"<<Log::endl;
     }
   }
   catch(std::exception &e)

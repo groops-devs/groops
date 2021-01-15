@@ -31,7 +31,7 @@ The main purpose is for visualization with \program{PlotGraph}.
 class Kernel2Coefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Kernel2Coefficients, SINGLEPROCESS, "compute kernel coefficients", Misc)
@@ -39,7 +39,7 @@ GROOPS_RENAMED_PROGRAM(KernelComputeCoefficients, Kernel2Coefficients, date2time
 
 /***********************************************/
 
-void Kernel2Coefficients::run(Config &config)
+void Kernel2Coefficients::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

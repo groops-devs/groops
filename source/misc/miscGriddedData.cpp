@@ -116,8 +116,6 @@ void printStatistics(const GriddedData &grid)
 {
   try
   {
-    if(!Parallel::isMaster()) return;
-
     const Double totalArea = std::accumulate(grid.areas.begin(), grid.areas.end(), Double(0.));
 
     logInfo<<"grid statistics"<<Log::endl;
@@ -159,8 +157,6 @@ void printStatistics(const GriddedDataRectangular &grid)
 {
   try
   {
-    if(!Parallel::isMaster()) return;
-
     if(!grid.isValid())
     {
       logInfo<<"grid is not valid"<<Log::endl;

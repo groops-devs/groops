@@ -43,7 +43,7 @@ public:
     UInt degree, order;
   };
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GravityfieldReplacePotentialCoefficients, SINGLEPROCESS, "Replace single potential coefficients in a gravity field", Gravityfield)
@@ -74,7 +74,7 @@ template<> Bool readConfig(Config &config, const std::string &name, Gravityfield
 
 /***********************************************/
 
-void GravityfieldReplacePotentialCoefficients::run(Config &config)
+void GravityfieldReplacePotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

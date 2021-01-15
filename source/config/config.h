@@ -14,9 +14,10 @@
 #define __GROOPS_CONFIG__
 
 #include "base/import.h"
-#include "inputOutput/fileName.h"
 #include "parser/xml.h"
 #include "parser/expressionParser.h"
+#include "inputOutput/fileName.h"
+#include "parallel/parallel.h"
 
 /** @addtogroup configGroup */
 /// @{
@@ -141,7 +142,7 @@ public:
 class ProgramConfig : public Config
 {
 public:
-  void run(VariableList &variableList);
+  void run(VariableList &variableList, Parallel::CommunicatorPtr comm);
 };
 
 /***** CLASS ***********************************/

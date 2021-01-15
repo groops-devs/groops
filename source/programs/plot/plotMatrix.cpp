@@ -42,14 +42,14 @@ see \url{https://docs.generic-mapping-tools.org/latest/gmt.conf.html}.
 class PlotMatrix
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(PlotMatrix, SINGLEPROCESS, "Plot coefficients of a Matrix.", Plot, Matrix)
 
 /***********************************************/
 
-void PlotMatrix::run(Config &config)
+void PlotMatrix::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

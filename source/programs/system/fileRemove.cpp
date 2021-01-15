@@ -28,14 +28,14 @@ Deletes also the content recursivley if one of \config{files} is a directory.
 class FileRemove
 {
  public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(FileRemove, SINGLEPROCESS, "Remove files or directories.", System)
 
 /***********************************************/
 
-void FileRemove::run(Config &config)
+void FileRemove::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

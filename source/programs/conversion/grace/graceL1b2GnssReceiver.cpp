@@ -31,14 +31,14 @@ For further information see \program{GraceL1b2Accelerometer}.
 class GraceL1b2GnssReceiver
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceL1b2GnssReceiver, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Gnss, Instrument)
 
 /***********************************************/
 
-void GraceL1b2GnssReceiver::run(Config &config)
+void GraceL1b2GnssReceiver::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

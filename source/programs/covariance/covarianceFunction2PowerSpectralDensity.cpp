@@ -38,7 +38,7 @@ See also \program{PowerSpectralDensity2CovarianceFunction}.
 class CovarianceFunction2PowerSpectralDensity
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(CovarianceFunction2PowerSpectralDensity, SINGLEPROCESS, "Power Spectral Density (PSD) from covariance functions.", Covariance)
@@ -46,7 +46,7 @@ GROOPS_RENAMED_PROGRAM(CovarianceFunction2PSD, CovarianceFunction2PowerSpectralD
 
 /***********************************************/
 
-void CovarianceFunction2PowerSpectralDensity::run(Config &config)
+void CovarianceFunction2PowerSpectralDensity::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

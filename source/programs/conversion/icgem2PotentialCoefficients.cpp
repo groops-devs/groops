@@ -30,7 +30,7 @@ Read spherical harmonics in ICGEM format (\url{http://icgem.gfz-potsdam.de/}).
 class Icgem2PotentialCoefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 
   class Coefficient
   {
@@ -70,7 +70,7 @@ GROOPS_REGISTER_PROGRAM(Icgem2PotentialCoefficients, SINGLEPROCESS, "read spheri
 
 /***********************************************/
 
-void Icgem2PotentialCoefficients::run(Config &config)
+void Icgem2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

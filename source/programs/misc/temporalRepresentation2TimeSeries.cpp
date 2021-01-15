@@ -31,14 +31,14 @@ The intention of this program is to visualize the parametrization together with 
 class TemporalRepresentation2TimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(TemporalRepresentation2TimeSeries, SINGLEPROCESS, "Design matrix of temporal representation.", Misc, TimeSeries)
 
 /***********************************************/
 
-void TemporalRepresentation2TimeSeries::run(Config &config)
+void TemporalRepresentation2TimeSeries::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

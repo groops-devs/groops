@@ -882,9 +882,8 @@ The processing flow is controlled via a list of \configClass{processingSteps}{gn
 Each step is processed consecutively. Some steps allow the selection of parameters, epochs, or the normal equation structure,
 which affects all subsequent steps.
 
-If the program is run on multiple processes in \reference{parallel}{general.parallelization}, \config{parallelIntervals}=\verb|yes| distributes the
-defined \configClass{intervals}{timeSeriesType} over all processes. Otherwise the intervals are processed consecutively while the
-\configClass{receiver}{gnssParametrizationReceiverType}s (stations or LEO satellites) are distributed over the processes.
+If the program is run on multiple processes the \configClass{receiver}{gnssParametrizationReceiverType}s
+(stations or LEO satellites) are distributed over the processes.
 
 See also \program{GnssSimulateReceiver}.
 
@@ -895,9 +894,7 @@ See also \program{GnssSimulateReceiver}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileParameterName & \hfuzz=500pt filename & \hfuzz=500pt parameter names\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~intervals & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt each interval is processed independently\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~parallelIntervals & \hfuzz=500pt boolean & \hfuzz=500pt parallelize intervals instead of receivers per interval\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt defines epochs within intervals\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt defines observation epochs\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeMargin & \hfuzz=500pt double & \hfuzz=500pt [seconds] margin to consider two times identical\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~transmitter & \hfuzz=500pt \hyperref[gnssParametrizationTransmitterType]{gnssParametrizationTransmitter} & \hfuzz=500pt constellation of GNSS satellites\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~receiver & \hfuzz=500pt \hyperref[gnssParametrizationReceiverType]{gnssParametrizationReceiver} & \hfuzz=500pt ground station network or LEO satellite\\
@@ -1064,9 +1061,8 @@ via \configClass{noiseObervation}{noiseGeneratorType} and \configClass{noiseCloc
 interpreted as a factor that is multiplied to the accuracy derived from the accuracy pattern of the respective observation type
 (see \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition} in \configClass{receiver}{gnssParametrizationReceiverType}).
 
-If the program is run on multiple processes in \reference{parallel}{general.parallelization}, \config{parallelIntervals}=\verb|yes| distributes the
-defined \configClass{intervals}{timeSeriesType} over all processes. Otherwise the intervals are processed consecutively while the
-\configClass{receiver}{gnssParametrizationReceiverType}s (stations or LEO satellites) are distributed over the processes.
+If the program is run on multiple processes the \configClass{receiver}{gnssParametrizationReceiverType}s
+(stations or LEO satellites) are distributed over the processes.
 
 
 \keepXColumns
@@ -1076,7 +1072,6 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGnssReceiver & \hfuzz=500pt filename & \hfuzz=500pt simulated observations\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileClock & \hfuzz=500pt filename & \hfuzz=500pt simulated receiver clock errors\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~intervals & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt each interval is processed independently\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt defines epochs within intervals\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeMargin & \hfuzz=500pt double & \hfuzz=500pt [seconds] margin to consider two times identical\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~transmitter & \hfuzz=500pt \hyperref[gnssParametrizationTransmitterType]{gnssParametrizationTransmitter} & \hfuzz=500pt constellation of GNSS satellites\\
@@ -1086,7 +1081,6 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~observationType & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt simulated observation types\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~noiseObservation & \hfuzz=500pt \hyperref[noiseGeneratorType]{noiseGenerator} & \hfuzz=500pt [-] noise is multplied with type accuracy pattern of receiver\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~noiseClockReceiver & \hfuzz=500pt \hyperref[noiseGeneratorType]{noiseGenerator} & \hfuzz=500pt [m] noise added to the simulated receiver clock\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~parallelIntervals & \hfuzz=500pt boolean & \hfuzz=500pt parallelize intervals instead of receivers per interval\\
 \hline
 \end{tabularx}
 
@@ -2545,7 +2539,6 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
-This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{GriddedDataReduceSampling}\label{GriddedDataReduceSampling}
@@ -2568,7 +2561,6 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
-This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{GriddedTopography2AtmospherePotentialCoefficients}\label{GriddedTopography2AtmospherePotentialCoefficients}
@@ -2649,7 +2641,6 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
-This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{Matrix2GriddedData}\label{Matrix2GriddedData}
@@ -3304,6 +3295,7 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
+This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{InstrumentDetrend}\label{InstrumentDetrend}
@@ -3465,6 +3457,7 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
+This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{InstrumentMultiplyAdd}\label{InstrumentMultiplyAdd}
@@ -4673,16 +4666,16 @@ Name & Type & Annotation\\
 %==================================
 \subsection{SatelliteModelCreate}\label{SatelliteModelCreate}
 This program creates a satellite macro model for the estimation of non-gravitational accelerations acting on a satellite.
-Mandatory input values are the \config{satelliteName}, \config{mass}, \config{coefficientDrag} and information 
-about the satellite \config{surfaces}. For low Earth orbiting satellites, like GRACE for instance, a good guess 
-for the drag coefficient could be 2.3. Apart from that, it is latter on possible to estimate a more precise variable drag coefficient 
-(e.g. \configClass{miscAccelerations:atmosphericDrag}{miscAccelerationsType:atmosphericDrag}), which will override this initial guess. 
+Mandatory input values are the \config{satelliteName}, \config{mass}, \config{coefficientDrag} and information
+about the satellite \config{surfaces}. For low Earth orbiting satellites, like GRACE for instance, a good guess
+for the drag coefficient could be 2.3. Apart from that, it is latter on possible to estimate a more precise variable drag coefficient
+(e.g. \configClass{miscAccelerations:atmosphericDrag}{miscAccelerationsType:atmosphericDrag}), which will override this initial guess.
 Concerning the satellite surfaces an external file must be imported which must contain information about each single
- satellite plate in terms of plate \config{area}, the associated plate normal and re-radiation properties 
-(reflexion, diffusion and absorption) properties in the visible and IR part. Examplarily, a description of 
+ satellite plate in terms of plate \config{area}, the associated plate normal and re-radiation properties
+(reflexion, diffusion and absorption) properties in the visible and IR part. Examplarily, a description of
 the macro model for GRACE can be found under:
 \url{https://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/docs/ProdSpecDoc_v4.6.pdf}
-Additionally, it is possible to add further information like antennaThrust, solar panel, temporal mass changes and 
+Additionally, it is possible to add further information like antennaThrust, solar panel, temporal mass changes and
 massInstrument using the modules option.
 
 
@@ -4753,10 +4746,10 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{ThermosphericState2GriddedData}\label{ThermosphericState2GriddedData}
-This program converts the output (neutral mass density,temperature) of an empirical thermosphere model (e.g. JB2008) on a given \configClass{grid}{gridType}. 
-Additionally, also the thermospheric winds estimated by using the horizontal wind model HWM 2014 can be assessed.  
+This program converts the output (neutral mass density,temperature) of an empirical thermosphere model (e.g. JB2008) on a given \configClass{grid}{gridType}.
+Additionally, also the thermospheric winds estimated by using the horizontal wind model HWM 2014 can be assessed.
 The time for the evaluation can be specified in \config{time}. The values will be saved together with points expressed as ellipsoidal coordinates
-(longitude, latitude, height) based on a reference ellipsoid with parameters \config{R} and \config{inverseFlattening}.    
+(longitude, latitude, height) based on a reference ellipsoid with parameters \config{R} and \config{inverseFlattening}.
 \fig{!hb}{1.0}{thermosphericState2GriddedData}{fig:thermosphericState2GriddedData}{JB2008 model in 300 km height at 2003-07-01 12:00.}
 
 
@@ -6693,7 +6686,10 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GroupPrograms}\label{GroupPrograms}
-Runs programs in a group. The sole purpose is to structure GROOPS config files.
+Runs \config{program}s in a group, which can be used to structure a config file.
+If \config{catchErrors} is enabled and an error occurs, the remaining \config{program}s
+are skipped and execution continues with \config{errorProgram}s, in case any are defined.
+Otherwise an exception is thrown.
 
 
 \keepXColumns
@@ -6702,6 +6698,8 @@ Runs programs in a group. The sole purpose is to structure GROOPS config files.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~program & \hfuzz=500pt programType & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~catchErrors & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-unbounded.pdf}~errorProgram & \hfuzz=500pt programType & \hfuzz=500pt executed if an error occured\\
 \hline
 \end{tabularx}
 
@@ -6709,7 +6707,8 @@ This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{IfPrograms}\label{IfPrograms}
-Runs a list of programs if a \configClass{condition}{conditionType} is met.
+Runs a list of \config{program}s if a \configClass{condition}{conditionType} is met.
+Otherwise \config{elseProgram}s are executed.
 
 
 \keepXColumns
@@ -6718,7 +6717,8 @@ Runs a list of programs if a \configClass{condition}{conditionType} is met.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~program & \hfuzz=500pt programType & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~program & \hfuzz=500pt programType & \hfuzz=500pt executed if condition evaluates to true\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~elseProgram & \hfuzz=500pt programType & \hfuzz=500pt executed if condition evaluates to false\\
 \hline
 \end{tabularx}
 
@@ -6728,13 +6728,15 @@ This program is \reference{parallelized}{general.parallelization}.
 \subsection{LoopPrograms}\label{LoopPrograms}
 This program runs a list of programs in a \configClass{loop}{loopType}.
 
-If \config{continueAfterError}=\verb|yes| and an error occurs, the remaining programs in the current loop
-are skipped and iteration continues in the next loop. Otherwise an exception is thrown.
-This option is disabled in parallel mode as exceptions cannot be properly caught.
+If \config{continueAfterError}=\verb|yes| and an error occurs, the remaining programs in the current iteration
+are skipped and the loop continues with the next iteration. Otherwise an exception is thrown.
 
-If \config{parallelLoops} is set the loops are distributed to the process nodes, computed in parallel,
-and each program is executed with only one node. Otherwise the loops and programs are executed
-sequentially but programs are using all nodes.
+If this program is excecuted on multpile processing nodes, the iterations can be computed in parallel,
+see \reference{parallelization}{general.parallelization}. The first process serves as load balancer
+and the other processes are assigned to iterations according to \config{processCountPerIteration}.
+For example, running a loop containing three iterations on 13 processes with \config{processCountPerIteration}=\verb|4|,
+runs the three iterations in parallel, with each iteration being assigned four processes.
+With \config{parallelLog}=\verb|yes| all processes write output to screen and the log file.
 
 
 \keepXColumns
@@ -6742,9 +6744,10 @@ sequentially but programs are using all nodes.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~loop & \hfuzz=500pt \hyperref[loopType]{loop} & \hfuzz=500pt subprograms are called for every loop\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~continueAfterError & \hfuzz=500pt boolean & \hfuzz=500pt continue with next loop after error, otherwise throw exception\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~parallelLoops & \hfuzz=500pt boolean & \hfuzz=500pt parallelize loops instead of programs\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~loop & \hfuzz=500pt \hyperref[loopType]{loop} & \hfuzz=500pt subprograms are called for every iteration\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~continueAfterError & \hfuzz=500pt boolean & \hfuzz=500pt continue with next iteration after error, otherwise throw exception\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~processCountPerIteration & \hfuzz=500pt uint & \hfuzz=500pt 0: use all processes for each iteration\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~parallelLog & \hfuzz=500pt boolean & \hfuzz=500pt write to screen/log file from all processing nodes in parallelized loops\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~program & \hfuzz=500pt programType & \hfuzz=500pt \\
 \hline
 \end{tabularx}

@@ -49,24 +49,6 @@ GnssParametrizationAntenna::GnssParametrizationAntenna(Config &config, const std
 
 /***********************************************/
 
-void GnssParametrizationAntenna::initIntervalEarly(Gnss::AnalysisType /*analysisType*/, const std::vector<Time> &/*times*/, const Time &/*timeMargin*/, Parallel::CommunicatorPtr /*comm*/)
-{
-  try
-  {
-    device2antenna.clear();
-    antennaNames.clear();
-    indexParameter.clear();
-    types.clear();
-    usedTypes.clear();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
 void GnssParametrizationAntenna::addAntennas(UInt idDevice, Bool deviceIsReceiver, const GnssStationInfo &stationInfo, const std::vector<GnssType> &typesObs)
 {
   try

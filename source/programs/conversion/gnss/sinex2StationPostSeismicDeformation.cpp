@@ -34,14 +34,14 @@ See also \program{Sinex2StationPosition} and \program{Sinex2StationDiscontinuiti
 class Sinex2StationPostSeismicDeformation
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Sinex2StationPostSeismicDeformation, SINGLEPROCESS, "Convert ITRF post-seismic deformation SINEX file to Instrument VECTOR3d file.", Conversion, Gnss, Instrument)
 
 /***********************************************/
 
-void Sinex2StationPostSeismicDeformation::run(Config &config)
+void Sinex2StationPostSeismicDeformation::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

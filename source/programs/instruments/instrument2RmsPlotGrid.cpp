@@ -55,14 +55,14 @@ It uses a \reference{robust least squares adjustment}{fundamentals.robustLeastSq
 class Instrument2RmsPlotGrid
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Instrument2RmsPlotGrid, SINGLEPROCESS, "Compute RMS plot grid from instrument file(s) containing 3D data (e.g. orbits, station positions).", Instrument, Plot, Gnss)
 
 /***********************************************/
 
-void Instrument2RmsPlotGrid::run(Config &config)
+void Instrument2RmsPlotGrid::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -117,12 +117,8 @@ void Instrument2RmsPlotGrid::run(Config &config)
     Matrix RmsPlotGrid(countInterval*countInstrument,3);
     std::vector<Vector> helmertTimeSeries;
     UInt countOutput = 0;
-
-    logTimerStart;
-    for(UInt idInterval = 0; idInterval < countInterval; idInterval++)
+    Single::forEach(countInterval, [&](UInt idInterval)
     {
-      logTimerLoop(idInterval, countInterval);
-
       Time time;
       if(timesInterval.size())
       {
@@ -159,7 +155,7 @@ void Instrument2RmsPlotGrid::run(Config &config)
         if(!arcRef.size())
         {
           //logWarning << "Instrument reference file <" << fileNameInInstrumentRef.at(idInstrument)(fileNameVariableList) << "> not found or empty, skipping." << Log::endl;
-          continue;
+          return;
         }
 
         // check if data of reference file matches instrument file
@@ -175,7 +171,7 @@ void Instrument2RmsPlotGrid::run(Config &config)
       if(epochCount == MAX_UINT)
       {
         logWarning<<"No instrument data found. continue with next epoch"<<Log::endl;
-        continue;
+        return;
       }
 
       // Estimate Helmert transformation
@@ -262,8 +258,7 @@ void Instrument2RmsPlotGrid::run(Config &config)
           RmsPlotGrid(countOutput, 2) = factor * norm(l.row(3*idInstrument,3))/std::sqrt(3*l.columns());  // 1D RMS
           countOutput++;
         }
-    }
-    logTimerLoopEnd(countInterval);
+    });
 
     // ======================================================
 

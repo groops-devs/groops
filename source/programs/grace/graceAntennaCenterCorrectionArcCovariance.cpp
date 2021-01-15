@@ -43,14 +43,14 @@ class GraceAntennaCenterCorrectionArcCovariance
   void rotaryCholesky(const std::vector<Time> &times, const Covariance3dArc &starCameraCovariance, const Vector &sigmaAxisAcc, UInt degree, MatrixDistributed &normals) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceAntennaCenterCorrectionArcCovariance, PARALLEL, "compute antenna center correction from orbit configuration", Grace, Covariance)
 
 /***********************************************/
 
-void GraceAntennaCenterCorrectionArcCovariance::run(Config &config)
+void GraceAntennaCenterCorrectionArcCovariance::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -162,7 +162,7 @@ void GraceAntennaCenterCorrectionArcCovariance::run(Config &config)
       }
 
       writeFileMatrix(fileNameCovariance.appendBaseName(".arc"+arcNo%"%03i"s),  Cov);
-    }); // forEach
+    }, comm); // forEach
   }
   catch(std::exception &e)
   {

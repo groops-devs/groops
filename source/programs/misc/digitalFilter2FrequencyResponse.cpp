@@ -55,14 +55,14 @@ private:
   Vector groupDelay(const Vector &f, const Vector &phase);
   Vector unwrap(const Vector &phase);
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(DigitalFilter2FrequencyResponse, SINGLEPROCESS, "amplitude and phase response of a filter cascade", Misc)
 
 /***********************************************/
 
-void DigitalFilter2FrequencyResponse::run(Config& config)
+void DigitalFilter2FrequencyResponse::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

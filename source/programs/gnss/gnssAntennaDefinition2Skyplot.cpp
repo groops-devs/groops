@@ -44,7 +44,7 @@ as in \configClass{grid}{gridType} and \program{PlotMap}.
 class GnssAntennaDefinition2Skyplot
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssAntennaDefinition2Skyplot, SINGLEPROCESS, "Create gridded data from Antenna definition.", Gnss, Grid)
@@ -52,7 +52,7 @@ GROOPS_RENAMED_PROGRAM(GnssAntennaDefinition2GriddedData, GnssAntennaDefinition2
 
 /***********************************************/
 
-void GnssAntennaDefinition2Skyplot::run(Config &config)
+void GnssAntennaDefinition2Skyplot::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

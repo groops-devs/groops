@@ -31,14 +31,14 @@ For further information see \program{GraceL1A2Accelerometer}.
 class GraceL1A2StarCamera
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceL1A2StarCamera, SINGLEPROCESS, "read GRACE L1A data", Conversion, Grace, Instrument)
 
 /***********************************************/
 
-void GraceL1A2StarCamera::run(Config &config)
+void GraceL1A2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

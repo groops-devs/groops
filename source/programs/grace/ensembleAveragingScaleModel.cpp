@@ -31,14 +31,14 @@ Each shape is assigned to one arc of 3 hours (default). This can be modefied by 
 class EnsembleAveragingScaleModel
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(EnsembleAveragingScaleModel, SINGLEPROCESS, "Ensamble Averaging of eclipse transit signals", Grace)
 
 /***********************************************/
 
-void EnsembleAveragingScaleModel::run(Config &config)
+void EnsembleAveragingScaleModel::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

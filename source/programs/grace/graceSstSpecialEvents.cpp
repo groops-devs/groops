@@ -41,14 +41,14 @@ see \configClass{parametrizationSatelliteTracking:specialEffect}{parametrization
 class GraceSstSpecialEvents
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceSstSpecialEvents, SINGLEPROCESS, "Detect GRACE events (eclipse, sun intrusion into star camera box).", Grace)
 
 /***********************************************/
 
-void GraceSstSpecialEvents::run(Config &config)
+void GraceSstSpecialEvents::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

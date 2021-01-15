@@ -34,14 +34,14 @@ from Hartmann and Wenzel 1995 file, \url{https://doi.org/10.1029/95GL03324}.
 class Hw2TideGeneratingPotential
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Hw2TideGeneratingPotential, SINGLEPROCESS, "Read tide generating potential from Hartmann and Wenzel 1995", Conversion)
 
 /***********************************************/
 
-void Hw2TideGeneratingPotential::run(Config &config)
+void Hw2TideGeneratingPotential::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

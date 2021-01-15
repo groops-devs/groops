@@ -36,14 +36,14 @@ given at \url{https://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/docs/H
 class GraceL1b2Accelerometer
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceL1b2Accelerometer, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Instrument)
 
 /***********************************************/
 
-void GraceL1b2Accelerometer::run(Config &config)
+void GraceL1b2Accelerometer::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

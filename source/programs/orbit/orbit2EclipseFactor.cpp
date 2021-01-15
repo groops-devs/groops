@@ -31,7 +31,7 @@ The data of \configFile{inputfileInstrument}{instrument} are appended as values 
 class Orbit2EclipseFactor
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Orbit2EclipseFactor, PARALLEL, "Create instrument file containing eclipse factors.", Orbit, Instrument)
@@ -39,7 +39,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentOrbit2EclipseFactor, Orbit2EclipseFactor, date2
 
 /***********************************************/
 
-void Orbit2EclipseFactor::run(Config &config)
+void Orbit2EclipseFactor::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -87,11 +87,11 @@ void Orbit2EclipseFactor::run(Config &config)
       }
 
       return Arc(orbit.times(), A);
-    });
+    }, comm);
 
     // write results
     // -------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write eclipse factor to file <"<<fileNameEclipse<<">"<<Log::endl;
       InstrumentFile::write(fileNameEclipse, arcList);

@@ -39,14 +39,14 @@ See also \program{PotentialCoefficients2DegreeAmplitudes}.
 class Gravityfield2DegreeAmplitudes
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2DegreeAmplitudes, SINGLEPROCESS, "computes degree amplitudes of a gravity field", Gravityfield, PotentialCoefficients)
 
 /***********************************************/
 
-void Gravityfield2DegreeAmplitudes::run(Config &config)
+void Gravityfield2DegreeAmplitudes::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

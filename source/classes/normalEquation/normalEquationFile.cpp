@@ -59,8 +59,7 @@ void NormalEquationFile::parameterNames(std::vector<ParameterName> &names) const
   {
     for(UInt i=0; i<this->names.size(); i++)
       if(!names.at(i+startIndex).combine(this->names.at(i)))
-        if(Parallel::isMaster())
-          logWarning<<"Parameter names do not match at index "<<i+startIndex<<": '"<<names.at(i+startIndex).str()<<"' != '"<<this->names.at(i).str()<<"'"<< Log::endl;
+        logWarningOnce<<"Parameter names do not match at index "<<i+startIndex<<": '"<<names.at(i+startIndex).str()<<"' != '"<<this->names.at(i).str()<<"'"<< Log::endl;
   }
   catch(std::exception &e)
   {
@@ -75,7 +74,7 @@ void NormalEquationFile::init(MatrixDistributed &normalsTotal, UInt rhsCount)
   try
   {
     NormalEquationInfo info;
-    readFileNormalEquation(fileName, info, normals, n);
+    readFileNormalEquation(fileName, info, normals, n, normalsTotal.communicator());
 
     std::vector<UInt> index(normalsTotal.parameterCount(), NULLINDEX);
     std::iota(index.begin()+startIndex, index.begin()+startIndex+normals.parameterCount(), 0);
@@ -83,7 +82,7 @@ void NormalEquationFile::init(MatrixDistributed &normalsTotal, UInt rhsCount)
 
     // init right hand sides
     // ---------------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(normalsTotal.communicator()))
     {
       if(rhsCount != n.columns())
         throw(Exception("number of right hand sides must agree ("+rhsCount%"%i != "s+n.columns()%"%i)"s));
@@ -125,10 +124,10 @@ Bool NormalEquationFile::addNormalEquation(UInt rhsNo, const const_MatrixSlice &
             matMult(1., normals.N(i,k).trans(), vx.row(normals.blockIndex(i), normals.blockSize(i)), Nvx.row(normals.blockIndex(k), normals.blockSize(k)));
             matMult(1., normals.N(i,k).trans(), Wz.row(normals.blockIndex(i), normals.blockSize(i)), NWz.row(normals.blockIndex(k), normals.blockSize(k)));
           }
-      Parallel::reduceSum(Nvx);
-      Parallel::reduceSum(NWz);
+      Parallel::reduceSum(Nvx, 0, normalsTotal.communicator());
+      Parallel::reduceSum(NWz, 0, normalsTotal.communicator());
 
-      if(Parallel::isMaster())
+      if(Parallel::isMaster(normalsTotal.communicator()) )
       {
         // aposteriori sigma
         const Double sigma2Old = sigma2;
@@ -137,8 +136,8 @@ Bool NormalEquationFile::addNormalEquation(UInt rhsNo, const const_MatrixSlice &
         sigma2 = ePe/r;
         ready  = (std::fabs(std::sqrt(sigma2)-std::sqrt(sigma2Old))/std::sqrt(sigma2) < 0.01);
       }
-      Parallel::broadCast(sigma2);
-      Parallel::broadCast(ready);
+      Parallel::broadCast(sigma2, 0, normalsTotal.communicator());
+      Parallel::broadCast(ready,  0, normalsTotal.communicator());
     }
 
     // accumulate normals
@@ -154,7 +153,7 @@ Bool NormalEquationFile::addNormalEquation(UInt rhsNo, const const_MatrixSlice &
 
     // accumulate right hand sides
     // ---------------------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(normalsTotal.communicator()))
     {
       axpy(1./sigma2, n,   nTotal);
       axpy(1./sigma2, lPl, lPlTotal);
@@ -201,8 +200,8 @@ Vector NormalEquationFile::contribution(MatrixDistributed &Cov)
         }
     }
 
-    Parallel::reduceSum(contrib);
-    Parallel::broadCast(contrib);
+    Parallel::reduceSum(contrib, 0, Cov.communicator());
+    Parallel::broadCast(contrib, 0, Cov.communicator());
     return contrib;
   }
   catch(std::exception &e)

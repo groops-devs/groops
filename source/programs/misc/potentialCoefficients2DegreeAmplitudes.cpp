@@ -55,14 +55,14 @@ See also \program{Gravityfield2DegreeAmplitudes}.
 class PotentialCoefficients2DegreeAmplitudes
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(PotentialCoefficients2DegreeAmplitudes, SINGLEPROCESS, "degree amplitudes of potential coefficients", Misc, Gravityfield, PotentialCoefficients)
 
 /***********************************************/
 
-void PotentialCoefficients2DegreeAmplitudes::run(Config &config)
+void PotentialCoefficients2DegreeAmplitudes::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

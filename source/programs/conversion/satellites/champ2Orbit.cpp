@@ -36,14 +36,14 @@ class Champ2Orbit
   void readOrbit     (const FileName &fileName, std::vector<Time> &times, std::vector<Vector3d> &position, std::vector<Vector3d> &velocity) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Champ2Orbit, SINGLEPROCESS, "read champ PSO orbits from the special CHORB format", Conversion, Orbit, Instrument)
 
 /***********************************************/
 
-void Champ2Orbit::run(Config &config)
+void Champ2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -144,15 +144,13 @@ void Champ2Orbit::run(Config &config)
     if(rFrame=="CTS")
     {
       logStatus<<"rotation from TRF to CRF"<<Log::endl;
-      logTimerStart;
-      for(UInt i=0; i<orbitArc.size(); i++)
+      Single::forEach(orbitArc.size(), [&](UInt i)
       {
-        logTimerLoop(i,orbitArc.size());
-        Rotary3d rotation  = inverse(earthRotation->rotaryMatrix(orbitArc.at(i).time));
+        const Rotary3d rotation = inverse(earthRotation->rotaryMatrix(orbitArc.at(i).time));
         orbitArc.at(i).position = rotation.rotate(orbitArc.at(i).position);
-        orbitArc.at(i).velocity = rotation.rotate(orbitArc.at(i).velocity);
-      }
-      logTimerLoopEnd(orbitArc.size());
+        if(orbitArc.at(i).velocity.r() > 0)
+          orbitArc.at(i).velocity = rotation.rotate(orbitArc.at(i).velocity) + crossProduct(earthRotation->rotaryAxis(orbitArc.at(i).time), orbitArc.at(i).position);
+      });
     }
     // ==============================
 

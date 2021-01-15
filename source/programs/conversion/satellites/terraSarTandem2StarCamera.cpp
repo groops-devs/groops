@@ -29,7 +29,7 @@ This program reads in TerraSar-X or Tandem-X star camera data given in the speci
 class TerraSarTandem2StarCamera
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(TerraSarTandem2StarCamera, SINGLEPROCESS, "read TerraSar-X or Tandem-X star camera data", Conversion, Instrument)
@@ -37,7 +37,7 @@ GROOPS_RENAMED_PROGRAM(Tsxtdx2Starcamera, TerraSarTandem2StarCamera, date2time(2
 
 /***********************************************/
 
-void TerraSarTandem2StarCamera::run(Config &config)
+void TerraSarTandem2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -48,7 +48,7 @@ public:
     void init(const std::vector<Time> &timesGlobal, Double margin);
   };
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssEstimateClockShift, SINGLEPROCESS, "Estimate clock shift for a constellation of satellites.", Gnss)
@@ -121,7 +121,7 @@ void GnssEstimateClockShift::Data::init(const std::vector<Time> &timesGlobal, Do
 
 /***********************************************/
 
-void GnssEstimateClockShift::run(Config &config)
+void GnssEstimateClockShift::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -149,11 +149,8 @@ void GnssEstimateClockShift::run(Config &config)
       throw(Exception("no data found"));
 
     std::vector<Double> shiftTimeSeries(times.size(), NAN_EXPR);
-    logTimerStart;
-    for(UInt idEpoch = 0; idEpoch < times.size(); idEpoch++)
+    Single::forEach(times.size(), [&](UInt idEpoch)
     {
-      logTimerLoop(idEpoch, times.size());
-
       // build observation vector
       std::vector<Double> l;
       for(const auto &d : data)
@@ -163,7 +160,7 @@ void GnssEstimateClockShift::run(Config &config)
       if(l.size() == 0)
       {
         logWarning<<"No data found at epoch "+times.at(idEpoch).dateTimeStr()+". continue with next epoch"<<Log::endl;
-        continue;
+        return;
       }
 
       // compute and remove shift
@@ -174,8 +171,7 @@ void GnssEstimateClockShift::run(Config &config)
           d.clock(d.index.at(idEpoch))     -= shiftTimeSeries.at(idEpoch);
           d.clockDiff(d.index.at(idEpoch)) -= shiftTimeSeries.at(idEpoch);
         }
-    }
-    logTimerLoopEnd(times.size());
+    });
 
     // save output files
     for(const auto &d : data)

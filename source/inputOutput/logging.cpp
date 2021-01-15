@@ -12,179 +12,250 @@
 /***********************************************/
 
 #include "base/import.h"
-#include "parallel/parallel.h"
+#include "base/string.h"
 #include "inputOutput/system.h"
+#include "inputOutput/file.h"
 #include "logging.h"
 
-/***********************************************/
+/***** CLASS ***********************************/
 
-Log logging;
-
-/***********************************************/
-
-Log::Log()
+class Logging
 {
-  isLogfile = FALSE;
-  printFile = printCout = printCerr = FALSE;
-  setSilent(FALSE);
+public:
+  enum Type : UInt {STATUS, INFO, WARNINGONCE, WARNING, ERROR};
+
+  Type              type;
+  UInt              rank;
+  Bool              enabled, silent, newLine, isLogfile;
+  std::stringstream ss;
+  std::function<void(UInt type, const std::string &str)> send;
+  OutFile           file;
+
+  Logging();
+ ~Logging();
+
+  void setRank(UInt rank_)       {rank = rank_;}
+  Bool enableOutput(Bool enable) {std::swap(enable, enabled);  return enable;}
+  void setSilent(Bool silent_)   {silent = silent_;}
+  void setLogFile(const std::string &name);
+
+  std::ostream &startLine(Type type);
+  std::ostream &endLine(std::ostream &stream);
+  void recieve(UInt type, const std::string &str);
+
+  // Timer
+  std::stack<Time> startTime;
+  void   startTimer();
+  void   loopTimer(UInt idx, UInt count, UInt processCount);
+  void   loopTimerEnd(UInt count);
+};
+
+static Logging logging;
+
+/***********************************************/
+
+Logging::Logging() : type(STATUS), rank(0), enabled(TRUE), silent(FALSE), newLine(FALSE)
+{
+  send = std::bind(&Logging::recieve, this, std::placeholders::_1, std::placeholders::_2);
   startTimer();
 }
 
 /***********************************************/
 
-Log::~Log()
+Logging::~Logging()
 {
   if(!ss.str().empty())
   {
-    std::cerr<<"WARNING: last log line do not end with Log::endl"<<std::endl;
-    std::cerr<<"line = '"<<ssFile.str()<<ss.str()<<"'"<<std::endl;
+    std::cerr<<"WARNING: last log line does not end with  with Log::endl"<<std::endl;
+    std::cerr<<"line = '"<<ss.str()<<"'"<<std::endl;
     endLine(ss);
   }
 }
 
 /***********************************************/
 
-static Bool isMaster()
+void Logging::setLogFile(const std::string &name)
 {
-  return Parallel::isMaster(Parallel::globalCommunicator());
-}
-
-/***********************************************/
-
-void Log::setLogFile(const std::string &name)
-{
-  if(!isMaster()) return;
+  if(rank != 0) return;
   if(name.empty())
     return;
-  file.open(name, std::ios::out|std::ios::app);
+  file.open(name);
   isLogfile = TRUE;
 }
 
 /***********************************************/
 
-void Log::setSilent(Bool silent_)
+std::ostream &Logging::startLine(Type type_)
 {
-  this->silent = silent_;
-}
-
-/***********************************************/
-
-std::ostream &Log::startLine(Type type)
-{
-  if(!ss.str().empty())
+  try
   {
-    std::cerr<<"WARNING: last log line do not end with Log::endl"<<std::endl;
-    std::cerr<<"line = '"<<ssFile.str()<<ss.str()<<"'"<<std::endl;
-    endLine(ss);
-  }
-
-  printCerr = ((type==ERROR) || (type==WARNING));
-  printCout = (isMaster() && !printCerr);
-  printFile = isLogfile && (printCerr || printCout);
-  printCout = printCout && !silent;
-
-  if(printFile)
-  {
-    ssFile<<System::now()%"%y-%m-%d %H:%M:%S"s;
-    switch(type)
+    if(!ss.str().empty())
     {
-      case STATUS: ssFile<<" Status  "; break;
-      case INFO:   ssFile<<" Info    "; break;
-      case WARNING:ssFile<<" WARNING "; break;
-      case ERROR:  ssFile<<" ERROR   "; break;
-      //default:     ssFile<<"         "; break;
+      std::cerr<<"WARNING: last log line does not end with  with Log::endl"<<std::endl;
+      std::cerr<<"line = '"<<ss.str()<<"'"<<std::endl;
+      endLine(ss);
     }
-  }
 
-  return ss;
+    type = type_;
+    return ss;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
 
 /***********************************************/
 
-std::ostream &Log::endLine(std::ostream &stream)
+std::ostream &Logging::endLine(std::ostream &stream)
 {
-  stream<<std::endl;
-  if(&stream != &ss)
+  try
   {
-    std::cerr<<"WARNING: Log::endl used with other ostream than log"<<std::endl;
+    if(&stream != &ss)
+      throw(Exception("Log::endl used with other ostream than log"));
+
+    // send log line to main process
+    if(enabled || (type == WARNING) || (type == ERROR))
+      for(const std::string &str :  String::split(ss.str(), '\n'))
+      {
+        if(rank == 0)
+          recieve(type, str);
+        else
+          send(type, rank%"%4i. process: "s+str);
+      }
+
+    ss.str("");
     return stream;
   }
-
-  if(printCerr)
-    std::cerr<<"\033[1;31m"<<ss.str()<<"\033[0m"<<std::flush; // ANSI escape sequence: red and bold
-  if(printCout)
-    std::cout<<ss.str()<<std::flush;
-  if(printFile)
+  catch(std::exception &e)
   {
-    ssFile<<ss.str();
-    file<<ssFile.str()<<std::flush;
+    GROOPS_RETHROW(e)
   }
-
-  std::cerr<<std::flush;
-  std::cout<<std::flush;
-
-  ss.str("");
-  ssFile.str("");
-  return stream;
-}
-
-/***********************************************/
-/***********************************************/
-
-void Log::startTimer()
-{
-  startTime.push(System::now());
 }
 
 /***********************************************/
 
-Double Log::seconds() const
+// recieved log line at main node
+void Logging::recieve(UInt type, const std::string &str)
 {
-  return (System::now()-startTime.top()).seconds();
-}
-
-/***********************************************/
-
-std::string Log::timeString(Double t)
-{
-  const Int hour = static_cast<Int>(t)/3600;
-  const Int min  = static_cast<Int>(t)/60-60*hour;
-  const Int sec  = static_cast<Int>(t)-3600*hour-60*min;
-  return hour%"%02i:"s+min%"%02i:"s+sec%"%02i"s;
-}
-
-/***********************************************/
-
-void Log::loopTimer(UInt idx, UInt count)
-{
-  if(isMaster())
+  try
   {
-    UInt digits = static_cast<UInt>(std::log10(count)) + 1;
-    if(count == 0 || (digits >= 4 && ((idx % static_cast<UInt>(std::pow(10, digits-3))) != 0)))
+    if(!silent || (type == WARNINGONCE) || (type == WARNING) || (type == ERROR))
+    {
+      if(newLine)
+        std::cout<<std::endl<<std::flush;
+      newLine = FALSE;
+      if((type == STATUS) || (type == INFO))
+        std::cout<<str<<std::endl<<std::flush;
+      else
+        std::cerr<<"\033[1;31m"<<str<<"\033[0m"<<std::endl<<std::flush; // ANSI escape sequence: red and bold
+    }
+
+    if(isLogfile)
+    {
+      file<<System::now()%"%y-%m-%d %H:%M:%S"s;
+      switch(type)
+      {
+        case STATUS:      file<<" Status  "; break;
+        case INFO:        file<<" Info    "; break;
+        case WARNINGONCE: file<<" WARNING "; break;
+        case WARNING:     file<<" WARNING "; break;
+        case ERROR:       file<<" ERROR   "; break;
+      }
+      file<<str<<std::endl;
+    }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+void Logging::startTimer()
+{
+  try
+  {
+    startTime.push(System::now());
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void Logging::loopTimer(UInt idx, UInt count, UInt processCount)
+{
+  try
+  {
+    if((count == 0) || (rank != 0) || !enabled || silent)
       return;
 
+    if(idx >= 1000)
+    {
+      const UInt digits = static_cast<UInt>(std::log10(idx+1)) + 1;
+      if((idx+1) % static_cast<UInt>(std::pow(10, digits-3)))
+        return;
+    }
+
+    const Double diff    = (System::now()-startTime.top()).mjd();
+    const Double perStep = (idx >= processCount) ? diff/(idx/processCount) : 0.;
+    const Double left    = (count-idx+processCount-1)/processCount * perStep;
+
     const std::string countStr = count%"%i"s;
-    Double diff = seconds();
-    Double left = (idx!=0) ? diff*(count-idx)/idx : 0;
-    if(!silent)
-      std::cout<<"\r  "<<std::setw(countStr.size())<<idx+1<<" of "<<countStr<<" (time: "<<timeString(diff)<<", remaining: "<<timeString(left)<<") "<<std::flush;
+    std::cout<<"\r  "<<std::setw(countStr.size())<<idx+1<<" of "<<countStr<<" (time: "<<diff%"%H:%M:%S, remaining: "s<<left%"%H:%M:%S) "s<<std::flush;
+    newLine = TRUE;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
   }
 }
 
 /***********************************************/
 
-void Log::loopTimerEnd(UInt count)
+void Logging::loopTimerEnd(UInt count)
 {
-  if(isMaster())
+  try
   {
     Bool s = silent;
-    setSilent(TRUE);
-    logStatus<<count<<" loops in time "<<timeString(seconds())<<Log::endl;
+    if((rank == 0) && enabled && !silent)
+    {
+      std::cout<<"\r  "<<count<<" of "<<count<<" (time: "<<(System::now()-startTime.top())%"%H:%M:%S, remaining: "s<<0.%"%H:%M:%S) "s<<std::endl<<std::flush;
+      newLine = FALSE;
+      silent  = TRUE;
+    }
+    logStatus<<count<<" loops in time "<<(System::now()-startTime.top())%"%H:%M:%S"s<<Log::endl;
     setSilent(s);
-    if(!silent)
-      std::cout<<"\r  "<<count<<" of "<<count<<" (time: "<<timeString(seconds())<<", remaining: "<<timeString(0.0)<<") "<<std::endl<<std::flush;
+    startTime.pop();
   }
-  startTime.pop();
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
+
+/***********************************************/
+/***********************************************/
+
+std::function<void(UInt type, const std::string &str)> Log::getRecieve() {return std::bind(&Logging::recieve, &logging, std::placeholders::_1, std::placeholders::_2);}
+void Log::setSend(std::function<void(UInt type, const std::string &str)> send) {logging.send = send;}
+void Log::setRank(UInt rank)                                 {logging.setRank(rank);}
+Bool Log::enableOutput(Bool enable)                          {return logging.enableOutput(enable);}
+void Log::setSilent(Bool silent)                             {logging.setSilent(silent);}
+void Log::setLogFile(const std::string &name)                {logging.setLogFile(name);}
+void Log::startTimer()                                       {logging.startTimer();}
+void Log::loopTimer(UInt idx, UInt count, UInt processCount) {logging.loopTimer(idx, count, processCount);}
+void Log::loopTimerEnd(UInt count)                           {logging.loopTimerEnd(count);}
+std::ostream &Log::status()                                  {return logging.startLine(Logging::STATUS);}
+std::ostream &Log::info()                                    {return logging.startLine(Logging::INFO);}
+std::ostream &Log::warningOnce()                             {return logging.startLine(Logging::WARNINGONCE);}
+std::ostream &Log::warning()                                 {return logging.startLine(Logging::WARNING);}
+std::ostream &Log::error()                                   {return logging.startLine(Logging::ERROR);}
+std::ostream &Log::endl(std::ostream &stream)                {return logging.endLine(stream);}
 
 /***********************************************/

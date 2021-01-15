@@ -60,7 +60,7 @@ class Instrument2SpectralCoherence
   std::vector<std::vector<std::complex<Double>>> leastSquaresFourier(const Vector &freqs, const_MatrixSliceRef arcMatrix, Bool countEven);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Instrument2SpectralCoherence, PARALLEL, "Empirical computation of the spectral coherence between two instrument files.", Instrument, Statistics)
@@ -68,7 +68,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentComputeSpectralCoherence, Instrument2SpectralCo
 
 /***********************************************/
 
-void Instrument2SpectralCoherence::run(Config &config)
+void Instrument2SpectralCoherence::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -91,7 +91,7 @@ void Instrument2SpectralCoherence::run(Config &config)
     Vector freqs;
     UInt arcEpochCount, dataCount, arcCount;
     Double sampling = 1.0;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       arcCount = instrumentFile.arcCount();
       std::vector<Time> times;
@@ -117,10 +117,10 @@ void Instrument2SpectralCoherence::run(Config &config)
       logInfo<<"  maximum arc length: "<<arcEpochCount<<" epochs"<<Log::endl;
       logInfo<<"  median sampling:    "<<sampling<<" seconds"<<Log::endl;
     }
-    Parallel::broadCast(freqs);
-    Parallel::broadCast(arcEpochCount);
-    Parallel::broadCast(dataCount);
-    Parallel::broadCast(arcCount);
+    Parallel::broadCast(freqs,         0, comm);
+    Parallel::broadCast(arcEpochCount, 0, comm);
+    Parallel::broadCast(dataCount,     0, comm);
+    Parallel::broadCast(arcCount,      0, comm);
     Bool countEven = (arcEpochCount%2) == 0; // flag that determines how to handle the nyquist frequency, see fourier.h for details
 
     // estimate the covariance matrix for each arc, then reduce
@@ -155,15 +155,14 @@ void Instrument2SpectralCoherence::run(Config &config)
           Gyy(n, k) += std::abs(G.at(k).at(n)*std::conj(G.at(k).at(n)));
         }
       }
-    });
+    }, comm);
 
-    Parallel::reduceSum(GxyReal);
-    Parallel::reduceSum(GxyImag);
+    Parallel::reduceSum(GxyReal, 0, comm);
+    Parallel::reduceSum(GxyImag, 0, comm);
+    Parallel::reduceSum(Gxx, 0, comm);
+    Parallel::reduceSum(Gyy, 0, comm);
 
-    Parallel::reduceSum(Gxx);
-    Parallel::reduceSum(Gyy);
-
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       Matrix coherence(freqs.rows(), dataCount+1); // first row is frequency
       copy(freqs, coherence.column(0));

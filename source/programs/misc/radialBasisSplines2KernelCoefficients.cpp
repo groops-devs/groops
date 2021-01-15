@@ -42,7 +42,7 @@ The output of the coefficients is given in the file  \configFile{outputfileCoeff
 class RadialBasisSplines2KernelCoefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(RadialBasisSplines2KernelCoefficients, SINGLEPROCESS, "Kernel/Covariance-function from gravity field accuracies, if not given from signal (cnm,snm), if not given from kaulas rule", Misc)
@@ -50,7 +50,7 @@ GROOPS_RENAMED_PROGRAM(KernelDegreeVariances, RadialBasisSplines2KernelCoefficie
 
 /***********************************************/
 
-void RadialBasisSplines2KernelCoefficients::run(Config &config)
+void RadialBasisSplines2KernelCoefficients::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

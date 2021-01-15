@@ -37,14 +37,14 @@ See also \program{Sinex2StationPosition} and \program{Sinex2StationPostSeismicDe
 class Sinex2StationDiscontinuities
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Sinex2StationDiscontinuities, SINGLEPROCESS, "Convert station discontinuities from SINEX (e.g. ITRF14) to InstrumentMiscValue.", Conversion, Gnss, Instrument)
 
 /***********************************************/
 
-void Sinex2StationDiscontinuities::run(Config &config)
+void Sinex2StationDiscontinuities::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

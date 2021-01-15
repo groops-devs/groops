@@ -57,7 +57,7 @@ if \config{localReferenceFrame} is set.
 class Gravityfield2DisplacementTimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2DisplacementTimeSeries, SINGLEPROCESS, "generates a time series of station displacements", Gravityfield, TimeSeries)
@@ -65,7 +65,7 @@ GROOPS_RENAMED_PROGRAM(DisplacementTimeSeries, Gravityfield2DisplacementTimeSeri
 
 /***********************************************/
 
-void Gravityfield2DisplacementTimeSeries::run(Config &config)
+void Gravityfield2DisplacementTimeSeries::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -123,13 +123,10 @@ void Gravityfield2DisplacementTimeSeries::run(Config &config)
     // --------------
     logStatus<<"Compute Earth rotation"<<Log::endl;
     std::vector<Rotary3d> rotEarth(times.size());
-    logTimerStart;
-    for(UInt i=0; i<times.size(); i++)
+    Single::forEach(times.size(), [&](UInt i)
     {
-      logTimerLoop(i, times.size());
       rotEarth.at(i) = earthRotation->rotaryMatrix(times.at(i));
-    }
-    logTimerLoopEnd(times.size());
+    });
 
     // displacements
     // -------------

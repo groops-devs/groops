@@ -47,14 +47,14 @@ potentialCoefficients before.
 class DoodsonHarmonics2PotentialCoefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(DoodsonHarmonics2PotentialCoefficients, SINGLEPROCESS, "write a lot of files with potential coefficients from harmonic tide model.", DoodsonHarmonics, PotentialCoefficients)
 
 /***********************************************/
 
-void DoodsonHarmonics2PotentialCoefficients::run(Config &config)
+void DoodsonHarmonics2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

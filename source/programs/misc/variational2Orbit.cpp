@@ -29,14 +29,14 @@ from \configFile{inputfileVariational}{variationalEquation}.
 class Variational2Orbit
 {
  public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Variational2Orbit, SINGLEPROCESS, "Extracts orbit from variational file.", Misc, VariationalEquation, Instrument)
 
 /***********************************************/
 
-void Variational2Orbit::run(Config &config)
+void Variational2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

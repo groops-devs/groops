@@ -35,14 +35,14 @@ See also \program{SatelliteModelCreate}.
 class SinexMetadata2SatelliteModel
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SinexMetadata2SatelliteModel, SINGLEPROCESS, "Create satellite model from IGS SINEX metadata file.", Conversion, Gnss)
 
 /***********************************************/
 
-void SinexMetadata2SatelliteModel::run(Config &config)
+void SinexMetadata2SatelliteModel::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

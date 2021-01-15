@@ -35,14 +35,14 @@ of first temporal parameter, followed by all data of the second temporal paramet
 class InstrumentDetrend
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentDetrend, PARALLEL, "Reduces temporal parametrization (e.g. trend, polynomial) per arc from instrument file.", Instrument)
 
 /***********************************************/
 
-void InstrumentDetrend::run(Config &config)
+void InstrumentDetrend::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -100,11 +100,11 @@ void InstrumentDetrend::run(Config &config)
       }
 
       return Arc(times, l, arc.getType());
-    }); // forEach
+    }, comm); // forEach
 
     // ======================================================
 
-    if(!fileNameOut.empty() && Parallel::isMaster())
+    if(!fileNameOut.empty() && Parallel::isMaster(comm))
     {
       logStatus<<"write instrument data to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);
@@ -113,8 +113,8 @@ void InstrumentDetrend::run(Config &config)
 
     if(!fileNameParameters.empty() && arcParameters.size())
     {
-      Parallel::reduceSum(arcParameters);
-      if(Parallel::isMaster())
+      Parallel::reduceSum(arcParameters, 0, comm);
+      if(Parallel::isMaster(comm))
       {
         logStatus<<"write arc parameters to instrument file <"<<fileNameParameters<<">"<<Log::endl;
         InstrumentFile::write(fileNameParameters, Arc(arcParameters));

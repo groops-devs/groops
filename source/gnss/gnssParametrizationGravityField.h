@@ -51,9 +51,6 @@ public:
   /// Constructor.
   GnssParametrizationGravityField(Config &config, const std::string &name);
 
-  /// Destructor.
-  virtual ~GnssParametrizationGravityField();
-
   /** @brief Gravity field parametrization. */
   ParametrizationGravityPtr parametrization() const {return parametrizationPtr;}
 
@@ -66,7 +63,6 @@ public:
 
   // Realization of Gnss::Parametrization
   // ------------------------------------
-  void   initIntervalEarly(Gnss::AnalysisType analysisType, const std::vector<Time> &times, const Time &timeMargin, Parallel::CommunicatorPtr comm) override;
   void   initParameter(Gnss::NormalEquationInfo &normalEquationInfo) override;
   void   aprioriParameter(const Gnss::NormalEquationInfo &normalEquationInfo, MatrixSliceRef x0) const override;
   Double updateParameter(const Gnss::NormalEquationInfo &normalEquationInfo, const_MatrixSliceRef x, const_MatrixSliceRef Wz, Bool printStatistics) override;

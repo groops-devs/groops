@@ -110,7 +110,7 @@ public:
   static Vector  computeRedundancy(std::vector<Matrix> &A, MatrixDistributed &normals, Double threshold=1e-4);
   static void    estimateAccuracy(std::vector<Vector> &e, std::vector<Vector> &redundancy, Bool sigmaPerAxis, Double huber, Double huberPower, Vector &sigmaAxis, Vector &sigmaEpoch);
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentStarCameraAngularAccelerometerFusion, PARALLEL, "estimation of the satellites orientation from star camera and angular accelerometer data.", Grace, Instrument)
@@ -143,7 +143,7 @@ template<> void load(InArchive  &ia, InstrumentStarCameraAngularAccelerometerFus
 
 /***********************************************/
 
-void InstrumentStarCameraAngularAccelerometerFusion::run(Config &config)
+void InstrumentStarCameraAngularAccelerometerFusion::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -203,9 +203,9 @@ void InstrumentStarCameraAngularAccelerometerFusion::run(Config &config)
     logStatus<<"computing quaternions"<<Log::endl;
     starCamera0File.open(fileNameStarCamera0);
     std::vector<ArcObservation> arcs(starCamera0File.arcCount());
-    Parallel::forEach(arcs, [this] (UInt arcNo) {return computeArc(arcNo);});
+    Parallel::forEach(arcs, [this] (UInt arcNo) {return computeArc(arcNo);}, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       for(UInt arcNo=0; arcNo<arcs.size(); arcNo++)
         logInfo<<"  "<<arcNo%"%2i. arc "s
@@ -217,7 +217,7 @@ void InstrumentStarCameraAngularAccelerometerFusion::run(Config &config)
                <<"sigmaAccZ = "<<arcs.at(arcNo).sigmaAcc(2)%"%8.2e"s<<Log::endl;
     }
 
-    if(Parallel::isMaster() && !fileNameOutStarCamera.empty())
+    if(Parallel::isMaster(comm) && !fileNameOutStarCamera.empty())
     {
       logStatus<<"write starCamera file <"<<fileNameOutStarCamera<<">"<<Log::endl;
       std::vector<Arc> arcList(arcs.size());
@@ -226,7 +226,7 @@ void InstrumentStarCameraAngularAccelerometerFusion::run(Config &config)
       InstrumentFile::write(fileNameOutStarCamera, arcList);
     }
 
-    if(Parallel::isMaster() && !fileNameOutCovariance.empty())
+    if(Parallel::isMaster(comm) && !fileNameOutCovariance.empty())
     {
       logStatus<<"write covariance file <"<<fileNameOutCovariance<<">"<<Log::endl;
       std::vector<Arc> arcList(arcs.size());
@@ -235,7 +235,7 @@ void InstrumentStarCameraAngularAccelerometerFusion::run(Config &config)
       InstrumentFile::write(fileNameOutCovariance, arcList);
     }
 
-    if(Parallel::isMaster() && !fileNameOutAngularAcc.empty())
+    if(Parallel::isMaster(comm) && !fileNameOutAngularAcc.empty())
     {
       logStatus<<"write angular acceleration file <"<<fileNameOutAngularAcc<<">"<<Log::endl;
       std::vector<Arc> arcList(arcs.size());
@@ -244,7 +244,7 @@ void InstrumentStarCameraAngularAccelerometerFusion::run(Config &config)
       InstrumentFile::write(fileNameOutAngularAcc, arcList);
     }
 
-    if(Parallel::isMaster() && !fileNameOutSolution.empty())
+    if(Parallel::isMaster(comm) && !fileNameOutSolution.empty())
     {
       logStatus<<"write solution file <"<<fileNameOutSolution<<">"<<Log::endl;
       Matrix x(arcs.at(0).x.rows(), arcs.size());
@@ -253,7 +253,7 @@ void InstrumentStarCameraAngularAccelerometerFusion::run(Config &config)
       writeFileMatrix(fileNameOutSolution, x);
     }
 
-    if(Parallel::isMaster() && !fileNameOutEpochSigmasStarCamera.empty())
+    if(Parallel::isMaster(comm) && !fileNameOutEpochSigmasStarCamera.empty())
     {
       logStatus<<"write star camera epoch sigmas to file <"<<fileNameOutEpochSigmasStarCamera<<">"<<Log::endl;
       std::vector<Arc> arcList(arcs.size());
@@ -262,7 +262,7 @@ void InstrumentStarCameraAngularAccelerometerFusion::run(Config &config)
       InstrumentFile::write(fileNameOutEpochSigmasStarCamera, arcList);
     }
 
-    if(Parallel::isMaster() && !fileNameOutEpochSigmasAccelerometer.empty())
+    if(Parallel::isMaster(comm) && !fileNameOutEpochSigmasAccelerometer.empty())
     {
       logStatus<<"write accelerometer epoch sigmas to file <"<<fileNameOutEpochSigmasAccelerometer<<">"<<Log::endl;
       std::vector<Arc> arcList(arcs.size());

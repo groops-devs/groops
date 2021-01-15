@@ -73,7 +73,7 @@ private:
   void writeEpoch(const Time &time, Char type, std::vector<DataPtr> &data, OutFile &file) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssClock2ClockRinex, SINGLEPROCESS, "Converts GNSS clocks from GROOPS format to IGS clock RINEX format.", Conversion, Gnss, Instrument)
@@ -212,7 +212,7 @@ void GnssClock2ClockRinex::writeEpoch(const Time &time, Char type, std::vector<D
 
 /***********************************************/
 
-void GnssClock2ClockRinex::run(Config &config)
+void GnssClock2ClockRinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -34,14 +34,14 @@ To split the arc in multiple gap free arcs use \program{InstrumentSynchronize}.
 class GraceL1A2Accelerometer
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceL1A2Accelerometer, SINGLEPROCESS, "read GRACE L1A data", Conversion, Grace, Instrument)
 
 /***********************************************/
 
-void GraceL1A2Accelerometer::run(Config &config)
+void GraceL1A2Accelerometer::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

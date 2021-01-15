@@ -37,14 +37,14 @@ See also \program{Gravityfield2GridCovarianceMatrix}, \program{GravityfieldCovar
 class GravityfieldVariancesPropagation2GriddedData
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GravityfieldVariancesPropagation2GriddedData, PARALLEL, "standard deviations of values of a gravity field on a grid", Gravityfield, Grid, Covariance)
 
 /***********************************************/
 
-void GravityfieldVariancesPropagation2GriddedData::run(Config &config)
+void GravityfieldVariancesPropagation2GriddedData::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -70,15 +70,15 @@ void GravityfieldVariancesPropagation2GriddedData::run(Config &config)
     std::vector<Vector3d> points = grid->points();
     std::vector<Double>   areas  = grid->areas();
     std::vector<Double>   field(points.size());
-    Parallel::forEach(field, [&](UInt i) {return sqrt(gravityfield->variance(time, points.at(i), *kernel));});
+    Parallel::forEach(field, [&](UInt i) {return sqrt(gravityfield->variance(time, points.at(i), *kernel));}, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"save values to file <"<<fileNameGrid<<">"<<Log::endl;
       GriddedData griddedData(Ellipsoid(a,f), points, areas, {field});
       writeFileGriddedData(fileNameGrid, griddedData);
       MiscGriddedData::printStatistics(griddedData);
-    } // if(Parallel::isMaster())
+    } // if(Parallel::isMaster(comm))
   }
   catch(std::exception &e)
   {

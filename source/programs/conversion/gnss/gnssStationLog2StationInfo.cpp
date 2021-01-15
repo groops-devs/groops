@@ -47,14 +47,14 @@ class GnssStationLog2StationInfo
   Bool            readTime  (const std::string &line, Time &x) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssStationLog2StationInfo, SINGLEPROCESS, "GNSS analysis", Conversion, Gnss)
 
 /***********************************************/
 
-void GnssStationLog2StationInfo::run(Config &config)
+void GnssStationLog2StationInfo::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

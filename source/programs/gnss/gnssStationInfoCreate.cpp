@@ -31,7 +31,7 @@ See also \program{GnssAntex2AntennaDefinition} and \program{GnssStationLog2Stati
 class GnssStationInfoCreate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssStationInfoCreate, SINGLEPROCESS, "create station information file for GNSS receivers", Gnss)
@@ -136,7 +136,7 @@ static Bool readConfig(Config &config, const std::string &name, GnssReferencePoi
 
 /***********************************************/
 
-void GnssStationInfoCreate::run(Config &config)
+void GnssStationInfoCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

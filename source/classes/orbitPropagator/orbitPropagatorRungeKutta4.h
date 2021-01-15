@@ -55,11 +55,8 @@ inline OrbitArc OrbitPropagatorRungeKutta4::integrateArc(OrbitEpoch startEpoch, 
     orbit.push_back(startEpoch);
     const Double dt = sampling.seconds();
 
-    if(timing) logTimerStart;
-    for(UInt k=1; k<posCount; k++)
+    Single::forEach(posCount-1, [&](UInt /*k*/)
     {
-      if(timing) logTimerLoop(k, posCount);
-
       // Evaluate accelerations at 4 positions between current epoch and next
       OrbitEpoch k1 = orbit.back();
 
@@ -88,8 +85,7 @@ inline OrbitArc OrbitPropagatorRungeKutta4::integrateArc(OrbitEpoch startEpoch, 
       epoch.velocity    += (dt/6.) * (k1.acceleration + 2*k2.acceleration + 2*k3.acceleration + k4.acceleration);
       epoch.acceleration = acceleration(epoch, forces, satellite, earthRotation, ephemerides);
       orbit.push_back(epoch);
-    }
-    if(timing) logTimerLoopEnd(posCount);
+    }, timing);
 
     return orbit;
   }

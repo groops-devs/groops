@@ -36,14 +36,14 @@ class NormalsSphericalHarmonics2Sinex
   static void addVector(Sinex::SinexSolutionVectorPtr vector, const Time &time, const std::vector<ParameterName> &parameterName, const Vector x, const Vector sigma, const std::vector<Bool> &parameterIsContrained);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NormalsSphericalHarmonics2Sinex, SINGLEPROCESS, "Write potential coefficients and normal equations to SINEX format.", Conversion, NormalEquation)
 
 /***********************************************/
 
-void NormalsSphericalHarmonics2Sinex::run(Config &config)
+void NormalsSphericalHarmonics2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

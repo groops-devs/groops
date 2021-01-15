@@ -30,14 +30,14 @@ and save as \file{StarCamera file}{instrument}.
 class InstrumentEarthRotation
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentEarthRotation, SINGLEPROCESS, "Precompute Earth rotation matrix (CRF -> TRF) and save as StarCamera file.", Instrument)
 
 /***********************************************/
 
-void InstrumentEarthRotation::run(Config &config)
+void InstrumentEarthRotation::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -54,16 +54,13 @@ void InstrumentEarthRotation::run(Config &config)
 
     logStatus<<"computing earth rotation"<<Log::endl;
     Arc arc;
-    logTimerStart;
-    for(UInt i=0; i<times.size(); i++)
+    Single::forEach(times.size(), [&](UInt i)
     {
-      logTimerLoop(i, times.size());
       StarCameraEpoch epoch;
       epoch.time = times.at(i);
       epoch.rotary = earthRotation->rotaryMatrix(times.at(i));
       arc.push_back(epoch);
-    }
-    logTimerLoopEnd(times.size());
+    });
 
     logStatus<<"write star camera data to file <"<<fileNameStarCamera<<">"<<Log::endl;
     InstrumentFile::write(fileNameStarCamera, arc);

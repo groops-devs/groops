@@ -50,14 +50,14 @@ The window function $\mathbf{\Omega}$ can feature a smooth transition between 0 
 class FilterMatrixWindowedPotentialCoefficients
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(FilterMatrixWindowedPotentialCoefficients, PARALLEL, "create a spherical harmonic window matrix.", Misc, PotentialCoefficients, Matrix)
 
 /***********************************************/
 
-void FilterMatrixWindowedPotentialCoefficients::run(Config &config)
+void FilterMatrixWindowedPotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -136,12 +136,12 @@ void FilterMatrixWindowedPotentialCoefficients::run(Config &config)
       }
 
       matMult(1., A2.trans(), A1, A);
-    });
-    Parallel::reduceSum(A);
+    }, comm);
+    Parallel::reduceSum(A, 0, comm);
 
     // write
     // -----
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"writing window matrix to file <"<<fileNameOut<<">"<<Log::endl;
       writeFileMatrix(fileNameOut, A);

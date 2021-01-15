@@ -31,14 +31,14 @@ with \config{interpolationDegree} of the quaternions.
 class InstrumentStarCamera2AccAngularRate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentStarCamera2AccAngularRate, SINGLEPROCESS, "derivation of angular rates from rotations", Instrument)
 
 /***********************************************/
 
-void InstrumentStarCamera2AccAngularRate::run(Config &config)
+void InstrumentStarCamera2AccAngularRate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -61,12 +61,8 @@ void InstrumentStarCamera2AccAngularRate::run(Config &config)
     logStatus<<"calculate angular rates & accelerations"<<Log::endl;
     InstrumentFile starCameraFile(starCameraName);
     std::list<Arc> angRateArcList, angAccArcList;
-
-    logTimerStart;
-    for(UInt arcNo=0; arcNo<starCameraFile.arcCount(); arcNo++)
+    Single::forEach(starCameraFile.arcCount(), [&](UInt arcNo)
     {
-      logTimerLoop(arcNo, starCameraFile.arcCount());
-
       StarCameraArc scaArc = starCameraFile.readArc(arcNo);
       const Double  dt     = (scaArc.at(1).time - scaArc.at(0).time).seconds();
 
@@ -106,8 +102,7 @@ void InstrumentStarCamera2AccAngularRate::run(Config &config)
         }
         angAccArcList.push_back(angAccArc);
       }
-    }
-    logTimerLoopEnd(starCameraFile.arcCount());
+    });
 
     // write data
     // ----------

@@ -35,20 +35,17 @@ Only longitude and latitude of points are considered; the height is ignored for 
 class GriddedDataInterpolate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GriddedDataInterpolate, PARALLEL, "Interpolate values of rectangular grids to new points", Grid)
+GROOPS_REGISTER_PROGRAM(GriddedDataInterpolate, SINGLEPROCESS, "Interpolate values of rectangular grids to new points", Grid)
 
 /***********************************************/
 
-void GriddedDataInterpolate::run(Config &config)
+void GriddedDataInterpolate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
-    if(!Parallel::isMaster())
-      return;
-
     FileName    fileNameOutGrid, fileNameInGrid;
     GridPtr     gridPtr;
     std::string choice;

@@ -31,14 +31,14 @@ The class \configClass{matrixGenerator}{matrixGeneratorType} allows complex matr
 class MatrixCalculate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(MatrixCalculate, SINGLEPROCESS, "Matrix manipulation", Misc, Matrix)
 
 /***********************************************/
 
-void MatrixCalculate::run(Config &config)
+void MatrixCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

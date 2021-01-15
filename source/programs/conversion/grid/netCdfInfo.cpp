@@ -30,14 +30,14 @@ See also \program{NetCdf2GridRectangular}, \program{GridRectangular2NetCdf}.
 class NetCdfInfo
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NetCdfInfo, SINGLEPROCESS, "Content information of a NetCDF file", Conversion)
 
 /***********************************************/
 
-void NetCdfInfo::run(Config &config)
+void NetCdfInfo::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

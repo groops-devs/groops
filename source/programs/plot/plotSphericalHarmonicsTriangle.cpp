@@ -47,14 +47,14 @@ see \url{https://docs.generic-mapping-tools.org/latest/gmt.conf.html}.
 class PlotSphericalHarmonicsTriangle
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(PlotSphericalHarmonicsTriangle, SINGLEPROCESS, "Plot triangle of potential coefficients", Plot, PotentialCoefficients)
 
 /***********************************************/
 
-void PlotSphericalHarmonicsTriangle::run(Config &config)
+void PlotSphericalHarmonicsTriangle::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

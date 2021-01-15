@@ -147,14 +147,9 @@ listed here.
 The first step is setting the processing sampling, in this example it is 5~minutes. Alternatively, if observation
 preprocessing (outlier detection, cycle slip detection etc.) should be performed at full (i.e. 30-second) sampling,
 set \config{sampling}=\verb|30/86400| and define a \configClass{processingStep:selectEpochs}{gnssProcessingStepType:selectEpochs}
-which selects every 10th epoch. The processing interval usually is a single 24-hour day.
-\begin{itemize}
-  \item \configClass{intervals:uniformSampling}{timeSeriesType:uniformSampling} with \config{timeStart}=\verb|<mjd>|,
-        \config{timeEnd}=\verb|<mjd>+1|, \config{sampling}=\verb|1| (replace \verb|<mjd>| with MJD of the day to process)
-  \item \config{parallelIntervals}=\verb|no| (we only process a single interval and thus want to distribute stations to the parallel processes)
-  \item \configClass{timeSeries:uniformSampling}{timeSeriesType:uniformSampling} with \config{timeStart}=\verb|<mjd>|,
-        \config{timeEnd}=\verb|<mjd>+1|, \config{sampling}=\verb|5/1440| (processing sampling)
-\end{itemize}
+which selects every 10th epoch. The processing interval usually is a single 24-hour day,
+\configClass{timeSeries:uniformSampling}{timeSeriesType:uniformSampling} with \config{timeStart}=\verb|<mjd>|,
+\config{timeEnd}=\verb|<mjd>+1|, \config{sampling}=\verb|5/1440| (processing sampling).
 
 Next define the GNSS constellations, in this case GPS and Galileo.
 \begin{itemize}

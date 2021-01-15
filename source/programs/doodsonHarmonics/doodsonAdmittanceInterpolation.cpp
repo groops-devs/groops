@@ -37,14 +37,14 @@ columns the contribution of the major tides to the this tidal frequency as defin
 class DoodsonAdmittanceInterpolation
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(DoodsonAdmittanceInterpolation, SINGLEPROCESS, "visualize the interpolation of the minor tides.", DoodsonHarmonics)
 
 /***********************************************/
 
-void DoodsonAdmittanceInterpolation::run(Config &config)
+void DoodsonAdmittanceInterpolation::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

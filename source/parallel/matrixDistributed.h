@@ -75,15 +75,15 @@ public:
   * @param blockIndex: boundary indices of the sub-blocks.
   * @param comm: Parallel communicator of the matrix (default: MPI_COMM_WORLD).
   * @param calcRank: function handler to determine the process rank of block(i,k) (default: block cyclic distribution). */
-  explicit MatrixDistributed(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm=nullptr, std::function<UInt(UInt, UInt, UInt)> calcRank=nullptr);
+  explicit MatrixDistributed(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, std::function<UInt(UInt, UInt, UInt)> calcRank=nullptr);
 
   /** @copydoc MatrixDistributed(const std::vector<UInt> &, Parallel::CommunicatorPtr, std::function<UInt(UInt, UInt, UInt)>)
   * This method allocates the upper block triangle of a symmetric matrix with zero matrices. */
-  void init(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm=nullptr, std::function<UInt(UInt, UInt, UInt)> calcRank=nullptr);
+  void init(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, std::function<UInt(UInt, UInt, UInt)> calcRank=nullptr);
 
   /** @copydoc MatrixDistributed(const std::vector<UInt> &, Parallel::CommunicatorPtr, std::function<UInt(UInt, UInt, UInt)>)
   * No memory is allocated. To assign blocks to processes and allocate memory, @a setBlock(UInt i, UInt k, UInt rank) has to be called. */
-  void initEmpty(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm=nullptr, std::function<UInt(UInt, UInt, UInt)> calcRank=nullptr);
+  void initEmpty(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, std::function<UInt(UInt, UInt, UInt)> calcRank=nullptr);
 
   // =========================================
 

@@ -35,14 +35,14 @@ cf. \url{ftp://tai.bipm.org/iers/conv2010/chapter6/tidemodels/fes2004.dat}.
 class DoodsonHarmonics2IersPotential
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(DoodsonHarmonics2IersPotential, SINGLEPROCESS, "convert doodson harmonics file to IERS", Conversion, DoodsonHarmonics)
 
 /***********************************************/
 
-void DoodsonHarmonics2IersPotential::run(Config &config)
+void DoodsonHarmonics2IersPotential::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

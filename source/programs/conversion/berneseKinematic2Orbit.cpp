@@ -30,7 +30,7 @@ Read kinematic orbits in Bernese format.
 class BerneseKinematic2Orbit
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(BerneseKinematic2Orbit, SINGLEPROCESS, "read kinematic orbits in Bernese format", Conversion, Orbit, Covariance, Instrument)
@@ -38,7 +38,7 @@ GROOPS_RENAMED_PROGRAM(Kinematic2Orbit, BerneseKinematic2Orbit, date2time(2020, 
 
 /***********************************************/
 
-void BerneseKinematic2Orbit::run(Config &config)
+void BerneseKinematic2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -117,18 +117,15 @@ void BerneseKinematic2Orbit::run(Config &config)
     if(earthRotation)
     {
       logStatus<<"rotation from TRF to CRF"<<Log::endl;
-      logTimerStart;
-      for(UInt i=0; i<orbit.size(); i++)
+      Single::forEach(orbit.size(), [&](UInt i)
       {
-        logTimerLoop(i, orbit.size());
         const Rotary3d rotation = inverse(earthRotation->rotaryMatrix(orbit.at(i).time));
         orbit.at(i).position = rotation.rotate(orbit.at(i).position);
         if(orbit.at(i).velocity.r() > 0)
           orbit.at(i).velocity = rotation.rotate(orbit.at(i).velocity) + crossProduct(earthRotation->rotaryAxis(orbit.at(i).time), orbit.at(i).position);
         if(covariance.size())
           covariance.at(i).covariance = rotation.rotate(covariance.at(i).covariance);
-      }
-      logTimerLoopEnd(orbit.size());
+      });
     }
 
     // ==============================

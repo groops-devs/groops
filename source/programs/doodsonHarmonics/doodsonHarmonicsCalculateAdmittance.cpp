@@ -37,14 +37,14 @@ class DoodsonHarmonicsCalculateAdmittance
                    const TideGeneratingPotential &tgp, MatrixSliceRef A) const;
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(DoodsonHarmonicsCalculateAdmittance, SINGLEPROCESS, "computes the admittance function from TGP", DoodsonHarmonics)
 
 /***********************************************/
 
-void DoodsonHarmonicsCalculateAdmittance::run(Config &config)
+void DoodsonHarmonicsCalculateAdmittance::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

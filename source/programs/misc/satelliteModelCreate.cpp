@@ -14,16 +14,16 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program creates a satellite macro model for the estimation of non-gravitational accelerations acting on a satellite.
-Mandatory input values are the \config{satelliteName}, \config{mass}, \config{coefficientDrag} and information 
-about the satellite \config{surfaces}. For low Earth orbiting satellites, like GRACE for instance, a good guess 
-for the drag coefficient could be 2.3. Apart from that, it is latter on possible to estimate a more precise variable drag coefficient 
-(e.g. \configClass{miscAccelerations:atmosphericDrag}{miscAccelerationsType:atmosphericDrag}), which will override this initial guess. 
+Mandatory input values are the \config{satelliteName}, \config{mass}, \config{coefficientDrag} and information
+about the satellite \config{surfaces}. For low Earth orbiting satellites, like GRACE for instance, a good guess
+for the drag coefficient could be 2.3. Apart from that, it is latter on possible to estimate a more precise variable drag coefficient
+(e.g. \configClass{miscAccelerations:atmosphericDrag}{miscAccelerationsType:atmosphericDrag}), which will override this initial guess.
 Concerning the satellite surfaces an external file must be imported which must contain information about each single
- satellite plate in terms of plate \config{area}, the associated plate normal and re-radiation properties 
-(reflexion, diffusion and absorption) properties in the visible and IR part. Examplarily, a description of 
+ satellite plate in terms of plate \config{area}, the associated plate normal and re-radiation properties
+(reflexion, diffusion and absorption) properties in the visible and IR part. Examplarily, a description of
 the macro model for GRACE can be found under:
 \url{https://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/docs/ProdSpecDoc_v4.6.pdf}
-Additionally, it is possible to add further information like antennaThrust, solar panel, temporal mass changes and 
+Additionally, it is possible to add further information like antennaThrust, solar panel, temporal mass changes and
 massInstrument using the modules option.
 )";
 
@@ -42,7 +42,7 @@ massInstrument using the modules option.
 class SatelliteModelCreate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SatelliteModelCreate, SINGLEPROCESS, "Create satellite macro model.", Misc)
@@ -246,7 +246,7 @@ template<> Bool readConfig(Config &config, const std::string &name, SatelliteMod
 
 /***********************************************/
 
-void SatelliteModelCreate::run(Config &config)
+void SatelliteModelCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

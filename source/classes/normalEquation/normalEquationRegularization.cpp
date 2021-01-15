@@ -111,7 +111,7 @@ Bool NormalEquationRegularization::addNormalEquation(UInt rhsNo, const const_Mat
   try
   {
     UInt ready = 0;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(normals.communicator()))
     {
       Vector vx = x.slice(startIndex, rhsNo, bias.rows(), 1);
       if(quadsum(vx) > 0.)
@@ -130,8 +130,8 @@ Bool NormalEquationRegularization::addNormalEquation(UInt rhsNo, const const_Mat
         ready  = (std::fabs(std::sqrt(sigma2)-std::sqrt(sigma2Old))/std::sqrt(sigma2) < 0.01);
       }
     }
-    Parallel::broadCast(sigma2);
-    Parallel::broadCast(ready);
+    Parallel::broadCast(sigma2, 0, normals.communicator());
+    Parallel::broadCast(ready,  0, normals.communicator());
 
     // add normals
     const Double factor = 1/sigma2;
@@ -146,7 +146,7 @@ Bool NormalEquationRegularization::addNormalEquation(UInt rhsNo, const const_Mat
       }
 
     // accumulate right hand sides
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(normals.communicator()))
     {
       for(UInt z=0; z<paraCount; z++)
         for(UInt s=0; s<rhsCount; s++)
@@ -177,8 +177,8 @@ Vector NormalEquationRegularization::contribution(MatrixDistributed &Cov)
           if((z+Cov.blockIndex(i) >= startIndex) && (z+Cov.blockIndex(i) < startIndex+paraCount))
             contrib(z+Cov.blockIndex(i)) += Cov.N(i,i)(z,z) * K(z+Cov.blockIndex(i)-startIndex)/sigma2;
 
-    Parallel::reduceSum(contrib);
-    Parallel::broadCast(contrib);
+    Parallel::reduceSum(contrib, 0, Cov.communicator());
+    Parallel::broadCast(contrib, 0, Cov.communicator());
     return contrib;
   }
   catch(std::exception &e)

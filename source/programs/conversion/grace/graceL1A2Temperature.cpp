@@ -35,14 +35,14 @@ class GraceL1A2Temperature
   void readFile(const FileName &fileName, MiscValuesArc &arcTemp);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceL1A2Temperature, SINGLEPROCESS, "read GRACE L1A data", Conversion, Grace, Instrument)
 
 /***********************************************/
 
-void GraceL1A2Temperature::run(Config &config)
+void GraceL1A2Temperature::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

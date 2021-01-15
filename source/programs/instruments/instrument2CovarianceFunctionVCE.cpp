@@ -63,14 +63,14 @@ class Instrument2CovarianceFunctionVCE
   Arc  computeResiduals(UInt arcNo);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Instrument2CovarianceFunctionVCE, PARALLEL, "Covariance functions via variance component estimation", Instrument, Covariance)
 
 /***********************************************/
 
-void Instrument2CovarianceFunctionVCE::run(Config &config)
+void Instrument2CovarianceFunctionVCE::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -103,7 +103,7 @@ void Instrument2CovarianceFunctionVCE::run(Config &config)
 
     UInt   covLength = 0;
     Double sampling  = 0;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       arcTimes.resize(arcCount);
       arcData.resize(arcCount);
@@ -118,11 +118,11 @@ void Instrument2CovarianceFunctionVCE::run(Config &config)
         countData = std::min(countData, arcData.at(arcNo).columns()-1-startData);
       }
     }
-    Parallel::broadCast(arcTimes);
-    Parallel::broadCast(arcData);
-    Parallel::broadCast(countData);
-    Parallel::broadCast(covLength);
-    Parallel::broadCast(sampling);
+    Parallel::broadCast(arcTimes,  0, comm);
+    Parallel::broadCast(arcData,   0, comm);
+    Parallel::broadCast(countData, 0, comm);
+    Parallel::broadCast(covLength, 0, comm);
+    Parallel::broadCast(sampling,  0, comm);
 
     // init arc sigmas
     // ---------------
@@ -162,18 +162,18 @@ void Instrument2CovarianceFunctionVCE::run(Config &config)
         n = Vector(countData*parameter->parameterCount());
         lPl      = 0;
         obsCount = 0;
-        Parallel::forEach(arcCount, [this](UInt arcNo) {buildNormals(arcNo);});
+        Parallel::forEach(arcCount, [this](UInt arcNo) {buildNormals(arcNo);}, comm);
 
         // collect system of normal equations
         // ----------------------------------
         logStatus<<"collect system of normal equations"<<Log::endl;
-        Parallel::reduceSum(N);
-        Parallel::reduceSum(n);
-        Parallel::reduceSum(obsCount);
-        Parallel::reduceSum(lPl);
+        Parallel::reduceSum(N,        0, comm);
+        Parallel::reduceSum(n,        0, comm);
+        Parallel::reduceSum(obsCount, 0, comm);
+        Parallel::reduceSum(lPl,      0, comm);
 
         logStatus<<"solve system of normal equations"<<Log::endl;
-        if(Parallel::isMaster())
+        if(Parallel::isMaster(comm))
         {
           x = solve(N, n);
           logInfo<<"  aposteriori sigma = "<<sqrt((lPl-inner(x, n))/(obsCount-x.rows()))<<Log::endl;
@@ -182,24 +182,24 @@ void Instrument2CovarianceFunctionVCE::run(Config &config)
           Wz = Vce::monteCarlo(x.rows(), 100); // monte carlo vector for VCE
           triangularSolve(1., N, Wz);
         }
-        Parallel::broadCast(x);
-        Parallel::broadCast(Wz);
+        Parallel::broadCast(x,  0, comm);
+        Parallel::broadCast(Wz, 0, comm);
 
-        if(Parallel::isMaster() && !fileNameSolution.empty())
+        if(Parallel::isMaster(comm) && !fileNameSolution.empty())
         {
           logStatus<<"write solution to <"<<fileNameSolution<<">"<<Log::endl;
           writeFileMatrix(fileNameSolution, x);
         }
       } // if(parameter->parameterCount())
-      Parallel::barrier();
+      Parallel::barrier(comm);
 
       if(!fileNameResiduals.empty())
       {
         logStatus<<"compute residuals"<<Log::endl;
         std::vector<Arc> arcs(arcCount);
-        Parallel::forEach(arcs, [this](UInt arcNo) {return computeResiduals(arcNo);});
+        Parallel::forEach(arcs, [this](UInt arcNo) {return computeResiduals(arcNo);}, comm);
 
-        if(Parallel::isMaster())
+        if(Parallel::isMaster(comm))
         {
           logStatus<<"write residual file <"<<fileNameResiduals<<">"<<Log::endl;
           InstrumentFile::write(fileNameResiduals, arcs);
@@ -209,12 +209,12 @@ void Instrument2CovarianceFunctionVCE::run(Config &config)
       logStatus<<"compute redundancies"<<Log::endl;
       sigmaNew = Vector(arcCount);
       ePe = redundancy = Matrix(covLength, countData);
-      Parallel::forEach(arcCount, [this](UInt arcNo) {computeRedundancies(arcNo);});
+      Parallel::forEach(arcCount, [this](UInt arcNo) {computeRedundancies(arcNo);}, comm);
 
       // sigmas per arc
       // --------------
-      Parallel::reduceSum(sigmaNew);
-      if(Parallel::isMaster())
+      Parallel::reduceSum(sigmaNew, 0, comm);
+      if(Parallel::isMaster(comm))
       {
         sigma = sigmaNew;
         const Double sigma0 = Vce::meanSigma(sigma);
@@ -227,20 +227,20 @@ void Instrument2CovarianceFunctionVCE::run(Config &config)
           writeFileMatrix(fileNameArcSigma, sigma);
         }
       }
-      Parallel::broadCast(sigma);
+      Parallel::broadCast(sigma, 0, comm);
 
       // estimate new PSD through variance component estimation
       // ------------------------------------------------------
       logStatus<<"compute psd through variance component estimation"<<Log::endl;
-      Parallel::reduceSum(ePe);
-      Parallel::reduceSum(redundancy);
-      if(Parallel::isMaster())
+      Parallel::reduceSum(ePe, 0, comm);
+      Parallel::reduceSum(redundancy, 0, comm);
+      if(Parallel::isMaster(comm))
       {
         Double maxFactor = 0;
         Vce::estimatePsd(ePe, redundancy, Psd, maxFactor);
         logInfo<<"  max. PSD adjustment factor: "<<maxFactor<<Log::endl;
-      } // if(Parallel::isMaster())
-      Parallel::broadCast(Psd);
+      } // if(Parallel::isMaster(comm))
+      Parallel::broadCast(Psd, 0, comm);
       copy(CosTransform*Psd, covFunc.column(1, Psd.columns())); // compute new covariance function
 
       for(UInt idData=0; idData<countData; idData++)
@@ -252,7 +252,7 @@ void Instrument2CovarianceFunctionVCE::run(Config &config)
         cholesky(W.at(idData));
       }
 
-      if(Parallel::isMaster() && !fileNameCov.empty())
+      if(Parallel::isMaster(comm) && !fileNameCov.empty())
       {
         logStatus<<"write covariance function file <"<<fileNameCov<<">"<<Log::endl;
         writeFileMatrix(fileNameCov, covFunc);

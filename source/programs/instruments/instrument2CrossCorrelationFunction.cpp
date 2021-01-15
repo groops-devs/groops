@@ -45,7 +45,7 @@ For instrument with data gaps, lag bins without any data are set to NAN.
 class Instrument2CrossCorrelationFunction
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Instrument2CrossCorrelationFunction, PARALLEL, "Empirical computation of the correlation between two instrument files.", Instrument, Statistics)
@@ -53,7 +53,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentComputeCorrelation, Instrument2CrossCorrelation
 
 /***********************************************/
 
-void Instrument2CrossCorrelationFunction::run(Config &config)
+void Instrument2CrossCorrelationFunction::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -78,7 +78,7 @@ void Instrument2CrossCorrelationFunction::run(Config &config)
     // ------------------------------------
     UInt   maxLag;
     Double sampling = 1.0;
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       std::vector<Time> times;
       Time maxArcLen;
@@ -96,8 +96,8 @@ void Instrument2CrossCorrelationFunction::run(Config &config)
       logInfo<<"  maximum arc length: "<<maxLag<<" epochs"<<Log::endl;
       logInfo<<"  median sampling:    "<<sampling<<" seconds"<<Log::endl;
     }
-    Parallel::broadCast(maxLag);
-    Parallel::broadCast(sampling);
+    Parallel::broadCast(maxLag,   0, comm);
+    Parallel::broadCast(sampling, 0, comm);
 
     // estimate the covariance for each arc, then reduce
     // -------------------------------------------------
@@ -149,13 +149,13 @@ void Instrument2CrossCorrelationFunction::run(Config &config)
               crossCovariance(idx, col) += X(i, col) * Y(k, col);
           }
       }
-    });
-    Parallel::reduceSum(count);
-    Parallel::reduceSum(autoCovarianceX);
-    Parallel::reduceSum(autoCovarianceY);
-    Parallel::reduceSum(crossCovariance);
+    }, comm);
+    Parallel::reduceSum(count, 0, comm);
+    Parallel::reduceSum(autoCovarianceX, 0, comm);
+    Parallel::reduceSum(autoCovarianceY, 0, comm);
+    Parallel::reduceSum(crossCovariance, 0, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       autoCovarianceX *= 1./count(maxLag-1);
       autoCovarianceY *= 1./count(maxLag-1);

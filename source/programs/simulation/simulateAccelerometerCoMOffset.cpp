@@ -33,14 +33,14 @@ Euler forces and the effect of gravity gradients.
 class SimulateAccelerometerCoMOffset
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SimulateAccelerometerCoMOffset, PARALLEL, "Create accelerations due to CoM offset.", Simulation, Instrument)
 
 /***********************************************/
 
-void SimulateAccelerometerCoMOffset::run(Config &config)
+void SimulateAccelerometerCoMOffset::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -119,9 +119,9 @@ void SimulateAccelerometerCoMOffset::run(Config &config)
         accelerometerArc.push_back(epoch);
       }
       return accelerometerArc;
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write data to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

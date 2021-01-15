@@ -39,7 +39,7 @@ public:
     Double   factor;
   };
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentMultiplyAdd, PARALLEL, "Multiply instrument data with a factor and add them together", Instrument)
@@ -58,7 +58,7 @@ template<> Bool readConfig(Config &config, const std::string &name, InstrumentMu
 
 /***********************************************/
 
-void InstrumentMultiplyAdd::run(Config &config)
+void InstrumentMultiplyAdd::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -100,10 +100,10 @@ void InstrumentMultiplyAdd::run(Config &config)
           A.column(k) -= mean(A.column(k));
 
       return Arc(arc.times(), A, arc.getType());
-    });
+    }, comm);
 
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write instrument data to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

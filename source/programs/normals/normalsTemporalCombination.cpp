@@ -34,14 +34,14 @@ It can be used to estimate trend and annual spherical harmonic coefficients from
 class NormalsTemporalCombination
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NormalsTemporalCombination, PARALLEL, "normal equations of trend, annual from a time series of normal equations", NormalEquation)
 
 /***********************************************/
 
-void NormalsTemporalCombination::run(Config &config)
+void NormalsTemporalCombination::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -77,11 +77,8 @@ void NormalsTemporalCombination::run(Config &config)
     Matrix             nTotal;
     NormalEquationInfo infoTotal;
 
-    logTimerStart;
-    for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
+    Single::forEach(times.size(), [&](UInt idEpoch)
     {
-      logTimerLoop(idEpoch, times.size());
-
       // read normals
       // ------------
       Matrix N, n;
@@ -93,7 +90,7 @@ void NormalsTemporalCombination::run(Config &config)
       catch(std::exception &e)
       {
         logWarning<<e.what()<<" continue..."<<Log::endl;
-        continue;
+        return;
       }
 
       // init normals
@@ -104,7 +101,7 @@ void NormalsTemporalCombination::run(Config &config)
         std::vector<UInt> blockIndex(factorTemporal.size()+1);
         for(UInt i=0; i<=factorTemporal.rows(); i++)
           blockIndex.at(i) = i*N.rows();
-        normal.initEmpty(blockIndex);
+        normal.initEmpty(blockIndex, comm);
         nTotal = Matrix(normal.parameterCount(), n.columns());
         infoTotal.lPl = Vector(n.columns());
       }
@@ -136,15 +133,14 @@ void NormalsTemporalCombination::run(Config &config)
               axpy(factorTemporal(i)*factorTemporal(k), N, normal.N(i,k));
           }
 
-      if(Parallel::isMaster())
+      if(Parallel::isMaster(comm))
       {
         for(UInt i=0; i<normal.blockCount(); i++)
           axpy(factorTemporal(i), n, nTotal.row(normal.blockIndex(i), normal.blockSize(i)));
         infoTotal.observationCount += info.observationCount;
         infoTotal.lPl += info.lPl;
       }
-    } // for(idEpoch)
-    logTimerLoopEnd(times.size());
+    });
 
     // =============================================
 

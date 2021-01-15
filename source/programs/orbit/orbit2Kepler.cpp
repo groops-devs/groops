@@ -42,14 +42,14 @@ with the Keplerian elements at each epoch in the following order
 class Orbit2Kepler
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Orbit2Kepler, PARALLEL, "keplerian elements from orbit position and velocity at each epoch", Orbit, Instrument, TimeSeries)
 
 /***********************************************/
 
-void Orbit2Kepler::run(Config &config)
+void Orbit2Kepler::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -109,11 +109,11 @@ void Orbit2Kepler::run(Config &config)
       }
 
       return Arc(orbit.times(), A);
-    });
+    }, comm);
 
     // write results
     // -------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write time series of Keplerian elements to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

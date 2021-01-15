@@ -218,8 +218,6 @@ static void readInfoFile(const FileName &name, NormalEquationInfo &info, Matrix 
     }
     catch(std::exception &/*e*/)
     {
-//      if(Parallel::isMaster())
-//        logWarning << "Could not read normal equation parameter name file <" << fileNameParameterNames << ">." << Log::endl;
       info.parameterName.clear();
       info.parameterName.resize(paramCount);
     }
@@ -273,14 +271,14 @@ void readFileNormalEquation(const FileName &name, NormalEquationInfo &info, Matr
 
 /***********************************************/
 
-void readFileNormalEquation(const FileName &name, NormalEquationInfo &info, MatrixDistributed &normal, Matrix &n)
+void readFileNormalEquation(const FileName &name, NormalEquationInfo &info, MatrixDistributed &normal, Matrix &n, Parallel::CommunicatorPtr comm)
 {
   try
   {
     readInfoFile(name, info, n);
 
     // read normal equation
-    normal.initEmpty(info.blockIndex);
+    normal.initEmpty(info.blockIndex, comm);
     for(UInt i=0; i<normal.blockCount(); i++)
       for(UInt k=i; k<normal.blockCount(); k++)
       {

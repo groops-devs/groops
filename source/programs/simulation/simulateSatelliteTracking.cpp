@@ -55,14 +55,14 @@ The \configFile{inputfileOrbit}{instrument}s must contain positions, velocities,
 class SimulateSatelliteTracking
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SimulateSatelliteTracking, PARALLEL, "simulate tracking data (range, range-rate, range-accelerations) between 2 satellites", Simulation, Instrument)
 
 /***********************************************/
 
-void SimulateSatelliteTracking::run(Config &config)
+void SimulateSatelliteTracking::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -103,9 +103,9 @@ void SimulateSatelliteTracking::run(Config &config)
         arc.push_back(epoch);
       }
       return arc;
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write tracking data to file <"<<outName<<">"<<Log::endl;
       InstrumentFile::write(outName, arcList);

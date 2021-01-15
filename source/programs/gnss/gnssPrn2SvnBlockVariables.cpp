@@ -29,14 +29,14 @@ a specified \config{time}.
 class GnssPrn2SvnBlockVariables
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssPrn2SvnBlockVariables, PARALLEL, "Create variables containing SVN and block based on a transmitter info file of a GNSS satellite/PRN and a specified time.", Gnss)
 
 /***********************************************/
 
-void GnssPrn2SvnBlockVariables::run(Config &config)
+void GnssPrn2SvnBlockVariables::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

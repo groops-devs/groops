@@ -42,14 +42,14 @@ See also \program{Gravityfield2GridCovarianceMatrix}, \program{GravityfieldVaria
 class GravityfieldCovariancesPropagation2GriddedData
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GravityfieldCovariancesPropagation2GriddedData, PARALLEL, "covariances of values of a gravity field on a grid", Gravityfield, Grid)
 
 /***********************************************/
 
-void GravityfieldCovariancesPropagation2GriddedData::run(Config &config)
+void GravityfieldCovariancesPropagation2GriddedData::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -86,16 +86,16 @@ void GravityfieldCovariancesPropagation2GriddedData::run(Config &config)
     // -------------------
     logStatus<<"calculate covariances on grid"<<Log::endl;
     std::vector<Double> field(points.size());
-    Parallel::forEach(field, [&](UInt i) {return gravityfield->covariance(time, point0, points.at(i), *kernel);});
+    Parallel::forEach(field, [&](UInt i) {return gravityfield->covariance(time, point0, points.at(i), *kernel);}, comm);
 
     std::vector<Double> sigma(points.size());
     if(calcCorrelation)
     {
       logStatus<<"calculate standard deviations on grid"<<Log::endl;
-      Parallel::forEach(sigma, [&](UInt i) {return sqrt(gravityfield->variance(time, points.at(i), *kernel));});
+      Parallel::forEach(sigma, [&](UInt i) {return sqrt(gravityfield->variance(time, points.at(i), *kernel));}, comm);
     }
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       if(calcCorrelation)
       {
@@ -108,7 +108,7 @@ void GravityfieldCovariancesPropagation2GriddedData::run(Config &config)
       GriddedData griddedData(Ellipsoid(a,f), points, areas, {field});
       writeFileGriddedData(fileNameGrid, griddedData);
       MiscGriddedData::printStatistics(griddedData);
-    } // if(Parallel::isMaster())
+    } // if(Parallel::isMaster(comm))
   }
   catch(std::exception &e)
   {

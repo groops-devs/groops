@@ -33,14 +33,14 @@ class Cosmic2OrbitStar
   void readFileCosmic(const FileName &fileName, StarCameraArc &starArc, OrbitArc &orbArc);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Cosmic2OrbitStar, SINGLEPROCESS, "read COSMIC orbit and star camera data", Conversion, Orbit, Instrument)
 
 /***********************************************/
 
-void Cosmic2OrbitStar::run(Config &config)
+void Cosmic2OrbitStar::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -97,10 +97,8 @@ void Cosmic2OrbitStar::readFileCosmic(const FileName &fileName, StarCameraArc &s
     file.exceptions(std::ios::badbit|std::ios::failbit);
 
     //Daten einlesen, Headerzeilen werden hier direkt behandelt
-//    logTimerStart;
     for(UInt i=0; ; i++)
     {
-//      logTimerLoop(i, 259200);
       std::string line;
       try
       {
@@ -192,7 +190,6 @@ void Cosmic2OrbitStar::readFileCosmic(const FileName &fileName, StarCameraArc &s
         }
       }
     }  //for(UInt i=0; ; i++) Schleife über die zeilen des Files
-//    logTimerLoopEnd(259200);
   }
   catch(std::exception &e)
   {

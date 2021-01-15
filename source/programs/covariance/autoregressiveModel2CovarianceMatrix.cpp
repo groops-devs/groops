@@ -34,14 +34,14 @@ second file cross covariance and so on). The matrix for lag $h$ describes the co
 class AutoregressiveModel2CovarianceMatrix
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(AutoregressiveModel2CovarianceMatrix, SINGLEPROCESS, "Compute the covariance structure of a sequence of VAR(0) to VAR(p) models", Covariance)
 
 /***********************************************/
 
-void AutoregressiveModel2CovarianceMatrix::run(Config &config)
+void AutoregressiveModel2CovarianceMatrix::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

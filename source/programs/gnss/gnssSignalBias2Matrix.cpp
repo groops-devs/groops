@@ -31,7 +31,7 @@ The resulting \configFile{outputfileMatrix}{matrix} contains a vector with an en
 class GnssSignalBias2Matrix
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssSignalBias2Matrix, SINGLEPROCESS, "Computes signal biases for a given type list", Gnss)
@@ -39,7 +39,7 @@ GROOPS_REGISTER_PROGRAM(GnssSignalBias2Matrix, SINGLEPROCESS, "Computes signal b
 
 /***********************************************/
 
-void GnssSignalBias2Matrix::run(Config &config)
+void GnssSignalBias2Matrix::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

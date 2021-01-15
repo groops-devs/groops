@@ -34,9 +34,8 @@ The processing flow is controlled via a list of \configClass{processingSteps}{gn
 Each step is processed consecutively. Some steps allow the selection of parameters, epochs, or the normal equation structure,
 which affects all subsequent steps.
 
-If the program is run on multiple processes in \reference{parallel}{general.parallelization}, \config{parallelIntervals}=\verb|yes| distributes the
-defined \configClass{intervals}{timeSeriesType} over all processes. Otherwise the intervals are processed consecutively while the
-\configClass{receiver}{gnssParametrizationReceiverType}s (stations or LEO satellites) are distributed over the processes.
+If the program is run on multiple processes the \configClass{receiver}{gnssParametrizationReceiverType}s
+(stations or LEO satellites) are distributed over the processes.
 
 See also \program{GnssSimulateReceiver}.
 )";
@@ -78,11 +77,6 @@ typedef std::shared_ptr<GnssProcessingStep> GnssProcessingStepPtr;
 class GnssProcessing
 {
 public:
-  FileName           fileNameNormalsInfo;
-  std::vector<Time>  timeSeries, timesInterval;
-  VariableList       fileNameVariableList;
-  Double             marginSeconds;
-  Bool               parallelIntervals;
 
   // Gnss
   // ----
@@ -100,7 +94,6 @@ public:
   // ----------------
   std::vector<GnssProcessingStepPtr> processingSteps;
 
-  void   computeInterval(UInt idInterval, Parallel::CommunicatorPtr comm);
   void   initParameter(Gnss::NormalEquationInfo &normalEquationInfo);
   void   regularizeNotUsedParameters(const Gnss::NormalEquationInfo &normalEquationInfo, UInt blockStart, UInt blockCount);
   void   collectNormalsBlocks(UInt blockStart, UInt blockCount);
@@ -109,7 +102,7 @@ public:
                           Bool resolveAmbiguities, Bool dryRun, Bool computeResiduals,
                           Gnss::Receiver::WeightingType computeWeights, Gnss::Receiver::WeightingType adjustSigma0);
 
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssProcessing, PARALLEL, "GNSS/LEO satellite orbit determination, station network analysis, PPP", Gnss)
@@ -382,11 +375,11 @@ public:
       changedNormalEquationInfo = FALSE;
 
       // set variable receiver
-      auto fileNameVariableList2 = gnssProcessing.fileNameVariableList;
+      VariableList fileNameVariableList;
       if(!variableReceiver.empty())
       {
         const UInt idRecv = std::distance(normalEquationInfo.estimateReceiver.begin(), std::find(normalEquationInfo.estimateReceiver.begin(), normalEquationInfo.estimateReceiver.end(), TRUE));
-        addVariable(variableReceiver, gnssProcessing.gnss.receiver.at(idRecv)->name(), fileNameVariableList2);
+        addVariable(variableReceiver, gnssProcessing.gnss.receiver.at(idRecv)->name(), fileNameVariableList);
       }
 
       // parameterNames
@@ -419,18 +412,18 @@ public:
 
       if(!fileNameParameterNames.empty() && Parallel::isMaster(normalEquationInfo.comm))
       {
-        logStatus<<"write parameter name file <"<<fileNameParameterNames(fileNameVariableList2)<<">"<<Log::endl;
-        writeFileParameterName(fileNameParameterNames(fileNameVariableList2), parameterNames);
+        logStatus<<"write parameter name file <"<<fileNameParameterNames(fileNameVariableList)<<">"<<Log::endl;
+        writeFileParameterName(fileNameParameterNames(fileNameVariableList), parameterNames);
       }
 
       if(!fileNameApriori.empty())
       {
-        logStatus<<"write apriori solution to <"<<fileNameApriori(fileNameVariableList2)<<">"<<Log::endl;
+        logStatus<<"write apriori solution to <"<<fileNameApriori(fileNameVariableList)<<">"<<Log::endl;
         Vector x0 = gnssProcessing.gnss.aprioriParameter(normalEquationInfo);
         if(eliminateEpochParameters)
           x0 = x0.row(normalEquationInfo.blockIndex(normalEquationInfo.blockInterval()), x0.rows()-normalEquationInfo.blockIndex(normalEquationInfo.blockInterval()));
         if(Parallel::isMaster(normalEquationInfo.comm))
-          writeFileMatrix(fileNameApriori(fileNameVariableList2), reorder(x0, indexVector));
+          writeFileMatrix(fileNameApriori(fileNameVariableList), reorder(x0, indexVector));
       }
 
       // compute index vectors and block structure for to-be-eliminated parameters
@@ -532,19 +525,19 @@ public:
           rhs = rhs.row(eliminationCount, rhs.rows()-eliminationCount);
         }
 
-        logStatus<<"write unconstrained normal equations to <"<<fileNameNormals(fileNameVariableList2)<<">"<<Log::endl;
-        writeFileNormalEquation(fileNameNormals(fileNameVariableList2), NormalEquationInfo(parameterNames, gnssProcessing.lPl, gnssProcessing.obsCount), gnssProcessing.normals, rhs);
+        logStatus<<"write unconstrained normal equations to <"<<fileNameNormals(fileNameVariableList)<<">"<<Log::endl;
+        writeFileNormalEquation(fileNameNormals(fileNameVariableList), NormalEquationInfo(parameterNames, gnssProcessing.lPl, gnssProcessing.obsCount), gnssProcessing.normals, rhs);
       }
 
       if(!fileNameConstraints.empty())
       {
-        logStatus<<"write constraint normal equations to <"<<fileNameConstraints(fileNameVariableList2)<<">"<<Log::endl;
+        logStatus<<"write constraint normal equations to <"<<fileNameConstraints(fileNameVariableList)<<">"<<Log::endl;
         if(eliminationCount > 0)
         {
           normalsConstraints.eraseBlocks(0, eliminationBlocks);
           rhsConstraints = rhsConstraints.row(eliminationCount, rhsConstraints.rows()-eliminationCount);
         }
-        writeFileNormalEquation(fileNameConstraints(fileNameVariableList2), infoConstraints, normalsConstraints, rhsConstraints);
+        writeFileNormalEquation(fileNameConstraints(fileNameVariableList), infoConstraints, normalsConstraints, rhsConstraints);
       }
     }
     catch(std::exception &e)
@@ -997,7 +990,8 @@ public:
           }
           catch(std::exception &e)
           {
-            logWarning<<gnssProcessing.gnss.receiver.at(idRecv)->name()<<": disabled due to exception in single receiver loop:\n"<<e.what()<<Log::endl;
+            logError<<gnssProcessing.gnss.receiver.at(idRecv)->name()<<": disabled due to exception in single receiver loop:"<<Log::endl;
+            logError<<e.what()<<Log::endl;
             gnssProcessing.gnss.receiver.at(idRecv)->disable();
           }
         } // for(idRecv)
@@ -1168,11 +1162,13 @@ std::vector<Byte> GnssProcessingStep::selectReceivers(const Gnss &gnss, const Ve
 /***********************************************/
 /***********************************************/
 
-void GnssProcessing::run(Config &config)
+void GnssProcessing::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
-    TimeSeriesPtr                                  timeSeriesPtr, timesIntervalPtr;
+    FileName                                       fileNameNormalsInfo;
+    TimeSeriesPtr                                  timeSeriesPtr;
+    Double                                         marginSeconds;
     std::vector<GnssParametrizationTransmitterPtr> gnssTransmitters;
     std::vector<GnssParametrizationReceiverPtr>    gnssReceivers;
     GnssParametrizationEarthRotationPtr            gnssEarthRotation;
@@ -1181,9 +1177,7 @@ void GnssProcessing::run(Config &config)
     std::vector<GnssParametrizationConstraintsPtr> gnssConstraints;
 
     readConfig(config, "outputfileParameterName",  fileNameNormalsInfo, Config::OPTIONAL, "output/parameterNames_{loopTime:%D}.txt", "parameter names");
-    readConfig(config, "intervals",                timesIntervalPtr,    Config::OPTIONAL, "",     "each interval is processed independently");
-    readConfig(config, "parallelIntervals",        parallelIntervals,   Config::DEFAULT,  "1",    "parallelize intervals instead of receivers per interval");
-    readConfig(config, "timeSeries",               timeSeriesPtr,       Config::MUSTSET,  "",     "defines epochs within intervals");
+    readConfig(config, "timeSeries",               timeSeriesPtr,       Config::MUSTSET,  "",     "defines observation epochs");
     readConfig(config, "timeMargin",               marginSeconds,       Config::DEFAULT,  "0.1",  "[seconds] margin to consider two times identical");
     readConfig(config, "transmitter",              gnssTransmitters,    Config::MUSTSET,  "",     "constellation of GNSS satellites");
     readConfig(config, "receiver",                 gnssReceivers,       Config::MUSTSET,  "",     "ground station network or LEO satellite");
@@ -1197,23 +1191,16 @@ void GnssProcessing::run(Config &config)
 
     // ============================
 
-    // init time intervals
-    // -------------------
-    timeSeries = timeSeriesPtr->times();
-    if(timesIntervalPtr)
-      timesInterval = timesIntervalPtr->times();
-    if(timesInterval.size()==0)
-    {
-      timesInterval.push_back(timeSeries.at(0));
-      timesInterval.push_back(timeSeries.back()+seconds2time(1));
-    }
-
-    addTimeVariables(fileNameVariableList);
-
-    // ============================
-
     // init
     // ----
+    std::vector<Time> times = timeSeriesPtr->times();
+    if(!times.size())
+    {
+//       Parallel::isMaster()
+//         logWarning<<idInterval+1<<". "<<timesInterval.at(idInterval).dateTimeStr()<<" - "<<timesInterval.at(idInterval+1).dateTimeStr()<<": empty interval"<<Log::endl;
+      return;
+    }
+
     std::vector<Gnss::TransmitterPtr>     transmitters;
     std::vector<Gnss::ReceiverPtr>        receivers;
     std::vector<Gnss::ParametrizationPtr> parametrizations;
@@ -1237,68 +1224,26 @@ void GnssProcessing::run(Config &config)
     // constraints
     parametrizations.insert(parametrizations.end(), gnssConstraints.begin(), gnssConstraints.end());
 
-    logInfo<<"Init GNSS"<<Log::endl;
-    gnss.init(receivers, transmitters, parametrizations, gnssIonosphere, gnssEarthRotation, gnssGravityField, gnssAmbiguities);
-    logInfo<<"  transmitter: "<<transmitters.size()<<Log::endl;
-    logInfo<<"  receiver:    "<<receivers.size()<<Log::endl;
-
-    // ============================
-
-    logStatus<<"compute intervals"<<Log::endl;
-    if(parallelIntervals)
-    {
-      Parallel::forEach(timesInterval.size()-1, [this](UInt idInterval) {computeInterval(idInterval, Parallel::selfCommunicator());});
-    }
-    else
-    {
-      for(UInt idInterval=0; idInterval<timesInterval.size()-1; idInterval++)
-        computeInterval(idInterval, nullptr); // use all processes for each interval
-    }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-void GnssProcessing::computeInterval(UInt idInterval, Parallel::CommunicatorPtr comm)
-{
-  try
-  {
-    logStatus<<"================================================================"<<Log::endl;
-    logStatus<<idInterval+1<<". "<<timesInterval.at(idInterval).dateTimeStr()<<" - "<<timesInterval.at(idInterval+1).dateTimeStr()<<Log::endl;
-    evaluateTimeVariables(idInterval, timesInterval.at(idInterval), timesInterval.at(idInterval+1), fileNameVariableList);
-
-    // init time series
-    // ----------------
-    std::vector<Time> times;
-    for(UInt i=0; i<timeSeries.size(); i++)
-      if(timeSeries.at(i).isInInterval(timesInterval.at(idInterval), timesInterval.at(idInterval+1)))
-        times.push_back(timeSeries.at(i));
-
-    if(!times.size() && Parallel::isMaster(comm))
-    {
-      logWarning<<idInterval+1<<". "<<timesInterval.at(idInterval).dateTimeStr()<<" - "<<timesInterval.at(idInterval+1).dateTimeStr()<<": empty interval"<<Log::endl;
-      return;
-    }
-
     // init the GNSS system
     // --------------------
+    logInfo<<"Init GNSS"<<Log::endl;
     Gnss::AnalysisType analysisType = Gnss::ANALYSIS_RAW;
+    gnss.init(receivers, transmitters, parametrizations, gnssIonosphere, gnssEarthRotation, gnssGravityField, gnssAmbiguities);
     gnss.initInterval(analysisType, times, seconds2time(marginSeconds), comm);
-    if(!std::any_of(gnss.transmitter.begin(), gnss.transmitter.end(), [](auto trans){return trans->useable();}) && Parallel::isMaster(comm))
+
+    logInfo<<"  transmitter: "<<transmitters.size()<<Log::endl;
+    logInfo<<"  receiver:    "<<receivers.size()<<Log::endl;
+    if(!std::any_of(gnss.transmitter.begin(), gnss.transmitter.end(), [](auto trans){return trans->useable();}))
     {
-      logWarning<<idInterval+1<<". "<<timesInterval.at(idInterval).dateTimeStr()<<" - "<<timesInterval.at(idInterval+1).dateTimeStr()<<": no useable transmitter"<<Log::endl;
+      logWarningOnce<<times.front().dateTimeStr()<<" - "<<times.back().dateTimeStr()<<": no useable transmitter"<<Log::endl;
       return;
     }
     UInt useable = std::any_of(gnss.receiver.begin(), gnss.receiver.end(), [](auto recv){return recv->useable();});
     Parallel::reduceSum(useable, 0, comm);
     Parallel::broadCast(useable, 0, comm);
-    if(!useable && Parallel::isMaster(comm))
+    if(!useable)
     {
-      logWarning<<idInterval+1<<". "<<timesInterval.at(idInterval).dateTimeStr()<<" - "<<timesInterval.at(idInterval+1).dateTimeStr()<<": no useable receiver"<<Log::endl;
+      logWarningOnce<<times.front().dateTimeStr()<<" - "<<times.back().dateTimeStr()<<": no useable receiver"<<Log::endl;
       return;
     }
 
@@ -1317,7 +1262,7 @@ void GnssProcessing::computeInterval(UInt idInterval, Parallel::CommunicatorPtr 
           countTypes(i) += count.at(i);
         countTracks += gnss.receiver.at(idRecv)->track.size();
       }
-    Parallel::reduceSum(countTypes, 0, comm);
+    Parallel::reduceSum(countTypes,  0, comm);
     Parallel::reduceSum(countTracks, 0, comm);
 
     for(UInt idType=0; idType<types.size(); idType++)
@@ -1331,8 +1276,8 @@ void GnssProcessing::computeInterval(UInt idInterval, Parallel::CommunicatorPtr 
     initParameter(normalEquationInfo);
     if(!fileNameNormalsInfo.empty() && Parallel::isMaster(comm))
     {
-      logStatus<<"write parameter name file <"<<fileNameNormalsInfo(fileNameVariableList)<<">"<<Log::endl;
-      writeFileParameterName(fileNameNormalsInfo(fileNameVariableList), normalEquationInfo.parameterNames());
+      logStatus<<"write parameter name file <"<<fileNameNormalsInfo<<">"<<Log::endl;
+      writeFileParameterName(fileNameNormalsInfo, normalEquationInfo.parameterNames());
     }
 
     // =======================================================
@@ -1355,11 +1300,6 @@ void GnssProcessing::computeInterval(UInt idInterval, Parallel::CommunicatorPtr 
   }
   catch(std::exception &e)
   {
-    if(parallelIntervals)
-    {
-      logError<<timesInterval.at(idInterval).dateTimeStr()<<": Cannot solve (continue): "<<e.what()<<Log::endl;
-      return;
-    }
     GROOPS_RETHROW(e)
   }
 }

@@ -40,14 +40,14 @@ To visualize the results use \program{PlotMap}.
 class Gravityfield2AbsoluteGravity
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2AbsoluteGravity, PARALLEL, "Absolute gravity values on a grid.", Gravityfield)
 
 /***********************************************/
 
-void Gravityfield2AbsoluteGravity::run(Config &config)
+void Gravityfield2AbsoluteGravity::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -76,9 +76,9 @@ void Gravityfield2AbsoluteGravity::run(Config &config)
     // ---------------------
     logStatus<<"create values on grid"<<Log::endl;
     std::vector<Double> field(points.size());
-    Parallel::forEach(field, [&](UInt i){return factor*gravityfield->gravity(time, points.at(i)).r();});
+    Parallel::forEach(field, [&](UInt i){return factor*gravityfield->gravity(time, points.at(i)).r();}, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       // write results
       // -------------

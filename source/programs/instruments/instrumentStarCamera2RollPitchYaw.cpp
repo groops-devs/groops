@@ -32,14 +32,14 @@ See also \program{SimulateStarCamera}.
 class InstrumentStarCamera2RollPitchYaw
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentStarCamera2RollPitchYaw, PARALLEL, "Compute roll, pitch, yaw angles", Instrument)
 
 /***********************************************/
 
-void InstrumentStarCamera2RollPitchYaw::run(Config &config)
+void InstrumentStarCamera2RollPitchYaw::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -78,9 +78,9 @@ void InstrumentStarCamera2RollPitchYaw::run(Config &config)
         arc.push_back(epoch);
       }
       return arc;
-    }); // forEach
+    }, comm); // forEach
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write angles to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

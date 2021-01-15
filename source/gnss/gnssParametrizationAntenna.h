@@ -75,7 +75,6 @@ public:
 
   // Realization of Gnss::Parametrization
   // ------------------------------------
-  void   initIntervalEarly(Gnss::AnalysisType analysisType, const std::vector<Time> &times, const Time &timeMargin, Parallel::CommunicatorPtr comm) override;
   void   initParameter(Gnss::NormalEquationInfo &normalEquationInfo) override;
   Bool   isDesignMatrix(const Gnss::NormalEquationInfo &normalEquationInfo, UInt idRecv, UInt idTrans, UInt idEpoch) const override;
   void   designMatrix(const Gnss::NormalEquationInfo &normalEquationInfo, const Gnss::ObservationEquation &eqn, Gnss::DesignMatrix &A) const override;

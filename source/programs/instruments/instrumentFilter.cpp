@@ -31,14 +31,14 @@ with \configClass{digitalFilter}{digitalFilterType} arc wise.
 class InstrumentFilter
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentFilter, PARALLEL, "filter any instrument file arc wise", Instrument)
 
 /***********************************************/
 
-void InstrumentFilter::run(Config &config)
+void InstrumentFilter::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -66,9 +66,9 @@ void InstrumentFilter::run(Config &config)
       countData = std::min(countData, data.columns()-1-startData);
       copy(filter->filter(data.column(1+startData, countData)), data.column(1+startData, countData));
       return Arc(arc.times(), data, arc.getType());
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write instrument data to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

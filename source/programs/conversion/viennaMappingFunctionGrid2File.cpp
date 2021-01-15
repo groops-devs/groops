@@ -34,14 +34,14 @@ Gridded VMF data is available at: \url{https://vmf.geo.tuwien.ac.at/trop_product
 class ViennaMappingFunctionGrid2File
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(ViennaMappingFunctionGrid2File, SINGLEPROCESS, "converts VMF grid time series to one file.", Conversion)
 
 /***********************************************/
 
-void ViennaMappingFunctionGrid2File::run(Config &config)
+void ViennaMappingFunctionGrid2File::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -84,10 +84,8 @@ void ViennaMappingFunctionGrid2File::run(Config &config)
 
     logStatus<<"read coefficients from files"<<Log::endl;
     std::vector<Matrix> data(times.size(), Matrix(grid.points.size(), 8));
-    logTimerStart;
-    for(UInt i=0; i<fileNamesIn.size(); i++)
+    Single::forEach(fileNamesIn.size(), [&](UInt i)
     {
-      logTimerLoop(i, fileNamesIn.size());
       InFile file(fileNamesIn.at(i));
 
       std::string line;
@@ -101,8 +99,7 @@ void ViennaMappingFunctionGrid2File::run(Config &config)
         ss>>data.at(i)(k, 4)>>data.at(i)(k, 5)>>data.at(i)(k, 6)>>data.at(i)(k, 7); // gradients
       }
       data.at(i).column(4, 4) *= 0.001; // gradients mm --> m
-    }
-    logTimerLoopEnd(fileNamesIn.size());
+    });
 
     // ======================================================
 

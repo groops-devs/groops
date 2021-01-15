@@ -106,13 +106,9 @@ For most input files the default value and annotation give a good hint of what i
 listed here.
 
 The first step is setting the processing sampling, in this example it is 30~seconds.
-The processing interval usually is a single 24-hour day.
-\begin{itemize}
-  \item \configClass{intervals:uniformSampling}{timeSeriesType:uniformSampling} with \config{timeStart}=\verb|<mjd>|,
-        \config{timeEnd}=\verb|<mjd>+1|, \config{sampling}=\verb|1| (replace \verb|<mjd>| with MJD of the day to process)
-  \item \configClass{timeSeries:uniformSampling}{timeSeriesType:uniformSampling} with \config{timeStart}=\verb|<mjd>|,
-        \config{timeEnd}=\verb|<mjd>+1|, \config{sampling}=\verb|30/86400| (processing sampling)
-\end{itemize}
+The processing interval usually is a single 24-hour day,
+\configClass{timeSeries:uniformSampling}{timeSeriesType:uniformSampling} with \config{timeStart}=\verb|<mjd>|,
+\config{timeEnd}=\verb|<mjd>+1|, \config{sampling}=\verb|30/86400| (processing sampling).
 
 Next define the GNSS constellations, in this case GPS and Galileo.
 \begin{itemize}

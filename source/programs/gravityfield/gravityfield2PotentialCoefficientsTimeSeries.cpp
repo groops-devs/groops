@@ -41,14 +41,14 @@ as data columns for each epoch in the sequence given by
 class Gravityfield2PotentialCoefficientsTimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2PotentialCoefficientsTimeSeries, SINGLEPROCESS, "time series of potential coefficients", Gravityfield, TimeSeries)
 
 /***********************************************/
 
-void Gravityfield2PotentialCoefficientsTimeSeries::run(Config &config)
+void Gravityfield2PotentialCoefficientsTimeSeries::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

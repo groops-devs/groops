@@ -69,17 +69,12 @@ inline Bool ConditionCommand::condition(const VariableList &varList) const
 {
   try
   {
-    Bool result;
-    if(Parallel::isMaster())
-    {
-      std::vector<std::string> outputs;
-      result = System::exec(StringParser::parse(command, varList), outputs);
-      if(!silently)
-        for(const auto &output : outputs)
-          logInfo<<output<<Log::endl;
-    }
-    Parallel::broadCast(result);
-    return result;
+    std::vector<std::string> outputs;
+    Bool result = System::exec(StringParser::parse(command, varList), outputs);
+    if(!silently)
+      for(const auto &output : outputs)
+        logInfo<<output<<Log::endl;
+  return result;
   }
   catch(std::exception &e)
   {

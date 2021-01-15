@@ -36,7 +36,7 @@ given at \url{http://podaac.jpl.nasa.gov/grace/documentation.html}.
 class GraceAod2TimeSplines
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceAod2TimeSplines, SINGLEPROCESS, "convert AOD1B dealiasing data into linear splines", Conversion, TimeSplines)
@@ -44,7 +44,7 @@ GROOPS_RENAMED_PROGRAM(GraceCsrAod2TimeSplines, GraceAod2TimeSplines, date2time(
 
 /***********************************************/
 
-void GraceAod2TimeSplines::run(Config &config)
+void GraceAod2TimeSplines::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

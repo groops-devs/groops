@@ -47,14 +47,14 @@ As an example, the two different areas could be oceanic regions on the one hand 
 class NormalsRegularizationBorders
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NormalsRegularizationBorders, SINGLEPROCESS, "Two regularization matrices for inside und outside of Border", NormalEquation)
 
 /***********************************************/
 
-void NormalsRegularizationBorders::run(Config &config)
+void NormalsRegularizationBorders::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

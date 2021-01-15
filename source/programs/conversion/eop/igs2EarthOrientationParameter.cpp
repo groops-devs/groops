@@ -30,7 +30,7 @@ and write it as \configFile{outputfileEOP}{earthOrientationParameter}.
 class Igs2EarthOrientationParameter
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Igs2EarthOrientationParameter, SINGLEPROCESS, "Earth Orientation Parameter from IGS daily file", Conversion)
@@ -38,7 +38,7 @@ GROOPS_RENAMED_PROGRAM(IGS2EarthRotation, Igs2EarthOrientationParameter, date2ti
 
 /***********************************************/
 
-void Igs2EarthOrientationParameter::run(Config &config)
+void Igs2EarthOrientationParameter::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

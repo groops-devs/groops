@@ -34,14 +34,14 @@ if \configClass{earthRotation}{earthRotationType} is provided.
 class PlanetOrbit
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(PlanetOrbit, SINGLEPROCESS, "orbits of sun, moon and, planets", Orbit, Instrument)
 
 /***********************************************/
 
-void PlanetOrbit::run(Config &config)
+void PlanetOrbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -64,10 +64,8 @@ void PlanetOrbit::run(Config &config)
     logStatus<<"computing"<<Log::endl;
     std::vector<Time> times  = timeSeries->times();
     OrbitArc orbit;
-    logTimerStart;
-    for(UInt i=0; i<times.size(); i++)
+    Single::forEach(times.size(), [&](UInt i)
     {
-      logTimerLoop(i,times.size());
       OrbitEpoch epoch;
       epoch.time = times.at(i);
       ephemerides->ephemeris(times.at(i), planet, epoch.position, epoch.velocity);
@@ -81,8 +79,7 @@ void PlanetOrbit::run(Config &config)
       }
 
       orbit.push_back(epoch);
-    }
-    logTimerLoopEnd(times.size());
+    });
 
     logStatus<<"write orbit data to file <"<<fileNameOrbit<<">"<<Log::endl;
     InstrumentFile::write(fileNameOrbit, orbit);

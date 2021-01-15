@@ -76,14 +76,14 @@ See also \program{InstrumentArcCalculate}, \program{GriddedDataCalculate}, \prog
 class FunctionsCalculate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(FunctionsCalculate, SINGLEPROCESS, "Functions Calulate", Misc, Matrix, TimeSeries)
 
 /***********************************************/
 
-void FunctionsCalculate::run(Config &config)
+void FunctionsCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

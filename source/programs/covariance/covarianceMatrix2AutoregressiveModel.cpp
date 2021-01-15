@@ -47,14 +47,14 @@ The estimate AR model is saved as single matrix \config{outputfileAutoregressive
 class CovarianceMatrix2AutoregressiveModel
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(CovarianceMatrix2AutoregressiveModel, SINGLEPROCESS, "Compute a VAR(p) model from covariance matrices", Covariance)
 
 /***********************************************/
 
-void CovarianceMatrix2AutoregressiveModel::run(Config &config)
+void CovarianceMatrix2AutoregressiveModel::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

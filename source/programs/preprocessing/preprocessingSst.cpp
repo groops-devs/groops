@@ -62,7 +62,7 @@ For every interval a file is written with an index appended (counting from zero)
 class PreprocessingSst
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 
 private:
   ObservationMiscSstPtr observationMisc;
@@ -113,7 +113,7 @@ private:
   std::vector<SatelliteTrackingArc> arcListResidualsSst;
   std::vector<OrbitArc> arcListResidualsPod1, arcListResidualsPod2;
 
-  void initNormals(UInt countSignalParameter, const std::vector<ParameterName> &paraNameSignal);
+  void initNormals(UInt countSignalParameter, const std::vector<ParameterName> &paraNameSignal, Parallel::CommunicatorPtr comm);
   void computeObservationEquation(UInt arcNo);
   void buildNormals(UInt arcNo);
   void computeRedundancies(UInt arcNo);
@@ -136,7 +136,7 @@ GROOPS_REGISTER_PROGRAM(PreprocessingSst, PARALLEL, "Estimate covariance functio
 /***********************************************/
 /***********************************************/
 
-void PreprocessingSst::run(Config &config)
+void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -319,13 +319,13 @@ void PreprocessingSst::run(Config &config)
     // Init normal equations
     // ---------------------
     logStatus<<"Init normal equations"<<Log::endl;
-    initNormals(countHighFrequencyParameters, parameterNamesHighFrequency);
+    initNormals(countHighFrequencyParameters, parameterNamesHighFrequency, comm);
 
     // ===================================================
 
     // parameter names
     // ---------------
-    if(!fileNameParaName.empty() && Parallel::isMaster())
+    if(!fileNameParaName.empty() && Parallel::isMaster(comm))
     {
       logStatus<<"write parameter names <"<<fileNameParaName<<">"<<Log::endl;
       observationMisc->setInterval(date2time(9999,1,1), date2time(9999,1,2));
@@ -342,7 +342,7 @@ void PreprocessingSst::run(Config &config)
     observationArc.resize(arcCount);
     arcIndexN.resize(arcCount);
     arcIndexA.resize(arcCount);
-    std::vector<UInt> processNo = Parallel::forEachInterval(arcCount, arcsInterval, [this](UInt arcNo) {computeObservationEquation(arcNo);});
+    std::vector<UInt> processNo = Parallel::forEachInterval(arcCount, arcsInterval, [this](UInt arcNo) {computeObservationEquation(arcNo);}, comm);
     observationMisc = ObservationMiscSstPtr(nullptr);
 
     // =============================================
@@ -365,7 +365,7 @@ void PreprocessingSst::run(Config &config)
     if(covarianceSstArcWiseCount)
     {
       logStatus<<"read arc-wise sst covariance matrices"<<Log::endl;
-      Parallel::forEachProcess(arcCount, [this, &fileNamesCovarianceMatricesSst](UInt arcNo) {initArcWiseSSTCovarianceMatrices(arcNo, fileNamesCovarianceMatricesSst);}, processNo);
+      Parallel::forEachProcess(arcCount, [this, &fileNamesCovarianceMatricesSst](UInt arcNo) {initArcWiseSSTCovarianceMatrices(arcNo, fileNamesCovarianceMatricesSst);}, processNo, comm);
     }
 
     // =============================================
@@ -378,8 +378,8 @@ void PreprocessingSst::run(Config &config)
       for(UInt i=0; i<arcIndexN.at(arcNo).size(); i++)
         for(UInt k=0; k<arcIndexN.at(arcNo).size(); k++)
           BlockUsed(arcIndexN.at(arcNo).at(i), arcIndexN.at(arcNo).at(k)) = 1;
-    Parallel::reduceSum(BlockUsed);
-    Parallel::broadCast(BlockUsed);
+    Parallel::reduceSum(BlockUsed, 0, comm);
+    Parallel::broadCast(BlockUsed, 0, comm);
 
     for(UInt i=0; i<normals.blockCount(); i++)
       for(UInt k=i; k<normals.blockCount(); k++)
@@ -396,12 +396,12 @@ void PreprocessingSst::run(Config &config)
     for(UInt arcNo=0; arcNo<arcCount; arcNo++)
     {
       covLengthSst  = std::max(covLengthSst,  observationArc.at(arcNo).timesSst.size());
-      covLengthPod1 = std::max(covLengthPod1, observationArc.at(arcNo).timesPod1.size());
-      covLengthPod2 = std::max(covLengthPod2, observationArc.at(arcNo).timesPod2.size());
+      covLengthPod1 = std::max(covLengthPod1, observationArc.at(arcNo).timesPod1.size() ? static_cast<UInt>(std::round((observationArc.at(arcNo).timesPod1.back() - observationArc.at(arcNo).timesPod1.front()).seconds()/samplingPod1) + 1) : 0);
+      covLengthPod2 = std::max(covLengthPod2, observationArc.at(arcNo).timesPod2.size() ? static_cast<UInt>(std::round((observationArc.at(arcNo).timesPod2.back() - observationArc.at(arcNo).timesPod2.front()).seconds()/samplingPod2) + 1) : 0);
     }
-    Parallel::reduceMax(covLengthSst);  Parallel::broadCast(covLengthSst);
-    Parallel::reduceMax(covLengthPod1); Parallel::broadCast(covLengthPod1);
-    Parallel::reduceMax(covLengthPod2); Parallel::broadCast(covLengthPod2);
+    Parallel::reduceMax(covLengthSst,  0, comm); Parallel::broadCast(covLengthSst,  0, comm);
+    Parallel::reduceMax(covLengthPod1, 0, comm); Parallel::broadCast(covLengthPod1, 0, comm);
+    Parallel::reduceMax(covLengthPod2, 0, comm); Parallel::broadCast(covLengthPod2, 0, comm);
 
     // ===================================================
 
@@ -438,7 +438,7 @@ void PreprocessingSst::run(Config &config)
       InstrumentFile filePod2(fileNameInEpochSigmaPod2);
 
       for(UInt arcNo=0; arcNo<arcCount; arcNo++)
-        if(Parallel::myRank() == processNo.at(arcNo))
+        if(Parallel::myRank(comm) == processNo.at(arcNo))
         {
           arcListEpochSigmaSst.at(arcNo)  = fileSst.readArc(arcNo);
           arcListEpochSigmaPod1.at(arcNo) = filePod1.readArc(arcNo);
@@ -496,14 +496,14 @@ void PreprocessingSst::run(Config &config)
         n.setNull();
         lPl      = 0;
         obsCount = 0;
-        Parallel::forEachProcess(arcCount, [this](UInt arcNo) {buildNormals(arcNo);}, processNo);
+        Parallel::forEachProcess(arcCount, [this](UInt arcNo) {buildNormals(arcNo);}, processNo, comm);
 
         // collect system of normal equations
         // ----------------------------------
         logStatus<<"collect system of normal equations"<<Log::endl;
-        Parallel::reduceSum(n);
-        Parallel::reduceSum(obsCount);
-        Parallel::reduceSum(lPl);
+        Parallel::reduceSum(n, 0, comm);
+        Parallel::reduceSum(obsCount, 0, comm);
+        Parallel::reduceSum(lPl, 0, comm);
         normals.reduceSum();
 
         // =============================================
@@ -513,7 +513,7 @@ void PreprocessingSst::run(Config &config)
         if(blockIndexHighFrequency.size())
         {
           logStatus<<"normals of process dynamic"<<Log::endl;
-          if(Parallel::isMaster())
+          if(Parallel::isMaster(comm))
             obsCount += countHighFrequencyParameters * blockIndexHighFrequency.size();
           for(UInt id=0; id<blockIndexHighFrequency.size(); id++)
           {
@@ -544,10 +544,10 @@ void PreprocessingSst::run(Config &config)
                 countRegul++;
               }
           }
-        Parallel::reduceSum(countRegul);
-        if(Parallel::isMaster() && countRegul)
+        Parallel::reduceSum(countRegul, 0, comm);
+        if(Parallel::isMaster(comm) && countRegul)
           logWarning<<countRegul<<" parameters are not used"<<Log::endl;
-        Parallel::barrier();
+        Parallel::barrier(comm);
 
         // =============================================
 
@@ -555,16 +555,16 @@ void PreprocessingSst::run(Config &config)
         // -------------------------
         logStatus<<"solve system of normal equations"<<Log::endl;
         x = normals.solve(n, TRUE/*timing*/);
-        Parallel::broadCast(x);
-        if(Parallel::isMaster())
+        Parallel::broadCast(x, 0, comm);
+        if(Parallel::isMaster(comm))
           logInfo<<"  aposteriori sigma = "<<sqrt((lPl-inner(x, n))/(obsCount-normals.parameterCount()))<<Log::endl;
 
         // N contains now the cholesky decomposition
         Wz = Vce::monteCarlo(normals.parameterCount(), 100); // monte carlo vector for VCE
         normals.triangularSolve(Wz);
-        Parallel::broadCast(Wz);
+        Parallel::broadCast(Wz, 0, comm);
 
-        if(Parallel::isMaster() && !fileNameSolution.empty())
+        if(Parallel::isMaster(comm) && !fileNameSolution.empty())
         {
           logStatus<<"write solution to <"<<fileNameSolution(variableIteration)<<">"<<Log::endl;
           writeFileMatrix(fileNameSolution(variableIteration), x.row(normals.blockIndex(blockIndexStatic), normals.parameterCount()-normals.blockIndex(blockIndexStatic)));
@@ -578,11 +578,11 @@ void PreprocessingSst::run(Config &config)
               if(normals.rank(i,k) != 0)
               {
                 if(normals.isMyRank(i,k))
-                  Parallel::send(normals.N(i,k), 0);
-                else if(Parallel::isMaster())
-                  Parallel::receive(normals.N(i,k), normals.rank(i,k));
+                  Parallel::send(normals.N(i,k), 0, comm);
+                else if(Parallel::isMaster(comm))
+                  Parallel::receive(normals.N(i,k), normals.rank(i,k), comm);
               }
-          if(Parallel::isMaster())
+          if(Parallel::isMaster(comm))
           {
             const UInt count = normals.parameterCount()-normals.blockIndex(blockIndexStatic);
             Matrix W(count, Matrix::TRIANGULAR);
@@ -601,21 +601,21 @@ void PreprocessingSst::run(Config &config)
                 normals.N(i,k) = Matrix();
         } // if(!fileNameSigmax.empty())
 
-        if(Parallel::isMaster() && blockIndexHighFrequency.size() && !fileNameHighFrequency.empty())
+        if(Parallel::isMaster(comm) && blockIndexHighFrequency.size() && !fileNameHighFrequency.empty())
         {
           logStatus<<"write signal solution to <"<<fileNameHighFrequency(variableIteration)<<">"<<Log::endl;
           for(UInt i=0; i<blockIndexHighFrequency.size(); i++)
             writeFileMatrix(fileNameHighFrequency(variableIteration).appendBaseName(i%".%02i"s), x.row(normals.blockIndex(blockIndexHighFrequency.at(i)), normals.blockSize(blockIndexHighFrequency.at(i))));
         } // if(!fileNameSignal.empty())
 
-        if(Parallel::isMaster() && blockIndexInterval.size() && !fileNameInterval.empty())
+        if(Parallel::isMaster(comm) && blockIndexInterval.size() && !fileNameInterval.empty())
         {
           logStatus<<"write interval solution to <"<<fileNameInterval(variableIteration)<<">"<<Log::endl;
           for(UInt i=0; i<blockIndexInterval.size(); i++)
             writeFileMatrix(fileNameInterval(variableIteration).appendBaseName(i%".%02i"s), x.row(normals.blockIndex(blockIndexInterval.at(i)), normals.blockSize(blockIndexInterval.at(i))));
         } // if(!fileNameInterval.empty())
       } // if(countAParameter)
-      Parallel::barrier();
+      Parallel::barrier(comm);
 
       // =============================================
 
@@ -625,24 +625,24 @@ void PreprocessingSst::run(Config &config)
         arcListResidualsSst.clear();  arcListResidualsSst.resize(arcCount);
         arcListResidualsPod1.clear(); arcListResidualsPod1.resize(arcCount);
         arcListResidualsPod2.clear(); arcListResidualsPod2.resize(arcCount);
-        Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeResiduals(arcNo);}, processNo);
-        Parallel::forEachProcess(arcListResidualsSst,  [this](UInt arcNo) {return collectArcSst (arcNo);}, processNo);
-        Parallel::forEachProcess(arcListResidualsPod1, [this](UInt arcNo) {return collectArcPod1(arcNo);}, processNo);
-        Parallel::forEachProcess(arcListResidualsPod2, [this](UInt arcNo) {return collectArcPod2(arcNo);}, processNo);
+        Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeResiduals(arcNo);}, processNo, comm);
+        Parallel::forEachProcess(arcListResidualsSst,  [this](UInt arcNo) {return collectArcSst (arcNo);}, processNo, comm);
+        Parallel::forEachProcess(arcListResidualsPod1, [this](UInt arcNo) {return collectArcPod1(arcNo);}, processNo, comm);
+        Parallel::forEachProcess(arcListResidualsPod2, [this](UInt arcNo) {return collectArcPod2(arcNo);}, processNo, comm);
 
-        if(Parallel::isMaster() && (!fileNameResidualsSst.empty()))
+        if(Parallel::isMaster(comm) && (!fileNameResidualsSst.empty()))
         {
           logStatus<<"write residual (SST) file <"<<fileNameResidualsSst(variableIteration)<<">"<<Log::endl;
           InstrumentFile::write(fileNameResidualsSst(variableIteration), arcListResidualsSst);
         }
 
-        if(Parallel::isMaster() && (!fileNameResidualsPod1.empty()))
+        if(Parallel::isMaster(comm) && (!fileNameResidualsPod1.empty()))
         {
           logStatus<<"write residual (POD1) file <"<<fileNameResidualsPod1(variableIteration)<<">"<<Log::endl;
           InstrumentFile::write(fileNameResidualsPod1(variableIteration), arcListResidualsPod1);
         }
 
-        if(Parallel::isMaster() && (!fileNameResidualsPod2.empty()))
+        if(Parallel::isMaster(comm) && (!fileNameResidualsPod2.empty()))
         {
           logStatus<<"write residual (POD2) file <"<<fileNameResidualsPod2(variableIteration)<<">"<<Log::endl;
           InstrumentFile::write(fileNameResidualsPod2(variableIteration), arcListResidualsPod2);
@@ -678,11 +678,11 @@ void PreprocessingSst::run(Config &config)
                 }
               }
         } // for(id)
-        Parallel::reduceSum(Nx);
-        Parallel::reduceSum(NWz);
+        Parallel::reduceSum(Nx,  0, comm);
+        Parallel::reduceSum(NWz, 0, comm);
         logTimerLoopEnd(blockIndexHighFrequency.size());
 
-        if(Parallel::isMaster())
+        if(Parallel::isMaster(comm))
         {
           const Double ePe = inner(x,Nx);
           const Double r   = countHighFrequencyParameters*blockIndexHighFrequency.size() - 1./sigma2_signal*inner(Wz,NWz);
@@ -691,7 +691,7 @@ void PreprocessingSst::run(Config &config)
           if((s2==s2) && (s2>0))
             sigma2_signal = s2;
         }
-        Parallel::broadCast(sigma2_signal);
+        Parallel::broadCast(sigma2_signal, 0, comm);
       } // if(blockIndexSignal.size())
 
       // =============================================
@@ -706,7 +706,7 @@ void PreprocessingSst::run(Config &config)
         ePePod1 = redundancyPod1 = Matrix(covLengthPod1, 3); // for x,y,z
         ePePod2 = redundancyPod2 = Matrix(covLengthPod2, 3); // for x,y,z
         ePeCovMatrixSst = redundancyCovMatrixSst = Vector(covarianceSstArcWiseCount);
-        Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeRedundancies(arcNo);}, processNo);
+        Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeRedundancies(arcNo);}, processNo, comm);
       }
 
       // =============================================
@@ -715,10 +715,10 @@ void PreprocessingSst::run(Config &config)
       // --------------
       if(estimateArcSigmas)
       {
-        Parallel::reduceSum(sigmaSstNew);
-        Parallel::reduceSum(sigmaPod1New);
-        Parallel::reduceSum(sigmaPod2New);
-        if(Parallel::isMaster())
+        Parallel::reduceSum(sigmaSstNew,  0, comm);
+        Parallel::reduceSum(sigmaPod1New, 0, comm);
+        Parallel::reduceSum(sigmaPod2New, 0, comm);
+        if(Parallel::isMaster(comm))
         {
           sigmaSst  = sigmaSstNew;
           sigmaPod1 = sigmaPod1New;
@@ -752,9 +752,9 @@ void PreprocessingSst::run(Config &config)
             writeFileMatrix(fileNameOutArcSigmaPod2(variableIteration), sigmaPod2);
           }
         }
-        Parallel::broadCast(sigmaSst);
-        Parallel::broadCast(sigmaPod1);
-        Parallel::broadCast(sigmaPod2);
+        Parallel::broadCast(sigmaSst,  0, comm);
+        Parallel::broadCast(sigmaPod1, 0, comm);
+        Parallel::broadCast(sigmaPod2, 0, comm);
       } // if(estimateArcSigmas)
 
       // =============================================
@@ -762,32 +762,32 @@ void PreprocessingSst::run(Config &config)
       if(estimateEpochSigmas)
       {
         logStatus<<"compute epoch sigmas"<<Log::endl;
-        Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeEpochSigmas(arcNo);}, processNo);
+        Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeEpochSigmas(arcNo);}, processNo, comm);
 
         logStatus<<"collect epoch sigmas"<<Log::endl;
-        Parallel::forEachProcess(arcListEpochSigmaSst,  [this](UInt arcNo) {return collectEpochSigmasSst (arcNo);}, processNo);
-        Parallel::forEachProcess(arcListEpochSigmaPod1, [this](UInt arcNo) {return collectEpochSigmasPod1(arcNo);}, processNo);
-        Parallel::forEachProcess(arcListEpochSigmaPod2, [this](UInt arcNo) {return collectEpochSigmasPod2(arcNo);}, processNo);
+        Parallel::forEachProcess(arcListEpochSigmaSst,  [this](UInt arcNo) {return collectEpochSigmasSst (arcNo);}, processNo, comm);
+        Parallel::forEachProcess(arcListEpochSigmaPod1, [this](UInt arcNo) {return collectEpochSigmasPod1(arcNo);}, processNo, comm);
+        Parallel::forEachProcess(arcListEpochSigmaPod2, [this](UInt arcNo) {return collectEpochSigmasPod2(arcNo);}, processNo, comm);
 
-        if(Parallel::isMaster() && (!fileNameOutEpochSigmaSst.empty()))
+        if(Parallel::isMaster(comm) && (!fileNameOutEpochSigmaSst.empty()))
         {
           logStatus<<"write epoch sigma (SST) file <"<<fileNameOutEpochSigmaSst(variableIteration)<<">"<<Log::endl;
           InstrumentFile::write(fileNameOutEpochSigmaSst(variableIteration), arcListEpochSigmaSst);
         }
 
-        if(Parallel::isMaster() && (!fileNameOutEpochSigmaPod1.empty()))
+        if(Parallel::isMaster(comm) && (!fileNameOutEpochSigmaPod1.empty()))
         {
           logStatus<<"write epoch sigma (POD1) file <"<<fileNameOutEpochSigmaPod1(variableIteration)<<">"<<Log::endl;
           InstrumentFile::write(fileNameOutEpochSigmaPod1(variableIteration), arcListEpochSigmaPod1);
         }
 
-        if(Parallel::isMaster() && (!fileNameOutEpochSigmaPod2.empty()))
+        if(Parallel::isMaster(comm) && (!fileNameOutEpochSigmaPod2.empty()))
         {
           logStatus<<"write epoch sigma (POD2) file <"<<fileNameOutEpochSigmaPod2(variableIteration)<<">"<<Log::endl;
           InstrumentFile::write(fileNameOutEpochSigmaPod2(variableIteration), arcListEpochSigmaPod2);
         }
 
-        Parallel::barrier();
+        Parallel::barrier(comm);
       } // if(estimateEpochSigmas)
 
       // =============================================
@@ -796,15 +796,15 @@ void PreprocessingSst::run(Config &config)
       // ------------------------------------------------------
       if(estimateCovarianceFunctionVCE)
       {
-        Parallel::reduceSum(ePeSst);
-        Parallel::reduceSum(ePePod1);
-        Parallel::reduceSum(ePePod2);
-        Parallel::reduceSum(redundancySst);
-        Parallel::reduceSum(redundancyPod1);
-        Parallel::reduceSum(redundancyPod2);
+        Parallel::reduceSum(ePeSst,         0, comm);
+        Parallel::reduceSum(ePePod1,        0, comm);
+        Parallel::reduceSum(ePePod2,        0, comm);
+        Parallel::reduceSum(redundancySst,  0, comm);
+        Parallel::reduceSum(redundancyPod1, 0, comm);
+        Parallel::reduceSum(redundancyPod2, 0, comm);
 
         logStatus<<"compute psd through variance component estimation"<<Log::endl;
-        if(Parallel::isMaster())
+        if(Parallel::isMaster(comm))
         {
           Double maxFactorSst = 0;
           Double maxFactorPod = 0;
@@ -822,11 +822,11 @@ void PreprocessingSst::run(Config &config)
             thresholdReached = true;
           }
 
-        } // if(Parallel::isMaster())
-        Parallel::broadCast(PsdSst);
-        Parallel::broadCast(PsdPod1);
-        Parallel::broadCast(PsdPod2);
-        Parallel::broadCast(thresholdReached);
+        } // if(Parallel::isMaster(comm))
+        Parallel::broadCast(PsdSst,  0, comm);
+        Parallel::broadCast(PsdPod1, 0, comm);
+        Parallel::broadCast(PsdPod2, 0, comm);
+        Parallel::broadCast(thresholdReached, 0, comm);
         // compute new covariance function
         copy(CosTransformSst  * PsdSst,  covFuncSst.column(1,1));
         copy(CosTransformPod1 * PsdPod1, covFuncPod1.column(1,3));
@@ -839,9 +839,9 @@ void PreprocessingSst::run(Config &config)
       // -------------------------------------------------------------
       if(estimateVarianceFactorsSstArcWiseCovariances)
       {
-        Parallel::reduceSum(ePeCovMatrixSst);
-        Parallel::reduceSum(redundancyCovMatrixSst);
-        if(Parallel::isMaster())
+        Parallel::reduceSum(ePeCovMatrixSst, 0, comm);
+        Parallel::reduceSum(redundancyCovMatrixSst, 0, comm);
+        if(Parallel::isMaster(comm))
         {
           for(UInt i=0; i<covarianceSstArcWiseCount; i++)
           {
@@ -850,24 +850,24 @@ void PreprocessingSst::run(Config &config)
             logStatus<<" SST arc-wise variance factor #"<<i<<" (current/total): "<<alpha<<"/"<<covMatrixSstSigmas(i)<<Log::endl;
           }
         }
-        Parallel::broadCast(covMatrixSstSigmas);
+        Parallel::broadCast(covMatrixSstSigmas, 0, comm);
       }
 
       // =============================================
 
       // Write covariance function to file
       // ---------------------------------
-      if(Parallel::isMaster() && !fileNameOutCovSst.empty())
+      if(Parallel::isMaster(comm) && !fileNameOutCovSst.empty())
       {
         logStatus<<"write covariance function file <"<<fileNameOutCovSst(variableIteration)<<">"<<Log::endl;
         writeFileMatrix(fileNameOutCovSst(variableIteration), covFuncSst);
       }
-      if(Parallel::isMaster() && !fileNameOutCovPod1.empty())
+      if(Parallel::isMaster(comm) && !fileNameOutCovPod1.empty())
       {
         logStatus<<"write covariance function file <"<<fileNameOutCovPod1(variableIteration)<<">"<<Log::endl;
         writeFileMatrix(fileNameOutCovPod1(variableIteration), covFuncPod1);
       }
-      if(Parallel::isMaster() && !fileNameOutCovPod2.empty())
+      if(Parallel::isMaster(comm) && !fileNameOutCovPod2.empty())
       {
         logStatus<<"write covariance function file <"<<fileNameOutCovPod2(variableIteration)<<">"<<Log::endl;
         writeFileMatrix(fileNameOutCovPod2(variableIteration), covFuncPod2);
@@ -875,14 +875,14 @@ void PreprocessingSst::run(Config &config)
 
       // Write variance factor to file
       // -----------------------------
-      if(Parallel::isMaster() && !fileNameOutVarianceFactorsSst.empty())
+      if(Parallel::isMaster(comm) && !fileNameOutVarianceFactorsSst.empty())
       {
         logStatus<<"write arc-wise SST variance factors <"<<fileNameOutVarianceFactorsSst(variableIteration)<<">"<<Log::endl;
         writeFileMatrix(fileNameOutVarianceFactorsSst(variableIteration), covMatrixSstSigmas);
       }
 
       // bail if the iteration threshold has been reached
-      Parallel::broadCast(thresholdReached);
+      Parallel::broadCast(thresholdReached, 0, comm);
       if(thresholdReached)
         break;
 
@@ -945,7 +945,7 @@ Matrix PreprocessingSst::arcWiseSSTCovarianceMatrix(UInt arcNo) const
 
  /***********************************************/
 
-void PreprocessingSst::initNormals(UInt countSignalParameter, const std::vector<ParameterName> &paraNameSignal)
+void PreprocessingSst::initNormals(UInt countSignalParameter, const std::vector<ParameterName> &paraNameSignal, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -1060,7 +1060,7 @@ void PreprocessingSst::initNormals(UInt countSignalParameter, const std::vector<
 
     // Init normal equations
     // ---------------------
-    normals.initEmpty(blockIndex);
+    normals.initEmpty(blockIndex, comm);
     for(UInt i=0; i<normals.blockCount(); i++)
       normals.setBlock(i,i);
     n = Matrix(normals.parameterCount(), observationMisc->rightSideCount());

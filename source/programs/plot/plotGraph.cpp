@@ -48,14 +48,14 @@ See also: \program{PlotDegreeAmplitudes}, \program{PlotMap}, \program{PlotMatrix
 class PlotGraph
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(PlotGraph, SINGLEPROCESS, "Plot functions (x,y)", Plot, TimeSeries)
 
 /***********************************************/
 
-void PlotGraph::run(Config &config)
+void PlotGraph::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

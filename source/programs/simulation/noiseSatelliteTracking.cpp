@@ -29,14 +29,14 @@ See \configClass{noiseGenerator}{noiseGeneratorType} for details on noise genera
 class NoiseSatelliteTracking
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(NoiseSatelliteTracking, PARALLEL, "generate noise and add the result to satellite tracking data", Simulation, Noise, Instrument)
 
 /***********************************************/
 
-void NoiseSatelliteTracking::run(Config &config)
+void NoiseSatelliteTracking::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -62,9 +62,9 @@ void NoiseSatelliteTracking::run(Config &config)
       data.column(2) += noiseRate->noise(data.rows());
       data.column(3) += noiseAcc->noise(data.rows());
       return Arc(sst.times(), data, sst.getType());
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write tracking data to file <"<<outName<<">"<<Log::endl;
       InstrumentFile::write(outName, arcList);

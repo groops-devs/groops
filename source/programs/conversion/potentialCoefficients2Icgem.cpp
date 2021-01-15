@@ -32,7 +32,7 @@ the possibility to include comments and set the modelname.
 class PotentialCoefficients2Icgem
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 
   class Oscillation
   {
@@ -67,7 +67,7 @@ template<> Bool readConfig(Config &config, const std::string &name, PotentialCoe
 
 /***********************************************/
 
-void PotentialCoefficients2Icgem::run(Config &config)
+void PotentialCoefficients2Icgem::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

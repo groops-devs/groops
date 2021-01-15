@@ -33,14 +33,14 @@ A description of the format can be found under: \url{http://op.gfz-potsdam.de/ch
 class Champ2AccStar
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Champ2AccStar, SINGLEPROCESS, "read CHAMP accelerometer and star camera data", Conversion, Instrument)
 
 /***********************************************/
 
-void Champ2AccStar::run(Config &config)
+void Champ2AccStar::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -30,14 +30,14 @@ Read JPL DExxx (ASCII) ephemerides.
 class JplAscii2Ephemerides
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(JplAscii2Ephemerides, SINGLEPROCESS, "JPL DExxx (ASCII) ephemerides", Conversion)
 
 /***********************************************/
 
-void JplAscii2Ephemerides::run(Config &config)
+void JplAscii2Ephemerides::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

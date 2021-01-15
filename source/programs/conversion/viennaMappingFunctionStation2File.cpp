@@ -35,14 +35,14 @@ Station-wise VMF data for GNSS is available at: \url{https://vmf.geo.tuwien.ac.a
 class ViennaMappingFunctionStation2File
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(ViennaMappingFunctionStation2File, SINGLEPROCESS, "converts VMF station time series to one file.", Conversion)
 
 /***********************************************/
 
-void ViennaMappingFunctionStation2File::run(Config &config)
+void ViennaMappingFunctionStation2File::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

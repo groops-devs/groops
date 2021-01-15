@@ -65,22 +65,18 @@ inline LoopCommandOutput::LoopCommandOutput(Config &config)
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL, "",            "variable with total number of iterations");
     if(isCreateSchema(config)) return;
 
-    if(Parallel::isMaster())
+    UInt count = 0;
+    for(UInt i=0; i<command.size(); i++)
     {
-      UInt count = 0;
-      for(UInt i=0; i<command.size(); i++)
-      {
-        if(!System::exec(command.at(i), strings))
-          throw(Exception("Command \""+command.at(i).str()+"\" exited with error"));
-        if(!silently)
-          for(const auto &str : strings)
-            logInfo<<str<<Log::endl;
-        if(strings.size() == count)
-          logWarning<<"Command \""+command.at(i).str()+"\" returned no output"<<Log::endl;
-        count = strings.size();
-      } // for(i)
-    }
-    Parallel::broadCast(strings);
+      if(!System::exec(command.at(i), strings))
+        throw(Exception("Command \""+command.at(i).str()+"\" exited with error"));
+      if(!silently)
+        for(const auto &str : strings)
+          logInfo<<str<<Log::endl;
+      if(strings.size() == count)
+        logWarningOnce<<"Command \""+command.at(i).str()+"\" returned no output"<<Log::endl;
+      count = strings.size();
+    } // for(i)
 
     index = 0;
   }

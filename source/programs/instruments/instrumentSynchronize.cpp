@@ -51,7 +51,7 @@ Data outside the defined arcs will be deleted.
 class InstrumentSynchronize
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 
   class Data
   {
@@ -138,7 +138,7 @@ UInt InstrumentSynchronize::searchInterval(UInt i)
 
 /***********************************************/
 
-void InstrumentSynchronize::run(Config &config)
+void InstrumentSynchronize::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

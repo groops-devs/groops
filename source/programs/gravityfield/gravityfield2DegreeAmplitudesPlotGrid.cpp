@@ -44,7 +44,7 @@ See also \program{Gravityfield2DegreeAmplitudes}.
 class Gravityfield2DegreeAmplitudesPlotGrid
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2DegreeAmplitudesPlotGrid, SINGLEPROCESS, "Time series of degree amplitudes from a time variable gravityfield.", Gravityfield, TimeSeries)
@@ -52,7 +52,7 @@ GROOPS_RENAMED_PROGRAM(Gravityfield2DegreeAmplitudeTimeSeries, Gravityfield2Degr
 
 /***********************************************/
 
-void Gravityfield2DegreeAmplitudesPlotGrid::run(Config &config)
+void Gravityfield2DegreeAmplitudesPlotGrid::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -32,14 +32,14 @@ class GoceXml2Gradiometer
   void readFileGoceGradiometer(const FileName &fileName, GradiometerArc &arc);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GoceXml2Gradiometer, SINGLEPROCESS, "read ESA XML GOCE Data", Conversion, Instrument)
 
 /***********************************************/
 
-void GoceXml2Gradiometer::run(Config &config)
+void GoceXml2Gradiometer::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

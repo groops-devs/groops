@@ -29,14 +29,14 @@ This file can be used in \program{NormalsCreate} or in the class \configClass{pa
 class ParameterNamesCreate
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(ParameterNamesCreate, SINGLEPROCESS, "Generate a parameter names file.", NormalEquation)
 
 /***********************************************/
 
-void ParameterNamesCreate::run(Config &config)
+void ParameterNamesCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

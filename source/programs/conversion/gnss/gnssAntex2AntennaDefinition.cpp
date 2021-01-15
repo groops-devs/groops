@@ -44,14 +44,14 @@ class GnssAntex2AntennaDefinition
   };
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GnssAntex2AntennaDefinition, SINGLEPROCESS, "Converts IGS ANTEX file to GNSS metadata and antenna definition files.", Conversion, Gnss)
 
 /***********************************************/
 
-void GnssAntex2AntennaDefinition::run(Config &config)
+void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

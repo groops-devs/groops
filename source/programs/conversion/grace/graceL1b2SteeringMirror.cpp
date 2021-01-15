@@ -29,14 +29,14 @@ This program converts GRACE-FO Steering Mirror output to an \file{instrument fil
 class GraceL1b2SteeringMirror
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceL1b2SteeringMirror, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Instrument)
 
 /***********************************************/
 
-void GraceL1b2SteeringMirror::run(Config &config)
+void GraceL1b2SteeringMirror::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

@@ -49,14 +49,14 @@ See also \program{PotentialCoefficients2DoodsonHarmonics}.
 class ModelEquilibriumTide
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(ModelEquilibriumTide, PARALLEL, "equilibrium tide, taking the effect of loading and self attraction into account.", DoodsonHarmonics, Simulation)
 
 /***********************************************/
 
-void ModelEquilibriumTide::run(Config &config)
+void ModelEquilibriumTide::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -124,8 +124,8 @@ void ModelEquilibriumTide::run(Config &config)
       const Double h20 = h20_0 + h20_2*Cnm(2,0)/std::sqrt(5);
       height0 -= h20 * std::pow(DEFAULT_R, 2)/GM * TGP * Cnm(2,0);
       return height0;
-    });
-    Parallel::broadCast(height0);
+    }, comm);
+    Parallel::broadCast(height0, 0, comm);
 
     // =======================================
 
@@ -153,11 +153,11 @@ void ModelEquilibriumTide::run(Config &config)
           axpy(factor/(2*n+1) * tide.at(i) * areas.at(i), Cnm.row(n), cnm.row(n));
           axpy(factor/(2*n+1) * tide.at(i) * areas.at(i), Snm.row(n), snm.row(n));
         }
-      });
-      Parallel::reduceSum(cnm);
-      Parallel::reduceSum(snm);
-      Parallel::broadCast(cnm);
-      Parallel::broadCast(snm);
+      }, comm);
+      Parallel::reduceSum(cnm, 0, comm);
+      Parallel::reduceSum(snm, 0, comm);
+      Parallel::broadCast(cnm, 0, comm);
+      Parallel::broadCast(snm, 0, comm);
       logInfo<<"  total Mass change =  "<<R*cnm(0,0)<<" m"<<Log::endl;
       cnm(0,0) = 0;
       harm = SphericalHarmonics(GM, R, cnm, snm);
@@ -172,8 +172,8 @@ void ModelEquilibriumTide::run(Config &config)
         for(UInt n=0; n<Yn.rows(); n++)
           sum += (1.+load_kn(n,0)-load_hnln(n,0))/gravity * Yn(n);
         return sum;
-      });
-      Parallel::broadCast(lsa);
+      }, comm);
+      Parallel::broadCast(lsa, 0, comm);
 
       // compute new tide
       std::vector<Double> tideOld = tide;
@@ -203,7 +203,7 @@ void ModelEquilibriumTide::run(Config &config)
 
     // write results
     // -------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"writing potential coefficients to file <"<<potentialCoefficientsName<<">"<<Log::endl;
       writeFileSphericalHarmonics(potentialCoefficientsName, harm);

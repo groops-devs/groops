@@ -32,14 +32,14 @@ This program evaluates estimated satellite parameters and write the result as ac
 class InstrumentAccelerometerEstimatedParameter
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentAccelerometerEstimatedParameter, PARALLEL, "Estimated satellite parameter as accelerometer data", Instrument)
 
 /***********************************************/
 
-void InstrumentAccelerometerEstimatedParameter::run(Config &config)
+void InstrumentAccelerometerEstimatedParameter::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -123,11 +123,11 @@ void InstrumentAccelerometerEstimatedParameter::run(Config &config)
       }
 
       return accArc;
-    });
+    }, comm);
 
     // write result
     // ------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write accelerometer data to file <"<<fileNameOutAccelerometer<<">"<<Log::endl;
       InstrumentFile::write(fileNameOutAccelerometer, arcList);

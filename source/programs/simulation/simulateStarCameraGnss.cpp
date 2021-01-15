@@ -173,14 +173,14 @@ class SimulateStarCameraGnss
   UInt modelBetaDependentOrbitNormal(UInt idEpoch, const AttitudeInfo &attitudeInfo);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SimulateStarCameraGnss, SINGLEPROCESS, "Simulates star camera data for a GNSS satellite based on an attitude model.", Simulation, Gnss, Instrument)
 
 /***********************************************/
 
-void SimulateStarCameraGnss::run(Config &config)
+void SimulateStarCameraGnss::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

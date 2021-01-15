@@ -33,14 +33,14 @@ For further information see \program{GraceL1b2Accelerometer}.
 class GraceL1b2Orbit
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceL1b2Orbit, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Orbit, Instrument)
 
 /***********************************************/
 
-void GraceL1b2Orbit::run(Config &config)
+void GraceL1b2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -100,16 +100,13 @@ void GraceL1b2Orbit::run(Config &config)
     // =============================================
 
     logStatus<<"rotation from TRF to CRF"<<Log::endl;
-    logTimerStart;
-    for(UInt i=0; i<arc.size(); i++)
+    Single::forEach(arc.size(), [&](UInt i)
     {
-      logTimerLoop(i, arc.size());
       const Rotary3d rotation = inverse(earthRotation->rotaryMatrix(arc.at(i).time));
       arc.at(i).position = rotation.rotate(arc.at(i).position);
       if(arc.at(i).velocity.r() > 0)
         arc.at(i).velocity = rotation.rotate(arc.at(i).velocity) + crossProduct(earthRotation->rotaryAxis(arc.at(i).time), arc.at(i).position);
-    }
-    logTimerLoopEnd(arc.size());
+    });
 
     logStatus<<"sort epochs"<<Log::endl;
     arc.sort();

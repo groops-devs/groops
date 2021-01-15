@@ -34,14 +34,14 @@ See also \program{DigitalFilter2FrequencyResponse}.
 class DigitalFilter2ImpulseResponse
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(DigitalFilter2ImpulseResponse, SINGLEPROCESS, "impulse response of a filter cascade", Misc)
 
 /***********************************************/
 
-void DigitalFilter2ImpulseResponse::run(Config& config)
+void DigitalFilter2ImpulseResponse::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

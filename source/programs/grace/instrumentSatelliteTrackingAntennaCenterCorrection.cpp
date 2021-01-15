@@ -64,14 +64,14 @@ an interpolation polynomial of degree \config{interpolationDegree}.
 class InstrumentSatelliteTrackingAntennaCenterCorrection
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentSatelliteTrackingAntennaCenterCorrection, PARALLEL, "compute antenna center correction from orbit configuration", Grace, Instrument)
 
 /***********************************************/
 
-void InstrumentSatelliteTrackingAntennaCenterCorrection::run(Config &config)
+void InstrumentSatelliteTrackingAntennaCenterCorrection::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -206,9 +206,9 @@ void InstrumentSatelliteTrackingAntennaCenterCorrection::run(Config &config)
       return GraceKBandGeometry::antennaCenterCorrection(orbit1File.readArc(arcNo), orbit2File.readArc(arcNo),
                                                          starCamera1File.readArc(arcNo), starCamera2File.readArc(arcNo),
                                                          center1, center2, degree);
-    }); // forEach
+    }, comm); // forEach
 
-    if(Parallel::isMaster() && !outSSTName.empty())
+    if(Parallel::isMaster(comm) && !outSSTName.empty())
     {
       logStatus<<"write tracking data to file <"<<outSSTName<<">"<<Log::endl;
       InstrumentFile::write(outSSTName, arcList);

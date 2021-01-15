@@ -35,14 +35,14 @@ The gravity gradients are given by \configClass{gravityfield}{gravityfieldType} 
 class SimulateGradiometer
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SimulateGradiometer, PARALLEL, "simulate error free gradiometer data", Simulation, Instrument)
 
 /***********************************************/
 
-void SimulateGradiometer::run(Config &config)
+void SimulateGradiometer::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -94,9 +94,9 @@ void SimulateGradiometer::run(Config &config)
         gradiometer.push_back(epoch);
       }
       return gradiometer;
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write gradiometer file <"<<fileNameGradiometer<<">"<<Log::endl;
       InstrumentFile::write(fileNameGradiometer, arcList);

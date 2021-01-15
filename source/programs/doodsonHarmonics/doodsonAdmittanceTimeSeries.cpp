@@ -36,14 +36,14 @@ The \config{outputfileTimeSeries} is an \file{instrument file}{instrument} conta
 class DoodsonAdmittanceTimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(DoodsonAdmittanceTimeSeries, SINGLEPROCESS, "cos/sin multipliers of the major tides.", DoodsonHarmonics, TimeSeries)
 
 /***********************************************/
 
-void DoodsonAdmittanceTimeSeries::run(Config &config)
+void DoodsonAdmittanceTimeSeries::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -68,11 +68,8 @@ void DoodsonAdmittanceTimeSeries::run(Config &config)
     Matrix doodsonMatrix = Doodson::matrix(admit.doodsonMinor); // Matrix with Doodson multiplicators
     Matrix A(times.size(), 1+admit.doodsonMajor.size());
 
-    logTimerStart;
-    for(UInt i=0; i<times.size(); i++)
+    Single::forEach(times.size(), [&](UInt i)
     {
-      logTimerLoop(i,times.size());
-
       Vector thetaf = doodsonMatrix * Doodson::arguments(times.at(i));
       Vector cosMinor(thetaf.rows());
       for(UInt k=0; k<thetaf.rows(); k++)
@@ -82,8 +79,7 @@ void DoodsonAdmittanceTimeSeries::run(Config &config)
       A(i,0) = times.at(i).mjd();
       for(UInt k=0; k<cosMajor.rows(); k++)
         A(i,1+k) = cosMajor(k);
-    }
-    logTimerLoopEnd(times.size());
+    });
 
     // save results
     // ------------

@@ -33,14 +33,14 @@ class GrailCdr2StarCamera
   void readFile(const FileName fileName, StarCameraArc &arc);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GrailCdr2StarCamera, SINGLEPROCESS, "read CDR GRAIL data", Conversion, Instrument)
 
 /***********************************************/
 
-void GrailCdr2StarCamera::run(Config &config)
+void GrailCdr2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

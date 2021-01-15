@@ -33,7 +33,7 @@ The data of \configFile{inputfileInstrument}{instrument} are appended as values 
 class Orbit2BetaPrimeAngle
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Orbit2BetaPrimeAngle, PARALLEL, "Beta prime angle", Orbit, Instrument)
@@ -41,7 +41,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentOrbit2BetaPrimeAngle, Orbit2BetaPrimeAngle, dat
 
 /***********************************************/
 
-void Orbit2BetaPrimeAngle::run(Config &config)
+void Orbit2BetaPrimeAngle::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -95,11 +95,11 @@ void Orbit2BetaPrimeAngle::run(Config &config)
       }
 
       return Arc(orbit.times(), A);
-    });
+    }, comm);
 
     // write results
     // -------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write beta prime angle to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

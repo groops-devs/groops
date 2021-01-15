@@ -36,7 +36,7 @@ See also \program{GroopsAscii2Orbit}.
 class Orbit2GroopsAscii
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Orbit2GroopsAscii, SINGLEPROCESS, "write orbit positions to TUG ASCII format", Conversion, Orbit, Covariance, Instrument)
@@ -44,7 +44,7 @@ GROOPS_RENAMED_PROGRAM(Orbit2Ascii, Orbit2GroopsAscii, date2time(2020, 6, 14))
 
 /***********************************************/
 
-void Orbit2GroopsAscii::run(Config &config)
+void Orbit2GroopsAscii::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -69,10 +69,8 @@ void Orbit2GroopsAscii::run(Config &config)
     file<<"# "<<textLine1<<textDatum<<std::endl;
     file<<"# MJD GPS time [days]        x [m]           y [m]           z [m]        xx [m^2]        yy [m^2]        zz [m^2]        xy [m^2]        xz [m^2]        yz [m^2]"<<std::endl;
 
-    logTimerStart;
-    for(UInt i=0; i<orbit.size(); i++)
+    Single::forEach(orbit.size(), [&](UInt i)
     {
-      logTimerLoop(i, orbit.size());
       const Rotary3d rot      = earthRotation->rotaryMatrix(orbit.at(i).time);
       const Vector3d position = rot.rotate(orbit.at(i).position);
       Tensor3d cv;
@@ -83,8 +81,7 @@ void Orbit2GroopsAscii::run(Config &config)
       file<<position.x()%" %15.4f"s<<position.y()%" %15.4f"s<<position.z()%" %15.4f"s;
       file<<cv.xx()%" %15.8e"s<<cv.yy()%" %15.8e"s<<cv.zz()%" %15.8e"s<<cv.xy()%" %15.8e"s<<cv.xz()%" %15.8e"s<<cv.yz()%" %15.8e"s;
       file<<std::endl;
-    }
-    logTimerLoopEnd(orbit.size());
+    });
   }
   catch(std::exception &e)
   {

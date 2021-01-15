@@ -32,14 +32,14 @@ The resulting rotation matrices rotate from satellite frame to inertial frame.
 class SimulateStarCameraSentinel1
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(SimulateStarCameraSentinel1, PARALLEL, "simulate star camera data for Sentinel 1", Simulation, Instrument)
 
 /***********************************************/
 
-void SimulateStarCameraSentinel1::run(Config &config)
+void SimulateStarCameraSentinel1::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -105,11 +105,11 @@ void SimulateStarCameraSentinel1::run(Config &config)
         arc.push_back(epoch);
       }
       return arc;
-    }); // forEach
+    }, comm); // forEach
 
     // write
     // -----
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write star camera data to file <"<<starCameraName<<">"<<Log::endl;
       InstrumentFile::write(starCameraName, arcList);

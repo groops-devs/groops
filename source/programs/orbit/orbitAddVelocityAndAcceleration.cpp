@@ -31,7 +31,7 @@ The values are saved in one output file which then contains orbit, velocity and 
 class OrbitAddVelocityAndAcceleration
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(OrbitAddVelocityAndAcceleration, PARALLEL, "Compute velocities and accelerations from a given orbit", Orbit, Instrument)
@@ -39,7 +39,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentOrbit2VelocityAcceleration, OrbitAddVelocityAnd
 
 /***********************************************/
 
-void OrbitAddVelocityAndAcceleration::run(Config &config)
+void OrbitAddVelocityAndAcceleration::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -109,11 +109,11 @@ void OrbitAddVelocityAndAcceleration::run(Config &config)
         }
       }
       return orbit;
-    });
+    }, comm);
 
     // write results
     // -------------
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write orbit data to file <"<<fileNameOut<<">"<<Log::endl;
       InstrumentFile::write(fileNameOut, arcList);

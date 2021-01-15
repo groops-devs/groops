@@ -41,7 +41,7 @@ It can be plotted with \program{PlotGraph}.
 class Instrument2Spectrogram
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Instrument2Spectrogram, PARALLEL, "spectrogram using Short Time Fourier Transform", Instrument, Statistics)
@@ -49,7 +49,7 @@ GROOPS_RENAMED_PROGRAM(InstrumentComputeSpectrogram, Instrument2Spectrogram, dat
 
 /***********************************************/
 
-void Instrument2Spectrogram::run(Config &config)
+void Instrument2Spectrogram::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -106,10 +106,10 @@ void Instrument2Spectrogram::run(Config &config)
         for(UInt i=0; i<f.size(); i++)
           spectrogram(idx+i, 2+k) = std::abs(f.at(i))*std::sqrt(sampling/f.size());
       }
-    });
-    Parallel::reduceSum(spectrogram);
+    }, comm);
+    Parallel::reduceSum(spectrogram, 0, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       logStatus<<"write spectrogram <"<<fileNameOut<<">"<<Log::endl;
       writeFileMatrix(fileNameOut, spectrogram);

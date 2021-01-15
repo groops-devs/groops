@@ -84,8 +84,7 @@ ObservationMiscPodIntegral::ObservationMiscPodIntegral(Config &config)
     if(accelerateComputation && keepSatelliteStates)
     {
       accelerateComputation = FALSE;
-      if(Parallel::isMaster())
-        logWarning<<"acceleration of computation is not possible, if keepSatelliteStates is set"<<Log::endl;
+      logWarningOnce<<"acceleration of computation is not possible, if keepSatelliteStates is set"<<Log::endl;
     }
   }
   catch(std::exception &e)

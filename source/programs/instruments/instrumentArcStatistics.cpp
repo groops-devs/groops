@@ -37,14 +37,14 @@ See also \program{InstrumentArcCrossStatistics}, \program{InstrumentStatisticsTi
 class InstrumentArcStatistics
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentArcStatistics, PARALLEL, "Compute statistics for arcs of instrument data", Instrument, TimeSeries, Statistics)
 
 /***********************************************/
 
-void InstrumentArcStatistics::run(Config &config)
+void InstrumentArcStatistics::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -104,9 +104,9 @@ void InstrumentArcStatistics::run(Config &config)
         row(0, 1+i) = func(ignoreNan ? removeNan(slice) : slice);
       }
       return row;
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       // copy rows to matrix
       rows.erase(std::remove_if(rows.begin(), rows.end(), [](const Matrix &A) {return !A.size();}), rows.end());

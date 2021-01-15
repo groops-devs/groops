@@ -32,14 +32,14 @@ followed by the five fundamental arguments in radians.
 class DoodsonArguments2TimeSeries
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(DoodsonArguments2TimeSeries, SINGLEPROCESS, "doodson/fundamental arguments.", DoodsonHarmonics, TimeSeries)
 
 /***********************************************/
 
-void DoodsonArguments2TimeSeries::run(Config &config)
+void DoodsonArguments2TimeSeries::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -56,16 +56,12 @@ void DoodsonArguments2TimeSeries::run(Config &config)
     std::vector<Time> times  = timeSeries->times();
     Matrix A(times.size(), 1+6+5);
 
-    logTimerStart;
-    for(UInt i=0; i<times.size(); i++)
+    Single::forEach(times.size(), [&](UInt i)
     {
-      logTimerLoop(i,times.size());
-
       A(i,0) = times.at(i).mjd();
       copy(Doodson::arguments(times.at(i)).trans(),    A.slice(i,1,1,6));
       copy(Planets::fundamentals(times.at(i)).trans(), A.slice(i,7,1,5));
-    }
-    logTimerLoopEnd(times.size());
+    });
 
     // save results
     // ------------

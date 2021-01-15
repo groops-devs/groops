@@ -42,14 +42,14 @@ private:
  SphericalHarmonics readPotentialCoefficients(const FileName &name, Time &timeStart, Time &timeEnd);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GraceCoefficients2BlockMeanTimeSplines, SINGLEPROCESS, "read GRACE data", Conversion, Grace, PotentialCoefficients)
 
 /***********************************************/
 
-void GraceCoefficients2BlockMeanTimeSplines::run(Config &config)
+void GraceCoefficients2BlockMeanTimeSplines::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

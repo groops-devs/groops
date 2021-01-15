@@ -15,13 +15,15 @@
 static const char *docstring = R"(
 This program runs a list of programs in a \configClass{loop}{loopType}.
 
-If \config{continueAfterError}=\verb|yes| and an error occurs, the remaining programs in the current loop
-are skipped and iteration continues in the next loop. Otherwise an exception is thrown.
-This option is disabled in parallel mode as exceptions cannot be properly caught.
+If \config{continueAfterError}=\verb|yes| and an error occurs, the remaining programs in the current iteration
+are skipped and the loop continues with the next iteration. Otherwise an exception is thrown.
 
-If \config{parallelLoops} is set the loops are distributed to the process nodes, computed in parallel,
-and each program is executed with only one node. Otherwise the loops and programs are executed
-sequentially but programs are using all nodes.
+If this program is excecuted on multpile processing nodes, the iterations can be computed in parallel,
+see \reference{parallelization}{general.parallelization}. The first process serves as load balancer
+and the other processes are assigned to iterations according to \config{processCountPerIteration}.
+For example, running a loop containing three iterations on 13 processes with \config{processCountPerIteration}=\verb|4|,
+runs the three iterations in parallel, with each iteration being assigned four processes.
+With \config{parallelLog}=\verb|yes| all processes write output to screen and the log file.
 )";
 
 /***********************************************/
@@ -36,7 +38,7 @@ sequentially but programs are using all nodes.
 class LoopPrograms
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(LoopPrograms, PARALLEL, "Runs programs mutiple times.", System)
@@ -44,111 +46,132 @@ GROOPS_RENAMED_PROGRAM(LoopProgramme, LoopPrograms, date2time(2020, 6, 3))
 
 /***********************************************/
 
-void LoopPrograms::run(Config &config)
+void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
     LoopPtr       loopPtr;
     Bool          continueAfterError;
-    Bool          parallelLoops;
+    UInt          processCount;
+    Bool          parallelLog;
     ProgramConfig programs;
 
-    renameDeprecatedConfig(config, "programme", "program", date2time(2020, 6, 3));
+    renameDeprecatedConfig(config, "programme",     "program", date2time(2020, 6, 3));
+    renameDeprecatedConfig(config, "parallelLoops", "processCountPerLoopStep", date2time(2020, 12, 28));
+    renameDeprecatedConfig(config, "processCountPerLoopStep", "processCountPerIteration", date2time(2020, 1, 14));
 
-    readConfig(config, "loop",               loopPtr,            Config::MUSTSET,  "",  "subprograms are called for every loop");
-    readConfig(config, "continueAfterError", continueAfterError, Config::DEFAULT,  "0", "continue with next loop after error, otherwise throw exception");
-    readConfig(config, "parallelLoops",      parallelLoops,      Config::DEFAULT,  "0", "parallelize loops instead of programs");
-    readConfig(config, "program",            programs,           Config::OPTIONAL, "", "");
+    readConfig(config, "loop",                     loopPtr,            Config::MUSTSET,  "",  "subprograms are called for every iteration");
+    readConfig(config, "continueAfterError",       continueAfterError, Config::DEFAULT,  "0", "continue with next iteration after error, otherwise throw exception");
+    readConfig(config, "processCountPerIteration", processCount,       Config::DEFAULT,  "0", "0: use all processes for each iteration");
+    readConfig(config, "parallelLog",              parallelLog,        Config::DEFAULT,  "1", "write to screen/log file from all processing nodes in parallelized loops");
+    readConfig(config, "program",                  programs,           Config::OPTIONAL, "",  "");
     if(isCreateSchema(config)) return;
 
     logStatus<<"Run programs"<<Log::endl;
     auto varList = config.getVarList();
 
-    // lambda
-    // ------
-    auto loopRun = [&]()
+    // Every process executes every iteration
+    // --------------------------------------
+    if((processCount == 0) || (Parallel::size(comm) < 3))
     {
-      try
-      {
-        auto varListTmp = varList;
-        programs.run(varListTmp);
-      }
-      catch(std::exception &e)
-      {
-        if(!continueAfterError)
-          throw;
-        logError<<e.what()<<"  continue..."<<Log::endl;
-      }
-    };
-    // -----------------
-
-    if(!parallelLoops || (Parallel::size() < 3))
-    {
-      // single process version
-      // ----------------------
-      if((Parallel::size() > 1) && (continueAfterError))
-      {
-        if(Parallel::isMaster())
-          logWarning<<"continueAfterError does not work on parallel nodes => disabled"<<Log::endl;
-        continueAfterError = FALSE;
-      }
-
       UInt iter = 0;
-      logTimerStart;
+      Log::startTimer();
       while(loopPtr->iteration(varList))
       {
         logStatus<<"=== "<<iter+1<<". loop ==="<<Log::endl;
-        logTimerLoop(iter++, loopPtr->count());
-        loopRun();
+        Log::loopTimer(iter++, loopPtr->count());
+        try
+        {
+          Parallel::broadCastExceptions(comm, [&](Parallel::CommunicatorPtr comm)
+          {
+            auto varListTmp = varList;
+            programs.run(varListTmp, comm);
+          });
+        }
+        catch(std::exception &e)
+        {
+          if(!continueAfterError)
+            throw;
+          if(Parallel::isMaster(comm))
+            logError<<e.what()<<"  continue..."<<Log::endl;
+        }
       }
-      logTimerLoopEnd(loopPtr->count());
+      Log::loopTimerEnd(loopPtr->count());
       return;
     }
 
-    auto comm = Parallel::setDefaultCommunicator(Parallel::selfCommunicator());
-    if(Parallel::isMaster(comm))
+    // Iterations in parallel
+    // ----------------------
+    processCount = std::min(processCount, Parallel::size(comm)-1);
+    UInt rank = Parallel::myRank(comm);
+    auto commLocal = Parallel::splitCommunicator(rank ? (rank-1)/processCount : NULLINDEX, rank, comm); // processes of an iteration
+    auto commLoop  = Parallel::splitCommunicator(((rank == 0) || ((rank-1)%processCount == 0)) ?  0 : NULLINDEX, rank, comm); // 'main' processes of all iterations
+
+    if(commLoop && Parallel::isMaster(commLoop))
     {
-      // parallel version: master node
-      // -----------------------------
+      // parallel version: main node
+      // ---------------------------
       UInt iter = 0;
-      logTimerStart;
+      Log::startTimer();
       while(loopPtr->iteration(varList))
       {
-        logTimerLoop(iter, loopPtr->count());
+        Log::loopTimer(iter, loopPtr->count(), Parallel::size(commLoop)-1);
         UInt process;
-        Parallel::receive(process, NULLINDEX, comm); // which process needs work?
-        Parallel::send(iter++, process, comm);       // send new loop number to be computed at process
+        Parallel::receive(process, NULLINDEX, commLoop); // which process needs work?
+        Parallel::send(iter++, process, commLoop);       // send new loop number to be computed at process
       }
       // send to all processes the end signal (NULLINDEX)
-      for(UInt i=1; i<Parallel::size(comm); i++)
+      for(UInt i=1; i<Parallel::size(commLoop); i++)
       {
         UInt process;
-        Parallel::receive(process, NULLINDEX, comm); // which process needs work?
-        Parallel::send(NULLINDEX, process, comm);    // end signal
+        Parallel::receive(process, NULLINDEX, commLoop); // which process needs work?
+        Parallel::send(NULLINDEX, process, commLoop);    // end signal
       }
       Parallel::barrier(comm);
-      logTimerLoopEnd(loopPtr->count());
+      Log::loopTimerEnd(loopPtr->count());
     }
     else
     {
       // clients
       // -------
-      Parallel::send(Parallel::myRank(comm), 0, comm);
       UInt k=0;
       for(;;)
       {
         UInt i;
-        Parallel::receive(i, 0, comm);
-        if(i==NULLINDEX)
+        if(Parallel::isMaster(commLocal))
+        {
+          Parallel::send(Parallel::myRank(commLoop), 0, commLoop);
+          Parallel::receive(i, 0, commLoop);
+        }
+        Parallel::broadCast(i, 0, commLocal);
+        if(i == NULLINDEX) // end signal?
           break;
         for(; k<=i; k++) // step to current loop number
           loopPtr->iteration(varList);
-        loopRun();
-        Parallel::send(Parallel::myRank(comm), 0, comm);
+
+        Bool outputOld = Log::enableOutput(parallelLog && Parallel::isMaster(commLocal));
+        try
+        {
+          Parallel::broadCastExceptions(commLocal, [&](Parallel::CommunicatorPtr commLocal)
+          {
+            auto varListTmp = varList;
+            programs.run(varListTmp, commLocal);
+          });
+        }
+        catch(std::exception &e)
+        {
+          if(!continueAfterError)
+          {
+            Log::enableOutput(outputOld);
+            throw;
+          }
+          if(Parallel::isMaster(commLocal))
+            logError<<e.what()<<"  continue..."<<Log::endl;
+        }
+        Log::enableOutput(outputOld);
       }
       Parallel::barrier(comm);
-    }
-    Parallel::setDefaultCommunicator(comm);
+    } // clients
   }
   catch(std::exception &e)
   {

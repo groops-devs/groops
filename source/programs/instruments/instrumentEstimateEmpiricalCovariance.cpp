@@ -46,14 +46,14 @@ To get a reliable estimate, \program{InstrumentDetrend} should be called first.
 class InstrumentEstimateEmpiricalCovariance
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(InstrumentEstimateEmpiricalCovariance, PARALLEL, "Estimate the empirical covariance matrix of an instrument file", Instrument, Covariance)
 
 /***********************************************/
 
-void InstrumentEstimateEmpiricalCovariance::run(Config &config)
+void InstrumentEstimateEmpiricalCovariance::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -82,13 +82,13 @@ void InstrumentEstimateEmpiricalCovariance::run(Config &config)
       rankKUpdate(1, data.column(startData+1, dim), covarianceMatrix.at(0)); // x_{t-h}*x_{t}^T
       for(UInt h=1; h<fileNameOut.size(); h++)
         matMult(1., data.slice(0, startData+1, data.rows()-h, dim).trans(), data.slice(h, startData+1, data.rows()-h, dim), covarianceMatrix.at(h)); // x_{t-h}*x_{t}^T
-    }); // forEach
+    }, comm); // forEach
 
-    Parallel::reduceSum(countEpochs);
+    Parallel::reduceSum(countEpochs, 0, comm);
     for(UInt h=0; h<covarianceMatrix.size(); h++)
-      Parallel::reduceSum(covarianceMatrix.at(h));
+      Parallel::reduceSum(covarianceMatrix.at(h), 0, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       for(UInt h=0; h<fileNameOut.size(); h++)
       {

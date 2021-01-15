@@ -31,14 +31,14 @@ class GrailCdr2Orbit
   void readFile(const FileName fileName, OrbitArc &arc);
 
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(GrailCdr2Orbit, SINGLEPROCESS, "read CDR GRAIL data", Conversion, Orbit, Instrument)
 
 /***********************************************/
 
-void GrailCdr2Orbit::run(Config &config)
+void GrailCdr2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {

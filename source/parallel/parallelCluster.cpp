@@ -24,66 +24,6 @@
 namespace Parallel
 {
 
-class Communicator
-{
-public:
-  MPI_Comm comm;
-
-  Communicator(const MPI_Comm &comm_=MPI_COMM_WORLD) : comm(comm_) {}
- ~Communicator()
-  {
-    if((comm != MPI_COMM_WORLD) && (comm != MPI_COMM_SELF))
-    {
-      MPI_Group group;
-      MPI_Comm_group(comm, &group);
-      MPI_Comm_free(&comm);
-      MPI_Group_free(&group);
-    }
-  }
-};
-
-static CommunicatorPtr commDefault;
-
-/***********************************************/
-/***********************************************/
-
-void init(int argc, char *argv[])
-{
-  try
-  {
-    MPI_Init(&argc, &argv);
-    MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_RETURN);
-    commDefault = globalCommunicator();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-void finalize()
-{
-  MPI_Finalize();
-}
-
-/***********************************************/
-
-void abort()
-{
-  MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-}
-
-
-/***********************************************/
-/***********************************************/
-
-inline MPI_Comm getComm(CommunicatorPtr comm)
-{
-  return (comm != nullptr) ? comm->comm : commDefault->comm;
-}
-
 /***********************************************/
 
 inline void check(int errorcode)
@@ -93,35 +33,280 @@ inline void check(int errorcode)
     int  resultlen;
     char errorStr[MPI_MAX_ERROR_STRING];
     MPI_Error_string(errorcode, errorStr, &resultlen);
-    throw(Exception("MPI Error: "+std::string(errorStr,resultlen)));
+    throw(Exception("MPI Error: "+std::string(errorStr, resultlen)));
   }
 }
 
 /***********************************************/
 /***********************************************/
 
-CommunicatorPtr globalCommunicator()
+class Mpi
 {
-  return std::make_shared<Communicator>(MPI_COMM_WORLD);
-}
+public:
+  Mpi(int argc, char *argv[])
+  {
+    MPI_Init(&argc, &argv);
+  }
+
+ ~Mpi()
+  {
+    MPI_Finalize();
+  }
+};
+
+
+/***********************************************/
+/***********************************************/
+
+// Extra channels to communicate log messages and exceptions
+class HiddenChannel
+{
+public:
+  MPI_Comm    comm;
+  MPI_Request request;
+
+  HiddenChannel(MPI_Comm communicator)
+  {
+    try
+    {
+      request = MPI_REQUEST_NULL;
+      check(MPI_Comm_dup(communicator, &comm));
+    }
+    catch(std::exception &e)
+    {
+      GROOPS_RETHROW(e)
+    }
+  }
+
+  virtual ~HiddenChannel()
+  {
+    int completed;
+    check(MPI_Request_get_status(request, &completed, MPI_STATUS_IGNORE));
+    if(!completed)
+    {
+      check(MPI_Cancel(&request));
+      check(MPI_Request_free(&request));
+    }
+    check(MPI_Comm_free(&comm));
+  }
+
+  virtual void recievedSignal() = 0;
+};
+
+typedef std::shared_ptr<HiddenChannel> HiddenChannelPtr;
+
+/***********************************************/
+/***********************************************/
+
+class LogChannel : public HiddenChannel
+{
+  int                      rank, sendRank;
+  unsigned int             type, count;
+  std::vector<char>        data;
+  std::vector<MPI_Request> sendRequests;
+  std::function<void(UInt type, const std::string &str)> recieve;
+
+public:
+  LogChannel(MPI_Comm communicator, std::function<void(UInt type, const std::string &str)> recv);
+ ~LogChannel();
+  void recievedSignal() override;
+  void sendSignal(UInt type, const std::string &str);
+};
+
+typedef std::shared_ptr<LogChannel> LogChannelPtr;
 
 /***********************************************/
 
-CommunicatorPtr defaultCommunicator()
-{
-  return commDefault;
-}
-
-/***********************************************/
-
-CommunicatorPtr setDefaultCommunicator(CommunicatorPtr comm)
+LogChannel::LogChannel(MPI_Comm communicator, std::function<void(UInt type, const std::string &str)> recv) : HiddenChannel(communicator), sendRequests(4, MPI_REQUEST_NULL), recieve(recv)
 {
   try
   {
-    if(comm == nullptr)
-      throw(Exception("null pointer"));
-    std::swap(commDefault, comm);
+    check(MPI_Comm_rank(comm, &rank));
+    if(rank == 0)
+      check(MPI_Irecv(&sendRank, 1, MPI_INT, MPI_ANY_SOURCE, 111, comm, &request));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+LogChannel::~LogChannel()
+{
+  for(MPI_Request sendRequest : sendRequests)
+  {
+    int completed;
+    check(MPI_Request_get_status(sendRequest, &completed, MPI_STATUS_IGNORE));
+    if(!completed)
+    {
+      check(MPI_Cancel(&sendRequest));
+      check(MPI_Request_free(&sendRequest));
+    }
+  }
+}
+
+/***********************************************/
+
+void LogChannel::recievedSignal()
+{
+  try
+  {
+    int completed = 0;
+    do
+    {
+      check(MPI_Recv(&type,  1, MPI_UNSIGNED, sendRank, 222, comm, MPI_STATUS_IGNORE));
+      check(MPI_Recv(&count, 1, MPI_UNSIGNED, sendRank, 333, comm, MPI_STATUS_IGNORE));
+      data.resize(count);
+      if(count)
+        check(MPI_Recv(data.data(), count, MPI_CHAR, sendRank, 444, comm, MPI_STATUS_IGNORE));
+      recieve(static_cast<UInt>(type), std::string(data.data(), count));
+      data.clear();
+      check(MPI_Irecv(&sendRank, 1, MPI_INT, MPI_ANY_SOURCE, 111, comm, &request));
+      check(MPI_Test(&request, &completed, MPI_STATUS_IGNORE));
+    }
+    while(completed);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void LogChannel::sendSignal(UInt type_, const std::string &str)
+{
+  try
+  {
+    if(rank == 0)
+    {
+      recieve(type_, str);
+      return;
+    }
+
+    // wait for pending sends
+    check(MPI_Waitall(sendRequests.size(), sendRequests.data(), MPI_STATUSES_IGNORE));
+
+    type  = static_cast<unsigned int>(type_);
+    count = str.size();
+    data.resize(count);
+    std::copy(str.begin(), str.end(), data.begin());
+
+    check(MPI_Isend(&rank,  1, MPI_INT,      0, 111, comm, &sendRequests.at(0)));
+    check(MPI_Isend(&type,  1, MPI_UNSIGNED, 0, 222, comm, &sendRequests.at(1)));
+    check(MPI_Isend(&count, 1, MPI_UNSIGNED, 0, 333, comm, &sendRequests.at(2)));
+    if(count)
+      check(MPI_Isend(data.data(), count, MPI_CHAR, 0, 444, comm, &sendRequests.at(3)));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+class Communicator
+{
+public:
+  std::shared_ptr<Mpi> mpi;
+  MPI_Comm             comm;
+  Bool                 completed; // Not completed communication due to exceptions, causes memmory leaks
+  std::vector<HiddenChannelPtr> channels;
+
+  Communicator(CommunicatorPtr commParent, MPI_Comm comm_) : comm(comm_), completed(TRUE)
+  {
+    if(commParent)
+    {
+      mpi      = commParent->mpi;
+      channels = commParent->channels;
+    }
+  }
+
+ ~Communicator()
+  {
+   if((comm != MPI_COMM_WORLD) && (comm != MPI_COMM_SELF) && (comm != MPI_COMM_NULL)/* && completed*/)
+     MPI_Comm_free(&comm);
+  }
+
+  void wait(MPI_Request &request);
+};
+
+/***********************************************/
+
+inline void Communicator::wait(MPI_Request &request)
+{
+  try
+  {
+    if(request == MPI_REQUEST_NULL)
+      return;
+
+    // we wait until either our request or extra requests finished
+    this->completed = FALSE;
+    do
+    {
+      // First MPI_REQUEST_NULL to workaround Bug in MPI-3.3:
+      // https://github.com/pmodels/mpich/commit/0f7be7196cc05bf0c908761e148628e88d635190
+      std::vector<MPI_Request> requests({MPI_REQUEST_NULL, request});
+      for(auto &channel : channels)
+        if(channel->request != MPI_REQUEST_NULL)
+          requests.push_back(channel->request);
+
+      int index = -1;
+      check(MPI_Waitany(requests.size(), requests.data(), &index, MPI_STATUS_IGNORE));
+      UInt idx = 1;
+      request = requests.at(idx++);
+      for(auto &channel : channels)
+        if(channel->request != MPI_REQUEST_NULL)
+        {
+          channel->request = requests.at(idx++);
+          int completed = 0;
+          check(MPI_Test(&channel->request, &completed, MPI_STATUS_IGNORE));
+          if(completed)
+            channel->recievedSignal();
+        }
+      int completed = 0;
+      check(MPI_Test(&request, &completed, MPI_STATUS_IGNORE));
+      this->completed = completed;
+    }
+    while(!this->completed);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+CommunicatorPtr init(int argc, char *argv[])
+{
+  try
+  {
+    auto mpi = std::make_shared<Mpi>(argc, argv);
+    CommunicatorPtr comm = std::make_shared<Communicator>(nullptr, MPI_COMM_WORLD);
+    comm->mpi = mpi;
     return comm;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+std::function<void(UInt type, const std::string &str)> addChannel(std::function<void(UInt type, const std::string &str)> recieve, CommunicatorPtr comm)
+{
+  try
+  {
+    LogChannelPtr channel = std::make_shared<LogChannel>(MPI_COMM_WORLD, recieve);
+    comm->channels.push_back(channel);
+    return std::bind(&LogChannel::sendSignal, channel.get(), std::placeholders::_1, std::placeholders::_2);
   }
   catch(std::exception &e)
   {
@@ -135,27 +320,11 @@ CommunicatorPtr splitCommunicator(UInt color, UInt key, CommunicatorPtr comm)
 {
   try
   {
-    CommunicatorPtr commNew = std::make_shared<Communicator>(MPI_COMM_WORLD);
-    check(MPI_Comm_split(getComm(comm), ((color==NULLINDEX) ? (MPI_UNDEFINED) : (color)), key, &commNew->comm));
+    MPI_Comm commNew;
+    check(MPI_Comm_split(comm->comm, ((color==NULLINDEX) ? (MPI_UNDEFINED) : (color)), key, &commNew));
     if(color==NULLINDEX)
       return nullptr;
-    return commNew;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-CommunicatorPtr selfCommunicator()
-{
-  try
-  {
-    CommunicatorPtr commNew = std::make_shared<Communicator>();
-    commNew->comm = MPI_COMM_SELF;
-    return commNew;
+    return std::make_shared<Communicator>(comm, commNew);
   }
   catch(std::exception &e)
   {
@@ -169,24 +338,38 @@ CommunicatorPtr createCommunicator(std::vector<UInt> ranks, CommunicatorPtr comm
 {
   try
   {
-    CommunicatorPtr commNew = std::make_shared<Communicator>();
     std::vector<int> mpiRanks(ranks.size());
     for(UInt i=0; i<ranks.size(); i++)
       mpiRanks.at(i) = static_cast<int>(ranks.at(i));
 
     MPI_Group group, newgroup;
-    check(MPI_Comm_group(getComm(comm), &group));
+    check(MPI_Comm_group(comm->comm, &group));
     check(MPI_Group_incl(group, mpiRanks.size(), mpiRanks.data(), &newgroup));
+    MPI_Comm commNew;
 #if MPI_VERSION >= 3
-    check(MPI_Comm_create_group(getComm(comm), newgroup, 99, &commNew->comm));
+    check(MPI_Comm_create_group(comm->comm, newgroup, 99, &commNew));
 #else
-    check(MPI_Comm_create(getComm(comm), newgroup, &commNew->comm));
+    check(MPI_Comm_create(comm->comm, newgroup, &commNew));
 #endif
     check(MPI_Group_free(&group));
     check(MPI_Group_free(&newgroup));
-    if(commNew->comm == MPI_COMM_NULL)
-        return nullptr;
-    return commNew;
+    if(commNew == MPI_COMM_NULL)
+      return nullptr;
+    return std::make_shared<Communicator>(comm, commNew);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+CommunicatorPtr selfCommunicator()
+{
+  try
+  {
+    return std::make_shared<Communicator>(nullptr, MPI_COMM_SELF);
   }
   catch(std::exception &e)
   {
@@ -200,7 +383,7 @@ CommunicatorPtr createCommunicator(std::vector<UInt> ranks, CommunicatorPtr comm
 UInt myRank(CommunicatorPtr comm)
 {
   int rank;
-  check(MPI_Comm_rank(getComm(comm), &rank));
+  check(MPI_Comm_rank(comm->comm, &rank));
   return static_cast<UInt>(rank);
 }
 
@@ -209,7 +392,7 @@ UInt myRank(CommunicatorPtr comm)
 UInt size(CommunicatorPtr comm)
 {
   int size;
-  check(MPI_Comm_size(getComm(comm), &size));
+  check(MPI_Comm_size(comm->comm, &size));
   return static_cast<UInt>(size);
 }
 
@@ -219,7 +402,9 @@ void barrier(CommunicatorPtr comm)
 {
   try
   {
-    check(MPI_Barrier(getComm(comm)));
+    MPI_Request request;
+    check(MPI_Ibarrier(comm->comm, &request));
+    comm->wait(request);
   }
   catch(std::exception &e)
   {
@@ -228,13 +413,219 @@ void barrier(CommunicatorPtr comm)
 }
 
 /***********************************************/
+/***********************************************/
+
+class BroadCastetException
+{
+public:
+  std::string message;
+  BroadCastetException(const std::string &msg)  : message(msg) {}
+};
+
+/***********************************************/
+
+class ErrorChannel : public HiddenChannel
+{
+  int code;
+
+public:
+  ErrorChannel(MPI_Comm communicator);
+  void recievedSignal() override;
+  void broadCastException(const std::string &msg);
+  void syncronizeAndThrowException(const std::string &msg);
+};
+
+typedef std::shared_ptr<ErrorChannel> ErrorChannelPtr;
+
+/***********************************************/
+
+ErrorChannel::ErrorChannel(MPI_Comm communicator)  : HiddenChannel(communicator), code(0)
+{
+  try
+  {
+    check(MPI_Irecv(&code, 1, MPI_INT, MPI_ANY_SOURCE, 666, comm, &request));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void ErrorChannel::recievedSignal()
+{
+  try
+  {
+    check(MPI_Barrier(comm));
+    syncronizeAndThrowException(std::string());
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void ErrorChannel::broadCastException(const std::string &msg)
+{
+  try
+  {
+    int rank, size;
+    check(MPI_Comm_rank(comm, &rank));
+    check(MPI_Comm_size(comm, &size));
+
+    // send signal to all other processes
+    int code;
+    std::vector<MPI_Request> requests(size, MPI_REQUEST_NULL);
+    for(int i=0; i<size; i++)
+      if(i != rank)
+        check(MPI_Issend(&code, 1, MPI_INT, i, 666, comm, &requests.at(i)));
+
+    // wait for all processed (corresponding barrier() in recievedSignal())
+    check(MPI_Barrier(comm));
+
+    // cleanup all pending requests
+    for(UInt i=0; i<requests.size(); i++)
+      if(requests.at(i) != MPI_REQUEST_NULL)
+      {
+        int completed = 0;
+        check(MPI_Test(&requests.at(i), &completed, MPI_STATUS_IGNORE));
+        if(completed)
+          continue;
+        check(MPI_Cancel(&requests.at(i)));
+        check(MPI_Request_free(&requests.at(i)));
+      }
+
+    syncronizeAndThrowException(msg);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void ErrorChannel::syncronizeAndThrowException(const std::string &msg)
+{
+  try
+  {
+    // complete remaining incoming messages
+    int completed = 1;
+    check(MPI_Test(&request, &completed, MPI_STATUS_IGNORE));
+    while(completed)
+    {
+      check(MPI_Irecv(&code, 1, MPI_INT, MPI_ANY_SOURCE, 666, comm, &request));
+      check(MPI_Test(&request, &completed, MPI_STATUS_IGNORE));
+    }
+
+    int rank, size;
+    check(MPI_Comm_rank(comm, &rank));
+    check(MPI_Comm_size(comm, &size));
+
+    // collect and broadCast all messages
+    std::stringstream completeMsg;
+    for(int process=0; process<size; process++)
+    {
+      unsigned int count = msg.size();
+      check(MPI_Bcast(&count, 1, MPI_UNSIGNED, process, comm));
+      if(!count)
+        continue;
+      std::vector<char> data(count);
+      std::copy(msg.begin(), msg.end(), data.begin());
+      check(MPI_Bcast(data.data(), count, MPI_CHAR, process, comm));
+      completeMsg<<"in process "<<process<<" of "<<size<<":"<<std::endl<<std::string(data.data(), count)<<std::endl;
+    }
+    throw(BroadCastetException(completeMsg.str()));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void broadCastExceptions(CommunicatorPtr commOld, std::function<void(CommunicatorPtr)> func)
+{
+  if(size(commOld) == 1)
+  {
+    func(commOld);
+    return;
+  }
+
+  try // distributed exceptions
+  {
+    // duplicate communicator and setup error channel
+    MPI_Comm commDuplicate;
+    check(MPI_Comm_dup(commOld->comm, &commDuplicate));
+    CommunicatorPtr comm = std::make_shared<Communicator>(commOld, commDuplicate);
+    ErrorChannelPtr errorChannel = std::make_shared<ErrorChannel>(commDuplicate);
+    comm->channels.push_back(errorChannel);
+
+    try // local exceptions
+    {
+      func(comm);
+      barrier(comm);
+    }
+    catch(BroadCastetException &e)
+    {
+      throw;
+    }
+    catch(std::exception &e)
+    {
+      errorChannel->broadCastException(e.what());
+    }
+    catch(...)
+    {
+      errorChannel->broadCastException("Unknown ERROR");
+    }
+  }
+  catch(BroadCastetException &e)
+  {
+    throw(Exception(e.message));
+  }
+  catch(std::exception &e)
+  {
+    std::cerr<<"\033[1;31m"<<"****** Fatal error ******"<<std::endl;
+    std::cerr<<e.what()<<"\033[0m"<<std::endl;
+    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    exit(EXIT_FAILURE);
+  }
+  catch(...)
+  {
+    std::cerr<<"\033[1;31m"<<"****** Fatal unknown error ******"<<"\033[0m"<<std::endl;
+    MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    exit(EXIT_FAILURE);
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+inline void send(const void *buffer, UInt count, MPI_Datatype datatype, UInt process, CommunicatorPtr comm)
+{
+  try
+  {
+    MPI_Request request;
+    check(MPI_Isend(buffer, count, datatype, process, 17, comm->comm, &request));
+    comm->wait(request);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
 /***********************************************/
 
 void send(const Byte *x, UInt size, UInt process, CommunicatorPtr comm)
 {
   try
   {
-    check(MPI_Send(x, size, MPI_CHAR, process, 11, getComm(comm)));
+    send(x, size, MPI_CHAR, process, comm);
   }
   catch(std::exception &e)
   {
@@ -242,36 +633,6 @@ void send(const Byte *x, UInt size, UInt process, CommunicatorPtr comm)
   }
 }
 
-/***********************************************/
-
-void receive(Byte *x, UInt size, UInt process, CommunicatorPtr comm)
-{
-  try
-  {
-    MPI_Status status;
-    check(MPI_Recv(x, size, MPI_CHAR, ((process!=NULLINDEX) ? process : MPI_ANY_SOURCE), 11, getComm(comm), &status));
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-void broadCast(Byte *x, UInt size, UInt process, CommunicatorPtr comm)
-{
-  try
-  {
-    check(MPI_Bcast(x, size, MPI_CHAR, process, getComm(comm)));
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
 /***********************************************/
 
 template<> void send(const UInt &x, UInt process, CommunicatorPtr comm)
@@ -279,7 +640,7 @@ template<> void send(const UInt &x, UInt process, CommunicatorPtr comm)
   try
   {
     unsigned int y = static_cast<unsigned int>(x);
-    check(MPI_Send(&y, 1, MPI_UNSIGNED, process, 1, getComm(comm)));
+    send(&y, 1, MPI_UNSIGNED, process, comm);
   }
   catch(std::exception &e)
   {
@@ -293,7 +654,7 @@ template<> void send(const Double &x, UInt process, CommunicatorPtr comm)
 {
   try
   {
-    check(MPI_Send(&x, 1, MPI_DOUBLE, process, 2, getComm(comm)));
+    send(&x, 1, MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -308,7 +669,7 @@ template<> void send(const Bool &x, UInt process, CommunicatorPtr comm)
   try
   {
     unsigned int y = static_cast<unsigned int>(x);
-    check(MPI_Send(&y, 1, MPI_UNSIGNED, process, 2, getComm(comm)));
+    send(&y, 1, MPI_UNSIGNED, process, comm);
   }
   catch(std::exception &e)
   {
@@ -322,7 +683,7 @@ template<> void send(const Angle &x, UInt process, CommunicatorPtr comm)
 {
   try
   {
-    check(MPI_Send(&x, 1, MPI_DOUBLE, process, 2, getComm(comm)));
+    send(&x, 1, MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -352,7 +713,7 @@ template<> void send(const GnssType &x, UInt process, CommunicatorPtr comm)
   try
   {
     unsigned int y = static_cast<unsigned int>(x.type);
-    check(MPI_Send(&y, 1, MPI_UNSIGNED, process, 1, getComm(comm)));
+    send(&y, 1, MPI_UNSIGNED, process, comm);
   }
   catch(std::exception &e)
   {
@@ -366,7 +727,7 @@ template<> void send(const Vector3d &x, UInt process, CommunicatorPtr comm)
 {
   try
   {
-    check(MPI_Send(x.vector().field(), 3, MPI_DOUBLE, process, 3, getComm(comm)));
+    send(x.vector().field(), 3, MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -382,7 +743,7 @@ template<> void send(const Vector &x, UInt process, CommunicatorPtr comm)
   {
     send(x.rows(), process, comm);
     if(x.size()!=0)
-      check(MPI_Send(x.field(), x.size(), MPI_DOUBLE, process, 4, getComm(comm)));
+      send(x.field(), x.size(), MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -403,7 +764,7 @@ template<> void send(const Matrix &x, UInt process, CommunicatorPtr comm)
     send(type,        process, comm);
     send(upper,       process, comm);
     if(x.size()!=0)
-      check(MPI_Send(x.field(), x.size(), MPI_DOUBLE, process, 4, getComm(comm)));
+      send(x.field(), x.size(), MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -414,13 +775,42 @@ template<> void send(const Matrix &x, UInt process, CommunicatorPtr comm)
 /***********************************************/
 /***********************************************/
 
+inline void receive(void *buffer, UInt count, MPI_Datatype datatype, UInt process, CommunicatorPtr comm)
+{
+  try
+  {
+    MPI_Request request;
+    check(MPI_Irecv(buffer, count, datatype, ((process!=NULLINDEX) ? process : MPI_ANY_SOURCE), 17, comm->comm, &request));
+    comm->wait(request);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void receive(Byte *x, UInt size, UInt process, CommunicatorPtr comm)
+{
+  try
+  {
+    receive(x, size, MPI_CHAR, process, comm);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
 template<> void receive(UInt &x, UInt process, CommunicatorPtr comm)
 {
   try
   {
     unsigned int y;
-    MPI_Status status;
-    check(MPI_Recv(&y, 1, MPI_UNSIGNED, ((process!=NULLINDEX) ? process : MPI_ANY_SOURCE), 1, getComm(comm), &status));
+    receive(&y, 1, MPI_UNSIGNED, process, comm);
     x = static_cast<UInt>(y);
   }
   catch(std::exception &e)
@@ -435,8 +825,7 @@ template<> void receive(Double &x, UInt process, CommunicatorPtr comm)
 {
   try
   {
-    MPI_Status status;
-    check(MPI_Recv(&x, 1, MPI_DOUBLE, ((process!=NULLINDEX) ? process : MPI_ANY_SOURCE), 2, getComm(comm), &status));
+    receive(&x, 1, MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -451,8 +840,7 @@ template<> void receive(Bool &x, UInt process, CommunicatorPtr comm)
   try
   {
     unsigned int y;
-    MPI_Status status;
-    check(MPI_Recv(&y, 1, MPI_UNSIGNED, ((process!=NULLINDEX) ? process : MPI_ANY_SOURCE), 1, getComm(comm), &status));
+    receive(&y, 1, MPI_UNSIGNED, process, comm);
     x = static_cast<Bool>(y);
   }
   catch(std::exception &e)
@@ -467,8 +855,7 @@ template<> void receive(Angle &x, UInt process, CommunicatorPtr comm)
 {
   try
   {
-    MPI_Status status;
-    check(MPI_Recv(&x, 1, MPI_DOUBLE, ((process!=NULLINDEX) ? process : MPI_ANY_SOURCE), 2, getComm(comm), &status));
+    receive(&x, 1, MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -500,8 +887,7 @@ template<> void receive(Vector3d &x, UInt process, CommunicatorPtr comm)
   try
   {
     Double v[3];
-    MPI_Status status;
-    check(MPI_Recv(v, 3, MPI_DOUBLE, ((process!=NULLINDEX) ? process : MPI_ANY_SOURCE), 3, getComm(comm), &status));
+    receive(v, 3, MPI_DOUBLE, process, comm);
     x.x() = v[0];
     x.y() = v[1];
     x.z() = v[2];
@@ -518,12 +904,11 @@ template<> void receive(Vector &x, UInt process, CommunicatorPtr comm)
 {
   try
   {
-    MPI_Status status;
     UInt rows;
     receive(rows, process, comm);
     x = Vector(rows);
     if(x.size()!=0)
-      check(MPI_Recv(x.field(), x.size(), MPI_DOUBLE, ((process!=NULLINDEX) ? process : MPI_ANY_SOURCE), 4, getComm(comm), &status));
+      receive(x.field(), x.size(), MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -537,7 +922,6 @@ template<> void receive(Matrix &x, UInt process, CommunicatorPtr comm)
 {
   try
   {
-    MPI_Status status;
     UInt rows, columns;
     UInt  type, upper;
     receive(rows,    process, comm);
@@ -547,7 +931,7 @@ template<> void receive(Matrix &x, UInt process, CommunicatorPtr comm)
     x = Matrix(rows, columns);
     x.setType(static_cast<Matrix::Type>(type), (upper) ? Matrix::UPPER : Matrix::LOWER);
     if(x.size()!=0)
-      check(MPI_Recv(x.field(), x.size(), MPI_DOUBLE, ((process!=NULLINDEX) ? process : MPI_ANY_SOURCE), 4, getComm(comm), &status));
+      receive(x.field(), x.size(), MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -562,8 +946,7 @@ template<> void receive(GnssType &x, UInt process, CommunicatorPtr comm)
   try
   {
     unsigned int y;
-    MPI_Status status;
-    check(MPI_Recv(&y, 1, MPI_UNSIGNED, ((process!=NULLINDEX) ? process : MPI_ANY_SOURCE), 1, getComm(comm), &status));
+    receive(&y, 1, MPI_UNSIGNED, process, comm);
     x = GnssType(static_cast<UInt>(y));
   }
   catch(std::exception &e)
@@ -575,12 +958,42 @@ template<> void receive(GnssType &x, UInt process, CommunicatorPtr comm)
 /***********************************************/
 /***********************************************/
 
+inline void broadCast(void *buffer, UInt count, MPI_Datatype datatype, UInt process, CommunicatorPtr comm)
+{
+  try
+  {
+    MPI_Request request;
+    check(MPI_Ibcast(buffer, count, datatype, process, comm->comm, &request));
+    comm->wait(request);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void broadCast(Byte *x, UInt size, UInt process, CommunicatorPtr comm)
+{
+  try
+  {
+    broadCast(x, size, MPI_CHAR, process, comm);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
 template<> void broadCast(UInt &x, UInt process, CommunicatorPtr comm)
 {
   try
   {
     unsigned int y = static_cast<unsigned int>(x);
-    check(MPI_Bcast(&y, 1, MPI_UNSIGNED, process, getComm(comm)));
+    broadCast(&y, 1, MPI_UNSIGNED, process, comm);
     x = static_cast<UInt>(y);
   }
   catch(std::exception &e)
@@ -595,7 +1008,7 @@ template<> void broadCast(Double &x, UInt process, CommunicatorPtr comm)
 {
   try
   {
-    check(MPI_Bcast(&x, 1, MPI_DOUBLE, process, getComm(comm)));
+    broadCast(&x, 1, MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -610,7 +1023,7 @@ template<> void broadCast(Bool &x, UInt process, CommunicatorPtr comm)
   try
   {
     unsigned int y = static_cast<unsigned int>(x);
-    check(MPI_Bcast(&y, 1, MPI_UNSIGNED, process, getComm(comm)));
+    broadCast(&y, 1, MPI_UNSIGNED, process, comm);
     x = static_cast<Bool>(y);
   }
   catch(std::exception &e)
@@ -625,7 +1038,7 @@ template<> void broadCast(Angle &x, UInt process, CommunicatorPtr comm)
 {
   try
   {
-    check(MPI_Bcast(&x, 1, MPI_DOUBLE, process, getComm(comm)));
+    broadCast(&x, 1, MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -658,7 +1071,7 @@ template<> void broadCast(GnssType &x, UInt process, CommunicatorPtr comm)
   try
   {
     unsigned int y = static_cast<unsigned int>(x.type);
-    check(MPI_Bcast(&y, 1, MPI_UNSIGNED, process, getComm(comm)));
+    broadCast(&y, 1, MPI_UNSIGNED, process, comm);
     x = GnssType(static_cast<UInt>(y));
   }
   catch(std::exception &e)
@@ -678,7 +1091,7 @@ template<> void broadCast(Vector &x, UInt process, CommunicatorPtr comm)
     if(x.rows() != rows)
       x = Vector(rows);
     if(x.size()!=0)
-      check(MPI_Bcast(x.field(), x.size(), MPI_DOUBLE, process, getComm(comm)));
+      broadCast(x.field(), x.size(), MPI_DOUBLE, process, comm);
   }
   catch(std::exception &e)
   {
@@ -711,7 +1124,7 @@ template<> void broadCast(Matrix &x, UInt process, CommunicatorPtr comm)
     while(index<x.size())
     {
       const UInt size = std::min(x.size()-index, BLOCKSIZE);
-      check(MPI_Bcast(x.field()+index, size, MPI_DOUBLE, process, getComm(comm)));
+      broadCast(x.field()+index, size, MPI_DOUBLE, process, comm);
       index += size;
     }
   }
@@ -724,6 +1137,23 @@ template<> void broadCast(Matrix &x, UInt process, CommunicatorPtr comm)
 /***********************************************/
 /***********************************************/
 
+inline void reduce(const void *sendbuf, void *recvbuf, UInt count, MPI_Datatype datatype,
+                   MPI_Op op, UInt process, CommunicatorPtr comm)
+{
+  try
+  {
+    MPI_Request request;
+    check(MPI_Ireduce(sendbuf, recvbuf, count, datatype, op, process, comm->comm, &request));
+    comm->wait(request);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
 void reduceSum(UInt &x, UInt process, CommunicatorPtr comm)
 {
   try
@@ -732,13 +1162,13 @@ void reduceSum(UInt &x, UInt process, CommunicatorPtr comm)
     {
       unsigned int tmp = static_cast<unsigned int >(x);
       unsigned int y = 0;
-      check(MPI_Reduce(&tmp, &y, 1, MPI_UNSIGNED, MPI_SUM, process, getComm(comm)));
+      reduce(&tmp, &y, 1, MPI_UNSIGNED, MPI_SUM, process, comm);
       x = static_cast<UInt>(y);
     }
     else
     {
       unsigned int y = static_cast<unsigned int>(x);
-      check(MPI_Reduce(&y, nullptr, 1, MPI_UNSIGNED, MPI_SUM, process, getComm(comm)));
+      reduce(&y, nullptr, 1, MPI_UNSIGNED, MPI_SUM, process, comm);
     }
   }
   catch(std::exception &e)
@@ -757,10 +1187,10 @@ void reduceSum(Double &x, UInt process, CommunicatorPtr comm)
     {
       Double tmp = x;
       x = 0;
-      check(MPI_Reduce(&tmp, &x, 1, MPI_DOUBLE, MPI_SUM, process, getComm(comm)));
+      reduce(&tmp, &x, 1, MPI_DOUBLE, MPI_SUM, process, comm);
     }
     else
-      check(MPI_Reduce(&x, nullptr, 1, MPI_DOUBLE, MPI_SUM, process, getComm(comm)));
+      reduce(&x, nullptr, 1, MPI_DOUBLE, MPI_SUM, process, comm);
   }
   catch(std::exception &e)
   {
@@ -778,13 +1208,13 @@ void reduceSum(Bool &x, UInt process, CommunicatorPtr comm)
     {
       unsigned int tmp = static_cast<unsigned int >(x);
       unsigned int y = 0;
-      check(MPI_Reduce(&tmp, &y, 1, MPI_UNSIGNED, MPI_SUM, process, getComm(comm)));
+      reduce(&tmp, &y, 1, MPI_UNSIGNED, MPI_SUM, process, comm);
       x = static_cast<Bool>(y);
     }
     else
     {
       unsigned int y = static_cast<unsigned int>(x);
-      check(MPI_Reduce(&y, nullptr, 1, MPI_UNSIGNED, MPI_SUM, process, getComm(comm)));
+      reduce(&y, nullptr, 1, MPI_UNSIGNED, MPI_SUM, process, comm);
     }
   }
   catch(std::exception &e)
@@ -808,11 +1238,11 @@ void reduceSum(Matrix &x, UInt process, CommunicatorPtr comm)
       if(myRank(comm) == process)
       {
         Vector tmp(size);
-        check(MPI_Reduce(x.field()+index, tmp.field(), size, MPI_DOUBLE, MPI_SUM, process, getComm(comm)));
+        reduce(x.field()+index, tmp.field(), size, MPI_DOUBLE, MPI_SUM, process, comm);
         std::copy_n(tmp.field(), size, x.field()+index);
       }
       else
-        check(MPI_Reduce(x.field()+index, nullptr, size, MPI_DOUBLE, MPI_SUM, process, getComm(comm)));
+        reduce(x.field()+index, nullptr, size, MPI_DOUBLE, MPI_SUM, process, comm);
 
       index += size;
     }
@@ -834,13 +1264,13 @@ void reduceMin(UInt &x, UInt process, CommunicatorPtr comm)
     {
       unsigned int tmp = static_cast<unsigned int>(x);
       unsigned int y   = tmp;
-      check(MPI_Reduce(&tmp, &y, 1, MPI_UNSIGNED, MPI_MIN, process, getComm(comm)));
+      reduce(&tmp, &y, 1, MPI_UNSIGNED, MPI_MIN, process, comm);
       x = static_cast<UInt>(y);
     }
     else
     {
       unsigned int y = static_cast<unsigned int>(x);
-      check(MPI_Reduce(&y, nullptr, 1, MPI_UNSIGNED, MPI_MIN, process, getComm(comm)));
+      reduce(&y, nullptr, 1, MPI_UNSIGNED, MPI_MIN, process, comm);
     }
   }
   catch(std::exception &e)
@@ -858,10 +1288,10 @@ void reduceMin(Double &x, UInt process, CommunicatorPtr comm)
     if(myRank(comm) == process)
     {
       Double tmp = x;
-      check(MPI_Reduce(&tmp, &x, 1, MPI_DOUBLE, MPI_MIN, process, getComm(comm)));
+      reduce(&tmp, &x, 1, MPI_DOUBLE, MPI_MIN, process, comm);
     }
     else
-      check(MPI_Reduce(&x, nullptr, 1, MPI_DOUBLE, MPI_MIN, process, getComm(comm)));
+      reduce(&x, nullptr, 1, MPI_DOUBLE, MPI_MIN, process, comm);
   }
   catch(std::exception &e)
   {
@@ -879,13 +1309,13 @@ void reduceMax(UInt &x, UInt process, CommunicatorPtr comm)
     {
       unsigned int tmp = static_cast<unsigned int>(x);
       unsigned int y   = tmp;
-      check(MPI_Reduce(&tmp, &y, 1, MPI_UNSIGNED, MPI_MAX, process, getComm(comm)));
+      reduce(&tmp, &y, 1, MPI_UNSIGNED, MPI_MAX, process, comm);
       x = static_cast<UInt>(y);
     }
     else
     {
       unsigned int y = static_cast<unsigned int>(x);
-      check(MPI_Reduce(&y, nullptr, 1, MPI_UNSIGNED, MPI_MAX, process, getComm(comm)));
+      reduce(&y, nullptr, 1, MPI_UNSIGNED, MPI_MAX, process, comm);
     }
   }
   catch(std::exception &e)
@@ -903,10 +1333,10 @@ void reduceMax(Double &x, UInt process, CommunicatorPtr comm)
     if(myRank(comm) == process)
     {
       Double tmp = x;
-      check(MPI_Reduce(&tmp, &x, 1, MPI_DOUBLE, MPI_MAX, process, getComm(comm)));
+      reduce(&tmp, &x, 1, MPI_DOUBLE, MPI_MAX, process, comm);
     }
     else
-      check(MPI_Reduce(&x, nullptr, 1, MPI_DOUBLE, MPI_MAX, process, getComm(comm)));
+      reduce(&x, nullptr, 1, MPI_DOUBLE, MPI_MAX, process, comm);
   }
   catch(std::exception &e)
   {

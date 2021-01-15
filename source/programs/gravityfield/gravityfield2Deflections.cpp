@@ -38,14 +38,14 @@ based on a reference ellipsoid with parameters \config{R} and \config{inverseFla
 class Gravityfield2Deflections
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(Gravityfield2Deflections, PARALLEL, "Deflections of the vertical - based on gravity field", Gravityfield)
 
 /***********************************************/
 
-void Gravityfield2Deflections::run(Config &config)
+void Gravityfield2Deflections::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -76,9 +76,9 @@ void Gravityfield2Deflections::run(Config &config)
     Parallel::forEach(g, [&](UInt i)
     {
       return normalize(localNorthEastUp(points.at(i), ellipsoid).inverseTransform(gravityfield->gravity(time, points.at(i))));
-    });
+    }, comm);
 
-    if(Parallel::isMaster())
+    if(Parallel::isMaster(comm))
     {
       std::vector<std::vector<Double>> field(2);
       for(UInt i=0; i<points.size(); i++)
@@ -91,7 +91,7 @@ void Gravityfield2Deflections::run(Config &config)
       GriddedData griddedData(Ellipsoid(a,f), points, areas, field);
       writeFileGriddedData(fileNameGrid, griddedData);
       MiscGriddedData::printStatistics(griddedData);
-    } // if(Parallel::isMaster())
+    } // if(Parallel::isMaster(comm))
   }
   catch(std::exception &e)
   {

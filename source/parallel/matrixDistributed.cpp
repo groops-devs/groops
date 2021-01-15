@@ -166,6 +166,8 @@ void MatrixDistributed::broadCast(Matrix &x, UInt idx, const std::vector<Bool> &
     for(UInt idProcess=0; idProcess<usedRank.size(); idProcess++)
       if(usedRank.at(idProcess) && (idProcess != _rank[idx]))
         ranks.push_back(idProcess);
+    if(ranks.size() < 2)
+      return;
     Parallel::CommunicatorPtr commNew = Parallel::createCommunicator(ranks, comm);
     if(commNew)
       Parallel::broadCast(x, 0, commNew);
@@ -186,6 +188,8 @@ void MatrixDistributed::reduceSum(Matrix &x, UInt idx, const std::vector<Bool> &
     for(UInt idProcess=0; idProcess<usedRank.size(); idProcess++)
       if(usedRank.at(idProcess) && (idProcess != _rank[idx]))
         ranks.push_back(idProcess);
+    if(ranks.size() < 2)
+      return;
     Parallel::CommunicatorPtr commNew = Parallel::createCommunicator(ranks, comm);
     if(!commNew)
       return;

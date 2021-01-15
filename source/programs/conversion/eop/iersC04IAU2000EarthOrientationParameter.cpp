@@ -30,7 +30,7 @@ and write it as \configFile{outputfileEOP}{earthOrientationParameter}.
 class IersC04IAU2000EarthOrientationParameter
 {
 public:
-  void run(Config &config);
+  void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
 GROOPS_REGISTER_PROGRAM(IersC04IAU2000EarthOrientationParameter, SINGLEPROCESS, "read Earth Orientation Parameter", Conversion)
@@ -38,7 +38,7 @@ GROOPS_RENAMED_PROGRAM(Eop2003file, IersC04IAU2000EarthOrientationParameter, dat
 
 /***********************************************/
 
-void IersC04IAU2000EarthOrientationParameter::run(Config &config)
+void IersC04IAU2000EarthOrientationParameter::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
