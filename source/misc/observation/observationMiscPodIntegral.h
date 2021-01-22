@@ -64,14 +64,14 @@ public:
   ObservationMiscPodIntegral(Config &config);
  ~ObservationMiscPodIntegral() {}
 
-  Bool setInterval(const Time &timeStart, const Time &timeEnd);
-  UInt parameterCount()          const {return countAParameter;}
-  UInt gravityParameterCount()   const {return parameterGravity->parameterCount();}
-  UInt rightSideCount()          const {return rhs.size();}
-  UInt arcCount()                const {return countArc;}
-  void parameterName(std::vector<ParameterName> &name) const;
+  Bool setInterval(const Time &timeStart, const Time &timeEnd) override;
+  UInt parameterCount()          const override {return countAParameter;}
+  UInt gravityParameterCount()   const override {return parameterGravity->parameterCount();}
+  UInt rightSideCount()          const override {return rhs.size();}
+  UInt arcCount()                const override {return countArc;}
+  void parameterName(std::vector<ParameterName> &name) const override;
 
-  Arc computeArc(UInt arcNo, CovariancePodPtr covPod=CovariancePodPtr(nullptr));
+  Arc computeArc(UInt arcNo, CovariancePodPtr covPod);
 };
 
 /***********************************************/

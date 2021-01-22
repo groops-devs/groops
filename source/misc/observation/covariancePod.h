@@ -114,11 +114,10 @@ public:
   /** @brief Decorrelates observation equations.
   * The observations must be given as x,y,z per epoch in CRF [m].
   * The list of observation vector and design matrices are decorrelated.
-  * Computes additionally the Cholesky decomposition of the covariance matrix
-  * (WARNING: Orbit rotation and epoch wise covariance matrix are not included in cholesky) */
-  static void decorrelate(const OrbitArc &pod, Double sigmaArc,const ObservationSigmaArc &sigmaEpoch,
-                          const Covariance3dArc &covPod, const_MatrixSliceRef covFunction, Matrix &W,
-                          const std::list<MatrixSlice> &A);
+  * @return Cholesky decomposition of the covariance matrix (without orbit rotation and epoch wise covariance matrix). */
+  static Matrix decorrelate(const OrbitArc &pod, Double sigmaArc, const ObservationSigmaArc &sigmaEpoch,
+                            const Covariance3dArc &covPod, const_MatrixSliceRef covFunction,
+                            const std::list<MatrixSlice> &A);
 
   /** @brief creates an derived instance of this class. */
   static CovariancePodPtr create(Config &config, const std::string &name) {return std::make_shared<CovariancePod>(config, name);}

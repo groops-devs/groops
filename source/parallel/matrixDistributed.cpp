@@ -395,6 +395,8 @@ void MatrixDistributed::reduceSum(UInt i, UInt k)
     const UInt ik = index(i, k);
     if(ik == NULLINDEX)
       throw(Exception("N("+i%"%i, "s+k%"%i): block not exist"s));
+    if(isMyRank(ik) && (_N[ik].size() == 0))
+      _N[ik] = ((i==k) ? Matrix(blockSize(i), Matrix::SYMMETRIC) : Matrix(blockSize(i), blockSize(k)));
     const UInt color = _N[ik].size()  ? k : NULLINDEX;
     const UInt key   = isMyRank(ik) ? 0 : Parallel::myRank(comm)+1;
     Parallel::CommunicatorPtr commNew = Parallel::splitCommunicator(color, key, comm);
@@ -421,9 +423,11 @@ void MatrixDistributed::reduceSum(Bool timing)
     if(timing) logTimerStart;
     UInt idxBlock = 0;
     for(UInt i=0; i<blockCount(); i++)
-      loopBlockRow(i, {i, blockCount()}, [&](UInt /*k*/, UInt ik)
+      loopBlockRow(i, {i, blockCount()}, [&](UInt k, UInt ik)
       {
         if(timing) logTimerLoop(idxBlock++, _N.size());
+        if(isMyRank(ik) && (_N[ik].size() == 0))
+          _N[ik] = ((i==k) ? Matrix(blockSize(i), Matrix::SYMMETRIC) : Matrix(blockSize(i), blockSize(k)));
         UInt color = _N[ik].size()  ? idxBlock : NULLINDEX;
         UInt key   = isMyRank(ik) ? 0 : Parallel::myRank(comm)+1;
         Parallel::CommunicatorPtr commNew = Parallel::splitCommunicator(color, key, comm);

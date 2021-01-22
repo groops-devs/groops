@@ -61,7 +61,7 @@ with
   \end{bmatrix}.
 \end{equation}
 used to constrain high-frequency temporal gravity field variations (see
-\program{KalmanSmootherLeastSquares}, \program{KalmanStaticTemporalNormals},
+\program{KalmanSmootherLeastSquares}, \program{NormalsBuildShortTimeStaticLongTime},
 \program{PreprocessingSst}).
 
 The corresponding normal equation coefficient matrix is given by

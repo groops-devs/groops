@@ -214,8 +214,7 @@ void CovariancePod::decorrelate(UInt arcNo, const OrbitArc &pod, const std::list
       return;
     }
 
-    Matrix W;
-    decorrelate(pod, 1/weight, sigmaEpoch, covPod, covFunction, W, A);
+    decorrelate(pod, 1/weight, sigmaEpoch, covPod, covFunction, A);
   }
   catch(std::exception &e)
   {
@@ -225,9 +224,9 @@ void CovariancePod::decorrelate(UInt arcNo, const OrbitArc &pod, const std::list
 
 /***********************************************/
 
-void CovariancePod::decorrelate(const OrbitArc &pod, Double sigmaArc, const ObservationSigmaArc &sigmaEpoch,
-                                const Covariance3dArc &covPod, const_MatrixSliceRef covFunction, Matrix &W,
-                                const std::list<MatrixSlice> &A)
+Matrix CovariancePod::decorrelate(const OrbitArc &pod, Double sigmaArc, const ObservationSigmaArc &sigmaEpoch,
+                                  const Covariance3dArc &covPod, const_MatrixSliceRef covFunction,
+                                  const std::list<MatrixSlice> &A)
 {
   try
   {
@@ -268,7 +267,7 @@ void CovariancePod::decorrelate(const OrbitArc &pod, Double sigmaArc, const Obse
 
     // covariance function in orbit system
     // -----------------------------------
-    W = Matrix(3*pod.size(), Matrix::SYMMETRIC, Matrix::UPPER);
+    Matrix W(3*pod.size(), Matrix::SYMMETRIC, Matrix::UPPER);
     if(covFunction.size())
     {
       const Double sampling = covFunction(1,0)-covFunction(0,0);
@@ -290,6 +289,8 @@ void CovariancePod::decorrelate(const OrbitArc &pod, Double sigmaArc, const Obse
     for(MatrixSliceRef WA : A)
       if(WA.size())
         triangularSolve(1., W.trans(), WA);
+
+    return W;
   }
   catch(std::exception &e)
   {

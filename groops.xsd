@@ -5680,7 +5680,7 @@
 							</xs:annotation>
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="inputfileSatelliteTracking" type="filename" minOccurs="0" maxOccurs="unbounded">
+									<xs:element name="inputfileSatelliteTracking" type="filename" maxOccurs="unbounded">
 										<xs:annotation>
 											<xs:documentation>ranging observations and corrections</xs:documentation>
 										</xs:annotation>
@@ -5860,6 +5860,124 @@
 						<xs:element name="covarianceSst" type="covarianceSstType">
 							<xs:annotation>
 								<xs:documentation>covariance matrix of satellite to satellite tracking observations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="covariancePod1" type="covariancePodType">
+							<xs:annotation>
+								<xs:documentation>covariance matrix of kinematic orbits (satellite 1)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="covariancePod2" type="covariancePodType">
+							<xs:annotation>
+								<xs:documentation>covariance matrix of kinematic orbits (satellite 2)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="dualSstVariational">
+				<xs:annotation>
+					<xs:documentation>dual sst data and pod</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="rightHandSide">
+							<xs:annotation>
+								<xs:documentation>input for observation vectors</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="inputfileSatelliteTracking1" type="filename" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>ranging observations and corrections</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSatelliteTracking2" type="filename" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>ranging observations and corrections</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileOrbit1" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>kinematic positions of satellite A as observations</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileOrbit2" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>kinematic positions of satellite B as observations</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="sstType">
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="range"/>
+									<xs:element name="rangeRate"/>
+									<xs:element name="none"/>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="inputfileVariational1" type="filename">
+							<xs:annotation>
+								<xs:documentation>approximate position and integrated state matrix</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileVariational2" type="filename">
+							<xs:annotation>
+								<xs:documentation>approximate position and integrated state matrix</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ephemerides" type="ephemeridesType" minOccurs="0" default="jpl"/>
+						<xs:element name="parametrizationGravity" type="parametrizationGravityType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>gravity field parametrization</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="parametrizationAcceleration1" type="parametrizationAccelerationType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>orbit1 force parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="parametrizationAcceleration2" type="parametrizationAccelerationType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>orbit2 force parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="parametrizationSst1" type="parametrizationSatelliteTrackingType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>satellite tracking parameter for first ranging observations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="parametrizationSst2" type="parametrizationSatelliteTrackingType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>satellite tracking parameter for second ranging observations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="integrationDegree" type="uint" minOccurs="0" default="7">
+							<xs:annotation>
+								<xs:documentation>integration of forces by polynomial approximation of degree n</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="7">
+							<xs:annotation>
+								<xs:documentation>orbit interpolation by polynomial approximation of degree n</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="covarianceSst1" type="covarianceSstType">
+							<xs:annotation>
+								<xs:documentation>covariance matrix of first satellite to satellite tracking observations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="covarianceSst2" type="covarianceSstType">
+							<xs:annotation>
+								<xs:documentation>covariance matrix of second satellite to satellite tracking observations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="covarianceAcc" type="covarianceSstType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>common covariance matrix of reduced satellite to satellite tracking observations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="covariancePod1" type="covariancePodType">
@@ -9465,6 +9583,7 @@
 			<xs:appinfo>rename: KernelComputeCoefficients = Kernel2Coefficients</xs:appinfo>
 			<xs:appinfo>rename: KernelDegreeVariances = RadialBasisSplines2KernelCoefficients</xs:appinfo>
 			<xs:appinfo>rename: InstrumentCreateTimeSeries = TimeSeriesCreate</xs:appinfo>
+			<xs:appinfo>rename: KalmanStaticTemporalNormals = NormalsBuildShortTimeStaticLongTime</xs:appinfo>
 			<xs:appinfo>rename: NormalsParameterSelection2IndexVector = ParameterSelection2IndexVector</xs:appinfo>
 			<xs:appinfo>rename: InstrumentOrbit2ArgumentOfLatitude = Orbit2ArgumentOfLatitude</xs:appinfo>
 			<xs:appinfo>rename: InstrumentOrbit2BetaPrimeAngle = Orbit2BetaPrimeAngle</xs:appinfo>
@@ -14632,65 +14751,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="KalmanStaticTemporalNormals">
-				<xs:annotation>
-					<xs:documentation>Combined normal equations with static, temporal and high-frequency gravity field parameters.</xs:documentation>
-					<xs:appinfo>rename: outputfileNormalequation = outputfileNormalEquation</xs:appinfo>
-					<xs:appinfo>rename: arcList = inputfileArcList</xs:appinfo>
-					<xs:appinfo>tag: KalmanFilter</xs:appinfo>
-					<xs:appinfo>tag: NormalEquation</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileNormalEquation" type="filename">
-							<xs:annotation>
-								<xs:documentation>outputfile for normal equations</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="observation" type="observationType"/>
-						<xs:element name="autoregressiveModelSequence" type="autoregressiveModelSequenceType" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>AR model sequence for constraining high frequency variations</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="temporal" minOccurs="0">
-							<xs:annotation>
-								<xs:appinfo>rename: temporalRepresentation = parametrization</xs:appinfo>
-								<xs:appinfo>rename: temporalParameterCount = parameterCount</xs:appinfo>
-							</xs:annotation>
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="parametrization" type="parametrizationTemporalType" maxOccurs="unbounded">
-										<xs:annotation>
-											<xs:documentation>use state normals to parametrize time variations (trend, annual, ...)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="parameterCount" type="uint">
-										<xs:annotation>
-											<xs:documentation>use state normals to parametrize time variations (trend, annual, ...)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
-						<xs:element name="inputfileArcList" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>list to correspond points of time to arc numbers</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="normalsBlockSize" type="uint" minOccurs="0" default="2048">
-							<xs:annotation>
-								<xs:documentation>block size for distributing the normal equations, 0: one block</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="memorySizePerNodeInGByte" type="double" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>avaiable memory for the normal equations (without observation equations)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="DigitalFilter2FrequencyResponse">
 				<xs:annotation>
 					<xs:documentation>amplitude and phase response of a filter cascade</xs:documentation>
@@ -15552,6 +15612,77 @@
 						<xs:element name="normalsBlockSize" type="uint" minOccurs="0" default="2048">
 							<xs:annotation>
 								<xs:documentation>block size for distributing the normal equations, 0: one block</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="NormalsBuildShortTimeStaticLongTime">
+				<xs:annotation>
+					<xs:documentation>Normal equations with static, short time, and long time gravity field parameters</xs:documentation>
+					<xs:appinfo>rename: outputfileNormalequation = outputfileNormalEquation</xs:appinfo>
+					<xs:appinfo>rename: arcList = inputfileArcList</xs:appinfo>
+					<xs:appinfo>tag: NormalEquation</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileNormalEquation" type="filename">
+							<xs:annotation>
+								<xs:documentation>outputfile for normal equations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="observation" type="observationType"/>
+						<xs:element name="estimateShortTimeVariations" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>co-estimate short time gravity field variations</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="autoregressiveModelSequence" type="autoregressiveModelSequenceType">
+										<xs:annotation>
+											<xs:documentation>AR model sequence for constraining short time gravity variations</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="parameterSelection" type="parameterSelectorType" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>parameters describing the short time gravity field</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="estimateLongTimeVariations" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>co-estimate long time gravity field variations</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="parametrizationTemporal" type="parametrizationTemporalType" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>parametrization of time variations (trend, annual, ...)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="parameterSelection" type="parameterSelectorType" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>parameters describing the long time gravity field</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="inputfileArcList" type="filename">
+							<xs:annotation>
+								<xs:documentation>list to correspond points of time to arc numbers</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="defaultBlockSize" type="uint" minOccurs="0" default="2048">
+							<xs:annotation>
+								<xs:documentation>block size for distributing the normal equations, 0: one block</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="eliminateParameter" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>eliminate short time and state parameter</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -16657,6 +16788,474 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="PreprocessingDualSst">
+				<xs:annotation>
+					<xs:documentation>Estimate covariance function / arc weights.</xs:documentation>
+					<xs:appinfo>tag: Preprocessing</xs:appinfo>
+					<xs:appinfo>tag: Covariance</xs:appinfo>
+					<xs:appinfo>tag: Residuals</xs:appinfo>
+					<xs:appinfo>tag: KalmanFilter</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileSolution" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>estimated parameter vector (static part only)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileSigmax" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>standard deviations of the parameters (sqrt of the diagonal of the inverse normal equation)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileParameterName" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>estimated signal parameters (index is appended)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="estimateArcSigmas" minOccurs="0">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="outputfileSigmasPerArcSst1" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>accuracies of each arc (SST1)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileSigmasPerArcSst2" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>accuracies of each arc (SST2)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileSigmasPerArcAcc" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>accuracies of each arc (ACC)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileSigmasPerArcPod1" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>accuracies of each arc (POD1)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileSigmasPerArcPod2" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>accuracies of each arc (POD2)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="estimateEpochSigmas" minOccurs="0">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="outputfileSigmasPerEpochSst1" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>accuracies of each epoch (SST1)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileSigmasPerEpochSst2" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>accuracies of each epoch (SST2)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileSigmasPerEpochAcc" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>accuracies of each epoch (ACC)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileSigmasPerEpochPod1" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>accuracies of each epoch (POD1)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileSigmasPerEpochPod2" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>accuracies of each epoch (POD2)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="estimateCovarianceFunctions" minOccurs="0">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="outputfileCovarianceFunctionSst1" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileCovarianceFunctionSst2" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileCovarianceFunctionAcc" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileCovarianceFunctionPod1" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>covariance functions for along, cross, radial direction</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="outputfileCovarianceFunctionPod2" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>covariance functions for along, cross, radial direction</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="computeResiduals" minOccurs="0">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="outputfileSst1Residuals" type="filename" minOccurs="0"/>
+									<xs:element name="outputfileSst2Residuals" type="filename" minOccurs="0"/>
+									<xs:element name="outputfileAccResiduals" type="filename" minOccurs="0"/>
+									<xs:element name="outputfilePod1Residuals" type="filename" minOccurs="0"/>
+									<xs:element name="outputfilePod2Residuals" type="filename" minOccurs="0"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="observation">
+							<xs:annotation>
+								<xs:documentation>obervation equations (Sst)</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="dualSstVariational">
+										<xs:annotation>
+											<xs:documentation>two SST observations</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="rightHandSide">
+													<xs:annotation>
+														<xs:documentation>input for observation vectors</xs:documentation>
+													</xs:annotation>
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="inputfileSatelliteTracking1" type="filename" maxOccurs="unbounded">
+																<xs:annotation>
+																	<xs:documentation>ranging observations and corrections</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="inputfileSatelliteTracking2" type="filename" maxOccurs="unbounded">
+																<xs:annotation>
+																	<xs:documentation>ranging observations and corrections</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="inputfileOrbit1" type="filename" minOccurs="0">
+																<xs:annotation>
+																	<xs:documentation>kinematic positions of satellite A as observations</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+															<xs:element name="inputfileOrbit2" type="filename" minOccurs="0">
+																<xs:annotation>
+																	<xs:documentation>kinematic positions of satellite B as observations</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="sstType">
+													<xs:complexType>
+														<xs:choice>
+															<xs:element name="range"/>
+															<xs:element name="rangeRate"/>
+															<xs:element name="none"/>
+														</xs:choice>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="inputfileVariational1" type="filename">
+													<xs:annotation>
+														<xs:documentation>approximate position and integrated state matrix</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="inputfileVariational2" type="filename">
+													<xs:annotation>
+														<xs:documentation>approximate position and integrated state matrix</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="ephemerides" type="ephemeridesType" minOccurs="0" default="jpl"/>
+												<xs:element name="parametrizationGravity" type="parametrizationGravityType" minOccurs="0" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>gravity field parametrization</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="parametrizationAcceleration1" type="parametrizationAccelerationType" minOccurs="0" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>orbit1 force parameters</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="parametrizationAcceleration2" type="parametrizationAccelerationType" minOccurs="0" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>orbit2 force parameters</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="parametrizationSst1" type="parametrizationSatelliteTrackingType" minOccurs="0" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>satellite tracking parameter for first ranging observations</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="parametrizationSst2" type="parametrizationSatelliteTrackingType" minOccurs="0" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>satellite tracking parameter for second ranging observations</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="integrationDegree" type="uint" minOccurs="0" default="7">
+													<xs:annotation>
+														<xs:documentation>integration of forces by polynomial approximation of degree n</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="7">
+													<xs:annotation>
+														<xs:documentation>orbit interpolation by polynomial approximation of degree n</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="covarianceSst1">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="sigma" type="double" minOccurs="0" default="1">
+										<xs:annotation>
+											<xs:documentation>apriori factor of covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasPerArc" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>apriori different accuaries for each arc (multiplicated with sigma)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasPerEpoch" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>apriori different accuaries for each epoch</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileCovarianceFunction" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>approximate covariances in time</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileCovarianceMatrixArc" type="filename" minOccurs="0" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>Must be given per sst arc with correct dimensions.</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasCovarianceMatrixArc" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Vector with one sigma for each &lt;inputfileCovarianceMatrixArc&gt;</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="sampling" type="double" minOccurs="0" default="5">
+										<xs:annotation>
+											<xs:documentation>[seconds] sampling of the covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="covarianceSst2">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="sigma" type="double" minOccurs="0" default="1">
+										<xs:annotation>
+											<xs:documentation>apriori factor of covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasPerArc" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>apriori different accuaries for each arc (multiplicated with sigma)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasPerEpoch" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>apriori different accuaries for each epoch</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileCovarianceFunction" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>approximate covariances in time</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileCovarianceMatrixArc" type="filename" minOccurs="0" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>Must be given per sst arc with correct dimensions.</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasCovarianceMatrixArc" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Vector with one sigma for each &lt;inputfileCovarianceMatrixArc&gt;</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="covarianceAcc">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="sigma" type="double" minOccurs="0" default="1">
+										<xs:annotation>
+											<xs:documentation>apriori factor of covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasPerArc" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>apriori different accuaries for each arc (multplicated with sigma)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasPerEpoch" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>apriori different accuaries for each epoch</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileCovarianceFunction" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>approximate covariances in time</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileCovarianceMatrixArc" type="filename" minOccurs="0" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>Must be given per sst arc with correct dimensions.</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasCovarianceMatrixArc" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Vector with one sigma for each &lt;inputfileCovarianceMatrixArc&gt;</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="covariancePod1">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="sigma" type="double" minOccurs="0" default="1">
+										<xs:annotation>
+											<xs:documentation>apriori factor of covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasPerArc" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>apriori different accuaries for each arc (multiplicated with sigma)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasPerEpoch" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>apriori different accuaries for each epoch</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileCovarianceFunction" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>approximate covariances in time</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileCovariancePodEpoch" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>3x3 epoch covariances</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="sampling" type="double" minOccurs="0" default="30">
+										<xs:annotation>
+											<xs:documentation>[seconds] sampling of the covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="covariancePod2">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="sigma" type="double" minOccurs="0" default="1">
+										<xs:annotation>
+											<xs:documentation>apriori factor of covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasPerArc" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>apriori different accuaries for each arc (multiplicated with sigma)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileSigmasPerEpoch" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>apriori different accuaries for each epoch</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileCovarianceFunction" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>approximate covariances in time</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputfileCovariancePodEpoch" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>3x3 epoch covariances</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="sampling" type="double" minOccurs="0" default="30">
+										<xs:annotation>
+											<xs:documentation>[seconds] sampling of the covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="estimateShortTimeVariations" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>co-estimate short time gravity field variations</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="estimateSigma" type="boolean" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>estimate standard deviation via VCE</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="autoregressiveModelSequence" type="autoregressiveModelSequenceType">
+										<xs:annotation>
+											<xs:documentation>AR model sequence for constraining short time gravity variations</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="parameterSelection" type="parameterSelectorType" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>parameters describing the short time gravity field</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="downweightPod" type="double" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>downweight factor for POD</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileArcList" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>list to correspond points of time to arc numbers</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="iterationCount" type="uint" minOccurs="0" default="3">
+							<xs:annotation>
+								<xs:documentation>(maximum) number of iterations for the estimation of calibration parameter and error PSD</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableNameIterations" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>All output fileNames in preprocessing iteration are expanded with this variable prior to writing to disk</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="defaultBlockSize" type="uint" minOccurs="0" default="2048">
+							<xs:annotation>
+								<xs:documentation>block size of static normal equation blocks</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="PreprocessingGradiometer">
 				<xs:annotation>
 					<xs:documentation>Estimate covariance function / arc weights.</xs:documentation>
@@ -16950,7 +17549,6 @@
 			<xs:element name="PreprocessingSst">
 				<xs:annotation>
 					<xs:documentation>Estimate covariance function / arc weights.</xs:documentation>
-					<xs:appinfo>rename: arcList = inputfileArcList</xs:appinfo>
 					<xs:appinfo>tag: Preprocessing</xs:appinfo>
 					<xs:appinfo>tag: Covariance</xs:appinfo>
 					<xs:appinfo>tag: Residuals</xs:appinfo>
@@ -16971,16 +17569,6 @@
 						<xs:element name="outputfileParameterName" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>estimated signal parameters (index is appended)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outputfileSolutionHighFrequency" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>estimated high-frequency gravity field parameters (index is appended for each interval)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outputfileSolutionInterval" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>other interval parameters (index is appended)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="estimateArcSigmas" minOccurs="0">
@@ -17046,10 +17634,10 @@
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
-						<xs:element name="estimateSstArcWiseCovariancesVarianceFactors" minOccurs="0">
+						<xs:element name="estimateSstArcCovarianceSigmas" minOccurs="0">
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="outputfileVarianceFactors" type="filename" minOccurs="0">
+									<xs:element name="outputfileSigmasCovarianceMatrixArc" type="filename" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>one variance factor per matrix</xs:documentation>
 										</xs:annotation>
@@ -17182,7 +17770,7 @@
 													</xs:annotation>
 													<xs:complexType>
 														<xs:sequence>
-															<xs:element name="inputfileSatelliteTracking" type="filename" minOccurs="0" maxOccurs="unbounded">
+															<xs:element name="inputfileSatelliteTracking" type="filename" maxOccurs="unbounded">
 																<xs:annotation>
 																	<xs:documentation>ranging observations and corrections</xs:documentation>
 																</xs:annotation>
@@ -17369,43 +17957,38 @@
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
-						<xs:element name="estimateHighFrequencyVariations" minOccurs="0">
+						<xs:element name="estimateShortTimeVariations" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>co-estimate high-frequency gravity field variations</xs:documentation>
+								<xs:documentation>co-estimate short time gravity field variations</xs:documentation>
 							</xs:annotation>
 							<xs:complexType>
 								<xs:sequence>
 									<xs:element name="estimateSigma" type="boolean" minOccurs="0" default="0">
 										<xs:annotation>
-											<xs:documentation>estimate factor of covariance  function (VCE)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="sigma" type="double" minOccurs="0" default="1.0">
-										<xs:annotation>
-											<xs:documentation>a-priori standard deviation for AR model regularization</xs:documentation>
+											<xs:documentation>estimate standard deviation via VCE</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="autoregressiveModelSequence" type="autoregressiveModelSequenceType">
 										<xs:annotation>
-											<xs:documentation>AR model sequence for constraining high frequency gravity variations</xs:documentation>
+											<xs:documentation>AR model sequence for constraining short time gravity variations</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="parametrization" type="parametrizationGravityType" maxOccurs="unbounded">
+									<xs:element name="parameterSelection" type="parameterSelectorType" maxOccurs="unbounded">
 										<xs:annotation>
-											<xs:documentation>must be set in observation too</xs:documentation>
+											<xs:documentation>parameters describing the short time gravity field</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
+						<xs:element name="downweightPod" type="double" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>downweight factor for POD</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="inputfileArcList" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>list to correspond points of time to arc numbers</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="adjustmentThreshold" type="double" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>Adjustment factor threshold: Iteration will be stopped once both SST and POD adjustment factors are under this threshold</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="iterationCount" type="uint" minOccurs="0" default="3">
@@ -17413,14 +17996,14 @@
 								<xs:documentation>(maximum) number of iterations for the estimation of calibration parameter and error PSD</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="downweightPod" type="double" minOccurs="0" default="1">
-							<xs:annotation>
-								<xs:documentation>downweight factor for POD</xs:documentation>
-							</xs:annotation>
-						</xs:element>
 						<xs:element name="variableNameIterations" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>All output fileNames in preprocessing iteration are expanded with this variable prior to writing to disk</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="defaultBlockSize" type="uint" minOccurs="0" default="2048">
+							<xs:annotation>
+								<xs:documentation>block size of static normal equation blocks</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -17637,7 +18220,7 @@
 							</xs:annotation>
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="inputfileSatelliteTracking" type="filename" minOccurs="0" maxOccurs="unbounded">
+									<xs:element name="inputfileSatelliteTracking" type="filename" maxOccurs="unbounded">
 										<xs:annotation>
 											<xs:documentation>ranging observations and corrections</xs:documentation>
 										</xs:annotation>

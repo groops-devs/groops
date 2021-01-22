@@ -86,60 +86,23 @@ void CovarianceSst::testInput(const std::vector<Time> &times, const ObservationS
 
 /***********************************************/
 
-Matrix CovarianceSst::decorrelate(UInt arcNo, const std::vector<Time> &times, const std::list<MatrixSlice> &A)
+Matrix CovarianceSst::covariance(UInt arcNo, const std::vector<Time> &times)
 {
   try
   {
-    // arbitrary matrices
-    // ------------------
-    Matrix W;
-    if(fileNamesCovarianceMatrix.size())
+    Matrix C(times.size(), Matrix::SYMMETRIC, Matrix::UPPER);
+
+    for(UInt i=0; i<fileNamesCovarianceMatrix.size(); i++)
     {
-      W = Matrix(times.size(), Matrix::SYMMETRIC, Matrix::UPPER);
-      for(UInt i=0; i<fileNamesCovarianceMatrix.size(); i++)
-      {
-        Matrix M;
-        FileName thisFile = fileNamesCovarianceMatrix.at(i).appendBaseName(".arc"+arcNo%"%03i"s);
-        readFileMatrix(thisFile, M);
-        if((M.rows() != W.rows()) || (M.columns() != W.columns()))
-          throw(Exception("Arc-Wise SST covariance matrix <"+thisFile.str()+"> wrong size for arc."));
-        axpy(std::pow(covMatrixSigmas(i), 2), M, W);
-      }
+      Matrix M;
+      FileName thisFile = fileNamesCovarianceMatrix.at(i).appendBaseName(".arc"+arcNo%"%03i"s);
+      readFileMatrix(thisFile, M);
+      if((M.rows() != C.rows()) || (M.columns() != C.columns()))
+        throw(Exception("Arc-Wise SST covariance matrix <"+thisFile.str()+"> wrong size for arc."));
+      axpy(std::pow(covMatrixSigmas(i), 2), M, C);
     }
 
-    ObservationSigmaArc sigmaEpoch = fileSigmaEpoch.readArc(arcNo);
-    testInput(times, sigmaEpoch, covFunction, W);
-
-    if(sigmaArc.size() && (arcNo>=sigmaArc.size()))
-      throw(Exception("sigmasPerArc contain not enough rows for this arc number"));
-
-    Double weight = 1./this->sigma;
-    if(sigmaArc.size() != 0)
-      weight *= 1./this->sigmaArc(arcNo);
-
-    // special case 1: diagonal matrix
-    // -------------------------------
-    if(fileNamesCovarianceMatrix.empty() && (covFunction.size()==0) && (sigmaEpoch.size()==0))
-    {
-      for(MatrixSliceRef WA : A)
-        if(WA.size()) WA *= weight;
-      return W;
-    }
-
-    // special case 2: diagonal matrix
-    // -------------------------------
-    if(fileNamesCovarianceMatrix.empty() && covFunction.size()==0)
-    {
-      for(UInt i=0; i<sigmaEpoch.size(); i++)
-        for(MatrixSliceRef WA : A)
-          if(WA.size()) WA.row(i) *= weight/sigmaEpoch.at(i).sigma;
-      return W;
-    }
-
-    // apply covariance functions
-    // --------------------------
-    decorrelate(times, 1./weight, sigmaEpoch, covFunction, W, A);
-    return W;
+    return covariance(times, (sigmaArc.size() ? sigmaArc(arcNo) : 1.), fileSigmaEpoch.readArc(arcNo), covFunction, C);
   }
   catch(std::exception &e)
   {
@@ -149,30 +112,91 @@ Matrix CovarianceSst::decorrelate(UInt arcNo, const std::vector<Time> &times, co
 
 /***********************************************/
 
-void CovarianceSst::decorrelate(const std::vector<Time> &times, Double sigmaArc, const ObservationSigmaArc &sigmaEpoch,
-                                const_MatrixSliceRef covFunction, Matrix &W, const std::list<MatrixSlice> &A)
+void CovarianceSst::decorrelate(UInt arcNo, const std::vector<Time> &times, const std::list<MatrixSlice> &A)
 {
   try
   {
-    testInput(times, sigmaEpoch, covFunction, W);
+    Double weight = 1./this->sigma;
+    if(sigmaArc.size() != 0)
+      weight *= 1./this->sigmaArc(arcNo);
 
-    const Double sigma2 = pow(sigmaArc, 2);
+    // special case 1: diagonal matrix
+    // -------------------------------
+    if(fileNamesCovarianceMatrix.empty() && !covFunction.size() && !fileSigmaEpoch.arcCount())
+    {
+      for(MatrixSliceRef WA : A)
+        if(WA.size()) WA *= weight;
+      return;
+    }
 
-    if(!W.size())
-      W = Matrix(times.size(), Matrix::SYMMETRIC, Matrix::UPPER);
+    // special case 2: diagonal matrix
+    // -------------------------------
+    if(fileNamesCovarianceMatrix.empty() && !covFunction.size())
+    {
+      ObservationSigmaArc sigmaEpoch = fileSigmaEpoch.readArc(arcNo);
+      for(UInt i=0; i<sigmaEpoch.size(); i++)
+        for(MatrixSliceRef WA : A)
+          if(WA.size()) WA.row(i) *= weight/sigmaEpoch.at(i).sigma;
+      return;
+    }
 
-    if(covFunction.size())
-      for(UInt z=0; z<times.size(); z++)
-        for(UInt s=z; s<times.size(); s++)
-          W(z,s) += sigma2 * covFunction(s-z,1);
-
-    for(UInt i=0; i<sigmaEpoch.size(); i++)
-      W(i,i) += pow(sigmaEpoch.at(i).sigma,2);
+    Matrix W = covariance(arcNo, times);
     cholesky(W);
 
     for(MatrixSliceRef WA : A)
       if(WA.size())
         triangularSolve(1., W.trans(), WA);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+MatrixSliceRef CovarianceSst::covariance(const std::vector<Time> &times, Double sigmaArc, const ObservationSigmaArc &sigmaEpoch,
+                                         const_MatrixSliceRef covFunction, Matrix &Cov)
+{
+  try
+  {
+    testInput(times, sigmaEpoch, covFunction, Cov);
+
+    if(!Cov.size())
+      Cov = Matrix(times.size(), Matrix::SYMMETRIC, Matrix::UPPER);
+
+    const Double sigma2 = pow(sigmaArc, 2);
+    if(covFunction.size())
+      for(UInt z=0; z<times.size(); z++)
+        for(UInt s=z; s<times.size(); s++)
+          Cov(z,s) += sigma2 * covFunction(s-z,1);
+
+    for(UInt i=0; i<sigmaEpoch.size(); i++)
+      Cov(i,i) += pow(sigmaEpoch.at(i).sigma,2);
+
+    return Cov;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+MatrixSliceRef CovarianceSst::decorrelate(const std::vector<Time> &times, Double sigmaArc, const ObservationSigmaArc &sigmaEpoch,
+                                          const_MatrixSliceRef covFunction, Matrix &W, const std::list<MatrixSlice> &A)
+{
+  try
+  {
+    covariance(times, sigmaArc, sigmaEpoch, covFunction, W);
+    cholesky(W);
+
+    for(MatrixSliceRef WA : A)
+      if(WA.size())
+        triangularSolve(1., W.trans(), WA);
+
+    return W;
   }
   catch(std::exception &e)
   {

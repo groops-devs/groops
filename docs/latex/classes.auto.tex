@@ -45,7 +45,7 @@ with
   \end{bmatrix}.
 \end{equation}
 used to constrain high-frequency temporal gravity field variations (see
-\program{KalmanSmootherLeastSquares}, \program{KalmanStaticTemporalNormals},
+\program{KalmanSmootherLeastSquares}, \program{NormalsBuildShortTimeStaticLongTime},
 \program{PreprocessingSst}).
 
 The corresponding normal equation coefficient matrix is given by
@@ -1567,7 +1567,7 @@ are usually estimated.
 
 A list of satellite PRNs (i.e for GPS: G01, G02, G03, ...) must be provided via
 \configFile{inputfileTransmitterList}{stringList}. Satellite system codes follow the
-\href{https://files.igs.org/pub/data/format/rinex304.pdf}{RINEX 3 definition}, see \reference{GnssType}{gnssType}.
+\href{https://files.igs.org/pub/data/format/rinex305.pdf}{RINEX 3 definition}, see \reference{GnssType}{gnssType}.
 All input and output files except \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition},
 \configFile{inputfileReceiverDefinition}{gnssReceiverDefinition}, and
 \configFile{outputfileUsedTransmitterList}{stringList} are read/written for each satellite.
@@ -2179,7 +2179,7 @@ A GnssType string consists of six parts (type, frequency, attribute, system, PRN
 represented by seven characters.
 \begin{itemize}
 \item The first three characters (representing type, frequency, and attribute) correspond to the observation codes of the
-      \href{https://files.igs.org/pub/data/format/rinex304.pdf}{RINEX 3 definition}.
+      \href{https://files.igs.org/pub/data/format/rinex305.pdf}{RINEX 3 definition}.
 \item The satellite system character also follows the RINEX 3 definition:
       \begin{itemize}
         \item \verb|G| = GPS
@@ -4394,7 +4394,7 @@ The accuracy or the full covariance matrix of SST is provided in
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~rightHandSide & \hfuzz=500pt sequence & \hfuzz=500pt input for observation vectors\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-unbounded.pdf}~inputfileSatelliteTracking & \hfuzz=500pt filename & \hfuzz=500pt ranging observations and corrections\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileSatelliteTracking & \hfuzz=500pt filename & \hfuzz=500pt ranging observations and corrections\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileOrbit1 & \hfuzz=500pt filename & \hfuzz=500pt kinematic positions of satellite A as observations\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileOrbit2 & \hfuzz=500pt filename & \hfuzz=500pt kinematic positions of satellite B as observations\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~sstType & \hfuzz=500pt choice & \hfuzz=500pt \\
@@ -4457,6 +4457,62 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~integrationDegree & \hfuzz=500pt uint & \hfuzz=500pt integration of forces by polynomial approximation of degree n\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt orbit interpolation by polynomial approximation of degree n\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~covarianceSst & \hfuzz=500pt \hyperref[covarianceSstType]{covarianceSst} & \hfuzz=500pt covariance matrix of satellite to satellite tracking observations\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~covariancePod1 & \hfuzz=500pt \hyperref[covariancePodType]{covariancePod} & \hfuzz=500pt covariance matrix of kinematic orbits (satellite 1)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~covariancePod2 & \hfuzz=500pt \hyperref[covariancePodType]{covariancePod} & \hfuzz=500pt covariance matrix of kinematic orbits (satellite 2)\\
+\hline
+\end{tabularx}
+
+
+\subsection{DualSstVariational}\label{observationType:dualSstVariational}
+Like \configClass{observation:sstVariational}{observationType:sstVariational} (see there for details)
+but with two simultaneous satellite-to-satellite (SST) observations.
+
+This class reads two SST observation files (\configFile{inputfileSatelliteTracking1}{instrument} and
+\configFile{inputfileSatelliteTracking2}{instrument}).
+Empirical parameters for the SST observations can be setup independently for both SST observation
+types with \configClass{parametrizationSst1}{parametrizationSatelliteTrackingType} and
+\configClass{parametrizationSst2}{parametrizationSatelliteTrackingType}.
+
+Both SST observation types are reduced by the same background models and the same impact
+of accelerometer measurements. The covariance matrix of the reduced observations should not consider
+the the instrument noise only (\configClass{covarianceSst1/2}{covarianceSstType}) but must
+take the cross correlations \configClass{covarianceAcc}{covarianceSstType} into account.
+The covariance matrix of the reduced observations is given by
+\begin{equation}
+  \M\Sigma(\begin{bmatrix} \Delta l_{SST1} \\ \Delta l_{SST2} \end{bmatrix})
+  = \begin{bmatrix} \M\Sigma_{SST1} + \M\Sigma_{ACC} & \M\Sigma_{ACC} \\
+                   \M\Sigma_{ACC} & \M\Sigma_{SST2} + \M\Sigma_{ACC}
+    \end{bmatrix}.
+\end{equation}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~rightHandSide & \hfuzz=500pt sequence & \hfuzz=500pt input for observation vectors\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileSatelliteTracking1 & \hfuzz=500pt filename & \hfuzz=500pt ranging observations and corrections\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileSatelliteTracking2 & \hfuzz=500pt filename & \hfuzz=500pt ranging observations and corrections\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileOrbit1 & \hfuzz=500pt filename & \hfuzz=500pt kinematic positions of satellite A as observations\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileOrbit2 & \hfuzz=500pt filename & \hfuzz=500pt kinematic positions of satellite B as observations\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~sstType & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~range & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~rangeRate & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~none & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileVariational1 & \hfuzz=500pt filename & \hfuzz=500pt approximate position and integrated state matrix\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileVariational2 & \hfuzz=500pt filename & \hfuzz=500pt approximate position and integrated state matrix\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~parametrizationGravity & \hfuzz=500pt \hyperref[parametrizationGravityType]{parametrizationGravity} & \hfuzz=500pt gravity field parametrization\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~parametrizationAcceleration1 & \hfuzz=500pt \hyperref[parametrizationAccelerationType]{parametrizationAcceleration} & \hfuzz=500pt orbit1 force parameters\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~parametrizationAcceleration2 & \hfuzz=500pt \hyperref[parametrizationAccelerationType]{parametrizationAcceleration} & \hfuzz=500pt orbit2 force parameters\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~parametrizationSst1 & \hfuzz=500pt \hyperref[parametrizationSatelliteTrackingType]{parametrizationSatelliteTracking} & \hfuzz=500pt satellite tracking parameter for first ranging observations\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~parametrizationSst2 & \hfuzz=500pt \hyperref[parametrizationSatelliteTrackingType]{parametrizationSatelliteTracking} & \hfuzz=500pt satellite tracking parameter for second ranging observations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~integrationDegree & \hfuzz=500pt uint & \hfuzz=500pt integration of forces by polynomial approximation of degree n\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt orbit interpolation by polynomial approximation of degree n\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~covarianceSst1 & \hfuzz=500pt \hyperref[covarianceSstType]{covarianceSst} & \hfuzz=500pt covariance matrix of first satellite to satellite tracking observations\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~covarianceSst2 & \hfuzz=500pt \hyperref[covarianceSstType]{covarianceSst} & \hfuzz=500pt covariance matrix of second satellite to satellite tracking observations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~covarianceAcc & \hfuzz=500pt \hyperref[covarianceSstType]{covarianceSst} & \hfuzz=500pt common covariance matrix of reduced satellite to satellite tracking observations\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~covariancePod1 & \hfuzz=500pt \hyperref[covariancePodType]{covariancePod} & \hfuzz=500pt covariance matrix of kinematic orbits (satellite 1)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~covariancePod2 & \hfuzz=500pt \hyperref[covariancePodType]{covariancePod} & \hfuzz=500pt covariance matrix of kinematic orbits (satellite 2)\\
 \hline

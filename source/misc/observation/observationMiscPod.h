@@ -17,6 +17,7 @@
 
 #include "base/parameterName.h"
 #include "files/fileInstrument.h"
+#include "classes/observation/observation.h"
 #include "misc/observation/covariancePod.h"
 
 /***** TYPES ***********************************/
@@ -29,7 +30,7 @@ typedef std::shared_ptr<ObservationMiscPod> ObservationMiscPodPtr;
 /** @brief Precise Orbit data.
 * @ingroup miscGroup
 * @see Observation */
-class ObservationMiscPod
+class ObservationMiscPod : public Observation
 {
 public:
   class Arc
@@ -42,14 +43,9 @@ public:
 
   virtual ~ObservationMiscPod() {}
 
-  virtual Bool setInterval(const Time &timeStart, const Time &timeEnd) = 0;
-  virtual UInt parameterCount()          const = 0;
-  virtual UInt gravityParameterCount()   const = 0;
-  virtual UInt rightSideCount()          const = 0;
-  virtual UInt arcCount()                const = 0;
-  virtual void parameterName(std::vector<ParameterName> &name) const = 0;
+  virtual Arc computeArc(UInt arcNo, CovariancePodPtr covPod=nullptr) = 0;
 
-  virtual Arc computeArc(UInt arcNo, CovariancePodPtr covPod=CovariancePodPtr(nullptr)) = 0;
+  void observation(UInt arcNo, Matrix &l, Matrix &A, Matrix &B) override;
 
   /** @brief creates an derived instance of this class. */
   static ObservationMiscPodPtr create(Config &config, const std::string &name);

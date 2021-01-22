@@ -64,3 +64,17 @@ ObservationMiscPodPtr ObservationMiscPod::create(Config &config, const std::stri
 }
 
 /***********************************************/
+
+void ObservationMiscPod::observation(UInt /*arcNo*/, Matrix &/*l*/, Matrix &/*A*/, Matrix &/*B*/)
+{
+  try
+  {
+    throw(Exception("Must not be called"));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/

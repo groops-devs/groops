@@ -49,13 +49,27 @@ ObservationMiscSstPtr ObservationMiscSst::create(Config &config, const std::stri
     ObservationMiscSstPtr observation;
     std::string type;
     readConfigChoice(config, name, type, Config::MUSTSET, "", "obervation equations (Sst)");
-    if(readConfigChoiceElement(config, "sstIntegral"        , type, "integral approach"))
+    if(readConfigChoiceElement(config, "sstIntegral",    type, "integral approach"))
       observation = ObservationMiscSstPtr(new ObservationMiscSstIntegral(config));
-    if(readConfigChoiceElement(config, "sstVariational"     , type, "variational equations"))
+    if(readConfigChoiceElement(config, "sstVariational", type, "variational equations"))
       observation = ObservationMiscSstPtr(new ObservationMiscSstVariational(config));
     endChoice(config);
 
     return observation;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void ObservationMiscSst::observation(UInt /*arcNo*/, Matrix &/*l*/, Matrix &/*A*/, Matrix &/*B*/)
+{
+  try
+  {
+    throw(Exception("Must not be called"));
   }
   catch(std::exception &e)
   {

@@ -24,6 +24,7 @@
 #include "observationPodVariational.h"
 #include "observationSstIntegral.h"
 #include "observationSstVariational.h"
+#include "observationDualSstVariational.h"
 #include "observationGradiometer.h"
 #include "observationTerrestrial.h"
 #include "observationDeflections.h"
@@ -39,6 +40,7 @@ GROOPS_REGISTER_CLASS(Observation, "observationType",
                       ObservationPodEnergy,
                       ObservationSstVariational,
                       ObservationSstIntegral,
+                      ObservationDualSstVariational,
                       ObservationGradiometer,
                       ObservationTerrestrial,
                       ObservationDeflections,
@@ -71,6 +73,8 @@ ObservationPtr Observation::create(Config &config, const std::string &name)
       ptr = std::make_shared<ObservationSstVariational>(config);
     if(readConfigChoiceElement(config, "sstIntegral",         type, "sst data and pod"))
       ptr = std::make_shared<ObservationSstIntegral>(config);
+    if(readConfigChoiceElement(config, "dualSstVariational",  type, "dual sst data and pod"))
+      ptr = std::make_shared<ObservationDualSstVariational>(config);
     if(readConfigChoiceElement(config, "gradiometer",         type, "GOCE gradiometry"))
       ptr = std::make_shared<ObservationGradiometer>(config);
     if(readConfigChoiceElement(config, "terrestrial",         type, "e.g. gravity anomalies, GPS/levelling"))

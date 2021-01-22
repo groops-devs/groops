@@ -53,14 +53,14 @@ public:
   ObservationMiscPodVariational(Config &config);
  ~ObservationMiscPodVariational() {}
 
-  Bool setInterval(const Time &timeStart, const Time &timeEnd);
-  UInt parameterCount()          const {return countAParameter;}
-  UInt gravityParameterCount()   const {return gravityCount;}
-  UInt rightSideCount()          const {return 1;}
-  UInt arcCount()                const {return countArc;}
-  void parameterName(std::vector<ParameterName> &name) const;
+  Bool setInterval(const Time &timeStart, const Time &timeEnd) override;
+  UInt parameterCount()          const override {return countAParameter;}
+  UInt gravityParameterCount()   const override {return gravityCount;}
+  UInt rightSideCount()          const override {return 1;}
+  UInt arcCount()                const override {return countArc;}
+  void parameterName(std::vector<ParameterName> &name) const override;
 
-  Arc computeArc(UInt arcNo, CovariancePodPtr cov=CovariancePodPtr(nullptr));
+  Arc computeArc(UInt arcNo, CovariancePodPtr cov) override;
 };
 
 /***********************************************/

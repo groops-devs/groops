@@ -129,6 +129,7 @@ classes/normalEquation/normalEquationRegularization.cpp
 classes/normalEquation/normalEquationRegularizationGeneralized.cpp
 classes/observation/observation.cpp
 classes/observation/observationDeflections.cpp
+classes/observation/observationDualSstVariational.cpp
 classes/observation/observationGradiometer.cpp
 classes/observation/observationPodAcceleration.cpp
 classes/observation/observationPodEnergy.cpp
@@ -199,6 +200,7 @@ misc/observation/covariancePod.cpp
 misc/observation/covarianceSst.cpp
 misc/observation/integralEquation.cpp
 misc/observation/observationMisc.cpp
+misc/observation/observationMiscDualSstVariational.cpp
 misc/observation/observationMiscPod.cpp
 misc/observation/observationMiscPodIntegral.cpp
 misc/observation/observationMiscPodVariational.cpp
@@ -207,8 +209,9 @@ misc/observation/observationMiscSstIntegral.cpp
 misc/observation/observationMiscSstVariational.cpp
 misc/observation/variationalEquation.cpp
 misc/observation/variationalEquationFromFile.cpp
-misc/miscGriddedData.cpp
 misc/kalmanProcessing.cpp
+misc/miscGriddedData.cpp
+misc/normalsShortTimeStaticLongTime.cpp
 misc/varianceComponentEstimation.cpp
 
 plot/plotAxis.cpp
@@ -335,7 +338,6 @@ programs/kalmanFilter/kalmanBuildNormals.cpp
 programs/kalmanFilter/kalmanFilter.cpp
 programs/kalmanFilter/kalmanSmoother.cpp
 programs/kalmanFilter/kalmanSmootherLeastSquares.cpp
-programs/kalmanFilter/kalmanStaticTemporalNormals.cpp
 programs/misc/digitalFilter2FrequencyResponse.cpp
 programs/misc/digitalFilter2ImpulseResponse.cpp
 programs/misc/earthOrientationParameterTimeSeries.cpp
@@ -359,6 +361,7 @@ programs/misc/timeSeriesCreate.cpp
 programs/misc/variational2Orbit.cpp
 programs/normals/normalsAccumulate.cpp
 programs/normals/normalsBuild.cpp
+programs/normals/normalsBuildShortTimeStaticLongTime.cpp
 programs/normals/normalsCreate.cpp
 programs/normals/normalsEliminate.cpp
 programs/normals/normalsMultiplyAdd.cpp
@@ -383,6 +386,7 @@ programs/plot/plotGraph.cpp
 programs/plot/plotMap.cpp
 programs/plot/plotMatrix.cpp
 programs/plot/plotSphericalHarmonicsTriangle.cpp
+programs/preprocessing/preprocessingDualSst.cpp
 programs/preprocessing/preprocessingGradiometer.cpp
 programs/preprocessing/preprocessingPod.cpp
 programs/preprocessing/preprocessingSst.cpp

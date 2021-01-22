@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - PreprocessingDualSst</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>PreprocessingDualSst</h1><p>
+
+This programs processes satellite-to-satellite-tracking (SST) and orbit observations in a GRACE like configuration.
+Four different observation groups are considered separatly: two types of SST and POD1/POD2 for the two satellites.
+This program works similar to <a class="groops-program" href="PreprocessingSst.html">PreprocessingSst</a>, see there for details. Here only the settings explained,
+which are different.</p><p>Both SST observation types are reduced by the same background models and the same impact
+of accelerometer measurements. The covariance matrix of the reduced observations should not consider
+the the instrument noise only (<a class="groops-class" href="covarianceSstType.html">covarianceSst1/2</a>) but must
+take the cross correlations <a class="groops-class" href="covarianceSstType.html">covarianceAcc</a> into account.
+The covariance matrix of the reduced observations is given by
+\[
+  \M\Sigma(\begin{bmatrix} \Delta l_{SST1} \\ \Delta l_{SST2} \end{bmatrix})
+  = \begin{bmatrix} \M\Sigma_{SST1} + \M\Sigma_{ACC} & \M\Sigma_{ACC} \\
+                   \M\Sigma_{ACC} & \M\Sigma_{SST2} + \M\Sigma_{ACC}
+    \end{bmatrix}.
+\]</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileSolution</div></div></td><td>filename</td><td>estimated parameter vector (static part only)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileSigmax</div></div></td><td>filename</td><td>standard deviations of the parameters (sqrt of the diagonal of the inverse normal equation)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileParameterName</div></div></td><td>filename</td><td>estimated signal parameters (index is appended)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateArcSigmas</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSigmasPerArcSst1</div></div></td><td>filename</td><td>accuracies of each arc (SST1)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSigmasPerArcSst2</div></div></td><td>filename</td><td>accuracies of each arc (SST2)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSigmasPerArcAcc</div></div></td><td>filename</td><td>accuracies of each arc (ACC)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSigmasPerArcPod1</div></div></td><td>filename</td><td>accuracies of each arc (POD1)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSigmasPerArcPod2</div></div></td><td>filename</td><td>accuracies of each arc (POD2)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateEpochSigmas</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSigmasPerEpochSst1</div></div></td><td>filename</td><td>accuracies of each epoch (SST1)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSigmasPerEpochSst2</div></div></td><td>filename</td><td>accuracies of each epoch (SST2)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSigmasPerEpochAcc</div></div></td><td>filename</td><td>accuracies of each epoch (ACC)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSigmasPerEpochPod1</div></div></td><td>filename</td><td>accuracies of each epoch (POD1)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSigmasPerEpochPod2</div></div></td><td>filename</td><td>accuracies of each epoch (POD2)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateCovarianceFunctions</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileCovarianceFunctionSst1</div></div></td><td>filename</td><td>covariance function</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileCovarianceFunctionSst2</div></div></td><td>filename</td><td>covariance function</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileCovarianceFunctionAcc</div></div></td><td>filename</td><td>covariance function</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileCovarianceFunctionPod1</div></div></td><td>filename</td><td>covariance functions for along, cross, radial direction</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileCovarianceFunctionPod2</div></div></td><td>filename</td><td>covariance functions for along, cross, radial direction</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeResiduals</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSst1Residuals</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileSst2Residuals</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileAccResiduals</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfilePod1Residuals</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfilePod2Residuals</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">observation</div></div></td><td>choice</td><td>obervation equations (Sst)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">dualSstVariational</div></div></td><td>sequence</td><td>two SST observations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">rightHandSide</div></div></td><td>sequence</td><td>input for observation vectors</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset-unbounded">inputfileSatelliteTracking1</div></div></td><td>filename</td><td>ranging observations and corrections</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset-unbounded">inputfileSatelliteTracking2</div></div></td><td>filename</td><td>ranging observations and corrections</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config optional">inputfileOrbit1</div></div></td><td>filename</td><td>kinematic positions of satellite A as observations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config optional">inputfileOrbit2</div></div></td><td>filename</td><td>kinematic positions of satellite B as observations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">sstType</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset">range</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset">rangeRate</div></div></td><td></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset">none</div></div></td><td></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileVariational1</div></div></td><td>filename</td><td>approximate position and integrated state matrix</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfileVariational2</div></div></td><td>filename</td><td>approximate position and integrated state matrix</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationGravity</div></div></td><td><a href="parametrizationGravityType.html">parametrizationGravity</a></td><td>gravity field parametrization</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationAcceleration1</div></div></td><td><a href="parametrizationAccelerationType.html">parametrizationAcceleration</a></td><td>orbit1 force parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationAcceleration2</div></div></td><td><a href="parametrizationAccelerationType.html">parametrizationAcceleration</a></td><td>orbit2 force parameters</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationSst1</div></div></td><td><a href="parametrizationSatelliteTrackingType.html">parametrizationSatelliteTracking</a></td><td>satellite tracking parameter for first ranging observations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional-unbounded">parametrizationSst2</div></div></td><td><a href="parametrizationSatelliteTrackingType.html">parametrizationSatelliteTracking</a></td><td>satellite tracking parameter for second ranging observations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">integrationDegree</div></div></td><td>uint</td><td>integration of forces by polynomial approximation of degree n</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>orbit interpolation by polynomial approximation of degree n</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">covarianceSst1</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>apriori factor of covariance function</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerArc</div></div></td><td>filename</td><td>apriori different accuaries for each arc (multiplicated with sigma)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerEpoch</div></div></td><td>filename</td><td>apriori different accuaries for each epoch</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovarianceFunction</div></div></td><td>filename</td><td>approximate covariances in time</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional-unbounded">inputfileCovarianceMatrixArc</div></div></td><td>filename</td><td>Must be given per sst arc with correct dimensions.</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasCovarianceMatrixArc</div></div></td><td>filename</td><td>Vector with one sigma for each <inputfileCovarianceMatrixArc></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">sampling</div></div></td><td>double</td><td>[seconds] sampling of the covariance function</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">covarianceSst2</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>apriori factor of covariance function</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerArc</div></div></td><td>filename</td><td>apriori different accuaries for each arc (multiplicated with sigma)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerEpoch</div></div></td><td>filename</td><td>apriori different accuaries for each epoch</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovarianceFunction</div></div></td><td>filename</td><td>approximate covariances in time</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional-unbounded">inputfileCovarianceMatrixArc</div></div></td><td>filename</td><td>Must be given per sst arc with correct dimensions.</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasCovarianceMatrixArc</div></div></td><td>filename</td><td>Vector with one sigma for each <inputfileCovarianceMatrixArc></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">covarianceAcc</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>apriori factor of covariance function</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerArc</div></div></td><td>filename</td><td>apriori different accuaries for each arc (multplicated with sigma)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerEpoch</div></div></td><td>filename</td><td>apriori different accuaries for each epoch</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovarianceFunction</div></div></td><td>filename</td><td>approximate covariances in time</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional-unbounded">inputfileCovarianceMatrixArc</div></div></td><td>filename</td><td>Must be given per sst arc with correct dimensions.</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasCovarianceMatrixArc</div></div></td><td>filename</td><td>Vector with one sigma for each <inputfileCovarianceMatrixArc></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">covariancePod1</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>apriori factor of covariance function</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerArc</div></div></td><td>filename</td><td>apriori different accuaries for each arc (multiplicated with sigma)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerEpoch</div></div></td><td>filename</td><td>apriori different accuaries for each epoch</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovarianceFunction</div></div></td><td>filename</td><td>approximate covariances in time</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovariancePodEpoch</div></div></td><td>filename</td><td>3x3 epoch covariances</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">sampling</div></div></td><td>double</td><td>[seconds] sampling of the covariance function</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">covariancePod2</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>apriori factor of covariance function</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerArc</div></div></td><td>filename</td><td>apriori different accuaries for each arc (multiplicated with sigma)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerEpoch</div></div></td><td>filename</td><td>apriori different accuaries for each epoch</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovarianceFunction</div></div></td><td>filename</td><td>approximate covariances in time</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovariancePodEpoch</div></div></td><td>filename</td><td>3x3 epoch covariances</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">sampling</div></div></td><td>double</td><td>[seconds] sampling of the covariance function</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateShortTimeVariations</div></div></td><td>sequence</td><td>co-estimate short time gravity field variations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">estimateSigma</div></div></td><td>boolean</td><td>estimate standard deviation via VCE</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">autoregressiveModelSequence</div></div></td><td><a href="autoregressiveModelSequenceType.html">autoregressiveModelSequence</a></td><td>AR model sequence for constraining short time gravity variations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset-unbounded">parameterSelection</div></div></td><td><a href="parameterSelectorType.html">parameterSelector</a></td><td>parameters describing the short time gravity field</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">downweightPod</div></div></td><td>double</td><td>downweight factor for POD</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileArcList</div></div></td><td>filename</td><td>list to correspond points of time to arc numbers</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">iterationCount</div></div></td><td>uint</td><td>(maximum) number of iterations for the estimation of calibration parameter and error PSD</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableNameIterations</div></div></td><td>string</td><td>All output fileNames in preprocessing iteration are expanded with this variable prior to writing to disk</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">defaultBlockSize</div></div></td><td>uint</td><td>block size of static normal equation blocks</td></tr>
+</table>
+This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.
+
+        </div>
+    </main>
+</body>
+</html>

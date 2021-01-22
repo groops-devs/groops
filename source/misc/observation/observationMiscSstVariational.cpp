@@ -39,7 +39,7 @@ ObservationMiscSstVariational::ObservationMiscSstVariational(Config &config)
 
     if(readConfigSequence(config, "rightHandSide", Config::MUSTSET, "", "input for observation vectors"))
     {
-      readConfig(config, "inputfileSatelliteTracking", fileNameSst,  Config::OPTIONAL, "", "ranging observations and corrections");
+      readConfig(config, "inputfileSatelliteTracking", fileNameSst,  Config::MUSTSET,  "", "ranging observations and corrections");
       readConfig(config, "inputfileOrbit1",            fileNamePod1, Config::OPTIONAL, "", "kinematic positions of satellite A as observations");
       readConfig(config, "inputfileOrbit2",            fileNamePod2, Config::OPTIONAL, "", "kinematic positions of satellite B as observations");
       endSequence(config);

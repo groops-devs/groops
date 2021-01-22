@@ -481,10 +481,8 @@ void PreprocessingPod::buildNormals(UInt arcNo)
     Matrix Wl = observationArc.at(arcNo).l;
     Matrix WA = observationArc.at(arcNo).A;
     Matrix WB = observationArc.at(arcNo).B;
-    Matrix W;
-    ObservationSigmaArc sigmaEpoch;
-    Covariance3dArc     covPodEpoch = fileCovPodEpoch.readArc(arcNo);
-    CovariancePod::decorrelate(observationArc.at(arcNo).pod, sigmaPod(arcNo), sigmaEpoch, covPodEpoch, covFuncPod, W, {Wl, WA, WB});
+    CovariancePod::decorrelate(observationArc.at(arcNo).pod, sigmaPod(arcNo), ObservationSigmaArc(),
+                               fileCovPodEpoch.readArc(arcNo), covFuncPod, {Wl, WA, WB});
 
     // eliminate arc dependent parameters
     // ----------------------------------
@@ -501,33 +499,29 @@ void PreprocessingPod::buildNormals(UInt arcNo)
 
     // build normals
     // -------------
-    this->lPl      += quadsum(l_bar);
-    this->obsCount += l_bar.rows();
-    Matrix n2 = A_bar.trans() * l_bar;
-    Matrix N2(A_bar.columns(), Matrix::SYMMETRIC);
-    rankKUpdate(1., A_bar, N2);
-    fillSymmetric(N2);
-
+    lPl      += quadsum(l_bar);
+    obsCount += l_bar.rows();
     for(UInt i=0; i<arcIndexA.at(arcNo).size(); i++)
     {
       const UInt idxN1 = arcIndexN.at(arcNo).at(i);
       const UInt idxA1 = arcIndexA.at(arcNo).at(i);
-
       // right hand sides
-      axpy(1., n2.row(idxA1, normals.blockSize(idxN1)), n.row(normals.blockIndex(idxN1), normals.blockSize(idxN1)));
-
-      // normal matrix
-      for(UInt k=0; k<arcIndexA.at(arcNo).size(); k++)
-        if(arcIndexN.at(arcNo).at(k)>=idxN1)
-        {
-          const UInt idxN2 = arcIndexN.at(arcNo).at(k);
-          const UInt idxA2 = arcIndexA.at(arcNo).at(k);
-          if(normals.N(idxN1, idxN2).size() == 0)
-            normals.N(idxN1, idxN2) = ((idxN1==idxN2) ? Matrix(normals.blockSize(idxN1), Matrix::SYMMETRIC)
-                                                      : Matrix(normals.blockSize(idxN1), normals.blockSize(idxN2)));
-          axpy(1., N2.slice(idxA1, idxA2, normals.blockSize(idxN1), normals.blockSize(idxN2)), normals.N(idxN1, idxN2));
-        }
-    } // for(i)
+      matMult(1., A_bar.column(idxA1, normals.blockSize(idxN1)).trans(), l_bar, n.row(normals.blockIndex(idxN1), normals.blockSize(idxN1)));
+      // normal matrix diagonal block
+      if(normals.N(idxN1, idxN1).size() == 0)
+        normals.N(idxN1, idxN1) = Matrix(normals.blockSize(idxN1), Matrix::SYMMETRIC);
+      rankKUpdate(1.0, A_bar.column(idxA1, normals.blockSize(idxN1)), normals.N(idxN1, idxN1));
+      // normal matrix, other blocks
+      for(UInt k=1; k<arcIndexA.at(arcNo).size(); k++)
+      {
+        const UInt idxN2 = arcIndexN.at(arcNo).at(k);
+        const UInt idxA2 = arcIndexA.at(arcNo).at(k);
+        if(normals.N(idxN1, idxN2).size() == 0)
+          normals.N(idxN1, idxN2) = Matrix(normals.blockSize(idxN1), normals.blockSize(idxN2));
+        matMult(1.0, A_bar.column(idxA1, normals.blockSize(idxN1)).trans(),
+                     A_bar.column(idxA2, normals.blockSize(idxN2)), normals.N(idxN1, idxN2));
+      }
+    }
   }
   catch(std::exception &e)
   {
@@ -553,10 +547,8 @@ void PreprocessingPod::computeRedundancies(UInt arcNo)
     Matrix Wl = observationArc.at(arcNo).l;
     Matrix WA = observationArc.at(arcNo).A;
     Matrix WB = observationArc.at(arcNo).B;
-    Matrix WPod;
-    ObservationSigmaArc sigmaEpoch;
-    Covariance3dArc     covPodEpoch = fileCovPodEpoch.readArc(arcNo);
-    CovariancePod::decorrelate(observationArc.at(arcNo).pod, sigmaPod(arcNo), sigmaEpoch, covPodEpoch, covFuncPod, WPod, {Wl, WA, WB});
+    Matrix WPod = CovariancePod::decorrelate(observationArc.at(arcNo).pod, sigmaPod(arcNo), ObservationSigmaArc(),
+                                             fileCovPodEpoch.readArc(arcNo), covFuncPod, {Wl, WA, WB});
 
     // eliminate arc dependent parameters
     // ----------------------------------
@@ -645,11 +637,8 @@ void PreprocessingPod::computeResiduals(UInt arcNo)
     {
       Matrix We = e;
       Matrix WB = observationArc.at(arcNo).B;
-
-      Matrix WPod;
-      ObservationSigmaArc sigmaEpoch;
-      Covariance3dArc     covPodEpoch = fileCovPodEpoch.readArc(arcNo);
-      CovariancePod::decorrelate(observationArc.at(arcNo).pod, sigmaPod(arcNo), sigmaEpoch, covPodEpoch, covFuncPod, WPod, {We, WB});
+      CovariancePod::decorrelate(observationArc.at(arcNo).pod, sigmaPod(arcNo), ObservationSigmaArc(),
+                                 fileCovPodEpoch.readArc(arcNo), covFuncPod, {We, WB});
 
       Vector tau = QR_decomposition(WB);
       QTransMult(WB, tau, We); // transform observations: l:= Q'l

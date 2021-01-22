@@ -17,6 +17,7 @@
 
 #include "base/parameterName.h"
 #include "files/fileInstrument.h"
+#include "classes/observation/observation.h"
 #include "misc/observation/covarianceSst.h"
 #include "misc/observation/covariancePod.h"
 
@@ -30,7 +31,7 @@ typedef std::shared_ptr<ObservationMiscSst> ObservationMiscSstPtr;
 /** @brief Satellite to satellite tracking.
 * @ingroup miscGroup
 * @see Observation */
-class ObservationMiscSst
+class ObservationMiscSst : public Observation
 {
 public:
   class Arc
@@ -46,19 +47,14 @@ public:
 
   virtual ~ObservationMiscSst() {}
 
-  virtual Bool setInterval(const Time &timeStart, const Time &timeEnd) = 0;
-  virtual UInt parameterCount()          const = 0;
-  virtual UInt gravityParameterCount()   const = 0;
-  virtual UInt rightSideCount()          const = 0;
-  virtual UInt arcCount()                const = 0;
-  virtual void parameterName(std::vector<ParameterName> &name) const = 0;
-
   virtual Arc computeArc(UInt arcNo,
-                         CovarianceSstPtr covSst =CovarianceSstPtr(nullptr),
-                         CovariancePodPtr covPod1=CovariancePodPtr(nullptr),
-                         CovariancePodPtr covPod2=CovariancePodPtr(nullptr),
+                         CovarianceSstPtr covSst =nullptr,
+                         CovariancePodPtr covPod1=nullptr,
+                         CovariancePodPtr covPod2=nullptr,
                          const std::vector<Rotary3d> &rotSat1={},
                          const std::vector<Rotary3d> &rotSat2={}) = 0;
+
+  void observation(UInt arcNo, Matrix &l, Matrix &A, Matrix &B) override;
 
   /** @brief creates an derived instance of this class. */
   static ObservationMiscSstPtr create(Config &config, const std::string &name);

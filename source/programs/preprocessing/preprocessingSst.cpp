@@ -15,45 +15,43 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This programs processes satellite-to-satellite-tracking (SST) and orbit observations in a GRACE like configuration.
+This program processes satellite-to-satellite-tracking (SST) and kinematic orbit observations in a GRACE like configuration.
 Three different observation groups are considered separatly: SST and POD1/POD2 for the two satellites.
 This program works similar to \program{PreprocessingPod}, see there for details. Here only deviations
 in the settings are explained.
 
-Precise orbit data (POD) contain often systematic errors additional to stochastic noise. In this case the
-variance component estimation fails and assign too much weight to the data. Therefore an additional
+Precise orbit data (POD) often contains systematic errors in addition to stochastic noise. In this case the
+variance component estimation fails and assigns too much weight to the POD data. Therefore an additional
 \config{downweightPod} factor can be applied to the standard deviation of POD for the next least squares adjustment
 in the iteration. This factor should also applied as \config{sigma} in \configClass{observation}{observationType}
 for computation of the final solution e.g. with \program{NormalsSolverVCE}.
 
-Daily variations (or other intervals) of the gravity field can be co-estimated together with the static/monthly
-mean gravity field. The \configClass{covarianceSignal:parametrizationGravity}{parametrizationGravityType}
-describes the daily gravity field parameters and must agree with the parametrization of the covariance matrices.
-Furthermore it must be part of
-the \configClass{parametrizationGravity}{parametrizationGravityType} selected in \config{observation}.
-The intervals are defined in \config{arcList}, created by \program{InstrumentSynchronize}.
-These daily estimates must be constrained by providing
-\config{inputfileCovariance} matrices in \config{covarianceSignal}. The first file provides the spatial signal
-covariances and the second, third and so on files the spatial and temporal covariances between one day and the
-next days respectively. The covariance matrices are the same as used in \program{KalmanFilter} and can be
-generated with \program{Gravityfield2EmpiricalCovariance}. It is possible to scale the covariance matrices with
-\config{covarianceSignal:sigma} and to estimate the factor by means of variance component estimation.
-The daily (or in general interval) estimates can be written with \configFile{outputfileSolutionSignal}{matrix}.
-For every interval a file is written with an index appended (counting from zero) to the file name.
+Short time variations of the gravity field can be co-estimated together with the static/monthly
+mean gravity field. The short time parameters must also be set in \configClass{observation:parametrizationGravity}{parametrizationGravityType} and
+can then be selected by \configClass{estimateShortTimeVariations:parameterSelection}{parameterSelectorType}.
+If these parameters are not time variable, for example when a range of static parameters is selected,
+they are set up as constant for each time interval defined in \config{inputfileArcList}. The parameters are constrained by an
+\configClass{estimateShortTimeVariations:autoregressiveModelSequence}{autoregressiveModelSequenceType}. The weight of
+the constrain equations in terms of the standard deviation can be estimated by means of
+Variance Component Estimation (VCE) if \config{estimateShortTimeVariations:estimateSigma} is set.
+The mathematical background of this co-estimation can be found in:
+
+Kvas, A., Mayer-Gürr, T. GRACE gravity field recovery with background model uncertainties.
+J Geod 93, 2543–2552 (2019). \url{https://doi.org/10.1007/s00190-019-01314-1}.
 )";
 
 /***********************************************/
 
 #include "programs/program.h"
-#include "parallel/matrixDistributed.h"
 #include "files/fileArcList.h"
 #include "files/fileMatrix.h"
 #include "files/fileInstrument.h"
 #include "files/fileParameterName.h"
-#include "classes/parametrizationGravity/parametrizationGravity.h"
+#include "classes/parameterSelector/parameterSelector.h"
 #include "misc/observation/observationMiscSst.h"
 #include "misc/varianceComponentEstimation.h"
 #include "misc/kalmanProcessing.h"
+#include "misc/normalsShortTimeStaticLongTime.h"
 
 /***** CLASS ***********************************/
 
@@ -65,43 +63,32 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 
 private:
-  ObservationMiscSstPtr observationMisc;
+  ObservationMiscSstPtr                observationMisc;
   std::vector<ObservationMiscSst::Arc> observationArc;
-  InstrumentFile fileCovEpochPod1, fileCovEpochPod2;
-
-  std::vector<UInt> arcsInterval;
-  std::vector<Time> timesInterval;
-  std::vector< std::vector<UInt> > arcIndexN;
-  std::vector< std::vector<UInt> > arcIndexA;
+  InstrumentFile                       fileCovEpochPod1, fileCovEpochPod2;
+  std::vector<UInt>                    arcsInterval;
+  std::vector<Time>                    timesInterval;
 
   Bool estimateCovarianceFunctionVCE;
-  Bool estimateVarianceFactorsSstArcWiseCovariances;
+  Bool estimateSigmasCovSst;
   Bool estimateArcSigmas;
   Bool estimateEpochSigmas;
   Bool estimateResiduals;
-  Bool estimateArModelSigma;
+  Bool estimateSigmaShortTimeModel;
 
   // normal equations
   // ----------------
-  std::vector<ParameterName> blockParaName; // name of first parameter in each block
-  std::vector<UInt> blockInterval;
-  std::vector<UInt> blockIndexHighFrequency;
-  std::vector<UInt> blockIndexInterval;
-  UInt              blockIndexStatic;
-  MatrixDistributed normals;
-  Matrix n;        // right hand sides
-  Matrix x;        // solution
-  Matrix Wz;       // monte carlo vector for redundancy computation
-  Double lPl;      // =l'Pl, weighted norm of the observations
-  UInt   obsCount; // number of observations
+  NormalsShortTimeStaticLongTime normals;
+  Matrix x;  // solution
+  Matrix Wz; // monte carlo vector for redundancy computation
 
   // covariance
   // ----------
   Vector  sigmaSst, sigmaPod1, sigmaPod2;
   Vector  sigmaSstNew, sigmaPod1New, sigmaPod2New;
   std::vector<ObservationSigmaArc> arcListEpochSigmaSst, arcListEpochSigmaPod1, arcListEpochSigmaPod2;
-  std::vector<std::vector<Matrix>> covMatrixSst; // Several independant matrices per arc
-  Vector  covMatrixSstSigmas, ePeCovMatrixSst, redundancyCovMatrixSst;
+  std::vector<std::vector<Matrix>> CovSst; // Several independant matrices per arc
+  Vector  sigmasCovSst, ePeCovSst, redundancyCovSst;
   Matrix  covFuncSst, covFuncPod1, covFuncPod2;
   Matrix  PsdSst, PsdPod1, PsdPod2;
   Matrix  ePeSst, ePePod1, ePePod2;
@@ -113,22 +100,12 @@ private:
   std::vector<SatelliteTrackingArc> arcListResidualsSst;
   std::vector<OrbitArc> arcListResidualsPod1, arcListResidualsPod2;
 
-  void initNormals(UInt countSignalParameter, const std::vector<ParameterName> &paraNameSignal, Parallel::CommunicatorPtr comm);
-  void computeObservationEquation(UInt arcNo);
+  UInt findInterval(UInt arcNo) const;
+  void decorrelate(UInt arcNo, UInt countSst, UInt countPod1, UInt countPod2, Matrix &WSst, Matrix &WPod1, Matrix &WPod2, const std::list<MatrixSlice> &A);
   void buildNormals(UInt arcNo);
   void computeRedundancies(UInt arcNo);
   void computeResiduals(UInt arcNo);
   void computeEpochSigmas(UInt arcNo);
-  Arc  collectArcSst (UInt arcNo) const {return arcListResidualsSst.at(arcNo);}
-  Arc  collectArcPod1(UInt arcNo) const {return arcListResidualsPod1.at(arcNo);}
-  Arc  collectArcPod2(UInt arcNo) const {return arcListResidualsPod2.at(arcNo);}
-  Arc  collectEpochSigmasSst (UInt arcNo) const {return arcListEpochSigmaSst.at(arcNo);}
-  Arc  collectEpochSigmasPod1(UInt arcNo) const {return arcListEpochSigmaPod1.at(arcNo);}
-  Arc  collectEpochSigmasPod2(UInt arcNo) const {return arcListEpochSigmaPod2.at(arcNo);}
-
-  // Arc-wise SST covariance matrices
-  void initArcWiseSSTCovarianceMatrices(UInt arcNo, const std::vector<FileName> names);
-  Matrix arcWiseSSTCovarianceMatrix(UInt arcNo) const;
 };
 
 GROOPS_REGISTER_PROGRAM(PreprocessingSst, PARALLEL, "Estimate covariance function / arc weights.", Preprocessing, Covariance, Residuals, KalmanFilter)
@@ -141,44 +118,36 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
   try
   {
     estimateCovarianceFunctionVCE = estimateArcSigmas = estimateEpochSigmas = estimateResiduals = FALSE;
-    estimateArModelSigma = FALSE;
-    estimateVarianceFactorsSstArcWiseCovariances = FALSE;
+    estimateSigmaShortTimeModel = FALSE;
+    estimateSigmasCovSst = FALSE;
 
     FileName fileNameSolution,         fileNameSigmax,            fileNameParaName;
-    FileName fileNameHighFrequency,    fileNameInterval;
     FileName fileNameOutArcSigmaSst,   fileNameOutArcSigmaPod1,   fileNameOutArcSigmaPod2;
     FileName fileNameOutEpochSigmaSst, fileNameOutEpochSigmaPod1, fileNameOutEpochSigmaPod2;
     FileName fileNameOutCovSst,        fileNameOutCovPod1,        fileNameOutCovPod2;
-    FileName fileNameOutVarianceFactorsSst;
+    FileName fileNameOutSigmasCovSst;
     FileName fileNameResidualsSst,     fileNameResidualsPod1,     fileNameResidualsPod2;
 
     FileName fileNameArcList;
     FileName fileNameInArcSigmaSst,   fileNameInArcSigmaPod1,   fileNameInArcSigmaPod2;
     FileName fileNameInEpochSigmaSst, fileNameInEpochSigmaPod1, fileNameInEpochSigmaPod2;
     FileName fileNameInCovSst,        fileNameInCovPod1,        fileNameInCovPod2;
-    std::vector<FileName> fileNamesCovarianceMatricesSst;
-    FileName fileNameInCovMatrixSigmas;
+    FileName fileNameInSigmasCovSst;
+    std::vector<FileName> fileNamesCovSst;
 
-    FileName fileNameInCovEpochPod1,  fileNameInCovEpochPod2;
-    Double   sigma0Sst=1, sigma0Pod1=1, sigma0Pod2=1;
-    Double   adjustmentThreshold;
-    UInt     iterCount;
-    Double   downweightPod;
-
-    Double sigma0HighFrequency = 1.0;
-    AutoregressiveModelSequencePtr arSequence;
-    std::vector<ParameterName> parameterNamesHighFrequency;
-
-    // loops
+    FileName    fileNameInCovEpochPod1,  fileNameInCovEpochPod2;
+    Double      sigma0Sst=1, sigma0Pod1=1, sigma0Pod2=1;
+    UInt        iterCount;
     std::string iterVariableName;
+    Double      downweightPod;
+    UInt        defaultBlockSize;
 
-    renameDeprecatedConfig(config, "arcList", "inputfileArcList", date2time(2020, 7, 7));
+    AutoregressiveModelSequencePtr arSequence;
+    ParameterSelectorPtr           parameterShortTime;
 
-    readConfig(config, "outputfileSolution",              fileNameSolution,      Config::OPTIONAL, "", "estimated parameter vector (static part only)");
-    readConfig(config, "outputfileSigmax",                fileNameSigmax,        Config::OPTIONAL, "", "standard deviations of the parameters (sqrt of the diagonal of the inverse normal equation)");
-    readConfig(config, "outputfileParameterName",         fileNameParaName,      Config::OPTIONAL, "", "estimated signal parameters (index is appended)");
-    readConfig(config, "outputfileSolutionHighFrequency", fileNameHighFrequency, Config::OPTIONAL, "", "estimated high-frequency gravity field parameters (index is appended for each interval)");
-    readConfig(config, "outputfileSolutionInterval",      fileNameInterval,      Config::OPTIONAL, "", "other interval parameters (index is appended)");
+    readConfig(config, "outputfileSolution",      fileNameSolution, Config::OPTIONAL, "", "estimated parameter vector (static part only)");
+    readConfig(config, "outputfileSigmax",        fileNameSigmax,   Config::OPTIONAL, "", "standard deviations of the parameters (sqrt of the diagonal of the inverse normal equation)");
+    readConfig(config, "outputfileParameterName", fileNameParaName, Config::OPTIONAL, "", "estimated signal parameters (index is appended)");
     if(readConfigSequence(config, "estimateArcSigmas", Config::OPTIONAL, "", ""))
     {
       estimateArcSigmas = TRUE;
@@ -203,10 +172,10 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
       readConfig(config, "outputfileCovarianceFunctionPod2", fileNameOutCovPod2, Config::OPTIONAL, "", "covariance functions for along, cross, radial direction");
       endSequence(config);
     }
-    if(readConfigSequence(config, "estimateSstArcWiseCovariancesVarianceFactors", Config::OPTIONAL, "", ""))
+    if(readConfigSequence(config, "estimateSstArcCovarianceSigmas", Config::OPTIONAL, "", ""))
     {
-      estimateVarianceFactorsSstArcWiseCovariances = TRUE;
-      readConfig(config, "outputfileVarianceFactors",  fileNameOutVarianceFactorsSst,  Config::OPTIONAL, "", "one variance factor per matrix");
+      estimateSigmasCovSst = TRUE;
+      readConfig(config, "outputfileSigmasCovarianceMatrixArc", fileNameOutSigmasCovSst, Config::OPTIONAL, "", "one variance factor per matrix");
       endSequence(config);
     }
     if(readConfigSequence(config, "computeResiduals", Config::OPTIONAL, "", ""))
@@ -220,20 +189,20 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
     readConfig(config, "observation", observationMisc, Config::MUSTSET,  "", "");
     if(readConfigSequence(config, "covarianceSst", Config::MUSTSET, "", ""))
     {
-      readConfig(config, "sigma",                              sigma0Sst,                      Config::DEFAULT,  "1", "apriori factor of covariance function");
-      readConfig(config, "inputfileSigmasPerArc",              fileNameInArcSigmaSst,          Config::OPTIONAL, "",  "apriori different accuaries for each arc (multiplicated with sigma)");
-      readConfig(config, "inputfileSigmasPerEpoch",            fileNameInEpochSigmaSst,        Config::OPTIONAL, "",  "apriori different accuaries for each epoch");
-      readConfig(config, "inputfileCovarianceFunction",        fileNameInCovSst,               Config::OPTIONAL, "",  "approximate covariances in time");
-      readConfig(config, "inputfileCovarianceMatrixArc",       fileNamesCovarianceMatricesSst, Config::OPTIONAL, "",  "Must be given per sst arc with correct dimensions.");
-      readConfig(config, "inputfileSigmasCovarianceMatrixArc", fileNameInCovMatrixSigmas,      Config::OPTIONAL, "",  "Vector with one sigma for each <inputfileCovarianceMatrixArc>");
-      readConfig(config, "sampling",                           samplingSst,                    Config::DEFAULT,  "5", "[seconds] sampling of the covariance function");
+      readConfig(config, "sigma",                              sigma0Sst,               Config::DEFAULT,  "1", "apriori factor of covariance function");
+      readConfig(config, "inputfileSigmasPerArc",              fileNameInArcSigmaSst,   Config::OPTIONAL, "",  "apriori different accuaries for each arc (multiplicated with sigma)");
+      readConfig(config, "inputfileSigmasPerEpoch",            fileNameInEpochSigmaSst, Config::OPTIONAL, "",  "apriori different accuaries for each epoch");
+      readConfig(config, "inputfileCovarianceFunction",        fileNameInCovSst,        Config::OPTIONAL, "",  "approximate covariances in time");
+      readConfig(config, "inputfileCovarianceMatrixArc",       fileNamesCovSst,         Config::OPTIONAL, "",  "Must be given per sst arc with correct dimensions.");
+      readConfig(config, "inputfileSigmasCovarianceMatrixArc", fileNameInSigmasCovSst,  Config::OPTIONAL, "",  "Vector with one sigma for each <inputfileCovarianceMatrixArc>");
+      readConfig(config, "sampling",                           samplingSst,             Config::DEFAULT,  "5", "[seconds] sampling of the covariance function");
       endSequence(config);
     }
     if(readConfigSequence(config, "covariancePod1", Config::MUSTSET, "", ""))
     {
       readConfig(config, "sigma",                        sigma0Pod1,               Config::DEFAULT,  "1",  "apriori factor of covariance function");
       readConfig(config, "inputfileSigmasPerArc",        fileNameInArcSigmaPod1,   Config::OPTIONAL, "",   "apriori different accuaries for each arc (multiplicated with sigma)");
-      readConfig(config, "inputfileSigmasPerEpoch",      fileNameInEpochSigmaPod1, Config::OPTIONAL, "",  "apriori different accuaries for each epoch");
+      readConfig(config, "inputfileSigmasPerEpoch",      fileNameInEpochSigmaPod1, Config::OPTIONAL, "",   "apriori different accuaries for each epoch");
       readConfig(config, "inputfileCovarianceFunction",  fileNameInCovPod1,        Config::OPTIONAL, "",   "approximate covariances in time");
       readConfig(config, "inputfileCovariancePodEpoch",  fileNameInCovEpochPod1,   Config::OPTIONAL, "",   "3x3 epoch covariances");
       readConfig(config, "sampling",                     samplingPod1,             Config::DEFAULT,  "30", "[seconds] sampling of the covariance function");
@@ -249,25 +218,18 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
       readConfig(config, "sampling",                     samplingPod2,             Config::DEFAULT,  "30", "[seconds] sampling of the covariance function");
       endSequence(config);
     }
-    if(readConfigSequence(config, "estimateHighFrequencyVariations", Config::OPTIONAL, "", "co-estimate high-frequency gravity field variations"))
+    if(readConfigSequence(config, "estimateShortTimeVariations", Config::OPTIONAL, "", "co-estimate short time gravity field variations"))
     {
-      ParametrizationGravityPtr parametrization;
-
-      readConfig(config, "estimateSigma",               estimateArModelSigma, Config::DEFAULT,  "0",   "estimate factor of covariance  function (VCE)");
-      readConfig(config, "sigma",                       sigma0HighFrequency,  Config::DEFAULT,  "1.0", "a-priori standard deviation for AR model regularization");
-      readConfig(config, "autoregressiveModelSequence", arSequence,           Config::MUSTSET,  "",    "AR model sequence for constraining high frequency gravity variations");
-      readConfig(config, "parametrization",              parametrization,       Config::MUSTSET,  "",    "must be set in observation too");
+      readConfig(config, "estimateSigma",               estimateSigmaShortTimeModel, Config::DEFAULT, "0", "estimate standard deviation via VCE");
+      readConfig(config, "autoregressiveModelSequence", arSequence,                  Config::MUSTSET, "",  "AR model sequence for constraining short time gravity variations");
+      readConfig(config, "parameterSelection",          parameterShortTime,          Config::MUSTSET, "",  "parameters describing the short time gravity field");
       endSequence(config);
-
-      if(!isCreateSchema(config))
-        parametrization->parameterName(parameterNamesHighFrequency);
     }
-    readConfig(config, "inputfileArcList",       fileNameArcList,    Config::OPTIONAL, "",  "list to correspond points of time to arc numbers");
-    readConfig(config, "adjustmentThreshold",    adjustmentThreshold,Config::DEFAULT,  "0", "Adjustment factor threshold: Iteration will be stopped once both SST and POD adjustment factors are under this threshold");
-    readConfig(config, "iterationCount",         iterCount,          Config::DEFAULT,  "3", "(maximum) number of iterations for the estimation of calibration parameter and error PSD");
-    readConfig(config, "downweightPod",          downweightPod,      Config::DEFAULT,  "1", "downweight factor for POD");
-    readConfig(config, "variableNameIterations", iterVariableName,   Config::OPTIONAL, "",  "All output fileNames in preprocessing iteration are expanded with this variable prior to writing to disk");
-
+    readConfig(config, "downweightPod",          downweightPod,      Config::DEFAULT,  "1",    "downweight factor for POD");
+    readConfig(config, "inputfileArcList",       fileNameArcList,    Config::OPTIONAL, "",     "list to correspond points of time to arc numbers");
+    readConfig(config, "iterationCount",         iterCount,          Config::DEFAULT,  "3",    "(maximum) number of iterations for the estimation of calibration parameter and error PSD");
+    readConfig(config, "variableNameIterations", iterVariableName,   Config::OPTIONAL, "",     "All output fileNames in preprocessing iteration are expanded with this variable prior to writing to disk");
+    readConfig(config, "defaultBlockSize",       defaultBlockSize,   Config::DEFAULT,  "2048", "block size of static normal equation blocks");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -277,14 +239,13 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
     const UInt arcCount        = observationMisc->arcCount();
     const UInt countAParameter = observationMisc->parameterCount();
 
-    arcsInterval = {0, arcCount};
+    arcsInterval  = {0, arcCount};
+    timesInterval = {Time(), date2time(9999,1,1)};
     if(!fileNameArcList.empty())
     {
       logStatus<<"read arc list <"<<fileNameArcList<<">"<<Log::endl;
       readFileArcList(fileNameArcList, arcsInterval, timesInterval);
     }
-    else if(arSequence != nullptr)
-      throw(Exception("arcList must be given, if autoregressiveModelSequence is set"));
 
     // init arc sigmas
     // ---------------
@@ -303,35 +264,28 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
 
     // ===================================================
 
-    // normal equations of high-frequency variations
-    // ---------------------------------------------
-    UInt countHighFrequencyParameters = 0;
-    std::vector< std::vector< std::vector<Matrix> > > normalsHighFrequency;
-    if(arSequence != nullptr)
+    // normal equations of short time model
+    // ------------------------------------
+    UInt countShortTimeParameters = 0;
+    std::vector<std::vector<std::vector<Matrix>>> normalsShortTime;
+    if(arSequence)
     {
-      logStatus<<"initialize normal equations for high-frequency gravity field parameters"<<Log::endl;
-      countHighFrequencyParameters = arSequence->dimension();
-      normalsHighFrequency = arSequence->normalEquationSequence();
+      logStatus<<"initialize normal equations of short time gravity field model"<<Log::endl;
+      countShortTimeParameters = arSequence->dimension();
+      normalsShortTime = arSequence->normalEquationSequence();
     }
 
-    // =============================================
-
-    // Init normal equations
+    // init normal equations
     // ---------------------
-    logStatus<<"Init normal equations"<<Log::endl;
-    initNormals(countHighFrequencyParameters, parameterNamesHighFrequency, comm);
-
-    // ===================================================
+    logStatus<<"initialize normal equations"<<Log::endl;
+    normals.init(observationMisc, timesInterval, defaultBlockSize, comm, FALSE/*sortStateBeforeGravityParameter*/, countShortTimeParameters, parameterShortTime);
 
     // parameter names
     // ---------------
     if(!fileNameParaName.empty() && Parallel::isMaster(comm))
     {
       logStatus<<"write parameter names <"<<fileNameParaName<<">"<<Log::endl;
-      observationMisc->setInterval(date2time(9999,1,1), date2time(9999,1,2));
-      std::vector<ParameterName> paraNameStatic;
-      observationMisc->parameterName(paraNameStatic);
-      writeFileParameterName(fileNameParaName, paraNameStatic);
+      writeFileParameterName(fileNameParaName, normals.parameterNames);
     }
 
     // =============================================
@@ -340,51 +294,45 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
     // ---------------------------
     logStatus<<"set up observation equations"<<Log::endl;
     observationArc.resize(arcCount);
-    arcIndexN.resize(arcCount);
-    arcIndexA.resize(arcCount);
-    std::vector<UInt> processNo = Parallel::forEachInterval(arcCount, arcsInterval, [this](UInt arcNo) {computeObservationEquation(arcNo);}, comm);
-    observationMisc = ObservationMiscSstPtr(nullptr);
+    std::vector<UInt> processNo = Parallel::forEachInterval(arcCount, arcsInterval, [this](UInt arcNo)
+    {
+      const UInt idInterval = findInterval(arcNo);
+      if(timesInterval.size())
+        observationMisc->setInterval(timesInterval.at(idInterval), timesInterval.at(idInterval+1));
+      observationArc.at(arcNo) = observationMisc->computeArc(arcNo);
+    }, comm);
+    observationMisc = nullptr;
+
+    // =============================================
+
+    // set used blocks
+    // ---------------
+    logStatus<<"setup normal equations"<<Log::endl;
+    normals.setBlocks(arcsInterval);
 
     // =============================================
 
     // read SST covariance matrices
     // ----------------------------
-    const UInt covarianceSstArcWiseCount = fileNamesCovarianceMatricesSst.size();
-    covMatrixSst.resize(arcCount);
-    covMatrixSstSigmas = Vector(covarianceSstArcWiseCount);
-    for(UInt i=0; i<covarianceSstArcWiseCount; i++)
-      covMatrixSstSigmas(i) = 1.0;
-
-    if(!fileNameInCovMatrixSigmas.empty())
-    {
-      readFileMatrix(fileNameInCovMatrixSigmas, covMatrixSstSigmas);
-      if(covMatrixSstSigmas.rows() != covarianceSstArcWiseCount)
-        throw(Exception("Number of sigmas not compatible with number of given arc-wise SST covariance matrices"));
-    }
-
-    if(covarianceSstArcWiseCount)
+    CovSst.resize(arcCount);
+    if(fileNamesCovSst.size())
     {
       logStatus<<"read arc-wise sst covariance matrices"<<Log::endl;
-      Parallel::forEachProcess(arcCount, [this, &fileNamesCovarianceMatricesSst](UInt arcNo) {initArcWiseSSTCovarianceMatrices(arcNo, fileNamesCovarianceMatricesSst);}, processNo, comm);
+      Parallel::forEachProcess(arcCount, [&](UInt arcNo)
+      {
+        CovSst.at(arcNo).resize(fileNamesCovSst.size());
+        for(UInt i=0; i<fileNamesCovSst.size(); i++)
+          readFileMatrix(fileNamesCovSst.at(i).appendBaseName(".arc"+arcNo%"%03i"s), CovSst.at(arcNo).at(i));
+      }, processNo, comm);
     }
 
-    // =============================================
-
-    // count used blocks
-    // -----------------
-    logStatus<<"setup normal equations"<<Log::endl;
-    Matrix BlockUsed(normals.blockCount(), Matrix::SYMMETRIC);
-    for(UInt arcNo=0; arcNo<arcCount; arcNo++)
-      for(UInt i=0; i<arcIndexN.at(arcNo).size(); i++)
-        for(UInt k=0; k<arcIndexN.at(arcNo).size(); k++)
-          BlockUsed(arcIndexN.at(arcNo).at(i), arcIndexN.at(arcNo).at(k)) = 1;
-    Parallel::reduceSum(BlockUsed, 0, comm);
-    Parallel::broadCast(BlockUsed, 0, comm);
-
-    for(UInt i=0; i<normals.blockCount(); i++)
-      for(UInt k=i; k<normals.blockCount(); k++)
-        if((BlockUsed(i,k)>0) && (!normals.isBlockUsed(i,k)))
-          normals.setBlock(i,k);
+    sigmasCovSst = Vector(fileNamesCovSst.size(), 1.);
+    if(!fileNameInSigmasCovSst.empty())
+    {
+      readFileMatrix(fileNameInSigmasCovSst, sigmasCovSst);
+      if(sigmasCovSst.rows() != fileNamesCovSst.size())
+        throw(Exception("Number of sigmas not compatible with number of given arc-wise SST covariance matrices"));
+    }
 
     // =============================================
 
@@ -416,9 +364,9 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
     covFuncSst  = Vce::readCovarianceFunction(fileNameInCovSst,  covLengthSst,  1, samplingSst);
     covFuncPod1 = Vce::readCovarianceFunction(fileNameInCovPod1, covLengthPod1, 3, samplingPod1);
     covFuncPod2 = Vce::readCovarianceFunction(fileNameInCovPod2, covLengthPod2, 3, samplingPod2);
-    covFuncSst.column(1,1)  *= pow(sigma0Sst, 2);
-    covFuncPod1.column(1,3) *= pow(sigma0Pod1,2);
-    covFuncPod2.column(1,3) *= pow(sigma0Pod2,2);
+    covFuncSst.column(1,1)  *= std::pow(sigma0Sst, 2);
+    covFuncPod1.column(1,3) *= std::pow(sigma0Pod1,2);
+    covFuncPod2.column(1,3) *= std::pow(sigma0Pod2,2);
     PsdSst  = CosTransformSst  * covFuncSst.column(1,1);
     PsdPod1 = CosTransformPod1 * covFuncPod1.column(1,3);
     PsdPod2 = CosTransformPod2 * covFuncPod2.column(1,3);
@@ -478,12 +426,10 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
     if(iterVariableName.size())
       addVariable(iterVariableName, variableIteration);
 
-    Double sigma2_signal = pow(sigma0HighFrequency, 2);
+    Double sigma2ShortTimeModel = 1.;
     for(UInt iter=0; iter<iterCount; iter++)
     {
       logInfo<<"starting iteration "<<iter<<Log::endl;
-      bool thresholdReached = false;
-
       if(iterVariableName.size())
         variableIteration[iterVariableName]->setValue(iter);
 
@@ -493,127 +439,46 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
       {
         logStatus<<"accumulate system of normal equations"<<Log::endl;
         normals.setNull();
-        n.setNull();
-        lPl      = 0;
-        obsCount = 0;
         Parallel::forEachProcess(arcCount, [this](UInt arcNo) {buildNormals(arcNo);}, processNo, comm);
-
-        // collect system of normal equations
-        // ----------------------------------
         logStatus<<"collect system of normal equations"<<Log::endl;
-        Parallel::reduceSum(n, 0, comm);
-        Parallel::reduceSum(obsCount, 0, comm);
-        Parallel::reduceSum(lPl, 0, comm);
         normals.reduceSum();
 
-        // =============================================
-
-        // add normals of AR model
-        // -----------------------
-        if(blockIndexHighFrequency.size())
+        // add normals of short time model
+        // -------------------------------
+        if(normalsShortTime.size())
         {
-          logStatus<<"normals of process dynamic"<<Log::endl;
-          if(Parallel::isMaster(comm))
-            obsCount += countHighFrequencyParameters * blockIndexHighFrequency.size();
-          for(UInt id=0; id<blockIndexHighFrequency.size(); id++)
-          {
-            const UInt idx = std::min(id, normalsHighFrequency.size()-1);
-            for(UInt i=0; i<normalsHighFrequency.at(idx).size(); i++)
-              for(UInt k=i; k<normalsHighFrequency.at(idx).at(i).size(); k++)
-              {
-                normals.setBlock(blockIndexHighFrequency.at(id+i-idx), blockIndexHighFrequency.at(id+k-idx));
-                if(normals.isMyRank(blockIndexHighFrequency.at(id+i-idx), blockIndexHighFrequency.at(id+k-idx)))
-                  axpy(1./sigma2_signal, normalsHighFrequency.at(idx).at(i).at(k), normals.N(blockIndexHighFrequency.at(id+i-idx), blockIndexHighFrequency.at(id+k-idx)));
-              }
-          }
-        } // if(blockIndexSignal.size())
-
-        // =============================================
-
-        // Regularize not used parameters
-        // ------------------------------
-        UInt countRegul = 0;
-        for(UInt i=0; i<normals.blockCount(); i++)
-          if(normals.isMyRank(i,i))
-          {
-            Matrix &N = normals.N(i,i);
-            for(UInt k=0; k<N.rows(); k++)
-              if(N(k,k) == 0)
-              {
-                N(k,k) = 1.;
-                countRegul++;
-              }
-          }
-        Parallel::reduceSum(countRegul, 0, comm);
-        if(Parallel::isMaster(comm) && countRegul)
-          logWarning<<countRegul<<" parameters are not used"<<Log::endl;
-        Parallel::barrier(comm);
-
-        // =============================================
+          logStatus<<"add normals of short time model"<<Log::endl;
+          normals.addShortTimeNormals(sigma2ShortTimeModel, normalsShortTime);
+        }
 
         // cholesky and forward step
         // -------------------------
         logStatus<<"solve system of normal equations"<<Log::endl;
-        x = normals.solve(n, TRUE/*timing*/);
-        Parallel::broadCast(x, 0, comm);
-        if(Parallel::isMaster(comm))
-          logInfo<<"  aposteriori sigma = "<<sqrt((lPl-inner(x, n))/(obsCount-normals.parameterCount()))<<Log::endl;
-
-        // N contains now the cholesky decomposition
-        Wz = Vce::monteCarlo(normals.parameterCount(), 100); // monte carlo vector for VCE
-        normals.triangularSolve(Wz);
-        Parallel::broadCast(Wz, 0, comm);
+        const Double sigma = normals.solve(x, Wz);
+        logInfo<<"  aposteriori sigma = "<<sigma<<Log::endl;
 
         if(Parallel::isMaster(comm) && !fileNameSolution.empty())
         {
           logStatus<<"write solution to <"<<fileNameSolution(variableIteration)<<">"<<Log::endl;
-          writeFileMatrix(fileNameSolution(variableIteration), x.row(normals.blockIndex(blockIndexStatic), normals.parameterCount()-normals.blockIndex(blockIndexStatic)));
+          writeFileMatrix(fileNameSolution(variableIteration), x);
         }
 
         if(!fileNameSigmax.empty())
         {
           logStatus<<"inverte cholesky matrix and write standard deviations to <"<<fileNameSigmax(variableIteration)<<">"<<Log::endl;
-          for(UInt i=blockIndexStatic; i<normals.blockCount(); i++)
-            for(UInt k=i; k<normals.blockCount(); k++)
-              if(normals.rank(i,k) != 0)
-              {
-                if(normals.isMyRank(i,k))
-                  Parallel::send(normals.N(i,k), 0, comm);
-                else if(Parallel::isMaster(comm))
-                  Parallel::receive(normals.N(i,k), normals.rank(i,k), comm);
-              }
+          Vector sigma = normals.parameterStandardDeviation();
           if(Parallel::isMaster(comm))
-          {
-            const UInt count = normals.parameterCount()-normals.blockIndex(blockIndexStatic);
-            Matrix W(count, Matrix::TRIANGULAR);
-            for(UInt i=blockIndexStatic; i<normals.blockCount(); i++)
-              for(UInt k=i; k<normals.blockCount(); k++)
-                copy(normals.N(i,k), W.slice(normals.blockIndex(i)-normals.blockIndex(blockIndexStatic), normals.blockIndex(k)-normals.blockIndex(blockIndexStatic), normals.blockSize(i), normals.blockSize(k)));
-            inverse(W);
-            Vector diagonal(count);
-            for(UInt z=0; z<count; z++)
-              diagonal(z) = sqrt(quadsum(W.slice(z,z,1,count-z)));
-            writeFileMatrix(fileNameSigmax(variableIteration), diagonal);
-          }
-          for(UInt i=blockIndexStatic; i<normals.blockCount(); i++)
-            for(UInt k=i; k<normals.blockCount(); k++)
-              if(!normals.isMyRank(i,k))
-                normals.N(i,k) = Matrix();
+            writeFileMatrix(fileNameSigmax(variableIteration), sigma);
         } // if(!fileNameSigmax.empty())
 
-        if(Parallel::isMaster(comm) && blockIndexHighFrequency.size() && !fileNameHighFrequency.empty())
+        if(estimateSigmaShortTimeModel && normalsShortTime.size())
         {
-          logStatus<<"write signal solution to <"<<fileNameHighFrequency(variableIteration)<<">"<<Log::endl;
-          for(UInt i=0; i<blockIndexHighFrequency.size(); i++)
-            writeFileMatrix(fileNameHighFrequency(variableIteration).appendBaseName(i%".%02i"s), x.row(normals.blockIndex(blockIndexHighFrequency.at(i)), normals.blockSize(blockIndexHighFrequency.at(i))));
-        } // if(!fileNameSignal.empty())
-
-        if(Parallel::isMaster(comm) && blockIndexInterval.size() && !fileNameInterval.empty())
-        {
-          logStatus<<"write interval solution to <"<<fileNameInterval(variableIteration)<<">"<<Log::endl;
-          for(UInt i=0; i<blockIndexInterval.size(); i++)
-            writeFileMatrix(fileNameInterval(variableIteration).appendBaseName(i%".%02i"s), x.row(normals.blockIndex(blockIndexInterval.at(i)), normals.blockSize(blockIndexInterval.at(i))));
-        } // if(!fileNameInterval.empty())
+          logStatus<<"compute standard deviation of short time gravity model"<<Log::endl;
+          Double s2 = normals.estimateShortTimeNormalsVariance(sigma2ShortTimeModel, normalsShortTime, x, Wz);
+          logInfo<<"  sigma: "<<std::sqrt(s2)<<Log::endl;
+          if((s2==s2) && (s2>0))
+            sigma2ShortTimeModel = s2;
+        }
       } // if(countAParameter)
       Parallel::barrier(comm);
 
@@ -626,9 +491,9 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
         arcListResidualsPod1.clear(); arcListResidualsPod1.resize(arcCount);
         arcListResidualsPod2.clear(); arcListResidualsPod2.resize(arcCount);
         Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeResiduals(arcNo);}, processNo, comm);
-        Parallel::forEachProcess(arcListResidualsSst,  [this](UInt arcNo) {return collectArcSst (arcNo);}, processNo, comm);
-        Parallel::forEachProcess(arcListResidualsPod1, [this](UInt arcNo) {return collectArcPod1(arcNo);}, processNo, comm);
-        Parallel::forEachProcess(arcListResidualsPod2, [this](UInt arcNo) {return collectArcPod2(arcNo);}, processNo, comm);
+        Parallel::forEachProcess(arcListResidualsSst,  [this](UInt arcNo) {return arcListResidualsSst.at(arcNo);},  processNo, comm);
+        Parallel::forEachProcess(arcListResidualsPod1, [this](UInt arcNo) {return arcListResidualsPod1.at(arcNo);}, processNo, comm);
+        Parallel::forEachProcess(arcListResidualsPod2, [this](UInt arcNo) {return arcListResidualsPod2.at(arcNo);}, processNo, comm);
 
         if(Parallel::isMaster(comm) && (!fileNameResidualsSst.empty()))
         {
@@ -651,61 +516,16 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
 
       // =============================================
 
-      if(estimateArModelSigma && blockIndexHighFrequency.size())
-      {
-        logStatus<<"compute variance factor of AR model"<<Log::endl;
-        Matrix Nx(x.rows(), 1);
-        Matrix NWz(Wz.rows(), Wz.columns());
-        logTimerStart;
-        for(UInt id=0; id<blockIndexHighFrequency.size(); id++)
-        {
-          logTimerLoop(id, blockIndexHighFrequency.size());
-          const UInt idx = std::min(id, normalsHighFrequency.size()-1);
-          for(UInt i=0; i<normalsHighFrequency.at(idx).size(); i++)
-            for(UInt k=i; k<normalsHighFrequency.at(idx).at(i).size(); k++)
-              if(normals.isMyRank(id+i-idx,id+k-idx))
-              {
-                matMult(1., normalsHighFrequency.at(idx).at(i).at(k),  x.row(normals.blockIndex(blockIndexHighFrequency.at(id+k-idx)), normals.blockSize(blockIndexHighFrequency.at(id+k-idx))),
-                                                            Nx.row(normals.blockIndex(blockIndexHighFrequency.at(id+i-idx)), normals.blockSize(blockIndexHighFrequency.at(id+i-idx))));
-                matMult(1., normalsHighFrequency.at(idx).at(i).at(k), Wz.row(normals.blockIndex(blockIndexHighFrequency.at(id+k-idx)), normals.blockSize(blockIndexHighFrequency.at(id+k-idx))),
-                                                          NWz.row(normals.blockIndex(blockIndexHighFrequency.at(id+i-idx)), normals.blockSize(blockIndexHighFrequency.at(id+i-idx))));
-                if(k>i) // extend symmetric
-                {
-                  matMult(1., normalsHighFrequency.at(idx).at(i).at(k).trans(),  x.row(normals.blockIndex(blockIndexHighFrequency.at(id+i-idx)), normals.blockSize(blockIndexHighFrequency.at(id+i-idx))),
-                                                                      Nx.row(normals.blockIndex(blockIndexHighFrequency.at(id+k-idx)), normals.blockSize(blockIndexHighFrequency.at(id+k-idx))));
-                  matMult(1., normalsHighFrequency.at(idx).at(i).at(k).trans(), Wz.row(normals.blockIndex(blockIndexHighFrequency.at(id+i-idx)), normals.blockSize(blockIndexHighFrequency.at(id+i-idx))),
-                                                                    NWz.row(normals.blockIndex(blockIndexHighFrequency.at(id+k-idx)), normals.blockSize(blockIndexHighFrequency.at(id+k-idx))));
-                }
-              }
-        } // for(id)
-        Parallel::reduceSum(Nx,  0, comm);
-        Parallel::reduceSum(NWz, 0, comm);
-        logTimerLoopEnd(blockIndexHighFrequency.size());
-
-        if(Parallel::isMaster(comm))
-        {
-          const Double ePe = inner(x,Nx);
-          const Double r   = countHighFrequencyParameters*blockIndexHighFrequency.size() - 1./sigma2_signal*inner(Wz,NWz);
-          const Double s2  = ePe/r;
-          logInfo<<"  Process dynamic sigma: sqrt("<<ePe<<"/("<<countHighFrequencyParameters*blockIndexHighFrequency.size()<<"-"<<1./sigma2_signal*inner(Wz,NWz)<<"))="<<sqrt(s2)<<Log::endl;
-          if((s2==s2) && (s2>0))
-            sigma2_signal = s2;
-        }
-        Parallel::broadCast(sigma2_signal, 0, comm);
-      } // if(blockIndexSignal.size())
-
-      // =============================================
-
       // compute redundancies
       // --------------------
-      if((estimateArcSigmas || estimateCovarianceFunctionVCE || estimateVarianceFactorsSstArcWiseCovariances))
+      if((estimateArcSigmas || estimateCovarianceFunctionVCE || estimateSigmasCovSst))
       {
         logStatus<<"compute redundancies"<<Log::endl;
         sigmaSstNew = sigmaPod1New = sigmaPod2New = Vector(arcCount);
         ePeSst  = redundancySst  = Matrix(covLengthSst,  1);
         ePePod1 = redundancyPod1 = Matrix(covLengthPod1, 3); // for x,y,z
         ePePod2 = redundancyPod2 = Matrix(covLengthPod2, 3); // for x,y,z
-        ePeCovMatrixSst = redundancyCovMatrixSst = Vector(covarianceSstArcWiseCount);
+        ePeCovSst = redundancyCovSst = Vector(sigmasCovSst.rows());
         Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeRedundancies(arcNo);}, processNo, comm);
       }
 
@@ -765,9 +585,9 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
         Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeEpochSigmas(arcNo);}, processNo, comm);
 
         logStatus<<"collect epoch sigmas"<<Log::endl;
-        Parallel::forEachProcess(arcListEpochSigmaSst,  [this](UInt arcNo) {return collectEpochSigmasSst (arcNo);}, processNo, comm);
-        Parallel::forEachProcess(arcListEpochSigmaPod1, [this](UInt arcNo) {return collectEpochSigmasPod1(arcNo);}, processNo, comm);
-        Parallel::forEachProcess(arcListEpochSigmaPod2, [this](UInt arcNo) {return collectEpochSigmasPod2(arcNo);}, processNo, comm);
+        Parallel::forEachProcess(arcListEpochSigmaSst,  [this](UInt arcNo) {return arcListEpochSigmaSst.at(arcNo);},  processNo, comm);
+        Parallel::forEachProcess(arcListEpochSigmaPod1, [this](UInt arcNo) {return arcListEpochSigmaPod1.at(arcNo);}, processNo, comm);
+        Parallel::forEachProcess(arcListEpochSigmaPod2, [this](UInt arcNo) {return arcListEpochSigmaPod2.at(arcNo);}, processNo, comm);
 
         if(Parallel::isMaster(comm) && (!fileNameOutEpochSigmaSst.empty()))
         {
@@ -815,18 +635,10 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
           maxFactorPod /= downweightPod;
           logInfo<<"  max. PSD adjustment factor (SST): "<<maxFactorSst<<Log::endl;
           logInfo<<"  max. PSD adjustment factor (POD): "<<maxFactorPod<<Log::endl;
-
-          if ((maxFactorSst < adjustmentThreshold) && (maxFactorPod < adjustmentThreshold))
-          {
-            logStatus<<"  adjustment threshold "<<adjustmentThreshold<<" reached after iteration "<<iter+1<<"."<<Log::endl;
-            thresholdReached = true;
-          }
-
         } // if(Parallel::isMaster(comm))
         Parallel::broadCast(PsdSst,  0, comm);
         Parallel::broadCast(PsdPod1, 0, comm);
         Parallel::broadCast(PsdPod2, 0, comm);
-        Parallel::broadCast(thresholdReached, 0, comm);
         // compute new covariance function
         copy(CosTransformSst  * PsdSst,  covFuncSst.column(1,1));
         copy(CosTransformPod1 * PsdPod1, covFuncPod1.column(1,3));
@@ -837,20 +649,20 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
 
       // estimate variance factor for arc-wise SST covariance matrices
       // -------------------------------------------------------------
-      if(estimateVarianceFactorsSstArcWiseCovariances)
+      if(estimateSigmasCovSst)
       {
-        Parallel::reduceSum(ePeCovMatrixSst, 0, comm);
-        Parallel::reduceSum(redundancyCovMatrixSst, 0, comm);
+        Parallel::reduceSum(ePeCovSst, 0, comm);
+        Parallel::reduceSum(redundancyCovSst, 0, comm);
         if(Parallel::isMaster(comm))
         {
-          for(UInt i=0; i<covarianceSstArcWiseCount; i++)
+          for(UInt i=0; i<sigmasCovSst.rows(); i++)
           {
-            Double alpha = std::sqrt(ePeCovMatrixSst(i) / redundancyCovMatrixSst(i));
-            covMatrixSstSigmas(i) *= alpha;
-            logStatus<<" SST arc-wise variance factor #"<<i<<" (current/total): "<<alpha<<"/"<<covMatrixSstSigmas(i)<<Log::endl;
+            const Double alpha = std::sqrt(ePeCovSst(i)/redundancyCovSst(i));
+            sigmasCovSst(i) *= alpha;
+            logStatus<<"  sigma of SST covariance matrix (current/total): "<<alpha<<"/"<<sigmasCovSst(i)<<Log::endl;
           }
         }
-        Parallel::broadCast(covMatrixSstSigmas, 0, comm);
+        Parallel::broadCast(sigmasCovSst, 0, comm);
       }
 
       // =============================================
@@ -875,27 +687,17 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
 
       // Write variance factor to file
       // -----------------------------
-      if(Parallel::isMaster(comm) && !fileNameOutVarianceFactorsSst.empty())
+      if(Parallel::isMaster(comm) && !fileNameOutSigmasCovSst.empty())
       {
-        logStatus<<"write arc-wise SST variance factors <"<<fileNameOutVarianceFactorsSst(variableIteration)<<">"<<Log::endl;
-        writeFileMatrix(fileNameOutVarianceFactorsSst(variableIteration), covMatrixSstSigmas);
+        logStatus<<"write arc-wise SST variance factors <"<<fileNameOutSigmasCovSst(variableIteration)<<">"<<Log::endl;
+        writeFileMatrix(fileNameOutSigmasCovSst(variableIteration), sigmasCovSst);
       }
 
-      // bail if the iteration threshold has been reached
-      Parallel::broadCast(thresholdReached, 0, comm);
-      if(thresholdReached)
-        break;
-
-      if((!estimateArcSigmas) && (!estimateCovarianceFunctionVCE))
-        break; // iterations not needed
-
-      PsdPod1                 *= std::pow(downweightPod,2);
-      PsdPod2                 *= std::pow(downweightPod,2);
-      covFuncPod1.column(1,3) *= std::pow(downweightPod,2);
-      covFuncPod2.column(1,3) *= std::pow(downweightPod,2);
+      PsdPod1                 *= std::pow(downweightPod, 2);
+      PsdPod2                 *= std::pow(downweightPod, 2);
+      covFuncPod1.column(1,3) *= std::pow(downweightPod, 2);
+      covFuncPod2.column(1,3) *= std::pow(downweightPod, 2);
     } // for(iter)
-
-    // =============================================
   }
   catch(std::exception &e)
   {
@@ -905,207 +707,58 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
 
 /***********************************************/
 
-void PreprocessingSst::initArcWiseSSTCovarianceMatrices(UInt arcNo, const std::vector<FileName> names)
+UInt PreprocessingSst::findInterval(UInt arcNo) const
 {
-  try
-  {
-    for(const auto &fileName : names)
-    {
-      Matrix c;
-      readFileMatrix(fileName.appendBaseName(".arc"+arcNo%"%03i"s), c);
-      covMatrixSst.at(arcNo).push_back(c);
-    }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
+  for(UInt idInterval=0; idInterval+1<arcsInterval.size(); idInterval++)
+    if(arcNo < arcsInterval.at(idInterval+1))
+      return idInterval;
+  return 0;
 }
 
 /***********************************************/
 
-Matrix PreprocessingSst::arcWiseSSTCovarianceMatrix(UInt arcNo) const
+void PreprocessingSst::decorrelate(UInt arcNo, UInt countSst, UInt countPod1, UInt countPod2,
+                                   Matrix &WSst, Matrix &WPod1, Matrix &WPod2, const std::list<MatrixSlice> &A)
 {
   try
   {
-    if(!covMatrixSst.at(arcNo).size())
-      return Matrix();
+    UInt obsCount = 0;
+    const UInt idxSst  = obsCount; obsCount += countSst;
+    const UInt idxPod1 = obsCount; obsCount += 3*countPod1;
+    const UInt idxPod2 = obsCount; obsCount += 3*countPod2;
 
-    Matrix W = std::pow(covMatrixSstSigmas.at(0),2) * covMatrixSst.at(arcNo).at(0);
-    for(UInt i=1; i<covMatrixSst.at(arcNo).size(); i++)
-      axpy(std::pow(covMatrixSstSigmas.at(i),2), covMatrixSst.at(arcNo).at(i), W);
-
-    return W;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
- /***********************************************/
-
-void PreprocessingSst::initNormals(UInt countSignalParameter, const std::vector<ParameterName> &paraNameSignal, Parallel::CommunicatorPtr comm)
-{
-  try
-  {
-    // parameter names
-    // ---------------
-    std::vector<ParameterName> paraNameAll, paraNameStatic;
-    observationMisc->parameterName(paraNameAll);
-    observationMisc->setInterval(date2time(9999,1,1), date2time(9999,1,2));
-    observationMisc->parameterName(paraNameStatic);
-    std::vector<Bool> unused(paraNameAll.size(), TRUE);
-
-    // static parameters
-    // -----------------
-    std::vector<Bool> isStatic(paraNameAll.size(), FALSE);
-    UInt k=0;
-    for(UInt i=0; i<paraNameStatic.size(); i++)
-      for(; k<paraNameAll.size(); k++)
-        if(paraNameStatic.at(i) == paraNameAll.at(k))
-        {
-          isStatic.at(k++) = TRUE;
-          break;
-        }
-
-    // signal parameters
-    // -----------------
-    std::vector<UInt> indexSignal(paraNameSignal.size(), NULLINDEX);
-    k=0;
-    for(UInt i=0; i<paraNameSignal.size(); i++)
-      for(; k<paraNameAll.size(); k++)
-        if(paraNameSignal.at(i) == paraNameAll.at(k))
-        {
-          indexSignal.at(i) = k;
-          break;
-        }
-    Bool isSignalPartOfStatic = FALSE;
-    for(UInt i=0; i<paraNameSignal.size(); i++)
+    if(countSst)
     {
-      if(indexSignal.at(i) == NULLINDEX)
-        throw(Exception("Signal covariance parameter '"+paraNameSignal.at(i).str()+"' must be set in observation too."));
-      if(isStatic.at(indexSignal.at(i)))
-        isSignalPartOfStatic = TRUE;
-    }
+      std::list<MatrixSlice> WA;
+      for(const MatrixSlice &a : A)
+        WA.push_back(a.row(idxSst, countSst));
 
-    // examine intervals
-    // -----------------
-    std::vector<UInt> blockIndex(1, 0);
-    for(UInt idInterval=0; idInterval+1<timesInterval.size(); idInterval++)
-    {
-      std::vector<ParameterName> paraNameInterval;
-      observationMisc->setInterval(timesInterval.at(idInterval), timesInterval.at(idInterval+1));
-      observationMisc->parameterName(paraNameInterval);
-
-      // interval parameters
-      // -------------------
-      std::vector<UInt> indexInterval(paraNameInterval.size(), NULLINDEX);
-      std::vector<Bool> inInterval(paraNameAll.size(), FALSE);
-      UInt k=0;
-      for(UInt i=0; i<paraNameInterval.size(); i++)
-        for(; k<paraNameAll.size(); k++)
-          if(paraNameInterval.at(i) == paraNameAll.at(k))
-          {
-            indexInterval.at(i) = k;
-            inInterval.at(k) = TRUE;
-            break;
-          }
-
-      // signal parameters
-      // -----------------
-      for(UInt i=0; i<indexSignal.size(); i++)
-        if(inInterval.at(indexSignal.at(i)) && unused.at(indexSignal.at(i)))
-        {
-          if(!isSignalPartOfStatic)
-            for(UInt count=0; count<countSignalParameter; count++)
-              unused.at(indexSignal.at(i+count)) = FALSE;
-          blockIndexHighFrequency.push_back(blockIndex.size()-1);
-          blockParaName.push_back(paraNameAll.at(indexSignal.at(i)));
-          blockIndex.push_back( blockIndex.back()+countSignalParameter );
-          blockInterval.push_back((isSignalPartOfStatic) ? idInterval : NULLINDEX);
-          i += countSignalParameter-1;
-        }
-
-      // other interval parameters
-      // -------------------------
-      for(UInt i=0; i<indexInterval.size(); i++)
-        if(unused.at(indexInterval.at(i)) && !isStatic.at(indexInterval.at(i)))
-        {
-          UInt count = 0;
-          while((i+count<indexInterval.size()) && unused.at(indexInterval.at(i+count)) && !isStatic.at(indexInterval.at(i+count)))
-            unused.at(indexInterval.at(i+count++)) = FALSE;
-          blockIndexInterval.push_back(blockIndex.size()-1);
-          blockParaName.push_back(paraNameAll.at(indexInterval.at(i)));
-          blockIndex.push_back( blockIndex.back()+count );
-          blockInterval.push_back(NULLINDEX);
-          i += count-1;
-        }
-    } // for(idInterval)
-
-    // static part
-    // -----------
-    blockIndexStatic = blockIndex.size()-1;
-    for(UInt i=0; i<isStatic.size(); i++)
-      if(isStatic.at(i))
+      WSst = Matrix();
+      if(CovSst.at(arcNo).size())
       {
-        UInt count = 0;
-        while((i+count<isStatic.size()) && isStatic.at(i+count))
-          unused.at(i+count++) = FALSE;
-        blockParaName.push_back(paraNameAll.at(i));
-        blockIndex.push_back( blockIndex.back()+count );
-        blockInterval.push_back(NULLINDEX);
-        i += count-1;
+        WSst = std::pow(sigmasCovSst.at(0),2) * CovSst.at(arcNo).at(0);
+        for(UInt i=1; i<CovSst.at(arcNo).size(); i++)
+          axpy(std::pow(sigmasCovSst.at(i),2), CovSst.at(arcNo).at(i), WSst);
       }
 
-    // Init normal equations
-    // ---------------------
-    normals.initEmpty(blockIndex, comm);
-    for(UInt i=0; i<normals.blockCount(); i++)
-      normals.setBlock(i,i);
-    n = Matrix(normals.parameterCount(), observationMisc->rightSideCount());
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
+      CovarianceSst::decorrelate(observationArc.at(arcNo).timesSst, sigmaSst(arcNo), arcListEpochSigmaSst.at(arcNo), covFuncSst, WSst, WA);
+    }
 
-/***********************************************/
+    if(countPod1)
+    {
+      std::list<MatrixSlice> WA;
+      for(const MatrixSlice &a : A)
+        WA.push_back(a.row(idxPod1, 3*countPod1));
+      WPod1 = CovariancePod::decorrelate(observationArc.at(arcNo).pod1, sigmaPod1(arcNo), arcListEpochSigmaPod1.at(arcNo), fileCovEpochPod1.readArc(arcNo), covFuncPod1, WA);
+    }
 
-void PreprocessingSst::computeObservationEquation(UInt arcNo)
-{
-  try
-  {
-    // restrict time interval
-    // ----------------------
-    UInt idxInterval = 0;
-    for(; idxInterval<arcsInterval.size(); idxInterval++)
-      if(arcNo<arcsInterval.at(idxInterval+1))
-        break;
-
-    if(timesInterval.size())
-      observationMisc->setInterval(timesInterval.at(idxInterval), timesInterval.at(idxInterval+1));
-
-    // set block index of normal equations
-    // -----------------------------------
-    std::vector<ParameterName> paraName;
-    observationMisc->parameterName(paraName);
-    arcIndexN.at(arcNo).clear();
-    arcIndexA.at(arcNo).clear();
-    for(UInt idxBlock=0; idxBlock<blockParaName.size(); idxBlock++)
-      if((blockInterval.at(idxBlock) == idxInterval) || (blockInterval.at(idxBlock) == NULLINDEX))
-        for(UInt idxA=0; idxA<paraName.size(); idxA++)
-          if(paraName.at(idxA) == blockParaName.at(idxBlock))
-          {
-            arcIndexN.at(arcNo).push_back( idxBlock );
-            arcIndexA.at(arcNo).push_back( idxA );
-            break;
-          }
-
-    // compute observation equations
-    // -----------------------------
-    observationArc.at(arcNo) = observationMisc->computeArc(arcNo);
+    if(countPod2)
+    {
+      std::list<MatrixSlice> WA;
+      for(const MatrixSlice &a : A)
+        WA.push_back(a.row(idxPod2, 3*countPod2));
+      WPod2 = CovariancePod::decorrelate(observationArc.at(arcNo).pod2, sigmaPod2(arcNo), arcListEpochSigmaPod2.at(arcNo), fileCovEpochPod2.readArc(arcNo), covFuncPod2, WA);
+    }
   }
   catch(std::exception &e)
   {
@@ -1122,72 +775,17 @@ void PreprocessingSst::buildNormals(UInt arcNo)
     if(observationArc.at(arcNo).A.size() == 0)
       return;
 
-    // count observations and calculate index
-    // --------------------------------------
-    const UInt countSst  = observationArc.at(arcNo).timesSst.size();
-    const UInt countPod1 = observationArc.at(arcNo).timesPod1.size();
-    const UInt countPod2 = observationArc.at(arcNo).timesPod2.size();
-
-    UInt obsCount = 0;
-    const UInt idxSst  = obsCount; obsCount += countSst;
-    const UInt idxPod1 = obsCount; obsCount += 3*countPod1;
-    const UInt idxPod2 = obsCount; obsCount += 3*countPod2;
-
     // Decorrelation
     // -------------
-    Matrix Wl   = observationArc.at(arcNo).l;
-    Matrix WA   = observationArc.at(arcNo).A;
-    Matrix WB   = observationArc.at(arcNo).B;
-    Matrix WSst = arcWiseSSTCovarianceMatrix(arcNo);
-    Matrix WPod;
-    Covariance3dArc covEpochPod1 = fileCovEpochPod1.readArc(arcNo);
-    Covariance3dArc covEpochPod2 = fileCovEpochPod2.readArc(arcNo);
-    if(countSst)  CovarianceSst::decorrelate(observationArc.at(arcNo).timesSst, sigmaSst(arcNo),  arcListEpochSigmaSst.at(arcNo),  covFuncSst,  WSst, {Wl.row(idxSst, countSst),     WA.row(idxSst, countSst),     WB.row(idxSst, countSst)});
-    if(countPod1) CovariancePod::decorrelate(observationArc.at(arcNo).pod1,     sigmaPod1(arcNo), arcListEpochSigmaPod1.at(arcNo), covEpochPod1, covFuncPod1, WPod, {Wl.row(idxPod1, 3*countPod1), WA.row(idxPod1, 3*countPod1), WB.row(idxPod1, 3*countPod1)});
-    if(countPod2) CovariancePod::decorrelate(observationArc.at(arcNo).pod2,     sigmaPod2(arcNo), arcListEpochSigmaPod2.at(arcNo), covEpochPod2, covFuncPod2, WPod, {Wl.row(idxPod2, 3*countPod2), WA.row(idxPod2, 3*countPod2), WB.row(idxPod2, 3*countPod2)});
+    Matrix Wl = observationArc.at(arcNo).l;
+    Matrix WA = observationArc.at(arcNo).A;
+    Matrix WB = observationArc.at(arcNo).B;
+    Matrix WSst, WPod1, WPod2;
+    decorrelate(arcNo, observationArc.at(arcNo).timesSst.size(),
+                observationArc.at(arcNo).timesPod1.size(), observationArc.at(arcNo).timesPod2.size(),
+                WSst, WPod1, WPod2, {Wl, WA, WB});
 
-    // eliminate arc dependent parameters
-    // ----------------------------------
-    Vector tau;
-    if(WB.size())
-    {
-      tau = QR_decomposition(WB);
-      QTransMult(WB, tau, Wl); // transform observations: l:= Q'l
-      QTransMult(WB, tau, WA); // transform design matrix A:=Q'A
-    }
-    // use only nullspace of design matrix WB
-    MatrixSlice A_bar( WA.row(WB.columns(), WA.rows()-WB.columns()) );
-    MatrixSlice l_bar( Wl.row(WB.columns(), Wl.rows()-WB.columns()) );
-
-    // build normals
-    // -------------
-    this->lPl      += quadsum(l_bar);
-    this->obsCount += l_bar.rows();
-    Matrix n2 = A_bar.trans() * l_bar;
-    Matrix N2(A_bar.columns(), Matrix::SYMMETRIC);
-    rankKUpdate(1., A_bar, N2);
-    fillSymmetric(N2);
-
-    for(UInt i=0; i<arcIndexA.at(arcNo).size(); i++)
-    {
-      const UInt idxN1 = arcIndexN.at(arcNo).at(i);
-      const UInt idxA1 = arcIndexA.at(arcNo).at(i);
-
-      // right hand sides
-      axpy(1., n2.row(idxA1, normals.blockSize(idxN1)), n.row(normals.blockIndex(idxN1), normals.blockSize(idxN1)));
-
-      // normal matrix
-      for(UInt k=0; k<arcIndexA.at(arcNo).size(); k++)
-        if(arcIndexN.at(arcNo).at(k)>=idxN1)
-        {
-          const UInt idxN2 = arcIndexN.at(arcNo).at(k);
-          const UInt idxA2 = arcIndexA.at(arcNo).at(k);
-          if(normals.N(idxN1, idxN2).size() == 0)
-            normals.N(idxN1, idxN2) = ((idxN1==idxN2) ? Matrix(normals.blockSize(idxN1), Matrix::SYMMETRIC)
-                                                      : Matrix(normals.blockSize(idxN1), normals.blockSize(idxN2)));
-          axpy(1., N2.slice(idxA1, idxA2, normals.blockSize(idxN1), normals.blockSize(idxN2)), normals.N(idxN1, idxN2));
-        }
-    } // for(i)
+    normals.accumulate(findInterval(arcNo), Wl, WA, WB);
   }
   catch(std::exception &e)
   {
@@ -1217,31 +815,26 @@ void PreprocessingSst::computeRedundancies(UInt arcNo)
 
     // Decorrelation
     // -------------
-    Matrix Wl   = observationArc.at(arcNo).l;
-    Matrix WA   = observationArc.at(arcNo).A;
-    Matrix WB   = observationArc.at(arcNo).B;
-    Matrix WSst = arcWiseSSTCovarianceMatrix(arcNo);
-    Matrix WPod1, WPod2;
-    Covariance3dArc covEpochPod1 = fileCovEpochPod1.readArc(arcNo);
-    Covariance3dArc covEpochPod2 = fileCovEpochPod2.readArc(arcNo);
-    if(countSst)  CovarianceSst::decorrelate(observationArc.at(arcNo).timesSst, sigmaSst(arcNo),  arcListEpochSigmaSst.at(arcNo),  covFuncSst,  WSst, {Wl.row(idxSst, countSst),     WA.row(idxSst, countSst),     WB.row(idxSst, countSst)});
-    if(countPod1) CovariancePod::decorrelate(observationArc.at(arcNo).pod1,     sigmaPod1(arcNo), arcListEpochSigmaPod1.at(arcNo), covEpochPod1, covFuncPod1, WPod1, {Wl.row(idxPod1, 3*countPod1), WA.row(idxPod1, 3*countPod1), WB.row(idxPod1, 3*countPod1)});
-    if(countPod2) CovariancePod::decorrelate(observationArc.at(arcNo).pod2,     sigmaPod2(arcNo), arcListEpochSigmaPod2.at(arcNo), covEpochPod2, covFuncPod2, WPod2, {Wl.row(idxPod2, 3*countPod2), WA.row(idxPod2, 3*countPod2), WB.row(idxPod2, 3*countPod2)});
+    Matrix Wl = observationArc.at(arcNo).l;
+    Matrix WA = observationArc.at(arcNo).A;
+    Matrix WB = observationArc.at(arcNo).B;
+    Matrix WSst, WPod1, WPod2;
+    decorrelate(arcNo, countSst, countPod1, countPod2, WSst, WPod1, WPod2, {Wl, WA, WB});
 
     // eliminate arc dependent parameters
     // ----------------------------------
     if(WB.size())
     {
       Vector tau = QR_decomposition(WB);
-      QTransMult(WB, tau, Wl); // transform observations: l:= Q'l
-      Wl.row(0, WB.columns()).setNull(); // residuals: remove WB*x
-      QMult(WB, tau, Wl); // back transformation
+      QTransMult(WB, tau, Wl);             // transform observations: l:= Q'l
+      Wl.row(0, WB.columns()).setNull();   // residuals: remove WB*x
+      QMult(WB, tau, Wl);                  // back transformation
 
       if(WA.size())
       {
-        QTransMult(WB, tau, WA); // transform design matrix A:=Q'A
+        QTransMult(WB, tau, WA);           // transform design matrix A:=Q'A
         WA.row(0, WB.columns()).setNull(); // residuals: remove WB*x
-        QMult(WB, tau, WA); // back transformation
+        QMult(WB, tau, WA);                // back transformation
       }
 
       generateQ(WB, tau);
@@ -1251,13 +844,8 @@ void PreprocessingSst::computeRedundancies(UInt arcNo)
     // ----------------------
     Matrix We = Wl;
     Matrix WAz(Wl.rows(), Wz.columns());
-    for(UInt i=0; i<arcIndexA.at(arcNo).size(); i++)
-    {
-      const UInt idxN = arcIndexN.at(arcNo).at(i);
-      const UInt idxA = arcIndexA.at(arcNo).at(i);
-      matMult(-1., WA.column(idxA, normals.blockSize(idxN)),  x.row(normals.blockIndex(idxN), normals.blockSize(idxN)), We);
-      matMult( 1., WA.column(idxA, normals.blockSize(idxN)), Wz.row(normals.blockIndex(idxN), normals.blockSize(idxN)), WAz);
-    }
+    normals.designMatMult(findInterval(arcNo), -1., WA, x,  We);
+    normals.designMatMult(findInterval(arcNo), +1., WA, Wz, WAz);
 
     // ============================================
 
@@ -1266,17 +854,17 @@ void PreprocessingSst::computeRedundancies(UInt arcNo)
       if(countSst)
       {
         const Double redundancy = countSst - quadsum(WAz.row(idxSst, countSst)) - quadsum(WB.row(idxSst, countSst));
-        sigmaSstNew(arcNo) = sqrt(quadsum(We.row(idxSst,  countSst))/redundancy) * sigmaSst(arcNo);
+        sigmaSstNew(arcNo) = std::sqrt(quadsum(We.row(idxSst,  countSst))/redundancy) * sigmaSst(arcNo);
       }
       if(countPod1)
       {
         const Double redundancy = 3*countPod1 - quadsum(WAz.row(idxPod1, 3*countPod1)) - quadsum(WB.row(idxPod1, 3*countPod1));
-        sigmaPod1New(arcNo) = sqrt(quadsum(We.row(idxPod1,  3*countPod1))/redundancy) * sigmaPod1(arcNo);
+        sigmaPod1New(arcNo) = std::sqrt(quadsum(We.row(idxPod1,  3*countPod1))/redundancy) * sigmaPod1(arcNo);
       }
       if(countPod2)
       {
         const Double redundancy = 3*countPod2 - quadsum(WAz.row(idxPod2, 3*countPod2)) - quadsum(WB.row(idxPod2, 3*countPod2));
-        sigmaPod2New(arcNo) = sqrt(quadsum(We.row(idxPod2,  3*countPod2))/redundancy) * sigmaPod2(arcNo);
+        sigmaPod2New(arcNo) = std::sqrt(quadsum(We.row(idxPod2,  3*countPod2))/redundancy) * sigmaPod2(arcNo);
       }
       return;
     } // if(!estimateCovarianceFunctionVCE)
@@ -1300,9 +888,9 @@ void PreprocessingSst::computeRedundancies(UInt arcNo)
       sigmaSstNew(arcNo) = std::sqrt(ePeSum/redundancySum) * sigmaSst(arcNo);  // compute new sigma (for this arc)
 
       // Arc-wise covariance matrices
-      if(estimateVarianceFactorsSstArcWiseCovariances)
-        for(UInt i=0; i<covMatrixSst.at(arcNo).size(); i++)
-          Vce::matrix(R, WWe, std::pow(covMatrixSstSigmas(i),2) * covMatrixSst.at(arcNo).at(i), ePeCovMatrixSst(i), redundancyCovMatrixSst(i));
+      if(estimateSigmasCovSst)
+        for(UInt i=0; i<CovSst.at(arcNo).size(); i++)
+          Vce::matrix(R, WWe, std::pow(sigmasCovSst(i),2) * CovSst.at(arcNo).at(i), ePeCovSst(i), redundancyCovSst(i));
     }
 
     // variance component estimation (pod1)
@@ -1363,13 +951,8 @@ void PreprocessingSst::computeResiduals(UInt arcNo)
 
     // Residuals
     // ---------
-    Matrix e = observationArc.at(arcNo).l;;
-    for(UInt i=0; i<arcIndexA.at(arcNo).size(); i++)
-    {
-      const UInt idxN = arcIndexN.at(arcNo).at(i);
-      const UInt idxA = arcIndexA.at(arcNo).at(i);
-      matMult(-1., observationArc.at(arcNo).A.column(idxA, normals.blockSize(idxN)), x.row(normals.blockIndex(idxN), normals.blockSize(idxN)), e);
-    }
+    Matrix e = observationArc.at(arcNo).l;
+    normals.designMatMult(findInterval(arcNo), -1., observationArc.at(arcNo).A, x, e);
 
     // eliminate arc dependent parameters
     // ----------------------------------
@@ -1377,15 +960,8 @@ void PreprocessingSst::computeResiduals(UInt arcNo)
     {
       Matrix We = e;
       Matrix WB = observationArc.at(arcNo).B;
-      Matrix WSst = arcWiseSSTCovarianceMatrix(arcNo);
-      Matrix WPod;
-
-      Covariance3dArc covEpochPod1 = fileCovEpochPod1.readArc(arcNo);
-      Covariance3dArc covEpochPod2 = fileCovEpochPod2.readArc(arcNo);
-      if(countSst)  CovarianceSst::decorrelate(observationArc.at(arcNo).timesSst, sigmaSst(arcNo),  arcListEpochSigmaSst.at(arcNo),  covFuncSst,  WSst, {We.row(idxSst, countSst), WB.row(idxSst, countSst)});
-      if(countPod1) CovariancePod::decorrelate(observationArc.at(arcNo).pod1,     sigmaPod1(arcNo), arcListEpochSigmaPod1.at(arcNo), covEpochPod1, covFuncPod1, WPod, {We.row(idxPod1, 3*countPod1), WB.row(idxPod1, 3*countPod1)});
-      if(countPod2) CovariancePod::decorrelate(observationArc.at(arcNo).pod2,     sigmaPod2(arcNo), arcListEpochSigmaPod2.at(arcNo), covEpochPod2, covFuncPod2, WPod, {We.row(idxPod2, 3*countPod2), WB.row(idxPod2, 3*countPod2)});
-
+      Matrix WSst, WPod1, WPod2;
+      decorrelate(arcNo, countSst, countPod1, countPod2, WSst, WPod1, WPod2, {We, WB});
       Vector tau = QR_decomposition(WB);
       QTransMult(WB, tau, We); // transform observations: l:= Q'l
       Matrix y = We.row(0, tau.rows());
@@ -1441,34 +1017,34 @@ void PreprocessingSst::computeEpochSigmas(UInt arcNo)
     const Double thresholdSst = huber*huber*covFuncSst(0,1);
     for(UInt i=0; i<countSst; i++)
     {
-      const Double e2 = pow(arcListResidualsSst.at(arcNo).at(i).rangeRate, 2);
+      const Double e2 = std::pow(arcListResidualsSst.at(arcNo).at(i).rangeRate, 2);
       arcListEpochSigmaSst.at(arcNo).at(i).sigma = 0.;
       if(e2 > thresholdSst)
-        arcListEpochSigmaSst.at(arcNo).at(i).sigma = sqrt(e2-thresholdSst);
+        arcListEpochSigmaSst.at(arcNo).at(i).sigma = std::sqrt(e2-thresholdSst);
     }
 
     const UInt   countPod1     = observationArc.at(arcNo).timesPod1.size();
     const Double thresholdPod1 = huber*huber*(covFuncPod1(0,1)+covFuncPod1(0,2)+covFuncPod1(0,3));
     for(UInt i=0; i<countPod1; i++)
     {
-      const Double e2 = pow(arcListResidualsPod1.at(arcNo).at(i).position.x(),2)+
-                        pow(arcListResidualsPod1.at(arcNo).at(i).position.y(),2)+
-                        pow(arcListResidualsPod1.at(arcNo).at(i).position.z(),2);
+      const Double e2 = std::pow(arcListResidualsPod1.at(arcNo).at(i).position.x(),2)+
+                        std::pow(arcListResidualsPod1.at(arcNo).at(i).position.y(),2)+
+                        std::pow(arcListResidualsPod1.at(arcNo).at(i).position.z(),2);
       arcListEpochSigmaPod1.at(arcNo).at(i).sigma = 0.;
       if(e2 > thresholdPod1)
-        arcListEpochSigmaPod1.at(arcNo).at(i).sigma = sqrt((e2-thresholdPod1)/3);
+        arcListEpochSigmaPod1.at(arcNo).at(i).sigma = std::sqrt((e2-thresholdPod1)/3);
     }
 
     const UInt   countPod2     = observationArc.at(arcNo).timesPod2.size();
     const Double thresholdPod2 = huber*huber*(covFuncPod2(0,1)+covFuncPod2(0,2)+covFuncPod2(0,3));
     for(UInt i=0; i<countPod2; i++)
     {
-      const Double e2 = pow(arcListResidualsPod2.at(arcNo).at(i).position.x(),2)+
-                        pow(arcListResidualsPod2.at(arcNo).at(i).position.y(),2)+
-                        pow(arcListResidualsPod2.at(arcNo).at(i).position.z(),2);
+      const Double e2 = std::pow(arcListResidualsPod2.at(arcNo).at(i).position.x(),2)+
+                        std::pow(arcListResidualsPod2.at(arcNo).at(i).position.y(),2)+
+                        std::pow(arcListResidualsPod2.at(arcNo).at(i).position.z(),2);
       arcListEpochSigmaPod2.at(arcNo).at(i).sigma = 0.;
       if(e2 > thresholdPod2)
-        arcListEpochSigmaPod2.at(arcNo).at(i).sigma = sqrt((e2-thresholdPod2)/3);
+        arcListEpochSigmaPod2.at(arcNo).at(i).sigma = std::sqrt((e2-thresholdPod2)/3);
     }
   }
   catch(std::exception &e)

@@ -85,9 +85,14 @@ public:
   /// Destructor.
   virtual ~CovarianceSst() {}
 
+  /** @brief Full variance covariance matrix. */
+  Matrix covariance(UInt arcNo, const std::vector<Time> &times);
+
   /** @brief Decorrelates observation equations.
   * The list of matrices, usually the observation vector and design matrices, are decorrelated. */
-  Matrix decorrelate(UInt arcNo, const std::vector<Time> &times, const std::list<MatrixSlice> &A);
+  void decorrelate(UInt arcNo, const std::vector<Time> &times, const std::list<MatrixSlice> &A);
+
+  // --------------------
 
   /** @brief Decorrelates observation equations.
   * A list of matrices, usually the observation vector and design matrices, are decorrelated.
@@ -96,10 +101,23 @@ public:
   * @param sigmaArc variance factor for the toeplitz covariance function of this arc
   * @param sigmaEpoch Epoch-wise sigmas
   * @param covFunction Toeplitz covariance function
-  * @param[in,out] W input: Empty or Non-Toeplitz covariance matrix for this arc. Output: Cholesky decomposition
-  * @param[in,out] A Matrices to be decorrelated */
-  static void decorrelate(const std::vector<Time> &times, Double sigmaArc, const ObservationSigmaArc &sigmaEpoch,
-                          const_MatrixSliceRef covFunction, Matrix &W, const std::list<MatrixSlice> &A);
+  * @param[in,out] Cov0 input: Empty or Non-Toeplitz covariance matrix for this arc. Output: Full covariance matrix.
+  * @return reference to @a Cov0 */
+  static MatrixSliceRef covariance(const std::vector<Time> &times, Double sigmaArc, const ObservationSigmaArc &sigmaEpoch,
+                                   const_MatrixSliceRef covFunction, Matrix &Cov0);
+
+  /** @brief Decorrelates observation equations.
+  * A list of matrices, usually the observation vector and design matrices, are decorrelated.
+  * additionally, the Cholesky decomposition of the complete covariance matrix is returned.
+  * @param times of the SST arcNo
+  * @param sigmaArc variance factor for the toeplitz covariance function of this arc
+  * @param sigmaEpoch Epoch-wise sigmas
+  * @param covFunction Toeplitz covariance function
+  * @param[in,out] W input: Empty or Non-Toeplitz covariance matrix for this arc. Output: Cholesky decomposition of the full covariance matrix
+  * @param[in,out] A Matrices to be decorrelated
+  * @return reference to @a W */
+  static MatrixSliceRef decorrelate(const std::vector<Time> &times, Double sigmaArc, const ObservationSigmaArc &sigmaEpoch,
+                                    const_MatrixSliceRef covFunction, Matrix &W, const std::list<MatrixSlice> &A);
 
   /** @brief creates an derived instance of this class. */
   static CovarianceSstPtr create(Config &config, const std::string &name) {return std::make_shared<CovarianceSst>(config, name);}

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - NormalsBuildShortTimeStaticLongTime</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>NormalsBuildShortTimeStaticLongTime</h1><p>
+
+This program sets up normal equations based on <a class="groops-class" href="observationType.html">observation</a>.
+Additionally short time and long time variations can be parametrized based on the static parameters
+in <a class="groops-class" href="observationType.html">observation</a> in an efficient way. The observation equations
+are divided into time intervals $i \in \{1, ..., N\}$ (e.g. daily) as defined in
+<a class="groops-class" href="fileFormat_arcList.html">inputfileArcList</a>.</p><p>With <strong class="groops-config-element">estimateLongTimeVariations</strong> additional temporal variations can be co-estimated
+for a subset of the parameters selected by <a class="groops-class" href="parameterSelectorType.html">parameterSelection</a>.
+These parameters might be spherical harmonic coefficients with a limited maximum degree.
+The temporal variations are represented by base functions $\Phi_k(t_i)$ (e.g. trend and annual oscillation)
+given by <a class="groops-class" href="parametrizationTemporalType.html">parametrizationTemporal</a>.
+The temporal base functions are evaluated at the mid time $t_i$ of each interval $i$, multiplicated
+with the design matrix $\M A_i$ of the selected parameters, and the design matrix is extended
+accordingly.</p><p><figure><img class="figure" style="width:80%;" src="../figures/normalsBuildShortTimeStaticLongTime.png" alt="normalsBuildShortTimeStaticLongTime"><figcaption class="center">Figure: Schema of the extended design matrix.</figcaption></figure></p><p>With <strong class="groops-config-element">estimateShortTimeVariations</strong> short time variations of the gravity field can be co-estimated.
+Their purpose is to mitigate temporal aliasing.
+The short time parameters selected by <a class="groops-class" href="parameterSelectorType.html">parameterSelection</a>
+(e.g. daily constant or linear splines every 6 hour) are constrained by an
+<a class="groops-class" href="autoregressiveModelSequenceType.html">autoregressiveModelSequence</a>. If only a static parameter
+set is selected the coressponding part of the design matrix is copied and modeled as a constant value
+per interval in <a class="groops-class" href="fileFormat_arcList.html">inputfileArcList</a> additionally so the corresponding temporal factor can be expressed as
+\[
+  \Phi_i(t)  =
+  \begin{cases}
+    1 &\text{if} \hspace{5pt} t \in [t_i, t_{i+1}) \\
+    0 & \text{otherwise}
+  \end{cases}.
+\]
+Before writing the normal equations to <a class="groops-class" href="fileFormat_normalEquation.html">outputfileNormalEquation</a>
+short time gravity and satellite specific parameters can be eliminated with <strong class="groops-config-element">eliminateParameter</strong>.</p><p>Example: For the computation of the mean gravity field ITSG-Grace2018s with additional trend and annual signal
+the normal equations are computed month by month and accumulated afterwards (see <a class="groops-program" href="NormalsAccumulate.html">NormalsAccumulate</a>).
+The observations were divided into daily intervals with <a class="groops-class" href="fileFormat_arcList.html">inputfileArcList</a>.
+The static gravity field has been parametrized as spherical harmonics
+up to degree $n=200$ in <a class="groops-class" href="parametrizationGravityType.html">observation:parametrizationGravity</a>.
+The trend and annual signals defined by
+<a class="groops-class" href="parametrizationTemporalType.html">estimateLongTimeVariations:parametrizationTemporal</a>
+were estimated for selected parameters up to degree $n=120$.
+To mitigate temporal aliasing daily gravity fields up to degree $n=40$ were setup and constrained
+with an <a class="groops-class" href="autoregressiveModelSequenceType.html">autoregressiveModelSequence</a> up to order three.</p><p>A detailed description of the approach is given in:
+Kvas, A., Mayer-Gürr, T. GRACE gravity field recovery with background model uncertainties.
+J Geod 93, 2543–2552 (2019). <a href="https://doi.org/10.1007/s00190-019-01314-1" target="_blank">https://doi.org/10.1007/s00190-019-01314-1</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileNormalEquation</div></div></td><td>filename</td><td>outputfile for normal equations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">observation</div></div></td><td><a href="observationType.html">observation</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateShortTimeVariations</div></div></td><td>sequence</td><td>co-estimate short time gravity field variations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">autoregressiveModelSequence</div></div></td><td><a href="autoregressiveModelSequenceType.html">autoregressiveModelSequence</a></td><td>AR model sequence for constraining short time gravity variations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset-unbounded">parameterSelection</div></div></td><td><a href="parameterSelectorType.html">parameterSelector</a></td><td>parameters describing the short time gravity field</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateLongTimeVariations</div></div></td><td>sequence</td><td>co-estimate long time gravity field variations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset-unbounded">parametrizationTemporal</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>parametrization of time variations (trend, annual, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset-unbounded">parameterSelection</div></div></td><td><a href="parameterSelectorType.html">parameterSelector</a></td><td>parameters describing the long time gravity field</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileArcList</div></div></td><td>filename</td><td>list to correspond points of time to arc numbers</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">defaultBlockSize</div></div></td><td>uint</td><td>block size for distributing the normal equations, 0: one block</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">eliminateParameter</div></div></td><td>boolean</td><td>eliminate short time and state parameter</td></tr>
+</table>
+This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.
+
+        </div>
+    </main>
+</body>
+</html>
