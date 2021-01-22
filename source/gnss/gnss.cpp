@@ -434,6 +434,15 @@ std::vector<GnssType> Gnss::replaceCompositeSignals(const std::vector<GnssType> 
   //       else if(t == GnssType::C8XE) {types.push_back(GnssType::C8IE + prn); types.push_back(GnssType::C8QE + prn);}
   //       else if(t == GnssType::C6XE) {types.push_back(GnssType::C6BE + prn); types.push_back(GnssType::C6CE + prn);}
   //       else if(t == GnssType::C6ZE) {types.push_back(GnssType::C6AE + prn); types.push_back(GnssType::C6BE + prn); types.push_back(GnssType::C6CE + prn);}
+        else if(t == GnssType::C2XC) {types.push_back(GnssType::C2IC + prn); types.push_back(GnssType::C2QC + prn);}
+        else if(t == GnssType::C1XC) {types.push_back(GnssType::C1DC + prn); types.push_back(GnssType::C1PC + prn);}
+        else if(t == GnssType::C1ZC) {types.push_back(GnssType::C1SC + prn); types.push_back(GnssType::C1LC + prn);}
+        else if(t == GnssType::C5XC) {types.push_back(GnssType::C5DC + prn); types.push_back(GnssType::C5PC + prn);}
+        else if(t == GnssType::C7XC) {types.push_back(GnssType::C7IC + prn); types.push_back(GnssType::C7QC + prn);}
+        else if(t == GnssType::C7ZC) {types.push_back(GnssType::C7DC + prn); types.push_back(GnssType::C7PC + prn);}
+        else if(t == GnssType::C8XC) {types.push_back(GnssType::C8DC + prn); types.push_back(GnssType::C8PC + prn);}
+        else if(t == GnssType::C6XC) {types.push_back(GnssType::C6IC + prn); types.push_back(GnssType::C6QC + prn);}
+        else if(t == GnssType::C6ZC) {types.push_back(GnssType::C6DC + prn); types.push_back(GnssType::C6PC + prn);}
         // unknown attributes
         else if(t == GnssType::C2UG) {types.push_back(GnssType::C2SG + prn); types.push_back(GnssType::C2LG + prn);}
         else if(t == GnssType::C5UG) {types.push_back(GnssType::C5IG + prn); types.push_back(GnssType::C5QG + prn);}
@@ -481,6 +490,17 @@ void Gnss::defaultSignalComposition(const std::vector<GnssType> &types, std::vec
        {GnssType::C7XE,  GnssType::C7IE, GnssType::C7QE, 0.5, 0.5},
        {GnssType::C8XE,  GnssType::C8IE, GnssType::C8QE, 0.5, 0.5},
        {GnssType::C6XE,  GnssType::C6BE, GnssType::C6CE, 0.5, 0.5},
+
+       {GnssType::C2XC,  GnssType::C2IC, GnssType::C2QC, 0.5, 0.5},
+       {GnssType::C1XC,  GnssType::C1DC, GnssType::C1PC, 0.5, 0.5},
+       {GnssType::C1ZC,  GnssType::C1SC, GnssType::C1LC, 0.5, 0.5},
+       {GnssType::C5XC,  GnssType::C5DC, GnssType::C5PC, 0.5, 0.5},
+       {GnssType::C7XC,  GnssType::C7IC, GnssType::C7QC, 0.5, 0.5},
+       {GnssType::C7ZC,  GnssType::C7DC, GnssType::C7PC, 0.5, 0.5},
+       {GnssType::C8XC,  GnssType::C8DC, GnssType::C8PC, 0.5, 0.5},
+       {GnssType::C6XC,  GnssType::C6IC, GnssType::C6QC, 0.5, 0.5},
+       {GnssType::C6ZC,  GnssType::C6DC, GnssType::C6PC, 0.5, 0.5},
+
        // unknown attributes
        {GnssType::C2UG,  GnssType::C2SG, GnssType::C2LG, 0.5, 0.5},
        {GnssType::C5UG,  GnssType::C5IG, GnssType::C5QG, 0.5, 0.5},

@@ -24,7 +24,7 @@ A GnssType string consists of six parts (type, frequency, attribute, system, PRN
 represented by seven characters.
 \begin{itemize}
 \item The first three characters (representing type, frequency, and attribute) correspond to the observation codes of the
-      \href{https://files.igs.org/pub/data/format/rinex304.pdf}{RINEX 3 definition}.
+      \href{https://files.igs.org/pub/data/format/rinex305.pdf}{RINEX 3 definition}.
 \item The satellite system character also follows the RINEX 3 definition:
       \begin{itemize}
         \item \verb|G| = GPS
@@ -100,10 +100,10 @@ public:
   static const GnssType G2a;
   static const GnssType G3;
   static const GnssType B1;   ///< BDS
-  static const GnssType B1_2;
-  static const GnssType B2;
+  static const GnssType B1C;
   static const GnssType B2a;
   static const GnssType B2b;
+  static const GnssType B2;
   static const GnssType B3;
   static const GnssType L6;   ///< QZSS
   static const GnssType S9;   ///< IRNSS S
@@ -203,6 +203,41 @@ public:
   static const GnssType L7_E;
   static const GnssType L8_E;
   static const GnssType L6_E;
+
+  static const GnssType C2IC;
+  static const GnssType C2QC;
+  static const GnssType C2XC;
+  static const GnssType C1DC;
+  static const GnssType C1PC;
+  static const GnssType C1XC;
+  static const GnssType C1SC;
+  static const GnssType C1LC;
+  static const GnssType C1ZC;
+  static const GnssType C5DC;
+  static const GnssType C5PC;
+  static const GnssType C5XC;
+  static const GnssType C7IC;
+  static const GnssType C7QC;
+  static const GnssType C7XC;
+  static const GnssType C7DC;
+  static const GnssType C7PC;
+  static const GnssType C7ZC;
+  static const GnssType C8DC;
+  static const GnssType C8PC;
+  static const GnssType C8XC;
+  static const GnssType C6IC;
+  static const GnssType C6QC;
+  static const GnssType C6XC;
+  static const GnssType C6DC;
+  static const GnssType C6PC;
+  static const GnssType C6ZC;
+  static const GnssType L2_C;
+  static const GnssType L1_C;
+  static const GnssType L5_C;
+  static const GnssType L7_C;
+  static const GnssType L8_C;
+  static const GnssType L6_C;
+
 
   UInt64 type;
 

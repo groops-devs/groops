@@ -48,11 +48,11 @@ const GnssType GnssType::G1a       = GnssType(static_cast<UInt64>(4) << 12);
 const GnssType GnssType::G2        = GnssType(static_cast<UInt64>(2) << 12);
 const GnssType GnssType::G2a       = GnssType(static_cast<UInt64>(6) << 12);
 const GnssType GnssType::G3        = GnssType(static_cast<UInt64>(3) << 12);
-const GnssType GnssType::B1        = GnssType(static_cast<UInt64>(1) << 12); // BDS
-const GnssType GnssType::B1_2      = GnssType(static_cast<UInt64>(2) << 12);
-const GnssType GnssType::B2        = GnssType(static_cast<UInt64>(8) << 12);
+const GnssType GnssType::B1        = GnssType(static_cast<UInt64>(2) << 12); // BDS
+const GnssType GnssType::B1C       = GnssType(static_cast<UInt64>(1) << 12);
 const GnssType GnssType::B2a       = GnssType(static_cast<UInt64>(5) << 12);
 const GnssType GnssType::B2b       = GnssType(static_cast<UInt64>(7) << 12);
+const GnssType GnssType::B2        = GnssType(static_cast<UInt64>(8) << 12);
 const GnssType GnssType::B3        = GnssType(static_cast<UInt64>(6) << 12);
 const GnssType GnssType::L6        = GnssType(static_cast<UInt64>(6) << 12); // QZSS
 const GnssType GnssType::S9        = GnssType(static_cast<UInt64>(9) << 12); // IRNSS S
@@ -153,6 +153,40 @@ const GnssType GnssType::L5_E      = GnssType::PHASE + GnssType::E5a            
 const GnssType GnssType::L7_E      = GnssType::PHASE + GnssType::E5b               + GnssType::GALILEO;
 const GnssType GnssType::L8_E      = GnssType::PHASE + GnssType::E5                + GnssType::GALILEO;
 const GnssType GnssType::L6_E      = GnssType::PHASE + GnssType::E6                + GnssType::GALILEO;
+
+const GnssType GnssType::C2IC      = GnssType::RANGE + GnssType::B1  + GnssType::I + GnssType::BDS;
+const GnssType GnssType::C2QC      = GnssType::RANGE + GnssType::B1  + GnssType::Q + GnssType::BDS;
+const GnssType GnssType::C2XC      = GnssType::RANGE + GnssType::B1  + GnssType::X + GnssType::BDS;
+const GnssType GnssType::C1DC      = GnssType::RANGE + GnssType::B1C + GnssType::D + GnssType::BDS;
+const GnssType GnssType::C1PC      = GnssType::RANGE + GnssType::B1C + GnssType::P + GnssType::BDS;
+const GnssType GnssType::C1XC      = GnssType::RANGE + GnssType::B1C + GnssType::X + GnssType::BDS;
+const GnssType GnssType::C1SC      = GnssType::RANGE + GnssType::B1C + GnssType::S + GnssType::BDS;
+const GnssType GnssType::C1LC      = GnssType::RANGE + GnssType::B1C + GnssType::L + GnssType::BDS;
+const GnssType GnssType::C1ZC      = GnssType::RANGE + GnssType::B1C + GnssType::Z + GnssType::BDS;
+const GnssType GnssType::C5DC      = GnssType::RANGE + GnssType::B2a + GnssType::D + GnssType::BDS;
+const GnssType GnssType::C5PC      = GnssType::RANGE + GnssType::B2a + GnssType::P + GnssType::BDS;
+const GnssType GnssType::C5XC      = GnssType::RANGE + GnssType::B2a + GnssType::X + GnssType::BDS;
+const GnssType GnssType::C7IC      = GnssType::RANGE + GnssType::B2b + GnssType::I + GnssType::BDS;
+const GnssType GnssType::C7QC      = GnssType::RANGE + GnssType::B2b + GnssType::Q + GnssType::BDS;
+const GnssType GnssType::C7XC      = GnssType::RANGE + GnssType::B2b + GnssType::X + GnssType::BDS;
+const GnssType GnssType::C7DC      = GnssType::RANGE + GnssType::B2b + GnssType::D + GnssType::BDS;
+const GnssType GnssType::C7PC      = GnssType::RANGE + GnssType::B2b + GnssType::P + GnssType::BDS;
+const GnssType GnssType::C7ZC      = GnssType::RANGE + GnssType::B2b + GnssType::Z + GnssType::BDS;
+const GnssType GnssType::C8DC      = GnssType::RANGE + GnssType::B2  + GnssType::D + GnssType::BDS;
+const GnssType GnssType::C8PC      = GnssType::RANGE + GnssType::B2  + GnssType::P + GnssType::BDS;
+const GnssType GnssType::C8XC      = GnssType::RANGE + GnssType::B2  + GnssType::X + GnssType::BDS;
+const GnssType GnssType::C6IC      = GnssType::RANGE + GnssType::B3  + GnssType::I + GnssType::BDS;
+const GnssType GnssType::C6QC      = GnssType::RANGE + GnssType::B3  + GnssType::Q + GnssType::BDS;
+const GnssType GnssType::C6XC      = GnssType::RANGE + GnssType::B3  + GnssType::X + GnssType::BDS;
+const GnssType GnssType::C6DC      = GnssType::RANGE + GnssType::B3  + GnssType::D + GnssType::BDS;
+const GnssType GnssType::C6PC      = GnssType::RANGE + GnssType::B3  + GnssType::P + GnssType::BDS;
+const GnssType GnssType::C6ZC      = GnssType::RANGE + GnssType::B3  + GnssType::Z + GnssType::BDS;
+const GnssType GnssType::L2_C      = GnssType::PHASE + GnssType::B1                + GnssType::BDS;
+const GnssType GnssType::L1_C      = GnssType::PHASE + GnssType::B1C               + GnssType::BDS;
+const GnssType GnssType::L5_C      = GnssType::PHASE + GnssType::B2a               + GnssType::BDS;
+const GnssType GnssType::L7_C      = GnssType::PHASE + GnssType::B2b               + GnssType::BDS;
+const GnssType GnssType::L8_C      = GnssType::PHASE + GnssType::B2                + GnssType::BDS;
+const GnssType GnssType::L6_C      = GnssType::PHASE + GnssType::B3                + GnssType::BDS;
 
 /***********************************************/
 
@@ -365,8 +399,8 @@ Double GnssType::frequency() const
     }
     else if(*this==BDS)
     {
-      if     (*this == B1)   return 1575.42e6;
-      else if(*this == B1_2) return 1561.098e6;
+      if     (*this == B1C)  return 1575.42e6;
+      else if(*this == B1)   return 1561.098e6;
       else if(*this == B2)   return 1191.795e6;
       else if(*this == B2a)  return 1176.45e6;
       else if(*this == B2b)  return 1207.14e6;

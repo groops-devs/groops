@@ -12,7 +12,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Converts \href{https://files.igs.org/pub/data/format/rinex304.pdf}{RINEX} or
+Converts \href{https://files.igs.org/pub/data/format/rinex305.pdf}{RINEX} or
 \href{http://terras.gsi.go.jp/ja/crx2rnx.html}{Compact RINEX} files to
 \file{GnssReceiver Instrument file}{instrument}.
 

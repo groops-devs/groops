@@ -12,7 +12,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Evaluates orbit and clock parameters from \href{https://files.igs.org/pub/data/format/rinex304.pdf}{RINEX navigation file} \config{inputfileRinex}
+Evaluates orbit and clock parameters from \href{https://files.igs.org/pub/data/format/rinex305.pdf}{RINEX navigation file} \config{inputfileRinex}
 at epochs given by \configClass{timeSeries}{timeSeriesType} and writes them to \configFile{outputfileOrbit}{instrument} and
 \configFile{outputfileClock}{instrument}, respectively.
 )";
