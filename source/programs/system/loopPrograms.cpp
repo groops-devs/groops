@@ -72,7 +72,7 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
 
     // Every process executes every iteration
     // --------------------------------------
-    if((processCount == 0) || (Parallel::size(comm) < 3))
+    if((processCount == 0) || (processCount+1 >= Parallel::size(comm)) || (Parallel::size(comm) < 3))
     {
       UInt iter = 0;
       Log::startTimer();
