@@ -702,6 +702,16 @@ void GnssParametrizationTransmitter::initParameter(Gnss::NormalEquationInfo &nor
             // clock
             if((estimateClockError != EstimateClockError::NONE) && (normalEquationInfo.estimationType & Gnss::NormalEquationInfo::ESTIMATE_TRANSMITTER_CLOCK))
             {
+              // check if clock parameter is estimable with currently selected receivers
+              UInt count = 0;
+              for(UInt idRecv = 0; idRecv < gnss().receiver.size(); idRecv++)
+                if(gnss().receiver.at(idRecv)->useable() && normalEquationInfo.estimateReceiver.at(idRecv))
+                  count += gnss().receiver.at(idRecv)->countObservations(trans->idTrans(), idEpoch, idEpoch);
+              Parallel::reduceSum(count, 0, normalEquationInfo.comm);
+              Parallel::broadCast(count, 0, normalEquationInfo.comm);
+              if(!count)
+                continue;
+
               trans->indexParameterClock.at(idEpoch) = normalEquationInfo.parameterNamesEpochTransmitter(idEpoch, trans->idTrans(), {ParameterName(trans->name(), "clock", "", times.at(idEpoch))});
             }
           }

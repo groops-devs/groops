@@ -173,7 +173,7 @@ void Gnss::initInterval(AnalysisType analysisType, const std::vector<Time> &time
       if(receiver.at(idRecv)->useable())
         for(UInt idTrans=0; idTrans<transmitter.size(); idTrans++)
           typesRecvTrans.at(idRecv).at(idTrans) = receiver.at(idRecv)->observationsTypes(idTrans);
-      Parallel::broadCast(typesRecvTrans, static_cast<UInt>(stationProcess(idRecv)), comm);
+      Parallel::broadCast(typesRecvTrans.at(idRecv), static_cast<UInt>(stationProcess(idRecv)), comm);
     }
 
     // init other parametrizations
