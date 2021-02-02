@@ -589,31 +589,18 @@ Vector NormalsShortTimeStaticLongTime::parameterStandardDeviation()
 {
   try
   {
-    choleskyInverse();
+    cholesky2SparseInverse();
 
     Vector diagonal = Vector(dimension());
     for(UInt i=0; i<blockCount(); i++)
-    {
       if(isMyRank(i,i))
       {
         Matrix &N2 = N(i,i);
         for(UInt z=0; z<N2.rows(); z++)
-          diagonal(blockIndex(i)+z) += quadsum(N2.slice(z,z,1,N2.columns()-z));
+          diagonal(blockIndex(i)+z) = std::sqrt(N2(z,z));
       }
-      for(UInt k=i+1; k<blockCount(); k++)
-        if(isMyRank(i,k))
-        {
-          Matrix &N2 = N(i,k);
-          for(UInt z=0; z<N2.rows(); z++)
-            diagonal(blockIndex(i)+z) += quadsum(N2.row(z));
-        }
-    }
 
     Parallel::reduceSum(diagonal, 0, communicator());
-    if(Parallel::isMaster(communicator()))
-      for(UInt i=0; i<diagonal.rows(); i++)
-        diagonal(i) = std::sqrt(diagonal(i));
-
     return diagonal;
   }
   catch(std::exception &e)
