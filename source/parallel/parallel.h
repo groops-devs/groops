@@ -247,7 +247,7 @@ inline void Parallel::broadCast(T &x, UInt process, CommunicatorPtr comm)
     return;
   if(Parallel::myRank(comm) == process)
   {
-    std::stringstream stream; //(std::ios::binary);
+    std::stringstream stream(std::ios_base::out | std::ios::binary);
     OutArchiveBinary oa(stream, "", MAX_UINT);
     oa<<nameValue("xxx", x);
     std::string str = stream.str();
@@ -261,7 +261,7 @@ inline void Parallel::broadCast(T &x, UInt process, CommunicatorPtr comm)
     broadCast(size, process, comm);
     Byte *str = new Byte[size+1];
     broadCast(str, size, process, comm);
-    std::stringstream stream(std::string(str, size)); //, std::ios::binary);
+    std::stringstream stream(std::string(str, size), std::ios_base::in | std::ios::binary);
     InArchiveBinary ia(stream);
     ia>>nameValue("xxx", x);
     delete[] str;
