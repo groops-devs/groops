@@ -1,4 +1,4 @@
-# main
+# Release 2021-02-02
 - Interface change: GnssProcessing, GnssSimulateReceiver: Removed intervals (use program within LoopPrograms instead).
 - Interface change: SimulateStarCameraGnss: Full reimplementation with interface change.
                     Added support for all known attitude modes used by GPS, GLONASS, Galileo, BeiDou, and QZSS. Now requires GnssAttitudeInfo file.
