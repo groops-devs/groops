@@ -66,7 +66,7 @@ Logging::~Logging()
 {
   if(!ss.str().empty())
   {
-    std::cerr<<"WARNING: last log line does not end with  with Log::endl"<<std::endl;
+    std::cerr<<"WARNING: last log line does not end with with Log::endl"<<std::endl;
     std::cerr<<"line = '"<<ss.str()<<"'"<<std::endl;
     endLine(ss);
   }
@@ -91,7 +91,7 @@ std::ostream &Logging::startLine(Type type_)
   {
     if(!ss.str().empty())
     {
-      std::cerr<<"WARNING: last log line does not end with  with Log::endl"<<std::endl;
+      std::cerr<<"WARNING: last log line does not end with with Log::endl"<<std::endl;
       std::cerr<<"line = '"<<ss.str()<<"'"<<std::endl;
       endLine(ss);
     }

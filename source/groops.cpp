@@ -110,7 +110,6 @@ int main(int argc, char *argv[])
 {
   Parallel::CommunicatorPtr comm = Parallel::init(argc, argv);
 
-
   try
   {
     Parallel::broadCastExceptions(comm, [&](Parallel::CommunicatorPtr comm)
