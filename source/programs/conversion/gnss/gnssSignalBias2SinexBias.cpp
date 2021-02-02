@@ -122,9 +122,16 @@ void GnssSignalBias2SinexBias::readData(std::vector<Data> &data) const
       try
       {
         readFileGnssSignalBias(iter->inNameBias, iter->biases);
+
+        // replace unknown attributes with X (code) or * (phase)
         for(auto &type : iter->biases.type)
-          if(type == (GnssType::GALILEO + GnssType::UNKNOWN_ATTRIBUTE))
-            type = (type & ~GnssType::ATTRIBUTE) + GnssType::X;
+          if((type.type & GnssType::ATTRIBUTE.type) == GnssType::UNKNOWN_ATTRIBUTE.type)
+          {
+            type = (type & ~GnssType::ATTRIBUTE);
+            if(type == GnssType::RANGE)
+              type += GnssType::X;
+          }
+
         for(auto &&bias : iter->timeVariableBiases)
         {
           try
@@ -204,6 +211,8 @@ void GnssSignalBias2SinexBias::writeData(OutFile &file, const Time &timeStart, c
       // GLONASS station bias per satellite
       if(isStation && type == GnssType::GLONASS && type.frequencyNumber() != 9999)
       {
+        if(freqNo2prns.find(type.frequencyNumber()) == freqNo2prns.end())
+          return;
         for(const auto &prn : freqNo2prns.at(type.frequencyNumber()))
           writeLine(file, timeStart, timeEnd, prn, getSvn(prn), stationName, type, "ns", bias/LIGHT_VELOCITY*1e9, 0, biasSlope/LIGHT_VELOCITY*1e9, 0);
         return;
@@ -220,6 +229,8 @@ void GnssSignalBias2SinexBias::writeData(OutFile &file, const Time &timeStart, c
           // GLONASS station bias per satellite
           if(isStation && type == GnssType::GLONASS && type.frequencyNumber() != 9999)
           {
+            if(freqNo2prns.find(type.frequencyNumber()) == freqNo2prns.end())
+              continue;
             for(const auto &prn : freqNo2prns.at(type.frequencyNumber()))
               writeLine(file, timeStart, timeEnd, prn, getSvn(prn), stationName, (type2 & ~GnssType::TYPE) + GnssType::PHASE,
                         "ns", bias/LIGHT_VELOCITY*1e9, 0, biasSlope/LIGHT_VELOCITY*1e9, 0);
