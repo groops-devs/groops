@@ -149,6 +149,27 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="matrix">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="matrix" type="matrixGeneratorType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>expression is evaluated for each element of resulting matrix</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="expression" type="expression">
+							<xs:annotation>
+								<xs:documentation>(variable: data) evaluated for each element</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="all" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>all (=yes)/any (=no) elements must evaluate to true</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="stringContainsPattern">
 				<xs:complexType>
 					<xs:sequence>

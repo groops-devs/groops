@@ -1,3 +1,6 @@
+# main
+- New class:        In Condition: Matrix to evaluate matrix elements.
+
 # Release 2021-02-02
 - Interface change: GnssProcessing, GnssSimulateReceiver: Removed intervals (use program within LoopPrograms instead).
 - Interface change: SimulateStarCameraGnss: Full reimplementation with interface change.

@@ -20,6 +20,7 @@
 #include "conditionStringContainsPattern.h"
 #include "conditionStringMatchPattern.h"
 #include "conditionExpression.h"
+#include "conditionMatrix.h"
 #include "conditionAnd.h"
 #include "conditionOr.h"
 #include "conditionNot.h"
@@ -31,6 +32,7 @@ GROOPS_REGISTER_CLASS(Condition, "conditionType",
                       ConditionFileExist,
                       ConditionCommand,
                       ConditionExpression,
+                      ConditionMatrix,
                       ConditionStringContainsPattern,
                       ConditionStringMatchPattern,
                       ConditionAnd,
@@ -55,6 +57,8 @@ ConditionPtr Condition::create(Config &config, const std::string &name)
       condition = ConditionPtr(new ConditionCommand(config));
     if(readConfigChoiceElement(config, "expression", type, ""))
       condition = ConditionPtr(new ConditionExpression(config));
+    if(readConfigChoiceElement(config, "matrix", type, ""))
+      condition = ConditionPtr(new ConditionMatrix(config));
     if(readConfigChoiceElement(config, "stringContainsPattern", type, ""))
       condition = ConditionPtr(new ConditionStringContainsPattern(config));
     if(readConfigChoiceElement(config, "stringMatchPattern", type, ""))

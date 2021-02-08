@@ -211,6 +211,24 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
+\subsection{Matrix}
+Evaluate elements of a \configClass{matrix}{matrixGeneratorType} based on an expression.
+If \config{all}=\verb|yes|, all elements of the matrix must evaluate to true
+for the condition to be fulfilled, otherwise any element evaluating to true is sufficient.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~matrix & \hfuzz=500pt \hyperref[matrixGeneratorType]{matrixGenerator} & \hfuzz=500pt expression is evaluated for each element of resulting matrix\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~expression & \hfuzz=500pt expression & \hfuzz=500pt (variable: data) evaluated for each element\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~all & \hfuzz=500pt boolean & \hfuzz=500pt all (=yes)/any (=no) elements must evaluate to true\\
+\hline
+\end{tabularx}
+
+
 \subsection{StringContainsPattern}
 Determines if there is a match between a pattern or a regular expression and some subsequence in a string.
 
