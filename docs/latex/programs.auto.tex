@@ -3051,6 +3051,34 @@ Name & Type & Annotation\\
 This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
+\subsection{InstrumentAccelerometer2ThermosphericDensity}\label{InstrumentAccelerometer2ThermosphericDensity}
+This programm estimates neutral mass densities along the satellite trajectory based on \file{accelerometer data}{instrument}.
+In order to determine the neutral mass density the accelerometer input should only reflect the accelerations due to drag
+(e.g. \configClass{miscAccelerations:atmosphericDrag}{miscAccelerationsType:atmosphericDrag}).
+Thus, influences from solar and Earth radiation pressure must be reduced beforehand.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileDensity & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~satelliteModel & \hfuzz=500pt filename & \hfuzz=500pt satellite macro model\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt add non-gravitational forces in satellite reference frame\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~thermosphere & \hfuzz=500pt \hyperref[thermosphereType]{thermosphere} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~considerTemperature & \hfuzz=500pt boolean & \hfuzz=500pt compute drag and lift, otherwise simple drag coefficient is used\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~considerWind & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
 \subsection{InstrumentAccelerometerEstimateBiasScale}\label{InstrumentAccelerometerEstimateBiasScale}
 This program calibrates \configFile{inputfileAccelerometer}{instrument} with respect to
 simulated accelerometer data, see \program{SimulateAccelerometer}.

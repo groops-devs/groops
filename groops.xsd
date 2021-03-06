@@ -13565,6 +13565,38 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="InstrumentAccelerometer2ThermosphericDensity">
+				<xs:annotation>
+					<xs:documentation>Estimate neutral density from accelerometer data</xs:documentation>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileDensity" type="filename"/>
+						<xs:element name="satelliteModel" type="filename" minOccurs="0" default="~/data/satellite/">
+							<xs:annotation>
+								<xs:documentation>satellite macro model</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit" type="filename"/>
+						<xs:element name="inputfileStarCamera" type="filename"/>
+						<xs:element name="inputfileAccelerometer" type="filename">
+							<xs:annotation>
+								<xs:documentation>add non-gravitational forces in satellite reference frame</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="thermosphere" type="thermosphereType"/>
+						<xs:element name="considerTemperature" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>compute drag and lift, otherwise simple drag coefficient is used</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="considerWind" type="boolean" minOccurs="0" default="1"/>
+						<xs:element name="earthRotation" type="earthRotationType"/>
+						<xs:element name="ephemerides" type="ephemeridesType" minOccurs="0" default="jpl"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="InstrumentAccelerometerEstimateBiasScale">
 				<xs:annotation>
 					<xs:documentation>estimate accelerometer bias and scale.</xs:documentation>

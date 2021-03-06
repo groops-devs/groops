@@ -1,5 +1,6 @@
 # main
 - New class:        In Condition: Matrix to evaluate matrix elements.
+- New program:      InstrumentAccelerometer2ThermosphericDensity: Estimate neutral density from accelerometer data.
 
 # Release 2021-02-02
 - Interface change: GnssProcessing, GnssSimulateReceiver: Removed intervals (use program within LoopPrograms instead).
