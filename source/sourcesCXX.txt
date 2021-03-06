@@ -192,6 +192,7 @@ gnss/gnssParametrizationTransmitter.cpp
 gnss/gnssParametrizationTransmitterGalileo.cpp
 gnss/gnssParametrizationTransmitterGlonass.cpp
 gnss/gnssParametrizationTransmitterGps.cpp
+gnss/gnssParametrizationTransmitterQzss.cpp
 gnss/gnssReceiver.cpp
 gnss/gnssTransmitter.cpp
 

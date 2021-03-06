@@ -1889,6 +1889,67 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
+
+\subsection{QZSS}\label{gnssParametrizationTransmitterType:qzss}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterList & \hfuzz=500pt filename & \hfuzz=500pt ascii file with transmitter PRNs, used to loop variable \{prn\}\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAntennaDefintion & \hfuzz=500pt filename & \hfuzz=500pt phase centers and variations (ANTEX)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileReceiverDefintion & \hfuzz=500pt filename & \hfuzz=500pt transmitted signal types\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSignalBias & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileVariational & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileClock & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSignalBias & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileUsedTransmitterList & \hfuzz=500pt filename & \hfuzz=500pt ascii file with PRNs\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~estimateOrbit & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~dynamic & \hfuzz=500pt sequence & \hfuzz=500pt initial state and model parameters are estimated (in CRF)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileVariational & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileParameters & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-unbounded.pdf}~parametrizationAcceleration & \hfuzz=500pt \hyperref[parametrizationAccelerationType]{parametrizationAcceleration} & \hfuzz=500pt orbit force parameters\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~stochasticPulse & \hfuzz=500pt sequence & \hfuzz=500pt [mum/s] parametrization of stochastic pulses\\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~onlyEclipsing & \hfuzz=500pt boolean & \hfuzz=500pt only apply stochastic pulses to eclipsing satellites\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~minEstimableEpochsRatio & \hfuzz=500pt double & \hfuzz=500pt drop satellites with lower ratio of estimable epochs to total epochs\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~estimateCodeBias & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~estimatePhaseBias & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~supportsIntegerAmbiguities & \hfuzz=500pt boolean & \hfuzz=500pt receiver tracks full cycle integer ambiguities\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~biasModel & \hfuzz=500pt sequence & \hfuzz=500pt estimate time-variable signal bias\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileBias & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~type & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrizationTemporal & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~timeVariableBias & \hfuzz=500pt sequence & \hfuzz=500pt a priori time-variable signal bias\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileSignalBias & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available; instrument file with bias [m]\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~type & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt bias type\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~estimateClockError & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~epochWise & \hfuzz=500pt sequence & \hfuzz=500pt clock error is estimated for each epoch\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileClock & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sigmaZeroMeanConstraint & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~noiseModel & \hfuzz=500pt sequence & \hfuzz=500pt clock errors are estimated based on a noise model\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileClock & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileClockNoiseModel & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~estimateVarianceFactor & \hfuzz=500pt boolean & \hfuzz=500pt via Variance Component Estimation\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-unbounded.pdf}~clockModel & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sigmaZeroMeanConstraint & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~antennaCenter & \hfuzz=500pt \hyperref[gnssParametrizationAntennaType]{gnssParametrizationAntenna} & \hfuzz=500pt estimate antenna center variations\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~integrationDegree & \hfuzz=500pt uint & \hfuzz=500pt integration of forces by polynomial approximation of degree n\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt for orbit interpolation and velocity calculation\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~disableShadowEpochs & \hfuzz=500pt boolean & \hfuzz=500pt disable epochs if satellite is in Earth's/Moon's shadow\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~eclipse & \hfuzz=500pt \hyperref[eclipseType]{eclipse} & \hfuzz=500pt eclipse model used to determine if a satellite is in Earth's shadow\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~noAntennaPatternFound & \hfuzz=500pt choice & \hfuzz=500pt what should happen is no antenna pattern is found for an observation\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~ignoreObservation & \hfuzz=500pt  & \hfuzz=500pt ignore observation if no matching pattern is found\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~useNearestFrequency & \hfuzz=500pt  & \hfuzz=500pt use pattern of nearest frequency if no matching pattern is found\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~throwException & \hfuzz=500pt  & \hfuzz=500pt throw exception if no matching pattern is found\\
+\hline
+\end{tabularx}
+
 \clearpage
 %==================================
 

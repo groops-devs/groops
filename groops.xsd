@@ -3111,6 +3111,261 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="QZSS">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfileTransmitterList" type="filename" default="{groopsDataDir}/gnss/transmitterQzss/transmitterList.qzss.txt">
+							<xs:annotation>
+								<xs:documentation>ascii file with transmitter PRNs, used to loop variable {prn}</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitterQzss/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
+							<xs:annotation>
+								<xs:documentation>variable {prn} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAntennaDefintion" type="filename" default="{groopsDataDir}/gnss/transmitterQzss/antennaDefinition/igs/igs14/antennaDefinition_igs14.xml">
+							<xs:annotation>
+								<xs:documentation>phase centers and variations (ANTEX)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileReceiverDefintion" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/transmitterQzss/receiverDefinition/receiverDefinition.xml">
+							<xs:annotation>
+								<xs:documentation>transmitted signal types</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSignalBias" type="filename" minOccurs="0" default="signalBias_{loopTime:%D}.{prn}.txt">
+							<xs:annotation>
+								<xs:documentation>variable {prn} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileVariational" type="filename" default="variational_{loopTime:%D}.{prn}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {prn} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileClock" type="filename" default="clock_{loopTime:%D}.{prn}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {prn} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileSignalBias" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable {prn} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileUsedTransmitterList" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>ascii file with PRNs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="estimateOrbit" minOccurs="0">
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="dynamic">
+										<xs:annotation>
+											<xs:documentation>initial state and model parameters are estimated (in CRF)</xs:documentation>
+											<xs:appinfo>rename: parameter = parametrizationAcceleration</xs:appinfo>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="outputfileVariational" type="filename" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>variable {prn} available</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="outputfileOrbit" type="filename" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>variable {prn} available</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="outputfileParameters" type="filename" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>variable {prn} available</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="parametrizationAcceleration" type="parametrizationAccelerationType" minOccurs="0" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>orbit force parameters</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="stochasticPulse" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>[mum/s] parametrization of stochastic pulses</xs:documentation>
+													</xs:annotation>
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded"/>
+															<xs:element name="onlyEclipsing" type="boolean" minOccurs="0" default="0">
+																<xs:annotation>
+																	<xs:documentation>only apply stochastic pulses to eclipsing satellites</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="minEstimableEpochsRatio" type="double" default="0.75">
+													<xs:annotation>
+														<xs:documentation>drop satellites with lower ratio of estimable epochs to total epochs</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="estimateCodeBias" type="boolean" minOccurs="0" default="0"/>
+						<xs:element name="estimatePhaseBias" type="boolean" minOccurs="0" default="1"/>
+						<xs:element name="supportsIntegerAmbiguities" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>receiver tracks full cycle integer ambiguities</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="biasModel" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>estimate time-variable signal bias</xs:documentation>
+								<xs:appinfo>rename: temporal = parametrizationTemporal</xs:appinfo>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="outputfileBias" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>variable {prn} available</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="type" type="gnssType"/>
+									<xs:element name="parametrizationTemporal" type="parametrizationTemporalType" maxOccurs="unbounded"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="timeVariableBias" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>a priori time-variable signal bias</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="inputfileSignalBias" type="filename">
+										<xs:annotation>
+											<xs:documentation>variable {prn} available; instrument file with bias [m]</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="type" type="gnssType">
+										<xs:annotation>
+											<xs:documentation>bias type</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="estimateClockError" minOccurs="0">
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="epochWise">
+										<xs:annotation>
+											<xs:documentation>clock error is estimated for each epoch</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="outputfileClock" type="filename" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>variable {prn} available</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="sigmaZeroMeanConstraint" type="double" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>(0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="noiseModel">
+										<xs:annotation>
+											<xs:documentation>clock errors are estimated based on a noise model</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="outputfileClock" type="filename" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>variable {prn} available</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="inputfileClockNoiseModel" type="filename">
+													<xs:annotation>
+														<xs:documentation>variable {prn} available</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="estimateVarianceFactor" type="boolean" minOccurs="0" default="1">
+													<xs:annotation>
+														<xs:documentation>via Variance Component Estimation</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="clockModel" type="parametrizationTemporalType" minOccurs="0" maxOccurs="unbounded"/>
+												<xs:element name="sigmaZeroMeanConstraint" type="double" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>(0 = unconstrained) sigma [m] for zero-mean constraint over all satellite clocks</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="antennaCenter" type="gnssParametrizationAntennaType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>estimate antenna center variations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="integrationDegree" type="uint" default="7">
+							<xs:annotation>
+								<xs:documentation>integration of forces by polynomial approximation of degree n</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="interpolationDegree" type="uint" default="7">
+							<xs:annotation>
+								<xs:documentation>for orbit interpolation and velocity calculation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="disableShadowEpochs" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>disable epochs if satellite is in Earth&apos;s/Moon&apos;s shadow</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ephemerides" type="ephemeridesType"/>
+						<xs:element name="eclipse" type="eclipseType">
+							<xs:annotation>
+								<xs:documentation>eclipse model used to determine if a satellite is in Earth&apos;s shadow</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="noAntennaPatternFound" default="useNearestFrequency">
+							<xs:annotation>
+								<xs:documentation>what should happen is no antenna pattern is found for an observation</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="ignoreObservation">
+										<xs:annotation>
+											<xs:documentation>ignore observation if no matching pattern is found</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="useNearestFrequency">
+										<xs:annotation>
+											<xs:documentation>use pattern of nearest frequency if no matching pattern is found</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="throwException">
+										<xs:annotation>
+											<xs:documentation>throw exception if no matching pattern is found</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 		</xs:choice>
 	</xs:complexType>
 	<xs:complexType name="gnssProcessingStepType">
@@ -19433,6 +19688,11 @@
 								<xs:documentation>antenna center variations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="outputfileAntennaDefinitionQzss" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>antenna center variations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="outputfileTransmitterInfoGps" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>PRN is appended to file name</xs:documentation>
@@ -19449,6 +19709,11 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="outputfileTransmitterInfoBeiDou" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>PRN is appended to file name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileTransmitterInfoQzss" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>PRN is appended to file name</xs:documentation>
 							</xs:annotation>
@@ -19473,6 +19738,11 @@
 								<xs:documentation>SVN to satellite block mapping</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="outputfileSvnBlockTableQzss" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>SVN to satellite block mapping</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="outputfileTransmitterListGps" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>list of PRNs</xs:documentation>
@@ -19489,6 +19759,11 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="outputfileTransmitterListBeiDou" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>list of PRNs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileTransmitterListQzss" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>list of PRNs</xs:documentation>
 							</xs:annotation>

@@ -424,9 +424,11 @@ std::vector<GnssType> Gnss::replaceCompositeSignals(const std::vector<GnssType> 
         else if(t == GnssType::C1XG) {types.push_back(GnssType::C1SG + prn); types.push_back(GnssType::C1LG + prn);}
         else if(t == GnssType::C2XG) {types.push_back(GnssType::C2SG + prn); types.push_back(GnssType::C2LG + prn);}
         else if(t == GnssType::C5XG) {types.push_back(GnssType::C5IG + prn); types.push_back(GnssType::C5QG + prn);}
+
         else if(t == GnssType::C4XR) {types.push_back(GnssType::C4AR + prn); types.push_back(GnssType::C4BR + prn);}
         else if(t == GnssType::C6XR) {types.push_back(GnssType::C6AR + prn); types.push_back(GnssType::C6BR + prn);}
         else if(t == GnssType::C3XR) {types.push_back(GnssType::C3IR + prn); types.push_back(GnssType::C3QR + prn);}
+
   //       else if(t == GnssType::C1XE) {types.push_back(GnssType::C1BE + prn); types.push_back(GnssType::C1CE + prn);}
   //       else if(t == GnssType::C1ZE) {types.push_back(GnssType::C1AE + prn); types.push_back(GnssType::C1BE + prn); types.push_back(GnssType::C1CE + prn);}
   //       else if(t == GnssType::C5XE) {types.push_back(GnssType::C5IE + prn); types.push_back(GnssType::C5QE + prn);}
@@ -434,6 +436,7 @@ std::vector<GnssType> Gnss::replaceCompositeSignals(const std::vector<GnssType> 
   //       else if(t == GnssType::C8XE) {types.push_back(GnssType::C8IE + prn); types.push_back(GnssType::C8QE + prn);}
   //       else if(t == GnssType::C6XE) {types.push_back(GnssType::C6BE + prn); types.push_back(GnssType::C6CE + prn);}
   //       else if(t == GnssType::C6ZE) {types.push_back(GnssType::C6AE + prn); types.push_back(GnssType::C6BE + prn); types.push_back(GnssType::C6CE + prn);}
+
         else if(t == GnssType::C2XC) {types.push_back(GnssType::C2IC + prn); types.push_back(GnssType::C2QC + prn);}
         else if(t == GnssType::C1XC) {types.push_back(GnssType::C1DC + prn); types.push_back(GnssType::C1PC + prn);}
         else if(t == GnssType::C1ZC) {types.push_back(GnssType::C1SC + prn); types.push_back(GnssType::C1LC + prn);}
@@ -443,6 +446,14 @@ std::vector<GnssType> Gnss::replaceCompositeSignals(const std::vector<GnssType> 
         else if(t == GnssType::C8XC) {types.push_back(GnssType::C8DC + prn); types.push_back(GnssType::C8PC + prn);}
         else if(t == GnssType::C6XC) {types.push_back(GnssType::C6IC + prn); types.push_back(GnssType::C6QC + prn);}
         else if(t == GnssType::C6ZC) {types.push_back(GnssType::C6DC + prn); types.push_back(GnssType::C6PC + prn);}
+
+        else if(t == GnssType::C1XJ) {types.push_back(GnssType::C1SJ + prn); types.push_back(GnssType::C1LJ + prn);}
+        else if(t == GnssType::C2XJ) {types.push_back(GnssType::C2SJ + prn); types.push_back(GnssType::C2LJ + prn);}
+        else if(t == GnssType::C5XJ) {types.push_back(GnssType::C5IJ + prn); types.push_back(GnssType::C5QJ + prn);}
+        else if(t == GnssType::C5ZJ) {types.push_back(GnssType::C5DJ + prn); types.push_back(GnssType::C5PJ + prn);}
+        else if(t == GnssType::C6XJ) {types.push_back(GnssType::C6SJ + prn); types.push_back(GnssType::C6LJ + prn);}
+        else if(t == GnssType::C6ZJ) {types.push_back(GnssType::C6SJ + prn); types.push_back(GnssType::C6EJ + prn);}
+
         // unknown attributes
         else if(t == GnssType::C2UG) {types.push_back(GnssType::C2SG + prn); types.push_back(GnssType::C2LG + prn);}
         else if(t == GnssType::C5UG) {types.push_back(GnssType::C5IG + prn); types.push_back(GnssType::C5QG + prn);}
@@ -482,9 +493,11 @@ void Gnss::defaultSignalComposition(const std::vector<GnssType> &types, std::vec
       {{GnssType::C1XG,  GnssType::C1SG, GnssType::C1LG, 0.5, 0.5},
        {GnssType::C2XG,  GnssType::C2SG, GnssType::C2LG, 0.5, 0.5},
        {GnssType::C5XG,  GnssType::C5IG, GnssType::C5QG, 0.5, 0.5},
+
        {GnssType::C4XR,  GnssType::C4AR, GnssType::C4BR, 0.5, 0.5},
        {GnssType::C6XR,  GnssType::C6AR, GnssType::C6BR, 0.5, 0.5},
        {GnssType::C3XR,  GnssType::C3IR, GnssType::C3QR, 0.5, 0.5},
+
        {GnssType::C1XE,  GnssType::C1BE, GnssType::C1CE, 0.5, 0.5},
        {GnssType::C5XE,  GnssType::C5IE, GnssType::C5QE, 0.5, 0.5},
        {GnssType::C7XE,  GnssType::C7IE, GnssType::C7QE, 0.5, 0.5},
@@ -500,6 +513,13 @@ void Gnss::defaultSignalComposition(const std::vector<GnssType> &types, std::vec
        {GnssType::C8XC,  GnssType::C8DC, GnssType::C8PC, 0.5, 0.5},
        {GnssType::C6XC,  GnssType::C6IC, GnssType::C6QC, 0.5, 0.5},
        {GnssType::C6ZC,  GnssType::C6DC, GnssType::C6PC, 0.5, 0.5},
+
+       {GnssType::C1XJ,  GnssType::C1SJ, GnssType::C1LJ, 0.5, 0.5},
+       {GnssType::C2XJ,  GnssType::C2SJ, GnssType::C2LJ, 0.5, 0.5},
+       {GnssType::C5XJ,  GnssType::C5IJ, GnssType::C5QJ, 0.5, 0.5},
+       {GnssType::C5ZJ,  GnssType::C5DJ, GnssType::C5PJ, 0.5, 0.5},
+       {GnssType::C6XJ,  GnssType::C6SJ, GnssType::C6LJ, 0.5, 0.5},
+       {GnssType::C6ZJ,  GnssType::C6SJ, GnssType::C6EJ, 0.5, 0.5},
 
        // unknown attributes
        {GnssType::C2UG,  GnssType::C2SG, GnssType::C2LG, 0.5, 0.5},

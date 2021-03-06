@@ -82,6 +82,7 @@ const GnssType GnssType::Z         = GnssType(static_cast<UInt64>(11) << 24);
 const GnssType GnssType::P         = GnssType(static_cast<UInt64>(12) << 24);
 const GnssType GnssType::Y         = GnssType(static_cast<UInt64>(13) << 24);
 const GnssType GnssType::M         = GnssType(static_cast<UInt64>(14) << 24);
+const GnssType GnssType::E         = GnssType(static_cast<UInt64>(15) << 24);
 const GnssType GnssType::UNKNOWN_ATTRIBUTE = GnssType(static_cast<UInt64>(99) << 24);
 
 // some codes
@@ -188,6 +189,31 @@ const GnssType GnssType::L7_C      = GnssType::PHASE + GnssType::B2b            
 const GnssType GnssType::L8_C      = GnssType::PHASE + GnssType::B2                + GnssType::BDS;
 const GnssType GnssType::L6_C      = GnssType::PHASE + GnssType::B3                + GnssType::BDS;
 
+const GnssType GnssType::C1CJ      = GnssType::RANGE + GnssType::L1  + GnssType::C + GnssType::QZSS;
+const GnssType GnssType::C1SJ      = GnssType::RANGE + GnssType::L1  + GnssType::S + GnssType::QZSS;
+const GnssType GnssType::C1LJ      = GnssType::RANGE + GnssType::L1  + GnssType::L + GnssType::QZSS;
+const GnssType GnssType::C1XJ      = GnssType::RANGE + GnssType::L1  + GnssType::X + GnssType::QZSS;
+const GnssType GnssType::C1ZJ      = GnssType::RANGE + GnssType::L1  + GnssType::Z + GnssType::QZSS;
+const GnssType GnssType::C1BJ      = GnssType::RANGE + GnssType::L1  + GnssType::B + GnssType::QZSS;
+const GnssType GnssType::C2SJ      = GnssType::RANGE + GnssType::L2  + GnssType::S + GnssType::QZSS;
+const GnssType GnssType::C2LJ      = GnssType::RANGE + GnssType::L2  + GnssType::L + GnssType::QZSS;
+const GnssType GnssType::C2XJ      = GnssType::RANGE + GnssType::L2  + GnssType::X + GnssType::QZSS;
+const GnssType GnssType::C5IJ      = GnssType::RANGE + GnssType::L5  + GnssType::I + GnssType::QZSS;
+const GnssType GnssType::C5QJ      = GnssType::RANGE + GnssType::L5  + GnssType::Q + GnssType::QZSS;
+const GnssType GnssType::C5XJ      = GnssType::RANGE + GnssType::L5  + GnssType::X + GnssType::QZSS;
+const GnssType GnssType::C5DJ      = GnssType::RANGE + GnssType::L5  + GnssType::D + GnssType::QZSS;
+const GnssType GnssType::C5PJ      = GnssType::RANGE + GnssType::L5  + GnssType::P + GnssType::QZSS;
+const GnssType GnssType::C5ZJ      = GnssType::RANGE + GnssType::L5  + GnssType::Z + GnssType::QZSS;
+const GnssType GnssType::C6SJ      = GnssType::RANGE + GnssType::L6  + GnssType::S + GnssType::QZSS;
+const GnssType GnssType::C6LJ      = GnssType::RANGE + GnssType::L6  + GnssType::L + GnssType::QZSS;
+const GnssType GnssType::C6XJ      = GnssType::RANGE + GnssType::L6  + GnssType::X + GnssType::QZSS;
+const GnssType GnssType::C6EJ      = GnssType::RANGE + GnssType::L6  + GnssType::E + GnssType::QZSS;
+const GnssType GnssType::C6ZJ      = GnssType::RANGE + GnssType::L6  + GnssType::Z + GnssType::QZSS;
+const GnssType GnssType::L1_J      = GnssType::PHASE + GnssType::L1                + GnssType::QZSS;
+const GnssType GnssType::L2_J      = GnssType::PHASE + GnssType::L2                + GnssType::QZSS;
+const GnssType GnssType::L5_J      = GnssType::PHASE + GnssType::L5                + GnssType::QZSS;
+const GnssType GnssType::L6_J      = GnssType::PHASE + GnssType::L6                + GnssType::QZSS;
+
 /***********************************************/
 
 GnssType::GnssType(const std::string &str)
@@ -251,6 +277,7 @@ GnssType::GnssType(const std::string &str)
       case 'P': type += P.type; break;
       case 'Y': type += Y.type; break;
       case 'M': type += M.type; break;
+      case 'E': type += E.type; break;
       case '?': type += UNKNOWN_ATTRIBUTE.type; break;
       case '*': break;
       default:
@@ -341,6 +368,7 @@ std::string GnssType::str() const
     else if((type & ATTRIBUTE.type) == P.type) ss<<'P';
     else if((type & ATTRIBUTE.type) == Y.type) ss<<'Y';
     else if((type & ATTRIBUTE.type) == M.type) ss<<'M';
+    else if((type & ATTRIBUTE.type) == E.type) ss<<'E';
     else if((type & ATTRIBUTE.type) == UNKNOWN_ATTRIBUTE.type) ss<<'?';
     else if((type & ATTRIBUTE.type) == 0)      ss<<'*';
     else ss<<'?';

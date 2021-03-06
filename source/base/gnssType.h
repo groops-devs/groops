@@ -133,6 +133,7 @@ public:
   static const GnssType P;         ///< military P (AS off) - Code
   static const GnssType Y;         ///< military
   static const GnssType M;         ///< military
+  static const GnssType E;
   static const GnssType UNKNOWN_ATTRIBUTE;
 
   static const GnssType C1CG;
@@ -238,6 +239,30 @@ public:
   static const GnssType L8_C;
   static const GnssType L6_C;
 
+  static const GnssType C1CJ;
+  static const GnssType C1SJ;
+  static const GnssType C1LJ;
+  static const GnssType C1XJ;
+  static const GnssType C1ZJ;
+  static const GnssType C1BJ;
+  static const GnssType C2SJ;
+  static const GnssType C2LJ;
+  static const GnssType C2XJ;
+  static const GnssType C5IJ;
+  static const GnssType C5QJ;
+  static const GnssType C5XJ;
+  static const GnssType C5DJ;
+  static const GnssType C5PJ;
+  static const GnssType C5ZJ;
+  static const GnssType C6SJ;
+  static const GnssType C6LJ;
+  static const GnssType C6XJ;
+  static const GnssType C6EJ;
+  static const GnssType C6ZJ;
+  static const GnssType L1_J;
+  static const GnssType L2_J;
+  static const GnssType L5_J;
+  static const GnssType L6_J;
 
   UInt64 type;
 

@@ -40,6 +40,7 @@
 #include "gnss/gnssParametrizationTransmitterGlonass.h"
 #include "gnss/gnssParametrizationTransmitterGalileo.h"
 #include "gnss/gnssParametrizationTransmitterBeidou.h"
+#include "gnss/gnssParametrizationTransmitterQzss.h"
 #include "gnss/gnssParametrizationTransmitter.h"
 
 /***********************************************/
@@ -48,7 +49,8 @@ GROOPS_REGISTER_CLASS(GnssParametrizationTransmitter, "gnssParametrizationTransm
                       GnssParametrizationTransmitterGps,
                       GnssParametrizationTransmitterGlonass,
                       GnssParametrizationTransmitterGalileo,
-                      GnssParametrizationTransmitterBeidou)
+                      GnssParametrizationTransmitterBeidou,
+                      GnssParametrizationTransmitterQzss)
 
 GROOPS_RENAMED_CLASS(gnssTransmitterConstellationType, gnssParametrizationTransmitterType, date2time(2020, 6, 12))
 
@@ -71,6 +73,8 @@ GnssParametrizationTransmitterPtr GnssParametrizationTransmitter::create(Config 
       system = GnssParametrizationTransmitterPtr(new GnssParametrizationTransmitterGalileo(config));
     if(readConfigChoiceElement(config, "BeiDou", type, ""))
       system = GnssParametrizationTransmitterPtr(new GnssParametrizationTransmitterBeidou(config));
+    if(readConfigChoiceElement(config, "QZSS", type, ""))
+      system = GnssParametrizationTransmitterPtr(new GnssParametrizationTransmitterQzss(config));
     endChoice(config);
     return system;
   }
