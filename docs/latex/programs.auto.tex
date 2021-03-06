@@ -4312,7 +4312,10 @@ Name & Type & Annotation\\
 \subsection{Grs2PotentialCoefficients}\label{Grs2PotentialCoefficients}
 This program creates potential coefficients from the defining constants
 of a Geodetic Reference System (GRS). The potential coeffiencts excludes the centrifugal part.
-The default values creates the GRS80.
+The form of the reference ellipsoid is either determined by the dynamical form factor \config{J2},
+or the geometric \config{inverseFlattening}. One of those form parameters must be specified.
+
+The default values create the GRS80.
 
 
 \keepXColumns
@@ -4324,8 +4327,9 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~J2 & \hfuzz=500pt double & \hfuzz=500pt Dynamical form factor\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~omega & \hfuzz=500pt double & \hfuzz=500pt Angular velocity of rotation\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~J2 & \hfuzz=500pt double & \hfuzz=500pt Dynamical form factor\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt Geometric inverse flattening of reference ellipsoid (0: sphere, ignored when J2 is set)\\
 \hline
 \end{tabularx}
 

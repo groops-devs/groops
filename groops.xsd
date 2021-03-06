@@ -15287,14 +15287,19 @@
 								<xs:documentation>reference radius</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="omega" type="double" minOccurs="0" default="7292115e-11">
+							<xs:annotation>
+								<xs:documentation>Angular velocity of rotation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="J2" type="double" minOccurs="0" default="108263e-8">
 							<xs:annotation>
 								<xs:documentation>Dynamical form factor</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="omega" type="double" minOccurs="0" default="7292115e-11">
+						<xs:element name="inverseFlattening" type="double" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>Angular velocity of rotation</xs:documentation>
+								<xs:documentation>Geometric inverse flattening of reference ellipsoid (0: sphere, ignored when J2 is set)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
