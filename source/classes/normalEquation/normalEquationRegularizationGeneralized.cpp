@@ -40,8 +40,16 @@ NormalEquationRegularizationGeneralized::NormalEquationRegularizationGeneralized
       s2 *= s2;
 
     if(!fileNameBias.empty())
-     readFileMatrix(fileNameBias, bias);
-    rhsCount = std::max(bias.columns(), static_cast<UInt>(1));
+    {
+      readFileMatrix(fileNameBias, bias);
+      rhsCount = bias.columns();
+      paraCount = bias.rows();
+    }
+    else
+    {
+      rhsCount = 1;
+      paraCount = 0;
+    }
   }
   catch(std::exception &e)
   {
@@ -79,7 +87,7 @@ void NormalEquationRegularizationGeneralized::init(MatrixDistributed &normals, U
     std::iota(index.begin(), index.end(), 0);
 
     // blockIndex
-    std::vector<UInt> blockIndex = {0, normals.blockIndex(startBlock+1)-startIndex};
+    std::vector<UInt> blockIndex = {0, std::min(normals.blockIndex(startBlock+1)-startIndex, paraCount)};
     for(UInt i=startBlock+1; blockIndex.back()<paraCount; i++)
       blockIndex.push_back(std::min(blockIndex.back() + normals.blockSize(i), paraCount));
 
@@ -92,8 +100,11 @@ void NormalEquationRegularizationGeneralized::init(MatrixDistributed &normals, U
       if(Vi.isMyRank(0, 0))
       {
         readFileMatrix(fileName, Vi.N(0, 0));
-        if((Vi.N(0, 0).rows() != paraCount) || (Vi.N(0, 0).getType() != Matrix::SYMMETRIC))
-          throw(Exception("Dimension error of <"+fileName.str()+">"));
+        if((Vi.N(0, 0).rows() != paraCount))
+          throw(Exception("Dimension error of <"+fileName.str()+"> ("+Vi.N(0, 0).rows()%"%i"s+" vs. "+paraCount%"%i"s + " parameters)."));
+        if(Vi.N(0, 0).getType() != Matrix::SYMMETRIC)
+          throw(Exception("Matrix <"+fileName.str()+"> is not symmetric."));
+        fillSymmetric(Vi.N(0, 0));
       }
       Vi.reorder(index, blockIndex, calcRank); // distribute blocks
       V.push_back(Vi);
@@ -135,7 +146,7 @@ Bool NormalEquationRegularizationGeneralized::addNormalEquation(UInt rhsNo, cons
     if(quadsum(x.slice(startIndex, rhsNo, paraCount, 1)) > 0.) // estimate sigmas
     {
       Matrix Se  = symMatMult(Sigma, bias.column(rhsNo) - x.slice(startIndex, rhsNo, paraCount, 1));
-      Matrix SWz = symMatMult(Sigma, Wz);
+      Matrix SWz = symMatMult(Sigma, Wz.row(startIndex, paraCount));
       Parallel::broadCast(Se,  0, normals.communicator());
       Parallel::broadCast(SWz, 0, normals.communicator());
 
@@ -148,12 +159,15 @@ Bool NormalEquationRegularizationGeneralized::addNormalEquation(UInt rhsNo, cons
         Double r = 0;
         for(UInt i=0; i<Sigma.blockCount(); i++)
         {
-          for(UInt k=i; k<Sigma.blockCount(); k++)
+          for(UInt k=i+1; k<Sigma.blockCount(); k++)
             if(Sigma.isMyRank(i, k))
               r += 2 * inner(V.at(j).N(i,k), Sigma.N(i,k));
           if(Sigma.isMyRank(i, i))
-            for(UInt z=0; z<Sigma.blockSize(i); z++)
-              r -= V.at(j).N(i,i)(z,z) * Sigma.N(i,i)(z,z); // diagonal is accounted twice
+          {
+            fillSymmetric(V.at(j).N(i,i));
+            fillSymmetric(Sigma.N(i,i));
+            r += inner(V.at(j).N(i,i), Sigma.N(i,i));
+          }
         }
         Parallel::reduceSum(r, 0, normals.communicator());
 
@@ -195,7 +209,7 @@ Bool NormalEquationRegularizationGeneralized::addNormalEquation(UInt rhsNo, cons
     for(UInt i=0; i<Sigma.blockCount(); i++)
       for(UInt k=i; k<Sigma.blockCount(); k++)
       {
-        normals.setBlock(i, k);
+        normals.setBlock(startBlock+i, startBlock+k);
         if(Sigma.isMyRank(i, k))
         {
           const UInt rowStart = startIndex + Sigma.blockIndex(i) - normals.blockIndex(startBlock+i);
