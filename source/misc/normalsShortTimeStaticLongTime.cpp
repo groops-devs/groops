@@ -149,14 +149,22 @@ void NormalsShortTimeStaticLongTime::init(ObservationPtr observation, const std:
                                                                      {return (minInterval.at(i) == 0) && (maxInterval.at(i) == timesInterval.size()-2);}));
     std::stable_sort(sortIndex.begin(), sortIndex.end(), [&] (UInt i, UInt k)
     {
-      if(maxInterval.at(i) != maxInterval.at(k)) return (maxInterval.at(i) < maxInterval.at(k));
-      if(minInterval.at(i) != minInterval.at(k)) return (minInterval.at(i) < minInterval.at(k));
-      if(sortOtherParametersBeforeGravityParameters)
+      Bool firstIsStatic = minInterval.at(i) == 0 && maxInterval.at(i) == timesInterval.size() - 2; // first parameter is static
+      Bool secondIsStatic = minInterval.at(k) == 0 && maxInterval.at(k) == timesInterval.size() - 2;  // other parameter is static
+      if((firstIsStatic && secondIsStatic) && sortOtherParametersBeforeGravityParameters)
       {
         if(((observation->gravityParameterCount() <= i) && (i < observation->parameterCount())) && // is state parameter?
           !((observation->gravityParameterCount() <= k) && (k < observation->parameterCount())))   // is not state parameter?
         return TRUE;
       }
+      else if(firstIsStatic)
+        return FALSE;
+      else if(secondIsStatic)
+        return TRUE;
+
+      if(maxInterval.at(i) != maxInterval.at(k)) return (maxInterval.at(i) < maxInterval.at(k));
+      if(minInterval.at(i) != minInterval.at(k)) return (minInterval.at(i) < minInterval.at(k));
+
       return FALSE;
     });
 
@@ -388,8 +396,8 @@ void NormalsShortTimeStaticLongTime::reduceSum(Bool timing)
         for(UInt k=0; k<blockIndexTemporal.size(); k++)
            for(UInt idInterval=0; idInterval<nTemporal.size(); idInterval++)
              axpy(factorTemporal.at(k).at(idInterval),
-                  nTemporal.at(idInterval).row(blockIndex(blockRow+blockIndexTemporal.at(0)), blockSize(blockRow+blockIndexTemporal.at(0))),
-                  n.row(blockIndex(blockRow-blockIndexTemporal.at(0)+blockIndexTemporal.at(k)), blockSize(blockRow+blockIndexTemporal.at(0))));
+                  nTemporal.at(idInterval).row(blockIndex(blockRow+blockIndexTemporal.at(0)), blockSize(blockRow+blockIndexTemporal.at(k))),
+                  n.row(blockIndex(blockRow+blockIndexTemporal.at(k)), blockSize(blockRow+blockIndexTemporal.at(k))));
 
     for(UInt idInterval=0; idInterval<normalsTemporal.size(); idInterval++)
       normalsTemporal.at(idInterval).reduceSum(FALSE);
@@ -538,6 +546,7 @@ void NormalsShortTimeStaticLongTime::regularizeUnusedParameters(UInt countBlock)
 {
   try
   {
+    UInt additionalObservations = 0;
     for(UInt i=0; i<countBlock; i++)
     {
       setBlock(i, i);
@@ -548,10 +557,14 @@ void NormalsShortTimeStaticLongTime::regularizeUnusedParameters(UInt countBlock)
           if(N2(k,k) == 0)
           {
             N2(k,k) = 1.;
+            additionalObservations++;
             logWarning<<" parameters is not used: "<<parameterNames.at(blockIndex(i)+k).str()<<Log::endl;
           }
       }
     }
+    Parallel::reduceSum(additionalObservations, 0, communicator());
+    if(Parallel::isMaster(communicator()))
+      obsCount += additionalObservations;
     Parallel::barrier(communicator());
   }
   catch(std::exception &e)

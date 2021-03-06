@@ -459,7 +459,7 @@ ObservationMiscDualSstVariational::Arc ObservationMiscDualSstVariational::comput
       if(covSst1) CovSst1 = covSst1->covariance(arcNo, timesSst);
       if(covSst2) CovSst2 = covSst2->covariance(arcNo, timesSst);
       if(covAcc)  CovAcc  = covAcc->covariance(arcNo, timesSst);
-      decorrelate(CovSst1, CovSst2, CovAcc, {l.row(idxSst1, countSst), A.row(idxSst1, 2*countSst), B.row(idxSst1, 2*countSst)});
+      decorrelate(CovSst1, CovSst2, CovAcc, {l.row(idxSst1, 2*countSst), A.row(idxSst1, 2*countSst), B.row(idxSst1, 2*countSst)});
     }
     if(covPod1 && countPod1) covPod1->decorrelate(arcNo, pod1, {l.row(idxPod1, countPod1), A.row(idxPod1, countPod1), B.row(idxPod1, countPod1)});
     if(covPod2 && countPod2) covPod2->decorrelate(arcNo, pod2, {l.row(idxPod2, countPod2), A.row(idxPod2, countPod2), B.row(idxPod2, countPod2)});
