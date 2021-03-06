@@ -435,7 +435,6 @@ programs/conversion/gnss/gnssAttitude2Orbex.cpp
 programs/conversion/gnss/gnssClock2ClockRinex.cpp
 programs/conversion/gnss/gnssClockRinex2InstrumentClock.cpp
 programs/conversion/gnss/gnssEop2IgsErp.cpp
-programs/conversion/gnss/gnssNanu2Matrix.cpp
 programs/conversion/gnss/gnssNormals2Sinex.cpp
 programs/conversion/gnss/gnssOrbex2StarCamera.cpp
 programs/conversion/gnss/gnssRinexNavigation2OrbitClock.cpp
@@ -443,7 +442,6 @@ programs/conversion/gnss/gnssSignalBias2SinexBias.cpp
 programs/conversion/gnss/gnssSinexBias2SignalBias.cpp
 programs/conversion/gnss/gnssStationLog2StationInfo.cpp
 programs/conversion/gnss/gnssTroposphere2TropoSinex.cpp
-programs/conversion/gnss/gnssYawBias2Instrument.cpp
 programs/conversion/gnss/rinexObservation2GnssReceiver.cpp
 programs/conversion/gnss/sinex2StationDiscontinuities.cpp
 programs/conversion/gnss/sinex2StationPosition.cpp

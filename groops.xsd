@@ -20046,37 +20046,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GnssNanu2Matrix">
-				<xs:annotation>
-					<xs:documentation>Convert NANU files to outage Matrix file per GPS PRN.</xs:documentation>
-					<xs:appinfo>tag: Conversion</xs:appinfo>
-					<xs:appinfo>tag: Gnss</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileMatrix" type="filename" default="outage_{loopTime}.txt">
-							<xs:annotation>
-								<xs:documentation>PRN is appended to file name</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileNanu" type="filename" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>NANU file</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="intervals" type="timeSeriesType" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>for {loopTime} variable in outputfile</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="initiallyUnusable" type="boolean" minOccurs="0" default="1">
-							<xs:annotation>
-								<xs:documentation>set time periods before initial interval to unusable</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="GnssNormals2Sinex">
 				<xs:annotation>
 					<xs:documentation>Write GNSS data/metadata and normal equations to SINEX format.</xs:documentation>
@@ -20809,32 +20778,6 @@
 									</xs:element>
 								</xs:sequence>
 							</xs:complexType>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="GnssYawBias2Instrument">
-				<xs:annotation>
-					<xs:documentation>Convert yaw bias table from JPL to an InstrumentMisc file for a GPS PRN.</xs:documentation>
-					<xs:appinfo>tag: Conversion</xs:appinfo>
-					<xs:appinfo>tag: Gnss</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileInstrument" type="filename">
-							<xs:annotation>
-								<xs:documentation>yaw bias instrument file</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileYawBias" type="filename" default="{groopsDataDir}/gnss/transmitterGPS/yawBias/config/yaw_bias_table">
-							<xs:annotation>
-								<xs:documentation>JPL yaw bias table</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitterGPS/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
-							<xs:annotation>
-								<xs:documentation>GNSS transmitter info file</xs:documentation>
-							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
 				</xs:complexType>

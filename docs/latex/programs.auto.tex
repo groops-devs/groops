@@ -7150,30 +7150,6 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
-\subsection{GnssNanu2Matrix}\label{GnssNanu2Matrix}
-Convert NANU (Notice Advisory to NAVSTAR users) files to outage Matrix files per GPS PRN and day.
-
-NANU file source: \url{https://celestrak.com/GPS/NANU/}
-
-Extracts satellite outage information from \config{inputfileNanu} and writes a matrix
-file \configFile{outputfileMatrix}{matrix} for each PRN and each day. Each line represents an outage,
-with start time in the first column and end time in the second column of the matrix.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMatrix & \hfuzz=500pt filename & \hfuzz=500pt PRN is appended to file name\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileNanu & \hfuzz=500pt filename & \hfuzz=500pt NANU file\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~intervals & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt for \{loopTime\} variable in outputfile\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~initiallyUnusable & \hfuzz=500pt boolean & \hfuzz=500pt set time periods before initial interval to unusable\\
-\hline
-\end{tabularx}
-
-\clearpage
-%==================================
 \subsection{GnssNormals2Sinex}\label{GnssNormals2Sinex}
 Write GNSS data/metadata and \file{normal equations}{normalEquation} to
 \href{http://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX format}.
@@ -7447,31 +7423,6 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~versionNumber & \hfuzz=500pt string & \hfuzz=500pt Unique identifier of the product, same as in file name, e.g. 000\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileComment & \hfuzz=500pt filename & \hfuzz=500pt comments in the comment block from a file (truncated at 80 characters per line)\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-unbounded.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt comments in the comment block\\
-\hline
-\end{tabularx}
-
-\clearpage
-%==================================
-\subsection{GnssYawBias2Instrument}\label{GnssYawBias2Instrument}
-Convert yaw bias table from JPL to instrument files per GPS PRN.
-
-Yaw bias file source: \url{https://sideshow.jpl.nasa.gov/pub/gipsy_files/gipsy_params//yaw_bias_table.gz}
-
-Extracts yaw bias from \config{inputfileYawBias} based on PRN-SVN association in \configFile{inputfiletransmitterInfo}{gnssStationInfo}
-and writes an \configFile{outputfileInstrument}{instrument} (MISCVALUE) for the PRN containing the biases.
-
-SVN 23 -3.5 deg yaw bias is changed to -0.5 deg.
-Block IIF yaw bias is changed from -0.5 deg to -0.7 deg according to Kouba 2017 eclipse update manuscript.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt yaw bias instrument file\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileYawBias & \hfuzz=500pt filename & \hfuzz=500pt JPL yaw bias table\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt GNSS transmitter info file\\
 \hline
 \end{tabularx}
 
