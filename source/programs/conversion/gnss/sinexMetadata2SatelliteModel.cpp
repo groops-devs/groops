@@ -65,12 +65,33 @@ void SinexMetadata2SatelliteModel::run(Config &config, Parallel::CommunicatorPtr
 
     satellite->satelliteName = svn;
 
-    auto massIter  = std::find_if(massLines.rbegin(),  massLines.rend(),  [&](const std::string &line){ return (line.size() >= 45 && line.substr(1,4) == svn); });
-    if(massIter != massLines.rend())
-      satellite->mass = String::toDouble(massIter->substr(36, 9));
+    // mass and mass changes
+    std::vector<Double> masses;
+    std::vector<Time> massTimes;
+    for(const auto &line : massLines)
+      if(line.size() >= 45 && line.substr(1,4) == svn)
+      {
+        UInt year = static_cast<UInt>(String::toInt(line.substr(6, 4)));
+        UInt day  = static_cast<UInt>(String::toInt(line.substr(11, 3)));
+        UInt sec  = static_cast<UInt>(String::toInt(line.substr(15, 5)));
+        massTimes.push_back(date2time(year,1,1) + mjd2time(day-1.) + seconds2time(static_cast<Double>(sec)));
+        masses.push_back(String::toDouble(line.substr(36, 9)));
+      }
+    if(masses.size())
+      satellite->mass = masses.back();
     else
       logWarning << "mass missing for " + svn << Log::endl;
+    if(masses.size() > 1)
+    {
+      auto iter = std::remove_if(satellite->modules.begin(), satellite->modules.end(), [&](SatelliteModelModulePtr module){ return module->type() == SatelliteModelModule::MASSCHANGE; });
+      satellite->modules.erase(iter, satellite->modules.end());
+      SatelliteModelModuleMassChange *module = new SatelliteModelModuleMassChange;
+      module->times = massTimes;
+      module->mass = masses;
+      satellite->modules.push_back(SatelliteModelModulePtr(module));
+    }
 
+    // antenna thrust
     auto powerIter = std::find_if(powerLines.rbegin(), powerLines.rend(), [&](const std::string &line){ return (line.size() >= 40 && line.substr(1,4) == svn); });
     if(powerIter != powerLines.rend())
     {
@@ -83,6 +104,7 @@ void SinexMetadata2SatelliteModel::run(Config &config, Parallel::CommunicatorPtr
     else
       logWarning << "transmit power missing for " + svn << Log::endl;
 
+    // surfaces
     if(!satellite->surfaces.size())
     {
       // Box-wing surfaces
