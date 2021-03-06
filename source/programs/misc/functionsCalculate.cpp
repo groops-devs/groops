@@ -93,7 +93,7 @@ void FunctionsCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     std::vector<ExpressionVariablePtr> lsaExpr, removeExpr;
     std::vector<ExpressionVariablePtr> outExpr, statisticsExpr;
 
-    readConfig(config, "outputfile",      fileNameOut, Config::MUSTSET,  "",      "");
+    readConfig(config, "outputfile",      fileNameOut, Config::OPTIONAL, "",      "");
     readConfig(config, "inputfile",       fileNamesIn, Config::MUSTSET,  "",      "");
     readConfig(config, "constant",        constExpr,   Config::OPTIONAL, "",      "define a constant by name=value");
     readConfig(config, "parameter",       paramExpr,   Config::OPTIONAL, "",      "define a parameter by name[=value]");

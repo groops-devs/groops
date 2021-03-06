@@ -12700,7 +12700,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileGriddedData" type="filename"/>
+						<xs:element name="outputfileGriddedData" type="filename" minOccurs="0"/>
 						<xs:element name="inputfileGriddedData" type="filename" maxOccurs="unbounded"/>
 						<xs:element name="constant" type="expression" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
@@ -14966,7 +14966,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfile" type="filename"/>
+						<xs:element name="outputfile" type="filename" minOccurs="0"/>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
 						<xs:element name="constant" type="expression" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>

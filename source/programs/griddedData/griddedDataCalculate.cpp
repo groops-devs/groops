@@ -83,7 +83,7 @@ void GriddedDataCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*
     Bool                               computeArea;
     Double                             a, f;
 
-    readConfig(config, "outputfileGriddedData", fileNameOut, Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileGriddedData", fileNameOut, Config::OPTIONAL, "", "");
     readConfig(config, "inputfileGriddedData",  fileNamesIn, Config::MUSTSET,  "", "");
     readConfig(config, "constant",              constExpr,   Config::OPTIONAL, "", "define a constant by name=value");
     readConfig(config, "parameter",             paramExpr,   Config::OPTIONAL, "", "define a parameter by name[=value]");
@@ -242,9 +242,12 @@ void GriddedDataCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*
 
     // save grid
     // ---------
-    logStatus<<"save grid <"<<fileNameOut<<">"<<Log::endl;
-    writeFileGriddedData(fileNameOut, gridOut);
-    MiscGriddedData::printStatistics(gridOut);
+    if(!fileNameOut.empty())
+    {
+      logStatus<<"save grid <"<<fileNameOut<<">"<<Log::endl;
+      writeFileGriddedData(fileNameOut, gridOut);
+      MiscGriddedData::printStatistics(gridOut);
+    }
 
     // statistics
     // ----------
