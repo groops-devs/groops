@@ -980,7 +980,7 @@ void GnssParametrizationTransmitter::observationEquation(const Gnss::NormalEquat
 
         // transmitter clocks
         const UInt countClockTrans = (normalEquationInfo.estimationType & Gnss::NormalEquationInfo::ESTIMATE_TRANSMITTER_CLOCK) ? countTrans : 0;
-        const UInt idxClockTrans   = idxBiasRecv.back() + countClockRecv;
+        const UInt idxClockTrans   = idxClockRecv + countClockRecv;
 
         // accumulate normal equations
         Matrix N11(idxBiasRecv.back() + countClockRecv + countClockTrans, Matrix::SYMMETRIC); // receiver biases and receiver/transmitter clocks
@@ -1046,7 +1046,7 @@ void GnssParametrizationTransmitter::observationEquation(const Gnss::NormalEquat
             idxTrans++;
           }
         // zero mean of transmitter clocks
-        rankKUpdate(1, Vector(countClockTrans, 1.).trans(), N11.slice(idxBiasRecv.back(), idxBiasRecv.back(), countClockTrans, countClockTrans));
+        rankKUpdate(1, Vector(countClockTrans, 1.).trans(), N11.slice(idxClockTrans, idxClockTrans, countClockTrans, countClockTrans));
 
         // eliminate bias and clock parameters (with pseudo inverse)
         {
