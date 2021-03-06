@@ -42,9 +42,18 @@ Matrix Vce::monteCarlo(UInt rows, UInt columns)
 
 Double Vce::standardDeviation(Double ePe, Double redundancy, Double huber, Double huberPower)
 {
+  static Double huber_      = NAN;
+  static Double huberPower_ = NAN;
+  static Double sum         = NAN;
+  if((huber_ == huber) && (huberPower_ == huberPower))
+    return std::sqrt(ePe/redundancy/sum);
+
   constexpr Double dx = 1e-4;
-  Double sum = 0;
-  Double x   = dx/2;
+  huber_      = huber;
+  huberPower_ = huberPower;
+  sum         = 0;
+  Double x    = dx/2;
+
   // variance of normal distribution
   for(; x<std::min(huber, 10.); x+=dx)
     sum += x*x * std::exp(-0.5*x*x) * dx;
@@ -64,7 +73,6 @@ Matrix Vce::robustLeastSquares(const_MatrixSliceRef A, const_MatrixSliceRef l, U
   {
     Matrix x;
     UInt   countOutlier = 0;
-    const Double factor = standardDeviation(1., 1., huber, huberPower);
     Double sigma0 = 0;
     sigma = Vector(l.rows()/countGroup, 1.);
     for(UInt iter=0; iter<maxIter; iter++)
@@ -109,7 +117,7 @@ Matrix Vce::robustLeastSquares(const_MatrixSliceRef A, const_MatrixSliceRef l, U
         }
       }
 
-      const Double sigma0New = factor * std::sqrt(ePeSum/rSum);
+      const Double sigma0New = standardDeviation(ePeSum, rSum, huber, huberPower);
       if((countOutlierNew == 0) || ((countOutlier == countOutlierNew) && (std::fabs(sigma0New-sigma0)/sigma0 < 0.001)))
         break;
       sigma0       = sigma0New;
