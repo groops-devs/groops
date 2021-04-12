@@ -84,9 +84,17 @@ void GriddedDataConcatenate::run(Config &config, Parallel::CommunicatorPtr /*com
     GriddedData grid;
     for(auto fileName : fileNamesIn)
     {
-      logStatus<<"reading grid from file <"<<fileName<<">"<<Log::endl;
       GriddedData gridFile;
-      readFileGriddedData(fileName, gridFile);
+      try
+      {
+        logStatus<<"reading grid from file <"<<fileName<<">"<<Log::endl;
+        readFileGriddedData(fileName, gridFile);
+      }
+      catch(std::exception &e)
+      {
+        logWarning<<e.what()<<" continue..."<<Log::endl;
+        continue;
+      }
 
       if(grid.points.size() == 0)
       {
