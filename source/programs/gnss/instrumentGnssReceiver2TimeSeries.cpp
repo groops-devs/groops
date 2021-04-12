@@ -120,8 +120,9 @@ void InstrumentGnssReceiver2TimeSeries::run(Config &config, Parallel::Communicat
               std::vector<GnssType> typesTmp = types;
               while((idType<epoch.obsType.size()) && (idObs<epoch.observation.size()) && (epoch.obsType.at(idType) == typeSat))
               {
-                const GnssType type  = epoch.obsType.at(idType++);
+                const GnssType type  = epoch.obsType.at(idType++) + typeSat;
                 const Double   value = epoch.observation.at(idObs++);
+
                 const UInt     idx   = GnssType::index(typesTmp, type);
                 if((idx != NULLINDEX) && value)
                 {
