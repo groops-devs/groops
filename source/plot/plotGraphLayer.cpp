@@ -85,21 +85,21 @@ PlotGraphLayerLinesAndPoints::PlotGraphLayerLinesAndPoints(Config &config)
     if(!hasZValues)
       exprZ = nullptr;
 
-    // read data
-    // ---------
-    Matrix A;
-    try
-    {
-      readFileMatrix(fileName, A);
-    }
-    catch(std::exception &/*e*/)
+    // check if file exists
+    // --------------------
+    if(!System::exists(fileName))
     {
       if(description.empty())
         description = fileName.str();
       description += " (file not found)";
-      logWarning << "file <"<< fileName <<"> not found!"<<Log::endl;
+      logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
+
+    // read data
+    // ---------
+    Matrix A;
+    readFileMatrix(fileName, A);
 
     // create data variables
     // ---------------------
@@ -227,21 +227,21 @@ PlotGraphLayerErrorEnvelope::PlotGraphLayerErrorEnvelope(Config &config)
     if(!fillColor && !edgeLine)
       throw(Exception("At least one of fillColor and edgeLine must be set."));
 
-    // read data
-    // ---------
-    Matrix A;
-    try
-    {
-      readFileMatrix(fileName, A);
-    }
-    catch(std::exception &/*e*/)
+    // check if file exists
+    // --------------------
+    if(!System::exists(fileName))
     {
       if(description.empty())
         description = fileName.str();
       description += " (file not found)";
-      logWarning << "file <"<< fileName <<"> not found!"<<Log::endl;
+      logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
+
+    // read data
+    // ---------
+    Matrix A;
+    readFileMatrix(fileName, A);
 
     // create data variables
     // ---------------------
@@ -371,21 +371,21 @@ PlotGraphLayerBars::PlotGraphLayerBars(Config &config)
     readConfig(config, "plotOnSecondAxis", onSecondAxis, Config::DEFAULT,  "0",     "draw dataset on a second Y-axis (if available).");
     if(isCreateSchema(config)) return;
 
-    // read data
-    // ---------
-    Matrix A;
-    try
-    {
-      readFileMatrix(fileName, A);
-    }
-    catch(std::exception &/*e*/)
+    // check if file exists
+    // --------------------
+    if(!System::exists(fileName))
     {
       if(description.empty())
         description = fileName.str();
       description += " (file not found)";
-      logWarning << "file <"<< fileName <<"> not found!"<<Log::endl;
+      logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
+
+    // read data
+    // ---------
+    Matrix A;
+    readFileMatrix(fileName, A);
 
     // create data variables
     // ---------------------
@@ -536,18 +536,18 @@ PlotGraphLayerGridded::PlotGraphLayerGridded(Config &config)
     readConfig(config, "plotOnSecondAxis", onSecondAxis, Config::DEFAULT,   "0",     "draw dataset on a second Y-axis (if available).");
     if(isCreateSchema(config)) return;
 
+    // check if file exists
+    // --------------------
+    if(!System::exists(fileName))
+    {
+      logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
+      return;
+    }
+
     // read data
     // ---------
     Matrix A;
-    try
-    {
-      readFileMatrix(fileName, A);
-    }
-    catch(std::exception &/*e*/)
-    {
-      logWarning << "file <"<< fileName <<"> not found!"<<Log::endl;
-      return;
-    }
+    readFileMatrix(fileName, A);
 
     // create data variables
     // ---------------------
@@ -859,14 +859,9 @@ PlotGraphLayerDegreeAmplitudes::PlotGraphLayerDegreeAmplitudes(Config &config)
     readConfig(config, "plotOnSecondAxis", onSecondAxis, Config::DEFAULT,  "0",     "draw dataset on a second Y-axis (if available).");
     if(isCreateSchema(config)) return;
 
-    // read data
-    // ---------
-    Matrix A;
-    try
-    {
-      readFileMatrix(fileName, A);
-    }
-    catch(std::exception &/*e*/)
+    // check if file exists
+    // --------------------
+    if(!System::exists(fileName))
     {
       if(description.empty())
         description = fileName.str();
@@ -874,6 +869,11 @@ PlotGraphLayerDegreeAmplitudes::PlotGraphLayerDegreeAmplitudes(Config &config)
       logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
+
+    // read data
+    // ---------
+    Matrix A;
+    readFileMatrix(fileName, A);
 
     // create data variables
     // ---------------------
