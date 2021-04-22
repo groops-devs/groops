@@ -21,9 +21,9 @@ KernelTruncation::KernelTruncation(Config &config)
 {
   try
   {
-    readConfig(config, "kernel",     _kernel,    Config::MUSTSET, "",  "");
-    readConfig(config, "mminDegree", _minDegree, Config::DEFAULT, "0", "truncate before minDegree");
-    readConfig(config, "maxDegree",  _maxDegree, Config::MUSTSET, "",  "truncate after maxDegree");
+    readConfig(config, "kernel",    _kernel,    Config::MUSTSET, "",  "");
+    readConfig(config, "minDegree", _minDegree, Config::DEFAULT, "0", "truncate before minDegree");
+    readConfig(config, "maxDegree", _maxDegree, Config::MUSTSET, "", "truncate after maxDegree");
     if(isCreateSchema(config)) return;
   }
   catch(std::exception &e)

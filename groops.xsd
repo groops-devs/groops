@@ -4505,7 +4505,7 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="kernel" type="kernelType"/>
-						<xs:element name="mminDegree" type="uint" minOccurs="0" default="0">
+						<xs:element name="minDegree" type="uint" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>truncate before minDegree</xs:documentation>
 							</xs:annotation>
