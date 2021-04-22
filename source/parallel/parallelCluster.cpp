@@ -45,7 +45,8 @@ class Mpi
 public:
   Mpi(int argc, char *argv[])
   {
-    MPI_Init(&argc, &argv);
+    int provided;
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
   }
 
  ~Mpi()
@@ -227,8 +228,8 @@ public:
 
  ~Communicator()
   {
-   if((comm != MPI_COMM_WORLD) && (comm != MPI_COMM_SELF) && (comm != MPI_COMM_NULL))
-     MPI_Comm_free(&comm);
+    if((comm != MPI_COMM_WORLD) && (comm != MPI_COMM_SELF) && (comm != MPI_COMM_NULL))
+      MPI_Comm_free(&comm);
   }
 
   void wait(MPI_Request &request);
@@ -246,29 +247,33 @@ inline void Communicator::wait(MPI_Request &request)
     // repeat until our request finished
     for(;;)
     {
-      // First MPI_REQUEST_NULL to workaround Bug in MPI-3.3:
-      // https://github.com/pmodels/mpich/commit/0f7be7196cc05bf0c908761e148628e88d635190
-      std::vector<MPI_Request> requests({MPI_REQUEST_NULL, request});
+      std::vector<MPI_Request> requests(1, request);
       for(auto &channel : channels)
         requests.push_back(channel->request);
 
       int count = -1;
       std::vector<int> indices(requests.size());
-      check(MPI_Waitsome(requests.size(), requests.data(), &count, indices.data(), MPI_STATUSES_IGNORE));
+      std::vector<MPI_Status> statuses(requests.size());
+      int error = MPI_Waitsome(requests.size(), requests.data(), &count, indices.data(), statuses.data());
+      if(error == MPI_ERR_IN_STATUS)
+        for(int i=0; i<count; i++)
+          check(statuses.at(i).MPI_ERROR);
+      else
+        check(error);
       indices.resize(count);
 
       // copy back requests
-      UInt idx = 1;
+      UInt idx = 0;
       request = requests.at(idx++);
       for(auto &channel : channels)
         channel->request = requests.at(idx++);
 
       // check extra channels
       for(int index : indices)
-        if(index > 1)
-          channels.at(index-2)->recievedSignal();
+        if(index > 0)
+          channels.at(index-1)->recievedSignal();
 
-      if(std::find(indices.begin(), indices.end(), 1) != indices.end()) // is our request finished?
+      if(std::find(indices.begin(), indices.end(), 0) != indices.end()) // is our request finished?
         break;
     }
   }
@@ -347,17 +352,20 @@ CommunicatorPtr createCommunicator(std::vector<UInt> ranks, CommunicatorPtr comm
 #if MPI_VERSION >= 3
     // check for possible exceptions
     UInt dummy = 0;
-    for(UInt i=1; i<ranks.size(); i++)
-      if(ranks.at(0) == myRank(comm))
-      {
+    if(ranks.at(0) == myRank(comm))
+    {
+      for(UInt i=1; i<ranks.size(); i++)
         receive(dummy, ranks.at(i), comm);
-        send   (dummy, ranks.at(i), comm);
-      }
-      else if(ranks.at(i) == myRank(comm))
-      {
-        send   (dummy, ranks.at(0), comm);
-        receive(dummy, ranks.at(0), comm);
-      }
+      for(UInt i=1; i<ranks.size(); i++)
+        send(dummy, ranks.at(i), comm);
+    }
+    else
+      for(UInt i=1; i<ranks.size(); i++)
+        if(ranks.at(i) == myRank(comm))
+        {
+          send   (dummy, ranks.at(0), comm);
+          receive(dummy, ranks.at(0), comm);
+        }
     MPI_Comm commNew;
     check(MPI_Comm_create_group(comm->comm, newgroup, 99, &commNew));
 #else
