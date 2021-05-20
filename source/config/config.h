@@ -112,7 +112,7 @@ protected:
   XmlNodePtr   getChild(const std::string &name, Bool remove=TRUE);
   XmlNodePtr   getChildWithLoopCheck(const std::string &name, Bool remove=TRUE);
   void         notEmptyWarning();
-  std::string  copy(Config &config, const VariableList &variableList);
+  std::string  copy(Config &config, const VariableList &variableList) const;
 
   // schema mode
   XmlNodePtr   createSchemaNode(const std::string &name);
@@ -122,6 +122,7 @@ protected:
 public:
   void         setNodeUnbounded(); // need access from readConfig(std::vector<T> &var, ...)
 
+  friend class ProgramConfig;
   friend Bool isCreateSchema(Config &config);
   friend void renameDeprecatedConfig(Config &config, const std::string &oldName, const std::string &newName, const Time &time);
   friend void renameDeprecatedChoice(Config &config, std::string &type, const std::string &oldName, const std::string &newName, const Time &time);
@@ -142,7 +143,7 @@ public:
 class ProgramConfig : public Config
 {
 public:
-  void run(VariableList &variableList, Parallel::CommunicatorPtr comm);
+  void run(VariableList &variableList, Parallel::CommunicatorPtr comm) const;
 };
 
 /***** CLASS ***********************************/
@@ -154,7 +155,7 @@ public:
 class LoopConfig : public Config
 {
 public:
-  LoopPtr read(VariableList &variableList);
+  LoopPtr read(VariableList &variableList) const;
 };
 
 /***** FUNCTIONS ***********************************/

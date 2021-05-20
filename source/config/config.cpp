@@ -435,7 +435,7 @@ void Config::notEmptyWarning()
 
 /***********************************************/
 
-std::string Config::copy(Config &config, const VariableList &variableList)
+std::string Config::copy(Config &config, const VariableList &variableList) const
 {
   try
   {
@@ -713,7 +713,7 @@ XmlNodePtr Config::table()
 /***********************************************/
 /***********************************************/
 
-void ProgramConfig::run(VariableList &variableList, Parallel::CommunicatorPtr comm)
+void ProgramConfig::run(VariableList &variableList, Parallel::CommunicatorPtr comm) const
 {
   try
   {
@@ -730,12 +730,12 @@ void ProgramConfig::run(VariableList &variableList, Parallel::CommunicatorPtr co
         if(readConfigChoiceElement(config, program->name(), type, ""))
         {
           std::string comment;
-          StackNode top = stack.top();
-          stack.pop(); // coment is given in <program> not in <choiceElement>
-          XmlAttrPtr attr = stack.top().xmlNode->getAttribute("comment");
+          StackNode top = config.stack.top();
+          config.stack.pop(); // coment is given in <program> not in <choiceElement>
+          XmlAttrPtr attr = config.stack.top().xmlNode->getAttribute("comment");
           if(attr)
             comment = attr->getText();
-          stack.push(top);
+          config.stack.push(top);
 
           Parallel::barrier(comm);
           if(comment.empty())
@@ -743,7 +743,7 @@ void ProgramConfig::run(VariableList &variableList, Parallel::CommunicatorPtr co
           else
           {
             Bool resolved;
-            comment = StringParser::parse("comment", comment, getVarList(), resolved);
+            comment = StringParser::parse("comment", comment, config.getVarList(), resolved);
             logStatus<<"--- "<<program->name()<<" ("<<comment<<") ---"<<Log::endl;
           }
           program->run(config, comm);
@@ -763,7 +763,7 @@ void ProgramConfig::run(VariableList &variableList, Parallel::CommunicatorPtr co
 /***********************************************/
 /***********************************************/
 
-LoopPtr LoopConfig::read(VariableList &variableList)
+LoopPtr LoopConfig::read(VariableList &variableList) const
 {
   try
   {
