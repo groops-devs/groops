@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.7)
 project(GROOPS LANGUAGES CXX Fortran)
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_Fortran_FLAGS "-std=legacy")
 include_directories(${PROJECT_SOURCE_DIR})
 
 include(sourcesCXX.txt)
