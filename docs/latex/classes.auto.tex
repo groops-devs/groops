@@ -6935,6 +6935,27 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
+
+\subsection{NRLMSIS2}
+Thermosphere parameters from the NRLMSIS2 model:
+
+Emmert J.D, D.P.Drob, J.M. Picone, et al. (2020), NRLMSIS 2.0: A whole-atmosphere empirical
+model of temperature and neutral species densities. Earth and Space Science, Volume 8, 3
+\url{https://doi.org/10.1029/2020EA001321}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileMsis & \hfuzz=500pt filename & \hfuzz=500pt input NRLMSIS 2.0\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileModelParameters & \hfuzz=500pt filename & \hfuzz=500pt path to msis20.parm file\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileMagnetic3hAp & \hfuzz=500pt filename & \hfuzz=500pt indicies for wind model\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~hwm14DataDirectory & \hfuzz=500pt filename & \hfuzz=500pt directory containing dwm07b104i.dat, gd2qd.dat, hwm123114.bin\\
+\hline
+\end{tabularx}
+
 \clearpage
 %==================================
 

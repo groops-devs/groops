@@ -9327,6 +9327,35 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="nrlmsis2">
+				<xs:annotation>
+					<xs:documentation>NRLMSIS 2.0 Empirical Thermospheric Density Model</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfileMsis" type="filename" default="{groopsDataDir}/thermosphere/nrlmsis2/inputMSIS.txt">
+							<xs:annotation>
+								<xs:documentation>input NRLMSIS 2.0</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileModelParameters" type="filename" default="{groopsDataDir}/thermosphere/nrlmsis2/msis20.parm">
+							<xs:annotation>
+								<xs:documentation>path to msis20.parm file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileMagnetic3hAp" type="filename" minOccurs="0" default="{groopsDataDir}/thermosphere/hwm14/apActivity.txt">
+							<xs:annotation>
+								<xs:documentation>indicies for wind model</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="hwm14DataDirectory" type="filename" minOccurs="0" default="{groopsDataDir}/thermosphere/hwm14">
+							<xs:annotation>
+								<xs:documentation>directory containing dwm07b104i.dat, gd2qd.dat, hwm123114.bin</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 		</xs:choice>
 	</xs:complexType>
 	<xs:complexType name="tidesType">

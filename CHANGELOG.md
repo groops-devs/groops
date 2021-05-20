@@ -1,7 +1,9 @@
 # main
+- New program:      InstrumentAccelerometer2ThermosphericDensity: Estimate neutral density from accelerometer data.
+- New class:        In Thermosphere: new model nrlmsis2
 - New class:        In Condition: Matrix to evaluate matrix elements.
 - New class:        GnssParametrizationTransmitterQzss: QZSS constellation support in GNSS processing.
-- New program:      InstrumentAccelerometer2ThermosphericDensity: Estimate neutral density from accelerometer data.
+- New class:        In PlotMapProjection: added Mollweide map projection.
 
 # Release 2021-02-02
 - Interface change: GnssProcessing, GnssSimulateReceiver: Removed intervals (use program within LoopPrograms instead).
