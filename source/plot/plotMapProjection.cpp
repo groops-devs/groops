@@ -49,6 +49,35 @@ public:
 
 /***********************************************/
 
+static const char *docstringPlotMapProjectionMollweide = R"(
+\subsection{Mollweide}
+This pseudo-cylindrical, equal-area projection was developed by Mollweide in 1805. Parallels are unequally spaced straight
+lines with the meridians being equally spaced elliptical arcs. The scale is only true along latitudes 40$^{o}$44' north and south.
+The projection is used mainly for global maps showing data distributions.
+)";
+
+class PlotMapProjectionMollweide : public PlotMapProjection
+{
+  Angle L0;
+
+public:
+  PlotMapProjectionMollweide(Config &config)
+  {
+    readConfig(config, "centralMeridian", L0, Config::DEFAULT, "0", "central meridian [degree]");
+  }
+
+  std::string scriptEntry(Double width, Double /*height*/) const override
+  {
+    std::stringstream ss;
+    ss<<"-JW"<<L0*RAD2DEG<<"/"<<width<<"c";
+    return ss.str();
+  }
+
+  Double aspectRatio() const override {return 0.5;}
+};
+
+/***********************************************/
+
 static const char *docstringPlotMapProjectionOrthographic = R"(
 \subsection{Orthographic}
 The orthographic azimuthal projection is a perspective projection from infinite distance.
@@ -250,7 +279,8 @@ GROOPS_REGISTER_CLASS(PlotMapProjection, "plotMapProjectionType",
                       PlotMapProjectionSkyplot,
                       PlotMapProjectionUtm,
                       PlotMapProjectionLambert,
-                      PlotMapProjectionLinear)
+                      PlotMapProjectionLinear,
+                      PlotMapProjectionMollweide)
 
 GROOPS_READCONFIG_CLASS(PlotMapProjection, "plotMapProjectionType")
 
@@ -280,6 +310,8 @@ PlotMapProjectionPtr PlotMapProjection::create(Config &config, const std::string
       proj = PlotMapProjectionPtr(new PlotMapProjectionUtm(config));
     if(readConfigChoiceElement(config, "lambert",      type, "lambert conformal conic"))
       proj = PlotMapProjectionPtr(new PlotMapProjectionLambert(config));
+    if(readConfigChoiceElement(config, "mollweide",    type, "mollweide projection "))
+      proj = PlotMapProjectionPtr(new PlotMapProjectionMollweide(config));
     endChoice(config);
 
     return proj;
