@@ -988,6 +988,7 @@ inline void broadCast(void *buffer, UInt count, MPI_Datatype datatype, UInt proc
     MPI_Request request;
     check(MPI_Ibcast(buffer, count, datatype, process, comm->comm, &request));
     comm->wait(request);
+    barrier(comm); // prevents rare deadlocks when broadcast is called rapidly within loop, possibly MPI issue?
   }
   catch(std::exception &e)
   {
@@ -1168,6 +1169,7 @@ inline void reduce(const void *sendbuf, void *recvbuf, UInt count, MPI_Datatype 
     MPI_Request request;
     check(MPI_Ireduce(sendbuf, recvbuf, count, datatype, op, process, comm->comm, &request));
     comm->wait(request);
+    barrier(comm); // prevents rare deadlocks when reduce is called rapidly within loop, possibly MPI issue?
   }
   catch(std::exception &e)
   {
