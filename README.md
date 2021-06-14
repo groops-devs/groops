@@ -22,21 +22,22 @@ user interface where configuration files can be created and edited.
 
 ## Citing GROOPS
 
-If you use data sets computed with GROOPS in a publication or publish the data itself, please cite our reference paper.
-A [preprint](https://doi.org/10.1002/essoar.10505041.1) is available on the ESSOAr, which can be cited as:
+If you use data sets computed with GROOPS in a publication or publish the data itself, please cite our [reference paper](https://doi.org/10.1016/j.cageo.2021.104864):
 
-*Mayer-Gürr, T., Behzadpour, S., Eicker, A., Ellmer, M., Koch, B., Krauss, S., Pock, C., Rieser, D., Strasser, S., Suesser-Rechberger, B., Zehentner, N.,  Kvas, A. (2020). GROOPS: A software toolkit for gravity field recovery and GNSS processing. Earth and Space Science Open Archive, 8. https://doi.org/10.1002/essoar.10505041.1*
+*Mayer-Gürr, T., Behzadpour, S., Eicker, A., Ellmer, M., Koch, B., Krauss, S., Pock, C., Rieser, D., Strasser, S., Suesser-Rechberger, B., Zehentner, N.,  Kvas, A. (2021). GROOPS: A software toolkit for gravity field recovery and GNSS processing. Computers & Geosciences, 104864. https://doi.org/https://doi.org/10.1016/j.cageo.2021.104864*
+
 
 ```
-@article{10.1002/essoar.10505041.1,
-  author = {Mayer-Gürr, Torsten and Behzadpour, Saniya and Eicker, Annette and Ellmer, Matthias and Koch, Beate and
-  Krauss, Sandro and Pock, Christian and Rieser, Daniel and Strasser, Sebastian and Suesser-Rechberger, Barbara and
-  Zehentner, Norbert and Kvas, Andreas},
-  title = {{GROOPS}: A software toolkit for gravity field recovery and {GNSS} processing},
-  journal = {Earth and Space Science Open Archive},
-  pages = {8},
-  year = {2020},
-  DOI = {10.1002/essoar.10505041.1}
+@article{Mayer-Gurr2021,
+  author = {Mayer-G{\"{u}}rr, Torsten and Behzadpour, Saniya and Eicker, Annette and Ellmer, Matthias and Koch, Beate and Krauss, Sandro and Pock, Christian and Rieser, Daniel and Strasser, Sebastian and S{\"{u}}sser-Rechberger, Barbara and Zehentner, Norbert and Kvas, Andreas},
+  doi = {https://doi.org/10.1016/j.cageo.2021.104864},
+  issn = {0098-3004},
+  journal = {Computers & Geosciences},
+  keywords = {GNSS processing,Gravity field recovery,Orbit determination},
+  pages = {104864},
+  title = {{GROOPS: A software toolkit for gravity field recovery and GNSS processing}},
+  url = {https://www.sciencedirect.com/science/article/pii/S009830042100159X},
+  year = {2021}
 }
 ```
 
