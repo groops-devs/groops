@@ -24,7 +24,7 @@ user interface where configuration files can be created and edited.
 
 If you use data sets computed with GROOPS in a publication or publish the data itself, please cite our [reference paper](https://doi.org/10.1016/j.cageo.2021.104864):
 
-*Mayer-Gürr, T., Behzadpour, S., Eicker, A., Ellmer, M., Koch, B., Krauss, S., Pock, C., Rieser, D., Strasser, S., Suesser-Rechberger, B., Zehentner, N.,  Kvas, A. (2021). GROOPS: A software toolkit for gravity field recovery and GNSS processing. Computers & Geosciences, 104864. https://doi.org/https://doi.org/10.1016/j.cageo.2021.104864*
+*Mayer-Gürr, T., Behzadpour, S., Eicker, A., Ellmer, M., Koch, B., Krauss, S., Pock, C., Rieser, D., Strasser, S., Suesser-Rechberger, B., Zehentner, N.,  Kvas, A. (2021). GROOPS: A software toolkit for gravity field recovery and GNSS processing. Computers & Geosciences, 104864. https://doi.org/10.1016/j.cageo.2021.104864*
 
 
 ```
