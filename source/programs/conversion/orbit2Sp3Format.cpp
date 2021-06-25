@@ -92,7 +92,7 @@ void Orbit2Sp3Format::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "earthRotation",       earthRotation,  Config::OPTIONAL, "", "rotate data into Earth-fixed frame");
     readConfig(config, "gravityfield",        gravityfield,   Config::DEFAULT,  "", "degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)");
     readConfig(config, "comment",             commentLines,   Config::OPTIONAL, "", "comment lines (77 char max)");
-    readConfig(config, "firstLine",           textLine1,      Config::DEFAULT,  "RAW   IGS14 FIT  TUG", "Text for first line e.g:  u+U  IGS14 KIN ITSG");
+    readConfig(config, "firstLine",           textLine1,      Config::DEFAULT,  "RAW   IGb14 FIT  TUG", "Text for first line e.g:  u+U  IGb14 KIN ITSG");
     readConfig(config, "writeVelocity",       writeVel,       Config::DEFAULT,  "0", "write velocity in addition to position");
     readConfig(config, "useSp3kFormat",       useSp3k,        Config::DEFAULT,  "0", "use the extended sp3k format");
     if(isCreateSchema(config)) return;

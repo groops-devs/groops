@@ -61,7 +61,7 @@ GnssParametrizationReceiverStationNetwork::GnssParametrizationReceiverStationNet
     readConfig(config, "inputfileAntennaDefinition",    fileNameAntennaDef,          Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat", "antenna center offsets and variations");
     readConfig(config, "inputfileReceiverDefinition",   fileNameReceiverDef,         Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/receiverDefinition/receiverDefinition.dat", "observed signal types");
     readConfig(config, "inputfileAccuracyDefinition",   fileNameAccuracyDef,         Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/accuracyDefinition/accuracyDefinition.xml", "elevation and azimuth dependent accuracy");
-    readConfig(config, "inputfileStationPosition",      fileNameStationPosition,     Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/position/igs/igs14/stationPosition.{station}.dat", "precise coordinates used for no-net constraints (in TRF)");
+    readConfig(config, "inputfileStationPosition",      fileNameStationPosition,     Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/position/igs/igb14/stationPosition.{station}.dat", "precise coordinates used for no-net constraints (in TRF)");
     readConfig(config, "inputfileSignalBias",           fileNameSignalBias,          Config::OPTIONAL, "", "a priori signal biases");
     readConfig(config, "inputfileObservations",         fileNameObs,                 Config::OPTIONAL, "gnssReceiver_{loopTime:%D}.{station}.dat", "");
     readConfig(config, "kinematicPositionEstimation",   isKinematicPosition,         Config::DEFAULT,  "0", "positions are estimated every epoch (in TRF)");

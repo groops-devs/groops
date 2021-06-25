@@ -65,7 +65,7 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "createdBy",                createdBy,               Config::MUSTSET,  "",      "name of agency");
     readConfig(config, "inputData",                inputData,               Config::MUSTSET,  "u+U",   "description of input data (see ORBEX description)");
     readConfig(config, "contact",                  contact,                 Config::MUSTSET,  "",      "email address");
-    readConfig(config, "referenceFrame",           coordSystem,             Config::MUSTSET,  "IGS14", "reference frame used in file");
+    readConfig(config, "referenceFrame",           coordSystem,             Config::MUSTSET,  "IGb14", "reference frame used in file");
     readConfig(config, "orbitType",                orbitType,               Config::MUSTSET,  "FIT",   "3-char code (FIT, EXT, ...)");
     readConfig(config, "comment",                  comments,                Config::OPTIONAL, "",      "");
     if(isCreateSchema(config)) return;

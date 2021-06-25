@@ -1722,7 +1722,7 @@
 								<xs:documentation>elevation and azimuth dependent accuracy</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfileStationPosition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/position/igs/igs14/stationPosition.{station}.dat">
+						<xs:element name="inputfileStationPosition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/position/igs/igb14/stationPosition.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>precise coordinates used for no-net constraints (in TRF)</xs:documentation>
 							</xs:annotation>
@@ -19888,7 +19888,7 @@
 								<xs:documentation>email address</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="referenceFrame" type="string" default="IGS14">
+						<xs:element name="referenceFrame" type="string" default="IGb14">
 							<xs:annotation>
 								<xs:documentation>reference frame used in file</xs:documentation>
 							</xs:annotation>
@@ -20000,7 +20000,7 @@
 								<xs:documentation>identifier of reference satellite/station</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="referenceFrame" type="string" default="IGS14">
+						<xs:element name="referenceFrame" type="string" default="IGb14">
 							<xs:annotation>
 								<xs:documentation>terrestrial reference frame for the stations</xs:documentation>
 							</xs:annotation>
@@ -22276,9 +22276,9 @@
 								<xs:documentation>comment lines (77 char max)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="firstLine" type="string" minOccurs="0" default="RAW   IGS14 FIT  TUG">
+						<xs:element name="firstLine" type="string" minOccurs="0" default="RAW   IGb14 FIT  TUG">
 							<xs:annotation>
-								<xs:documentation>Text for first line e.g:  u+U  IGS14 KIN ITSG</xs:documentation>
+								<xs:documentation>Text for first line e.g:  u+U  IGb14 KIN ITSG</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="writeVelocity" type="boolean" minOccurs="0" default="0">

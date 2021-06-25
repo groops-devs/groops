@@ -232,7 +232,7 @@ void GnssClock2ClockRinex::run(Config &config, Parallel::CommunicatorPtr /*comm*
     readConfig(config, "differentialCodeBias",  dcb,             Config::OPTIONAL,  "GROOPS            OSB co-estimated in LSA (see bias file)", "program and source for applied differential code bias");
     readConfig(config, "phaseCenterVariations", pcv,             Config::MUSTSET,   "GROOPS            igs14.atx @ files.igs.org ", "program and source for applied phase center variations");
     readConfig(config, "referenceClock",        referenceClocks, Config::MUSTSET,   "", "identifier of reference satellite/station");
-    readConfig(config, "referenceFrame",        referenceFrame,  Config::MUSTSET,   "IGS14", "terrestrial reference frame for the stations");
+    readConfig(config, "referenceFrame",        referenceFrame,  Config::MUSTSET,   "IGb14", "terrestrial reference frame for the stations");
     if(isCreateSchema(config)) return;
 
     logStatus << "read data files" << Log::endl;
