@@ -15,6 +15,7 @@
 
 #include <array>
 #include <cmath>
+#include <limits>
 #include <string>
 #include <memory>
 #include <iostream>
