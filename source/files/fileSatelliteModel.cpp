@@ -237,8 +237,6 @@ Vector3d SatelliteModel::Surface::accelerationDrag(const Vector3d &direction, Do
     if(type == PLATE)
     {
       const Double cosPhi = -inner(direction, normal);
-      if (cosPhi <= 0)
-        return Vector3d();
 
       const Vector3d ul   = crossProduct(direction, crossProduct(direction, normal));
       const Double   s    = velocity/std::sqrt(2*R*temperature/M); // molecular speed ratio
