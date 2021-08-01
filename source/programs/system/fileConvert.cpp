@@ -180,7 +180,7 @@ void FileConvert::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
       if(!fileNameOutput.empty())
       {
-        std::vector<Matrix> data;
+        std::vector<Matrix> data(file.nodeCount());
         for(UInt i=0; i<file.nodeCount(); i++)
           data.at(i) = file.data(i);
         writeFileGriddedDataTimeSeries(fileNameOutput, file.splineDegree(), file.times(), file.grid(), data);

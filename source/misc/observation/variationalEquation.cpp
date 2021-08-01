@@ -19,12 +19,8 @@
 
 /***********************************************/
 
-VariationalEquation::VariationalEquation()
+VariationalEquation::VariationalEquation() : parameterCount_(0), gravityCount(0), satCount(0), satArcCount(0)
 {
-  parameterCount_ = 0;
-  gravityCount    = 0;
-  satCount        = 0;
-  satArcCount     = 0;
 }
 
 /***********************************************/

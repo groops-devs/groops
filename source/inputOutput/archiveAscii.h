@@ -31,24 +31,24 @@ public:
   OutArchiveAscii(const OutArchiveAscii &) = delete;
   OutArchiveAscii &operator=(const OutArchiveAscii &) = delete;
 
-  ArchiveType archiveType() const {return ASCII;}
+  ArchiveType archiveType() const override {return ASCII;}
 
 protected:
-  void endLine();
-  void comment(const std::string &text);
+  void endLine() override;
+  void comment(const std::string &text) override;
 
-  void save(const std::string &x);
-  void save(const Int         &x);
-  void save(const UInt        &x);
-  void save(const Double      &x);
-  void save(const Bool        &x);
-  void save(const Time        &x);
-  void save(const Angle       &x);
-  void save(const Vector      &x);
-  void save(const const_MatrixSlice  &x);
-  void save(const SphericalHarmonics &x);
-  void save(const Doodson     &x);
-  void save(const GnssType    &x);
+  void save(const std::string &x) override;
+  void save(const Int         &x) override;
+  void save(const UInt        &x) override;
+  void save(const Double      &x) override;
+  void save(const Bool        &x) override;
+  void save(const Time        &x) override;
+  void save(const Angle       &x) override;
+  void save(const Vector      &x) override;
+  void save(const const_MatrixSlice  &x) override;
+  void save(const SphericalHarmonics &x) override;
+  void save(const Doodson     &x) override;
+  void save(const GnssType    &x) override;
 
 private:
   void saveDouble(Double x, Int width=26, Int precision=18, Bool science=TRUE);
@@ -74,23 +74,23 @@ public:
   InArchiveAscii(std::istream &_stream);
  ~InArchiveAscii() {}
 
-  ArchiveType archiveType() const {return ASCII;}
-  std::string type()        const {return typeStr;}
-  UInt        version()     const {return _version;}
+  ArchiveType archiveType() const override {return ASCII;}
+  std::string type()        const override {return typeStr;}
+  UInt        version()     const override {return _version;}
 
 protected:
-  void load(std::string &x);
-  void load(Int      &x);
-  void load(UInt     &x);
-  void load(Double   &x);
-  void load(Bool     &x);
-  void load(Time     &x);
-  void load(Angle    &x);
-  void load(Vector   &x);
-  void load(Matrix   &x);
-  void load(SphericalHarmonics &x);
-  void load(Doodson  &x);
-  void load(GnssType &x);
+  void load(std::string &x) override;
+  void load(Int      &x) override;
+  void load(UInt     &x) override;
+  void load(Double   &x) override;
+  void load(Bool     &x) override;
+  void load(Time     &x) override;
+  void load(Angle    &x) override;
+  void load(Vector   &x) override;
+  void load(Matrix   &x) override;
+  void load(SphericalHarmonics &x) override;
+  void load(Doodson  &x) override;
+  void load(GnssType &x) override;
 };
 
 /***********************************************/

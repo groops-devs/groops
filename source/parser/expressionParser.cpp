@@ -880,16 +880,13 @@ public:
 
   void get();
   void putBack() {unused = TRUE;}
-  std::string infoString(std::string info) const;
+  std::string infoString(const std::string &info) const;
 };
 
 /***********************************************/
 
-Tokenizer::Tokenizer(const std::string &txt)
+Tokenizer::Tokenizer(const std::string &txt) : text(txt), pos(0), posStart(0), unused(FALSE)
 {
-  text = txt;
-  pos = posStart = 0;
-  unused = FALSE;
   get();
   putBack();
 }
@@ -993,7 +990,7 @@ void Tokenizer::get()
 
 /***********************************************/
 
-std::string Tokenizer::infoString(std::string info) const
+std::string Tokenizer::infoString(const std::string &info) const
 {
   std::stringstream ss;
   ss<<"'"<<text<<"', col="<<posStart<<", "<<info<<std::endl

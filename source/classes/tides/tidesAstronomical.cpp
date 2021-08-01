@@ -25,7 +25,6 @@ TidesAstronomical::TidesAstronomical(Config &config)
   try
   {
     Double c20;
-    std::string choice;
 
     readConfig(config, "useMoon",    useMoon,    Config::DEFAULT,  "1", "TGP of moon");
     readConfig(config, "useSun",     useSun,     Config::DEFAULT,  "1", "TGP of sun");

@@ -36,7 +36,6 @@ SetLoopConditionDialog::SetLoopConditionDialog(TreeElementGlobal *globalRoot, co
     ui->lineEditName->setValidator(validator);
 
     // fill combo box with existing loops/conditions
-    std::vector<TreeElement> a;
     for(int i = 0; i < globalRoot->childrenCount(); i++)
       if(globalRoot->childAt(i)->type() == type+"Type" && !globalRoot->childAt(i)->label().isEmpty())
         ui->comboBox->addItem(globalRoot->childAt(i)->name());

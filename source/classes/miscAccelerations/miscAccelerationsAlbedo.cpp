@@ -26,7 +26,6 @@ MiscAccelerationsAlbedo::MiscAccelerationsAlbedo(Config &config)
   try
   {
     FileName    fileNameReflectivity, fileNameEmissivity;
-    std::string choice;
 
     renameDeprecatedConfig(config, "inputfileEmissity", "inputfileEmissivity", date2time(2020, 8, 20));
 

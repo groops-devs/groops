@@ -33,7 +33,6 @@ A description of the format can be found under: \url{http://op.gfz-potsdam.de/ch
 class Metop2Starcamera
 {
   void readFileMetop(const FileName &fileName, StarCameraArc &starArc);
-  void fillStarCamera(StarCameraArc &starArc);
 
 public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
@@ -167,29 +166,5 @@ void Metop2Starcamera::readFileMetop(const FileName &fileName, StarCameraArc &st
     GROOPS_RETHROW(e)
   }
 }
-/***********************************************/
 
-void Metop2Starcamera::fillStarCamera(StarCameraArc &starArc)
-{
-  try
-  {
-    Matrix quat(starArc.size(),5);
-    for(UInt idStar=0; idStar<starArc.size(); idStar++)
-    {
-      Vector tmp = starArc.at(idStar).rotary.quaternion();
-      quat(idStar,0)=starArc.at(idStar).time.mjd();
-      quat(idStar,1)=tmp(0);
-      quat(idStar,2)=tmp(1);
-      quat(idStar,3)=tmp(2);
-      quat(idStar,4)=tmp(3);
-    }
-    writeFileMatrix(FileName("quaternions.txt"), quat);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
 /***********************************************/

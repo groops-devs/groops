@@ -23,10 +23,10 @@ XmlNodePtr XmlNode::clone() const
 {
   XmlNodePtr ptr = create(name);
   ptr->text  = text;
-  for(std::list<XmlAttrPtr>::const_iterator im=attribute.begin(); im!=attribute.end(); im++)
-    ptr->addAttribute(XmlAttrPtr(new XmlAttribute(**im)));
-  for(std::list<XmlNodePtr>::const_iterator im=children.begin(); im!=children.end(); im++)
-    ptr->addChild((*im)->clone());
+  for(auto attr : attribute)
+    ptr->addAttribute(std::make_shared<XmlAttribute>(*attr));
+  for(auto child : children)
+    ptr->addChild(child->clone());
   return ptr;
 
 }
@@ -35,28 +35,18 @@ XmlNodePtr XmlNode::clone() const
 
 UInt XmlNode::getChildCount(const QStringList &names)
 {
-  UInt count = 0;
-  for(std::list<XmlNodePtr>::iterator im=children.begin(); im!=children.end(); im++)
-    if(names.contains((*im)->getName()))
-      count++;
-  return count;
+  return std::count_if(children.begin(), children.end(), [&names](auto child) {return names.contains(child->getName());});
 }
 
 /***********************************************/
 
 XmlNodePtr XmlNode::getChild(const QStringList &names)
 {
-  XmlNodePtr ptr(nullptr);
-
-  for(std::list<XmlNodePtr>::iterator im=children.begin(); im!=children.end(); im++)
-    if(names.contains((*im)->getName()))
-    {
-      ptr = *im;
-      *im = XmlNodePtr(nullptr);
-      children.erase(im);
-      return ptr;
-    }
-
+  auto iter = std::find_if(children.begin(), children.end(), [&names](auto child) {return names.contains(child->getName());});
+  if(iter == children.end())
+    return XmlNodePtr();
+  XmlNodePtr ptr = *iter;
+  children.erase(iter);
   return ptr;
 }
 
@@ -64,11 +54,8 @@ XmlNodePtr XmlNode::getChild(const QStringList &names)
 
 XmlNodePtr XmlNode::findChild(const QString &name)
 {
-  for(std::list<XmlNodePtr>::iterator im=children.begin(); im!=children.end(); im++)
-    if((*im)->getName()==name)
-      return *im;
-
-  return XmlNodePtr(nullptr);
+  auto iter = std::find_if(children.begin(), children.end(), [&name](auto child) {return child->getName() == name;});
+  return (iter != children.end()) ? *iter : XmlNodePtr();
 }
 
 /***********************************************/
@@ -90,16 +77,12 @@ XmlNodePtr XmlNode::getNextChild()
 
 XmlAttrPtr XmlNode::getAttribute(const QString &name)
 {
-  for(std::list<XmlAttrPtr>::iterator im=attribute.begin(); im!=attribute.end(); im++)
-    if((*im)->getName()==name)
-    {
-      XmlAttrPtr ptr = *im;
-      *im = XmlAttrPtr(nullptr);
-      attribute.erase(im);
-      return ptr;
-    }
-
-  return XmlAttrPtr(nullptr);
+  auto iter = std::find_if(attribute.begin(), attribute.end(), [&name](auto attr) {return attr->getName() == name;});
+  if(iter == attribute.end())
+    return XmlAttrPtr();
+  XmlAttrPtr ptr = *iter;
+  attribute.erase(iter);
+  return ptr;
 }
 
 /***********************************************/
@@ -213,13 +196,11 @@ void XmlNode::write(QTextStream &stream, const XmlNodePtr &root)
 void XmlNode::write(QTextStream &stream, UInt depth)
 {
   // start tag
-  for(UInt i=0; i<depth; i++)
-    stream<<"\t";
-  stream<<"<"<<getName();
+  stream<<QString(depth, '\t')<<"<"<<getName();
 
   // attribute
-  for(std::list<XmlAttrPtr>::iterator im=attribute.begin(); im!=attribute.end(); im++)
-    stream<<" "<<(*im)->getName()<<"=\""<<sanitizeXML((*im)->getText())<<"\"";
+  for(auto attr : attribute)
+    stream<<" "<<attr->getName()<<"=\""<<sanitizeXML(attr->getText())<<"\"";
 
   // short form?
   if(getText().isEmpty() && children.empty())
@@ -233,10 +214,9 @@ void XmlNode::write(QTextStream &stream, UInt depth)
   if(!children.empty())
   {
     stream<<"\n";
-    for(std::list<XmlNodePtr>::iterator im=children.begin(); im!=children.end(); im++)
-      (*im)->write(stream, depth+1);
-    for(UInt i=0; i<depth; i++)
-      stream<<"\t";
+    for(auto child : children)
+      child->write(stream, depth+1);
+    stream<<QString(depth, '\t');
   }
 
   // end tag

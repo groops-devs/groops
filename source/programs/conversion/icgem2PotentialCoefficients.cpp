@@ -35,12 +35,12 @@ public:
   class Coefficient
   {
   public:
-    Coefficient(UInt _n, UInt _m, Double _cnm, Double _snm, Double _cnm_e, Double _snm_e) { n = _n; m = _m; cnm=_cnm; snm=_snm; cnm_error=_cnm_e; snm_error=_snm_e; }
+    Coefficient(UInt _n, UInt _m, Double _cnm, Double _snm, Double _cnm_e, Double _snm_e) : n(_n), m(_m), cnm(_cnm), snm(_snm), cnm_error(_cnm_e), snm_error(_snm_e) {}
 
     enum Type {STATIC, STATIC_INTERVAL, TREND, OSC_COSINE, OSC_SINE };
 
-    Double cnm, snm, cnm_error, snm_error;
     UInt n, m;
+    Double cnm, snm, cnm_error, snm_error;
 
     Time t0, t1;
     Double period;
@@ -53,13 +53,9 @@ public:
   public:
     Field() {}
 
-    Field(UInt maxDegree)
-    {
-      _cnm = Matrix(maxDegree+1, maxDegree+1);
-      _snm = Matrix(maxDegree+1, maxDegree+1);
-      _cnm_error = Matrix(maxDegree+1, maxDegree+1);
-      _snm_error = Matrix(maxDegree+1, maxDegree+1);
-    }
+    explicit Field(UInt maxDegree) :
+      _cnm(Matrix(maxDegree+1, maxDegree+1)),  _snm(Matrix(maxDegree+1, maxDegree+1)),
+      _cnm_error(Matrix(maxDegree+1, maxDegree+1)), _snm_error(Matrix(maxDegree+1, maxDegree+1)) {}
 
     Matrix _cnm, _snm, _cnm_error, _snm_error;
   };
