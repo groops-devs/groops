@@ -242,7 +242,18 @@ inline void Communicator::wait(MPI_Request &request)
   try
   {
     if(request == MPI_REQUEST_NULL)
+    {
+      // check other requests
+      for(auto &channel : channels)
+        if(channel->request != MPI_REQUEST_NULL)
+        {
+          int flag = 0;
+          check(MPI_Test(&channel->request, &flag, MPI_STATUS_IGNORE));
+          if(flag)
+            channel->recievedSignal();
+        }
       return;
+    }
 
     // repeat until our request finished
     for(;;)
