@@ -157,6 +157,7 @@ void Troposphere::computeEmpiricalCoefficients(const Time &time) const
       // zenith hydrostatic delay (Saastamoinen, 1972) and zenith wet delay (Askne and Nordius, 1987)
       zhd(stationId) = 0.0022768 * P / (1. - 0.00266*std::cos(2*latitude(stationId)) - 0.00000028*height(stationId));
       zwd(stationId) = 1e-6*Rg/dMtr/g * (k2p + k3/Tm(stationId)) * P * Q(stationId)/(0.622 + 0.378*Q(stationId))/(1+la(stationId));
+      zwd(stationId) *= std::exp(-h/2000); // extrapolate ZWD to station height
     }
   }
   catch(std::exception &e)
