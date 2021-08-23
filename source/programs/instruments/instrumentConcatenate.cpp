@@ -109,8 +109,10 @@ void InstrumentConcatenate::run(Config &config, Parallel::CommunicatorPtr /*comm
     {
       logStatus<<"search for NaNs"<<Log::endl;
       UInt removed=0;
-      Single::forEach(arc.size(), [&](UInt i)
+      logTimerStart;
+      for(UInt i=0; i<arc.size(); i++)
       {
+        logTimerLoop(i,arc.size());
         Vector data=arc.at(i).data();
         for(UInt j=0; j<data.rows(); j++)
           if(std::isnan(data.at(j)))
@@ -120,7 +122,8 @@ void InstrumentConcatenate::run(Config &config, Parallel::CommunicatorPtr /*comm
             i--;
             break;
           }
-      });
+      }
+      logTimerLoopEnd(arc.size());
       logInfo<<" "<<removed<<" epochs with NaN values removed!"<<Log::endl;
     }
 
