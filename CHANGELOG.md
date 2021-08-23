@@ -5,6 +5,7 @@
 - New class:        GnssParametrizationTransmitterQzss: QZSS constellation support in GNSS processing.
 - New class:        In PlotMapProjection: added Mollweide map projection.
 - Bugfix:           FileSatelliteModel: removed if-statement for shaded plates, not necessary when applying the algorithm following Sentman 1961
+- Other:            Additional constants in the mathematical parser like speed of light c().
 
 # Release 2021-02-02
 - Interface change: GnssProcessing, GnssSimulateReceiver: Removed intervals (use program within LoopPrograms instead).

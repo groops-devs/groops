@@ -21,19 +21,21 @@ static const char *docstringParserExpression = R"(
 \subsection{Mathematical expression parser}\label{general.parser:expression}
 In all input fields that accept numbers (int, uint, double, angle, time) numerical
 expressions are also allowed. Values from the global section can be used as variables. The following
-operations are defined:
+operations and functions are defined:
 \begin{itemize}
-\item Constants:    \verb|pi|, \verb|rho=180/pi|, \verb|nan|
+\item Constants:    \verb|pi()|, \verb|rho()=180/pi()|, \verb|nan()|, \verb|c()|: light velocity,
+                    \verb|G()|: gravitational constant, \verb|GM()|: gravitational constant of the Earth, \verb|R()|: reference radius of the Earth
 \item Mathematical: \verb|+|, \verb|-|, \verb|*|, \verb|/|, \verb|^|
 \item Comparison:   \verb|==|, \verb|!=|, \verb|<|, \verb|<=|, \verb|>|, \verb|>=|, result is 1 or 0
-\item Logical:      not \verb|!|, and \verb|&&|, \verb'||', or \verb|isnan()|, result is 1 or 0
-\item Functions:    \verb|sqrt()|, \verb|exp()|,
-                    \verb|sin()|,  \verb|cos()|, \verb|tan()|,
-                    \verb|asin()|,  \verb|acos()|,  \verb|atan()|,
-                    \verb|abs()|,  \verb|round()|,  \verb|ceil()|,  \verb|floor()|,
-\item Functions with 2 arguments: \verb|atan2(,)|, \verb|min(,)|, \verb|max(,)|, \verb|mod(,)|
-\item Functions with 3 arguments: \verb|date2mjd(year, month, day)|
-\item Condition: \verb|if(,,)|: If the first argument is true (not 0), the second argument is evalutated, otherwise the third.
+\item Logical:      not \verb|!|, and \verb|&&|, \verb'||', or \verb|isnan(x)|, result is 1 or 0
+\item Functions:    \verb|sqrt(x)|, \verb|exp(x)|,
+                    \verb|sin(x)|,  \verb|cos(x)|, \verb|tan(x)|,
+                    \verb|asin(x)|,  \verb|acos(x)|,  \verb|atan(x)|,
+                    \verb|abs(x)|,  \verb|round(x)|,  \verb|ceil(x)|,  \verb|floor(x)|,
+                    \verb|deg2rad(x)|, \verb|rad2deg(x)|
+\item Functions with 2 arguments: \verb|atan2(y,x)|, \verb|min(x,y)|, \verb|max(x,y)|, \verb|mod(x,y)|
+\item Time functions: \verb|now()|: local time in MJD, \verb|date2mjd(year, month, day)|, \verb|gps2utc(mjd)|, \verb|utc2gps(mjd)|, \verb|dayofyear(mjd)|, \verb|decimalyear(mjd)|
+\item Condition: \verb|if(c,x,y)|: If the first argument is true (not 0), the second argument is evalutated, otherwise the third.
 \end{itemize}
 )";
 #endif

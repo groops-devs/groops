@@ -75,27 +75,29 @@ In the second step mathematical expressions are resolved to a number. Basic data
 global section serve as input variables for the parsers.</p><p><h2 id="expression">Mathematical expression parser</h2><p>
 In all input fields that accept numbers (int, uint, double, angle, time) numerical
 expressions are also allowed. Values from the global section can be used as variables. The following
-operations are defined:
+operations and functions are defined:
 <ul>
 
-<li>Constants:    <code>pi</code>, <code>rho=180/pi</code>, <code>nan</code>
+<li>Constants:    <code>pi()</code>, <code>rho()=180/pi()</code>, <code>nan()</code>, <code>c()</code>: light velocity,
+                    <code>G()</code>: gravitational constant, <code>GM()</code>: gravitational constant of the Earth, <code>R()</code>: reference radius of the Earth
 </li><li>
 Mathematical: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>^</code>
 </li><li>
 Comparison:   <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>></code>, <code>>=</code>, result is 1 or 0
 </li><li>
-Logical:      not <code>!</code>, and <code>&&</code>, <code>||</code>, or <code>isnan()</code>, result is 1 or 0
+Logical:      not <code>!</code>, and <code>&&</code>, <code>||</code>, or <code>isnan(x)</code>, result is 1 or 0
 </li><li>
-Functions:    <code>sqrt()</code>, <code>exp()</code>,
-                    <code>sin()</code>,  <code>cos()</code>, <code>tan()</code>,
-                    <code>asin()</code>,  <code>acos()</code>,  <code>atan()</code>,
-                    <code>abs()</code>,  <code>round()</code>,  <code>ceil()</code>,  <code>floor()</code>,
+Functions:    <code>sqrt(x)</code>, <code>exp(x)</code>,
+                    <code>sin(x)</code>,  <code>cos(x)</code>, <code>tan(x)</code>,
+                    <code>asin(x)</code>,  <code>acos(x)</code>,  <code>atan(x)</code>,
+                    <code>abs(x)</code>,  <code>round(x)</code>,  <code>ceil(x)</code>,  <code>floor(x)</code>,
+                    <code>deg2rad(x)</code>, <code>rad2deg(x)</code>
 </li><li>
-Functions with 2 arguments: <code>atan2(,)</code>, <code>min(,)</code>, <code>max(,)</code>, <code>mod(,)</code>
+Functions with 2 arguments: <code>atan2(y,x)</code>, <code>min(x,y)</code>, <code>max(x,y)</code>, <code>mod(x,y)</code>
 </li><li>
-Functions with 3 arguments: <code>date2mjd(year, month, day)</code>
+Time functions: <code>now()</code>: local time in MJD, <code>date2mjd(year, month, day)</code>, <code>gps2utc(mjd)</code>, <code>utc2gps(mjd)</code>, <code>dayofyear(mjd)</code>, <code>decimalyear(mjd)</code>
 </li><li>
-Condition: <code>if(,,)</code>: If the first argument is true (not 0), the second argument is evalutated, otherwise the third.
+Condition: <code>if(c,x,y)</code>: If the first argument is true (not 0), the second argument is evalutated, otherwise the third.
 </li></ul>
 </p><p>
 <h2 id="text">Text parser</h2><p>
