@@ -23,6 +23,8 @@ International Geomagnetic Reference Field.
 
 /***********************************************/
 
+#include "base/polynomial.h"
+#include "files/fileInstrument.h"
 #include "external/igrf/igrf.h"
 #include "classes/magnetosphere/magnetosphere.h"
 
@@ -33,11 +35,58 @@ International Geomagnetic Reference Field.
 * @see Magnetosphere */
 class MagnetosphereIgrf : public Magnetosphere
 {
-public:
-  MagnetosphereIgrf(Config &/*config*/) {}
+  Polynomial        polynomial;
+  std::vector<Time> times;
+  Matrix            lonlat;
 
+public:
+  MagnetosphereIgrf(Config &config);
+
+  Vector3d geomagneticNorthPole(const Time &time) const override;
   Vector3d magenticFieldVector(const Time &time, const Vector3d &position) const override;
 };
+
+/***********************************************/
+
+MagnetosphereIgrf::MagnetosphereIgrf(Config &config) : polynomial(1)
+{
+  try
+  {
+    FileName fileName;
+    readConfig(config, "inputfileMagneticNorthPole", fileName, Config::OPTIONAL, "{groopsDataDir}/magnetosphere/magneticNorthPole.txt", "time series of north pole");
+    if(isCreateSchema(config)) return;
+
+    if(!fileName.empty())
+    {
+      MiscValuesArc arc = InstrumentFile::read(fileName);
+      times  = arc.times();
+      lonlat = arc.matrix().column(1, 2);
+    }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+inline Vector3d MagnetosphereIgrf::geomagneticNorthPole(const Time &time) const
+{
+  try
+  {
+    if(!times.size())
+      throw(Exception("magentic north pole data not provided"));
+    if((time < times.front()) || (time > times.back()))
+      logWarning<<time.dateTimeStr()<<" extrapolation of magentic north pole data"<<Log::endl;
+    const Matrix ll = polynomial.interpolate({time}, times, lonlat, 1);
+    return polar(Angle(ll(0,0)*DEG2RAD), Angle(ll(0,1)*DEG2RAD), 1);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
 
 /***********************************************/
 

@@ -48,13 +48,6 @@ MagnetospherePtr Magnetosphere::create(Config &config, const std::string &name)
 
 /***********************************************/
 
-Vector3d Magnetosphere::geomagneticNorthPole(const Time &/*time*/) const
-{
-  return polar(Angle(-72.58*DEG2RAD), Angle(80.27*DEG2RAD), 1);
-}
-
-/***********************************************/
-
 Rotary3d Magnetosphere::rotaryCelestial2SolarGeomagneticFrame(const Time &time) const
 {
   try

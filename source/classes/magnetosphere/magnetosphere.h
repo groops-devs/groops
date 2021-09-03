@@ -57,7 +57,7 @@ public:
 
   /** @brief Geomagnetic north pole in terrestrial frame (TRF).
   * Unit vector. */
-  virtual Vector3d geomagneticNorthPole(const Time &time) const;
+  virtual Vector3d geomagneticNorthPole(const Time &time) const = 0;
 
   /** @brief Rotation from celestial frame (CRF) to solar geomagnetic frame (SGF). */
   virtual Rotary3d rotaryCelestial2SolarGeomagneticFrame(const Time &time) const;
