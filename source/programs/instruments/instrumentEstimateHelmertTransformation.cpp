@@ -151,7 +151,7 @@ void InstrumentEstimateHelmertTransformation::run(Config &config, Parallel::Comm
           std::vector<Double> factor;
           parametrization->factors(d.times.at(idEpoch), index, factor);
 
-          for(UInt k = 0; k < trendCount; k++)
+          for(UInt k = 0; k < index.size(); k++)
           {
             UInt idCol = index.at(k)*paramCount;
             if(estimateShift)
