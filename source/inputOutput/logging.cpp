@@ -195,7 +195,7 @@ void Logging::loopTimer(UInt idx, UInt count, UInt processCount)
     if((count == 0) || (rank != 0) || !enabled || silent)
       return;
 
-    if(idx >= 1000)
+    if(idx >= 5000)
     {
       const UInt digits = static_cast<UInt>(std::log10(idx+1)) + 1;
       if((idx+1) % static_cast<UInt>(std::pow(10, digits-3)))
