@@ -67,7 +67,7 @@ inline ParametrizationAccelerationGnssSolarRadiation::ParametrizationAcceleratio
 
     readConfig(config, "estimateD0", d0,      Config::DEFAULT,  "1", "constant term along D-axis (sat-sun vector)");
     readConfig(config, "estimateD2", d2,      Config::DEFAULT,  "1", "2-per-rev terms along D-axis");
-    readConfig(config, "estimateD4", d4,      Config::DEFAULT,  "1", "4-per-rev terms along D-axis");
+    readConfig(config, "estimateD4", d4,      Config::DEFAULT,  "0", "4-per-rev terms along D-axis");
     readConfig(config, "estimateY0", y0,      Config::DEFAULT,  "1", "constant term along Y-axis (solar panel axis)");
     readConfig(config, "estimateB0", b0,      Config::DEFAULT,  "1", "constant term along B-axis (cross product D x Y)");
     readConfig(config, "estimateB1", b1,      Config::DEFAULT,  "1", "1-per-rev terms along B-axis");

@@ -7090,7 +7090,7 @@
 								<xs:documentation>2-per-rev terms along D-axis</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="estimateD4" type="boolean" minOccurs="0" default="1">
+						<xs:element name="estimateD4" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>4-per-rev terms along D-axis</xs:documentation>
 							</xs:annotation>
