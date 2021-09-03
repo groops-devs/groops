@@ -283,11 +283,23 @@ public:
   /** @brief First order STEC influence [m/TECU]. */
   Double ionosphericFactor() const;
 
-  /** @brief Returns true if both vectors are of the same size and contain only the same types, independent of sorting. */
-  static Bool allEqual(const std::vector<GnssType> &types1, const std::vector<GnssType> &types2, GnssType mask=GnssType::ALL);
+  /** @brief Returns TRUE if calling instance is in the given list. */
+  Bool isInList(const std::vector<GnssType> &types) const;
+
+  /** @brief Returns TRUE if calling instance is in the given list.
+  * Returns the @p index of types vector. If not found NULLINDEX is returned.*/
+  Bool isInList(const std::vector<GnssType> &types, UInt &index) const;
 
   /** @brief Returns the index of types vector. If not found NULLINDEX is returned. */
   static UInt index(const std::vector<GnssType> &types, GnssType type);
+
+  /** @brief Returns true if both vectors are of the same size and contain only the same types, independent of sorting. */
+  static Bool allEqual(const std::vector<GnssType> &types1, const std::vector<GnssType> &types2, GnssType mask=GnssType::ALL);
+
+  /** @brief Replaces observed (composed) types by orignal transmitted types.
+  * Codes replaced e.g. C2DG = C1CG - C1WG + C2CW.
+  * Phase types returned without tracking attribute and all other observations are removed. */
+  static std::vector<GnssType> replaceCompositeSignals(const std::vector<GnssType> &types);
 
   /** @brief Returns true if a wilcard (*) is used in the parts given by @a mask. */
   Bool hasWildcard(GnssType mask=GnssType::ALL) const;

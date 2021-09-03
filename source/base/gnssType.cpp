@@ -487,6 +487,31 @@ Double GnssType::ionosphericFactor() const
 
 /***********************************************/
 
+Bool GnssType::isInList(const std::vector<GnssType> &types) const
+{
+  return (index(types, *this) != NULLINDEX);
+}
+
+/***********************************************/
+
+Bool GnssType::isInList(const std::vector<GnssType> &types, UInt &idx) const
+{
+  idx = index(types, *this);
+  return (idx != NULLINDEX);
+}
+
+/***********************************************/
+
+UInt GnssType::index(const std::vector<GnssType> &types, GnssType type)
+{
+  for(UInt i=0; i<types.size(); i++)
+    if(type == types.at(i))
+      return i;
+  return NULLINDEX;
+}
+
+/***********************************************/
+
 Bool GnssType::allEqual(const std::vector<GnssType> &types1, const std::vector<GnssType> &types2, GnssType mask)
 {
   try
@@ -506,12 +531,72 @@ Bool GnssType::allEqual(const std::vector<GnssType> &types1, const std::vector<G
 
 /***********************************************/
 
-UInt GnssType::index(const std::vector<GnssType> &types, GnssType type)
+std::vector<GnssType> GnssType::replaceCompositeSignals(const std::vector<GnssType> &typesIn)
 {
-  for(UInt i=0; i<types.size(); i++)
-    if(type == types.at(i))
-      return i;
-  return NULLINDEX;
+  try
+  {
+    std::vector<GnssType> types;
+
+    for(GnssType t : typesIn)
+      if((t == GnssType::PHASE) || (t == GnssType::RANGE)) // only phase and code signals are transmitted (what about doppler?)
+      {
+        GnssType prn = t & GnssType::PRN;
+        if(t == GnssType::PHASE)
+          types.push_back( t & ~GnssType::ATTRIBUTE );
+        else if(t == GnssType::C2DG) {types.push_back(GnssType::C1CG + prn); types.push_back(GnssType::C1WG + prn); types.push_back(GnssType::C2WG + prn);}
+        else if(t == GnssType::C1XG) {types.push_back(GnssType::C1SG + prn); types.push_back(GnssType::C1LG + prn);}
+        else if(t == GnssType::C2XG) {types.push_back(GnssType::C2SG + prn); types.push_back(GnssType::C2LG + prn);}
+        else if(t == GnssType::C5XG) {types.push_back(GnssType::C5IG + prn); types.push_back(GnssType::C5QG + prn);}
+
+        else if(t == GnssType::C4XR) {types.push_back(GnssType::C4AR + prn); types.push_back(GnssType::C4BR + prn);}
+        else if(t == GnssType::C6XR) {types.push_back(GnssType::C6AR + prn); types.push_back(GnssType::C6BR + prn);}
+        else if(t == GnssType::C3XR) {types.push_back(GnssType::C3IR + prn); types.push_back(GnssType::C3QR + prn);}
+
+        else if(t == GnssType::C1XE) {types.push_back(GnssType::C1BE + prn); types.push_back(GnssType::C1CE + prn);}
+        else if(t == GnssType::C1ZE) {types.push_back(GnssType::C1AE + prn); types.push_back(GnssType::C1BE + prn); types.push_back(GnssType::C1CE + prn);}
+        else if(t == GnssType::C5XE) {types.push_back(GnssType::C5IE + prn); types.push_back(GnssType::C5QE + prn);}
+        else if(t == GnssType::C7XE) {types.push_back(GnssType::C7IE + prn); types.push_back(GnssType::C7QE + prn);}
+        else if(t == GnssType::C8XE) {types.push_back(GnssType::C8IE + prn); types.push_back(GnssType::C8QE + prn);}
+        else if(t == GnssType::C6XE) {types.push_back(GnssType::C6BE + prn); types.push_back(GnssType::C6CE + prn);}
+        else if(t == GnssType::C6ZE) {types.push_back(GnssType::C6AE + prn); types.push_back(GnssType::C6BE + prn); types.push_back(GnssType::C6CE + prn);}
+
+        else if(t == GnssType::C2XC) {types.push_back(GnssType::C2IC + prn); types.push_back(GnssType::C2QC + prn);}
+        else if(t == GnssType::C1XC) {types.push_back(GnssType::C1DC + prn); types.push_back(GnssType::C1PC + prn);}
+        else if(t == GnssType::C1ZC) {types.push_back(GnssType::C1SC + prn); types.push_back(GnssType::C1LC + prn);}
+        else if(t == GnssType::C5XC) {types.push_back(GnssType::C5DC + prn); types.push_back(GnssType::C5PC + prn);}
+        else if(t == GnssType::C7XC) {types.push_back(GnssType::C7IC + prn); types.push_back(GnssType::C7QC + prn);}
+        else if(t == GnssType::C7ZC) {types.push_back(GnssType::C7DC + prn); types.push_back(GnssType::C7PC + prn);}
+        else if(t == GnssType::C8XC) {types.push_back(GnssType::C8DC + prn); types.push_back(GnssType::C8PC + prn);}
+        else if(t == GnssType::C6XC) {types.push_back(GnssType::C6IC + prn); types.push_back(GnssType::C6QC + prn);}
+        else if(t == GnssType::C6ZC) {types.push_back(GnssType::C6DC + prn); types.push_back(GnssType::C6PC + prn);}
+
+        else if(t == GnssType::C1XJ) {types.push_back(GnssType::C1SJ + prn); types.push_back(GnssType::C1LJ + prn);}
+        else if(t == GnssType::C2XJ) {types.push_back(GnssType::C2SJ + prn); types.push_back(GnssType::C2LJ + prn);}
+        else if(t == GnssType::C5XJ) {types.push_back(GnssType::C5IJ + prn); types.push_back(GnssType::C5QJ + prn);}
+        else if(t == GnssType::C5ZJ) {types.push_back(GnssType::C5DJ + prn); types.push_back(GnssType::C5PJ + prn);}
+        else if(t == GnssType::C6XJ) {types.push_back(GnssType::C6SJ + prn); types.push_back(GnssType::C6LJ + prn);}
+        else if(t == GnssType::C6ZJ) {types.push_back(GnssType::C6SJ + prn); types.push_back(GnssType::C6EJ + prn);}
+
+        // unknown attributes
+        else if(t == GnssType::C2UG) {types.push_back(GnssType::C2SG + prn); types.push_back(GnssType::C2LG + prn);}
+        else if(t == GnssType::C5UG) {types.push_back(GnssType::C5IG + prn); types.push_back(GnssType::C5QG + prn);}
+        else if(t == GnssType::C1UE) {types.push_back(GnssType::C1BE + prn); types.push_back(GnssType::C1CE + prn);}
+        else if(t == GnssType::C5UE) {types.push_back(GnssType::C5IE + prn); types.push_back(GnssType::C5QE + prn);}
+        else if(t == GnssType::C7UE) {types.push_back(GnssType::C7IE + prn); types.push_back(GnssType::C7QE + prn);}
+        else if(t == GnssType::C8UE) {types.push_back(GnssType::C8IE + prn); types.push_back(GnssType::C8QE + prn);}
+        else if(t == GnssType::C6UE) {types.push_back(GnssType::C6BE + prn); types.push_back(GnssType::C6CE + prn);}
+        else
+          types.push_back(t);
+      }
+
+    std::sort(types.begin(), types.end());
+    types.erase(std::unique(types.begin(), types.end()), types.end()); // remove duplicates
+    return types;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
 
 /***********************************************/
