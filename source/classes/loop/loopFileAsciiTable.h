@@ -56,10 +56,10 @@ inline LoopFileAsciiTable::LoopFileAsciiTable(Config &config)
 {
   try
   {
-    FileName fileName;
+    std::vector<FileName> fileNames;
     UInt     startRow, countRows = MAX_UINT;
 
-    readConfig(config, "inputfile",          fileName,   Config::MUSTSET,  "",           "simple ASCII file with mutiple columns (separated by whitespace)");
+    readConfig(config, "inputfile",          fileNames,  Config::MUSTSET,  "",           "simple ASCII file with mutiple columns (separated by whitespace)");
     readConfig(config, "startLine",          startRow,   Config::DEFAULT,  "0",          "start at line startLine (counting from 0)");
     readConfig(config, "countLines",         countRows,  Config::OPTIONAL, "",           "read count lines (default: all)");
     readConfig(config, "variableLoopString", nameString, Config::MUSTSET,  "loopString", "1. variable name for the 1. column, next variable name for the 2. column, ... ");
@@ -67,7 +67,9 @@ inline LoopFileAsciiTable::LoopFileAsciiTable(Config &config)
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL, "",           "variable with total number of iterations");
     if(isCreateSchema(config)) return;
 
-    readFileStringTable(fileName, stringTable);
+    for(auto &fileName : fileNames)
+      readFileStringTable(fileName, stringTable);
+
     stringTable.erase(stringTable.begin(), stringTable.begin()+std::min(startRow, stringTable.size()));
     stringTable.erase(stringTable.begin()+std::min(countRows, stringTable.size()), stringTable.end());
 
@@ -78,7 +80,7 @@ inline LoopFileAsciiTable::LoopFileAsciiTable(Config &config)
         throw(Exception("More variables than columns in the table"));
       for(UInt i=1; i<stringTable.size(); i++)
         if(stringTable.at(i).size() != columns)
-          throw(Exception("Varying number of columns in input file <"+fileName.str()+">"));
+          throw(Exception("Varying number of columns in input file(s)"));
     }
 
     index = 0;

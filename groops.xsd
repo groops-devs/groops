@@ -4756,7 +4756,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="inputfile" type="filename">
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>simple ASCII file with mutiple columns (separated by whitespace)</xs:documentation>
 							</xs:annotation>
