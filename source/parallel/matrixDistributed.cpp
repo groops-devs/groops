@@ -61,12 +61,12 @@ void MatrixDistributed::initEmpty(const std::vector<UInt> &blockIndex, Parallel:
     if(blockIndex.front() != static_cast<UInt>(0))
       throw(Exception("Block index must start with zero."));
 
-    this->comm = comm;
+    this->comm  = comm;
     _blockIndex = blockIndex;
-    _row.clear();    _row.resize(blockCount());
-    _column.clear(); _column.resize(blockCount());
-    _rank.clear();
-    _N.clear();
+    _row        = std::vector<std::vector<std::pair<UInt, UInt>>>(blockCount());
+    _column     = std::vector<std::vector<std::pair<UInt, UInt>>>(blockCount());
+    _rank       = std::vector<UInt>();
+    _N          = std::vector<Matrix>();
     setCalculateRank(calcRank);
   }
   catch(std::exception &e)

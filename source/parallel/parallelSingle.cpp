@@ -29,6 +29,7 @@ CommunicatorPtr selfCommunicator() {return nullptr;}
 UInt myRank(CommunicatorPtr /*comm*/) {return 0;}
 UInt size(CommunicatorPtr /*comm*/)   {return 1;}
 void barrier(CommunicatorPtr /*comm*/) {}
+void peek(CommunicatorPtr /*comm*/) {}
 void broadCastExceptions(CommunicatorPtr comm, std::function<void(CommunicatorPtr)> func) {func(comm);}
 void send(const Byte */*x*/, UInt /*size*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
 void receive  (Byte  */*x*/, UInt /*size*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}

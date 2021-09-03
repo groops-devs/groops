@@ -72,6 +72,9 @@ namespace Parallel
   /** @brief Blocks until all process have reached this routine. */
   void barrier(CommunicatorPtr comm);
 
+  /** @brief Non blocking check of extra channels. */
+  void peek(CommunicatorPtr comm);
+
   /** @brief Distribute exceptions thrown in @p func by a single node to all nodes.
   * Must be called by every process in @a comm.
   * Exceptions causes memory leaks due to unfinished communications.

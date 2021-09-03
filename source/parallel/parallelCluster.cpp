@@ -232,8 +232,30 @@ public:
       MPI_Comm_free(&comm);
   }
 
+  void peek();
   void wait(MPI_Request &request);
 };
+
+/***********************************************/
+
+inline void Communicator::peek()
+{
+  try
+  {
+    for(auto &channel : channels)
+      if(channel->request != MPI_REQUEST_NULL)
+      {
+        int flag = 0;
+        check(MPI_Test(&channel->request, &flag, MPI_STATUS_IGNORE));
+        if(flag)
+          channel->recievedSignal();
+      }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
 
 /***********************************************/
 
@@ -243,15 +265,7 @@ inline void Communicator::wait(MPI_Request &request)
   {
     if(request == MPI_REQUEST_NULL)
     {
-      // check other requests
-      for(auto &channel : channels)
-        if(channel->request != MPI_REQUEST_NULL)
-        {
-          int flag = 0;
-          check(MPI_Test(&channel->request, &flag, MPI_STATUS_IGNORE));
-          if(flag)
-            channel->recievedSignal();
-        }
+      peek();
       return;
     }
 
@@ -438,6 +452,20 @@ void barrier(CommunicatorPtr comm)
     MPI_Request request;
     check(MPI_Ibarrier(comm->comm, &request));
     comm->wait(request);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void peek(CommunicatorPtr comm)
+{
+  try
+  {
+    comm->peek();
   }
   catch(std::exception &e)
   {
