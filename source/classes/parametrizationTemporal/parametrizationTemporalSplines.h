@@ -46,7 +46,7 @@ class ParametrizationTemporalSplines : public ParametrizationTemporalBase
 {
   std::vector<Time> times;
   std::vector<UInt> idEpochStart, idEpochEnd;
-  Bool              isInterval;
+  Bool              isInterval, includeLastTime;
   UInt              idxStart, idxEnd;
   UInt              degree;
 

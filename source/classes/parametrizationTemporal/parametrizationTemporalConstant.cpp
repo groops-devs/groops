@@ -23,7 +23,8 @@ ParametrizationTemporalConstant::ParametrizationTemporalConstant(Config &config)
   try
   {
     TimeSeriesPtr timeSeries;
-    readConfig(config, "interval", timeSeries, Config::DEFAULT,  "", "");
+    readConfig(config, "interval",        timeSeries,      Config::DEFAULT, "", "");
+    readConfig(config, "includeLastTime", includeLastTime, Config::DEFAULT, "0", "");
     if(isCreateSchema(config)) return;
 
     times      = timeSeries->times();
@@ -94,12 +95,12 @@ void ParametrizationTemporalConstant::factors(const Time &time, UInt startIndex,
       return;
     }
 
-    if((time<times.at(idxStart))||(time>=times.at(idxEnd)))
+    if((time < times.at(idxStart)) || (time > times.at(idxEnd)) || (!includeLastTime && (time == times.at(idxEnd))))
       return;
 
     // find index (interval)
     UInt idx = idxStart;
-    while(time>=times.at(idx+1))
+    while((idx+1 < idxEnd) && (time >= times.at(idx+1)))
       idx++;
 
     index.push_back(idx-idxStart+startIndex);

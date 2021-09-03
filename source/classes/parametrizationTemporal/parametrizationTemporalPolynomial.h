@@ -38,7 +38,7 @@ where $N$ is the polynmial degree and $M$ the number of intervals.
 class ParametrizationTemporalPolynomial : public ParametrizationTemporalBase
 {
   std::vector<Time> times;
-  Bool              isInterval;
+  Bool              isInterval, includeLastTime;
   UInt              idxStart, idxEnd;
   UInt              degree;
 

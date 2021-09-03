@@ -74,7 +74,8 @@
 This class gives a parametrization of time depending parameters (gravity field, positions, ...).
 It will be used to set up the design matrix in a least squares adjustment.
 If multiple parametrizations are given the coefficents in the parameter vector
-are sequently appended.
+are sequently appended.</p><p>Useally time intervals are defined half open meaning the last time belongs not to the interval.
+This behaviour can be changed for the last interval with <strong class="groops-config-element">includeLastTime</strong>.
 </p>
 
 <h2 id="constant">Constant</h2><p>
@@ -83,6 +84,7 @@ Represents a parameter being constant in time in each <strong class="groops-conf
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">interval</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">includeLastTime</div></div></td><td>boolean</td><td></td></tr>
 </table>
 
 <h2 id="trend">Trend</h2><p>
@@ -114,6 +116,7 @@ is the <strong class="groops-config-element">degree</strong>.
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">degree</div></div></td><td>uint</td><td>degree of splines</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>nodal points in time domain</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">intervals</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">includeLastTime</div></div></td><td>boolean</td><td></td></tr>
 </table>
 
 <h2>Polynomial</h2><p>
@@ -125,6 +128,7 @@ where $N$ is the polynmial degree and $M$ the number of intervals.
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">polynomialDegree</div></div></td><td>uint</td><td>polynomial degree</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">interval</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>intervals of polynomials</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">includeLastTime</div></div></td><td>boolean</td><td></td></tr>
 </table>
 
 <h2>Oscillation</h2><p>
@@ -155,6 +159,7 @@ The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$.
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">fourierDegree</div></div></td><td>uint</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">interval</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>intervals of fourier series</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">includeLastTime</div></div></td><td>boolean</td><td></td></tr>
 </table>
 
 <h2>DoodsonHarmonic</h2><p>

@@ -25,8 +25,9 @@ ParametrizationTemporalPolynomial::ParametrizationTemporalPolynomial(Config &con
   try
   {
     TimeSeriesPtr timeSeries;
-    readConfig(config, "polynomialDegree", degree,     Config::MUSTSET,  "0", "polynomial degree");
-    readConfig(config, "interval",         timeSeries, Config::DEFAULT,  "",  "intervals of polynomials");
+    readConfig(config, "polynomialDegree", degree,          Config::MUSTSET, "0", "polynomial degree");
+    readConfig(config, "interval",         timeSeries,      Config::DEFAULT, "",  "intervals of polynomials");
+    readConfig(config, "includeLastTime",  includeLastTime, Config::DEFAULT, "0", "");
     if(isCreateSchema(config)) return;
 
     times      = timeSeries->times();
@@ -94,12 +95,12 @@ void ParametrizationTemporalPolynomial::factors(const Time &time, UInt startInde
 {
   try
   {
-    if((time < times.at(idxStart)) || (time >= times.at(idxEnd)))
+    if((time < times.at(idxStart)) || (time > times.at(idxEnd)) || (!includeLastTime && (time == times.at(idxEnd))))
       return;
 
     // find index (interval)
     UInt idx = idxStart;
-    while(time>=times.at(idx+1))
+    while((idx+1 < idxEnd) && (time >= times.at(idx+1)))
       idx++;
 
     const Double t  = 2*(time-times.at(idx)).mjd()/(times.at(idx+1)-times.at(idx)).mjd()-1; // t is [-1,+1]

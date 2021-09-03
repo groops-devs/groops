@@ -27,9 +27,10 @@ ParametrizationTemporalSplines::ParametrizationTemporalSplines(Config &config)
   {
     TimeSeriesPtr timeSeriesPtr, timesIntervalPtr;
 
-    readConfig(config, "degree",     degree,           Config::MUSTSET,  "", "degree of splines");
-    readConfig(config, "timeSeries", timeSeriesPtr,    Config::MUSTSET,  "", "nodal points in time domain");
-    readConfig(config, "intervals",  timesIntervalPtr, Config::DEFAULT,  "", "");
+    readConfig(config, "degree",          degree,           Config::MUSTSET, "",  "degree of splines");
+    readConfig(config, "timeSeries",      timeSeriesPtr,    Config::MUSTSET, "",  "nodal points in time domain");
+    readConfig(config, "intervals",       timesIntervalPtr, Config::DEFAULT, "",  "");
+    readConfig(config, "includeLastTime", includeLastTime,  Config::DEFAULT, "0", "");
     if(isCreateSchema(config)) return;
 
     times = timeSeriesPtr->times();
@@ -143,23 +144,23 @@ void ParametrizationTemporalSplines::factors(const Time &time, UInt startIndex, 
   {
     if(idxEnd == idxStart)
       return;
-    if((time < times.at(idEpochStart.at(idxStart))) || (time >= times.at(idEpochEnd.at(idxEnd-1))))
+    if((time < times.at(idEpochStart.at(idxStart))) || (time > times.at(idEpochEnd.at(idxEnd-1))) || (!includeLastTime && (time == times.at(idEpochEnd.at(idxEnd-1)))))
       return;
 
     // find first used parameter
     UInt idx = idxStart;
-    while(time>=times.at(idEpochEnd.at(idx)))
+    while((idx+1+degree < idxEnd) && (time >= times.at(idEpochEnd.at(idx))))
       idx++;
 
     const UInt   idEpoch = idEpochEnd.at(idx)-1;
     const Double t = (time-times.at(idEpoch)).mjd()/(times.at(idEpoch+1)-times.at(idEpoch)).mjd();
     const Vector f = BasisSplines::compute(t, degree);
-
     for(UInt i=0; i<=degree; i++)
-    {
-      index.push_back( i+idx-idxStart+startIndex );
-      factor.push_back( f(i) );
-    }
+      if(std::fabs(f(i)) > 1e-8)
+      {
+        index.push_back( i+idx-idxStart+startIndex );
+        factor.push_back( f(i) );
+      }
   }
   catch(std::exception &e)
   {

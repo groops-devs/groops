@@ -25,16 +25,17 @@ ParametrizationTemporalFourier::ParametrizationTemporalFourier(Config &config)
   {
     TimeSeriesPtr timeSeries;
 
-    readConfig(config, "fourierDegree", order,      Config::MUSTSET,  "", "");
-    readConfig(config, "interval",      timeSeries, Config::DEFAULT,  "", "intervals of fourier series");
+    readConfig(config, "fourierDegree",   order,           Config::MUSTSET, "", "");
+    readConfig(config, "interval",        timeSeries,      Config::DEFAULT, "", "intervals of fourier series");
+    readConfig(config, "includeLastTime", includeLastTime, Config::DEFAULT, "0", "");
     if(isCreateSchema(config)) return;
 
     times      = timeSeries->times();
     isInterval = (times.size() != 0);
     if(!isInterval)
       times = {Time(), date2time(2500,1,1)};
-    idxStart   = 0;
-    idxEnd = times.size()-1;
+    idxStart = 0;
+    idxEnd   = times.size()-1;
   }
   catch(std::exception &e)
   {
@@ -94,12 +95,12 @@ void ParametrizationTemporalFourier::factors(const Time &time, UInt startIndex, 
 {
   try
   {
-    if((time<times.at(idxStart))||(time>=times.at(idxEnd)))
+    if((time < times.at(idxStart)) || (time > times.at(idxEnd)) || (!includeLastTime && (time == times.at(idxEnd))))
       return;
 
     // find index (interval)
     UInt idx = idxStart;
-    while(time>=times.at(idx+1))
+    while((idx+1 < idxEnd) && (time >= times.at(idx+1)))
       idx++;
 
     const Double angle = 2*PI*(time-times.at(idx)).mjd()/(times.at(idx+1)-times.at(idx)).mjd();

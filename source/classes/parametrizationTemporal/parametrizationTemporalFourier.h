@@ -47,7 +47,7 @@ The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$.
 class ParametrizationTemporalFourier : public ParametrizationTemporalBase
 {
   std::vector<Time> times;
-  Bool              isInterval;
+  Bool              isInterval, includeLastTime;
   UInt              idxStart, idxEnd;
   UInt              order;
 

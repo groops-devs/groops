@@ -34,7 +34,7 @@ Represents a parameter being constant in time in each \config{interval}.
 class ParametrizationTemporalConstant : public ParametrizationTemporalBase
 {
   std::vector<Time> times;
-  Bool              isInterval;
+  Bool              isInterval, includeLastTime;
   UInt              idxStart, idxEnd;
 
 public:

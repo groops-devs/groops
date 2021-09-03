@@ -5674,6 +5674,9 @@ It will be used to set up the design matrix in a least squares adjustment.
 If multiple parametrizations are given the coefficents in the parameter vector
 are sequently appended.
 
+Useally time intervals are defined half open meaning the last time belongs not to the interval.
+This behaviour can be changed for the last interval with \config{includeLastTime}.
+
 
 \subsection{Constant}\label{parametrizationTemporalType:constant}
 Represents a parameter being constant in time in each \config{interval}.
@@ -5685,6 +5688,7 @@ Represents a parameter being constant in time in each \config{interval}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~interval & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~includeLastTime & \hfuzz=500pt boolean & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 
@@ -5732,6 +5736,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~degree & \hfuzz=500pt uint & \hfuzz=500pt degree of splines\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt nodal points in time domain\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~intervals & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~includeLastTime & \hfuzz=500pt boolean & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 
@@ -5751,6 +5756,7 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~polynomialDegree & \hfuzz=500pt uint & \hfuzz=500pt polynomial degree\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~interval & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt intervals of polynomials\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~includeLastTime & \hfuzz=500pt boolean & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 
@@ -5798,6 +5804,7 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~fourierDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~interval & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt intervals of fourier series\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~includeLastTime & \hfuzz=500pt boolean & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 
