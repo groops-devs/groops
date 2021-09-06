@@ -1,3 +1,6 @@
+| :information_source: Release [2021-09-06](https://github.com/groops-devs/groops/releases/tag/2021-09-06) features a redesign of the GNSS processing interface to make usage a little bit easier and more flexible. In addition, we now provide GNSS [example scenarios](https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/) with config files and data. Since the structure of the [GNSS-related GROOPS data and metadata](https://ftp.tugraz.at/outgoing/ITSG/groops/data/gnss/) has changed, we recommend to download the latest version. More information can be found in the updated [cookbooks and documentation](https://groops-devs.github.io/groops/html/index.html). | 
+|:-------------------------| 
+
 ![GROOPS Logo](https://github.com/groops-devs/groops/blob/main/docs/html/static/groops_banner.png)
 
 The Gravity Recovery Object Oriented Programming System (GROOPS) is a software toolkit written in C++
