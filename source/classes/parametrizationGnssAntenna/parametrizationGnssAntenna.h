@@ -18,7 +18,7 @@
 static const char *docstringParametrizationGnssAntenna = R"(
 \section{ParametrizationGnssAntenna}\label{parametrizationGnssAntennaType}
 Parametrization of antenna center variations. It will be used to set up the design matrix in a least squares adjustment.
-Usually the paramtrization is setup separately for different \configClass{gnssType}{gnssType}.
+Usually the parametrization is setup separately for different \configClass{gnssType}{gnssType}.
 
 If multiple parametrizations are given the parameters are sequently appended in the design matrix and parameter vector.
 )";
@@ -27,8 +27,7 @@ If multiple parametrizations are given the parameters are sequently appended in 
 /***********************************************/
 
 #include "config/config.h"
-#include "base/gnssType.h"
-#include "gnss/gnss.h"
+#include "base/parameterName.h"
 
 /**
 * @defgroup parametrizationGnssAntennaGroup ParametrizationGnssAntenna

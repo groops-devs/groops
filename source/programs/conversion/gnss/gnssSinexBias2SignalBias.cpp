@@ -55,24 +55,24 @@ void GnssSinexBias2SignalBias::run(Config &config, Parallel::CommunicatorPtr /*c
 {
   try
   {
-    FileName fileNameOutSignalBias, fileNameInSinexBias, fileNameInGlonassReceiverDefinition;
+    FileName fileNameOutSignalBias, fileNameInSinexBias, fileNameInGlonassSignalDefinition;
     std::vector<std::string> identifiers;
 
-    readConfig(config, "outputfileSignalBias",               fileNameOutSignalBias,               Config::MUSTSET,  "", "identifier is appended to file name");
-    readConfig(config, "inputfileSinexBias",                 fileNameInSinexBias,                 Config::MUSTSET,  "", "");
-    readConfig(config, "inputfileGlonassReceiverDefinition", fileNameInGlonassReceiverDefinition, Config::OPTIONAL, "{groopsDataDir}/gnss/transmitterGlonass/receiverDefinition/receiverDefinition.xml", "GLONASS frequency number mapping");
-    readConfig(config, "identifier",                         identifiers,                         Config::OPTIONAL, "", "(empty = all) satellite PRN, e.g. G23 or E05");
+    readConfig(config, "outputfileSignalBias",             fileNameOutSignalBias,             Config::MUSTSET,  "", "identifier is appended to file name");
+    readConfig(config, "inputfileSinexBias",               fileNameInSinexBias,               Config::MUSTSET,  "", "");
+    readConfig(config, "inputfileGlonassSignalDefinition", fileNameInGlonassSignalDefinition, Config::OPTIONAL, "{groopsDataDir}/gnss/transmitter/signalDefinition/signalDefinition.xml", "GLONASS frequency number mapping");
+    readConfig(config, "identifier",                       identifiers,                       Config::OPTIONAL, "", "(empty = all) satellite PRN, e.g. G23 or E05");
     if(isCreateSchema(config)) return;
 
     logStatus<<"read SINEX Bias file <"<<fileNameInSinexBias<<">"<<Log::endl;
     Sinex sinexFile(fileNameInSinexBias);
     std::vector<std::string> lines = sinexFile.getBlock<Sinex::SinexText>("BIAS/SOLUTION")->lines();
 
-    std::vector<GnssReceiverDefinitionPtr> receiverDefinitions;
-    if(!fileNameInGlonassReceiverDefinition.empty())
+    std::vector<GnssReceiverDefinitionPtr> signalDefinitions;
+    if(!fileNameInGlonassSignalDefinition.empty())
     {
-      logStatus<<"read GLONASS receiver definition file <"<<fileNameInGlonassReceiverDefinition<<">"<<Log::endl;
-      readFileGnssReceiverDefinition(fileNameInGlonassReceiverDefinition, receiverDefinitions);
+      logStatus<<"read GLONASS signal definition file <"<<fileNameInGlonassSignalDefinition<<">"<<Log::endl;
+      readFileGnssReceiverDefinition(fileNameInGlonassSignalDefinition, signalDefinitions);
     }
 
     Bool printStationWarning = TRUE;
@@ -109,8 +109,8 @@ void GnssSinexBias2SignalBias::run(Config &config, Parallel::CommunicatorPtr /*c
       GnssType gnssType = GnssType(line.substr(25,3)+prn);
       if(gnssType == GnssType::GLONASS)
       {
-        auto iter = std::find_if(receiverDefinitions.begin(), receiverDefinitions.end(), [&](const GnssReceiverDefinitionPtr &def){ return def->serial == svn; });
-        if(iter != receiverDefinitions.end())
+        auto iter = std::find_if(signalDefinitions.begin(), signalDefinitions.end(), [&](const GnssReceiverDefinitionPtr &def){ return def->serial == svn; });
+        if(iter != signalDefinitions.end())
           gnssType.setFrequencyNumber(String::toInt((*iter)->version));
       }
       std::string unit = String::trim(line.substr(65,4));
@@ -142,12 +142,12 @@ void GnssSinexBias2SignalBias::run(Config &config, Parallel::CommunicatorPtr /*c
         GnssSignalBias signalBias;
         for(const auto &type : id.second)
         {
-          signalBias.type.push_back(type.first);
+          signalBias.types.push_back(type.first);
           Double weightedSum  = std::accumulate(type.second.begin(), type.second.end(), 0.,
                                                 [](Double a, const Bias &bias){ return a + bias.value*(bias.timeEnd-bias.timeStart).seconds(); });
           Double sumOfWeights = std::accumulate(type.second.begin(), type.second.end(), 0.,
                                                 [](Double a, const Bias &bias){ return a + (bias.timeEnd-bias.timeStart).seconds(); });
-          signalBias.bias.push_back(weightedSum/sumOfWeights);
+          signalBias.biases.push_back(weightedSum/sumOfWeights);
         }
         writeFileGnssSignalBias(fileNameOutSignalBias.appendBaseName("."+id.first), signalBias);
       }

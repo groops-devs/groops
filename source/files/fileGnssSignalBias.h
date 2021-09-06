@@ -58,11 +58,10 @@ typedef std::shared_ptr<GnssSignalBias> GnssSignalBiasPtr;
 class GnssSignalBias
 {
   public:
-  std::vector<GnssType> type;
-  std::vector<Double>   bias;
+  std::vector<GnssType> types;
+  std::vector<Double>   biases;
 
-  Vector compute(const std::vector<GnssType> &type) const;
-  void applyTecBias(Double tecBias);
+  Vector compute(const std::vector<GnssType> &types) const;
 };
 
 /***** FUNCTIONS *******************************/

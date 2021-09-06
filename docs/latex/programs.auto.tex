@@ -814,12 +814,11 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssGlonassFrequencyNumberUpdate}\label{GnssGlonassFrequencyNumberUpdate}
-Update/set GLONASS frequency number in \configFile{inputfileTransmitterInfo}{gnssStationInfo} and
-\configFile{inputfileReceiverDefinition}{gnssReceiverDefinition} files.
+Update/set GLONASS frequency number in \configFile{inputfileTransmitterInfo}{gnssStationInfo} files.
 
 PRN/SVN to frequency number source: \url{http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO}.
 
-See also \program{GnssReceiverDefinitionCreate} and \program{GnssAntex2AntennaDefinition}.
+See also \program{GnssAntex2AntennaDefinition}.
 
 
 \keepXColumns
@@ -828,9 +827,7 @@ See also \program{GnssReceiverDefinitionCreate} and \program{GnssAntex2AntennaDe
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt templated for PRN list (variableNamePrn)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileReceiverDefinition & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt templated for PRN list (variableNamePrn)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileReceiverDefinition & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfilePrn2FrequencyNumber & \hfuzz=500pt filename & \hfuzz=500pt GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~prn & \hfuzz=500pt string & \hfuzz=500pt PRN (e.g. G01) for transmitter info files\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableNamePrn & \hfuzz=500pt string & \hfuzz=500pt variable name for PRN in transmitter info files\\
@@ -861,28 +858,39 @@ This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{GnssProcessing}\label{GnssProcessing}
-This program processes GNSS observations. The primary use cases are:
+This program processes GNSS observations. It calculates the linearized observation equations,
+accumulates them into a system of normal equations and solves it.
+
+The primary use cases of this program are:
 \begin{itemize}
   \item \reference{GNSS satellite orbit determination and station network analysis}{cookbook.gnssNetwork}
   \item \reference{Kinematic orbit determination of LEO satellites}{cookbook.kinematicOrbit}
   \item \reference{GNSS precise point positioning (PPP)}{cookbook.gnssPpp}
 \end{itemize}
 
-One or more GNSS constellations must be defined via \configClass{transmitter}{gnssParametrizationTransmitterType}.
-Receivers such as ground station networks or Low Earth Orbit (LEO) satellites can be defined via \configClass{receiver}{gnssParametrizationReceiverType}.
+The observation epochs are defined by \configClass{timeSeries}{timeSeriesType}
+and only observations at these epochs (within a \config{timeMargin}) are considered.
 
-Earth rotation parameters (ERPs) can be estimated via \configClass{earthRotation}{gnssParametrizationEarthRotationType}.
+To calculate observation equations from the tracks, the model parameters or unknown parameters need to be
+defined beforehand. These unknown parameters can be chosen arbitrarily by the user with an adequate list of defined
+\configClass{parametrization}{gnssParametrizationType}.
+Some of the \configClass{parametrization}{gnssParametrizationType} also include a priori models.
 
-Constraints can be added to the normal equation system via \configClass{constraints}{gnssParametrizationConstraintsType} in case there are no direct constraint options
-in the respective config element (e.g. \config{noNetRotationSigma} in \configClass{receiver:stationNetwork}{gnssParametrizationReceiverType:stationNetwork}).
-For details on possible additional constraints see \configClass{receiver:stationNetwork}{gnssParametrizationReceiverType:stationNetwork} (tropospheric parameters),
-\configClass{transmitter}{gnssParametrizationTransmitterType} (antenna center offsets), or \configClass{earthRotation}{gnssParametrizationEarthRotationType} (dUT1).
+Lastly it is required to define the process flow of the gnssProcessing. This is accomplished
+with a list of \configClass{processingSteps}{gnssProcessingStepType}.
+Each step is processed consecutively. Some steps allow the selection of parameters, epochs,
+or the normal equation structure, which affects all subsequent steps.
+A minimal example consists of following steps:
+\begin{itemize}
+  \item \configClass{estimate}{gnssProcessingStepType:estimate}: iterative float solution with outlier downeighting
+  \item \configClass{resolveAmbiguities}{gnssProcessingStepType:resolveAmbiguities}:
+        fix ambiguities to integer and remove them from the normals
+  \item \configClass{estimate}{gnssProcessingStepType:estimate}: few iteration for final outlier downweighting
+  \item \configClass{writeResults}{gnssProcessingStepType:writeResults}:
+        write the output files defined in \configClass{parametrization}{gnssParametrizationType}
+\end{itemize}
 
-The processing flow is controlled via a list of \configClass{processingSteps}{gnssProcessingStepType}.
-Each step is processed consecutively. Some steps allow the selection of parameters, epochs, or the normal equation structure,
-which affects all subsequent steps.
-
-If the program is run on multiple processes the \configClass{receiver}{gnssParametrizationReceiverType}s
+If the program is run on multiple processes the \configClass{receiver}{gnssReceiverGeneratorType}s
 (stations or LEO satellites) are distributed over the processes.
 
 See also \program{GnssSimulateReceiver}.
@@ -893,16 +901,12 @@ See also \program{GnssSimulateReceiver}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileParameterName & \hfuzz=500pt filename & \hfuzz=500pt parameter names\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt defines observation epochs\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeMargin & \hfuzz=500pt double & \hfuzz=500pt [seconds] margin to consider two times identical\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~transmitter & \hfuzz=500pt \hyperref[gnssParametrizationTransmitterType]{gnssParametrizationTransmitter} & \hfuzz=500pt constellation of GNSS satellites\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~receiver & \hfuzz=500pt \hyperref[gnssParametrizationReceiverType]{gnssParametrizationReceiver} & \hfuzz=500pt ground station network or LEO satellite\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~ionosphere & \hfuzz=500pt \hyperref[gnssParametrizationIonosphereType]{gnssParametrizationIonosphere} & \hfuzz=500pt ionosphere settings\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[gnssParametrizationEarthRotationType]{gnssParametrizationEarthRotation} & \hfuzz=500pt Earth rotation and EOP estimation\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~gravityField & \hfuzz=500pt \hyperref[gnssParametrizationGravityFieldType]{gnssParametrizationGravityField} & \hfuzz=500pt gravity field estimation\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~ambiguities & \hfuzz=500pt \hyperref[gnssParametrizationAmbiguitiesType]{gnssParametrizationAmbiguities} & \hfuzz=500pt ambiguity resolution settings\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~constraints & \hfuzz=500pt \hyperref[gnssParametrizationConstraintsType]{gnssParametrizationConstraints} & \hfuzz=500pt additional constraints\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~transmitter & \hfuzz=500pt \hyperref[gnssTransmitterGeneratorType]{gnssTransmitterGenerator} & \hfuzz=500pt constellation of GNSS satellites\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~receiver & \hfuzz=500pt \hyperref[gnssReceiverGeneratorType]{gnssReceiverGenerator} & \hfuzz=500pt ground station network or LEO satellite\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt apriori earth rotation\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrization & \hfuzz=500pt \hyperref[gnssParametrizationType]{gnssParametrization} & \hfuzz=500pt models and parameters\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~processingStep & \hfuzz=500pt \hyperref[gnssProcessingStepType]{gnssProcessingStep} & \hfuzz=500pt steps are processed consecutively\\
 \hline
 \end{tabularx}
@@ -1051,17 +1055,21 @@ Name & Type & Annotation\\
 This program simulates observations from receivers to GNSS satellites.
 These simulated observations can then be used in \program{GnssProcessing}, for example to conduct closed-loop simulations.
 
-One or more GNSS constellations must be defined via \configClass{transmitter}{gnssParametrizationTransmitterType}.
-Receivers such as ground station networks or Low Earth Orbit (LEO) satellites can be defined via \configClass{receiver}{gnssParametrizationReceiverType}.
-In case of \configClass{receiver:stationNetwork}{gnssParametrizationReceiverType:stationNetwork} \configFile{outputfileGnssReceiver}{instrument} and
-\configFile{outputfileClock}{instrument} are template file names with the \reference{variable}{general.parser} \verb|{station}| being replaced by the station name.
+One or more GNSS constellations must be defined via \configClass{transmitter}{gnssTransmitterGeneratorType}.
+Receivers such as ground station networks or Low Earth Orbit (LEO) satellites can be defined via \configClass{receiver}{gnssReceiverGeneratorType}.
+
+If multiple receivers defined an \configFile{outputfileGnssReceiver}{instrument} and \configFile{outputfileClock}{instrument}
+are written for each single receiver with the \reference{variable}{general.parser} \verb|{station}| being replaced by the receiver name.
 
 A list of simulated observation types can be defined via \configClass{observationType}{gnssType}. Noise can be added to both observations and clock errors
 via \configClass{noiseObervation}{noiseGeneratorType} and \configClass{noiseClockReceiver}{noiseGeneratorType}, respectively. Observation noise is
 interpreted as a factor that is multiplied to the accuracy derived from the accuracy pattern of the respective observation type
-(see \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition} in \configClass{receiver}{gnssParametrizationReceiverType}).
+(see \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition} in \configClass{receiver}{gnssReceiverGeneratorType}).
 
-If the program is run on multiple processes the \configClass{receiver}{gnssParametrizationReceiverType}s
+The \configClass{parametrization}{gnssParametrizationType} are used to simulate a priori models (e.g. troposphere, signal biases).
+Parameter settings and outputfiles are irgnored.
+
+If the program is run on multiple processes the \configClass{receiver}{gnssReceiverGeneratorType}s
 (stations or LEO satellites) are distributed over the processes.
 
 
@@ -1070,14 +1078,14 @@ If the program is run on multiple processes the \configClass{receiver}{gnssParam
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGnssReceiver & \hfuzz=500pt filename & \hfuzz=500pt simulated observations\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileClock & \hfuzz=500pt filename & \hfuzz=500pt simulated receiver clock errors\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt defines epochs within intervals\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGnssReceiver & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available, simulated observations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileClock & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available, simulated receiver clock errors\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt defines observation epochs\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeMargin & \hfuzz=500pt double & \hfuzz=500pt [seconds] margin to consider two times identical\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~transmitter & \hfuzz=500pt \hyperref[gnssParametrizationTransmitterType]{gnssParametrizationTransmitter} & \hfuzz=500pt constellation of GNSS satellites\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~receiver & \hfuzz=500pt \hyperref[gnssParametrizationReceiverType]{gnssParametrizationReceiver} & \hfuzz=500pt ground station network or LEO satellite\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~ionosphere & \hfuzz=500pt \hyperref[gnssParametrizationIonosphereType]{gnssParametrizationIonosphere} & \hfuzz=500pt ionosphere settings\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[gnssParametrizationEarthRotationType]{gnssParametrizationEarthRotation} & \hfuzz=500pt Earth rotation\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~transmitter & \hfuzz=500pt \hyperref[gnssTransmitterGeneratorType]{gnssTransmitterGenerator} & \hfuzz=500pt constellation of GNSS satellites\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~receiver & \hfuzz=500pt \hyperref[gnssReceiverGeneratorType]{gnssReceiverGenerator} & \hfuzz=500pt ground station network or LEO satellite\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt apriori earth rotation\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrization & \hfuzz=500pt \hyperref[gnssParametrizationType]{gnssParametrization} & \hfuzz=500pt models and parameters\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~observationType & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt simulated observation types\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~noiseObservation & \hfuzz=500pt \hyperref[noiseGeneratorType]{noiseGenerator} & \hfuzz=500pt [-] noise is multplied with type accuracy pattern of receiver\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~noiseClockReceiver & \hfuzz=500pt \hyperref[noiseGeneratorType]{noiseGenerator} & \hfuzz=500pt [m] noise added to the simulated receiver clock\\
@@ -7009,16 +7017,8 @@ and \configFile{transmitterList}{stringList} files for the respective GNSS and f
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntennaDefinitionStation & \hfuzz=500pt filename & \hfuzz=500pt antenna center variations\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntennaDefinitionGps & \hfuzz=500pt filename & \hfuzz=500pt antenna center variations\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntennaDefinitionGlonass & \hfuzz=500pt filename & \hfuzz=500pt antenna center variations\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntennaDefinitionGalileo & \hfuzz=500pt filename & \hfuzz=500pt antenna center variations\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntennaDefinitionBeiDou & \hfuzz=500pt filename & \hfuzz=500pt antenna center variations\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntennaDefinitionQzss & \hfuzz=500pt filename & \hfuzz=500pt antenna center variations\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterInfoGps & \hfuzz=500pt filename & \hfuzz=500pt PRN is appended to file name\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterInfoGlonass & \hfuzz=500pt filename & \hfuzz=500pt PRN is appended to file name\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterInfoGalileo & \hfuzz=500pt filename & \hfuzz=500pt PRN is appended to file name\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterInfoBeiDou & \hfuzz=500pt filename & \hfuzz=500pt PRN is appended to file name\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterInfoQzss & \hfuzz=500pt filename & \hfuzz=500pt PRN is appended to file name\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntennaDefinitionTransmitter & \hfuzz=500pt filename & \hfuzz=500pt antenna center variations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt PRN is appended to file name\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSvnBlockTableGps & \hfuzz=500pt filename & \hfuzz=500pt SVN to satellite block mapping\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSvnBlockTableGlonass & \hfuzz=500pt filename & \hfuzz=500pt SVN to satellite block mapping\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSvnBlockTableGalileo & \hfuzz=500pt filename & \hfuzz=500pt SVN to satellite block mapping\\
@@ -7040,9 +7040,10 @@ Name & Type & Annotation\\
 \subsection{GnssAttitude2Orbex}\label{GnssAttitude2Orbex}
 Convert attitude of GNSS satellites to \href{http://acc.igs.org/misc/proposal_orbex_april2019.pdf}{ORBEX file format} (quaternions).
 
-ORBEX format contains quaternions for rotation from TRF to satellite body frame.
+If \configClass{earthRotation}{earthRotationType} is provided, the output file contains quaternions for rotation from TRF to satellite
+body frame (IGS/ORBEX convention), otherwise the rotation is from CRF to satellite body frame.
 
-See also \program{GnssOrbex2StarCamera}.
+See also \program{GnssOrbex2StarCamera}, \program{SimulateStarCameraGnss}.
 
 
 \keepXColumns
@@ -7051,17 +7052,17 @@ See also \program{GnssOrbex2StarCamera}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbex & \hfuzz=500pt filename & \hfuzz=500pt ORBEX file\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileTransmitterList & \hfuzz=500pt filename & \hfuzz=500pt ASCII list with transmitter PRNs used in solution\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileVariational & \hfuzz=500pt filename & \hfuzz=500pt variational file containing attitude and Earth rotation\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileTransmitterList & \hfuzz=500pt filename & \hfuzz=500pt ASCII list with transmitter PRNs\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAttitude & \hfuzz=500pt filename & \hfuzz=500pt instrument file containing attitude\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variablePrn & \hfuzz=500pt string & \hfuzz=500pt loop variable for PRNs from transmitter list\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt attitude output epochs\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt rotate data into Earth-fixed frame\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt for attitude and Earth rotation interpolation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~description & \hfuzz=500pt string & \hfuzz=500pt description of file contents\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~createdBy & \hfuzz=500pt string & \hfuzz=500pt name of agency\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputData & \hfuzz=500pt string & \hfuzz=500pt description of input data (see ORBEX description)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~contact & \hfuzz=500pt string & \hfuzz=500pt email address\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~referenceFrame & \hfuzz=500pt string & \hfuzz=500pt reference frame used in file\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~orbitType & \hfuzz=500pt string & \hfuzz=500pt 3-char code (FIT, EXT, ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
 \hline
 \end{tabularx}
@@ -7242,6 +7243,11 @@ Evaluates orbit and clock parameters from \href{https://files.igs.org/pub/data/f
 at epochs given by \configClass{timeSeries}{timeSeriesType} and writes them to \configFile{outputfileOrbit}{instrument} and
 \configFile{outputfileClock}{instrument}, respectively.
 
+Orbits are rotated from TRF (as broadcasted) to CRF via \configClass{earthRotation}{earthRotationType},
+but system-specific TRFs (WGS84, PZ-90, etc.) are not aligned to a common TRF.
+
+See also \program{OrbitAddVelocityAndAcceleration}.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -7252,6 +7258,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileClock & \hfuzz=500pt filename & \hfuzz=500pt PRN is appended to file name\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileRinex & \hfuzz=500pt filename & \hfuzz=500pt RINEX navigation file\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt orbit and clock evaluation epochs\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt for rotation from TRF to CRF\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~usePrn & \hfuzz=500pt string & \hfuzz=500pt only export these PRNs instead of all\\
 \hline
 \end{tabularx}
@@ -7338,7 +7345,7 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileSignalBias & \hfuzz=500pt filename & \hfuzz=500pt identifier is appended to file name\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinexBias & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileGlonassReceiverDefinition & \hfuzz=500pt filename & \hfuzz=500pt GLONASS frequency number mapping\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileGlonassSignalDefinition & \hfuzz=500pt filename & \hfuzz=500pt GLONASS frequency number mapping\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~identifier & \hfuzz=500pt string & \hfuzz=500pt (empty = all) satellite PRN, e.g. G23 or E05\\
 \hline
 \end{tabularx}

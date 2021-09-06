@@ -12,14 +12,12 @@
 
 #include "base/import.h"
 #include "parallel/matrixDistributed.h"
-#include "config/config.h"
-#include "inputOutput/logging.h"
-#include "gnss.h"
+#include "gnss/gnssNormalEquationInfo.h"
 #include "gnssDesignMatrix.h"
 
 /***********************************************/
 
-Gnss::DesignMatrix::DesignMatrix(const NormalEquationInfo &normalEquationInfo_, const_MatrixSliceRef l_) :
+GnssDesignMatrix::GnssDesignMatrix(const GnssNormalEquationInfo &normalEquationInfo_, const_MatrixSliceRef l_) :
       normalEquationInfo(normalEquationInfo_),
       blockIndices(normalEquationInfo.blockIndices()),
       indexUsedParameter(normalEquationInfo.blockCount()),
@@ -33,7 +31,7 @@ Gnss::DesignMatrix::DesignMatrix(const NormalEquationInfo &normalEquationInfo_, 
 
 /***********************************************/
 
-void Gnss::DesignMatrix::init(const_MatrixSliceRef l)
+void GnssDesignMatrix::init(const_MatrixSliceRef l)
 {
   try
   {
@@ -61,7 +59,7 @@ void Gnss::DesignMatrix::init(const_MatrixSliceRef l)
 
 /***********************************************/
 
-Gnss::DesignMatrix &Gnss::DesignMatrix::selectRows(UInt row_, UInt rows_)
+GnssDesignMatrix &GnssDesignMatrix::selectRows(UInt row_, UInt rows_)
 {
   try
   {
@@ -79,7 +77,7 @@ Gnss::DesignMatrix &Gnss::DesignMatrix::selectRows(UInt row_, UInt rows_)
 
 /***********************************************/
 
-MatrixSlice Gnss::DesignMatrix::column(const Gnss::ParameterIndex &index)
+MatrixSlice GnssDesignMatrix::column(const GnssParameterIndex &index)
 {
   try
   {
@@ -124,7 +122,7 @@ MatrixSlice Gnss::DesignMatrix::column(const Gnss::ParameterIndex &index)
 
 /***********************************************/
 
-Matrix Gnss::DesignMatrix::mult(const_MatrixSliceRef x)
+Matrix GnssDesignMatrix::mult(const_MatrixSliceRef x)
 {
   try
   {
@@ -148,7 +146,7 @@ Matrix Gnss::DesignMatrix::mult(const_MatrixSliceRef x)
 
 /***********************************************/
 
-Matrix Gnss::DesignMatrix::mult(const std::vector<Matrix> &x, UInt startBlock, UInt countBlock)
+Matrix GnssDesignMatrix::mult(const std::vector<Matrix> &x, UInt startBlock, UInt countBlock)
 {
   try
   {
@@ -171,7 +169,7 @@ Matrix Gnss::DesignMatrix::mult(const std::vector<Matrix> &x, UInt startBlock, U
 
 /***********************************************/
 
-void Gnss::DesignMatrix::transMult(const_MatrixSliceRef l, std::vector<Matrix> &x, UInt startBlock, UInt countBlock)
+void GnssDesignMatrix::transMult(const_MatrixSliceRef l, std::vector<Matrix> &x, UInt startBlock, UInt countBlock)
 {
   try
   {
@@ -192,7 +190,7 @@ void Gnss::DesignMatrix::transMult(const_MatrixSliceRef l, std::vector<Matrix> &
 
 /***********************************************/
 
-void Gnss::DesignMatrix::accumulateNormals(MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount)
+void GnssDesignMatrix::accumulateNormals(MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount)
 {
   try
   {
@@ -247,5 +245,4 @@ void Gnss::DesignMatrix::accumulateNormals(MatrixDistributed &normals, std::vect
   }
 }
 
-/***********************************************/
 /***********************************************/

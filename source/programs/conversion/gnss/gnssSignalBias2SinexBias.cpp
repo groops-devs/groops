@@ -124,7 +124,7 @@ void GnssSignalBias2SinexBias::readData(std::vector<Data> &data) const
         readFileGnssSignalBias(iter->inNameBias, iter->biases);
 
         // replace unknown attributes with X (code) or * (phase)
-        for(auto &type : iter->biases.type)
+        for(auto &type : iter->biases.types)
           if((type.type & GnssType::ATTRIBUTE.type) == GnssType::UNKNOWN_ATTRIBUTE.type)
           {
             type = (type & ~GnssType::ATTRIBUTE);
@@ -223,7 +223,7 @@ void GnssSignalBias2SinexBias::writeData(OutFile &file, const Time &timeStart, c
 
     auto writePhaseBias = [&](const Time &timeStart, const Time &timeEnd, const GnssType &type, Double bias, Double biasSlope=0.)
     {
-      for(const auto &type2 : data.biases.type)
+      for(const auto &type2 : data.biases.types)
         if(type2 == (type & ~GnssType::TYPE) + GnssType::RANGE)
         {
           // GLONASS station bias per satellite
@@ -244,23 +244,23 @@ void GnssSignalBias2SinexBias::writeData(OutFile &file, const Time &timeStart, c
 
 
     // Code biases
-    for(UInt i = 0; i < data.biases.type.size(); i++)
-      if(data.biases.type.at(i) == GnssType::RANGE && !data.isTimeVariableBias(data.biases.type.at(i)))
-        writeCodeBias(timeStart, timeEnd, data.biases.type.at(i), data.biases.bias.at(i));
+    for(UInt i = 0; i < data.biases.types.size(); i++)
+      if(data.biases.types.at(i) == GnssType::RANGE && !data.isTimeVariableBias(data.biases.types.at(i)))
+        writeCodeBias(timeStart, timeEnd, data.biases.types.at(i), data.biases.biases.at(i));
 
     // Phase biases (for wildcard types, i.e. L1*, write one line per matching code bias type with the same phase bias; example: C1C, C1W, L1* ==> C1C, C1W, L1C, L1W)
-    for(UInt i = 0; i < data.biases.type.size(); i++)
-      if(data.biases.type.at(i) == GnssType::PHASE && !data.isTimeVariableBias(data.biases.type.at(i)))
-        writePhaseBias(timeStart, timeEnd, data.biases.type.at(i), data.biases.bias.at(i));
+    for(UInt i = 0; i < data.biases.types.size(); i++)
+      if(data.biases.types.at(i) == GnssType::PHASE && !data.isTimeVariableBias(data.biases.types.at(i)))
+        writePhaseBias(timeStart, timeEnd, data.biases.types.at(i), data.biases.biases.at(i));
 
     // Time-variable biases
     for(const auto &bias : data.timeVariableBiases)
     {
       Double constBias = 0;
-      for(UInt i = 0; i < data.biases.type.size(); i++)
-        if((data.biases.type.at(i) & GnssType::NOPRN).type == bias.type.type) // exact match
+      for(UInt i = 0; i < data.biases.types.size(); i++)
+        if((data.biases.types.at(i) & GnssType::NOPRN).type == bias.type.type) // exact match
           {
-            constBias = data.biases.bias.at(i);
+            constBias = data.biases.biases.at(i);
             break;
           }
 
@@ -296,15 +296,15 @@ UInt GnssSignalBias2SinexBias::countBiases(const std::vector<Data> &data) const
     UInt count = 0;
     for(const auto &d : data)
     {
-      for(UInt i = 0; i < d.biases.type.size(); i++)
-        if(d.biases.type.at(i) == GnssType::RANGE)
+      for(UInt i = 0; i < d.biases.types.size(); i++)
+        if(d.biases.types.at(i) == GnssType::RANGE)
           count++;
 
       // Phase biases (for wildcard types, i.e. L1*, write one line per matching code bias type with the same phase bias; example: C1C, C1W, L1* ==> C1C, C1W, L1C, L1W)
-      for(UInt i = 0; i < d.biases.type.size(); i++)
-        if(d.biases.type.at(i) == GnssType::PHASE)
-          for(UInt j = 0; j < d.biases.type.size(); j++)
-            if(d.biases.type.at(j) == (d.biases.type.at(i) & ~GnssType::TYPE) + GnssType::RANGE)
+      for(UInt i = 0; i < d.biases.types.size(); i++)
+        if(d.biases.types.at(i) == GnssType::PHASE)
+          for(UInt j = 0; j < d.biases.types.size(); j++)
+            if(d.biases.types.at(j) == (d.biases.types.at(i) & ~GnssType::TYPE) + GnssType::RANGE)
               count++;
     }
 
@@ -333,7 +333,7 @@ void GnssSignalBias2SinexBias::run(Config &config, Parallel::CommunicatorPtr /*c
     UInt intervalLength = 0;
 
     readConfig(config, "outputfileSinexBias",      outNameSinexBias,      Config::MUSTSET,  "", "");
-    readConfig(config, "inputfileTransmitterInfo", inNameTransmitterInfo, Config::MUSTSET,  "", "one file per satellite");
+    readConfig(config, "inputfileTransmitterInfo", inNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "one file per satellite");
     readConfig(config, "transmitterBiases",        transmitterBiases,     Config::OPTIONAL, "", "one element per satellite");
     readConfig(config, "receiverBiases",           receiverBiases,        Config::OPTIONAL, "", "one element per station");
     readConfig(config, "agencyCode",               agencyCode,            Config::MUSTSET,  "TUG", "identify the agency providing the data");

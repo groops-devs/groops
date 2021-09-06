@@ -12,17 +12,57 @@
 /***********************************************/
 
 #include "base/import.h"
-#include "config/config.h"
-#include "inputOutput/logging.h"
-#include "gnss/gnss.h"
-#include "gnss/gnssParametrizationIonosphere.h"
 #include "gnss/gnssTransmitter.h"
 #include "gnss/gnssReceiver.h"
 #include "gnss/gnssObservation.h"
 
 /***********************************************/
 
-Bool Gnss::Observation::init(const Receiver &receiver, const Transmitter &transmitter, GnssParametrizationIonospherePtr /*ionosphere*/, UInt idEpoch, Double &phaseWindupOld)
+static void positionVelocityTime(const GnssReceiver &receiver, const GnssTransmitter &transmitter, const Rotary3d &rotCrf2Trf, UInt idEpoch,
+                                 Time &timeRecv,  Vector3d &posRecv,  Vector3d &velRecv,  Angle &azimutRecv,  Angle &elevationRecv,
+                                 Time &timeTrans, Vector3d &posTrans, Vector3d &velTrans, Angle &azimutTrans, Angle &elevationTrans,
+                                 Vector3d &k, Vector3d &kRecv, Vector3d &kTrans)
+{
+  try
+  {
+    // receiver in celestial reference frame
+    timeRecv = receiver.timeCorrected(idEpoch);
+    posRecv  = rotCrf2Trf.inverseRotate(receiver.position(idEpoch));
+    velRecv  = rotCrf2Trf.inverseRotate(receiver.velocity(idEpoch));
+    if(receiver.isEarthFixed())
+      velRecv += crossProduct(Vector3d(0., 0., 7.29211585531e-5), posRecv);
+
+    // transmitter position and time
+    posTrans = transmitter.position(idEpoch, timeRecv-seconds2time(20200e3/LIGHT_VELOCITY));
+    Vector3d posOld;
+    for(UInt i=0; (i<10) && ((posTrans-posOld).r() > 0.0001); i++) // iteration
+    {
+      timeTrans = timeRecv - seconds2time((posTrans-posRecv).r()/LIGHT_VELOCITY);
+      posOld    = posTrans;
+      posTrans  = transmitter.position(idEpoch, timeTrans);
+    }
+    velTrans = transmitter.velocity(timeTrans);
+
+    // line of sight from transmitter to receiver
+    k              = normalize(posRecv - posTrans);
+    kRecv          = receiver.local2antennaFrame(idEpoch).transform(receiver.global2localFrame(idEpoch).transform(rotCrf2Trf.rotate(-k))); // line of sight in receiver antenna system (north, east, up)
+    azimutRecv     = kRecv.lambda();
+    elevationRecv  = kRecv.phi();
+    kTrans         = transmitter.celestial2antennaFrame(idEpoch, timeTrans).transform(k);
+    azimutTrans    = kTrans.lambda();
+    elevationTrans = kTrans.phi();
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+
+/***********************************************/
+
+Bool GnssObservation::init(const GnssReceiver &receiver, const GnssTransmitter &transmitter, const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
+                           UInt idEpoch, Angle elevationCutOff, Double &phaseWindupOld)
 {
   try
   {
@@ -31,20 +71,18 @@ Bool Gnss::Observation::init(const Receiver &receiver, const Transmitter &transm
 
     // position, time of transmitter & receiver
     // ----------------------------------------
-    const Time     timeRecv = receiver.timeCorrected(idEpoch);
-    const Vector3d posRecv  = receiver.position(idEpoch);
-    Time     timeTrans;
-    Vector3d posTrans;
-    transmitter.transmitTime(idEpoch, timeRecv, posRecv, timeTrans, posTrans);
-    const Vector3d k              = normalize(posRecv - posTrans);                    // line of sight from transmitter to receiver
-    const Vector3d kRecv          = receiver.local2antennaFrame(idEpoch).transform(receiver.celestial2localFrame(idEpoch).transform(-k)); // line of sight in receiver antenna system (north, east, up)
-    const Angle    azimutRecv     = kRecv.lambda();
-    const Angle    elevationRecv  = kRecv.phi();
-    const Vector3d kTrans         = transmitter.celestial2antennaFrame(idEpoch, timeTrans).transform(k);
-    const Angle    azimutTrans    = kTrans.lambda();
-    const Angle    elevationTrans = kTrans.phi();
+    Time     timeRecv, timeTrans;
+    Vector3d posRecv,  velRecv, posTrans, velTrans, k, kRecv, kTrans;
+    Angle    azimutRecv, elevationRecv, azimutTrans, elevationTrans;
+    Rotary3d rotCrf2Trf;
+    if(receiver.isEarthFixed())
+      rotCrf2Trf = rotationCrf2Trf(receiver.timeCorrected(idEpoch));
+    positionVelocityTime(receiver, transmitter, rotCrf2Trf, idEpoch,
+                         timeRecv, posRecv, velRecv, azimutRecv, elevationRecv,
+                         timeTrans, posTrans, velTrans, azimutTrans, elevationTrans,
+                         k, kRecv, kTrans);
 
-    if(elevationRecv<receiver.elevationCutOff())
+    if(elevationRecv < elevationCutOff)
       return FALSE;
 
     std::vector<GnssType> types(size());
@@ -60,9 +98,9 @@ Bool Gnss::Observation::init(const Receiver &receiver, const Transmitter &transm
 
     // Accuracies and antenna pattern check
     // ------------------------------------
-    const Vector sigma0 = receiver.accuracy(idEpoch, azimutRecv, elevationRecv, types);
-    const Vector acv    = receiver.antennaVariations(idEpoch, azimutRecv, elevationRecv, types)
-                        + T * transmitter.antennaVariations(idEpoch, azimutTrans, elevationTrans, typesTransmitted);
+    const Vector sigma0 = receiver.accuracy(timeRecv, azimutRecv, elevationRecv, types);
+    const Vector acv    = receiver.antennaVariations(timeRecv, azimutRecv, elevationRecv, types)
+                        + T * transmitter.antennaVariations(timeTrans, azimutTrans, elevationTrans, typesTransmitted);
     for(UInt i=0; i<size(); i++)
     {
       at(i).sigma0 = sigma0(i);
@@ -83,12 +121,12 @@ Bool Gnss::Observation::init(const Receiver &receiver, const Transmitter &transm
     for(UInt i=0; i<size(); i++)
       at(i).residuals = at(i).redundancy = 0.;
 
-    std::sort(obs.begin(), obs.end(), [](const SingleObservation &obs1, const SingleObservation &obs2){return (obs1.type < obs2.type);});
+    std::sort(obs.begin(), obs.end(), [](const GnssSingleObservation &obs1, const GnssSingleObservation &obs2) {return (obs1.type < obs2.type);});
 
     // phase wind-up
     // Carrier phase wind-up in GPS reflectometry, Georg Beyerle, Springer Verlag 2008
     // -------------------------------------------------------------------------------
-    const Transform3d crf2arfRecv  = receiver.local2antennaFrame(idEpoch) * receiver.celestial2localFrame(idEpoch);
+    const Transform3d crf2arfRecv  = receiver.local2antennaFrame(idEpoch) * receiver.global2localFrame(idEpoch) * rotCrf2Trf;
     const Transform3d crf2arfTrans = transmitter.celestial2antennaFrame(idEpoch, timeTrans);
     const Vector3d Tx = crf2arfRecv.transform(crossProduct(crossProduct(k, crf2arfTrans.inverseTransform(Vector3d(1,0,0))), k));
     const Vector3d Ty = crf2arfRecv.transform(crossProduct(crossProduct(k, crf2arfTrans.inverseTransform(Vector3d(0,1,0))), k));
@@ -113,7 +151,7 @@ Bool Gnss::Observation::init(const Receiver &receiver, const Transmitter &transm
 
 /***********************************************/
 
-UInt Gnss::Observation::index(GnssType type) const
+UInt GnssObservation::index(GnssType type) const
 {
   for(UInt i=0; i<size(); i++)
     if(at(i).type == type)
@@ -123,14 +161,14 @@ UInt Gnss::Observation::index(GnssType type) const
 
 /***********************************************/
 
-Bool Gnss::Observation::observationList(Gnss::AnalysisType analysisType, std::vector<GnssType> &types) const
+Bool GnssObservation::observationList(GnssObservation::Group group, std::vector<GnssType> &types) const
 {
   try
   {
     types.clear();
 
     // code observations
-    if(analysisType & Gnss::ANALYSIS_CODE)
+    if(group & RANGE)
     {
       // need obs at two frequencies
       std::set<GnssType> typeFrequencies;
@@ -147,7 +185,7 @@ Bool Gnss::Observation::observationList(Gnss::AnalysisType analysisType, std::ve
     }
 
     // phase observations
-    if(analysisType & Gnss::ANALYSIS_PHASE)
+    if(group & PHASE)
     {
       // need obs at two frequencies
       std::set<GnssType> typeFrequencies;
@@ -164,7 +202,7 @@ Bool Gnss::Observation::observationList(Gnss::AnalysisType analysisType, std::ve
     }
 
     // ionospheric delay as pseudo observations
-    if(analysisType & Gnss::ANALYSIS_IONO)
+    if(group & IONO)
     {
       for(UInt i=0; i<size(); i++)
         if(at(i).sigma>0)
@@ -172,16 +210,6 @@ Bool Gnss::Observation::observationList(Gnss::AnalysisType analysisType, std::ve
             types.push_back( at(i).type );
     }
 
-    // all available observations
-//     if(analysisType & Gnss::ANALYSIS_RAW)
-//     {
-//       for(UInt i=0; i<size(); i++)
-//         if(at(i).sigma>0)
-//           if(GnnsType::index(type, at(i).type) == NULLINDEX)
-//             type.push_back( at(i).type );
-//     }
-
-//     std::sort(type.begin(), type.end());
     return (types.size() != 0);
   }
   catch(std::exception &e)
@@ -192,7 +220,7 @@ Bool Gnss::Observation::observationList(Gnss::AnalysisType analysisType, std::ve
 
 /***********************************************/
 
-void Gnss::Observation::setDecorrelatedResiduals(const std::vector<GnssType> &types, const_MatrixSliceRef residuals, const_MatrixSliceRef redundancy)
+void GnssObservation::setDecorrelatedResiduals(const std::vector<GnssType> &types, const_MatrixSliceRef residuals, const_MatrixSliceRef redundancy)
 {
   try
   {
@@ -211,10 +239,11 @@ void Gnss::Observation::setDecorrelatedResiduals(const std::vector<GnssType> &ty
 
 /***********************************************/
 
-void Gnss::Observation::updateParameter(const_MatrixSliceRef x, const_MatrixSliceRef /*covariance*/)
+void GnssObservation::updateParameter(const_MatrixSliceRef x, const_MatrixSliceRef /*covariance*/)
 {
   try
   {
+    STEC  += x(0,0);
     dSTEC += x(0,0);
   }
   catch(std::exception &e)
@@ -226,16 +255,23 @@ void Gnss::Observation::updateParameter(const_MatrixSliceRef x, const_MatrixSlic
 /***********************************************/
 /***********************************************/
 
-void Gnss::ObservationEquation::compute(const Observation &observation, const Receiver &receiver_, const Transmitter &transmitter_,
-                                        GnssParametrizationIonospherePtr ionosphere, UInt idEpoch_, Bool decorrelate, const std::vector<GnssType> &types_)
+void GnssObservationEquation::compute(const GnssObservation &observation, const GnssReceiver &receiver_, const GnssTransmitter &transmitter_,
+                                      const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
+                                      UInt idEpoch_, Bool decorrelate, const std::vector<GnssType> &types_)
 {
   try
   {
     const UInt obsCount = types_.size();
-    types  = types_;
-    l      = Vector(obsCount);
-    sigma  = Vector(obsCount);
-    sigma0 = Vector(obsCount);
+    idEpoch     = idEpoch_;
+    receiver    = &receiver_;
+    transmitter = &transmitter_;
+    track       = observation.track;
+    STEC        = observation.STEC;
+    dSTEC       = observation.dSTEC;
+    types       = types_;
+    l           = Vector(obsCount);
+    sigma       = Vector(obsCount);
+    sigma0      = Vector(obsCount);
 
     for(UInt i=0; i<obsCount; i++)
     {
@@ -250,40 +286,28 @@ void Gnss::ObservationEquation::compute(const Observation &observation, const Re
 
     // position, time of transmitter & receiver
     // ----------------------------------------
-    receiver      = &receiver_;
-    transmitter   = &transmitter_;
-    idEpoch       = idEpoch_;
-    timeRecv      = receiver->timeCorrected(idEpoch);
-    posRecv       = receiver->position(idEpoch);
-    transmitter->transmitTime(idEpoch, timeRecv, posRecv, timeTrans, posTrans);
-    velocityRecv  = receiver->velocity(idEpoch);
-    velocityTrans = transmitter->velocity(idEpoch, timeTrans);
-
-    // orientation of antennas
-    // -----------------------
-    const Vector3d k          = normalize(posRecv - posTrans);                               // line of sight from transmitter to receiver
+    Vector3d k, kRecvAnt, kTrans;
+    Rotary3d rotCrf2Trf;
+    if(receiver_.isEarthFixed())
+      rotCrf2Trf = rotationCrf2Trf(receiver_.timeCorrected(idEpoch));
+    positionVelocityTime(receiver_, transmitter_, rotCrf2Trf, idEpoch_,
+                         timeRecv,  posRecv,  velocityRecv,  azimutRecvAnt, elevationRecvAnt,
+                         timeTrans, posTrans, velocityTrans, azimutTrans,   elevationTrans,
+                         k, kRecvAnt, kTrans);
+    const Double   rDotTrans  = inner(k, velocityTrans)/LIGHT_VELOCITY;
     const Double   rDotRecv   = inner(k, velocityRecv) /LIGHT_VELOCITY;
-    const Vector3d kRecvLocal = receiver->celestial2localFrame(idEpoch).transform(-k);       // line of sight in local frame (north, east, up or vehicle)
-    azimutRecvLocal           = kRecvLocal.lambda();
-    elevationRecvLocal        = kRecvLocal.phi();
-    const Vector3d kRecvAnt   = receiver->local2antennaFrame(idEpoch).transform(kRecvLocal); // line of sight in left-handed antenna system (useally north, east, up)
-    azimutRecvAnt             = kRecvAnt.lambda();
-    elevationRecvAnt          = kRecvAnt.phi();
-
-    const Vector3d kTrans    = transmitter->celestial2antennaFrame(idEpoch, timeTrans).transform(k);
-    const Double   rDotTrans = inner(k, velocityTrans)/LIGHT_VELOCITY;
-    azimutTrans              = kTrans.lambda();
-    elevationTrans           = kTrans.phi();
+    const Vector3d kRecvLocal = receiver_.local2antennaFrame(idEpoch).inverseTransform(kRecvAnt);
+    azimutRecvLocal    = kRecvLocal.lambda();
+    elevationRecvLocal = kRecvLocal.phi();
 
     // Corrected range
     // ---------------
-    const Double r1 = posTrans.r();
-    const Double r2 = posRecv.r();
-    r12  = (posRecv - posTrans).r();
+    const Double r1  = posTrans.r();
+    const Double r2  = posRecv.r();
+    Double       r12 = (posRecv - posTrans).r();
     r12 += 2*DEFAULT_GM/pow(LIGHT_VELOCITY,2)*log((r1+r2+r12)/(r1+r2-r12)); // curved space-time
     r12 += 2*inner(posTrans, velocityTrans)/LIGHT_VELOCITY;                 // relativistic clock correction
-    r12 += receiver->troposphere(idEpoch, azimutRecvLocal, elevationRecvLocal);
-    r12 -= LIGHT_VELOCITY * transmitter->clockError(idEpoch, timeTrans);
+    r12 -= LIGHT_VELOCITY * transmitter->clockError(idEpoch);
     r12 += LIGHT_VELOCITY * receiver->clockError(idEpoch);
 
     // approximate range
@@ -292,31 +316,14 @@ void Gnss::ObservationEquation::compute(const Observation &observation, const Re
       if((types.at(i) == GnssType::RANGE) || (types.at(i) == GnssType::PHASE))
         l(i) -= r12;
 
-    // reduce ambiguities
-    // ------------------
-    track = observation.track;
-    if(track && track->ambiguity)
-      l -= track->ambiguity->ambiguities(types);
-
     // Composed signals (e.g. C2DG)
     Matrix T;
     receiver->signalComposition(idEpoch, types, typesTransmitted, T);
 
-    // antenna correction
-    // ------------------
-    l -= receiver->antennaVariations(idEpoch, azimutRecvAnt,  elevationRecvAnt,  types);
-    l -= T * transmitter->antennaVariations(idEpoch, azimutTrans, elevationTrans, typesTransmitted);
-
-    // reduce ionospheric effects
-    // --------------------------
-    dSTEC = observation.dSTEC;
-    B = Matrix();
-    if(ionosphere)
-      l -= ionosphere->slantDelay(*this, B);
-
     // design matrix
     // -------------
     A = Matrix(obsCount, 9 + obsCount + T.columns());
+    B = Matrix();
     for(UInt i=0; i<obsCount; i++)
     {
       if((types.at(i) == GnssType::RANGE) || (types.at(i) == GnssType::PHASE))
@@ -335,6 +342,15 @@ void Gnss::ObservationEquation::compute(const Observation &observation, const Re
       A(i, idxUnit+i) = 1.0; // unit matrix
     }  // for(i=0..obsCount)
     copy(T, A.column(idxUnit + obsCount, T.columns()));
+
+    // antenna correction and other corrections
+    // ----------------------------------------
+    l -= receiver->antennaVariations(timeRecv, azimutRecvAnt,  elevationRecvAnt,  types);
+    l -= T * transmitter->antennaVariations(timeTrans, azimutTrans, elevationTrans, typesTransmitted);
+    if(track && track->ambiguity)
+      l -= track->ambiguity->ambiguities(types);     // reduce ambiguities
+    if(reduceModels)
+      reduceModels(*this);
 
     // Decorrelate
     // -----------

@@ -57,7 +57,7 @@ void GnssSignalBias2Matrix::run(Config &config, Parallel::CommunicatorPtr /*comm
     readFileGnssSignalBias(fileNameSignalBias, signalBias);
 
     if(types.size() == 0)
-      types = signalBias.type;
+      types = signalBias.types;
     Vector bias = signalBias.compute(types);
 
     if(!fileNameTypes.empty())

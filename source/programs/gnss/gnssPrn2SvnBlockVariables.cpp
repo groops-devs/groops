@@ -46,7 +46,7 @@ void GnssPrn2SvnBlockVariables::run(Config &config, Parallel::CommunicatorPtr /*
 
     readConfig(config, "variableSVN",              nameSVN,                 Config::OPTIONAL,  "svn",   "name of the SVN variable");
     readConfig(config, "variableBlock",            nameBlock,               Config::OPTIONAL,  "block", "name of the satellites block variable");
-    readConfig(config, "inputfileTransmitterInfo", fileNameTransmitterInfo, Config::MUSTSET,   "",      "used for GNSS PRN-to-SVN/model relation");
+    readConfig(config, "inputfileTransmitterInfo", fileNameTransmitterInfo, Config::MUSTSET,   "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "used for GNSS PRN-to-SVN/model relation");
     readConfig(config, "time",                     time,                    Config::MUSTSET,   "",      "used for GNSS PRN-to-SVN/model relation");
     if(isCreateSchema(config)) return;
 

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - gnssReceiverGeneratorType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="gnssReceiverGeneratorType">GnssReceiverGenerator</h1><p>
+Definition and basic information of GNSS receivers.</p><p>Most of the input files are provided in GROOPS file formats at
+<a href="https://ftp.tugraz.at/outgoing/ITSG/groops" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops</a> (marked with <b>*</b> below).
+These files are regularly updated.
+<ul>
+
+  <li><a class="groops-class" href="fileFormat_gnssStationInfo.html">inputfileStationInfo</a><b>*</b>:
+        Antenna and receiver information, antenna reference point offsets, antenna orientations.
+        Created via <a class="groops-program" href="GnssStationLog2StationInfo.html">GnssStationLog2StationInfo</a> or <a class="groops-program" href="GnssStationInfoCreate.html">GnssStationInfoCreate</a>.
+  </li><li>
+<a class="groops-class" href="fileFormat_gnssAntennaDefinition.html">inputfileAntennaDefinition</a><b>*</b>:
+        Antenna center offsets and variations.
+        Created via <a class="groops-program" href="GnssAntex2AntennaDefinition.html">GnssAntex2AntennaDefinition</a> or <a class="groops-program" href="GnssAntennaDefinitionCreate.html">GnssAntennaDefinitionCreate</a>.
+  </li><li>
+<a class="groops-class" href="fileFormat_gnssReceiverDefinition.html">inputfileReceiverDefinition</a>:
+        Observed signal types (optional).
+        Created via <a class="groops-program" href="GnssReceiverDefinitionCreate.html">GnssReceiverDefinitionCreate</a> in case you want to define which signal
+        types a receiver model can observe.
+  </li><li>
+<a class="groops-class" href="fileFormat_gnssAntennaDefinition.html">inputfileAccuracyDefinition</a><b>*</b>:
+        Elevation and azimuth dependent accuracy.
+        Created via <a class="groops-program" href="GnssAntennaDefinitionCreate.html">GnssAntennaDefinitionCreate</a>.
+  </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileObservation</a>:
+        Converted from RINEX observation files via <a class="groops-program" href="RinexObservation2GnssReceiver.html">RinexObservation2GnssReceiver</a>.
+</li></ul>
+</p><p>It is possible to limit the observation types to be used in the processing by a list of <a class="groops-class" href="gnssType.html">useType</a>
+and any observation types not defined within the list are ignored and discarded.
+Similarly observations defined in the list of <a class="groops-class" href="gnssType.html">ignoreType</a> are ignored and discarded.
+The codes used follow the <a href="https://files.igs.org/pub/data/format/rinex305.pdf">RINEX 3 definition</a>.</p><p>Each receiver goes through a <strong class="groops-config-element">preprocessing</strong> step individually, where observation outliers are removed or downweighted,
+continuous tracks of phase observations are defined for ambiguity parametrization, cycle slips are detected, and receivers are
+disabled if they do not fulfill certain requirements. The preprocessing step consists of an initial PPP estimation done by
+<a class="groops-ref" href="fundamentals.robustLeastSquares.html">robust least squares adjustment</a> and checks whether the position error
+of the solutions exceeds <strong class="groops-config-element">codeMaxPositionDiff</strong>. If the error exceeds the threshold the receiver will be discarded.
+The preprocessing also sets initial clock error values and removes tracks that stay below a certain elevation mask (<strong class="groops-config-element">elevationTrackMinimum</strong>).</p><p>See also <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a> and <a class="groops-program" href="GnssSimulateReceiver.html">GnssSimulateReceiver</a>.
+</p>
+
+<h2 id="stationNetwork">StationNetwork</h2><p>
+A network of GNSS ground stations is defined via <a class="groops-class" href="fileFormat_stringTable.html">inputfileStationList</a>.
+Each line can contain more than one station. The first station in each line for which <a class="groops-class" href="fileFormat_instrument.html">inputfileObservations</a>
+exists and contains enough observations is used for the processing.
+All input files except <a class="groops-class" href="fileFormat_gnssAntennaDefinition.html">inputfileAntennaDefinition</a>,
+<a class="groops-class" href="fileFormat_gnssReceiverDefinition.html">inputfileReceiverDefinition</a>, and
+<a class="groops-class" href="fileFormat_gnssAntennaDefinition.html">inputfileAccuracyDefinition</a> are read for each station.
+The file name is interpreted as a template with the variable <code>{station}</code> being replaced by the station name.</p><p>The effects of loading and tidal deformation on station positions can be corrected for
+via <a class="groops-class" href="gravityfieldType.html">loadingDisplacement</a> and
+<a class="groops-class" href="tidesType.html">tidalDisplacement</a>, respectively.
+Tidal deformations typically include:
+<ul>
+
+  <li><a class="groops-class" href="tidesType.html#earthTide">earthTide</a>: Earth tidal deformations (IERS conventions)
+  </li><li>
+<a class="groops-class" href="tidesType.html#doodsonHarmonicTide">doodsonHarmonicTide</a>: ocean tidal deformations
+        (e.g. fes2014b_n720, <strong class="groops-config-element">minDegree</strong>=<code>1</code>)
+  </li><li>
+<a class="groops-class" href="tidesType.html#doodsonHarmonicTide">doodsonHarmonicTide</a>: atmospheric tidal deformation
+        (e.g. AOD1B RL06, <strong class="groops-config-element">minDegree</strong>=<code>1</code>)
+  </li><li>
+<a class="groops-class" href="tidesType.html#poleTide">poleTide</a>: pole tidal deformations (IERS conventions)
+  </li><li>
+<a class="groops-class" href="tidesType.html#oceanPoleTide">poleOceanTide</a>: ocean pole tidal deformations (IERS conventions)
+</li></ul>
+</p><p></p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStationList</div></div></td><td>filename</td><td>ascii file with station names</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxStationCount</div></div></td><td>uint</td><td>maximum number of stations to be used</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStationInfo</div></div></td><td>filename</td><td>variable {station} available. station metadata (antennas, receivers, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAntennaDefinition</div></div></td><td>filename</td><td>antenna center offsets and variations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">noAntennaPatternFound</div></div></td><td>choice</td><td>what should happen if no antenna pattern is found for an observation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">ignoreObservation</div></div></td><td></td><td>ignore observation if no matching pattern is found</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">useNearestFrequency</div></div></td><td></td><td>use pattern of nearest frequency if no matching pattern is found</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">throwException</div></div></td><td></td><td>throw exception if no matching pattern is found</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileReceiverDefinition</div></div></td><td>filename</td><td>observed signal types</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAccuracyDefinition</div></div></td><td>filename</td><td>elevation and azimuth dependent accuracy</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileStationPosition</div></div></td><td>filename</td><td>variable {station} available.</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileObservations</div></div></td><td>filename</td><td>variable {station} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">loadingDisplacement</div></div></td><td><a href="gravityfieldType.html">gravityfield</a></td><td>loading deformation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">tidalDisplacement</div></div></td><td><a href="tidesType.html">tides</a></td><td>tidal deformation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td>for tidal deformation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileDeformationLoadLoveNumber</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfilePotentialLoadLoveNumber</div></div></td><td>filename</td><td>if full potential is given and not only loading potential</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">useType</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>only use observations that match any of these patterns</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">ignoreType</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>ignore observations that match any of these patterns</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">elevationCutOff</div></div></td><td>angle</td><td>[degree] ignore observations below cutoff</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">elevationTrackMinimum</div></div></td><td>angle</td><td>[degree] ignore tracks that never exceed minimum elevation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minObsCountPerTrack</div></div></td><td>uint</td><td>tracks with less number of epochs with observations are dropped</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minEstimableEpochsRatio</div></div></td><td>double</td><td>[0,1] drop stations with lower ratio of estimable epochs to total epochs</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">preprocessing</div></div></td><td>sequence</td><td>settings for preprocessing of observations/stations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">huber</div></div></td><td>double</td><td>residuals > huber*sigma0 are downweighted</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">huberPower</div></div></td><td>double</td><td>residuals > huber: sigma=(e/huber)^huberPower*sigma0</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">codeMaxPositionDiff</div></div></td><td>double</td><td>[m] max. allowed position error by PPP code only clock error estimation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">denoisingLambda</div></div></td><td>double</td><td>regularization parameter for total variation denoising used in cylce slip detection</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">tecWindowSize</div></div></td><td>uint</td><td>(0 = disabled) window size for TEC smoothness evaluation used in cycle slip detection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">tecSigmaFactor</div></div></td><td>double</td><td>factor applied to moving standard deviation used as threshold in TEC smoothness evaluation during cycle slip detection</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileTrackBefore</div></div></td><td>filename</td><td>variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track before cycle slip detection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileTrackAfter</div></div></td><td>filename</td><td>variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track after cycle slip detection</td></tr>
+</table>
+
+<h2 id="lowEarthOrbiter">LowEarthOrbiter</h2><p>
+A single low-Earth orbiting (LEO) satellite with an onboard GNSS receiver.
+An apriori orbit is needed as <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>.
+Attitude data must be provided via <a class="groops-class" href="fileFormat_instrument.html">inputfileStarCamera</a>.
+If no attitude data is available from the satellite operator,
+the star camera data can be simulated by using <a class="groops-program" href="SimulateStarCamera.html">SimulateStarCamera</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStationInfo</div></div></td><td>filename</td><td>satellite metadata (antenna, receiver, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAntennaDefinition</div></div></td><td>filename</td><td>antenna center offsets and variations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">noAntennaPatternFound</div></div></td><td>choice</td><td>what should happen if no antenna pattern is found for an observation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">ignoreObservation</div></div></td><td></td><td>ignore observation if no matching pattern is found</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">useNearestFrequency</div></div></td><td></td><td>use pattern of nearest frequency if no matching pattern is found</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">throwException</div></div></td><td></td><td>throw exception if no matching pattern is found</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileReceiverDefinition</div></div></td><td>filename</td><td>observed signal types</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAccuracyDefinition</div></div></td><td>filename</td><td>elevation and azimut dependent accuracy</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileObservations</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit</div></div></td><td>filename</td><td>approximate positions</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStarCamera</div></div></td><td>filename</td><td>satellite attitude</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaFactorPhase</div></div></td><td>expression</td><td>PHASE: factor = f(FREQ, ELE, SNR, ROTI, dTEc, IONOINDEX)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaFactorCode</div></div></td><td>expression</td><td>CODE: factor = f(FREQ, ELE, SNR, ROTI, dTEc, IONOINDEX)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">supportsIntegerAmbiguities</div></div></td><td>boolean</td><td>receiver tracks full cycle integer ambiguities</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">wavelengthFactor</div></div></td><td>double</td><td>factor to account for half-wavelength observations (collected by codeless squaring techniques)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">useType</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>only use observations that match any of these patterns</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">ignoreType</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>ignore observations that match any of these patterns</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">elevationCutOff</div></div></td><td>angle</td><td>[degree] ignore observations below cutoff</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minObsCountPerTrack</div></div></td><td>uint</td><td>tracks with less number of epochs with observations are dropped</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">preprocessing</div></div></td><td>sequence</td><td>settings for preprocessing of observations/stations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">huber</div></div></td><td>double</td><td>residuals > huber*sigma0 are downweighted</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">huberPower</div></div></td><td>double</td><td>residuals > huber: sigma=(e/huber)^huberPower*sigma0</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">codeMaxPositionDiff</div></div></td><td>double</td><td>[m] max. allowed position error by PPP code only clock error estimation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">denoisingLambda</div></div></td><td>double</td><td>regularization parameter for total variation denoising used in cylce slip detection</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">tecWindowSize</div></div></td><td>uint</td><td>(0 = disabled) window size for TEC smoothness evaluation used in cycle slip detection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">tecSigmaFactor</div></div></td><td>double</td><td>factor applied to moving standard deviation used as threshold in TEC smoothness evaluation during cycle slip detection</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileTrackBefore</div></div></td><td>filename</td><td>variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track before cycle slip detection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">outputfileTrackAfter</div></div></td><td>filename</td><td>variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track after cycle slip detection</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

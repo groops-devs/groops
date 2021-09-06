@@ -17,7 +17,7 @@
 // Latex documentation
 #ifdef DOCSTRING_TimeSeries
 static const char *docstringTimeSeriesInstrument = R"(
-\subsection{Instrument}
+\subsection{Instrument}\label{timeSeriesType:instrument}
 Read a time series (epochs) from an \file{instrument file}{instrument}.
 The time series can be restricted to the interval
 starting from \config{timeStart} and before \config{timeEnd}.

@@ -75,7 +75,7 @@ Processing step in <a class="groops-program" href="GnssProcessing.html">GnssProc
 The most common steps are <a class="groops-class" href="gnssProcessingStepType.html#estimate">estimate</a>, which performs an iterative least
 squares adjustment, and <a class="groops-class" href="gnssProcessingStepType.html#writeResults">writeResults</a>, which writes all output files
 defined in <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a> and is usually the last step.
-Some steps such as <a class="groops-class" href="gnssProcessingStepType.html#selectParameters">selectParameters</a>,
+Some steps such as <a class="groops-class" href="gnssProcessingStepType.html#selectParametrizations">selectParametrizations</a>,
 <a class="groops-class" href="gnssProcessingStepType.html#selectEpochs">selectEpochs</a>,
 <a class="groops-class" href="gnssProcessingStepType.html#selectNormalsBlockStructure">selectNormalsBlockStructure</a>, and
 <a class="groops-class" href="gnssProcessingStepType.html#selectReceivers">selectReceivers</a> affect all subsequent steps.
@@ -86,131 +86,232 @@ or <a class="groops-ref" href="cookbook.kinematicOrbit.html">Kinematic orbit det
 </p>
 
 <h2 id="estimate">Estimate</h2><p>
-Iterative least squares adjustment.</p><p>Iterates until either <strong class="groops-config-element">convergenceThreshold</strong> or <strong class="groops-config-element">maxIterationCount</strong> are reached.
-If <strong class="groops-config-element">computeResiduals</strong>=<code>yes</code> and <strong class="groops-config-element">computeWeights</strong> or <strong class="groops-config-element">adjustSigma0</strong> are set,
-observation weights and/or $\sigma_0$ are adjusted after each iteration.
-</p>
+Iterative non-linear least squares adjustment.
+In every iteration it accumulates the system of normal equations, solves the system and updates the estimated parameters.
+The estimated parameters serve as a priori values in the next iteration and the following processing steps.
+Iterates until either every single parameter update (converted to an influence in meter)
+is below a <strong class="groops-config-element">convergenceThreshold</strong> or <strong class="groops-config-element">maxIterationCount</strong> is reached.</p><p>With <strong class="groops-config-element">computeResiduals</strong> the observation equations are computed
+again after each update to compute the observation residuals.</p><p>The overall standard deviation of a single observation used for the weighting
+is composed of several factors
+\[
+  \hat{\sigma}_i = \hat{\sigma}_i^{huber} \hat{\sigma}_{[\tau\nu a]}^{recv} \sigma_{[\tau\nu a]}^{recv}(E,A),
+\]where $[\tau\nu a]$ is the signal type, the azmiuth and elevation dependent $\sigma_{[\tau\nu a]}^{recv}(E,A)$ is given by
+<a class="groops-class" href="fileFormat_gnssAntennaDefinition.html">receiver:inputfileAccuracyDefinition</a> and the other factors are
+estimated iteratively from the residuals.</p><p>With <strong class="groops-config-element">computeWeights</strong> a standardized variance $\hat{s}_i^2$
+for each residual $\hat{\epsilon}_i$ is computed
+\[
+  \hat{s}_i^2 = \frac{1}{\hat{\sigma}_{[\tau\nu a]}^{recv} \sigma_{[\tau\nu a]}^{recv}(E,A)}\frac{\hat{\epsilon}_i^2}{r_i}
+  \qquad\text{with}\qquad
+  r_i = \left(\M A\left(\M A^T\M A\right)^{-1}\M A^T\right)_{ii}
+\]taking the redundancy $r_i$ into account. If $\hat{s}_i$ is above a threshold <strong class="groops-config-element">huber</strong>
+the observation gets a higher standard deviation used for weighting according to
+\[
+  \hat{\sigma}_i^{huber} =
+  \left\{ \begin{array}{ll}
+    1                              & s < huber,\\
+    (\hat{s}_i/huber)^{huberPower} & s \ge huber
+  \end{array} \right.,
+\]similar to <a class="groops-ref" href="fundamentals.robustLeastSquares.html">robust least squares adjustment</a>.</p><p>With <strong class="groops-config-element">adjustSigma0</strong> individual variance factors can be computed
+for each station and all phases of a system and each code observation <a class="groops-ref" href="gnssType.html">type</a>
+(e.g. for each <code>L**G</code>, <code>L**E</code>, <code>C1CG</code>, <code>C2WG</code>, <code>C1CE</code>, &hellip; )
+separately
+\[
+  \hat{\sigma}_{[\tau\nu a]}^{recv} = \sqrt{\frac{\hat{\M\epsilon}^T\M P\hat{\M\epsilon}}{r}}.
+\]</p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeResiduals</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">adjustSigma0</div></div></td><td>choice</td><td>adjust sigma0 by scale factor (per receiver)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">individual</div></div></td><td></td><td>individual observations (e.g. L1P, L2P, C1P, C2P)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">grouped</div></div></td><td></td><td>grouped by phase and code observation (e.g. L**, C**)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">groupedPhases</div></div></td><td></td><td>grouped phases and individual code (e.g. L**, C1P, C2P)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeWeights</div></div></td><td>choice</td><td>downweight outliers</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">individual</div></div></td><td></td><td>individual observations (e.g. L1P, L2P, C1P, C2P)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">grouped</div></div></td><td></td><td>grouped by phase and code observation (e.g. L**, C**)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">groupedPhases</div></div></td><td></td><td>grouped phases and individual code (e.g. L**, C1P, C2P)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">adjustSigma0</div></div></td><td>boolean</td><td>adjust sigma0 by scale factor (per receiver and type)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeWeights</div></div></td><td>boolean</td><td>downweight outliers</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huber</div></div></td><td>double</td><td>residuals > huber*sigma0 are downweighted</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huberPower</div></div></td><td>double</td><td>residuals > huber: sigma=(e/huber)^huberPower*sigma0</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">convergenceThreshold</div></div></td><td>double</td><td>[m] stop iteration once full convergence is reached</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxIterationCount</div></div></td><td>uint</td><td>maximum number of iterations</td></tr>
 </table>
 
 <h2 id="resolveAmbiguities">ResolveAmbiguities</h2><p>
-Least squares adjustment with ambiguity resolution.</p><p>After this step all resolved ambiguities are removed from the normal equation system, except if <strong class="groops-config-element">dryRun</strong>=<code>yes</code>.
-If <strong class="groops-config-element">computeResiduals</strong>=<code>yes</code> and <strong class="groops-config-element">computeWeights</strong> or <strong class="groops-config-element">adjustSigma0</strong> are set,
-observation weights and/or $\sigma_0$ are adjusted after resolving the ambiguities.</p><p>For a description of the ambiguity resolution algorithm see <a class="groops-class" href="gnssParametrizationAmbiguitiesType.html">GnssParametrizationAmbiguities</a>.
+Performs a least squares adjustment like <a class="groops-class" href="gnssProcessingStepType.html#estimate">processingStep:estimate</a>
+but with additional integer phase ambiguity resolution.
+After this step all resolved ambiguities are removed from the normal equation system.</p><p>Integer ambiguity resolution is performed based on the least squares ambiguity decorrelation adjustment
+(LAMBDA) method (Teunissen 1995, DOI <a href="https://doi.org/10.1007/BF00863419">10.1007/BF00863419</a>), specifically
+the modified algorithm (MLAMBDA) by Chang et al. (2005, DOI <a href="https://doi.org/10.1007/s00190-005-0004-x">10.1007/s00190-005-0004-x</a>).
+First the covariance matrix of the integer ambiguity parameters is computed by eliminating all but those parameters
+from the full normal equation matrix and inverting it. Then, a Z-transformation is performed as described by
+Chang et al. (2005) to decorrelate the ambiguity parameters without losing their integer nature.</p><p>The search process follows MLAMBDA and uses integer minimization of the weighted sum of squared residuals.
+It is computationally infeasible to search a hyper-ellipsoid with a dimension of ten thousand or more.
+Instead, a blocked search algorithm is performed by moving a window with a length of, for example,
+<strong class="groops-config-element">searchBlockSize</strong>=<code>200</code> parameters over the decorrelated ambiguities, starting from the most accurate.
+In each step, the window is moved by half of its length and the overlapping parts are compared to each other.
+If all fixed ambiguities in the overlap agree, the algorithm continues.
+Otherwise, both windows are combined and the search is repeated using the combined window, again comparing with the overlapping
+part of the preceding window. If not all solutions could be checked for a block after <strong class="groops-config-element">maxSearchSteps</strong>,
+the selected <strong class="groops-config-element">incompleteAction</strong> is performed.
+If the algorithm reaches ambiguities with a standard deviation higher than <strong class="groops-config-element">sigmaMaxResolve</strong>,
+ambiguity resolution stops and the remaining ambiguities are left as float values.
+Otherwise, all ambiguity parameters are fixed to integer values.</p><p>In contrast to an integer least squares solution over the full ambiguity vector, it is not guaranteed that the resulting solution
+is optimal in the sense of minimal variance with given covariance.
+This trade-off is necessary to cope with large numbers of ambiguities.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeResiduals</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">adjustSigma0</div></div></td><td>choice</td><td>adjust sigma0 by scale factor (per receiver)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">individual</div></div></td><td></td><td>individual observations (e.g. L1P, L2P, C1P, C2P)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">grouped</div></div></td><td></td><td>grouped by phase and code observation (e.g. L**, C**)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">groupedPhases</div></div></td><td></td><td>grouped phases and individual code (e.g. L**, C1P, C2P)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeWeights</div></div></td><td>choice</td><td>downweight outliers</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">individual</div></div></td><td></td><td>individual observations (e.g. L1P, L2P, C1P, C2P)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">grouped</div></div></td><td></td><td>grouped by phase and code observation (e.g. L**, C**)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">groupedPhases</div></div></td><td></td><td>grouped phases and individual code (e.g. L**, C1P, C2P)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">dryRun</div></div></td><td>boolean</td><td>compute integer ambiguities but don't mark as solved</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileAmbiguities</div></div></td><td>filename</td><td>resolved ambiguities</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaMaxResolve</div></div></td><td>double</td><td>max. allowed std. dev. of ambiguity to resolve [cycles]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">searchBlockSize</div></div></td><td>uint</td><td>block size for blocked integer search</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxSearchSteps</div></div></td><td>uint</td><td>max. steps of integer search for each block</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">incompleteAction</div></div></td><td>choice</td><td>if not all solutions tested after maxSearchSteps</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">stop</div></div></td><td></td><td>stop searching, ambiguities remain float in this block</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">resolve</div></div></td><td></td><td>use best integer solution found so far</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">shrinkBlockSize</div></div></td><td></td><td>try again with half block size</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">throwException</div></div></td><td></td><td>stop and throw an exception</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeResiduals</div></div></td><td>boolean</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">adjustSigma0</div></div></td><td>boolean</td><td>adjust sigma0 by scale factor (per receiver and type)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeWeights</div></div></td><td>boolean</td><td>downweight outliers</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huber</div></div></td><td>double</td><td>residuals > huber*sigma0 are downweighted</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huberPower</div></div></td><td>double</td><td>residuals > huber: sigma=(e/huber)^huberPower*sigma0</td></tr>
 </table>
 
 <h2 id="computeCovarianceMatrix">ComputeCovarianceMatrix</h2><p>
-Accumulate normal equations and compute the sparse inverse.
+Accumulates the normal equations and computes the covariance matrix as inverse of the normal matrix.
+It is not the full inverse but only the elements which are set in the normal matrix
+(see  <a class="groops-class" href="gnssProcessingStepType.html#selectNormalsBlockStructure">gnssProcessingStep:selectNormalsBlockStructure</a>)
+are computed. The matrix is passed to the <a class="groops-class" href="gnssParametrizationType.html">parametrizations</a>.
+Only used in <a class="groops-class" href="gnssParametrizationType.html#kinematicPositions">parametrizations:kinematicPositions</a>
+to get the epoch wise covariance information at the moment.
 </p>
-
-<h2 id="writeNormalEquations">WriteNormalEquations</h2><p>
-Write unconstrained normal equations and constraint equations.</p><p>Epoch parameters (e.g. clock errors) are eliminated before writing the normal equations
-if <strong class="groops-config-element">eliminateEpochParameters</strong>=<code>yes</code>. If <a class="groops-class" href="parameterSelectorType.html">remainingParameters</a>
-is set only the selected parameters are written to the normal equations and all other parameters are eliminated beforehand.
-</p>
-<table class="table table-hover">
-<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileNormalEquations</div></div></td><td>filename</td><td>unconstrained normals</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileConstraintEquations</div></div></td><td>filename</td><td>applied constraints</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileAprioriSolution</div></div></td><td>filename</td><td>a priori parameters</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileParameterName</div></div></td><td>filename</td><td>parameter names</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableReceiver</div></div></td><td>string</td><td>variable in single receiver loop</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">eliminateEpochParameters</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">remainingParameters</div></div></td><td><a href="parameterSelectorType.html">parameterSelector</a></td><td>parameter order/selection of output normal equations</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">defaultNormalsBlockSize</div></div></td><td>uint</td><td>block size for distributing the normal equations, 0: one block, empty: original block size</td></tr>
-</table>
 
 <h2 id="writeResults">WriteResults</h2><p>
-Write estimated solution to output files.</p><p>All output files defined in <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a> are written in this step.
-It is usually the last processing step, but can also be used at other points in the
+In this step all <strong class="groops-config-element">outputfiles</strong> defined in <a class="groops-class" href="gnssParametrizationType.html">parametrizations</a>
+are written. It considers the settings of
+<a class="groops-class" href="gnssProcessingStepType.html#selectParametrizations">processingStep:selectParametrizations</a>,
+<a class="groops-class" href="gnssProcessingStepType.html#selectEpochs">processingStep:selectEpochs</a>, and
+<a class="groops-class" href="gnssProcessingStepType.html#selectReceivers">processingStep:selectReceivers</a>.</p><p>It is usually the last processing step, but can also be used at other points in the
 processing in combination with <strong class="groops-config-element">suffix</strong> to write intermediate results, for example
-before <a class="groops-class" href="gnssProcessingStepType.html#resolveAmbiguities">resolveAmbiguities</a> to
+before <a class="groops-class" href="gnssProcessingStepType.html#resolveAmbiguities">gnssProcessingStep:resolveAmbiguities</a> to
 output the float solution.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">suffix</div></div></td><td>string</td><td>appended to every output file name (e.g. orbit.G01.<suffix>.dat)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">suffix</div></div></td><td>string</td><td>appended to every output file name (e.g. orbit.G01.suffix.dat)</td></tr>
+</table>
+
+<h2 id="writeNormalEquations">WriteNormalEquations</h2><p>
+Accumulates the normal equations matrix and writes it.
+If <a class="groops-class" href="parameterSelectorType.html">remainingParameters</a>
+is set only the selected parameters are written to the normal equations
+and all other parameters are eliminated beforehand (implicitly solved).</p><p>The solution of the normals would results in $\Delta\M x$
+(see <a class="groops-class" href="gnssParametrizationType.html">parametrizations</a>). To write the
+appropriate apriori vector $\M x_0$ use
+<a class="groops-class" href="gnssProcessingStepType.html#writeAprioriSolution">processingStep:writeAprioriSolution</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileNormalEquations</div></div></td><td>filename</td><td>normals</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">remainingParameters</div></div></td><td><a href="parameterSelectorType.html">parameterSelector</a></td><td>parameter order/selection of output normal equations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">constraintsOnly</div></div></td><td>boolean</td><td>write only normals of constraints without observations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">defaultNormalsBlockSize</div></div></td><td>uint</td><td>block size for distributing the normal equations, 0: one block, empty: original block size</td></tr>
+</table>
+
+<h2 id="writeAprioriSolution">WriteAprioriSolution</h2><p>
+Writes the current apriori vector $\M x_0$
+(see <a class="groops-class" href="gnssParametrizationType.html">parametrizations</a>).
+If <a class="groops-class" href="parameterSelectorType.html">remainingParameters</a>
+is set only the selected parameters are written.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileAprioriSolution</div></div></td><td>filename</td><td>a priori parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileParameterNames</div></div></td><td>filename</td><td>parameter names</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">remainingParameters</div></div></td><td><a href="parameterSelectorType.html">parameterSelector</a></td><td>parameter order/selection of output normal equations</td></tr>
+</table>
+
+<h2 id="writeResiduals">WriteResiduals</h2><p>
+Writes the <a class="groops-file" href="fileFormat_instrument.html">observation residuals</a> for all
+<a class="groops-class" href="gnssTransceiverSelectorType.html">selectReceivers</a>.
+For for each station a file is written. The file name is interpreted as
+a template with the variable <code>{station}</code> being replaced by the station name.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectReceivers</div></div></td><td><a href="gnssTransceiverSelectorType.html">gnssTransceiverSelector</a></td><td>subset of used stations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileResiduals</div></div></td><td>filename</td><td>variable {station} available</td></tr>
+</table>
+
+<h2 id="writeUsedStationList">WriteUsedStationList</h2><p>
+Writes a <a class="groops-file" href="fileFormat_stringList.html">list</a> of receivers (stations) which are used in the last step and
+selected by <a class="groops-class" href="gnssTransceiverSelectorType.html">selectReceivers</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectReceivers</div></div></td><td><a href="gnssTransceiverSelectorType.html">gnssTransceiverSelector</a></td><td>subset of used stations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileUsedStationList</div></div></td><td>filename</td><td>ascii file with names of used stations</td></tr>
+</table>
+
+<h2 id="writeUsedTransmitterList">WriteUsedTransmitterList</h2><p>
+Writes a <a class="groops-file" href="fileFormat_stringList.html">list</a> of transmitters which are used in the last step and
+selected by <a class="groops-class" href="gnssTransceiverSelectorType.html">selectTransmitters</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectTransmitters</div></div></td><td><a href="gnssTransceiverSelectorType.html">gnssTransceiverSelector</a></td><td>subset of used transmitters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileUsedTransmitterList</div></div></td><td>filename</td><td>ascii file with PRNs</td></tr>
 </table>
 
 <h2 id="printResidualStatistics">PrintResidualStatistics</h2><p>
 Print residual statistics.
+<pre>
+  areq: C1CG**: factor =  0.64, sigma0 = 1.00, count =  2748, outliers =    48 (1.75 %)
+  areq: C1WG**: factor =  0.50, sigma0 = 1.00, count =  2748, outliers =    43 (1.56 %)
+  areq: C2WG**: factor =  0.50, sigma0 = 1.00, count =  2748, outliers =    59 (2.15 %)
+  areq: C5XG**: factor =  0.46, sigma0 = 1.00, count =  1279, outliers =    23 (1.80 %)
+  areq: L1CG**: factor =  0.86, sigma0 = 0.96, count =  2748, outliers =    40 (1.46 %)
+  areq: L1WG**: factor =  0.86, sigma0 = 1.02, count =  2748, outliers =    40 (1.46 %)
+  areq: L2WG**: factor =  0.86, sigma0 = 0.96, count =  2748, outliers =    40 (1.46 %)
+  areq: L5XG**: factor =  0.86, sigma0 = 1.30, count =  1279, outliers =    14 (1.09 %)
+  areq: C1PR**: factor =  0.48, sigma0 = 1.00, count =  1713, outliers =    53 (3.09 %)
+  areq: C2PR**: factor =  0.55, sigma0 = 1.00, count =  1713, outliers =    51 (2.98 %)
+  areq: L1PR**: factor =  0.85, sigma0 = 1.09, count =  1713, outliers =    29 (1.69 %)
+  areq: L2PR**: factor =  0.85, sigma0 = 0.88, count =  1713, outliers =    29 (1.69 %)
+  areq: C1XE**: factor =  0.44, sigma0 = 1.00, count =  1264, outliers =    21 (1.66 %)
+  areq: C5XE**: factor =  0.33, sigma0 = 1.00, count =  1264, outliers =    27 (2.14 %)
+  areq: C7XE**: factor =  0.28, sigma0 = 1.00, count =  1264, outliers =    41 (3.24 %)
+  areq: L1XE**: factor =  0.82, sigma0 = 1.14, count =  1264, outliers =    15 (1.19 %)
+  areq: L5XE**: factor =  0.82, sigma0 = 0.84, count =  1264, outliers =    15 (1.19 %)
+  areq: L7XE**: factor =  0.82, sigma0 = 0.94, count =  1264, outliers =    15 (1.19 %)
+  badg: C1CG**: factor =  1.25, sigma0 = 1.00, count =  2564, outliers =    47 (1.83 %)
+  ...
+</pre>
 </p>
 
-<h2 id="selectParameters">SelectParameters</h2><p>
-Select parameters for subsequent steps.</p><p>This step can be used to control which parameters are estimated and which constraints are applied in subsequent
-<a class="groops-class" href="gnssProcessingStepType.html#estimate">estimate</a> steps. An example would be to estimate only the TEC bias
-in an intermediate step as seen in <a class="groops-ref" href="cookbook.gnssNetwork.html#processing">GNSS satellite orbit determination and network analysis</a>.
-Another example is to process at a 5-minute sampling using <a class="groops-class" href="gnssProcessingStepType.html#selectEpochs">selectEpochs</a> and then at
-the end to densify the clock parameters to the full 30-second observation sampling while keeping all other parameters fixed.
+<h2 id="selectParametrizations">SelectParametrizations</h2><p>
+Enable/disable parameter groups and constraint groups for subsequent steps,
+e.g. <a class="groops-class" href="gnssProcessingStepType.html#estimate">processingStep:estimate</a> or
+<a class="groops-class" href="gnssProcessingStepType.html#writeResults">processingStep:writeResults</a>.
+The <strong class="groops-config-element">name</strong> and <strong class="groops-config-element">nameConstraint</strong> of these groups
+are defined in <a class="groops-class" href="gnssParametrizationType.html">parametrizations</a>.
+Prior models or previously estimated parameters used as new apriori $\M x_0$ values are unaffected
+and they are always reduced from the observations. This means all unselected parameters are kept fixed
+to their last result.</p><p>An example would be to process at a 5-minute sampling using
+<a class="groops-class" href="gnssProcessingStepType.html#selectEpochs">processingStep:selectEpochs</a>
+and then at the end to densify the clock parameters to the full 30-second observation sampling
+while keeping all other parameters fixed
+(<strong class="groops-config-element">disable</strong>=<code>*</code>, <strong class="groops-config-element">enable</strong>=<code>*.clock*</code>, <strong class="groops-config-element">enable</strong>=<code>parameter.STEC</code>).
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateReceiverClock</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateReceiverKinematicPosition</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateReceiverPosition</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">constraintReceiverNoNetTranslation</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">constraintReceiverNoNetRotation</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateReceiverTroposphereWet</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateReceiverTroposphereGradient</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateReceiverSignalBias</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">constraintReceiverSignalBiasDiffClock</div></div></td><td>boolean</td><td>separate clock errors and biases of different satellite constellations</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateReceiverTecBias</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateReceiverAntennaCenterVariations</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateTransmitterClock</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">constraintTransmitterClockZeroMean</div></div></td><td>boolean</td><td>defines the time system</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">constraintTransmitterClockModel</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateTransmitterKinematicPosition</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateTransmitterOrbit</div></div></td><td>boolean</td><td>incl. SRP parameters and pulses</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateTransmitterClockModel</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateTransmitterSignalBias</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">constraintTransmitterSignalBiasZeroMean</div></div></td><td>boolean</td><td>separate transmitter and receiver biases</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateTransmitterTecBias</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateTransmitterBiasModel</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">constraintTransmitterSignalBiasModelZeroMean</div></div></td><td>boolean</td><td>separate temporal biases from constant biases</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateTransmitterAntennaCenterVariations</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateEarthRotationPole</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateEarthRotationUT1</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateEarthRotationNutation</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateGravity</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateAmbiguities</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateIonosphereSTEC</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">constraintIonosphereSTEC</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateIonosphereVTec</div></div></td><td>boolean</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">estimateIonosphereTecMap</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">constraintOther</div></div></td><td>boolean</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrization</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">enable</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset-unbounded">name</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">disable</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset-unbounded">name</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
 </table>
 
 <h2 id="selectEpochs">SelectEpochs</h2><p>
-Select epochs for subsequent steps.</p><p>This step can be used to reduce the processing sampling while keeping the original observation sampling
-for all preprocessing steps (e.g. outlier and cycle slip detection).
+Select epochs for subsequent steps. This step can be used to reduce the processing sampling
+while keeping the original observation sampling for all preprocessing steps (e.g. outlier and cycle slip detection).
 Another example is to process at a 5-minute sampling by setting <strong class="groops-config-element">nthEpoch</strong>=<code>10</code> and then
-at the end to densify only the clock parameters (see <a class="groops-class" href="gnssProcessingStepType.html#selectParameters">selectParameters</a>)
-to the full 30-second observation sampling by setting <strong class="groops-config-element">nthEpoch</strong>=<code>1</code> while keeping all other parameters fixed.
+at the end to densify only the clock parameters to the full 30-second observation sampling by
+setting <strong class="groops-config-element">nthEpoch</strong>=<code>1</code> while keeping all other parameters fixed
+with <a class="groops-class" href="gnssProcessingStepType.html#selectParametrizations">processingStep:selectParametrizations</a>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -241,23 +342,21 @@ as the large number of clock parameters require a lot of memory.
 </table>
 
 <h2 id="selectReceivers">SelectReceivers</h2><p>
-Select receivers of a <a class="groops-class" href="gnssParametrizationReceiverType.html#stationNetwork">stationNetwork</a> to process in subsequent steps.</p><p>This step can be used to process only a subset of stations in subsequent processing steps.
+This step can be used to process only a subset of stations in subsequent processing steps.
 The most common use is to start the processing with a well-distributed network of core stations as seen in
 <a class="groops-ref" href="cookbook.gnssNetwork.html#processing">GNSS satellite orbit determination and network analysis</a>.
-In this case <a class="groops-class" href="fileFormat_stringList.html">inputfileStationList</a> should contain one line per station with alternative
-stations on the same line separated by whitespace. To later process all other stations individually, use
-the processing step <a class="groops-class" href="gnssProcessingStepType.html#forEachReceiverSeparately">forEachReceiverSeparately</a>
-and provide the same station list as <a class="groops-class" href="fileFormat_stringList.html">inputfileExcludeStationList</a> in that step.
+To later process all other stations individually, use the processing step
+<a class="groops-class" href="gnssProcessingStepType.html#forEachReceiverSeparately">processingStep:forEachReceiverSeparately</a>
+and select all stations excluding the core stations in that step.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileStationList</div></div></td><td>filename</td><td>empty = all stations</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileExcludeStationList</div></div></td><td>filename</td><td>exclude these stations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectReceivers</div></div></td><td><a href="gnssTransceiverSelectorType.html">gnssTransceiverSelector</a></td><td></td></tr>
 </table>
 
 <h2 id="forEachReceiverSeparately">ForEachReceiverSeparately</h2><p>
-Perform these processing steps for each receiver of a <a class="groops-class" href="gnssParametrizationReceiverType.html#stationNetwork">stationNetwork</a> separately.
-All <a class="groops-class" href="gnssParametrizationTransmitterType.html">transmitter</a> parameters are disabled in these processing steps.</p><p>This step can be used for individual precise point positioning (PPP) of all stations.
+Perform these processing steps for each <a class="groops-class" href="gnssTransceiverSelectorType.html">selectReceivers</a> separately.
+All non-receiver related parameters parameters are disabled in these processing steps (see .</p><p>This step can be used for individual precise point positioning (PPP) of all stations.
 During <a class="groops-ref" href="cookbook.gnssNetwork.html#processing">GNSS satellite orbit determination and network analysis</a> this step is used after the
 initial processing of the core network to process all other stations individually. In that case provide the same station list as
 <a class="groops-class" href="fileFormat_stringList.html">inputfileExcludeStationList</a> in this step that was used as <a class="groops-class" href="fileFormat_stringList.html">inputfileStationList</a> in the
@@ -265,17 +364,32 @@ initial processing of the core network to process all other stations individuall
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileStationList</div></div></td><td>filename</td><td>empty = all stations</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileExcludeStationList</div></div></td><td>filename</td><td>exclude these stations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectReceivers</div></div></td><td><a href="gnssTransceiverSelectorType.html">gnssTransceiverSelector</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableReceiver</div></div></td><td>string</td><td>variable is set for each receiver</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">processingStep</div></div></td><td><a href="gnssProcessingStepType.html">gnssProcessingStep</a></td><td>steps are processed consecutively</td></tr>
 </table>
 
 <h2 id="group">Group</h2><p>
-Perform these processing steps. This step can be used to structure complex processing flows and has no further effect on the processing itself.
+Perform these processing steps. This step can be used to structure complex processing flows.
+The <a class="groops-class" href="gnssProcessingStepType.html#selectParametrizations">select..</a> processing steps
+defined within a group only affect the steps within this group.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">processingStep</div></div></td><td><a href="gnssProcessingStepType.html">gnssProcessingStep</a></td><td>steps are processed consecutively</td></tr>
+</table>
+
+<h2 id="disableTransmitterShadowEpochs">DisableTransmitterShadowEpochs</h2><p>
+Disable transmitter epochs during eclipse.
+With proper attitude modeling (see <a class="groops-program" href="SimulateStarCameraGnss.html">SimulateStarCameraGnss</a>) this is usually not necessary.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectTransmitters</div></div></td><td><a href="gnssTransceiverSelectorType.html">gnssTransceiverSelector</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">disableShadowEpochs</div></div></td><td>boolean</td><td>disable epochs if satellite is in Earth's/Moon's shadow</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">disablePostShadowRecoveryEpochs</div></div></td><td>boolean</td><td>disable epochs if satellite is in post-shadow recovery maneuver for GPS block IIA</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">eclipse</div></div></td><td><a href="eclipseType.html">eclipse</a></td><td>eclipse model used to determine if a satellite is in Earth's shadow</td></tr>
 </table>
 
         </div>

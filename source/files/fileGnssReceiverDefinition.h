@@ -22,7 +22,7 @@ Can also be used for GNSS transmitters to define a list of
 transmitted signal types. For GLONASS satellites the frequency
 number can be stored in the \emph{version} field.
 
-See \program{GnssReceiverDefinitionCreate} and \program{GnssGlonassFrequencyNumberUpdate}.
+See \program{GnssReceiverDefinitionCreate}.
 
 \begin{verbatim}
 <?xml version="1.0" encoding="UTF-8"?>

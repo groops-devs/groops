@@ -93,4 +93,4 @@ Here is a list of current and past contributors:
 
 [Torsten Mayer-Guerr](https://github.com/tmayerguerr), Annette Eicker, Daniel Rieser, Norbert Zehentner,
 Christian Pock, [Matthias Ellmer](https://github.com/x49), Beate Koch, [Andreas Kvas](https://github.com/akvas), Saniya Behzadpour,
-[Sebastian Strasser](https://github.com/sestras), Sandro Krauss, Barbara Suesser-Rechberger
+[Sebastian Strasser](https://github.com/sestras), Sandro Krauss, Barbara Suesser-Rechberger, [Patrick Dumitraschkewitz](https://github.com/zhedumi)

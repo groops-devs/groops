@@ -1,68 +1,115 @@
 \section{Kinematic orbit determination of LEO satellites}\label{cookbook.kinematicOrbit}
-
 This cookbook chapter describes exemplarily the steps for determining kinematic orbits of low-Earth orbit (LEO) satellites.
 
-\subsection{Prepare LEO meta data}
-\begin{enumerate}
-  \item For creating the \file{GnssStationInfo file}{gnssStationInfo} use \program{GnssStationInfoCreate}. The rotation from the
-  satellite reference frame into the antenna reference frame as well as the change of the center of mass due to fuel consumption has to be considered here.
-  \item The \file{GnssReceiverDefinition file}{gnssReceiverDefinition} can be created by using \program{GnssReceiverDefinitionCreate}. In this program the different GNSS types has to be specified.
-  \item For creating the \file{GnssAntennaDefinition file}{gnssAntennaDefinition}\ use \program{GnssAntennaDefinitionCreate}. This program considers the phase center offsets of L1 and L2 frequency from the used antenna.
+An example scenario for this task is available at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}.
+It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at \url{https://ftp.tugraz.at/outgoing/ITSG/groops} (data folder or zipped archive).
+The scenario generally represents what is described in this cookbook, but may slightly differ in certain settings.
+
+\subsection{Prepare GNSS satellite data}\label{cookbook.kinematicOrbit:gnssMetadata}
+Most of the required metadata files are provided in GROOPS file formats at \url{https://ftp.tugraz.at/outgoing/ITSG/groops}.
+These files are regularly updated.
+
+Data that has to be gathered from other sources comprises:
+\begin{itemize}
+  \item \textbf{Receiver observations}: GNSS measurements converted from RINEX format (see \program{RinexObservation2GnssReceiver})
+  \item \textbf{Precise orbits}: precise orbits in CRF for orbit integration (see \program{Sp3Format2Orbit})
+  \item \textbf{Precise clocks}: precise clocks (see \program{GnssClockRinex2InstrumentClock})
+  \item \textbf{Attitude}: rotation from body frame to CRF (see \program{SimulateStarCameraGnss} or \program{GnssOrbex2StarCamera})
+  \item \textbf{Signal biases}: code (and phase) biases (see \program{GnssSinexBias2SignalBias})
+\end{itemize}
+Receiver observations, precise satellite orbits and clocks, and possibly attitude and signal biases can be downloaded from the
+\href{https://igs.org/data-products-overview/}{IGS Data Centers}.
+GPS, GLONASS, and Galileo orbits, clocks, attitude, and signal biases for the period 1994-2020 are also available as part of
+\href{https://doi.org/10.3217/dataset-4528-0723-0867}{Graz University of Technology's contribution to IGS repro3}.
+
+The \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}{example scenario} includes a small set of this data.
+The script \verb|010groopsConvert.xml| can be used to convert these external formats into GROOPS formats.
+
+\subsection{Prepare LEO metadata}\label{cookbook.kinematicOrbit:leoMetadata}
+Metadata for several LEO missions is availabe at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/gnss/receiverLowEarthOrbiter}.
+
+If you want to process another mission, you can create the necessary files with these steps:
+\begin{itemize}
+  \item For creating the \file{GnssSatelliteInfo file}{gnssStationInfo} use \program{GnssStationInfoCreate}. Note that the rotation from the
+  satellite reference frame into the antenna reference frame, as well as the change of the center of mass due to fuel consumption, has to be considered here.
+  \item The \file{GnssReceiverDefinition file}{gnssReceiverDefinition} can be created by using \program{GnssReceiverDefinitionCreate}. Here you can specify which GNSS signal types the receiver observes.
+  \item For creating the \file{GnssAntennaDefinition file}{gnssAntennaDefinition}\ use \program{GnssAntennaDefinitionCreate}. Here you can define phase center offsets for the antenna.
   \item For determining the elevation dependent accuracies the program \program{GnssAntennaDefinitionCreate} is used again.
   \begin{itemize}
     \item \config{antenna}: set to new
     \item Set the \config{pattern}s for code (\config{type}=\verb|C**|) and phase
     (\config{type}=\verb|L**|). The standard deviation is expressed e.g. with \config{values}=\verb|0.001/cos(2*PI/180*zenith)|.
   \end{itemize}
-\end{enumerate}
+\end{itemize}
 
-\subsection{Read LEO data}
-\begin{enumerate}
-  \item Conversion of the approximated orbit and star camera data into GROOPS format using a conversion program.
+\subsection{Prepare LEO data}\label{cookbook.kinematicOrbit:leoData}
+The \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}{example scenario} includes a small set of this data for the GRACE-FO mission.
+The script \verb|020groopsConvertGracefo.xml| can be used to convert these external formats into GROOPS formats.
+
+The data preparation steps are:
+\begin{itemize}
+  \item Conversion of the approximate orbit and star camera data into GROOPS format using a conversion program.
   \item If no attitude data is given the star camera data can be simulated by using \program{SimulateStarCamera} or \program{SimulateStarCameraSentinel1}.
   \item The GNSS observation data (given in RINEX format) can be converted with \program{RinexObservation2GnssReceiver}.
   \item Suitable programs to get daily data are \program{InstrumentConcatenate} and \program{InstrumentSynchronize}.
-  \item For interpolating the orbit and star camera data to GNSS receiver epochs use \program{InstrumentResample} and specify GNSS receiver as input for
-  \config{timeSeries}.
-  \item For synchronizing these data use \program{InstrumentSynchronize}
-\end{enumerate}
+  \item For interpolating the orbit and star camera data to GNSS receiver epochs use \program{InstrumentResample} and provide the converted RINEX observation file as input for
+  \configClass{timeSeries:instrument}{timeSeriesType:instrument}.
+  \item For synchronizing these data use \program{InstrumentSynchronize}.
+\end{itemize}
 Detailed description of instrument data handling can be found in \reference{Instrument data handling}{cookbook.instrument}.
 
-\subsection{Prepare GNSS satellite metadata, orbits, and clocks}
-The cookbook chapter on \reference{GNSS precise point positioning (PPP)}{cookbook.gnssPpp} details how to prepare the GNSS satellite
-\reference{metadata}{cookbook.gnssPpp:metadata} and \reference{orbits}{cookbook.gnssPpp:orbitPreparation}.
-Use \program{GnssClockRinex2InstrumentClock} to convert satellite clock errors.
+\subsection{Estimate kinematic orbits}\label{cookbook.kinematicOrbit:processing}
+The script \verb|03groopsGnssProcessing.xml| in the \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}{example scenario}
+implements the following steps and settings.
 
-\subsection{Estimate kinematic orbits}
+These are the settings for \program{GnssProcessing}. If not otherwise stated use the default values.
 
-For kinematic orbit determination use \program{GnssProcessing}. The GNSS constellations have to be defined via
-\configClass{transmitter}{gnssParametrizationTransmitterType} which requires for example the signal bias and clock data.
-The LEO satellite can be defined via \configClass{receiver:lowEarthOrbiter}{gnssParametrizationReceiverType:lowEarthOrbiter} which requires for example the
-GNSS observations, the star camera and approximated orbit data. The impact of the ionosphere can be considered via
-\configClass{ionosphere}{gnssParametrizationIonosphereType} and the estimation of the earth rotation parameters is done
-with \configClass{earthRotation}{gnssParametrizationEarthRotationType}. The ambiguity resolution settings can be specified via
-\configClass{ambiguities}{gnssParametrizationAmbiguitiesType}.
+As we have only one receiver the processing sampling can be directly taken from the observation file:
+\configClass{timeSeries:instrument}{timeSeriesType:instrument}.
 
-The processing flow is controlled via a list of processing steps \configClass{processingStep}{gnssProcessingStepType}. The processing steps are
-processed consecutively. Some steps allow the selection of parameters,
-epochs, or the normal equation structure, which affects all subsequent steps.
+Add the appropriate \configClass{transmitters:gnss}{gnssTransmitterGeneratorType:gnss} (e.g. GPS)
+and provide the required files (from \reference{Prepare GNSS satellite data}{cookbook.kinematicOrbit:gnssMetadata}):
+\begin{itemize}
+  \item \configFile{inputfileOrbit}{instrument}
+  \item \configFile{inputfileAttitude}{instrument}
+  \item \configFile{inputfileClock}{instrument}
+\end{itemize}
 
-\begin{enumerate}
-    \item \configClass{processingStep:selectParameters}{gnssProcessingStepType}:  Parameters which should be estimated have to be enabled.
-    Consider the linear dependencies between the STEC and the VTEC as well as between the STEC and particular signal biases. This means, if STEC parameter
-    is enabled it is not possible to estimate the VTEC and TEC bias, so these parameters have to be be disabled.
-    \item \configClass{processingStep:estimate}{gnssProcessingStepType}: Estimation of the parameters. The number of iterations can be set with
-    \config{maxIterationCount}. The weights will be iteratively adjusted.
-    \item Estimation of the TEC bias parameter using \configClass{processingStep:selectParameters}{gnssProcessingStepType} and
-    \configClass{processingStep:estimate}{gnssProcessingStepType}. Only \config{estimateReceiverTecBias} parameter has to be selected.
-    \item \configClass{processingStep:estimate}{gnssProcessingStepType}: Further estimation of the parameters.
-    \item Solving the ambiguities via \configClass{processingStep:resolveAmbiguities}{gnssProcessingStepType}.
-    \item Further estimations of the parameters and the TEC bias parameter by using \configClass{processingStep:estimate}{gnssProcessingStepType}.
-    \item Computation of the epoch-wise covariance matrix can be done via \configClass{processingStep:computeCovarianceMatrix}{gnssProcessingStepType}.
-    \item \configClass{processingStep:writeResults}{gnssProcessingStepType}: Write estimation results into output files.
-\end{enumerate}
+The following files (from \reference{Prepare LEO metadata}{cookbook.kinematicOrbit:leoMetadata} and \reference{Prepare LEO data}{cookbook.kinematicOrbit:leoData}) and settings are needed in \configClass{receiver:lowEarthOrbiter}{gnssReceiverGeneratorType:lowEarthOrbiter}:
+\begin{itemize}
+   \item \configFile{inputfileStationInfo}{gnssStationInfo}: The satellite info file.
+   \item \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}
+   \item \configFile{inputfileReceiverDefinition}{gnssReceiverDefinition}
+   \item \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition}
+   \item \configFile{inputfileObservations}{instrument}: The converted RINEX observation file.
+   \item \configFile{inputfileOrbit}{instrument}: The approximate orbit.
+   \item \configFile{inputfileStarCamera}{instrument}: The convered or simulated attitude.
+   \item \configClass{useType}{gnssType}: We recommend to explicitly specify the signals to be processed
+            and to make sure that at least transmitter code biases are provided for each of them, e.g. \verb|C1CG|,
+            \verb|C1WG|, \verb|C2WG|, \verb|L1*G|, \verb|L2*G|, ...).
+\end{itemize}
 
+Add the following \configClass{parametrizations}{gnssParametrizationType}
+and define the \config{outputfiles} within you are interested in:
+\begin{itemize}
+  \item \configClass{ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}: add a constraint of \config{sigmaSTEC}=\verb|40|
+  \item \configClass{ionosphereVTEC}{gnssParametrizationType:ionosphereVTEC}:
+        set \config{mapR}=\verb|6371e3+450e3| to satellite height and ionosphere height \config{mapH}=\verb|50e3| above.
+  \item \configClass{clocks}{gnssParametrizationType:clocks}: delete \configClass{selectTransmitters}{gnssTransceiverSelectorType}
+  \item \configClass{signalBiases}{gnssParametrizationType:signalBiases}: provide \configFile{inputfileSignalBiasTransmitter}{gnssSignalBias} created with \program{GnssSinexBias2SignalBias}
+  \item \configClass{ambiguities}{gnssParametrizationType:ambiguities}: if precise transmitter phase biases are available you can delete \configClass{estimateTransmitterPhaseBiases}{gnssTransceiverSelectorType}
+  \item \configClass{codeBiases}{gnssParametrizationType:codeBiases}: delete \configClass{selectTransmitters}{gnssTransceiverSelectorType}, set \config{sigmaZeroMeanConstraint}=\verb|0|
+  \item \configClass{tecBiases}{gnssParametrizationType:tecBiases}: delete \configClass{selectTransmitters}{gnssTransceiverSelectorType}, set \config{sigmaZeroMeanConstraint}=\verb|0|
+  \item \configClass{kinematicPositions}{gnssParametrizationType:kinematicPositions}
+\end{itemize}
 
-
+Add the following \configClass{processingSteps}{gnssProcessingStepType}:
+\begin{itemize}
+  \item \configClass{estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|8|
+  \item \configClass{resolveAmbiguities}{gnssProcessingStepType:resolveAmbiguities}
+  \item \configClass{estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|2|
+  \item \configClass{computeCovarianceMatrix}{gnssProcessingStepType:computeCovarianceMatrix}
+  \item \configClass{writeResults}{gnssProcessingStepType:writeResults}
+\end{itemize}
 
 % =============================================================

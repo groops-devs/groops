@@ -13,7 +13,8 @@
 #ifndef __GROOPS_GNSSDESIGNMATRIX__
 #define __GROOPS_GNSSDESIGNMATRIX__
 
-#include "gnss/gnss.h"
+#include "parallel/matrixDistributed.h"
+#include "gnss/gnssNormalEquationInfo.h"
 
 /** @addtogroup gnssGroup */
 /// @{
@@ -21,9 +22,9 @@
 /***** CLASS ***********************************/
 
 /** @brief Management of sparse design matrix. */
-class Gnss::DesignMatrix
+class GnssDesignMatrix
 {
-  const NormalEquationInfo      &normalEquationInfo;
+  const GnssNormalEquationInfo  &normalEquationInfo;
   std::vector<UInt>              blockIndices;
   std::vector<UInt>              indexUsedBlock;
   std::vector<std::vector<UInt>> indexUsedParameter;
@@ -34,16 +35,16 @@ class Gnss::DesignMatrix
 public:
   Vector l;
 
-  DesignMatrix(const NormalEquationInfo &normalEquationInfo, const_MatrixSliceRef l=Vector());
- ~DesignMatrix() {}
+  GnssDesignMatrix(const GnssNormalEquationInfo &normalEquationInfo, const_MatrixSliceRef l=Vector());
+ ~GnssDesignMatrix() {}
 
-  void          init(const_MatrixSliceRef l);
-  DesignMatrix &selectRows(UInt row_, UInt rows_);
-  MatrixSlice   column(const Gnss::ParameterIndex &index);
-  Matrix        mult(const_MatrixSliceRef x);
-  Matrix        mult(const std::vector<Matrix> &x, UInt startBlock, UInt countBlock);
-  void          transMult(const_MatrixSliceRef l, std::vector<Matrix> &x, UInt startBlock, UInt countBlock);
-  void          accumulateNormals(MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount);
+  void              init(const_MatrixSliceRef l);
+  GnssDesignMatrix &selectRows(UInt row_, UInt rows_);
+  MatrixSlice       column(const GnssParameterIndex &index);
+  Matrix            mult(const_MatrixSliceRef x);
+  Matrix            mult(const std::vector<Matrix> &x, UInt startBlock, UInt countBlock);
+  void              transMult(const_MatrixSliceRef l, std::vector<Matrix> &x, UInt startBlock, UInt countBlock);
+  void              accumulateNormals(MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount);
 };
 
 /// @}

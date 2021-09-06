@@ -21,6 +21,9 @@ This class gives a parametrization of time depending parameters (gravity field, 
 It will be used to set up the design matrix in a least squares adjustment.
 If multiple parametrizations are given the coefficents in the parameter vector
 are sequently appended.
+
+Useally time intervals are defined half open meaning the last time belongs not to the interval.
+This behaviour can be changed for the last interval with \config{includeLastTime}.
 )";
 #endif
 

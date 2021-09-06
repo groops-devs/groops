@@ -64,8 +64,8 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssNormals2
   if(!readConfigSequence(config, name, mustSet, defaultValue, annotation))
     return FALSE;
   readConfig(config, "inputfileTransmitterList",   var.fileNameTransmitterList, Config::MUSTSET,  "",    "transmitter PRNs used in solution");
-  readConfig(config, "inputfileTransmitterInfo",   var.fileNameTransmitterInfo, Config::MUSTSET,  "",    "transmitter info file template");
-  readConfig(config, "inputfileAntennaDefinition", var.fileNameAntennaDef,      Config::MUSTSET,  "",    "transmitter phase centers and variations (ANTEX)");
+  readConfig(config, "inputfileTransmitterInfo",   var.fileNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "transmitter info file template");
+  readConfig(config, "inputfileAntennaDefinition", var.fileNameAntennaDef,      Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs14/transmitterInfo_igs14.dat",     "transmitter phase centers and variations (ANTEX)");
   readConfig(config, "variablePrn",                var.variablePrn,             Config::DEFAULT,  "prn", "loop variable for PRNs from transmitter list");
   endSequence(config);
   return TRUE;

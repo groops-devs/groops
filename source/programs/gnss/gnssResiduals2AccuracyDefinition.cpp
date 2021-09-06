@@ -181,7 +181,7 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
 
               if(value)
                 for(GnssAntennaPattern &pattern : antenna->pattern)
-                  if(type == pattern.type+typePRN)
+                  if(type+satType == pattern.type+typePRN)
                   {
                     const UInt idxL = static_cast<UInt>(std::round((Double(azimuth)+2*PI)/(2*PI)*pattern.pattern.rows()))%pattern.pattern.rows();
                     const UInt idxB = static_cast<UInt>(std::round((PI/2-Double(elevation))/Double(pattern.dZenit)));

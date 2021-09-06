@@ -131,16 +131,16 @@ void GnssClock2ClockRinex::readSatelliteData(std::vector<SatelliteData> &data, s
       iter->identifier.resize(4, ' ');
 
       // Code biases
-      for(const auto &type : bias.type)
+      for(const auto &type : bias.types)
         if(type == GnssType::RANGE)
           system2ObsTypes[type.str().at(3)].insert(type.str().substr(0,3));
 
       // Phase biases (for wildcard types, i.e. L1*, write one line per matching code bias type with the same phase bias; example: C1C, C1W, L1* ==> C1C, C1W, L1C, L1W)
-      for(UInt i = 0; i < bias.type.size(); i++)
-        if(bias.type.at(i) == GnssType::PHASE)
-          for(UInt j = 0; j < bias.type.size(); j++)
-            if(bias.type.at(j) == (bias.type.at(i) & ~GnssType::TYPE) + GnssType::RANGE)
-              system2ObsTypes[bias.type.at(i).str().at(3)].insert(((bias.type.at(j) & ~GnssType::TYPE) + GnssType::PHASE).str().substr(0,3));
+      for(UInt i = 0; i < bias.types.size(); i++)
+        if(bias.types.at(i) == GnssType::PHASE)
+          for(UInt j = 0; j < bias.types.size(); j++)
+            if(bias.types.at(j) == (bias.types.at(i) & ~GnssType::TYPE) + GnssType::RANGE)
+              system2ObsTypes[bias.types.at(i).str().at(3)].insert(((bias.types.at(j) & ~GnssType::TYPE) + GnssType::PHASE).str().substr(0,3));
       iter++;
     }
   }

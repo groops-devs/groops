@@ -71,7 +71,8 @@
         <div id="content" class="container">
             <h1>GnssProcessing</h1><p>
 
-This program processes GNSS observations. The primary use cases are:
+This program processes GNSS observations. It calculates the linearized observation equations,
+accumulates them into a system of normal equations and solves it.</p><p>The primary use cases of this program are:
 <ul>
 
   <li><a class="groops-ref" href="cookbook.gnssNetwork.html">GNSS satellite orbit determination and station network analysis</a>
@@ -80,27 +81,38 @@ This program processes GNSS observations. The primary use cases are:
   </li><li>
 <a class="groops-ref" href="cookbook.gnssPpp.html">GNSS precise point positioning (PPP)</a>
 </li></ul>
-</p><p>One or more GNSS constellations must be defined via <a class="groops-class" href="gnssParametrizationTransmitterType.html">transmitter</a>.
-Receivers such as ground station networks or Low Earth Orbit (LEO) satellites can be defined via <a class="groops-class" href="gnssParametrizationReceiverType.html">receiver</a>.</p><p>Earth rotation parameters (ERPs) can be estimated via <a class="groops-class" href="gnssParametrizationEarthRotationType.html">earthRotation</a>.</p><p>Constraints can be added to the normal equation system via <a class="groops-class" href="gnssParametrizationConstraintsType.html">constraints</a> in case there are no direct constraint options
-in the respective config element (e.g. <strong class="groops-config-element">noNetRotationSigma</strong> in <a class="groops-class" href="gnssParametrizationReceiverType.html#stationNetwork">receiver:stationNetwork</a>).
-For details on possible additional constraints see <a class="groops-class" href="gnssParametrizationReceiverType.html#stationNetwork">receiver:stationNetwork</a> (tropospheric parameters),
-<a class="groops-class" href="gnssParametrizationTransmitterType.html">transmitter</a> (antenna center offsets), or <a class="groops-class" href="gnssParametrizationEarthRotationType.html">earthRotation</a> (dUT1).</p><p>The processing flow is controlled via a list of <a class="groops-class" href="gnssProcessingStepType.html">processingSteps</a>.
-Each step is processed consecutively. Some steps allow the selection of parameters, epochs, or the normal equation structure,
-which affects all subsequent steps.</p><p>If the program is run on multiple processes the <a class="groops-class" href="gnssParametrizationReceiverType.html">receiver</a>s
+</p><p>The observation epochs are defined by <a class="groops-class" href="timeSeriesType.html">timeSeries</a>
+and only observations at these epochs (within a <strong class="groops-config-element">timeMargin</strong>) are considered.</p><p>To calculate observation equations from the tracks, the model parameters or unknown parameters need to be
+defined beforehand. These unknown parameters can be chosen arbitrarily by the user with an adequate list of defined
+<a class="groops-class" href="gnssParametrizationType.html">parametrization</a>.
+Some of the <a class="groops-class" href="gnssParametrizationType.html">parametrization</a> also include a priori models.</p><p>Lastly it is required to define the process flow of the gnssProcessing. This is accomplished
+with a list of <a class="groops-class" href="gnssProcessingStepType.html">processingSteps</a>.
+Each step is processed consecutively. Some steps allow the selection of parameters, epochs,
+or the normal equation structure, which affects all subsequent steps.
+A minimal example consists of following steps:
+<ul>
+
+  <li><a class="groops-class" href="gnssProcessingStepType.html#estimate">estimate</a>: iterative float solution with outlier downeighting
+  </li><li>
+<a class="groops-class" href="gnssProcessingStepType.html#resolveAmbiguities">resolveAmbiguities</a>:
+        fix ambiguities to integer and remove them from the normals
+  </li><li>
+<a class="groops-class" href="gnssProcessingStepType.html#estimate">estimate</a>: few iteration for final outlier downweighting
+  </li><li>
+<a class="groops-class" href="gnssProcessingStepType.html#writeResults">writeResults</a>:
+        write the output files defined in <a class="groops-class" href="gnssParametrizationType.html">parametrization</a>
+</li></ul>
+</p><p>If the program is run on multiple processes the <a class="groops-class" href="gnssReceiverGeneratorType.html">receiver</a>s
 (stations or LEO satellites) are distributed over the processes.</p><p>See also <a class="groops-program" href="GnssSimulateReceiver.html">GnssSimulateReceiver</a>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileParameterName</div></div></td><td>filename</td><td>parameter names</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>defines observation epochs</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">timeMargin</div></div></td><td>double</td><td>[seconds] margin to consider two times identical</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">transmitter</div></div></td><td><a href="gnssParametrizationTransmitterType.html">gnssParametrizationTransmitter</a></td><td>constellation of GNSS satellites</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">receiver</div></div></td><td><a href="gnssParametrizationReceiverType.html">gnssParametrizationReceiver</a></td><td>ground station network or LEO satellite</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ionosphere</div></div></td><td><a href="gnssParametrizationIonosphereType.html">gnssParametrizationIonosphere</a></td><td>ionosphere settings</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">earthRotation</div></div></td><td><a href="gnssParametrizationEarthRotationType.html">gnssParametrizationEarthRotation</a></td><td>Earth rotation and EOP estimation</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">gravityField</div></div></td><td><a href="gnssParametrizationGravityFieldType.html">gnssParametrizationGravityField</a></td><td>gravity field estimation</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ambiguities</div></div></td><td><a href="gnssParametrizationAmbiguitiesType.html">gnssParametrizationAmbiguities</a></td><td>ambiguity resolution settings</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">constraints</div></div></td><td><a href="gnssParametrizationConstraintsType.html">gnssParametrizationConstraints</a></td><td>additional constraints</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>defines observation epochs</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">timeMargin</div></div></td><td>double</td><td>[seconds] margin to consider two times identical</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">transmitter</div></div></td><td><a href="gnssTransmitterGeneratorType.html">gnssTransmitterGenerator</a></td><td>constellation of GNSS satellites</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">receiver</div></div></td><td><a href="gnssReceiverGeneratorType.html">gnssReceiverGenerator</a></td><td>ground station network or LEO satellite</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">earthRotation</div></div></td><td><a href="earthRotationType.html">earthRotation</a></td><td>apriori earth rotation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrization</div></div></td><td><a href="gnssParametrizationType.html">gnssParametrization</a></td><td>models and parameters</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">processingStep</div></div></td><td><a href="gnssProcessingStepType.html">gnssProcessingStep</a></td><td>steps are processed consecutively</td></tr>
 </table>
 This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.

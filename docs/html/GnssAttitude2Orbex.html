@@ -71,22 +71,23 @@
         <div id="content" class="container">
             <h1>GnssAttitude2Orbex</h1><p>
 
-Convert attitude of GNSS satellites to <a href="http://acc.igs.org/misc/proposal_orbex_april2019.pdf">ORBEX file format</a> (quaternions).</p><p>ORBEX format contains quaternions for rotation from TRF to satellite body frame.</p><p>See also <a class="groops-program" href="GnssOrbex2StarCamera.html">GnssOrbex2StarCamera</a>.
+Convert attitude of GNSS satellites to <a href="http://acc.igs.org/misc/proposal_orbex_april2019.pdf">ORBEX file format</a> (quaternions).</p><p>If <a class="groops-class" href="earthRotationType.html">earthRotation</a> is provided, the output file contains quaternions for rotation from TRF to satellite
+body frame (IGS/ORBEX convention), otherwise the rotation is from CRF to satellite body frame.</p><p>See also <a class="groops-program" href="GnssOrbex2StarCamera.html">GnssOrbex2StarCamera</a>, <a class="groops-program" href="SimulateStarCameraGnss.html">SimulateStarCameraGnss</a>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileOrbex</div></div></td><td>filename</td><td>ORBEX file</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfileTransmitterList</div></div></td><td>filename</td><td>ASCII list with transmitter PRNs used in solution</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileVariational</div></div></td><td>filename</td><td>variational file containing attitude and Earth rotation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfileTransmitterList</div></div></td><td>filename</td><td>ASCII list with transmitter PRNs</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAttitude</div></div></td><td>filename</td><td>instrument file containing attitude</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variablePrn</div></div></td><td>string</td><td>loop variable for PRNs from transmitter list</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>attitude output epochs</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">interpolationDegree</div></div></td><td>uint</td><td>for attitude and Earth rotation interpolation</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">description</div></div></td><td>string</td><td>description of file contents</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">createdBy</div></div></td><td>string</td><td>name of agency</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputData</div></div></td><td>string</td><td>description of input data (see ORBEX description)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">contact</div></div></td><td>string</td><td>email address</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">referenceFrame</div></div></td><td>string</td><td>reference frame used in file</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">orbitType</div></div></td><td>string</td><td>3-char code (FIT, EXT, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">earthRotation</div></div></td><td><a href="earthRotationType.html">earthRotation</a></td><td>rotate data into Earth-fixed frame</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">interpolationDegree</div></div></td><td>uint</td><td>for attitude and Earth rotation interpolation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">description</div></div></td><td>string</td><td>description of file contents</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">createdBy</div></div></td><td>string</td><td>name of agency</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputData</div></div></td><td>string</td><td>description of input data (see ORBEX description)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">contact</div></div></td><td>string</td><td>email address</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">referenceFrame</div></div></td><td>string</td><td>reference frame used in file</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">comment</div></div></td><td>string</td><td></td></tr>
 </table>
 

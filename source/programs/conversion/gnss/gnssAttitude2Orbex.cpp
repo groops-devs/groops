@@ -4,8 +4,6 @@
 *
 * @brief Convert attitude of GNSS satellites to ORBEX file format (quaternions).
 *
-* ORBEX format containts quaternions for rotation from earth-fixed frame to satellite body frame.
-*
 * @author Sebastian Strasser
 * @date 2019-05-29
 */
@@ -16,19 +14,21 @@
 static const char *docstring = R"(
 Convert attitude of GNSS satellites to \href{http://acc.igs.org/misc/proposal_orbex_april2019.pdf}{ORBEX file format} (quaternions).
 
-ORBEX format contains quaternions for rotation from TRF to satellite body frame.
+If \configClass{earthRotation}{earthRotationType} is provided, the output file contains quaternions for rotation from TRF to satellite
+body frame (IGS/ORBEX convention), otherwise the rotation is from CRF to satellite body frame.
 
-See also \program{GnssOrbex2StarCamera}.
+See also \program{GnssOrbex2StarCamera}, \program{SimulateStarCameraGnss}.
 )";
 
 /***********************************************/
 
 #include "programs/program.h"
 #include "base/polynomial.h"
+#include "classes/earthRotation/earthRotation.h"
 #include "classes/timeSeries/timeSeries.h"
+#include "files/fileInstrument.h"
 #include "files/fileStringTable.h"
 #include "inputOutput/system.h"
-#include "misc/observation/variationalEquationFromFile.h"
 
 /***** CLASS ***********************************/
 
@@ -48,25 +48,26 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
-    FileName fileNameOrbex, fileNameVariational;
+    FileName fileNameOrbex, fileNameAttitude;
     std::vector<FileName> fileNameTransmitterList;
-    std::string variablePrn, coordSystem, contact, createdBy, description, inputData, orbitType;
+    std::string variablePrn, coordSystem, contact, createdBy, description, inputData;
     std::vector<std::string> comments;
     TimeSeriesPtr timeSeriesPtr;
+    EarthRotationPtr earthRotation;
     UInt interpolationDegree;
 
     readConfig(config, "outputfileOrbex",          fileNameOrbex,           Config::MUSTSET,  "",      "ORBEX file");
-    readConfig(config, "inputfileTransmitterList", fileNameTransmitterList, Config::MUSTSET,  "",      "ASCII list with transmitter PRNs used in solution");
-    readConfig(config, "inputfileVariational",     fileNameVariational,     Config::MUSTSET,  "",      "variational file containing attitude and Earth rotation");
+    readConfig(config, "inputfileTransmitterList", fileNameTransmitterList, Config::MUSTSET,  "",      "ASCII list with transmitter PRNs");
+    readConfig(config, "inputfileAttitude",        fileNameAttitude,        Config::MUSTSET,  "attitude.{prn}.dat", "instrument file containing attitude");
     readConfig(config, "variablePrn",              variablePrn,             Config::DEFAULT,  "prn",   "loop variable for PRNs from transmitter list");
     readConfig(config, "timeSeries",               timeSeriesPtr,           Config::MUSTSET,  "",      "attitude output epochs");
+    readConfig(config, "earthRotation",            earthRotation,           Config::OPTIONAL, "",      "rotate data into Earth-fixed frame");
     readConfig(config, "interpolationDegree",      interpolationDegree,     Config::MUSTSET,  "7",     "for attitude and Earth rotation interpolation");
     readConfig(config, "description",              description,             Config::MUSTSET,  "",      "description of file contents");
     readConfig(config, "createdBy",                createdBy,               Config::MUSTSET,  "",      "name of agency");
-    readConfig(config, "inputData",                inputData,               Config::MUSTSET,  "u+U",   "description of input data (see ORBEX description)");
+    readConfig(config, "inputData",                inputData,               Config::MUSTSET,  "p",     "description of input data (see ORBEX description)");
     readConfig(config, "contact",                  contact,                 Config::MUSTSET,  "",      "email address");
     readConfig(config, "referenceFrame",           coordSystem,             Config::MUSTSET,  "IGb14", "reference frame used in file");
-    readConfig(config, "orbitType",                orbitType,               Config::MUSTSET,  "FIT",   "3-char code (FIT, EXT, ...)");
     readConfig(config, "comment",                  comments,                Config::OPTIONAL, "",      "");
     if(isCreateSchema(config)) return;
 
@@ -85,19 +86,20 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     for(const auto &prn : transmitterList)
     {
       fileNameVariableList[variablePrn]->setValue(prn);
-      VariationalEquationFromFile variationalEquationFromFile;
-      variationalEquationFromFile.open(fileNameVariational(fileNameVariableList), nullptr, nullptr, {}, nullptr, 0);
-      VariationalEquationFromFile::ObservationEquation variationalEquation = variationalEquationFromFile.integrateArc(times.front(), times.back(), FALSE/*computePosition*/, FALSE/*computeVelocity*/);
-      Matrix quaternion(variationalEquation.times.size(), 4);
-      for(UInt idEpoch = 0; idEpoch < variationalEquation.times.size(); idEpoch++)
+
+      StarCameraArc arc = InstrumentFile::read(fileNameAttitude(fileNameVariableList));
+      Matrix quaternion(arc.size(), 4);
+      for(UInt idEpoch = 0; idEpoch < arc.size(); idEpoch++)
       {
-        Rotary3d rot = inverse(variationalEquation.rotSat.at(idEpoch)) * inverse(variationalEquation.rotEarth.at(idEpoch)); // TRF -> satellite body frame
+        Rotary3d rot = inverse(arc.at(idEpoch).rotary);
+        if(earthRotation)
+          rot *= inverse(earthRotation->rotaryMatrix(arc.at(idEpoch).time));
         copy(rot.quaternion().trans(), quaternion.row(idEpoch));
       }
       for(UInt idEpoch=1; idEpoch<quaternion.rows(); idEpoch++)
         if(inner(quaternion.row(idEpoch), quaternion.row(idEpoch-1))<0)
           quaternion.row(idEpoch) *= -1;
-      prn2Quaternions[prn] = polynomial.interpolate(times, variationalEquation.times, quaternion);
+      prn2Quaternions[prn] = polynomial.interpolate(times, arc.times(), quaternion);
       for(UInt idEpoch=0; idEpoch<prn2Quaternions[prn].rows(); idEpoch++)
         prn2Quaternions[prn].row(idEpoch) /= norm(prn2Quaternions[prn].row(idEpoch));
     }
@@ -118,8 +120,7 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     outfile << " END_TIME            " << times.back() %"%y %m %d %H %M %012.9S000"s << std::endl;// ATTENTION: "fake" 15.12 precision due to max Time precision
     outfile << " EPOCH_INTERVAL      " << medianSampling(times).seconds()%"%9.3f"s << std::endl;
     outfile << " COORD_SYSTEM        " << coordSystem << std::endl;
-    outfile << " FRAME_TYPE          ECEF" << std::endl;
-    outfile << " ORBIT_TYPE          " << orbitType << std::endl;
+    outfile << " FRAME_TYPE          " << (earthRotation ? "ECEF" : "ECI") << std::endl;
     outfile << " LIST_OF_REC_TYPES   ATT" << std::endl;
     outfile << "-FILE/DESCRIPTION" << std::endl;
     if(comments.size())

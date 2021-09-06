@@ -17,7 +17,7 @@
 // Latex documentation
 #ifdef DOCSTRING_TimeSeries
 static const char *docstringTimeSeriesIrregular = R"(
-\subsection{Irregular}
+\subsection{Irregular}\label{timeSeriesType:irregular}
 The points of the time series are given explicitly with \config{time}.
 )";
 #endif

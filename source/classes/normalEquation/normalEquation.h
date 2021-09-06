@@ -219,8 +219,6 @@ protected:
   friend class NormalEquation;
 };
 
-/// @}
-
 /***********************************************/
 
 #endif /* __GROOPS_NORMALEQUATION__ */

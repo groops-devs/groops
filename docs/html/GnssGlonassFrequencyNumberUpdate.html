@@ -71,15 +71,12 @@
         <div id="content" class="container">
             <h1>GnssGlonassFrequencyNumberUpdate</h1><p>
 
-Update/set GLONASS frequency number in <a class="groops-class" href="fileFormat_gnssStationInfo.html">inputfileTransmitterInfo</a> and
-<a class="groops-class" href="fileFormat_gnssReceiverDefinition.html">inputfileReceiverDefinition</a> files.</p><p>PRN/SVN to frequency number source: <a href="http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO" target="_blank">http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO</a>.</p><p>See also <a class="groops-program" href="GnssReceiverDefinitionCreate.html">GnssReceiverDefinitionCreate</a> and <a class="groops-program" href="GnssAntex2AntennaDefinition.html">GnssAntex2AntennaDefinition</a>.
+Update/set GLONASS frequency number in <a class="groops-class" href="fileFormat_gnssStationInfo.html">inputfileTransmitterInfo</a> files.</p><p>PRN/SVN to frequency number source: <a href="http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO" target="_blank">http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO</a>.</p><p>See also <a class="groops-program" href="GnssAntex2AntennaDefinition.html">GnssAntex2AntennaDefinition</a>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileTransmitterInfo</div></div></td><td>filename</td><td>templated for PRN list (variableNamePrn)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileReceiverDefinition</div></div></td><td>filename</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTransmitterInfo</div></div></td><td>filename</td><td>templated for PRN list (variableNamePrn)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileReceiverDefinition</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTransmitterInfo</div></div></td><td>filename</td><td>templated for PRN list (variableNamePrn)</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfilePrn2FrequencyNumber</div></div></td><td>filename</td><td>GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">prn</div></div></td><td>string</td><td>PRN (e.g. G01) for transmitter info files</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableNamePrn</div></div></td><td>string</td><td>variable name for PRN in transmitter info files</td></tr>

@@ -69,15 +69,39 @@
     </header>
     <main class="container px-0 pt-2 top-buffer">
         <div id="content" class="container">
-            <h1 id="cookbook.kinematicOrbit">Kinematic orbit determination of LEO satellites</h1><p></p><p>This cookbook chapter describes exemplarily the steps for determining kinematic orbits of low-Earth orbit (LEO) satellites.</p><p><h2>Prepare LEO meta data</h2><p>
-<ol>
+            <h1 id="cookbook.kinematicOrbit">Kinematic orbit determination of LEO satellites</h1><p>
+This cookbook chapter describes exemplarily the steps for determining kinematic orbits of low-Earth orbit (LEO) satellites.</p><p>An example scenario for this task is available at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip</a>.
+It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops</a> (data folder or zipped archive).
+The scenario generally represents what is described in this cookbook, but may slightly differ in certain settings.</p><p><h2 id="gnssMetadata">Prepare GNSS satellite data</h2><p>
+Most of the required metadata files are provided in GROOPS file formats at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops</a>.
+These files are regularly updated.</p><p>Data that has to be gathered from other sources comprises:
+<ul>
 
-  <li>For creating the <a class="groops-file" href="fileFormat_gnssStationInfo.html">GnssStationInfo file</a> use <a class="groops-program" href="GnssStationInfoCreate.html">GnssStationInfoCreate</a>. The rotation from the
-  satellite reference frame into the antenna reference frame as well as the change of the center of mass due to fuel consumption has to be considered here.
+  <li><b>Receiver observations</b>: GNSS measurements converted from RINEX format (see <a class="groops-program" href="RinexObservation2GnssReceiver.html">RinexObservation2GnssReceiver</a>)
   </li><li>
-The <a class="groops-file" href="fileFormat_gnssReceiverDefinition.html">GnssReceiverDefinition file</a> can be created by using <a class="groops-program" href="GnssReceiverDefinitionCreate.html">GnssReceiverDefinitionCreate</a>. In this program the different GNSS types has to be specified.
+<b>Precise orbits</b>: precise orbits in CRF for orbit integration (see <a class="groops-program" href="Sp3Format2Orbit.html">Sp3Format2Orbit</a>)
   </li><li>
-For creating the <a class="groops-file" href="fileFormat_gnssAntennaDefinition.html">GnssAntennaDefinition file</a> use <a class="groops-program" href="GnssAntennaDefinitionCreate.html">GnssAntennaDefinitionCreate</a>. This program considers the phase center offsets of L1 and L2 frequency from the used antenna.
+<b>Precise clocks</b>: precise clocks (see <a class="groops-program" href="GnssClockRinex2InstrumentClock.html">GnssClockRinex2InstrumentClock</a>)
+  </li><li>
+<b>Attitude</b>: rotation from body frame to CRF (see <a class="groops-program" href="SimulateStarCameraGnss.html">SimulateStarCameraGnss</a> or <a class="groops-program" href="GnssOrbex2StarCamera.html">GnssOrbex2StarCamera</a>)
+  </li><li>
+<b>Signal biases</b>: code (and phase) biases (see <a class="groops-program" href="GnssSinexBias2SignalBias.html">GnssSinexBias2SignalBias</a>)
+</li></ul>
+
+Receiver observations, precise satellite orbits and clocks, and possibly attitude and signal biases can be downloaded from the
+<a href="https://igs.org/data-products-overview/">IGS Data Centers</a>.
+GPS, GLONASS, and Galileo orbits, clocks, attitude, and signal biases for the period 1994-2020 are also available as part of
+<a href="https://doi.org/10.3217/dataset-4528-0723-0867">Graz University of Technology's contribution to IGS repro3</a>.</p><p>The <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip">example scenario</a> includes a small set of this data.
+The script <code>010groopsConvert.xml</code> can be used to convert these external formats into GROOPS formats.</p><p><h2 id="leoMetadata">Prepare LEO metadata</h2><p>
+Metadata for several LEO missions is availabe at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/gnss/receiverLowEarthOrbiter" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/gnss/receiverLowEarthOrbiter</a>.</p><p>If you want to process another mission, you can create the necessary files with these steps:
+<ul>
+
+  <li>For creating the <a class="groops-file" href="fileFormat_gnssStationInfo.html">GnssSatelliteInfo file</a> use <a class="groops-program" href="GnssStationInfoCreate.html">GnssStationInfoCreate</a>. Note that the rotation from the
+  satellite reference frame into the antenna reference frame, as well as the change of the center of mass due to fuel consumption, has to be considered here.
+  </li><li>
+The <a class="groops-file" href="fileFormat_gnssReceiverDefinition.html">GnssReceiverDefinition file</a> can be created by using <a class="groops-program" href="GnssReceiverDefinitionCreate.html">GnssReceiverDefinitionCreate</a>. Here you can specify which GNSS signal types the receiver observes.
+  </li><li>
+For creating the <a class="groops-file" href="fileFormat_gnssAntennaDefinition.html">GnssAntennaDefinition file</a> use <a class="groops-program" href="GnssAntennaDefinitionCreate.html">GnssAntennaDefinitionCreate</a>. Here you can define phase center offsets for the antenna.
   </li><li>
 For determining the elevation dependent accuracies the program <a class="groops-program" href="GnssAntennaDefinitionCreate.html">GnssAntennaDefinitionCreate</a> is used again.
   <ul>
@@ -89,10 +113,12 @@ Set the <strong class="groops-config-element">pattern</strong>s for code (<stron
     (<strong class="groops-config-element">type</strong>=<code>L**</code>). The standard deviation is expressed e.g. with <strong class="groops-config-element">values</strong>=<code>0.001/cos(2*PI/180*zenith)</code>.
   </li></ul>
 
-</ol></p><p><h2>Read LEO data</h2><p>
-<ol>
+</ul></p><p><h2 id="leoData">Prepare LEO data</h2><p>
+The <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip">example scenario</a> includes a small set of this data for the GRACE-FO mission.
+The script <code>020groopsConvertGracefo.xml</code> can be used to convert these external formats into GROOPS formats.</p><p>The data preparation steps are:
+<ul>
 
-  <li>Conversion of the approximated orbit and star camera data into GROOPS format using a conversion program.
+  <li>Conversion of the approximate orbit and star camera data into GROOPS format using a conversion program.
   </li><li>
 If no attitude data is given the star camera data can be simulated by using <a class="groops-program" href="SimulateStarCamera.html">SimulateStarCamera</a> or <a class="groops-program" href="SimulateStarCameraSentinel1.html">SimulateStarCameraSentinel1</a>.
   </li><li>
@@ -100,47 +126,81 @@ The GNSS observation data (given in RINEX format) can be converted with <a class
   </li><li>
 Suitable programs to get daily data are <a class="groops-program" href="InstrumentConcatenate.html">InstrumentConcatenate</a> and <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>.
   </li><li>
-For interpolating the orbit and star camera data to GNSS receiver epochs use <a class="groops-program" href="InstrumentResample.html">InstrumentResample</a> and specify GNSS receiver as input for
-  <strong class="groops-config-element">timeSeries</strong>.
+For interpolating the orbit and star camera data to GNSS receiver epochs use <a class="groops-program" href="InstrumentResample.html">InstrumentResample</a> and provide the converted RINEX observation file as input for
+  <a class="groops-class" href="timeSeriesType.html#instrument">timeSeries:instrument</a>.
   </li><li>
-For synchronizing these data use <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>
-</li></ol>
+For synchronizing these data use <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>.
+</li></ul>
 
-Detailed description of instrument data handling can be found in <a class="groops-ref" href="cookbook.instrument.html">Instrument data handling</a>.</p><p><h2>Prepare GNSS satellite metadata, orbits, and clocks</h2><p>
-The cookbook chapter on <a class="groops-ref" href="cookbook.gnssPpp.html">GNSS precise point positioning (PPP)</a> details how to prepare the GNSS satellite
-<a class="groops-ref" href="cookbook.gnssPpp.html#metadata">metadata</a> and <a class="groops-ref" href="cookbook.gnssPpp.html#orbitPreparation">orbits</a>.
-Use <a class="groops-program" href="GnssClockRinex2InstrumentClock.html">GnssClockRinex2InstrumentClock</a> to convert satellite clock errors.</p><p><h2>Estimate kinematic orbits</h2><p></p><p>For kinematic orbit determination use <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>. The GNSS constellations have to be defined via
-<a class="groops-class" href="gnssParametrizationTransmitterType.html">transmitter</a> which requires for example the signal bias and clock data.
-The LEO satellite can be defined via <a class="groops-class" href="gnssParametrizationReceiverType.html#lowEarthOrbiter">receiver:lowEarthOrbiter</a> which requires for example the
-GNSS observations, the star camera and approximated orbit data. The impact of the ionosphere can be considered via
-<a class="groops-class" href="gnssParametrizationIonosphereType.html">ionosphere</a> and the estimation of the earth rotation parameters is done
-with <a class="groops-class" href="gnssParametrizationEarthRotationType.html">earthRotation</a>. The ambiguity resolution settings can be specified via
-<a class="groops-class" href="gnssParametrizationAmbiguitiesType.html">ambiguities</a>.</p><p>The processing flow is controlled via a list of processing steps <a class="groops-class" href="gnssProcessingStepType.html">processingStep</a>. The processing steps are
-processed consecutively. Some steps allow the selection of parameters,
-epochs, or the normal equation structure, which affects all subsequent steps.</p><p><ol>
+Detailed description of instrument data handling can be found in <a class="groops-ref" href="cookbook.instrument.html">Instrument data handling</a>.</p><p><h2 id="processing">Estimate kinematic orbits</h2><p>
+The script <code>03groopsGnssProcessing.xml</code> in the <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip">example scenario</a>
+implements the following steps and settings.</p><p>These are the settings for <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>. If not otherwise stated use the default values.</p><p>As we have only one receiver the processing sampling can be directly taken from the observation file:
+<a class="groops-class" href="timeSeriesType.html#instrument">timeSeries:instrument</a>.</p><p>Add the appropriate <a class="groops-class" href="gnssTransmitterGeneratorType.html#gnss">transmitters:gnss</a> (e.g. GPS)
+and provide the required files (from <a class="groops-ref" href="cookbook.kinematicOrbit.html#gnssMetadata">Prepare GNSS satellite data</a>):
+<ul>
 
-    <li><a class="groops-class" href="gnssProcessingStepType.html">processingStep:selectParameters</a>:  Parameters which should be estimated have to be enabled.
-    Consider the linear dependencies between the STEC and the VTEC as well as between the STEC and particular signal biases. This means, if STEC parameter
-    is enabled it is not possible to estimate the VTEC and TEC bias, so these parameters have to be be disabled.
-    </li><li>
-<a class="groops-class" href="gnssProcessingStepType.html">processingStep:estimate</a>: Estimation of the parameters. The number of iterations can be set with
-    <strong class="groops-config-element">maxIterationCount</strong>. The weights will be iteratively adjusted.
-    </li><li>
-Estimation of the TEC bias parameter using <a class="groops-class" href="gnssProcessingStepType.html">processingStep:selectParameters</a> and
-    <a class="groops-class" href="gnssProcessingStepType.html">processingStep:estimate</a>. Only <strong class="groops-config-element">estimateReceiverTecBias</strong> parameter has to be selected.
-    </li><li>
-<a class="groops-class" href="gnssProcessingStepType.html">processingStep:estimate</a>: Further estimation of the parameters.
-    </li><li>
-Solving the ambiguities via <a class="groops-class" href="gnssProcessingStepType.html">processingStep:resolveAmbiguities</a>.
-    </li><li>
-Further estimations of the parameters and the TEC bias parameter by using <a class="groops-class" href="gnssProcessingStepType.html">processingStep:estimate</a>.
-    </li><li>
-Computation of the epoch-wise covariance matrix can be done via <a class="groops-class" href="gnssProcessingStepType.html">processingStep:computeCovarianceMatrix</a>.
-    </li><li>
-<a class="groops-class" href="gnssProcessingStepType.html">processingStep:writeResults</a>: Write estimation results into output files.
-</li></ol>
+  <li><a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>
+  </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileAttitude</a>
+  </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileClock</a>
+</li></ul>
+</p><p>The following files (from <a class="groops-ref" href="cookbook.kinematicOrbit.html#leoMetadata">Prepare LEO metadata</a> and <a class="groops-ref" href="cookbook.kinematicOrbit.html#leoData">Prepare LEO data</a>) and settings are needed in <a class="groops-class" href="gnssReceiverGeneratorType.html#lowEarthOrbiter">receiver:lowEarthOrbiter</a>:
+<ul>
+
+   <li><a class="groops-class" href="fileFormat_gnssStationInfo.html">inputfileStationInfo</a>: The satellite info file.
+   </li><li>
+<a class="groops-class" href="fileFormat_gnssAntennaDefinition.html">inputfileAntennaDefinition</a>
+   </li><li>
+<a class="groops-class" href="fileFormat_gnssReceiverDefinition.html">inputfileReceiverDefinition</a>
+   </li><li>
+<a class="groops-class" href="fileFormat_gnssAntennaDefinition.html">inputfileAccuracyDefinition</a>
+   </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileObservations</a>: The converted RINEX observation file.
+   </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>: The approximate orbit.
+   </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileStarCamera</a>: The convered or simulated attitude.
+   </li><li>
+<a class="groops-class" href="gnssType.html">useType</a>: We recommend to explicitly specify the signals to be processed
+            and to make sure that at least transmitter code biases are provided for each of them, e.g. <code>C1CG</code>,
+            <code>C1WG</code>, <code>C2WG</code>, <code>L1*G</code>, <code>L2*G</code>, ...).
+</li></ul>
+</p><p>Add the following <a class="groops-class" href="gnssParametrizationType.html">parametrizations</a>
+and define the <strong class="groops-config-element">outputfiles</strong> within you are interested in:
+<ul>
+
+  <li><a class="groops-class" href="gnssParametrizationType.html#ionosphereSTEC">ionosphereSTEC</a>: add a constraint of <strong class="groops-config-element">sigmaSTEC</strong>=<code>40</code>
+  </li><li>
+<a class="groops-class" href="gnssParametrizationType.html#ionosphereVTEC">ionosphereVTEC</a>:
+        set <strong class="groops-config-element">mapR</strong>=<code>6371e3+450e3</code> to satellite height and ionosphere height <strong class="groops-config-element">mapH</strong>=<code>50e3</code> above.
+  </li><li>
+<a class="groops-class" href="gnssParametrizationType.html#clocks">clocks</a>: delete <a class="groops-class" href="gnssTransceiverSelectorType.html">selectTransmitters</a>
+  </li><li>
+<a class="groops-class" href="gnssParametrizationType.html#signalBiases">signalBiases</a>: provide <a class="groops-class" href="fileFormat_gnssSignalBias.html">inputfileSignalBiasTransmitter</a> created with <a class="groops-program" href="GnssSinexBias2SignalBias.html">GnssSinexBias2SignalBias</a>
+  </li><li>
+<a class="groops-class" href="gnssParametrizationType.html#ambiguities">ambiguities</a>: if precise transmitter phase biases are available you can delete <a class="groops-class" href="gnssTransceiverSelectorType.html">estimateTransmitterPhaseBiases</a>
+  </li><li>
+<a class="groops-class" href="gnssParametrizationType.html#codeBiases">codeBiases</a>: delete <a class="groops-class" href="gnssTransceiverSelectorType.html">selectTransmitters</a>, set <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>=<code>0</code>
+  </li><li>
+<a class="groops-class" href="gnssParametrizationType.html#tecBiases">tecBiases</a>: delete <a class="groops-class" href="gnssTransceiverSelectorType.html">selectTransmitters</a>, set <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>=<code>0</code>
+  </li><li>
+<a class="groops-class" href="gnssParametrizationType.html#kinematicPositions">kinematicPositions</a>
+</li></ul>
+</p><p>Add the following <a class="groops-class" href="gnssProcessingStepType.html">processingSteps</a>:
+<ul>
+
+  <li><a class="groops-class" href="gnssProcessingStepType.html#estimate">estimate</a>: with <strong class="groops-config-element">maxIterationCount</strong>=<code>8</code>
+  </li><li>
+<a class="groops-class" href="gnssProcessingStepType.html#resolveAmbiguities">resolveAmbiguities</a>
+  </li><li>
+<a class="groops-class" href="gnssProcessingStepType.html#estimate">estimate</a>: with <strong class="groops-config-element">maxIterationCount</strong>=<code>2</code>
+  </li><li>
+<a class="groops-class" href="gnssProcessingStepType.html#computeCovarianceMatrix">computeCovarianceMatrix</a>
+  </li><li>
+<a class="groops-class" href="gnssProcessingStepType.html#writeResults">writeResults</a>
+</li></ul>
 </p><p>
-
 </p>
 
         </div>

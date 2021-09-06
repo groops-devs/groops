@@ -74,7 +74,7 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssBiasCloc
   readConfig(config, "inputfileClock",           var.inNameClock,           Config::MUSTSET,  "", "clock instrument file");
   readConfig(config, "inputfileReferenceClock",  var.inNameReferenceClock,  Config::MUSTSET,  "", "reference clock instrument file");
   readConfig(config, "inputfileSignalBias",      var.inNameBias,            Config::OPTIONAL, "", "(GLONASS only) signal bias file");
-  readConfig(config, "inputfileTransmitterInfo", var.inNameTransmitterInfo, Config::MUSTSET,  "", "transmitter info file");
+  readConfig(config, "inputfileTransmitterInfo", var.inNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "transmitter info file");
   endSequence(config);
   return TRUE;
 }
@@ -175,9 +175,9 @@ void GnssBiasClockAlignment::run(Config &config, Parallel::CommunicatorPtr /*com
 
       // update receiver code biases
       for(auto &&rec : receivers)
-        for(UInt i = 0; i < rec.biases.type.size(); i++)
-          if(rec.biases.type.at(i) == group.first + GnssType::RANGE)
-            rec.biases.bias.at(i) -= mean * LIGHT_VELOCITY;
+        for(UInt i = 0; i < rec.biases.types.size(); i++)
+          if(rec.biases.types.at(i) == group.first + GnssType::RANGE)
+            rec.biases.biases.at(i) -= mean * LIGHT_VELOCITY;
     }
 
     if(alignFreqNoBiasesAtReceiver)
@@ -192,7 +192,7 @@ void GnssBiasClockAlignment::run(Config &config, Parallel::CommunicatorPtr /*com
       {
         // GLONASS signal bias types independent of frequency number
         std::set<GnssType> types;
-        for(const auto &type : rec.biases.type)
+        for(const auto &type : rec.biases.types)
           if(type == GnssType::GLONASS)
             types.insert(type & ~GnssType::FREQ_NO & (type == GnssType::PHASE ? ~GnssType::ATTRIBUTE : GnssType::ALL));
 
@@ -200,17 +200,17 @@ void GnssBiasClockAlignment::run(Config &config, Parallel::CommunicatorPtr /*com
         {
           // mean over all frequency numbers for this type
           std::vector<Double> values;
-          for(UInt i = 0; i < rec.biases.type.size(); i++)
-            if(rec.biases.type.at(i) == type)
-              values.push_back(rec.biases.bias.at(i));
+          for(UInt i = 0; i < rec.biases.types.size(); i++)
+            if(rec.biases.types.at(i) == type)
+              values.push_back(rec.biases.biases.at(i));
           const Double mean = ::mean(Vector(values));
 
           // bias residuals per frequency number for this type
-          for(UInt i = 0; i < rec.biases.type.size(); i++)
-            if(rec.biases.type.at(i) == type)
+          for(UInt i = 0; i < rec.biases.types.size(); i++)
+            if(rec.biases.types.at(i) == type)
             {
-              GnssType t = rec.biases.type.at(i) & (type == GnssType::PHASE ? ~GnssType::ATTRIBUTE : GnssType::ALL);
-              bias2Residuals[t].push_back(rec.biases.bias.at(i) - mean);
+              GnssType t = rec.biases.types.at(i) & (type == GnssType::PHASE ? ~GnssType::ATTRIBUTE : GnssType::ALL);
+              bias2Residuals[t].push_back(rec.biases.biases.at(i) - mean);
             }
         }
       }
@@ -225,15 +225,15 @@ void GnssBiasClockAlignment::run(Config &config, Parallel::CommunicatorPtr /*com
 
         // remove mean from receiver bias of all stations
         for(auto &&rec : receivers)
-          for(UInt i = 0; i < rec.biases.type.size(); i++)
-            if(rec.biases.type.at(i) == type)
-              rec.biases.bias.at(i) -= mean;
+          for(UInt i = 0; i < rec.biases.types.size(); i++)
+            if(rec.biases.types.at(i) == type)
+              rec.biases.biases.at(i) -= mean;
 
         // add mean to transmitter bias
         for(auto &trans : transmitters)
-          for(UInt i = 0; i < trans.biases.type.size(); i++)
-            if(trans.biases.type.at(i) == type)
-              trans.biases.bias.at(i) += mean;
+          for(UInt i = 0; i < trans.biases.types.size(); i++)
+            if(trans.biases.types.at(i) == type)
+              trans.biases.biases.at(i) += mean;
       }
     }
 
@@ -246,7 +246,7 @@ void GnssBiasClockAlignment::run(Config &config, Parallel::CommunicatorPtr /*com
     {
       logStatus<<"writing aligned receiver signal bias files <"<<receivers.at(0).outNameBias<<">"<<Log::endl;
       for(const auto &rec : receivers)
-        if(rec.biases.type.size())
+        if(rec.biases.types.size())
           writeFileGnssSignalBias(rec.outNameBias, rec.biases);
 
       if(alignFreqNoBiasesAtReceiver)

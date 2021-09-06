@@ -14,15 +14,21 @@
 #ifndef __GROOPS_GNSSOBSERVATION__
 #define __GROOPS_GNSSOBSERVATION__
 
-#include "gnss/gnss.h"
+#include "base/gnssType.h"
 
 /** @addtogroup gnssGroup */
 /// @{
 
+/***** TYPES ***********************************/
+
+class GnssTrack;
+class GnssReceiver;
+class GnssTransmitter;
+
 /***** CLASS ***********************************/
 
 /** @brief Single observation. */
-class Gnss::SingleObservation
+class GnssSingleObservation
 {
 public:
   GnssType type;        ///< measurement types (phases, pseudo ranges, ...)
@@ -32,39 +38,46 @@ public:
   Double   sigma0;      ///< expected (apriori) accuracies
   Double   sigma;       ///< modfied accuracies (downweighted outliers)
 
-  SingleObservation() {}
-  SingleObservation(GnssType _type, Double _observation=0., Double _residuals=0., Double _redundancy=0., Double _sigma0=0., Double _sigma=0.)
-  : type(_type), observation(_observation), residuals(_residuals), redundancy(_redundancy), sigma0(_sigma0), sigma(_sigma) {}
+  GnssSingleObservation() {}
+  GnssSingleObservation(GnssType _type, Double _observation=0., Double _residuals=0., Double _redundancy=0., Double _sigma0=0., Double _sigma=0.)
+    : type(_type), observation(_observation), residuals(_residuals), redundancy(_redundancy), sigma0(_sigma0), sigma(_sigma) {}
 };
 
 /***** CLASS ***********************************/
 
 /** @brief Observations.
 * Between one receiver and one transmitter at one epoch. */
-class Gnss::Observation
+class GnssObservation
 {
-  std::vector<SingleObservation> obs;
+  std::vector<GnssSingleObservation> obs;
 
 public:
-  Track  *track;     ///< phase ambiguities
-  Double  dSTEC;     ///< estimated ionosphere slant TEC along the path (additional to model)
+  typedef UInt Group;
+  constexpr static Group RANGE = 1<<0; // use code observations only
+  constexpr static Group PHASE = 1<<1;
+  constexpr static Group IONO  = 1<<2;
+  constexpr static Group ALL   = ~0;   // all bits set: use all available observations as they are
 
-  Observation() : track(nullptr), dSTEC(0.) {}
+  GnssTrack *track; ///< phase ambiguities
+  Double     STEC, dSTEC;  ///< total ionosphere slant TEC along the path and estimated part of STEC
 
-  UInt size() const                                  {return obs.size();}
-  SingleObservation       &at(UInt idType)           {return obs.at(idType);}
-  const SingleObservation &at(UInt idType) const     {return obs.at(idType);}
-  SingleObservation       &at(GnssType type)         {return obs.at(index(type));}
-  const SingleObservation &at(GnssType type) const   {return obs.at(index(type));}
-  void push_back(const SingleObservation &singleObs) {obs.push_back(singleObs);}
-  void erase(UInt idType)                            {obs.erase(obs.begin()+idType); obs.shrink_to_fit();}
-  void shrink_to_fit()                               {obs.shrink_to_fit();}
+  GnssObservation() : track(nullptr), STEC(0.), dSTEC(0.) {}
 
-  Bool init(const Receiver &receiver, const Transmitter &transmitter, GnssParametrizationIonospherePtr ionosphere, UInt idEpoch, Double &phaseWindupOld);
+  UInt size() const                                      {return obs.size();}
+  GnssSingleObservation       &at(UInt idType)           {return obs.at(idType);}
+  const GnssSingleObservation &at(UInt idType) const     {return obs.at(idType);}
+  GnssSingleObservation       &at(GnssType type)         {return obs.at(index(type));}
+  const GnssSingleObservation &at(GnssType type) const   {return obs.at(index(type));}
   UInt index(GnssType type) const;
+  void push_back(const GnssSingleObservation &singleObs) {obs.push_back(singleObs);}
+  void erase(UInt idType)                                {obs.erase(obs.begin()+idType); obs.shrink_to_fit();}
+  void shrink_to_fit()                                   {obs.shrink_to_fit();}
+
+  Bool init(const GnssReceiver &receiver, const GnssTransmitter &transmitter, const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
+            UInt idEpoch, Angle elevationCutOff, Double &phaseWindupOld);
 
   /** @brief Returns true if observation types required by @a analysisType are available, @a type contains list of these observations. */
-  Bool observationList         (AnalysisType analysisType, std::vector<GnssType> &types) const;
+  Bool observationList         (Group group, std::vector<GnssType> &types) const;
   void setDecorrelatedResiduals(const std::vector<GnssType> &types, const_MatrixSliceRef residuals, const_MatrixSliceRef redundancy);
   void updateParameter         (const_MatrixSliceRef x, const_MatrixSliceRef covariance=Matrix());
 };
@@ -73,7 +86,7 @@ public:
 
 /** @brief Reduced observations (obs - computed) and design matrix.
 * Between one receiver and one transmitter at one epoch. */
-class Gnss::ObservationEquation
+class GnssObservationEquation
 {
 public:
   enum {idxPosRecv    = 0, // x,y,z (CRF)
@@ -84,9 +97,9 @@ public:
         idxUnit       = 9};
 
   UInt  idEpoch;
-  const Track       *track; // phase ambiguities
-  const Receiver    *receiver;
-  const Transmitter *transmitter;
+  const GnssTrack       *track; // phase ambiguities
+  const GnssReceiver    *receiver;
+  const GnssTransmitter *transmitter;
 
   // weighted observations (with 1/sigma)
   std::vector<GnssType> types;              // observed types (inclusive composed signals)
@@ -101,22 +114,23 @@ public:
 
   // approximate values (Taylor point)
   Time     timeRecv, timeTrans;
-  Vector3d posRecv, posTrans;
+  Vector3d posRecv,  posTrans;
   Vector3d velocityRecv, velocityTrans;
-  Double   r12; // corrected range: range - (clockError, troposphere, relativistic effects)
   Angle    azimutRecvLocal, elevationRecvLocal;
   Angle    azimutRecvAnt,   elevationRecvAnt;
   Angle    azimutTrans,     elevationTrans;
-  Double   dSTEC;
+  Double   STEC, dSTEC;
 
-  ObservationEquation() : track(nullptr), receiver(nullptr), transmitter(nullptr) {}
+  GnssObservationEquation() : track(nullptr), receiver(nullptr), transmitter(nullptr) {}
 
-  ObservationEquation(const Observation &observation, const Receiver &receiver, const Transmitter &transmitter,
-                      GnssParametrizationIonospherePtr ionosphere, UInt idEpoch, Bool decorrelate, const std::vector<GnssType> &types)
-                      {compute(observation, receiver, transmitter, ionosphere, idEpoch, decorrelate, types);}
+  GnssObservationEquation(const GnssObservation &observation, const GnssReceiver &receiver, const GnssTransmitter &transmitter,
+                          const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
+                          UInt idEpoch, Bool decorrelate, const std::vector<GnssType> &types)
+    {compute(observation, receiver, transmitter, rotationCrf2Trf, reduceModels, idEpoch, decorrelate, types);}
 
-  void compute(const Observation &observation, const Receiver &receiver, const Transmitter &transmitter,
-               GnssParametrizationIonospherePtr ionosphere, UInt idEpoch, Bool decorrelate, const std::vector<GnssType> &types);
+  void compute(const GnssObservation &observation, const GnssReceiver &receiver, const GnssTransmitter &transmitter,
+               const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
+               UInt idEpoch, Bool decorrelate, const std::vector<GnssType> &types);
 };
 
 /***********************************************/

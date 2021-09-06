@@ -1,108 +1,96 @@
 \section{GNSS satellite orbit determination and station network analysis}\label{cookbook.gnssNetwork}
-
 This cookbook chapter describes an example of global GNSS processing as done by analysis centers of the
-International GNSS Service (IGS). A scientific article detailing the underlying processing approach
-can be found via DOI \href{https://doi.org/10.1007/s00190-018-1223-2}{10.1007/s00190-018-1223-2}.
-
-Resulting products usually comprise:
+International GNSS Service (IGS). Resulting products usually comprise:
 \begin{itemize}
   \item Satellite orbits, clocks, and signal biases
   \item Station positions, clocks, signal biases, and troposphere estimates
   \item Earth orientation parameters
-  \item Normal equations
 \end{itemize}
 
-This example is limited to GPS and Galileo, a small station network of around 100 stations, and a single day at a 5-minute
-processing sampling.
+A scientific article detailing the underlying processing approach
+can be found via DOI \href{https://doi.org/10.1007/s00190-018-1223-2}{10.1007/s00190-018-1223-2}.
+
+An example scenario for this task is available at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip}.
+It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at \url{https://ftp.tugraz.at/outgoing/ITSG/groops} (data folder or zipped archive).
+The scenario generally represents what is described in this cookbook, but may slightly differ in certain settings.
 
 \emph{Note: Global GNSS processing can become very computationally intensive. Depending on the number of satellites
-and stations, the observation and processing sampling, and certain parametrizations it can quickly exceed the capabilities
+and stations, the observation and processing sampling, and parametrizations it can quickly exceed the capabilities
 of a normal desktop computer and may require computer clusters or number crunchers (see section}
 \reference{Parallelization}{general.parallelization}\emph{).}
 
-\subsection{Data and metadata preparation}
+\subsection{Data preparation}\label{cookbook.gnssNetwork:metadata}
+Most of the required metadata files are provided in GROOPS file formats at \url{https://ftp.tugraz.at/outgoing/ITSG/groops}.
+These files are regularly updated.
 
-Global GNSS processing requires a large set of data and metadata. Most metadata and some data files are
-provided in GROOPS file formats at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/data}
-(marked with \textbf{*} below). These files are regularly updated. Alternatively, check the linked
-file types and programs for information on how to create these files manually.
-
-Satellite metadata:
+Data that has to be gathered from other sources comprises:
 \begin{itemize}
-  \item \file{Transmitter info}{gnssStationInfo}\textbf{*}: PRN-SVN mapping, antenna offsets and orientations
-  \item \file{Antenna definition}{gnssAntennaDefinition}\textbf{*}: antenna center variations
-  \item \file{Receiver definition}{gnssReceiverDefinition}\textbf{*}: transmitted signal types (recommended)
-  \item \file{Satellite macro model}{satelliteModel}\textbf{*}: box-wing model, mass, antenna thrust
-  \item \file{Attitude info}{instrument}\textbf{*}: attitude modes and parameters
+  \item \textbf{Receiver observations}: GNSS measurements converted from RINEX format (see \program{RinexObservation2GnssReceiver}).
+  \item \textbf{Approximate orbits}: broadcast or precise orbits in CRF for orbit integration (see \program{GnssRinexNavigation2OrbitClock} or \program{Sp3Format2Orbit}).
+  \item \textbf{Approximate clocks}: broadcast or precise clocks (see \program{GnssRinexNavigation2OrbitClock} or \program{GnssClockRinex2InstrumentClock})
 \end{itemize}
+Receiver observations, broadcast ephemerides, and precise satellite orbits and clocks can be downloaded from the
+\href{https://igs.org/data-products-overview/}{IGS Data Centers}.
+GPS, GLONASS, and Galileo orbits and clocks for the period 1994-2020 are also available as part of
+\href{https://doi.org/10.3217/dataset-4528-0723-0867}{Graz University of Technology's contribution to IGS repro3}.
 
-Station metadata:
-\begin{itemize}
-  \item \file{Station info}{gnssStationInfo}\textbf{*}: antenna and receiver information, antenna reference point
-        offsets, antenna orientations
-  \item \file{Antenna definition}{gnssAntennaDefinition}\textbf{*}: antenna center offsets and variations
-  \item \file{Receiver definition}{gnssReceiverDefinition}: observed signal types (optional)
-  \item \file{Accuracy definition}{gnssAntennaDefinition}\textbf{*}: elevation and azimuth dependent accuracy
-\end{itemize}
+The \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip}{example scenario} includes a small set of this data.
+The script \verb|010groopsConvert.xml| can be used to convert these external formats into GROOPS formats.
 
-Most data files are not provided in GROOPS formats and have to be converted manually from external file formats.
-
-Satellite data:
-\begin{itemize}
-  \item \textbf{Approximate orbits}: broadcast or precise IGS orbits in CRF for orbit integration (see \program{Sp3Format2Orbit})
-  \item \textbf{Approximate clocks}: broadcast or precise IGS clocks (see \program{GnssClockRinex2InstrumentClock})
-  \item \textbf{Attitude}: rotation from body frame to CRF (see \program{SimulateStarCameraGnss} or \program{GnssOrbex2StarCamera})
-\end{itemize}
-
-Station data:
-\begin{itemize}
-  \item \textbf{Precise position}\textbf{*}: i.e. IGS reference frame position, for no-net constraints (see \program{Sinex2StationPosition},
-        \program{Sinex2StationDiscontinuities}, \program{Sinex2StationPostSeismicDeformation})
-  \item \textbf{Observations}: receiver measurements (see \program{RinexObservation2GnssReceiver})
-  \item \textbf{Troposphere model}\textbf{*}: mapping functions, i.e. VMF3 (see \program{ViennaMappingFunctionGrid2File},
-        \program{ViennaMappingFunctionStation2File})
-\end{itemize}
-
-Additional data:
-\begin{itemize}
-  \item \textbf{Earth orientation parameters}\textbf{*}: IERS Earth rotation data
-        (see \configClass{EarthRotation}{earthRotationType})
-  \item \textbf{Gravity field}\textbf{*}: gravity field model for orbit integration
-        (see \configClass{Gravityfield}{gravityfieldType})
-  \item \textbf{Tides and tidal deformation}\textbf{*}: models for astronomical, Earth, ocean, pole, ocean pole,
-        and atmospheric tides (see \configClass{Tides}{tidesType})
-  \item \textbf{Albedo}\textbf{*}: reflectivity and emissivity grids, i.e. from CERES
-        (see \configClass{Albedo}{miscAccelerationsType:albedo})
-\end{itemize}
+Prepare a \file{station list file}{stringTable} that contains the stations to be processed.
+Each line can contain more than one station. The first station in each line that has data available is used for the processing.
+If your network contains more than 60-70 stations, it is recommended to start processing with a core network (see \reference{Advanced}{cookbook.gnssNetwork:advanced}).
+In this case, define an additional \file{core station list file}{stringTable} that can also have multiple stations per line.
 
 \subsection{Preprocessing: Orbit integration}\label{cookbook.gnssNetwork:orbitIntegration}
-
 Numerical integration of the satellite orbits is the first step in global GNSS processing.
-Use \program{PreprocessingVariationalEquation} and provide all relevant \configClass{forces}{forcesType},
-the \configFile{inputfileSatelliteModel}{satelliteModel}, attitude (see \program{SimulateStarCameraGnss}),
-and approximate orbit. Setting the largest force components (i.e. the static gravity field) in
-\configClass{gradientField}{gravityfieldType} is sufficient for GNSS satellites.
+Dynamic orbits are integrated based on \configClass{force models}{forcesType} and then fitted to the approximate orbits
+by estimating their initial state and additional empirical parameters for solar radiation pressure to improve the orbit fit.
+The resulting \file{variational equations}{variationalEquation} file contains the integrated orbit, derivatives
+with respect to the satellite state vector, attitude, Earth rotation and satellite model.
+
+Orbit preprocessing is covered by the script \verb|020groopsGnssPreprocessing.xml| in the \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip}{example scenario}.
+
+It is recommended to perform the steps below in a \reference{loop}{general.loopsAndConditions} over all
+satellites/PRNs using \program{LoopPrograms}.
+
+\begin{itemize}
+  \item \program{GnssPrn2SvnBlockVariables}
+  \item \program{InstrumentResample}: resample approximate orbits from \reference{data preparation}{cookbook.gnssPpp:metadata} to target sampling (e.g., 1 minute) by defining a \configClass{timeSeries}{timeSeriesType} based on a \config{method:polynomial} (\config{polynomialDegree}=\verb|7|, \config{maxDataPointRange}=\verb|7200|, \config{maxExtrapolationDistance}=\verb|900|).
+  \item \program{OrbitAddVelocityAndAcceleration}: add velocity via running polynomial (\config{polynomialDegree}=\verb|2|) derivation (needed for attitude computation)
+  \item \program{SimulateStarCameraGnss}
+  \item \program{PreprocessingVariationalEquation}:
+        \begin{itemize}
+          \item \configFile{inputfileSatelliteModel}{satelliteModel}=\verb|{groopsDataDir}/gnss/transmitter/satelliteModel/satelliteModel_boxWing.{svn}.xml|
+          \item \configFile{inputfileOrbit}{instrument}: the resampled approximate orbit from \program{InstrumentResample}
+          \item \configFile{inputfileStarCamera}{instrument}: the attitude file from \program{SimulateStarCameraGnss}
+          \item \config{forces}: see below
+          \item \configClass{gradientfield:potentialCoefficients}{gravityfieldType:potentialCoefficients}: a static gravity field (e.g. GOCO06s) with \config{maxDegree}=\verb|4|.
+        \end{itemize}
+  \item \program{PreprocessingVariationalEquationOrbitFit}: fit the integrated orbit (\configFile{inputfileVariational}{variationalEquation}) to the approximate orbit (\configFile{inputfileOrbit}{instrument}) by least squares adjustment.
+        Add \configClass{parametrizationAcceleration:gnssSolarRadiation}{parametrizationAccelerationType:gnssSolarRadiation}
+        and select the \href{https://doi.org/10.1007/s00190-015-0814-4}{ECOM2} parameters to be estimated.
+\end{itemize}
 
 Force models usually include:
 \begin{itemize}
-  \item \configClass{gravityField:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
+  \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
         static gravity field (e.g. GOCO06s)
-  \item \configClass{gravityField:trend}{gravityfieldType:trend}
+  \item \configClass{gravityfield:trend}{gravityfieldType:trend}
   \begin{itemize}
-    \item \configClass{gravityField:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
           trend component of time-variable gravity field (e.g. GOCO06s)
   \end{itemize}
-  \item \configClass{gravityField:oscillation}{gravityfieldType:oscillation}
+  \item \configClass{gravityfield:oscillation}{gravityfieldType:oscillation}
   \begin{itemize}
-    \item \configClass{gravityFieldCos:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
+    \item \configClass{gravityfieldCos:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
           annual cosine component of time-variable gravity field (e.g. GOCO06s)
-    \item \configClass{gravityFieldSin:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
+    \item \configClass{gravityfieldSin:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
           annual sine component of time-variable gravity field (e.g. GOCO06s)
   \end{itemize}
   \item \configClass{tides:astronomicalTide}{tidesType:astronomicalTide}: astronomical tides (e.g. based on JPL ephemeris)
   \item \configClass{tides:earthTide}{tidesType:earthTide}: Earth tide (IERS conventions)
   \item \configClass{tides:doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: ocean tides (e.g. FES 2014b)
-  \item \configClass{tides:doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: atmospheric tides (e.g. AOD1B RL06)
   \item \configClass{tides:poleTide}{tidesType:poleTide}: pole tides (IERS conventions)
   \item \configClass{tides:poleOceanTide}{tidesType:oceanPoleTide}: ocean pole tides (IERS conventions)
   \item \configClass{miscAccelerations:solarRadiationPressure}{miscAccelerationsType:solarRadiationPressure}:
@@ -113,330 +101,162 @@ Force models usually include:
   \item \configClass{miscAccelerations:relativisticEffect}{miscAccelerationsType:relativisticEffect}:
         relativistic effects (IERS conventions)
 \end{itemize}
+For the spherical harmonics expansions a \config{maxDegree}=\verb|60| is more than enough.
 
-The resulting \file{variational equations}{variationalEquation} file contains the integrated orbit, derivatives
-with respect to the satellite state vector, attitude, Earth rotation, and satellite model.
-Use \program{PreprocessingVariationalEquationOrbitFit} to fit the integrated orbit to the approximate orbit by
-least squares adjustment. This adjustment usually includes additional empirical parameters for solar radiation
-pressure to improve the orbit fit.
-Add \configClass{parametrizationAcceleration:gnssSolarRadiation}{parametrizationAccelerationType:gnssSolarRadiation}
-and select the \href{https://doi.org/10.1007/s00190-015-0814-4}{ECOM2} parameters to be estimated.
-The resulting variational equations file contains the updated orbit and derivatives.
-
-It is recommended to perform the steps above in a \reference{loop}{general.loopsAndConditions} over all
-satellites/PRNs using \program{LoopPrograms}. Since \program{PreprocessingVariationalEquation} requires an
-\configFile{inputfileSatelliteModel}{satelliteModel} and \program{SimulateStarCameraGnss} requires an
-\configFile{inputfileAttitudeInfo}{instrument}, both of which are generally defined for a specific satellite/SVN
-or block, \program{GnssPrn2SvnBlockVariables} can be used before these programs to define
-\reference{variables}{general.parser} for SVN and block based on the PRN.
-These variables are then available in \configFile{inputfileSatelliteModel}{satelliteModel} and
-\configFile{inputfileAttitudeInfo}{instrument}.
+The result of the preprocessing should be a \file{variational equations file}{variationalEquation},
+a \file{reduced dynamic orbit file}{instrument} from \program{PreprocessingVariationalEquationOrbitFit}
+and an \file{attitude file}{instrument} from \program{SimulateStarCameraGnss} for each satellite.
 
 \subsection{GNSS processing}\label{cookbook.gnssNetwork:processing}
+The script \verb|030groopsGnssProcessing.xml| in the \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip}{example scenario}
+implements the following steps and settings.
 
-Once all metadata and data are prepared and the orbits are integrated, the actual GNSS processing can begin.
-Use \program{GnssProcessing} and define the \configClass{transmitter}{gnssParametrizationTransmitterType}
-constellations, a \configClass{receiver:stationNetwork}{gnssParametrizationReceiverType:stationNetwork}, and
-the list of \configClass{processingSteps}{gnssProcessingStepType}.
+These are the settings for \program{GnssProcessing}. If not otherwise stated use the default values.
 
-Since this program is very complex, an overview of the most important settings used for the example
-processing in this cookbook chapter follows. Only config elements that deviate from the default values are listed.
-For most input files the default value and annotation give a good hint of what is expected, so they are not
-listed here.
-
-The first step is setting the processing sampling, in this example it is 5~minutes. Alternatively, if observation
-preprocessing (outlier detection, cycle slip detection etc.) should be performed at full (i.e. 30-second) sampling,
-set \config{sampling}=\verb|30/86400| and define a \configClass{processingStep:selectEpochs}{gnssProcessingStepType:selectEpochs}
-which selects every 10th epoch. The processing interval usually is a single 24-hour day,
+The first step is setting the processing sampling, in this example it is 30~seconds.
+The processing interval usually is a single 24-hour day, therefore define
 \configClass{timeSeries:uniformSampling}{timeSeriesType:uniformSampling} with \config{timeStart}=\verb|<mjd>|,
-\config{timeEnd}=\verb|<mjd>+1|, \config{sampling}=\verb|5/1440| (processing sampling).
+\config{timeEnd}=\verb|<mjd>+1|, \config{sampling}=\verb|30/86400| (processing sampling).
 
-Next define the GNSS constellations, in this case GPS and Galileo.
+Add the appropriate \configClass{transmitters:gnss}{gnssTransmitterGeneratorType:gnss} (e.g. GPS, GLONASS, and Galileo)
+and provide the required files:
 \begin{itemize}
-  \item \configClass{transmitter:GPS}{gnssParametrizationTransmitterType:gps}
-  \begin{itemize}
-    \item \configFile{inputfileSignalBias}{gnssSignalBias}: leave empty, since we estimate our own biases
-    \item \configFile{inputfileVariational}{variationalEquation}=\verb|preprocessing/variational.{prn}.dat| (integrated orbits)
-    \item \config{estimateOrbit:dynamic}
-    \begin{itemize}
-      \item \configClass{parametrizationAcceleration:gnssSolarRadiation}{parametrizationAccelerationType:gnssSolarRadiation}:
-            select same parameters used in orbit integration
-      \item \config{stochasticPulse}: set epoch for stochastic pulse (instantaneous velocity change) parameters to further
-            improve orbit fit (usually at 12:00)
-    \end{itemize}
-    \item \config{estimateCodeBias}=\verb|yes|
-    \item \config{estimatePhaseBias}=\verb|yes|
-    \item \config{biasModel}: time-variable GPS L5 phase bias
-    \begin{itemize}
-      \item \configClass{type}{gnssType}=\verb|L5*G|
-      \item \configClass{parametrizationTemporal:splines}{parametrizationTemporalType:splines} (e.g. degree 3 with hourly nodes
-            and daily intervals)
-    \end{itemize}
-    \item \config{estimateClockError:epochWise}
-    \begin{itemize}
-      \item \config{sigmaZeroMeanConstraint}=\verb|0.0001| (zero-mean constraint over GPS satellite clocks to remove rank
-            deficiency in clock parameters)
-    \end{itemize}
-    \item \configClass{antennaCenter}{gnssParametrizationAntennaType} (optional, to add antenna centers to normal equations)
-    \begin{itemize}
-      \item \configClass{antennaCenterVariations:center}{parametrizationGnssAntennaType:center} (enable X, Y, Z)
-      \item \configClass{patternTypes}{gnssType}=\verb|L1*G|, \verb|L2*G|, \verb|L5*G|
-      \item \config{addNonMatchingTypes}=\verb|no|
-    \end{itemize}
-  \end{itemize}
-  \item \configClass{transmitter:Galileo}{gnssParametrizationTransmitterType:galileo} (use same settings as for GPS, except for
-        what is listed below)
-  \begin{itemize}
-    \item \config{biasModel} is removed (not needed for Galileo)
-    \item \config{estimateClockError:epochWise}
-    \begin{itemize}
-      \item \config{sigmaZeroMeanConstraint}=\verb|0| (no constraint needed, clock rank deficiency is solved by
-            GPS zero-mean constraint)
-    \end{itemize}
-  \end{itemize}
+  \item \configFile{inputfileOrbit}{instrument} from \reference{preprocessing}{cookbook.gnssNetwork:orbitIntegration}
+  \item \configFile{inputfileAttitude}{instrument} from \reference{preprocessing}{cookbook.gnssNetwork:orbitIntegration}
+  \item \configFile{inputfileClock}{instrument} from \reference{data preparation}{cookbook.gnssPpp:metadata}
 \end{itemize}
 
-Define the station network to be processed. In this example it will contain around 100 stations. A subset of them
-(i.e. those that have IGS reference frame coordinates) are going to be used for no-net constraints. Prepare the
-respective \file{station list files}{stringList} (one station name per line) beforehand.
+The following settings are needed in \configClass{receiver:stationNetwork}{gnssReceiverGeneratorType:stationNetwork}:
 \begin{itemize}
-  \item \configClass{receiver:stationNetwork}{gnssParametrizationReceiverType:stationNetwork}
-  \begin{itemize}
-    \item \configFile{inputfileStationList}{stringList}: list of all stations to be processed
-    \item \configFile{inputfileSignalBias}{gnssSignalBias}: leave empty, since we estimate our own biases
-    \item \configClass{positionEstimation:constant}{parametrizationTemporalType:constant}
-    \item \config{noNetTranslationSigma}=\verb|0.00001| (optional)
-    \item \config{noNetRotationSigma}=\verb|0.00001| (required to solve rank deficiency)
-    \item \configFile{noNetStationList}{stringList}: list of no-net stations (e.g. IGS reference frame stations)
-    \item \config{estimateCodeBias}=\verb|yes|
-    \item \config{estimatePhaseBias}=\verb|yes|
-    \item \configClass{troposphere:viennaMapping}{troposphereType} (e.g. VMF3 operational gridded)
-    \item \configClass{troposphereWetEstimation:splines}{parametrizationTemporalType:splines} (e.g. degree 1 with 2-hourly
-          nodes and daily intervals)
-    \item \configClass{troposphereGradientEstimation:constant}{parametrizationTemporalType:constant}
-    \item \configClass{troposphereGradientEstimation:trend}{parametrizationTemporalType:trend} (at center of day with
-          \config{timeStep}=\verb|1|)
-    \item \configClass{tides:earthTide}{tidesType:earthTide}: Earth tidal deformations (IERS conventions)
-    \item \configClass{tides:doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: ocean tidal deformations
-          (e.g. FES 2014b, \config{minDegree}=\verb|1|)
-    \item \configClass{tides:doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: atmospheric tidal deformation
-          (e.g. AOD1B RL06, \config{minDegree}=\verb|1|)
-    \item \configClass{tides:poleTide}{tidesType:poleTide}: pole tidal deformations (IERS conventions)
-    \item \configClass{tides:poleOceanTide}{tidesType:oceanPoleTide}: ocean pole tidal deformations (IERS conventions)
-    \item \config{preprocessing}: settings for station-wise observation preprocessing
-          (e.g. \configClass{ignoreType}{gnssType}=\verb|*6*E| to ignore Galileo E6 observations)
-  \end{itemize}
+   \item \configFile{inputfileStationList}{stringTable}: list of all stations to be processed
+   \item \configFile{inputfileObservations}{instrument}: The converted RINEX observation files.
+   \item \configClass{tidalDisplacement}{tidesType}: Use the settings described in \reference{receiver:stationNetwork}{gnssReceiverGeneratorType:stationNetwork}.
+   \item \configClass{excludeType}{gnssType}: Signals you might want to exclude are \verb|C*?G| (old unknown GPS code observations), \verb|*3*R| (GLONASS G3 freq.), \verb|*6*E| (Galileo E6 freq.).
 \end{itemize}
 
-In the next step, define the Earth rotation and all Earth orientation parameters (EOPs) to be estimated. For GNSS this
-generally includes polar motion, polar motion rate, and length of day (LOD). A tightly-constrained parameter for dUT1
-is added as well so it is part of the resulting normal equations. The selected Earth rotation includes a high-frequency
-EOP model.
+Add the following \configClass{parametrizations}{gnssParametrizationType}
+and define the \config{outputfiles} you are interested in inside each of them:
 \begin{itemize}
-  \item \configClass{earthRotation}{gnssParametrizationEarthRotationType}
-  \begin{itemize}
-    \item \configClass{earthRotation:file}{earthRotationType:file}
-          with \configFile{inputfileEOP}{earthOrientationParameter}=\verb|timeSeries_EOP_IAU2000_desai.dat|
-    \item \configClass{earthRotationModels:itrf2010b}{earthRotationType:iers2010b} with empty
-          \configFile{inputfileEOP}{earthOrientationParameter} (model will be reduced from output for a priori EOP parameters)
-    \item \configClass{estimatePole:constant}{parametrizationTemporalType:constant}: polar motion
-    \item \configClass{estimatePole:trend}{parametrizationTemporalType:trend} polar motion rate
-          (at center of day with \config{timeStep}=\verb|1|)
-    \item \configClass{estimateUT1:constant}{parametrizationTemporalType:constant}:
-          dUT1 (not estimable with GNSS, only for normal equations)
-    \item \configClass{estimateUT1:trend}{parametrizationTemporalType:trend}: length of day (at center of day with
-          \config{timeStep}=\verb|-1| to match IGS sign convention)
-  \end{itemize}
+  \item \configClass{ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}: add a constraint of \config{sigmaSTEC}=\verb|40|
+  \item \configClass{ionosphereMap}{gnssParametrizationType:ionosphereMap}: add \configClass{temporal:splines}{parametrizationTemporalType:splines}
+        with linear (\config{degree}=\verb|1|) 2-hourly splines
+  \item \configClass{clocks}{gnssParametrizationType:clocks}: optionally change \configClass{selectTransmitterZeroMeans}{gnssTransceiverSelectorType} to \configClass{wildcard}{gnssTransceiverSelectorType:wildcard} with \config{name}=\verb|G*| to align clocks to mean over GPS (instead of all) satellites
+  \item \configClass{signalBiases}{gnssParametrizationType:signalBiases}
+  \item \configClass{ambiguities}{gnssParametrizationType:ambiguities}
+  \item \configClass{codeBiases}{gnssParametrizationType:codeBiases}
+  \item \configClass{tecBiases}{gnssParametrizationType:tecBiases}
+  \item \configClass{temporalBias}{gnssParametrizationType:temporalBias}: time-variable GPS L5 phase bias with \configClass{type}{gnssType}=\verb|L5*G|
+        and \configClass{parametrizationTemporal:splines}{parametrizationTemporalType:splines} with degree 3 and hourly nodes.
+  \item \configClass{staticPositions}{gnssParametrizationType:staticPositions}
+  \item \configClass{troposphere}{gnssParametrizationType:troposphere}: select \configClass{troposphere:viennaMapping}{troposphereType:viennaMapping}
+        with the appropriate vmf3grid file. Add \configClass{troposphereWetEstimation:splines}{parametrizationTemporalType:splines}
+        with linear (\config{degree}=\verb|1|) 2-hourly splines
+        and \configClass{troposphereGradientEstimation:splines}{parametrizationTemporalType:splines} with linear daily splines.
+  \item \configClass{transmitterDynamicOrbit}{gnssParametrizationType:transmitterDynamicOrbits}:
+        provide \configFile{inputfileVariational}{variationalEquation}=\verb|preprocessing/variational.{prn}.dat|
+        from the preprocessing step.
+        Add \configClass{parametrizationAcceleration:gnssSolarRadiation}{parametrizationAccelerationType:gnssSolarRadiation} and
+        \configClass{stochasticPulse:irregular}{timeSeriesType:irregular} parameter at center of day to further improve orbit fit.
+  \item \configClass{earthRotation}{gnssParametrizationType:earthRotation}
+        \begin{itemize}
+          \item \configClass{estimatePole:constant}{parametrizationTemporalType:constant}: polar motion
+          \item \configClass{estimatePole:trend}{parametrizationTemporalType:trend} polar motion rate
+                (at center of day with \config{timeStep}=\verb|1|)
+          \item \configClass{estimateUT1:trend}{parametrizationTemporalType:trend}: length of day (at center of day with
+                \config{timeStep}=\verb|-1| to match IGS sign convention)
+        \end{itemize}
+    \item \configClass{constraints}{gnssParametrizationType:constraints}: loose constraint on GPS L5 phase biases,
+        \configClass{parameters:wildcard:type}{parameterSelectorType:wildcard}=\verb|signalBias.L5*|, \config{sigma}=\verb|5| meters, and \config{relativeToApriori}=\verb|yes|
+    \item \configClass{constraints}{gnssParametrizationType:constraints}: loose constraint troposphere estimates,
+        \configClass{parameters:wildcard:type}{parameterSelectorType:wildcard}=\verb|troposphere*|, \config{sigma}=\verb|5| meters, and \config{relativeToApriori}=\verb|yes|
+    \item \configClass{constraints}{gnssParametrizationType:constraints}: constraint on stochastic pulses,
+        \configClass{parameters:wildcard:type}{parameterSelectorType:wildcard}=\verb|stochasticPulse*|, \config{sigma}=\verb|0.1| micrometers/second.
 \end{itemize}
 
-Some parametrizations don't offer config elements for constraints on the respective parameters, so they have to be added
-as general constraints. The parameters to be constrained can be selected by name (including support for wildcards).
-The sigma for general constraints is always of the same unit as the parameter.
+Finally, define the \configClass{processingSteps}{gnssProcessingStepType}.
+This can be overwhelming at first, but offers a lot of flexibility.
+The example script uses a 5-minute processing sampling with subsequent clock densification to 30 seconds.
+
 \begin{itemize}
-  \item \configClass{constraints}{gnssParametrizationConstraintsType}: loose constraint on GPS L5 phase biases
-  \begin{itemize}
-    \item \configClass{parameters:wildcard}{parameterSelectorType:wildcard} with \config{object}=\verb|G??|,
-          \config{type}=\verb|signalBias.L5*|, \config{temporal}=\verb|*|, \config{interval}=\verb|*|
-    \item \config{sigma}=\verb|5| meters
-    \item \config{relativeToApriori}=\verb|yes|
-  \end{itemize}
-  \item \configClass{constraints}{gnssParametrizationConstraintsType}: loose constraint troposphere estimates
-  \begin{itemize}
-    \item \configClass{parameters:wildcard}{parameterSelectorType:wildcard} with \config{object}=\verb|*|,
-          \config{type}=\verb|troposphere*|, \config{temporal}=\verb|*|, \config{interval}=\verb|*|
-    \item \config{sigma}=\verb|5| meters (wet)/degrees (gradient)
-    \item \config{relativeToApriori}=\verb|yes|
-  \end{itemize}
-  \item \configClass{constraints}{gnssParametrizationConstraintsType}: constraint on stochastic pulses
-  \begin{itemize}
-    \item \configClass{parameters:wildcard}{parameterSelectorType:wildcard} with \config{object}=\verb|*|,
-          \config{type}=\verb|stochasticPulse*|, \config{temporal}=\verb|*|, \config{interval}=\verb|*|
-    \item \config{sigma}=\verb|0.1| micrometers/second
-  \end{itemize}
-  \item \configClass{constraints}{gnssParametrizationConstraintsType}: tight constraint on dUT1 parameter
-        (not estimable with GNSS, only for normal equations)
-  \begin{itemize}
-    \item \configClass{parameters:wildcard}{parameterSelectorType:wildcard} with \config{object}=\verb|earth|,
-          \config{type}=\verb|UT1|, \config{temporal}=\verb||, \config{interval}=\verb|*|
-    \item \config{sigma}=\verb|1e-5| milliseconds
-    \item \config{relativeToApriori}=\verb|yes|
-  \end{itemize}
-  \item \configClass{constraints}{gnssParametrizationConstraintsType}: tight constraint on antenna center
-        (only for normal equations)
-  \begin{itemize}
-    \item \configClass{parameters:wildcard}{parameterSelectorType:wildcard} with \config{object}=\verb|*|,
-          \config{type}=\verb|antennaCenter*|, \config{temporal}=\verb|*|, \config{interval}=\verb|*|
-    \item \config{sigma}=\verb|1e-6| meters
-  \end{itemize}
+      \item \configClass{selectEpochs}{gnssProcessingStepType:selectEpochs}: with \config{nthEpoch}=\verb|10| to reduce sampling to 5 minutes.
+      \item \configClass{selectParametrizations}{gnssProcessingStepType:selectParametrizations}:
+            disable \verb|constraint.STEC|, \verb|*VTEC|, \verb|*.tecBiases| as the ionosphere parameters are estimated in the final steps only.
+      \item \configClass{estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|6|
+      \item \configClass{resolveAmbiguities}{gnssProcessingStepType:resolveAmbiguities}
+      \item \configClass{selectParametrizations}{gnssProcessingStepType:selectParametrizations}:
+            enable \verb|*| (all) parameters
+      \item \configClass{estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|4|: final iterations (with 5-minute sampling) and ionosphere parameters
+      \item \configClass{group}{gnssProcessingStepType:group}: clock densification to 30-second sampling
+      \begin{itemize}
+            \item \configClass{selectEpochs}{gnssProcessingStepType:selectEpochs}: with \config{nthEpoch}=\verb|1| to set full 30-second sampling
+            \item \configClass{selectParametrizations}{gnssProcessingStepType:selectParametrizations}:
+            disable \verb|*| (all) parameters and reenable \verb|*.clock*| and \verb|*.STEC| parameters
+            \item \configClass{estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|6|
+            \item \configClass{writeResults}{gnssProcessingStepType:writeResults}: with \config{suffix}=\verb|30s| to write 30-second clock files
+      \end{itemize}
+      \item \configClass{writeResults}{gnssProcessingStepType:writeResults}: write the final results
 \end{itemize}
 
-Finally, define the processing steps. This can be overwhelming at first, but offers a lot of flexibility.
+With some additional steps, the full 30-second sampling can be used to estimate all parameters (not only the clocks).
+These steps are disabled in the example script, as they require at least 16~GB of system memory.
+In this case, it is not necessary to separately write the 30-second clock files as listed above.
+
+\begin{itemize}
+      \item \configClass{selectEpochs}{gnssProcessingStepType:selectEpochs}: with \config{nthEpoch}=\verb|1| to set full 30-second sampling
+      \item \configClass{selectNormalsBlockStructure}{gnssProcessingStepType:selectNormalsBlockStructure}: As the system of normal
+      equations can be very large, the memory consumption might be reduced with \config{keepEpochNormalsinMemory}=\verb|no|.
+      In this case the epoch parameters are directly eliminated during the accumulation and reconstructed in the solving step.
+      This might lead to longer computation times.
+      \item \configClass{estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|2|: final iterations with full sampling
+\end{itemize}
+
+\subsection{Advanced: Processing large station networks}\label{cookbook.gnssNetwork:advanced}
+
+Processing large station networks requires some additional steps to keep the computational load to a reasonable degree.
 The general processing strategy is to first process a well-distributed subset of stations (i.e. a core network)
 to get good estimates of all satellite parameters, which then enables integer ambiguity resolution (IAR). Once
-the ambiguities of the core network are resolved and there are stable estimates for satellite phase biases, all
+the ambiguities of the core network are resolved and stable estimates for satellite phase biases are available, all
 other (non-core) stations can be processed individually (including IAR) while keeping the satellite parameters fixed.
-Finally, all stations can be processed together with all satellite parameters.
+At last, all stations can be processed together with all satellite parameters and ionosphere parameters.
 
-Let's start with the core network.
+Let's start with the \configClass{processingSteps}{gnssProcessingStepType} of the core network:
 \begin{itemize}
-  \item \configClass{processingStep:selectNormalsBlockStructure}{gnssProcessingStepType:selectNormalsBlockStructure}:
-      block structure for normal equations (different values may be more computationally efficient depending on the platform)
-  \begin{itemize}
-    \item \config{defaultBlockSizeInterval}=\verb|512|
-    \item \config{defaultBlockSizeAmbiguity}=\verb|256|
-    \item \config{keepEpochNormalsinMemory}=\verb|no| (in case your platform has limited memory, otherwise \verb|yes|)
-  \end{itemize}
-  \item \configClass{processingStep:selectParameters}{gnssProcessingStepType:selectParameters}: parameters
-        for least squares adjustment (TEC biases cannot be estimated together with signal biases)
-  \begin{itemize}
-    \item \config{estimateReceiverTecBias}=\verb|no|
-    \item \config{estimateReceiverAntennaCenterVariations}=\verb|no|
-    \item \config{estimateTransmitterTecBias}=\verb|no|
-    \item \config{estimateTransmitterAntennaCenterVariations}=\verb|no|
-    \item \config{constraintIonosphereSTEC}=\verb|no|
-    \item \config{estimateIonosphereVTec}=\verb|no|
-    \item \config{estimateIonosphereTecMap}=\verb|no|
-  \end{itemize}
-  \item \configClass{processingStep:selectReceivers}{gnssProcessingStepType:selectReceivers}: start with a
-        core network of well distributed stations (50-60 stations covering all signal types recommended)
-  \begin{itemize}
-    \item \configFile{inputfileStationList}{stringTable}: list of core network stations (one line per station
-          with alternative stations on the same line separated by whitespace)
-  \end{itemize}
-  \item \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}: initial iterative estimation
-        of all parameters (except non-core station parameters, TEC biases and antenna centers)
-  \begin{itemize}
-    \item \config{computeResiduals}=\verb|yes|
-    \item \config{adjustSigma0}=\verb|groupedPhases|
-    \item \config{computeWeights}=\verb|groupedPhases| (downweight code observations individually,
-          but phase observations all grouped together)
-    \item \config{convergenceThreshold}=\verb|0.005| meters
-    \item \config{maxIterationCount}=\verb|8|
-  \end{itemize}
-  \item \configClass{processingStep:group}{gnssProcessingStepType:group}: estimate TEC biases in an intermediate
-        step (set this as a \reference{global element}{general.configFiles:globalSection} as we will use it
-        again further below)
-  \begin{itemize}
-    \item \configClass{processingStep:selectParameters}{gnssProcessingStepType:selectParameters}: set everything
-          to \verb|no| except for the elements below (settings apply only to steps in current
-          \configClass{group}{gnssProcessingStepType:group})
-    \begin{itemize}
-      \item \config{estimateReceiverTecBias}=\verb|yes|
-      \item \config{constraintTransmitterSignalBiasZeroMean}=\verb|yes|
-      \item \config{estimateTransmitterTecBias}=\verb|yes|
-      \item \config{estimateIonosphereVTec}=\verb|yes|
-      \item \config{estimateIonosphereTecMap}=\verb|yes|
-      \item \config{constraintOther}=\verb|yes|
-    \end{itemize}
-    \item \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}
-    \begin{itemize}
-      \item \config{computeResiduals}=\verb|yes|
-      \item \config{convergenceThreshold}=\verb|0.005| meters
-      \item \config{maxIterationCount}=\verb|3|
-    \end{itemize}
-  \end{itemize}
-  \item \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}: some more core network iterations
-        (same settings as first time except for \config{maxIterationCount}=\verb|2|)
-  \item \configClass{processingStep:resolveAmbiguities}{gnssProcessingStepType:resolveAmbiguities}: integer
-        ambiguity resolution with core network
-  \begin{itemize}
-    \item \config{computeResiduals}=\verb|yes|
-    \item \config{adjustSigma0}=\verb|groupedPhases|
-    \item \config{computeWeights}=\verb|groupedPhases|
-  \end{itemize}
-  \item \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}: some more core network iterations
-        (same settings as first time except for \config{maxIterationCount}=\verb|2|)
+      \item \configClass{selectReceivers}{gnssProcessingStepType:selectReceivers} with \configClass{selectReceivers:file}{gnssTransceiverSelectorType:file}
+      using the core network station list file from \reference{data preparation}{cookbook.gnssPpp:metadata} as \configFile{inputfileStringTable}{stringTable}.
+      \item \configClass{selectEpochs}{gnssProcessingStepType:selectEpochs}: with \config{nthEpoch}=\verb|10| to reduce sampling to 5 minutes.
+      \item \configClass{selectParametrizations}{gnssProcessingStepType:selectParametrizations}:
+            disable \verb|constraint.STEC|, \verb|*VTEC|, \verb|*.tecBiases| as the ionosphere parameters are estimated in the final steps only.
+      \item \configClass{estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|6|
+      \item \configClass{resolveAmbiguities}{gnssProcessingStepType:resolveAmbiguities}
+      \item \configClass{estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|4|: final iterations (with 5-minute sampling)
 \end{itemize}
 
-Now all other (non-core) stations can be processed separately.
+Now all other (non-core) stations can be processed separately:
 \begin{itemize}
-  \item \configClass{processingStep:forEachReceiverSeparately}{gnssProcessingStepType:forEachReceiverSeparately}:
-        process all non-core stations individually with fixed transmitter parameters
-  \begin{itemize}
-    \item \configFile{inputfileExcludeStationList}{stringTable}: list of core network stations (same file as
-    \configFile{inputfileStationList}{stringTable} in
-    \configClass{processingStep:selectReceivers}{gnssProcessingStepType:selectReceivers})
-    \item Use the same steps here as for the core network, except for
-          \configClass{selectParameters}{gnssProcessingStepType:selectParameters} (settings are still valid here)
-          and \configClass{processingStep:selectReceivers}{gnssProcessingStepType:selectReceivers} (set automatically
-          by \configClass{forEachReceiverSeparately}{gnssProcessingStepType:forEachReceiverSeparately}). One option
-          is to set the steps from the core network as  \reference{global elements}{general.configFiles:globalSection}
-          and simply link them here.
-  \end{itemize}
-\end{itemize}
-
-Next all stations are processed together.
-\begin{itemize}
-  \item \configClass{processingStep:selectReceivers}{gnssProcessingStepType:selectReceivers} with empty
-        \configFile{inputfileStationList}{stringList} and \configFile{inputfileExcludeStationList}{stringList}
-        (selects all stations)
-  \item \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}: some iterations with the full network
-  \begin{itemize}
-    \item \config{computeResiduals}=\verb|yes|
-    \item \config{adjustSigma0}=\verb|groupedPhases|
-    \item \config{computeWeights}=\verb|groupedPhases|
-    \item \config{convergenceThreshold}=\verb|0.005| meters
-    \item \config{maxIterationCount}=\verb|2|
-  \end{itemize}
-  \item \configClass{processingStep:group}{gnssProcessingStepType:group}: estimate TEC biases again (link to the group
-        you set as a global element in the core network steps here so you don't have to define it again)
-  \item \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}: some final iterations, same settings as above
-\end{itemize}
-
-With all processing done, print the residual statistics and write the resulting output files.
-\begin{itemize}
-  \item \configClass{processingStep:printResidualStatistics}{gnssProcessingStepType:printResidualStatistics}
-  \item \configClass{processingStep:writeResults}{gnssProcessingStepType:writeResults}
-\end{itemize}
-
-Finally, since we also want to provide normal equations, some additional steps are necessary. Our normal equations shall
-include all parameters except for clocks, (remaining float) ambiguities, and receiver signal biases due to size restraints.
-These parameters will be removed via parameter elimination.
-\begin{itemize}
-  \item \configClass{processingStep:group}{gnssProcessingStepType:group}: this group is optional, but this way the
-        parameters selected below only affect the normal equations
-  \begin{itemize}
-    \item \configClass{processingStep:selectParameters}{gnssProcessingStepType:selectParameters}: antenna center offsets
-          are now included since we want them in the normal equations
-    \begin{itemize}
-      \item \config{estimateReceiverTecBias}=\verb|no|
-      \item \config{estimateTransmitterTecBias}=\verb|no|
-      \item \config{constraintIonosphereSTEC}=\verb|no|
-      \item \config{estimateIonosphereVTec}=\verb|no|
-      \item \config{estimateIonosphereTecMap}=\verb|no|
-    \end{itemize}
-    \item \configClass{processingStep:writeNormalEquations}{gnssProcessingStepType:writeNormalEquations}
-    \begin{itemize}
-      \item \config{eliminateEpochParameters}=\verb|yes| (clocks)
-      \item \configClass{remainingParameters:complement}{parameterSelectorType:complement}: keep all parameters except for these
+      \item \configClass{forEachReceiverSeparately}{gnssProcessingStepType:forEachReceiverSeparately}:
+            with \configClass{selectReceivers:file}{gnssTransceiverSelectorType:file} inside \configClass{selectReceivers:exclude}{gnssTransceiverSelectorType:exclude}
+            using the station list from the core network above to process all non-core stations individually with fixed transmitter parameters
       \begin{itemize}
-        \item \configClass{parameters:wildcard}{parameterSelectorType:wildcard} with \config{object}=\verb|*|,
-            \config{type}=\verb|ambiguity*|, \config{temporal}=\verb|*|, \config{interval}=\verb|*| (ambiguities)
-        \item \configClass{parameters:wildcard}{parameterSelectorType:wildcard} with \config{object}=\verb|????|,
-              \config{type}=\verb|signalBias*|, \config{temporal}=\verb|*|, \config{interval}=\verb|*| (receiver signal biases)
+      \item \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|6|
+      \item \configClass{processingStep:resolveAmbiguities}{gnssProcessingStepType:resolveAmbiguities}
+      \item \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|4|
       \end{itemize}
-    \end{itemize}
-  \end{itemize}
+\end{itemize}
+
+Next all stations are processed together with all parameters:
+\begin{itemize}
+      \item \configClass{selectReceivers}{gnssProcessingStepType:selectReceivers}: with \configClass{selectReceivers:all}{gnssTransceiverSelectorType:all}
+      \item \configClass{selectEpochs}{gnssProcessingStepType:selectEpochs}: with \config{nthEpoch}=\verb|1| to set full 30-second sampling
+      \item \configClass{group}{gnssProcessingStepType:group}: clock densification to 30-second sampling
+      \begin{itemize}
+            \item \configClass{selectParametrizations}{gnssProcessingStepType:selectParametrizations}:
+            disable \verb|*| (all) parameters and reenable \verb|*.clock*| and \verb|*.STEC| parameters
+            \item \configClass{estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|6|
+      \end{itemize}
+      \item \configClass{selectParametrizations}{gnssProcessingStepType:selectParametrizations}: enable \verb|*| (all) parameters.
+      \item \configClass{selectNormalsBlockStructure}{gnssProcessingStepType:selectNormalsBlockStructure}: with \config{keepEpochNormalsinMemory}=\verb|no|
+      \item \configClass{estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|4|: final iterations with full sampling and all parameters
+      \item \configClass{writeResults}{gnssProcessingStepType:writeResults}: write the final results
 \end{itemize}
 
 % =============================================================

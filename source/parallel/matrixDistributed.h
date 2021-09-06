@@ -194,7 +194,7 @@ public:
   * If blockSize is zero, the matrix consists of a single block. */
   static std::vector<UInt> computeBlockIndex(UInt parameterCount, UInt blockSize=2048);
 
-  friend class GnssProcessing;
+  friend class GnssProcessingStep;
   friend class GnssParametrizationAmbiguities;
 };
 

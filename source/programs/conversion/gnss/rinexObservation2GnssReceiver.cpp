@@ -117,7 +117,7 @@ void RinexObservation2GnssReceiver::run(Config &config, Parallel::CommunicatorPt
 
     readConfig(config, "outputfileGnssReceiver",             fileNameOut,                       Config::MUSTSET,  "", "");
     readConfig(config, "inputfileRinexObservation",          fileNameInObs,                     Config::MUSTSET,  "", "RINEX or Compact RINEX observation files");
-    readConfig(config, "inputfileMatrixPrn2FrequencyNumber", fileNameInPrn2FrequencyNumber,     Config::OPTIONAL, "", "(required for RINEX v2 files containing GLONASS observations) GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber");
+    readConfig(config, "inputfileMatrixPrn2FrequencyNumber", fileNameInPrn2FrequencyNumber,     Config::OPTIONAL, "{groopsDataDir}/gnss/transmitter/glonassPrnSvn2FrequencyNumber.txt", "(required for RINEX v2 files containing GLONASS observations) GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber");
     readConfig(config, "inputfileStationInfo",               fileNameStationInfo,               Config::OPTIONAL, "", "used to determine semi-codeless receivers and to cross-check antenna and receiver info");
     readConfig(config, "inputfileSemiCodelessReceivers",     fileNameSemiCodelessReceivers,     Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/semiCodelessReceivers.txt", "ASCII list with one receiver name per line");
     readConfig(config, "inputfileSpecialObservationTypes",   fileNameSpecialObservationTypes,   Config::OPTIONAL, "", "ASCII table mapping special observation types to RINEX 3 types, e.g.: LA L1C");

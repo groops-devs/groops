@@ -14,85 +14,102 @@
 #ifndef __GROOPS_GNSSTRANSMITTER__
 #define __GROOPS_GNSSTRANSMITTER__
 
-#include "gnss/gnss.h"
+#include "base/polynomial.h"
+#include "base/gnssType.h"
+#include "gnss/gnssTransceiver.h"
 
 /** @addtogroup gnssGroup */
 /// @{
+
+/***** TYPES ***********************************/
+
+class GnssTransmitter;
+typedef std::shared_ptr<GnssTransmitter> GnssTransmitterPtr;
 
 /***** CLASS ***********************************/
 
 /** @brief Abstract class for GNSS transmitter.
 * eg. GPS satellites. */
-class Gnss::Transmitter
+class GnssTransmitter : public GnssTransceiver
 {
-  Gnss   *_gnss;    // is set by Gnss::registerTransmitterAndReceiver
-  UInt    _idTrans; // is set by Gnss::registerTransmitterAndReceiver
+  GnssType                 type; // system + PRN
+  Polynomial               polynomial;
 
 public:
-/// Constructor.
-Transmitter();
+  std::vector<Time>        times;
+  std::vector<Double>      clk;
+  Vector                   pos, vel; // CoM in CRF
+  std::vector<Vector3d>    offset;   // between CoM and ARF in SRF
+  std::vector<Transform3d> crf2srf, srf2arf;
 
-/// Destructor.
-virtual ~Transmitter();
+  GnssTransmitter(GnssType prn, const std::string &name, const GnssStationInfo &info,
+                  GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction,
+                  const Vector &useableEpochs, const std::vector<Time> &times, const std::vector<Double> &clock,
+                  const Vector &position, const Vector &velocity, UInt interpolationDegree, const std::vector<Vector3d> &offset,
+                  const std::vector<Transform3d> &crf2srf, const std::vector<Transform3d> &srf2arf)
+  : GnssTransceiver(name, info, noPatternFoundAction, useableEpochs),
+    type(prn), polynomial(interpolationDegree), times(times), clk(clock), pos(position), vel(velocity), offset(offset), crf2srf(crf2srf), srf2arf(srf2arf) {}
 
-/** @brief is called by Gnss::init(). */
-void registerGnss(Gnss *gnss, UInt idTrans) {_gnss = gnss; _idTrans = idTrans;}
+  /// Destructor.
+  virtual ~GnssTransmitter() {}
 
-/** @brief Reference to the complete GNSS system. */
-Gnss &gnss()    const;
+  /** @brief Identify number in the GNSS system. */
+  UInt idTrans() const {return id_;}
 
-/** @brief Identify number in the GNSS system. */
-UInt idTrans() const {return _idTrans;}
+  /** @brief PRN number of satellite.
+  *  = prn + GnssType::SYSTEM. */
+  GnssType PRN() const {return type;}
 
-/** @brief PRN number of satellite.
-*  = prn + GnssType::SYSTEM. */
-virtual GnssType PRN() const = 0; // prn + GnssType::SYSTEM
+  /** @brief Clock error.
+  * error = clock time - system time [s] */
+  Double clockError(UInt idEpoch) const {return clk.at(idEpoch);}
 
-/** @brief name of satellite. */
-virtual std::string name() const = 0;
+  /** @brief set clock error.
+  * error = observed clock time - system time [s] */
+  void updateClockError(UInt idEpoch, Double deltaClock) {clk.at(idEpoch) += deltaClock;}
 
-/** @brief Is the transmitter usable at given epoch (or all epochs). */
-virtual Bool useable(UInt idEpoch=NULLINDEX) const = 0;
+  /** @brief center of mass in celestial reference frame (CRF). */
+  Vector3d positionCoM(const Time &time) const;
 
-/** @brief antenna reference point in CRF. */
-virtual Vector3d position(UInt idEpoch, const Time &time) const = 0;
+  /** @brief antenna reference point in celestial reference frame (CRF). */
+  Vector3d position(UInt idEpoch, const Time &time) const {return positionCoM(time) + crf2srf.at(idEpoch).inverseTransform(offset.at(idEpoch));}
 
-/** @brief velocity in CRF [m/s]. */
-virtual Vector3d velocity(UInt idEpoch, const Time &time) const = 0;
+  /** @brief velocity in CRF [m/s]. */
+  Vector3d velocity(const Time &time) const;
 
-/** @brief Rotation from celestial reference frame (CRF) to left-handed antenna system. */
-virtual Transform3d celestial2antennaFrame(UInt idEpoch, const Time &time) const = 0;
-
-/** @brief Clock error.
-* error = transmitter clock time - system time [s] */
-virtual Double clockError(UInt idEpoch, const Time &time) const = 0;
-
-/** @brief Transmitted signal types. Empty if no GNSS receiver definition was provided. */
-virtual std::vector<GnssType> definedTypes(UInt idEpoch) const = 0;
-
-/** @brief Direction dependent corrections.
-* observed range = range (ARPs of transmitter and receiver)  + antennaVariations. */
-virtual Vector antennaVariations(UInt idEpoch, Angle azimut, Angle elevation, const std::vector<GnssType> &type) const = 0;
-
-/** @brief Position and Time of transmitter.
-* For given receiver position and time the corresponding transmit time and position is computed */
-void transmitTime(UInt idEpoch, const Time &timeRecv, const Vector3d &posRecv, Time &timeTransmit, Vector3d &posTransmit) const;
-
-/** @brief Parameters of transmitter of this observation. */
-virtual Bool isDesignMatrixTransmitter(const NormalEquationInfo &normalEquationInfo, UInt idRecv, UInt idEpoch) const = 0;
-
-/** @brief Fill in the design matrix with parameters of transmitter. */
-virtual void designMatrixTransmitter(const NormalEquationInfo &normalEquationInfo, const ObservationEquation &eqn, DesignMatrix &A) const = 0;
-
-/** @brief Receivers are able to track full cycle integer ambiguities. */
-virtual Bool supportsIntegerAmbiguities(const NormalEquationInfo &normalEquationInfo) const = 0;
-
-/** @brief Are transmitter code biases estimated?. */
-virtual Bool isCodeBiasEstimated(const NormalEquationInfo &normalEquationInfo) const = 0;
-
-/** @brief Are transmitter (float) phase biases estimated?. */
-virtual Bool isPhaseBiasEstimated(const NormalEquationInfo &normalEquationInfo) const = 0;
+  /** @brief Rotation from celestial reference frame (CRF) to left-handed antenna system. */
+  Transform3d celestial2antennaFrame(UInt idEpoch, const Time &/*time*/) const {return srf2arf.at(idEpoch) * crf2srf.at(idEpoch);}
 };
+
+/***********************************************/
+
+inline Vector3d GnssTransmitter::positionCoM(const Time &time) const
+{
+  try
+  {
+    Vector p = polynomial.interpolate({time}, times, pos, 3);
+    return Vector3d(p(0), p(1), p(2));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+inline Vector3d GnssTransmitter::velocity(const Time &time) const
+{
+  try
+  {
+    const Vector v = polynomial.interpolate({time}, times, vel, 3);
+    return Vector3d(v(0), v(1), v(2));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
 
 /***********************************************/
 

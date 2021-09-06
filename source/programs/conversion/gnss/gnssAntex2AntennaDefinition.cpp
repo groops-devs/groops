@@ -55,38 +55,30 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
 {
   try
   {
-    FileName outFileNameAntennaStation, outFileNameAntennaGps, outFileNameAntennaGlonass, outFileNameAntennaGalileo, outFileNameAntennaBeiDou, outFileNameAntennaQzss;
-    FileName outFileNameTransmitterInfoGps, outFileNameTransmitterInfoGlonass, outFileNameTransmitterInfoGalileo, outFileNameTransmitterInfoBeiDou, outFileNameTransmitterInfoQzss;
+    FileName outFileNameAntennaStation, outFileNameAntennaTransmitter;
+    FileName outFileNameTransmitterInfo;
     FileName outFileNameSvnBlockTableGps, outFileNameSvnBlockTableGlonass, outFileNameSvnBlockTableGalileo, outFileNameSvnBlockTableBeiDou, outFileNameSvnBlockTableQzss;
     FileName outFileNameTransmitterListGps, outFileNameTransmitterListGlonass, outFileNameTransmitterListGalileo, outFileNameTransmitterListBeiDou, outFileNameTransmitterListQzss;
     FileName inFileName;
     Time     timeStart;
     Bool     setZero;
 
-    readConfig(config, "outputfileAntennaDefinitionStation", outFileNameAntennaStation,         Config::OPTIONAL, "",  "antenna center variations");
-    readConfig(config, "outputfileAntennaDefinitionGps",     outFileNameAntennaGps,             Config::OPTIONAL, "",  "antenna center variations");
-    readConfig(config, "outputfileAntennaDefinitionGlonass", outFileNameAntennaGlonass,         Config::OPTIONAL, "",  "antenna center variations");
-    readConfig(config, "outputfileAntennaDefinitionGalileo", outFileNameAntennaGalileo,         Config::OPTIONAL, "",  "antenna center variations");
-    readConfig(config, "outputfileAntennaDefinitionBeiDou",  outFileNameAntennaBeiDou,          Config::OPTIONAL, "",  "antenna center variations");
-    readConfig(config, "outputfileAntennaDefinitionQzss",    outFileNameAntennaQzss,            Config::OPTIONAL, "",  "antenna center variations");
-    readConfig(config, "outputfileTransmitterInfoGps",       outFileNameTransmitterInfoGps,     Config::OPTIONAL, "",  "PRN is appended to file name");
-    readConfig(config, "outputfileTransmitterInfoGlonass",   outFileNameTransmitterInfoGlonass, Config::OPTIONAL, "",  "PRN is appended to file name");
-    readConfig(config, "outputfileTransmitterInfoGalileo",   outFileNameTransmitterInfoGalileo, Config::OPTIONAL, "",  "PRN is appended to file name");
-    readConfig(config, "outputfileTransmitterInfoBeiDou",    outFileNameTransmitterInfoBeiDou,  Config::OPTIONAL, "",  "PRN is appended to file name");
-    readConfig(config, "outputfileTransmitterInfoQzss",      outFileNameTransmitterInfoQzss,    Config::OPTIONAL, "",  "PRN is appended to file name");
-    readConfig(config, "outputfileSvnBlockTableGps",         outFileNameSvnBlockTableGps,       Config::OPTIONAL, "",  "SVN to satellite block mapping");
-    readConfig(config, "outputfileSvnBlockTableGlonass",     outFileNameSvnBlockTableGlonass,   Config::OPTIONAL, "",  "SVN to satellite block mapping");
-    readConfig(config, "outputfileSvnBlockTableGalileo",     outFileNameSvnBlockTableGalileo,   Config::OPTIONAL, "",  "SVN to satellite block mapping");
-    readConfig(config, "outputfileSvnBlockTableBeiDou",      outFileNameSvnBlockTableBeiDou,    Config::OPTIONAL, "",  "SVN to satellite block mapping");
-    readConfig(config, "outputfileSvnBlockTableQzss",        outFileNameSvnBlockTableQzss,      Config::OPTIONAL, "",  "SVN to satellite block mapping");
-    readConfig(config, "outputfileTransmitterListGps",       outFileNameTransmitterListGps,     Config::OPTIONAL, "",  "list of PRNs");
-    readConfig(config, "outputfileTransmitterListGlonass",   outFileNameTransmitterListGlonass, Config::OPTIONAL, "",  "list of PRNs");
-    readConfig(config, "outputfileTransmitterListGalileo",   outFileNameTransmitterListGalileo, Config::OPTIONAL, "",  "list of PRNs");
-    readConfig(config, "outputfileTransmitterListBeiDou",    outFileNameTransmitterListBeiDou,  Config::OPTIONAL, "",  "list of PRNs");
-    readConfig(config, "outputfileTransmitterListQzss",      outFileNameTransmitterListQzss,    Config::OPTIONAL, "",  "list of PRNs");
-    readConfig(config, "inputfileAntex",                     inFileName,                        Config::MUSTSET,  "", "");
-    readConfig(config, "timeStart",                          timeStart,                         Config::OPTIONAL, "",  "ignore older antenna definitions");
-    readConfig(config, "createZeroModel",                    setZero,                           Config::DEFAULT,  "0", "create empty antenna patterns");
+    readConfig(config, "outputfileAntennaDefinitionStation",      outFileNameAntennaStation,         Config::OPTIONAL, "",  "antenna center variations");
+    readConfig(config, "outputfileAntennaDefinitionTransmitter",  outFileNameAntennaTransmitter,     Config::OPTIONAL, "",  "antenna center variations");
+    readConfig(config, "outputfileTransmitterInfo",               outFileNameTransmitterInfo,        Config::OPTIONAL, "",  "PRN is appended to file name");
+    readConfig(config, "outputfileSvnBlockTableGps",              outFileNameSvnBlockTableGps,       Config::OPTIONAL, "",  "SVN to satellite block mapping");
+    readConfig(config, "outputfileSvnBlockTableGlonass",          outFileNameSvnBlockTableGlonass,   Config::OPTIONAL, "",  "SVN to satellite block mapping");
+    readConfig(config, "outputfileSvnBlockTableGalileo",          outFileNameSvnBlockTableGalileo,   Config::OPTIONAL, "",  "SVN to satellite block mapping");
+    readConfig(config, "outputfileSvnBlockTableBeiDou",           outFileNameSvnBlockTableBeiDou,    Config::OPTIONAL, "",  "SVN to satellite block mapping");
+    readConfig(config, "outputfileSvnBlockTableQzss",             outFileNameSvnBlockTableQzss,      Config::OPTIONAL, "",  "SVN to satellite block mapping");
+    readConfig(config, "outputfileTransmitterListGps",            outFileNameTransmitterListGps,     Config::OPTIONAL, "",  "list of PRNs");
+    readConfig(config, "outputfileTransmitterListGlonass",        outFileNameTransmitterListGlonass, Config::OPTIONAL, "",  "list of PRNs");
+    readConfig(config, "outputfileTransmitterListGalileo",        outFileNameTransmitterListGalileo, Config::OPTIONAL, "",  "list of PRNs");
+    readConfig(config, "outputfileTransmitterListBeiDou",         outFileNameTransmitterListBeiDou,  Config::OPTIONAL, "",  "list of PRNs");
+    readConfig(config, "outputfileTransmitterListQzss",           outFileNameTransmitterListQzss,    Config::OPTIONAL, "",  "list of PRNs");
+    readConfig(config, "inputfileAntex",                          inFileName,                        Config::MUSTSET,  "", "");
+    readConfig(config, "timeStart",                               timeStart,                         Config::OPTIONAL, "",  "ignore older antenna definitions");
+    readConfig(config, "createZeroModel",                         setZero,                           Config::DEFAULT,  "0", "create empty antenna patterns");
     if(isCreateSchema(config)) return;
 
     // ==============================
@@ -345,11 +337,13 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
     std::sort(antennaListGps.begin(), antennaListGps.end(), [](GnssAntennaDefinitionPtr a, GnssAntennaDefinitionPtr b) {return std::stoi(a->serial.substr(1,3)) < std::stoi(b->serial.substr(1,3));});
 
     writeAntenna(outFileNameAntennaStation, antennaListStation);
-    writeAntenna(outFileNameAntennaGps,     antennaListGps);
-    writeAntenna(outFileNameAntennaGlonass, antennaListGlonass);
-    writeAntenna(outFileNameAntennaGalileo, antennaListGalileo);
-    writeAntenna(outFileNameAntennaBeiDou,  antennaListBeiDou);
-    writeAntenna(outFileNameAntennaQzss,    antennaListQzss);
+    std::vector<GnssAntennaDefinitionPtr> antennaListTransmitter;
+    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListGps.begin(), antennaListGps.end());
+    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListGlonass.begin(), antennaListGlonass.end());
+    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListGalileo.begin(), antennaListGalileo.end());
+    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListBeiDou.begin(), antennaListBeiDou.end());
+    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListQzss.begin(), antennaListQzss.end());
+    writeAntenna(outFileNameAntennaTransmitter, antennaListTransmitter);
 
     auto writeTransmitterInfo = [] (const FileName &outFileNameTransmitterInfo, const std::vector<GnssStationInfo> &transmitterList)
     {
@@ -361,11 +355,13 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
       }
     };
 
-    writeTransmitterInfo(outFileNameTransmitterInfoGps,     transmitterListGps);
-    writeTransmitterInfo(outFileNameTransmitterInfoGlonass, transmitterListGlonass);
-    writeTransmitterInfo(outFileNameTransmitterInfoGalileo, transmitterListGalileo);
-    writeTransmitterInfo(outFileNameTransmitterInfoBeiDou,  transmitterListBeiDou);
-    writeTransmitterInfo(outFileNameTransmitterInfoQzss,    transmitterListQzss);
+    std::vector<GnssStationInfo> transmitterList;
+    transmitterList.insert(transmitterList.end(), transmitterListGps.begin(),     transmitterListGps.end());
+    transmitterList.insert(transmitterList.end(), transmitterListGlonass.begin(), transmitterListGlonass.end());
+    transmitterList.insert(transmitterList.end(), transmitterListGalileo.begin(), transmitterListGalileo.end());
+    transmitterList.insert(transmitterList.end(), transmitterListBeiDou.begin(),  transmitterListBeiDou.end());
+    transmitterList.insert(transmitterList.end(), transmitterListQzss.begin(),    transmitterListQzss.end());
+    writeTransmitterInfo(outFileNameTransmitterInfo, transmitterList);
 
     auto writeSvnBlockTable = [] (const FileName &outFileNameSvnBlockTable, const std::vector<GnssAntennaDefinitionPtr> &antennaList)
     {
