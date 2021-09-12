@@ -82,7 +82,7 @@ public:
   virtual ~HiddenChannel()
   {
     int completed;
-    check(MPI_Request_get_status(request, &completed, MPI_STATUS_IGNORE));
+    check(MPI_Test(&request, &completed, MPI_STATUS_IGNORE));
     if(!completed)
     {
       check(MPI_Cancel(&request));
@@ -139,7 +139,7 @@ LogChannel::~LogChannel()
   for(MPI_Request sendRequest : sendRequests)
   {
     int completed;
-    check(MPI_Request_get_status(sendRequest, &completed, MPI_STATUS_IGNORE));
+    check(MPI_Test(&sendRequest, &completed, MPI_STATUS_IGNORE));
     if(!completed)
     {
       check(MPI_Cancel(&sendRequest));
@@ -285,6 +285,8 @@ inline void Communicator::wait(MPI_Request &request)
           check(statuses.at(i).MPI_ERROR);
       else
         check(error);
+      if(count == MPI_UNDEFINED)
+        throw(Exception("no active handles"));
       indices.resize(count);
 
       // copy back requests
