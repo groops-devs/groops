@@ -15,6 +15,7 @@
 #include "config/config.h"
 #include "files/fileInstrument.h"
 #include "files/fileMatrix.h"
+#include "files/fileParameterName.h"
 #include "gnss/gnss.h"
 #include "classes/ephemerides/ephemerides.h"
 #include "classes/parametrizationAcceleration/parametrizationAcceleration.h"
@@ -65,7 +66,7 @@ GnssParametrizationLeoDynamicOrbits::~GnssParametrizationLeoDynamicOrbits()
 
 /***********************************************/
 
-void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::CommunicatorPtr /*comm*/)
+void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -78,12 +79,17 @@ void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::Communicato
     VariableList fileNameVariableList;
     addVariable("station", "****", fileNameVariableList);
     parameters.resize(gnss->receivers.size(), nullptr);
+    Vector recvProcess(gnss->receivers.size());
     for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
       if(selectedReceivers.at(idRecv) && gnss->receivers.at(idRecv)->useable())
       {
+        recvProcess(idRecv) = Parallel::myRank(comm)+1;
         auto para = new Parameter();
         parameters.at(idRecv) = para;
         para->recv = gnss->receivers.at(idRecv);
+
+        if(!gnss->receivers.at(idRecv)->isMyRank())
+          continue;
 
         fileNameVariableList["station"]->setValue(gnss->receivers.at(idRecv)->name());
         VariationalEquationFromFile file;
@@ -119,6 +125,15 @@ void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::Communicato
         for(auto &name : para->parameterNames)
           name.object = gnss->receivers.at(idRecv)->name();
       }
+
+    // distribute process id of receivers
+    Parallel::reduceSum(recvProcess, 0, comm);
+    Parallel::broadCast(recvProcess, 0, comm);
+
+    // synchronize parameter names
+    for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
+      if(recvProcess(idRecv))
+        Parallel::broadCast(parameters.at(idRecv)->parameterNames, static_cast<UInt>(recvProcess(idRecv)-1), comm);
   }
   catch(std::exception &e)
   {
@@ -134,9 +149,9 @@ void GnssParametrizationLeoDynamicOrbits::requirements(GnssNormalEquationInfo &n
 {
   try
   {
-    if(isEnabled(normalEquationInfo, name) && !normalEquationInfo.isEachReceiverSeparately)
+    if(isEnabled(normalEquationInfo, name))
       for(auto para : parameters)
-        if(para && para->recv->useable())
+        if(para && para->recv->isMyRank())
          recvCount.at(para->recv->idRecv()) += static_cast<UInt>(minEstimableEpochsRatio * normalEquationInfo.idEpochs.size());
   }
   catch(std::exception &e)

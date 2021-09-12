@@ -1,4 +1,7 @@
 # main
+- Bugfix:           gnssProcessingStepResolveAmbiguities: for writing empty ambiguity file.
+- Bugfix:           gnssParametrizationLeoDynamicOrbits: in parallel excecution.
+- Bugfix:           gnssParametrizationKinematicPositions: in parallel excecution.
 
 # Release 2021-09-06
 - Interface change: Complete redesign of GnssProcessing to make usage a little bit easier and more flexible.

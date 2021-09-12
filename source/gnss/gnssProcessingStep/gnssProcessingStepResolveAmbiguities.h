@@ -117,7 +117,7 @@ void GnssProcessingStepResolveAmbiguities::process(GnssProcessingStep::State &st
     Matrix solutionSteps;
     state.estimateSolution(std::bind(&GnssLambda::searchIntegerBlocked, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
                                      sigmaMaxResolve, searchBlockSize, maxSearchSteps, incompleteAction, TRUE/*timing*/,
-                                     std::placeholders::_4, std::placeholders::_5, solutionSteps),
+                                     std::placeholders::_4, std::placeholders::_5, std::ref(solutionSteps)),
                            computeResiduals, computeWeights, adjustSigma0, huber, huberPower);
     state.changedNormalEquationInfo = TRUE;
 

@@ -92,9 +92,9 @@ void GnssParametrizationKinematicPositions::initParameter(GnssNormalEquationInfo
           if(recv->useable(idEpoch))
           {
             std::vector<ParameterName> parameterNames;
-            parameterNames.push_back(ParameterName(recv->name(), "position.x", "", recv->timeCorrected(idEpoch)));
-            parameterNames.push_back(ParameterName(recv->name(), "position.y", "", recv->timeCorrected(idEpoch)));
-            parameterNames.push_back(ParameterName(recv->name(), "position.z", "", recv->timeCorrected(idEpoch)));
+            parameterNames.push_back(ParameterName(recv->name(), "position.x", "", gnss->times.at(idEpoch)));
+            parameterNames.push_back(ParameterName(recv->name(), "position.y", "", gnss->times.at(idEpoch)));
+            parameterNames.push_back(ParameterName(recv->name(), "position.z", "", gnss->times.at(idEpoch)));
             index.at(idRecv).at(idEpoch) = normalEquationInfo.parameterNamesEpochReceiver(idEpoch, idRecv, parameterNames);
             countPara += parameterNames.size();
           }
