@@ -2284,6 +2284,32 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{GriddedData2GriddedDataTimeSeries}\label{GriddedData2GriddedDataTimeSeries}
+Write a series of \configFile{inputfileGriddedData}{griddedData}
+with the corresponding \configClass{timeSeries}{timeSeriesType}
+as a single \file{gridded data time series file}{griddedDataTimeSeries}.
+The \config{splineDegree} defines the possible temporal interpolation of data in the output file.
+For a file with spline degree 0 (temporal block means) the time intervals
+in which the grids are valid are defined between adjacent points in time.
+Therefore one more point in time is needed than the number of input grid files for degree 0.
+
+See also \program{GriddedDataTimeSeries2GriddedData}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGriddedDataTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt file count must agree with number of times+splineDegre-1\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~splineDegree & \hfuzz=500pt uint & \hfuzz=500pt degree of splines\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{GriddedData2Matrix}\label{GriddedData2Matrix}
 This program converts \configFile{inputfileGriddedData}{griddedData}
 to \configFile{outputfileMatrix}{matrix} with data columns.
@@ -2566,6 +2592,35 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileFineGridRectangular & \hfuzz=500pt filename & \hfuzz=500pt Digital Terrain Model\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~multiplierLongitude & \hfuzz=500pt uint & \hfuzz=500pt Generalizing factor\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~multiplierLatitude & \hfuzz=500pt uint & \hfuzz=500pt Generalizing factor\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{GriddedDataTimeSeries2GriddedData}\label{GriddedDataTimeSeries2GriddedData}
+Read a \configFile{inputfileGriddedDataTimeSeries}{griddedDataTimeSeries}
+and write for each epoch a \file{gridded data file}{griddedData} where
+the \config{variableLoopTime} and \config{variableLoopIndex} are expanded for
+each point of the given \configClass{timeSeries}{timeSeriesType}
+to create the file name for this epoch (see \reference{text parser}{general.parser:text}).
+
+If \configClass{timeSeries}{timeSeriesType} is not set
+the temporal nodal points from the inputfile are used.
+
+See also \program{GriddedData2GriddedDataTimeSeries}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfilesGriddedData & \hfuzz=500pt filename & \hfuzz=500pt for each epoch\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopTime & \hfuzz=500pt string & \hfuzz=500pt variable with time of each epoch\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current epoch (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of epochs\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGriddedDataTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt otherwise times from inputfile are used\\
 \hline
 \end{tabularx}
 

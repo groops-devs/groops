@@ -1,4 +1,5 @@
 # main
+- New programs:     GriddedData2GriddedDataTimeSeries and GriddedDataTimeSeries2GriddedData
 - Bugfix:           gnssProcessingStepResolveAmbiguities: for writing empty ambiguity file.
 - Bugfix:           gnssParametrizationLeoDynamicOrbits: in parallel excecution.
 - Bugfix:           gnssParametrizationKinematicPositions: in parallel excecution.

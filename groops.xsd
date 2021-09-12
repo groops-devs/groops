@@ -2403,7 +2403,7 @@
 								<xs:documentation>subset of used stations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="outputfileResiduals" type="filename" default="output/residuals_{loopTime%D}.{station}.dat">
+						<xs:element name="outputfileResiduals" type="filename" default="output/residuals_{loopTime:%D}.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {station} available</xs:documentation>
 							</xs:annotation>
@@ -12175,6 +12175,29 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="GriddedData2GriddedDataTimeSeries">
+				<xs:annotation>
+					<xs:documentation>Write time series of gridded data as gridded data time series file</xs:documentation>
+					<xs:appinfo>tag: Grid</xs:appinfo>
+					<xs:appinfo>tag: TimeSeries</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileGriddedDataTimeSeries" type="filename"/>
+						<xs:element name="inputfileGriddedData" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>file count must agree with number of times+splineDegre-1</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded"/>
+						<xs:element name="splineDegree" type="uint" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>degree of splines</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GriddedData2Matrix">
 				<xs:annotation>
 					<xs:documentation>write grid to matrix file</xs:documentation>
@@ -12546,6 +12569,43 @@
 						<xs:element name="multiplierLatitude" type="uint" default="8">
 							<xs:annotation>
 								<xs:documentation>Generalizing factor</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GriddedDataTimeSeries2GriddedData">
+				<xs:annotation>
+					<xs:documentation>Write a griddedDataTimeSeries as griddedData for each epoch</xs:documentation>
+					<xs:appinfo>tag: Grid</xs:appinfo>
+					<xs:appinfo>tag: TimeSeries</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfilesGriddedData" type="filename" default="grid_{loopTime:%y-%m}.dat">
+							<xs:annotation>
+								<xs:documentation>for each epoch</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopTime" type="string" minOccurs="0" default="loopTime">
+							<xs:annotation>
+								<xs:documentation>variable with time of each epoch</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with index of current epoch (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopCount" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with total number of epochs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileGriddedDataTimeSeries" type="filename"/>
+						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>otherwise times from inputfile are used</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>

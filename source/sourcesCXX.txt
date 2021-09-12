@@ -295,6 +295,7 @@ programs/gravityfield/gravityfieldReplacePotentialCoefficients.cpp
 programs/gravityfield/gravityfieldVariancesPropagation2GriddedData.cpp
 programs/griddedData/griddedData2AreaMeanTimeSeries.cpp
 programs/griddedData/griddedData2GriddedDataStatistics.cpp
+programs/griddedData/griddedData2GriddedDataTimeSeries.cpp
 programs/griddedData/griddedData2Matrix.cpp
 programs/griddedData/griddedData2PotentialCoefficients.cpp
 programs/griddedData/griddedData2SphericalDistance.cpp
@@ -304,6 +305,7 @@ programs/griddedData/griddedDataConcatenate.cpp
 programs/griddedData/griddedDataCreate.cpp
 programs/griddedData/griddedDataInterpolate.cpp
 programs/griddedData/griddedDataReduceSampling.cpp
+programs/griddedData/griddedDataTimeSeries2GriddedData.cpp
 programs/griddedData/griddedTopography2AtmospherePotentialCoefficients.cpp
 programs/griddedData/griddedTopography2PotentialCoefficients.cpp
 programs/griddedData/griddedTopographyEllipsoidal2Radial.cpp
