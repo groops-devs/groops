@@ -52,7 +52,7 @@ inline GnssProcessingStepWriteResiduals::GnssProcessingStepWriteResiduals(Config
   try
   {
     readConfig(config, "selectReceivers",     selectReceivers,   Config::MUSTSET, "", "subset of used stations");
-    readConfig(config, "outputfileResiduals", fileNameResiduals, Config::MUSTSET, "output/residuals_{loopTime%D}.{station}.dat", "variable {station} available");
+    readConfig(config, "outputfileResiduals", fileNameResiduals, Config::MUSTSET, "output/residuals_{loopTime:%D}.{station}.dat", "variable {station} available");
   }
   catch(std::exception &e)
   {
