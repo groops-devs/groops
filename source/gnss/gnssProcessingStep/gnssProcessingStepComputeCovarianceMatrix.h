@@ -55,9 +55,6 @@ void GnssProcessingStepComputeCovarianceMatrix::process(GnssProcessingStep::Stat
   try
   {
     logStatus<<"=== compute covariance matrix ==============================="<<Log::endl;
-    if(state.changedNormalEquationInfo)
-      state.gnss->initParameter(state.normalEquationInfo);
-    state.changedNormalEquationInfo = FALSE;
     state.buildNormals(FALSE/*constraintsOnly*/, FALSE/*solveEpochParameters*/);
     logStatus<<"cholesky"<<Log::endl;
     state.normals.cholesky(TRUE/*timing*/);

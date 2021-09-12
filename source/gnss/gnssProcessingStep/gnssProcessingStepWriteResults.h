@@ -63,9 +63,6 @@ void GnssProcessingStepWriteResults::process(GnssProcessingStep::State &state)
   try
   {
     logStatus<<"=== write results  =========================================="<<Log::endl;
-    if(state.changedNormalEquationInfo)
-      state.gnss->initParameter(state.normalEquationInfo);
-    state.changedNormalEquationInfo = FALSE;
     state.gnss->writeResults(state.normalEquationInfo, !suffix.empty() ? "."+suffix : "");
   }
   catch(std::exception &e)

@@ -79,10 +79,6 @@ void GnssProcessingStepWriteNormalEquations::process(GnssProcessingStep::State &
   try
   {
     logStatus<<"=== write normal equations =================================="<<Log::endl;
-    if(state.changedNormalEquationInfo)
-      state.gnss->initParameter(state.normalEquationInfo);
-    state.changedNormalEquationInfo = FALSE;
-
     Bool eliminateEpochParameters = FALSE;
     std::vector<UInt> blockIndex, indexVector(state.normalEquationInfo.parameterCount());
     std::iota(indexVector.begin(), indexVector.end(), 0);

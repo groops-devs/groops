@@ -66,9 +66,6 @@ void GnssProcessingStepWriteResiduals::process(GnssProcessingStep::State &state)
 {
   try
   {
-    if(state.changedNormalEquationInfo)
-      state.gnss->initParameter(state.normalEquationInfo);
-    state.changedNormalEquationInfo = FALSE;
     auto selectedReceivers = selectReceivers->select(state.gnss->receivers);
     VariableList fileNameVariableList;
     addVariable("station", "****", fileNameVariableList);

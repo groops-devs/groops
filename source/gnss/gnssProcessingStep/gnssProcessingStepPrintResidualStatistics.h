@@ -67,9 +67,6 @@ void GnssProcessingStepPrintResidualStatistics::process(GnssProcessingStep::Stat
   try
   {
     logStatus<<"=== print residual statistics  =============================="<<Log::endl;
-    if(state.changedNormalEquationInfo)
-      state.gnss->initParameter(state.normalEquationInfo);
-    state.changedNormalEquationInfo = FALSE;
     for(UInt idRecv=0; idRecv<state.gnss->receivers.size(); idRecv++)
       if(state.normalEquationInfo.estimateReceiver.at(idRecv))
       {

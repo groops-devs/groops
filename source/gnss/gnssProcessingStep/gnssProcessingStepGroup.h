@@ -40,6 +40,7 @@ class GnssProcessingStepGroup : public GnssProcessingStepBase
 public:
   GnssProcessingStepGroup(Config &config);
   void process(GnssProcessingStep::State &state) override;
+  Bool expectInitializedParameters() const override {return FALSE;}
 };
 
 /***********************************************/

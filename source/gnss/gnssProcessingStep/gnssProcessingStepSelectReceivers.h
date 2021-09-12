@@ -44,6 +44,7 @@ class GnssProcessingStepSelectReceivers : public GnssProcessingStepBase
 public:
   GnssProcessingStepSelectReceivers(Config &config);
   void process(GnssProcessingStep::State &state) override;
+  Bool expectInitializedParameters() const override {return FALSE;}
 };
 
 /***********************************************/

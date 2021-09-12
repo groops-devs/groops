@@ -69,10 +69,6 @@ void GnssProcessingStepWriteAprioriSolution::process(GnssProcessingStep::State &
 {
   try
   {
-    if(state.changedNormalEquationInfo)
-      state.gnss->initParameter(state.normalEquationInfo);
-    state.changedNormalEquationInfo = FALSE;
-
     std::vector<UInt> blockIndex, indexVector(state.normalEquationInfo.parameterCount());
     if(parameterSelector)
       indexVector = parameterSelector->indexVector(state.normalEquationInfo.parameterNames());

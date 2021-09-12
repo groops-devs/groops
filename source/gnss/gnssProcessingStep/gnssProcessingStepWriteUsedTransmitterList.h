@@ -65,9 +65,6 @@ void GnssProcessingStepWriteUsedTransmitterList::process(GnssProcessingStep::Sta
 {
   try
   {
-    if(state.changedNormalEquationInfo)
-      state.gnss->initParameter(state.normalEquationInfo);
-    state.changedNormalEquationInfo = FALSE;
     if(!Parallel::isMaster(state.normalEquationInfo.comm))
       return;
     auto selectedTransmitters = selectTransmitters->select(state.gnss->transmitters);

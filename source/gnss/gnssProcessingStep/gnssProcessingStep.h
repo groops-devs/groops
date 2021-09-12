@@ -131,6 +131,7 @@ public:
 
   /** @brief Execute the processing step. */
   virtual void process(GnssProcessingStep::State &state) = 0;
+  virtual Bool expectInitializedParameters() const {return TRUE;}
 };
 
 /***********************************************/

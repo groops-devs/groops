@@ -59,6 +59,7 @@ public:
 
   GnssProcessingStepSelectParametrizations(Config &config);
   void process(GnssProcessingStep::State &state) override;
+  Bool expectInitializedParameters() const override {return FALSE;}
 };
 
 /***********************************************/

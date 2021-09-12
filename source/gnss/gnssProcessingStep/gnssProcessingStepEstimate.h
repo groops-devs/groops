@@ -112,9 +112,6 @@ void GnssProcessingStepEstimate::process(GnssProcessingStep::State &state)
   try
   {
     logStatus<<"=== estimate ================================================"<<Log::endl;
-    if(state.changedNormalEquationInfo)
-      state.gnss->initParameter(state.normalEquationInfo);
-    state.changedNormalEquationInfo = FALSE;
     for(UInt iter=0; iter<iterCount; iter++)
     {
       logStatus<<iter+1<<". iteration  --------------------------"<<Log::endl;

@@ -112,8 +112,6 @@ void GnssProcessingStepResolveAmbiguities::process(GnssProcessingStep::State &st
   try
   {
     logStatus<<"=== resolve ambiguities  ===================================="<<Log::endl;
-    if(state.changedNormalEquationInfo)
-      state.gnss->initParameter(state.normalEquationInfo);
     Matrix solutionSteps;
     state.estimateSolution(std::bind(&GnssLambda::searchIntegerBlocked, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
                                      sigmaMaxResolve, searchBlockSize, maxSearchSteps, incompleteAction, TRUE/*timing*/,
