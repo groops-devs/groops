@@ -16,6 +16,7 @@
 #include "base/import.h"
 #include "config/configRegister.h"
 #include "plotMapProjection.h"
+#include "plotMisc.h"
 
 /***********************************************/
 
@@ -183,7 +184,11 @@ public:
   std::string scriptEntry(Double width, Double /*height*/) const override
   {
     std::stringstream ss;
-    ss<<"-JPa"<<width<<"cr"; // --MAP_POLAR_CAP=none";
+
+    if(PlotBasics::gmtVersion() >= 610)
+      ss<<"-JP"<<width<<"c+a+fe";
+    else
+      ss<<"-JPa"<<width<<"cr"; // --MAP_POLAR_CAP=none";
     return ss.str();
   }
 };
