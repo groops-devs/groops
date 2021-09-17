@@ -21,6 +21,7 @@
 #include "conditionStringMatchPattern.h"
 #include "conditionExpression.h"
 #include "conditionMatrix.h"
+#include "conditionMatrixEmpty.h"
 #include "conditionAnd.h"
 #include "conditionOr.h"
 #include "conditionNot.h"
@@ -33,6 +34,7 @@ GROOPS_REGISTER_CLASS(Condition, "conditionType",
                       ConditionCommand,
                       ConditionExpression,
                       ConditionMatrix,
+                      ConditionMatrixEmpty,
                       ConditionStringContainsPattern,
                       ConditionStringMatchPattern,
                       ConditionAnd,
@@ -59,6 +61,8 @@ ConditionPtr Condition::create(Config &config, const std::string &name)
       condition = ConditionPtr(new ConditionExpression(config));
     if(readConfigChoiceElement(config, "matrix", type, ""))
       condition = ConditionPtr(new ConditionMatrix(config));
+    if(readConfigChoiceElement(config, "matrixEmpty", type, ""))
+      condition = ConditionPtr(new ConditionMatrixEmpty(config));
     if(readConfigChoiceElement(config, "stringContainsPattern", type, ""))
       condition = ConditionPtr(new ConditionStringContainsPattern(config));
     if(readConfigChoiceElement(config, "stringMatchPattern", type, ""))
