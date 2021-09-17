@@ -19442,6 +19442,90 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="GnssGriddedDataTimeSeries2Ionex">
+				<xs:annotation>
+					<xs:documentation>Converts TEC maps from GROOPS GriddedDataTimeSeries format to IGS IONEX file format.</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Gnss</xs:appinfo>
+					<xs:appinfo>tag: Grid</xs:appinfo>
+					<xs:appinfo>tag: TimeSplines</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileIonex" type="filename"/>
+						<xs:element name="inputfileGriddedDataTimeSeries" type="filename">
+							<xs:annotation>
+								<xs:documentation>must contain regular grid</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="value" type="expression" default="data0">
+							<xs:annotation>
+								<xs:documentation>expression (e.g. data column)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>(empty = use input file time series)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="program" type="string" default="GROOPS">
+							<xs:annotation>
+								<xs:documentation>name of program (for first line)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="institution" type="string" default="TUG (TU Graz)">
+							<xs:annotation>
+								<xs:documentation>name of agency (for first line)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="description" type="string" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>description in header</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="comment" type="string" minOccurs="0" default="[&quot;TEC values in 0.1 TECU, 9999 if no value available&quot;]" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>comment in header</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="mappingFunction" type="string" minOccurs="0" default="NONE">
+							<xs:annotation>
+								<xs:documentation>see IONEX documentation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="elevationCutoff" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>see IONEX documentation (0 if unknown)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="observablesUsed" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>see IONEX documentation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="exponent" type="int" minOccurs="0" default="-1">
+							<xs:annotation>
+								<xs:documentation>factor 10^exponent is applied to all values</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GnssIonex2GriddedDataTimeSeries">
+				<xs:annotation>
+					<xs:documentation>Converts TEC maps from IGS IONEX file format to GROOPS GriddedDataTimeSeries format.</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Gnss</xs:appinfo>
+					<xs:appinfo>tag: Grid</xs:appinfo>
+					<xs:appinfo>tag: TimeSplines</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileGriddedDataTimeSeries" type="filename"/>
+						<xs:element name="inputfileIonex" type="filename" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GnssNormals2Sinex">
 				<xs:annotation>
 					<xs:documentation>Write GNSS data/metadata and normal equations to SINEX format.</xs:documentation>

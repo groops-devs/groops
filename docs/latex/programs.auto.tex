@@ -7210,6 +7210,58 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{GnssGriddedDataTimeSeries2Ionex}\label{GnssGriddedDataTimeSeries2Ionex}
+Converts TEC maps from GROOPS \file{gridded data time series}{griddedDataTimeSeries} format
+to IGS \href{https://files.igs.org/pub/data/format/ionex1.pdf}{IONEX file format}.
+
+Currently only supports 2D TEC maps.
+
+See also \program{GnssIonex2GriddedDataTimeSeries}, \configClass{IonosphereMap}{gnssParametrizationType:ionosphereMap}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileIonex & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGriddedDataTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt must contain regular grid\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~value & \hfuzz=500pt expression & \hfuzz=500pt expression (e.g. data column)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt (empty = use input file time series)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~program & \hfuzz=500pt string & \hfuzz=500pt name of program (for first line)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~institution & \hfuzz=500pt string & \hfuzz=500pt name of agency (for first line)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~description & \hfuzz=500pt string & \hfuzz=500pt description in header\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt comment in header\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~mappingFunction & \hfuzz=500pt string & \hfuzz=500pt see IONEX documentation\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~elevationCutoff & \hfuzz=500pt double & \hfuzz=500pt see IONEX documentation (0 if unknown)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~observablesUsed & \hfuzz=500pt string & \hfuzz=500pt see IONEX documentation\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~exponent & \hfuzz=500pt int & \hfuzz=500pt factor 10\textasciicircum{}exponent is applied to all values\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{GnssIonex2GriddedDataTimeSeries}\label{GnssIonex2GriddedDataTimeSeries}
+Converts TEC maps from IGS \href{https://files.igs.org/pub/data/format/ionex1.pdf}{IONEX file format}
+to GROOPS \file{gridded data time series}{griddedDataTimeSeries} format.
+
+Currently only supports 2D TEC maps.
+
+See also \program{GnssGriddedDataTimeSeries2Ionex}, \configClass{IonosphereMap}{gnssParametrizationType:ionosphereMap}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGriddedDataTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileIonex & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{GnssNormals2Sinex}\label{GnssNormals2Sinex}
 Write GNSS data/metadata and \file{normal equations}{normalEquation} to
 \href{http://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX format}.
