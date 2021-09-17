@@ -119,7 +119,7 @@ void GnssProcessingStepResolveAmbiguities::process(GnssProcessingStep::State &st
                            computeResiduals, computeWeights, adjustSigma0, huber, huberPower);
     state.changedNormalEquationInfo = TRUE;
 
-    if(!fileNameAmbiguities.empty())
+    if(!fileNameAmbiguities.empty() && Parallel::isMaster(state.normalEquationInfo.comm))
     {
       logStatus<<"write ambiguities to file(s) <"<<fileNameAmbiguities<<">"<<Log::endl;
       writeFileMatrix(fileNameAmbiguities, solutionSteps);
