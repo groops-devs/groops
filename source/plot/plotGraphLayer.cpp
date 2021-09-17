@@ -101,6 +101,15 @@ PlotGraphLayerLinesAndPoints::PlotGraphLayerLinesAndPoints(Config &config)
     Matrix A;
     readFileMatrix(fileName, A);
 
+    if(!A.size())
+    {
+      if(description.empty())
+        description = fileName.str();
+      description += " (empty file)";
+      logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
+      return;
+    }
+
     // create data variables
     // ---------------------
     std::vector<ExpressionVariablePtr> expressions = {exprX, exprY, exprZ, exprError};
@@ -138,6 +147,9 @@ std::string PlotGraphLayerLinesAndPoints::scriptEntry() const
 {
   try
   {
+    if(!data.size())
+      return std::string();
+
     std::stringstream ss;
     if(hasErrors)
       ss<<"gmt psxy "<<dataFileName<<" -bi"<<data.columns()<<"d -J -R -i0,1,"<<(hasZValues ? 3 : 2)<<" -Sc1p -Ey/1p -O -K >> groopsPlot.ps"<<std::endl;
@@ -243,6 +255,15 @@ PlotGraphLayerErrorEnvelope::PlotGraphLayerErrorEnvelope(Config &config)
     Matrix A;
     readFileMatrix(fileName, A);
 
+    if(!A.size())
+    {
+      if(description.empty())
+        description = fileName.str();
+      description += " (empty file)";
+      logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
+      return;
+    }
+
     // create data variables
     // ---------------------
     std::vector<ExpressionVariablePtr> expressions = {exprX, exprY, exprErrors};
@@ -278,6 +299,9 @@ std::string PlotGraphLayerErrorEnvelope::scriptEntry() const
 {
   try
   {
+    if(!data.size())
+      return std::string();
+
     std::stringstream ss;
     ss<<"gmt psxy "<<dataFileName<<" -bi"<<data.columns()<<"d -J -R -L+d";
     if(edgeLine)
@@ -387,6 +411,15 @@ PlotGraphLayerBars::PlotGraphLayerBars(Config &config)
     Matrix A;
     readFileMatrix(fileName, A);
 
+    if(!A.size())
+    {
+      if(description.empty())
+        description = fileName.str();
+      description += " (empty file)";
+      logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
+      return;
+    }
+
     // create data variables
     // ---------------------
     std::vector<ExpressionVariablePtr> expressions = {exprX, exprY, exprZ, exprBase, exprBase, exprWidth};
@@ -444,6 +477,9 @@ std::string PlotGraphLayerBars::scriptEntry() const
 {
   try
   {
+    if(!data.size())
+      return std::string();
+
     std::stringstream ss;
     ss<<"gmt psxy "<<dataFileName<<" -bi"<<data.columns()<<"d -J -R -S"<<(horizontal ? "B" : "b")<<barWidth<<"ub";
     if(edgeLine)
@@ -549,6 +585,12 @@ PlotGraphLayerGridded::PlotGraphLayerGridded(Config &config)
     Matrix A;
     readFileMatrix(fileName, A);
 
+    if(!A.size())
+    {
+      logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
+      return;
+    }
+
     // create data variables
     // ---------------------
     std::vector<ExpressionVariablePtr> expressions = {exprX, exprY, exprZ};
@@ -601,6 +643,9 @@ std::string PlotGraphLayerGridded::scriptEntry() const
 {
   try
   {
+    if(!data.size())
+      return std::string();
+
     const Double minX = min(data.column(0)) - bufferX();
     const Double maxX = max(data.column(0)) + bufferX();
     const Double minY = min(data.column(1)) - bufferY();
@@ -875,6 +920,15 @@ PlotGraphLayerDegreeAmplitudes::PlotGraphLayerDegreeAmplitudes(Config &config)
     Matrix A;
     readFileMatrix(fileName, A);
 
+    if(!A.size())
+    {
+      if(description.empty())
+        description = fileName.str();
+      description += " (empty file)";
+      logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
+      return;
+    }
+
     // create data variables
     // ---------------------
     std::vector<ExpressionVariablePtr> expressions = {exprDegree, exprSignal, exprErrors};
@@ -910,6 +964,9 @@ std::string PlotGraphLayerDegreeAmplitudes::scriptEntry() const
 {
   try
   {
+    if(!data.size())
+      return std::string();
+
     std::stringstream ss;
     if(lineSignal)
       ss<<"gmt psxy "<<dataFileName<<" -bi"<<data.columns()<<"d -J -R -i0,1 -W"<<lineSignal->str()<<" -O -K >> groopsPlot.ps"<<std::endl;
@@ -1069,9 +1126,6 @@ void PlotGraphLayer::writeDataFile(const FileName &workingDirectory, UInt idxLay
 {
   try
   {
-    if(!data.size())
-      return;
-
     dataFileName = "data."+idxLayer%"%i.dat"s;
     OutFile file(workingDirectory.append(dataFileName), std::ios::out | std::ios::binary);
     for(UInt i=0; i<data.rows(); i++)
