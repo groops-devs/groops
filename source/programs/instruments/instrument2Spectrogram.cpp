@@ -80,7 +80,7 @@ void Instrument2Spectrogram::run(Config &config, Parallel::CommunicatorPtr comm)
     countData = std::min(countData, A.columns()-1-startData);
 
     logStatus<<"computing spectrogram"<<Log::endl;
-    Matrix spectrogram(timesBin.size()*freqs.rows(), 2+countData, NAN);
+    Matrix spectrogram(timesBin.size()*freqs.rows(), 2+countData, NAN_EXPR);
     auto iter = times.begin();
     Parallel::forEach(timesBin.size(), [&](UInt i)
     {

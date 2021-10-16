@@ -12164,7 +12164,7 @@
 								</xs:choice>
 							</xs:complexType>
 						</xs:element>
-						<xs:element name="emptyValue" type="double" minOccurs="0" default="NAN">
+						<xs:element name="emptyValue" type="double" minOccurs="0" default="nan()">
 							<xs:annotation>
 								<xs:documentation>value for nodes without data</xs:documentation>
 							</xs:annotation>

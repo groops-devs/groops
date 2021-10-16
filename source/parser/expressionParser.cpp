@@ -1626,9 +1626,11 @@ ExpressionVariablePtr VariableList::find(const std::string &name) const
     if(iter != map.end())
       return iter->second;
     // Hack to read old constant definition without brackets
-    if(name == "pi")  return std::make_shared<ExpressionVariable>("pi",  PI);
-    if(name == "rho") return std::make_shared<ExpressionVariable>("rho", RAD2DEG);
-    if(name == "nan") return std::make_shared<ExpressionVariable>("nan", NAN_EXPR);
+    std::string name2 = name;
+    std::transform(name2.begin(), name2.end(), name2.begin(), [](auto c){return std::tolower(c);});
+    if(name2 == "pi")  return std::make_shared<ExpressionVariable>("pi",  PI);
+    if(name2 == "rho") return std::make_shared<ExpressionVariable>("rho", RAD2DEG);
+    if(name2 == "nan") return std::make_shared<ExpressionVariable>("nan", NAN_EXPR);
     return ExpressionVariablePtr(nullptr);
   }
   catch(std::exception &e)

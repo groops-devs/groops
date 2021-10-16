@@ -63,7 +63,7 @@ void Gravityfield2DegreeAmplitudesPlotGrid::run(Config &config, Parallel::Commun
     TimeSeriesPtr   timeSeries;
     Angle           gap;
     UInt            minDegree, maxDegree;
-    Double          evalRadius = NAN;
+    Double          evalRadius = NAN_EXPR;
     Double          GM, R;
 
     readConfig(config, "outputfileTimeSeries", outName,      Config::MUSTSET,  "",   "each row: mjd, degree, amplitude, formal error");

@@ -73,7 +73,7 @@ void GriddedData2GriddedDataStatistics::run(Config &config, Parallel::Communicat
       if(readConfigChoiceElement(config, "last",  choice, "last value"))                       type = LAST;
     }
     endChoice(config);
-    readConfig(config, "emptyValue",        emptyValue, Config::DEFAULT, "NAN", "value for nodes without data");
+    readConfig(config, "emptyValue",        emptyValue, Config::DEFAULT, "nan()", "value for nodes without data");
     readConfig(config, "R",                 a,          Config::DEFAULT, STRING_DEFAULT_GRS80_a, "reference radius for ellipsoidal coordinates");
     readConfig(config, "inverseFlattening", f,          Config::DEFAULT, STRING_DEFAULT_GRS80_f, "reference flattening for ellipsoidal coordinates");
     if(isCreateSchema(config)) return;
