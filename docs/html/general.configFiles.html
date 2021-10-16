@@ -129,10 +129,7 @@ in the global section and use it multiple times in different programs.</p><p>One
 file paths throughout many GROOPS programs. Since this global element is going to be needed in
 most config files, it is recommended to define it in a template file that is used when creating
 new config files in the GUI. See section <a class="groops-ref" href="general.gui.html">Graphical User Interface (GUI)</a>
-for details on how to set up a template file.</p><p>It is also possible to import global sections from other config files by providing them as <strong class="groops-config-element">inputfileGlobal</strong>.
-Global elements defined in the config file itself overwrite those with the same name imported from other config files.
-This functionality allows the definition of a set of global variables in a single file that is then imported into multiple
-other config files, which can be useful in larger scenarios/projects.</p><p>Global elements can be manipulated when running a config file by passing the argument <code>--global &lt;name>=&lt;value></code>.
+for details on how to set up a template file.</p><p>Global elements can be manipulated when running a config file by passing the argument <code>--global &lt;name>=&lt;value></code>.
 For example, running the command
 <pre>
   groops --global timeStart=58849 --global satellite=swarm config.xml

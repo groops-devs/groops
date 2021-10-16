@@ -22229,11 +22229,6 @@
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="inputfileGlobal" type="filename" minOccurs="0" maxOccurs="unbounded">
-					<xs:annotation>
-						<xs:documentation>global settings</xs:documentation>
-					</xs:annotation>
-				</xs:element>
 				<xs:element name="global">
 					<xs:annotation>
 						<xs:documentation>global settings</xs:documentation>

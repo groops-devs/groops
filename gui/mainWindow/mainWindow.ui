@@ -63,7 +63,6 @@
     <addaction name="editRemoveAction"/>
     <addaction name="separator"/>
     <addaction name="editSetGlobalAction"/>
-    <addaction name="editSetExternalLinkAction"/>
     <addaction name="separator"/>
     <addaction name="editSetLoopAction"/>
     <addaction name="editRemoveLoopAction"/>
@@ -617,21 +616,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+K</string>
-   </property>
-  </action>
-  <action name="editSetExternalLinkAction">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../resources/icons.qrc">
-     <normaloff>:/icons/scalable/link.svg</normaloff>:/icons/scalable/link.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Set External Link ...</string>
-   </property>
-   <property name="toolTip">
-    <string>Set Link to Global Variable in an External File</string>
    </property>
   </action>
   <action name="fileCloseOtherAction">

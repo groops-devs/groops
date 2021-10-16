@@ -526,34 +526,6 @@ void TreeElement::renameLink(const QString &oldLabel, const QString &newLabel)
 
 /***********************************************/
 
-void TreeElement::setNewExternalLink(const QString &label)
-{
-  try
-  {
-    if(label.isEmpty())
-      return;
-
-    // new link if not in list already
-    if(findLinkIndex(label) < 0)
-    {
-      _valueList.push_back(label);
-      if(comboBox)
-        comboBox->insertItem(comboBox->count(), QIcon(":/icons/scalable/link.svg"), label);
-
-      if(comboBox && (comboBox->count() != _valueList.size()))
-        throw(Exception("comboBox not consistent"));
-    }
-
-    changeSelectedIndex(findLinkIndex(label));
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
 void TreeElement::trackUnknown(Bool track)
 {
   try

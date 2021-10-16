@@ -167,9 +167,6 @@ void changeSelectedValue(const QString &value);
 * recursively called for all children. */
 virtual void renameLink(const QString &oldLabel, const QString &newLabel);
 
-/** @brief Add new external link to this element. */
-virtual void setNewExternalLink(const QString &label);
-
 /** @brief In case this element is unknown, track or untrack it depending on @p track. */
 virtual void trackUnknown(Bool track);
 

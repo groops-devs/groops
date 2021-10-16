@@ -276,7 +276,6 @@ public slots:
   void editAdd();
   void editRemove();
   void editSetGlobal();
-  void editSetExternalLink();
   void editSetLoop();
   void editRemoveLoop();
   void editSetCondition();

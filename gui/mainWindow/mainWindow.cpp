@@ -135,7 +135,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     actionList.editAddAction             = ui->editAddAction;
     actionList.editRemoveAction          = ui->editRemoveAction;
     actionList.editSetGlobalAction       = ui->editSetGlobalAction;
-    actionList.editSetExternalLinkAction = ui->editSetExternalLinkAction;
     actionList.editSetLoopAction         = ui->editSetLoopAction;
     actionList.editRemoveLoopAction      = ui->editRemoveLoopAction;
     actionList.editSetConditionAction    = ui->editSetConditionAction;

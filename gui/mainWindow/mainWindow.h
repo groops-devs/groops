@@ -107,7 +107,6 @@ public:
   QAction *editAddAction;
   QAction *editRemoveAction;
   QAction *editSetGlobalAction;
-  QAction *editSetExternalLinkAction;
   QAction *editSetLoopAction;
   QAction *editRemoveLoopAction;
   QAction *editSetConditionAction;

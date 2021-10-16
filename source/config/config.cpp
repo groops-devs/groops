@@ -80,33 +80,17 @@ Config::Config(FileName &fileName, const std::map<std::string, std::string> &com
 
     // add global elements from command line
     // -------------------------------------
-    for(auto it=commandlineGlobals.begin(); it!=commandlineGlobals.end(); it++)
+    for(const auto &command : commandlineGlobals)
     {
       // replace or add new global variable
-      XmlNodePtr xmlNode = globalFile->findChild(it->first);
+      XmlNodePtr xmlNode = globalFile->findChild(command.first);
       if(xmlNode)
       {
-        xmlNode->setText(it->second);
+        xmlNode->setText(command.second);
         xmlNode->getAttribute("link"); // remove link
       }
       else
-        writeXml(globalFile, it->first, it->second);
-    }
-
-    // Additional global input files
-    // -----------------------------
-    std::vector<FileName> fileNameGlobal(root->getChildCount("inputfileGlobal"));
-    for(UInt i=0; i<fileNameGlobal.size(); i++)
-      fileNameGlobal.at(i) = root->getChild("inputfileGlobal")->getText();
-    for(UInt i=fileNameGlobal.size(); i-->0;)
-    {
-      Config config(fileNameGlobal.at(i));
-      while(config.global->hasChildren())
-      {
-        XmlNodePtr xmlNode = config.global->getNextChild();
-        if(!globalFile->findChild(xmlNode->getName()))
-          globalFile->prependChild(xmlNode);
-      }
+        writeXml(globalFile, command.first, command.second);
     }
 
     // search global variables
@@ -533,8 +517,6 @@ void Config::writeSchema(const std::string &fileName)
     config.stack.top().type = SEQUENCE;
     config.xscomplexElement("groops", Config::SEQUENCE, Config::MUSTSET, "", "GROOPS (Gravity Recovery Object Oriented Programming System)");
     renameDeprecatedConfig(config, "programme", "program", date2time(2020, 6, 3));
-
-    config.xselement("inputfileGlobal", "filename", Config::OPTIONAL, Config::UNBOUNDED, "", "global settings");
 
     // global section
     readConfigSequence(config, "global", Config::MUSTSET, "", "global settings");

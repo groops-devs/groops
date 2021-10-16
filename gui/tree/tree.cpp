@@ -100,7 +100,6 @@ Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *workspace) :
     connect(this->actionList.editAddAction,             SIGNAL(triggered(bool)), this, SLOT(editAdd()));
     connect(this->actionList.editRemoveAction,          SIGNAL(triggered(bool)), this, SLOT(editRemove()));
     connect(this->actionList.editSetGlobalAction,       SIGNAL(triggered(bool)), this, SLOT(editSetGlobal()));
-    connect(this->actionList.editSetExternalLinkAction, SIGNAL(triggered(bool)), this, SLOT(editSetExternalLink()));
     connect(this->actionList.editSetLoopAction,         SIGNAL(triggered(bool)), this, SLOT(editSetLoop()));
     connect(this->actionList.editRemoveLoopAction,      SIGNAL(triggered(bool)), this, SLOT(editRemoveLoop()));
     connect(this->actionList.editSetConditionAction,    SIGNAL(triggered(bool)), this, SLOT(editSetCondition()));
@@ -985,7 +984,6 @@ void Tree::updateActions()
     actionList.editAddAction->setEnabled( canAdd );
     actionList.editRemoveAction->setEnabled( canRemove );
     actionList.editSetGlobalAction->setEnabled( elementGlobal() && element != elementGlobal() && elementGlobal()->canSetGlobal(element) );
-    actionList.editSetExternalLinkAction->setEnabled( elementGlobal() && element != elementGlobal() && elementGlobal()->canSetGlobal(element)  );
     actionList.editSetLoopAction->setEnabled( element->canSetLoop() );
     actionList.editRemoveLoopAction->setEnabled( !element->loop().isEmpty() );
     actionList.editSetConditionAction->setEnabled( element->canSetCondition() );
@@ -1172,36 +1170,6 @@ void Tree::editSetGlobal()
       return;
 
     elementGlobal()->setGlobal(element);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-void Tree::editSetExternalLink()
-{
-  try
-  {
-    if(!selectedItem)
-      return;
-    TreeElement *element = selectedItem->treeElement();
-    if(!(elementGlobal() && elementGlobal()->canSetGlobal(element)))
-      return;
-
-    QStringList existingNames = elementGlobal()->getChildrenNames();
-    existingNames.removeAt(existingNames.indexOf(element->label()));
-
-    bool ok;
-    QString label = QInputDialog::getText(this, tr("Set external link - GROOPS"), tr("Name of global variable in external file:"), QLineEdit::Normal, "", &ok);
-    QRegExp regex("[a-zA-Z]([a-zA-Z0-9])*");
-    while(ok && (label.isEmpty() || existingNames.contains(label) || !regex.exactMatch(label)))
-      label = QInputDialog::getText(this, tr("Set external link - GROOPS"), tr("Name is already used by global variable in this file or is invalid (only letters and digits allowed)!\nChoose another name:"), QLineEdit::Normal, label, &ok);
-
-    if(ok)
-      element->setNewExternalLink(label);
   }
   catch(std::exception &e)
   {
@@ -1518,7 +1486,6 @@ void Tree::treeContextMenuRequested(const QPoint &pos)
     contextMenu->addAction(actionList.editRemoveAction);
     contextMenu->addSeparator();
     contextMenu->addAction(actionList.editSetGlobalAction);
-    contextMenu->addAction(actionList.editSetExternalLinkAction);
     contextMenu->addSeparator();
     contextMenu->addAction(actionList.editSetLoopAction);
     contextMenu->addAction(actionList.editRemoveLoopAction);

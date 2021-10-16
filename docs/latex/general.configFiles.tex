@@ -58,11 +58,6 @@ most config files, it is recommended to define it in a template file that is use
 new config files in the GUI. See section~\reference{Graphical User Interface (GUI)}{general.gui}
 for details on how to set up a template file.
 
-It is also possible to import global sections from other config files by providing them as \config{inputfileGlobal}.
-Global elements defined in the config file itself overwrite those with the same name imported from other config files.
-This functionality allows the definition of a set of global variables in a single file that is then imported into multiple
-other config files, which can be useful in larger scenarios/projects.
-
 Global elements can be manipulated when running a config file by passing the argument \verb|--global <name>=<value>|.
 For example, running the command
 \begin{verbatim}
