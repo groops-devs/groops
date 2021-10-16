@@ -81,12 +81,12 @@ inline void ParametrizationSatelliteTrackingAntennaCenter::parameterName(std::ve
 {
   try
   {
-    if(estimate1x) name.push_back(ParameterName("satellite1", "sstAntennaCenter.x"));
-    if(estimate1y) name.push_back(ParameterName("satellite1", "sstAntennaCenter.y"));
-    if(estimate1z) name.push_back(ParameterName("satellite1", "sstAntennaCenter.z"));
-    if(estimate2x) name.push_back(ParameterName("satellite2", "sstAntennaCenter.x"));
-    if(estimate2y) name.push_back(ParameterName("satellite2", "sstAntennaCenter.y"));
-    if(estimate2z) name.push_back(ParameterName("satellite2", "sstAntennaCenter.z"));
+    if(estimate1x) name.push_back(ParameterName("satellite1.satellite2", "sstAntennaCenter1.x"));
+    if(estimate1y) name.push_back(ParameterName("satellite1.satellite2", "sstAntennaCenter1.y"));
+    if(estimate1z) name.push_back(ParameterName("satellite1.satellite2", "sstAntennaCenter1.z"));
+    if(estimate2x) name.push_back(ParameterName("satellite1.satellite2", "sstAntennaCenter2.x"));
+    if(estimate2y) name.push_back(ParameterName("satellite1.satellite2", "sstAntennaCenter2.y"));
+    if(estimate2z) name.push_back(ParameterName("satellite1.satellite2", "sstAntennaCenter2.z"));
   }
   catch(std::exception &e)
   {

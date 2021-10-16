@@ -107,11 +107,11 @@ Vector3d MiscAccelerationsAlbedo::acceleration(SatelliteModelPtr satellite, cons
       const Double distance = direction.normalize();
       posEarth.normalize();
 
-      // Cosine of angle of incident radiation
+      // Cosine of angle of reflected radiation
       const Double cosReflexion = inner(direction, posEarth);
       if(cosReflexion<=0) // element visible?
         continue;
-       // Cosine of angle of reflected radiation
+      // Cosine of angle of incident radiation
       const Double cosIncident = inner(posSun, posEarth);
 
       // Reflected Irradiance
