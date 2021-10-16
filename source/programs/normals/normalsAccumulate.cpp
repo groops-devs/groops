@@ -118,7 +118,6 @@ void NormalsAccumulate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
           ext = "."+z%"%02i-"s+s%"%02i"s;
 
         Matrix N;
-        logStatus<<"read matrix <"<<fileNameIn.at(0).appendBaseName(ext)<<">"<<Log::endl;
         for(UInt i=0; i<fileNameIn.size(); i++)
           if(usedBlocksIn.at(i)(z,s))
           {
