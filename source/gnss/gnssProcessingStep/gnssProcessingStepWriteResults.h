@@ -58,7 +58,7 @@ inline GnssProcessingStepWriteResults::GnssProcessingStepWriteResults(Config &co
 
 /***********************************************/
 
-void GnssProcessingStepWriteResults::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepWriteResults::process(GnssProcessingStep::State &state)
 {
   try
   {

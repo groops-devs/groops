@@ -65,11 +65,11 @@ inline GnssProcessingStepWriteAprioriSolution::GnssProcessingStepWriteAprioriSol
 
 /***********************************************/
 
-void GnssProcessingStepWriteAprioriSolution::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepWriteAprioriSolution::process(GnssProcessingStep::State &state)
 {
   try
   {
-    std::vector<UInt> blockIndex, indexVector(state.normalEquationInfo.parameterCount());
+    std::vector<UInt> indexVector(state.normalEquationInfo.parameterCount());
     if(parameterSelector)
       indexVector = parameterSelector->indexVector(state.normalEquationInfo.parameterNames());
     else

@@ -50,7 +50,7 @@ public:
 
 /***********************************************/
 
-void GnssProcessingStepComputeCovarianceMatrix::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepComputeCovarianceMatrix::process(GnssProcessingStep::State &state)
 {
   try
   {

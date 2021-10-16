@@ -84,7 +84,7 @@ inline GnssProcessingStepSelectNormalsBlockStructure::GnssProcessingStepSelectNo
 
 /***********************************************/
 
-void GnssProcessingStepSelectNormalsBlockStructure::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepSelectNormalsBlockStructure::process(GnssProcessingStep::State &state)
 {
   try
   {

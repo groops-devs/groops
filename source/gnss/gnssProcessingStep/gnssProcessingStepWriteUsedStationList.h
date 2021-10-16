@@ -61,7 +61,7 @@ inline GnssProcessingStepWriteUsedStationList::GnssProcessingStepWriteUsedStatio
 
 /***********************************************/
 
-void GnssProcessingStepWriteUsedStationList::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepWriteUsedStationList::process(GnssProcessingStep::State &state)
 {
   try
   {

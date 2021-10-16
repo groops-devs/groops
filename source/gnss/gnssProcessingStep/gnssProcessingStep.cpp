@@ -133,8 +133,10 @@ void GnssProcessingStep::process(GnssProcessingStep::State &state)
     {
       Parallel::peek(state.normalEquationInfo.comm);
       if(base->expectInitializedParameters() && state.changedNormalEquationInfo)
+      {
         state.gnss->initParameter(state.normalEquationInfo);
-      state.changedNormalEquationInfo = FALSE;
+        state.changedNormalEquationInfo = FALSE;
+      }
       base->process(state);
     }
   }

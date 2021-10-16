@@ -61,7 +61,7 @@ inline GnssProcessingStepWriteUsedTransmitterList::GnssProcessingStepWriteUsedTr
 
 /***********************************************/
 
-void GnssProcessingStepWriteUsedTransmitterList::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepWriteUsedTransmitterList::process(GnssProcessingStep::State &state)
 {
   try
   {

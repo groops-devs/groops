@@ -62,7 +62,7 @@ inline GnssProcessingStepWriteResiduals::GnssProcessingStepWriteResiduals(Config
 
 /***********************************************/
 
-void GnssProcessingStepWriteResiduals::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepWriteResiduals::process(GnssProcessingStep::State &state)
 {
   try
   {

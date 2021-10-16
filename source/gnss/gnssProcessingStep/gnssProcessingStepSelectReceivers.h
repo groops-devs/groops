@@ -63,7 +63,7 @@ inline GnssProcessingStepSelectReceivers::GnssProcessingStepSelectReceivers(Conf
 
 /***********************************************/
 
-void GnssProcessingStepSelectReceivers::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepSelectReceivers::process(GnssProcessingStep::State &state)
 {
   try
   {

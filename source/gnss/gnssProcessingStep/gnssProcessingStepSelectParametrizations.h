@@ -106,7 +106,7 @@ inline GnssProcessingStepSelectParametrizations::GnssProcessingStepSelectParamet
 
 /***********************************************/
 
-void GnssProcessingStepSelectParametrizations::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepSelectParametrizations::process(GnssProcessingStep::State &state)
 {
   try
   {

@@ -107,7 +107,7 @@ inline GnssProcessingStepResolveAmbiguities::GnssProcessingStepResolveAmbiguitie
 
 /***********************************************/
 
-void GnssProcessingStepResolveAmbiguities::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepResolveAmbiguities::process(GnssProcessingStep::State &state)
 {
   try
   {

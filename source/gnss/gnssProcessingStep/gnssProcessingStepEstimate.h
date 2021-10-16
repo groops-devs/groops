@@ -107,7 +107,7 @@ inline GnssProcessingStepEstimate::GnssProcessingStepEstimate(Config &config)
 
 /***********************************************/
 
-void GnssProcessingStepEstimate::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepEstimate::process(GnssProcessingStep::State &state)
 {
   try
   {

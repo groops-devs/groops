@@ -62,7 +62,7 @@ inline GnssProcessingStepSelectEpochs::GnssProcessingStepSelectEpochs(Config &co
 
 /***********************************************/
 
-void GnssProcessingStepSelectEpochs::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepSelectEpochs::process(GnssProcessingStep::State &state)
 {
   try
   {

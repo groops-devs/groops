@@ -62,7 +62,7 @@ public:
 
 /***********************************************/
 
-void GnssProcessingStepPrintResidualStatistics::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepPrintResidualStatistics::process(GnssProcessingStep::State &state)
 {
   try
   {

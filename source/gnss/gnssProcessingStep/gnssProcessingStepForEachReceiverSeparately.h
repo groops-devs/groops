@@ -69,7 +69,7 @@ inline GnssProcessingStepForEachReceiverSeparately::GnssProcessingStepForEachRec
 
 /***********************************************/
 
-void GnssProcessingStepForEachReceiverSeparately::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepForEachReceiverSeparately::process(GnssProcessingStep::State &state)
 {
   try
   {

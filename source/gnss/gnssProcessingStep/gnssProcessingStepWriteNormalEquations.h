@@ -74,7 +74,7 @@ inline GnssProcessingStepWriteNormalEquations::GnssProcessingStepWriteNormalEqua
 
 /***********************************************/
 
-void GnssProcessingStepWriteNormalEquations::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepWriteNormalEquations::process(GnssProcessingStep::State &state)
 {
   try
   {

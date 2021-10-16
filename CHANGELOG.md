@@ -1,5 +1,6 @@
 # main
 - New programs:     GriddedData2GriddedDataTimeSeries and GriddedDataTimeSeries2GriddedData
+- Bugfix:           gnssProcessingStep: uninitialized normalEquationInfo.
 - Bugfix:           gnssProcessingStepResolveAmbiguities: for writing empty ambiguity file.
 - Bugfix:           gnssParametrizationLeoDynamicOrbits: in parallel excecution.
 - Bugfix:           gnssParametrizationKinematicPositions: in parallel excecution.

@@ -68,7 +68,7 @@ inline GnssProcessingStepDisableTransmitterShadowEpochs::GnssProcessingStepDisab
 
 /***********************************************/
 
-void GnssProcessingStepDisableTransmitterShadowEpochs::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepDisableTransmitterShadowEpochs::process(GnssProcessingStep::State &state)
 {
   try
   {

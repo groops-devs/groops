@@ -59,7 +59,7 @@ inline GnssProcessingStepGroup::GnssProcessingStepGroup(Config &config)
 
 /***********************************************/
 
-void GnssProcessingStepGroup::process(GnssProcessingStep::State &state)
+inline void GnssProcessingStepGroup::process(GnssProcessingStep::State &state)
 {
   try
   {
