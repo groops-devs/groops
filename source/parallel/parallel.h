@@ -520,11 +520,15 @@ inline void Parallel::forEachProcess(UInt count, T func, const std::vector<UInt>
 {
   try
   {
+    std::set<UInt> procs;
+    for(UInt p : processNo)
+      procs.insert(p);
+
     UInt idx;
     if(timing) Log::startTimer();
     for(UInt i=0; i<count; i++)
     {
-      if(timing) Log::loopTimer(i, count, size(comm)-1);
+      if(timing) Log::loopTimer(i, count, procs.size());
       if(myRank(comm) == processNo.at(i))
       {
         func(i);
@@ -551,11 +555,15 @@ inline void Parallel::forEachProcess(std::vector<A> &vec, T func, const std::vec
 {
   try
   {
+    std::set<UInt> procs;
+    for(UInt p : processNo)
+      procs.insert(p);
+
     UInt idx = 0;
     if(timing) Log::startTimer();
     for(UInt i=0; i<vec.size(); i++)
     {
-      if(timing) Log::loopTimer(i, vec.size(), size(comm)-1);
+      if(timing) Log::loopTimer(i, vec.size(), procs.size());
       if(myRank(comm) == processNo.at(i))
       {
         vec[i] = func(i);
