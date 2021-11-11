@@ -55,30 +55,29 @@ inline LoopCommandOutput::LoopCommandOutput(Config &config)
 {
   try
   {
-    std::vector<FileName> command;
+    std::vector<FileName> commands;
     Bool                  silently;
 
-    readConfig(config, "command",            command,    Config::MUSTSET,   "",            "each output line becomes a loop iteration");
+    readConfig(config, "command",            commands,   Config::MUSTSET,   "",            "each output line becomes a loop iteration");
     readConfig(config, "silently",           silently,   Config::DEFAULT,   "0",           "without showing the output.");
     readConfig(config, "variableLoopString", nameString, Config::OPTIONAL, "loopCommand", "name of the variable to be replaced");
     readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL, "",            "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL, "",            "variable with total number of iterations");
     if(isCreateSchema(config)) return;
 
-    UInt count = 0;
-    for(UInt i=0; i<command.size(); i++)
+    for(const auto &command : commands)
     {
-      if(!System::exec(command.at(i), strings))
-        throw(Exception("Command \""+command.at(i).str()+"\" exited with error"));
-      if(!silently)
-        for(const auto &str : strings)
-          logInfo<<str<<Log::endl;
+      UInt count = strings.size();
+      if(!System::exec(command, strings))
+        throw(Exception("Command \""+command.str()+"\" exited with error"));
       if(strings.size() == count)
-        logWarningOnce<<"Command \""+command.at(i).str()+"\" returned no output"<<Log::endl;
-      count = strings.size();
+        logWarningOnce<<"Command \""+command.str()+"\" returned no output"<<Log::endl;
     } // for(i)
 
     index = 0;
+    if(!silently)
+      for(const auto &str : strings)
+        logInfo<<str<<Log::endl;
   }
   catch(std::exception &e)
   {
