@@ -204,14 +204,14 @@ Double GnssParametrizationTransmitterDynamicOrbits::updateParameter(const GnssNo
       {
         const Vector dx = x.row(normalEquationInfo.index(para->index), para->x.rows());
         para->x += dx;
-        const Vector dpos = polynomial.interpolate(gnss->times, para->times, para->PosDesign * dx, 3);
-        const Vector dvel = polynomial.interpolate(gnss->times, para->times, para->VelDesign * dx, 3);
-        para->trans->pos += dpos;
-        para->trans->vel += dvel;
+        const Vector dpos = polynomial.interpolate(para->trans->timesPosVel, para->times, para->PosDesign * dx, 3);
+        const Vector dvel = polynomial.interpolate(para->trans->timesPosVel, para->times, para->VelDesign * dx, 3);
+        para->trans->pos += reshape(dpos, 3, para->trans->pos.rows()).trans();
+        para->trans->vel += reshape(dvel, 3, para->trans->vel.rows()).trans();
 
-        for(UInt i=0; i<gnss->times.size(); i++)
+        for(UInt i=0; i<para->trans->timesPosVel.size(); i++)
           if(info.update(1e3*norm(dpos.row(3*i, 3))))
-            info.info = "position transmitter ("+para->trans->name()+", "+gnss->times.at(i).dateTimeStr()+")";
+            info.info = "position transmitter ("+para->trans->name()+", "+para->trans->timesPosVel.at(i).dateTimeStr()+")";
       }
     info.synchronizeAndPrint(normalEquationInfo.comm, 1e-3, maxChange);
     return maxChange;

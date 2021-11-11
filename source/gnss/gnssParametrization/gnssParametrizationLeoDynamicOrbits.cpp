@@ -144,8 +144,8 @@ void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::Communicato
 /***********************************************/
 
 void GnssParametrizationLeoDynamicOrbits::requirements(GnssNormalEquationInfo &normalEquationInfo,
-                                                               std::vector<UInt> &/*transCount*/, std::vector<UInt> &/*transCountEpoch*/,
-                                                               std::vector<UInt> &recvCount,  std::vector<UInt> &/*recvCountEpoch*/)
+                                                       std::vector<UInt> &/*transCount*/, std::vector<UInt> &/*transCountEpoch*/,
+                                                       std::vector<UInt> &recvCount,  std::vector<UInt> &/*recvCountEpoch*/)
 {
   try
   {

@@ -98,13 +98,15 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
 
         // read orbit
         // ----------
-        Vector pos, vel;
+        std::vector<Time> timesPosVel;
+        Matrix            pos, vel;
         try
         {
           const OrbitArc arc = InstrumentFile::read(fileNameOrbit(fileNameVariableList));
-          const Matrix data = polynomial.interpolate(times, arc.times(), arc.matrix().column(1, 6));
-          pos = reshape(data.column(0, 3).trans(), 0, 1);
-          vel = reshape(data.column(3, 3).trans(), 0, 1);
+          timesPosVel = arc.times();
+          const Matrix data = arc.matrix();
+          pos = data.column(1, 3);
+          vel = data.column(4, 3);
 
         }
         catch(std::exception &/*e*/)
@@ -176,7 +178,7 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
         }
 
         transmitters.push_back(std::make_shared<GnssTransmitter>(GnssType("***"+info.markerNumber), prn, info, noPatternFoundAction,
-                                                                 useableEpochs, times, clock, pos, vel, interpolationDegree, offset, crf2srf, srf2arf));
+                                                                 useableEpochs, clock, offset, crf2srf, srf2arf, timesPosVel, pos, vel, interpolationDegree));
         countTrans++;
       }
       catch(std::exception &e)

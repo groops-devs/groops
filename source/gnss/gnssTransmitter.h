@@ -34,21 +34,21 @@ class GnssTransmitter : public GnssTransceiver
 {
   GnssType                 type; // system + PRN
   Polynomial               polynomial;
-
-public:
-  std::vector<Time>        times;
   std::vector<Double>      clk;
-  Vector                   pos, vel; // CoM in CRF
   std::vector<Vector3d>    offset;   // between CoM and ARF in SRF
   std::vector<Transform3d> crf2srf, srf2arf;
 
+public:
+  std::vector<Time> timesPosVel;
+  Matrix            pos, vel; // CoM in CRF (epoch times (x,y,z))
+
   GnssTransmitter(GnssType prn, const std::string &name, const GnssStationInfo &info,
                   GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction,
-                  const Vector &useableEpochs, const std::vector<Time> &times, const std::vector<Double> &clock,
-                  const Vector &position, const Vector &velocity, UInt interpolationDegree, const std::vector<Vector3d> &offset,
-                  const std::vector<Transform3d> &crf2srf, const std::vector<Transform3d> &srf2arf)
+                  const Vector &useableEpochs, const std::vector<Double> &clock, const std::vector<Vector3d> &offset,
+                  const std::vector<Transform3d> &crf2srf, const std::vector<Transform3d> &srf2arf,
+                  const std::vector<Time> &timesPosVel, const_MatrixSliceRef position, const_MatrixSliceRef velocity, UInt interpolationDegree)
   : GnssTransceiver(name, info, noPatternFoundAction, useableEpochs),
-    type(prn), polynomial(interpolationDegree), times(times), clk(clock), pos(position), vel(velocity), offset(offset), crf2srf(crf2srf), srf2arf(srf2arf) {}
+    type(prn), polynomial(interpolationDegree), clk(clock), offset(offset), crf2srf(crf2srf), srf2arf(srf2arf), timesPosVel(timesPosVel), pos(position), vel(velocity) {}
 
   /// Destructor.
   virtual ~GnssTransmitter() {}
@@ -87,8 +87,7 @@ inline Vector3d GnssTransmitter::positionCoM(const Time &time) const
 {
   try
   {
-    Vector p = polynomial.interpolate({time}, times, pos, 3);
-    return Vector3d(p(0), p(1), p(2));
+    return Vector3d(polynomial.interpolate({time}, timesPosVel, pos));
   }
   catch(std::exception &e)
   {
@@ -102,8 +101,7 @@ inline Vector3d GnssTransmitter::velocity(const Time &time) const
 {
   try
   {
-    const Vector v = polynomial.interpolate({time}, times, vel, 3);
-    return Vector3d(v(0), v(1), v(2));
+    return Vector3d(polynomial.interpolate({time}, timesPosVel, vel));
   }
   catch(std::exception &e)
   {

@@ -349,7 +349,7 @@ void GnssParametrizationClocks::writeResults(const GnssNormalEquationInfo &norma
           if(indexTrans.at(idTrans).size() && indexTrans.at(idTrans).at(idEpoch))
           {
             MiscValueEpoch epoch;
-            epoch.time  = trans->times.at(idEpoch);
+            epoch.time  = gnss->times.at(idEpoch);
             epoch.value = trans->clockError(idEpoch);
             arc.push_back(epoch);
           }
