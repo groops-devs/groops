@@ -1,5 +1,6 @@
 # main
 - New programs:     GriddedData2GriddedDataTimeSeries and GriddedDataTimeSeries2GriddedData
+- New class:        In MiscAccelerations: FromParametrization
 - New option:       GnssAntennaDefinitionCreate: rename antennas.
 - Bugfix:           gnssProcessingStep: uninitialized normalEquationInfo.
 - Bugfix:           gnssProcessingStepResolveAmbiguities: for writing empty ambiguity file.

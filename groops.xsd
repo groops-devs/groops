@@ -4846,6 +4846,36 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="fromParametrization">
+				<xs:annotation>
+					<xs:documentation>from a solution vector with given parametrization</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="parametrization" type="parametrizationAccelerationType" maxOccurs="unbounded"/>
+						<xs:element name="inputfileSolution" type="filename">
+							<xs:annotation>
+								<xs:documentation>solution vector</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="indexStart" type="uint" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>position in the solution vector</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="rightSide" type="uint" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>if solution contains several right hand sides, select one</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 		</xs:choice>
 	</xs:complexType>
 	<xs:complexType name="noiseGeneratorType">

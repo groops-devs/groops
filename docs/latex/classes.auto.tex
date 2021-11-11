@@ -4401,6 +4401,31 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
+
+\subsection{FromParametrization}\label{miscAccelerationsType:fromParametrization}
+Reads a solution vector from file \configFile{inputfileSolution}{matrix}
+which may be computed by a least squares adjustment (e.g. by \program{NormalsSolverVCE}).
+The coefficients of the vector are interpreted from position \config{indexStart}
+(counting from zero) with help of \configClass{parametrization}{parametrizationAccelerationType}.
+If the solution file contains solution of several right hand sides you can choose
+one with number \config{rightSide} (counting from zero).
+
+The computed result is multiplied with \config{factor}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrization & \hfuzz=500pt \hyperref[parametrizationAccelerationType]{parametrizationAcceleration} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSolution & \hfuzz=500pt filename & \hfuzz=500pt solution vector\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~indexStart & \hfuzz=500pt uint & \hfuzz=500pt position in the solution vector\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~rightSide & \hfuzz=500pt uint & \hfuzz=500pt if solution contains several right hand sides, select one\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hline
+\end{tabularx}
+
 \clearpage
 %==================================
 

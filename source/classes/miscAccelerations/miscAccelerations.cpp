@@ -19,6 +19,7 @@
 #include "classes/miscAccelerations/miscAccelerationsAtmosphericDrag.h"
 #include "classes/miscAccelerations/miscAccelerationsAlbedo.h"
 #include "classes/miscAccelerations/miscAccelerationsAntennaThrust.h"
+#include "classes/miscAccelerations/miscAccelerationsFromParametrization.h"
 #include "classes/miscAccelerations/miscAccelerations.h"
 
 /***********************************************/
@@ -28,7 +29,8 @@ GROOPS_REGISTER_CLASS(MiscAccelerations, "miscAccelerationsType",
                       MiscAccelerationsSolarRadiationPressure,
                       MiscAccelerationsAlbedo,
                       MiscAccelerationsAtmosphericDrag,
-                      MiscAccelerationsAntennaThrust)
+                      MiscAccelerationsAntennaThrust,
+                      MiscAccelerationsFromParametrization)
 
 GROOPS_READCONFIG_UNBOUNDED_CLASS(MiscAccelerations, "miscAccelerationsType")
 
@@ -51,6 +53,8 @@ MiscAccelerations::MiscAccelerations(Config &config, const std::string &name)
        acc.push_back(new MiscAccelerationsAtmosphericDrag(config));
       if(readConfigChoiceElement(config, "antennaThrust", type, "antenna thrust"))
        acc.push_back(new MiscAccelerationsAntennaThrust(config));
+      if(readConfigChoiceElement(config, "fromParametrization", type, "from a solution vector with given parametrization"))
+       acc.push_back(new MiscAccelerationsFromParametrization(config));
       endChoice(config);
       if(isCreateSchema(config))
         return;
