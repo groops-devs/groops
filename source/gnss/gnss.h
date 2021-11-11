@@ -14,9 +14,9 @@
 #define __GROOPS_GNSS__
 
 #include "parallel/parallel.h"
-#include "classes/noiseGenerator/noiseGenerator.h"
 #include "base/gnssType.h"
 #include "base/parameterName.h"
+#include "classes/noiseGenerator/noiseGenerator.h"
 #include "gnss/gnssObservation.h"
 #include "gnss/gnssDesignMatrix.h"
 #include "gnss/gnssTransmitter.h"

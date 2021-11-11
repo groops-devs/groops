@@ -79,15 +79,15 @@ Rotary3d Gnss::rotationCrf2Trf(const Time &time) const
 {
   try
   {
-    const Polynomial polynomial(1);
-    const Matrix eopInterpolated = polynomial.interpolate({time}, times, eop); // EOP interpolation
-    const Double xp      = eopInterpolated(0,0);
-    const Double yp      = eopInterpolated(0,1);
-    const Double sp      = eopInterpolated(0,2);
-    const Double deltaUT = eopInterpolated(0,3) + (time-timeGPS2UTC(time)).seconds();
-    const Double X       = eopInterpolated(0,5);
-    const Double Y       = eopInterpolated(0,6);
-    const Double S       = eopInterpolated(0,7);
+    const UInt idx = std::min((times.size()-1), static_cast<UInt>(std::distance(times.begin(),
+                     std::upper_bound(times.begin(), times.end(), time, [](const Time &t, const Time &s) {return (t-s).seconds() < 0.5;}))));
+    const Double xp      = eop(idx, 0);
+    const Double yp      = eop(idx, 1);
+    const Double sp      = eop(idx, 2);
+    const Double deltaUT = eop(idx, 3) + (time-timeGPS2UTC(time)).seconds();
+    const Double X       = eop(idx, 5);
+    const Double Y       = eop(idx, 6);
+    const Double S       = eop(idx, 7);
 
     const Double ERA = Planets::ERA(timeGPS2UTC(time) + seconds2time(deltaUT));
     const Double r2  = X*X + Y*Y;
