@@ -409,12 +409,55 @@ public:
 
 /***********************************************/
 
+static const char *docstringGnssAntennaDefintionListRename = R"(
+\subsection{Rename}
+Replaces parts of the descrption of \config{antenna}s.
+The star "\verb|*|" left this part untouched.
+)";
+
+class GnssAntennaDefintionListRename : public GnssAntennaDefintionList
+{
+public:
+  GnssAntennaDefintionListRename(Config &config)
+  {
+    try
+    {
+      std::vector<GnssAntennaDefintionListPtr> antennaLists;
+      std::string name, serial, radome, comment;
+
+      readConfig(config, "antenna", antennaLists, Config::MUSTSET,  "",  "");
+      readConfig(config, "name",    name,         Config::OPTIONAL, "*", "*: left this part untouched");
+      readConfig(config, "serial",  serial,       Config::OPTIONAL, "*", "*: left this part untouched");
+      readConfig(config, "radome",  radome,       Config::OPTIONAL, "*", "*: left this part untouched");
+      readConfig(config, "comment", comment,      Config::OPTIONAL, "*", "*: left this part untouched");
+      if(isCreateSchema(config)) return;
+
+      for(auto &antennaList : antennaLists)
+        for(auto &antenna : antennaList->antennas)
+        {
+          if(name    != "*") antenna->name    = name;
+          if(serial  != "*") antenna->serial  = serial;
+          if(radome  != "*") antenna->radome  = radome;
+          if(comment != "*") antenna->comment = comment;
+          antennas.push_back(antenna);
+        } // for(antennas)
+    }
+    catch(std::exception &e)
+    {
+      GROOPS_RETHROW(e)
+    }
+  }
+};
+
+/***********************************************/
+
 GROOPS_REGISTER_CLASS(GnssAntennaDefintionList, "gnssAntennaDefintionListType",
                       GnssAntennaDefintionListNew,
                       GnssAntennaDefintionListFromFile,
                       GnssAntennaDefintionListFromStationInfo,
                       GnssAntennaDefintionListResample,
-                      GnssAntennaDefintionListTransform)
+                      GnssAntennaDefintionListTransform,
+                      GnssAntennaDefintionListRename)
 
 GROOPS_READCONFIG_CLASS(GnssAntennaDefintionList, "gnssAntennaDefintionListType")
 
@@ -437,6 +480,8 @@ GnssAntennaDefintionListPtr GnssAntennaDefintionList::create(Config &config, con
       ptr = GnssAntennaDefintionListPtr(new GnssAntennaDefintionListResample(config));
     if(readConfigChoiceElement(config, "transform",       choice, ""))
       ptr = GnssAntennaDefintionListPtr(new GnssAntennaDefintionListTransform(config));
+    if(readConfigChoiceElement(config, "rename",          choice, ""))
+      ptr = GnssAntennaDefintionListPtr(new GnssAntennaDefintionListRename(config));
     endChoice(config);
     return ptr;
   }

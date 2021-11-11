@@ -1467,6 +1467,33 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="rename">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="antenna" type="gnssAntennaDefintionListType" maxOccurs="unbounded"/>
+						<xs:element name="name" type="string" minOccurs="0" default="*">
+							<xs:annotation>
+								<xs:documentation>*: left this part untouched</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="serial" type="string" minOccurs="0" default="*">
+							<xs:annotation>
+								<xs:documentation>*: left this part untouched</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="radome" type="string" minOccurs="0" default="*">
+							<xs:annotation>
+								<xs:documentation>*: left this part untouched</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="comment" type="string" minOccurs="0" default="*">
+							<xs:annotation>
+								<xs:documentation>*: left this part untouched</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 		</xs:choice>
 	</xs:complexType>
 	<xs:complexType name="gnssParametrizationType">
