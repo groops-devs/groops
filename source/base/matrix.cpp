@@ -532,28 +532,14 @@ Matrix reshape(const_MatrixSliceRef A, UInt rows, UInt columns)
 
 /************************************************/
 
-Matrix reorder(const_MatrixSliceRef A, const std::vector<UInt>& rowIndex, const std::vector<UInt>& columnIndex)
+Matrix reorder(const_MatrixSliceRef A, const std::vector<UInt> &rowIndex)
 {
   try
   {
-    // row indices of input elements in new matrix
-    std::vector<UInt> newRowIndex = rowIndex.size() == 0 ? std::vector<UInt>(A.rows()) : rowIndex;
-    if(rowIndex.size() == 0) std::iota(newRowIndex.begin(), newRowIndex.end(), 0);
-
-    // column indices of input elements in new matrix
-    std::vector<UInt> newColumnIndex = columnIndex.size() == 0 ? std::vector<UInt>(A.columns()) : columnIndex;
-    if(columnIndex.size() == 0) std::iota(newColumnIndex.begin(), newColumnIndex.end(), 0);
-
-    Matrix B(newRowIndex.size(), newColumnIndex.size());
-
-    for(UInt i = 0; i<B.rows(); i++)
-      for(UInt j = 0; j<B.columns(); j++)
-      {
-        if(newRowIndex[i] != NULLINDEX && newColumnIndex[j] != NULLINDEX)
-          B(i, j) = A(newRowIndex[i], newColumnIndex[j]);
-      }
-
-    B.setType(A.getType());
+    Matrix B(rowIndex.size(), A.columns());
+    for(UInt i=0; i<B.rows(); i++)
+      if(rowIndex[i] != NULLINDEX)
+        copy(A.row(rowIndex.at(i)), B.row(i));
     return B;
   }
   catch(std::exception &e)

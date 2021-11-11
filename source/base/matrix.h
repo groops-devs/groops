@@ -390,12 +390,11 @@ void reshape(const_MatrixSliceRef A, MatrixSliceRef B);
 Matrix reshape(const_MatrixSliceRef A, UInt rows, UInt columns);
 
 /** @brief Return a reordered copy of Matrix @a A.
-* The parameters @a rowIndex and @a columnIndex contain the indices of the input matrix elements in the reordered matrix.
-* Indices with NULLINDEX are inserted as zero elements into the new matrix. If either @a rowIndex or @a columnIndex are empty (size == 0),
-* the ordering of the input matrix along the dimension is preserved.
-* The @a type of the return matrix is the same as of the input matrix.
+* The parameter @a rowIndex contains the indices of the input matrix rows in the reordered matrix.
+* Indices with NULLINDEX are inserted as zero elements into the new matrix.
+* The @a type of matrix is @b not considered
 * (operation is always applied to both triangles). */
-Matrix reorder(const_MatrixSliceRef A, const std::vector<UInt> &rowIndex, const std::vector<UInt> &columnIndex={});
+Matrix reorder(const_MatrixSliceRef A, const std::vector<UInt> &rowIndex);
 
 /** @brief Return the columns of the matrix as column vector.
 * The columns of the matrix are copied into the resulting vector.

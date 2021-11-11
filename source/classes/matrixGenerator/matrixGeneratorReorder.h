@@ -35,6 +35,7 @@ The index vector can be created with \program{ParameterSelection2IndexVector}.
 * @see MatrixGenerator */
 class MatrixGeneratorReorder : public MatrixGeneratorBase
 {
+  FileName fileNameRow, fileNameColumn;
   std::vector<UInt>  rowIndex;
   std::vector<UInt>  columnIndex;
   MatrixGeneratorPtr matrix;
@@ -52,8 +53,6 @@ inline MatrixGeneratorReorder::MatrixGeneratorReorder(Config &config) : MatrixGe
 {
   try
   {
-    FileName fileNameRow, fileNameColumn;
-
     renameDeprecatedConfig(config, "rowIndex",    "inputfileIndexVectorRow",    date2time(2018, 6, 6));
     renameDeprecatedConfig(config, "columnIndex", "inputfileIndexVectorColumn", date2time(2018, 6, 6));
 
@@ -99,7 +98,11 @@ inline void MatrixGeneratorReorder::compute(Matrix &A, UInt &/*startRow*/, UInt 
 {
   try
   {
-    A = reorder(matrix->compute(), rowIndex, columnIndex);
+    A = matrix->compute();
+    if(!fileNameRow.empty())
+      A = reorder(A, rowIndex);
+    if(!fileNameColumn.empty())
+      A = reorder(A.trans(), columnIndex).trans();
   }
   catch(std::exception &e)
   {
