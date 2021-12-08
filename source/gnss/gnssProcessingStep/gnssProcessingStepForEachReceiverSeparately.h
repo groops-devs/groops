@@ -43,7 +43,7 @@ class GnssProcessingStepForEachReceiverSeparately : public GnssProcessingStepBas
 {
   GnssTransceiverSelectorPtr selectReceivers;
   std::string                variableReceiver;
-  GnssProcessingStepPtr      processingSteps;
+  Config                     configProcessingSteps;
 
 public:
   GnssProcessingStepForEachReceiverSeparately(Config &config);
@@ -57,9 +57,11 @@ inline GnssProcessingStepForEachReceiverSeparately::GnssProcessingStepForEachRec
 {
   try
   {
+    GnssProcessingStepPtr processingSteps;
+
     readConfig(config, "selectReceivers",  selectReceivers,  Config::MUSTSET,  "",        "");
     readConfig(config, "variableReceiver", variableReceiver, Config::OPTIONAL, "station", "variable is set for each receiver");
-    readConfig(config, "processingStep",   processingSteps,  Config::MUSTSET,  "",        "steps are processed consecutively");
+    readConfigLater(config, "processingStep", processingSteps, configProcessingSteps, Config::MUSTSET, "", "steps are processed consecutively");
   }
   catch(std::exception &e)
   {
@@ -103,6 +105,8 @@ inline void GnssProcessingStepForEachReceiverSeparately::process(GnssProcessingS
 
         try
         {
+          GnssProcessingStepPtr processingSteps;
+          configProcessingSteps.read(processingSteps, varList);
           processingSteps->process(state);
         }
         catch(std::exception &e)

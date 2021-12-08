@@ -52,11 +52,16 @@ public:
   Bool getConfigValue(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, Double &v);
 
   /** @brief Removes the node with @a name from @a config and stores it in @a conf. */
-  Bool getConfigValue(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, Config &conf);
+  Bool getConfig(const std::string &name, Config::Appearance mustSet, Config &conf);
 
   /** @brief Removes all nodes with @a name from @a config and stores it in @a conf.
   * Number of elements is unknown as loops and conditions are not evaluated.  */
-  Bool getUnboundedConfigValues(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, Config &conf);
+  Bool getUnboundedConfig(const std::string &name, Config &conf);
+
+  /** @brief Reads the first variable(s) @p var.
+  * The nodes are not removed from the config.
+  * Should be used after @a readConfigLater. */
+  template<typename T> void read(T &var, VariableList &variableList) const;
 
   /** @brief Get the current global variable list. */
   VariableList &getVarList() {return varList;}
@@ -146,18 +151,6 @@ public:
   void run(VariableList &variableList, Parallel::CommunicatorPtr comm) const;
 };
 
-/***** CLASS ***********************************/
-
-/** @brief Config elements of a loop.
-* It can be read with @a readConfig().
-* The config is evaluated with @a read().
-* @ingroup config */
-class LoopConfig : public Config
-{
-public:
-  LoopPtr read(VariableList &variableList) const;
-};
-
 /***** FUNCTIONS ***********************************/
 
 /** @brief Check if functions are called in schema mode.
@@ -216,10 +209,36 @@ void endChoice(Config &config);
 * @ingroup config */
 template<typename T> Bool readConfig(Config &config, const std::string &name, T &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
+/** @brief Removes the config of a variable from @a config and stores it in configNew.
+* It can be later evluated with configNew.read(). @a var is untouched and only used to determine the type.
+* @ingroup config */
+template<typename T> Bool readConfigLater(Config &config, const std::string &name, T &var, Config &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
+
+/** @brief Removes the config of a variable from @a config and stores it in configNew.
+* It can be later evluated with configNew.read(). @a var is untouched and only used to determine the type.
+* @ingroup config */
+template<typename T> Bool readConfigLater(Config &config, const std::string &name, std::vector<T> &var, std::vector<Config> &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
+
 /// @}
 
 /***********************************************/
 /***** INLINES   *******************************/
+/***********************************************/
+
+template<typename T> inline void Config::read(T &var, VariableList &variableList) const
+{
+  try
+  {
+    Config config;
+    const std::string name = copy(config, variableList);
+    readConfig(config, name, var, MUSTSET, "", "");
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
 /***********************************************/
 
 template<typename T> inline Bool readConfig(Config &config, const std::string &name, std::vector<T> &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
@@ -243,6 +262,47 @@ template<typename T> inline Bool readConfig(Config &config, const std::string &n
     while(hasName(config, name, Config::OPTIONAL));
 
   return (var.size()!=0);
+}
+
+/***********************************************/
+
+template<typename T> inline Bool readConfigLater(Config &config, const std::string &name, T &var, Config &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
+{
+  if(isCreateSchema(config))
+  {
+    readConfig(config, name, var, mustSet, defaultValue, annotation);
+    return FALSE;
+  }
+
+  // get type and unbounded
+  Config configXsd;
+  readConfig(configXsd, name, var, mustSet, defaultValue, annotation);
+  XmlNodePtr xmlNode = configXsd.table()->getNextChild();
+
+  if(xmlNode->getAttribute("maxOccurs"))
+    return config.getUnboundedConfig(name, configNew);
+  return config.getConfig(name, mustSet, configNew);
+}
+
+/***********************************************/
+
+template<typename T> inline Bool readConfigLater(Config &config, const std::string &name, std::vector<T> &var, std::vector<Config> &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
+{
+  if(isCreateSchema(config))
+  {
+    readConfig(config, name, var, mustSet, defaultValue, annotation);
+    return FALSE;
+  }
+
+  if(hasName(config, name, mustSet))
+    do
+    {
+      configNew.resize(configNew.size()+1);
+      config.getConfig(name, mustSet, configNew.back());
+    }
+    while(hasName(config, name, Config::OPTIONAL));
+
+  return (configNew.size()!=0);
 }
 
 /***********************************************/

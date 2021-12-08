@@ -34,10 +34,10 @@ Loop over nested loops. First \config{loop} is outermost loop, every subsequent 
 * @see Loop */
 class LoopLoop : public Loop
 {
-  std::vector<LoopConfig> loopConfigs;
-  std::vector<LoopPtr>    loops;
-  UInt                    index;
-  std::string             nameIndex;
+  std::vector<Config>  loopConfigs;
+  std::vector<LoopPtr> loops;
+  UInt                 index;
+  std::string          nameIndex;
 
 public:
   LoopLoop(Config &config);
@@ -54,7 +54,7 @@ inline LoopLoop::LoopLoop(Config &config)
 {
   try
   {
-    readConfig(config, "loop",               loopConfigs, Config::MUSTSET,  "", "subloop");
+    readConfigLater(config, "loop", loops, loopConfigs, Config::MUSTSET,  "", "subloop");
     readConfig(config, "variableLoopIndex",  nameIndex,   Config::OPTIONAL, "", "variable with index of current iteration (starts with zero)");
     if(isCreateSchema(config))
       return;
@@ -87,7 +87,7 @@ inline Bool LoopLoop::iteration(VariableList &varList)
   {
     std::function<Bool(UInt)> initLoop = [&](UInt i) -> Bool
     {
-      loops.at(i) = loopConfigs.at(i).read(varList);
+      loopConfigs.at(i).read(loops.at(i), varList);
       while(loops.at(i)->iteration(varList))
         if((i+1 >= loops.size()) || initLoop(i+1))
           return TRUE;

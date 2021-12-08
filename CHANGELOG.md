@@ -3,6 +3,7 @@
 - New class:        In MiscAccelerations: FromParametrization
 - New option:       GnssAntennaDefinitionCreate: rename antennas.
 - Bugfix:           gnssProcessingStep: uninitialized normalEquationInfo.
+- Bugfix:           gnssProcessingStepForEachReceiverSeparately: variableReceiver was not set.
 - Bugfix:           gnssProcessingStepResolveAmbiguities: for writing empty ambiguity file.
 - Bugfix:           gnssParametrizationLeoDynamicOrbits: in parallel excecution.
 - Bugfix:           gnssParametrizationKinematicPositions: in parallel excecution.

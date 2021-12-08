@@ -320,16 +320,10 @@ Bool Config::getConfigValue(const std::string &name, const std::string &type, Co
 
 /***********************************************/
 
-Bool Config::getConfigValue(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, Config &conf)
+Bool Config::getConfig(const std::string &name, Config::Appearance mustSet, Config &conf)
 {
   try
   {
-    if(createSchema)
-    {
-      xselement(name, type, mustSet, ONCE, defaultValue, annotation);
-      return FALSE;
-    }
-
     XmlNodePtr xmlNode = XmlNode::create(name);
     XmlNodePtr child   = getChild(name);
     if(child)
@@ -353,16 +347,10 @@ Bool Config::getConfigValue(const std::string &name, const std::string &type, Co
 
 /***********************************************/
 
-Bool Config::getUnboundedConfigValues(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, Config &conf)
+Bool Config::getUnboundedConfig(const std::string &name, Config &conf)
 {
   try
   {
-    if(createSchema)
-    {
-      xselement(name, type, mustSet, UNBOUNDED, defaultValue, annotation);
-      return FALSE;
-    }
-
     // finish old iteration
     // --------------------
     if(stack.top().loopPtr && stack.top().loopNext && !stack.top().loopPtr->iteration(varList))
@@ -743,25 +731,6 @@ void ProgramConfig::run(VariableList &variableList, Parallel::CommunicatorPtr co
 }
 
 /***********************************************/
-/***********************************************/
-
-LoopPtr LoopConfig::read(VariableList &variableList) const
-{
-  try
-  {
-    Config config;
-    const std::string name = copy(config, variableList);
-    LoopPtr loop;
-    readConfig(config, name, loop, MUSTSET, "", "");
-    return loop;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
 /*** Functions *********************************/
 /***********************************************/
 
@@ -1078,15 +1047,13 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssType &va
 // read Program
 template<> Bool readConfig(Config &config, const std::string &name, ProgramConfig &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
 {
-  return config.getUnboundedConfigValues(name, "programType", mustSet, defaultValue, annotation, var);
-}
+  if(isCreateSchema(config))
+  {
+    config.xselement(name, "programType", mustSet, Config::UNBOUNDED, defaultValue, annotation);
+    return FALSE;
+  }
 
-/***********************************************/
-
-// read Loop
-template<> Bool readConfig(Config &config, const std::string &name, LoopConfig &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
-{
-  return config.getConfigValue(name, "loopType", mustSet, defaultValue, annotation, var);
+  return config.getUnboundedConfig(name, var);
 }
 
 /***********************************************/
