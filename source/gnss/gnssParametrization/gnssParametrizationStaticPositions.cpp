@@ -247,22 +247,19 @@ void GnssParametrizationStaticPositions::constraints(const GnssNormalEquationInf
       }
 
     // compute station weights for no-net constraint
-    Vector x;
+    Vector x(A.columns()), sigma;
     if(rootMeanSquare(l) > 1e-4)
-    {
-      Vector sigma;
       x = Vce::robustLeastSquares(A, l, 3, huber, huberPower, 30, sigma);
-      for(UInt i=0; i<sigma.rows(); i++)
-        A.row(3*i, 3) *= 1./sigma(i);
-    }
-    else
-      x = leastSquares(Matrix(A), Vector(l));
 
-    // compute noNetEstimator = (A'A)^(-1) A'
+    // compute noNetEstimator = (A'PA)^(-1) A'P
+    for(UInt i=0; i<sigma.rows(); i++)
+      A.row(3*i, 3) *= 1./sigma(i);
     const Vector tau = QR_decomposition(A);
     const Matrix W = A.row(0, noNetCount);
     generateQ(A, tau);
     triangularSolve(1., W, A.trans());
+    for(UInt i=0; i<sigma.rows(); i++)
+      A.row(3*i, 3) *= 1./sigma(i);
     noNetEstimator = A.trans();
 
     if(sigmaNoNetTranslation) logStatus<<"apply no-net translation to receiver positions, apriori ("<<1e3*x(idxNNT+0)%"%.1f, "s<<1e3*x(idxNNT+1)%"%.1f, "s<<1e3*x(idxNNT+2)%"%.1f) mm"s<<Log::endl;
