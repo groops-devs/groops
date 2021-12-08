@@ -2252,6 +2252,10 @@ of a new \configClass{grid}{gridType}. If some of the new points are not filled 
 the result can be selected with \config{statistics} (e.g. mean, root mean square, min, max, \ldots).
 It also is possible to simply count the number of data points that were assigned to each point.
 
+Be aware in case borders are given within \configClass{grid}{gridType}, the \configFile{outputfileGriddedData}{griddedData} will have points excluded before the assignement of old points to the new points.
+The data from \configFile{inputfileGriddedData}{griddedData} will not be limited by the given borders! See \reference{GriddedDataConcatenate}{GriddedDataConcatenate} to limit the
+\configFile{inputfileGriddedData}{griddedData} to given borders.
+
 \fig{!hb}{0.8}{griddedData2GriddedDataStatistics}{fig:griddedData2GriddedDataStatistics}{Assignement of irregular distributed data to grid.}
 
 

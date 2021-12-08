@@ -18,6 +18,10 @@ of a new \configClass{grid}{gridType}. If some of the new points are not filled 
 the result can be selected with \config{statistics} (e.g. mean, root mean square, min, max, \ldots).
 It also is possible to simply count the number of data points that were assigned to each point.
 
+Be aware in case borders are given within \configClass{grid}{gridType}, the \configFile{outputfileGriddedData}{griddedData} will have points excluded before the assignement of old points to the new points.
+The data from \configFile{inputfileGriddedData}{griddedData} will not be limited by the given borders! See \reference{GriddedDataConcatenate}{GriddedDataConcatenate} to limit the
+\configFile{inputfileGriddedData}{griddedData} to given borders.
+
 \fig{!hb}{0.8}{griddedData2GriddedDataStatistics}{fig:griddedData2GriddedDataStatistics}{Assignement of irregular distributed data to grid.}
 )";
 
@@ -126,9 +130,18 @@ void GriddedData2GriddedDataStatistics::run(Config &config, Parallel::Communicat
         idx = row * lambda.size() + col;
       }
       else
-        idx = std::distance(gridNew.points.begin(), std::min_element(gridNew.points.begin(), gridNew.points.end(),
-                            [&](const Vector3d &p1, const Vector3d &p2) {return (grid.points.at(i)-p1).r() < (grid.points.at(i)-p2).r();}));
-
+      {
+        Double minDistance = std::numeric_limits<Double>::max();
+        for(UInt k=0; k<gridNew.points.size(); k++)
+        {
+          const Double distance = (gridNew.points[k] - grid.points[i]).r();
+          if(distance < minDistance)
+          {
+            minDistance = distance;
+            idx = k;
+          }
+        }
+      }
       Double w = 1;
       if((type == WMEAN) || (type == WRMS) || (type == WSTD))
         w = grid.areas.at(i);

@@ -75,7 +75,9 @@ This program assigns values <a class="groops-class" href="fileFormat_griddedData
 of a new <a class="groops-class" href="gridType.html">grid</a>. If some of the new points are not filled in with data
 <strong class="groops-config-element">emptyValue</strong> is used instead. If multiple points of the input fall on the same node
 the result can be selected with <strong class="groops-config-element">statistics</strong> (e.g. mean, root mean square, min, max, &hellip; ).
-It also is possible to simply count the number of data points that were assigned to each point.</p><p><figure><img class="figure" style="width:80%;" src="../figures/griddedData2GriddedDataStatistics.png" alt="griddedData2GriddedDataStatistics"><figcaption class="center">Figure: Assignement of irregular distributed data to grid.</figcaption></figure>
+It also is possible to simply count the number of data points that were assigned to each point.</p><p>Be aware in case borders are given within <a class="groops-class" href="gridType.html">grid</a>, the <a class="groops-class" href="fileFormat_griddedData.html">outputfileGriddedData</a> will have points excluded before the assignement of old points to the new points.
+The data from <a class="groops-class" href="fileFormat_griddedData.html">inputfileGriddedData</a> will not be limited by the given borders! See <a class="groops-ref" href="GriddedDataConcatenate.html">GriddedDataConcatenate</a> to limit the
+<a class="groops-class" href="fileFormat_griddedData.html">inputfileGriddedData</a> to given borders.</p><p><figure><img class="figure" style="width:80%;" src="../figures/griddedData2GriddedDataStatistics.png" alt="griddedData2GriddedDataStatistics"><figcaption class="center">Figure: Assignement of irregular distributed data to grid.</figcaption></figure>
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
