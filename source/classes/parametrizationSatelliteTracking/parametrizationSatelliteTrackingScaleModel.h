@@ -25,7 +25,6 @@ Amplitude variation of model waveforms is defined by \configClass{parametrizatio
 /***********************************************/
 
 #include "base/import.h"
-#include "base/polynomial.h"
 #include "classes/parametrizationTemporal/parametrizationTemporal.h"
 #include "parametrizationSatelliteTracking.h"
 

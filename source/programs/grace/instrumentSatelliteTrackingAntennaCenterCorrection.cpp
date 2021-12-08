@@ -52,7 +52,6 @@ an interpolation polynomial of degree \config{interpolationDegree}.
 /***********************************************/
 
 #include "programs/program.h"
-#include "base/polynomial.h"
 #include "files/fileMatrix.h"
 #include "files/fileInstrument.h"
 #include "misc/grace/graceKBandGeometry.h"

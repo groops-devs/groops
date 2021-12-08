@@ -31,7 +31,6 @@ by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
 /***********************************************/
 
 #include "base/import.h"
-#include "base/polynomial.h"
 #include "classes/parametrizationTemporal/parametrizationTemporal.h"
 #include "parametrizationSatelliteTracking.h"
 #include "files/fileInstrument.h"
