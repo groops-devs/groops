@@ -374,8 +374,8 @@ Vector GnssLambda::searchIntegerBlocked(const_MatrixSliceRef xFloat, MatrixSlice
         {
           if(timing) logWarning<<"searchInteger("<<dim<<").slice("<<blockStart<<", "<<blockSize<<"): cannot find a solution -> restart with smaller block size"<<Log::endl;
           defaultBlockSize = (defaultBlockSize+1)/2;
-          blockStart += (blockSize+1)/2;
-          blockSize  -= (blockSize+1)/2;
+          blockStart = std::min(blockStartOld, blockStart+(blockSize+1)/2);
+          blockSize -= (blockSize+1)/2;
           iter--;
           continue;
         }
