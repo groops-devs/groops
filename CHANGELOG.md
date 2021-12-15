@@ -9,6 +9,7 @@
 - Bugfix:           gnssParametrizationKinematicPositions: in parallel excecution.
 - Bugfix:           sp3Format2Orbit: no/invalid orbit positions/velocities are now excluded.
 - Other:            Removed inputfileGlobal option.
+- Other:            GnssAttitude2Orbex: can now handle different sampling per satellite.
 
 # Release 2021-09-06
 - Interface change: Complete redesign of GnssProcessing to make usage a little bit easier and more flexible.

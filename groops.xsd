@@ -19263,9 +19263,9 @@
 								<xs:documentation>loop variable for PRNs from transmitter list</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded">
+						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>attitude output epochs</xs:documentation>
+								<xs:documentation>resample to these epochs (otherwise input file epochs are used)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">

@@ -36,6 +36,15 @@ See also \program{GnssOrbex2StarCamera}, \program{SimulateStarCameraGnss}.
 * @ingroup programsConversionGroup */
 class GnssAttitude2Orbex
 {
+  class Record
+  {
+  public:
+    std::string prn;
+    Vector      quaternion;
+
+    Record(const std::string &prn, const_MatrixSliceRef quaternion) : prn(prn), quaternion(quaternion) {}
+  };
+
 public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
@@ -55,12 +64,13 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     TimeSeriesPtr timeSeriesPtr;
     EarthRotationPtr earthRotation;
     UInt interpolationDegree;
+    Polynomial polynomial;
 
     readConfig(config, "outputfileOrbex",          fileNameOrbex,           Config::MUSTSET,  "",      "ORBEX file");
     readConfig(config, "inputfileTransmitterList", fileNameTransmitterList, Config::MUSTSET,  "",      "ASCII list with transmitter PRNs");
     readConfig(config, "inputfileAttitude",        fileNameAttitude,        Config::MUSTSET,  "attitude.{prn}.dat", "instrument file containing attitude");
     readConfig(config, "variablePrn",              variablePrn,             Config::DEFAULT,  "prn",   "loop variable for PRNs from transmitter list");
-    readConfig(config, "timeSeries",               timeSeriesPtr,           Config::MUSTSET,  "",      "attitude output epochs");
+    readConfig(config, "timeSeries",               timeSeriesPtr,           Config::OPTIONAL, "",      "resample to these epochs (otherwise input file epochs are used)");
     readConfig(config, "earthRotation",            earthRotation,           Config::OPTIONAL, "",      "rotate data into Earth-fixed frame");
     readConfig(config, "interpolationDegree",      interpolationDegree,     Config::MUSTSET,  "7",     "for attitude and Earth rotation interpolation");
     readConfig(config, "description",              description,             Config::MUSTSET,  "",      "description of file contents");
@@ -71,6 +81,13 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "comment",                  comments,                Config::OPTIONAL, "",      "");
     if(isCreateSchema(config)) return;
 
+    std::vector<Time> times;
+    if(timeSeriesPtr)
+    {
+      times = timeSeriesPtr->times();
+      polynomial = Polynomial(interpolationDegree);
+    }
+
     std::vector<std::string> transmitterList;
     for(const auto &fileName : fileNameTransmitterList)
     {
@@ -80,15 +97,14 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     VariableList fileNameVariableList;
     addVariable(variablePrn, fileNameVariableList);
-    std::map<std::string, Matrix> prn2Quaternions;
-    std::vector<Time> times = timeSeriesPtr->times();;
-    Polynomial polynomial(interpolationDegree);
+    std::map<Time, std::vector<Record>> times2Records;
     for(const auto &prn : transmitterList)
     {
       fileNameVariableList[variablePrn]->setValue(prn);
 
       StarCameraArc arc = InstrumentFile::read(fileNameAttitude(fileNameVariableList));
       Matrix quaternion(arc.size(), 4);
+
       for(UInt idEpoch = 0; idEpoch < arc.size(); idEpoch++)
       {
         Rotary3d rot = inverse(arc.at(idEpoch).rotary);
@@ -96,13 +112,27 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
           rot *= inverse(earthRotation->rotaryMatrix(arc.at(idEpoch).time));
         copy(rot.quaternion().trans(), quaternion.row(idEpoch));
       }
+
+      // ensure consistent sign of quaternions
       for(UInt idEpoch=1; idEpoch<quaternion.rows(); idEpoch++)
         if(inner(quaternion.row(idEpoch), quaternion.row(idEpoch-1))<0)
           quaternion.row(idEpoch) *= -1;
-      prn2Quaternions[prn] = polynomial.interpolate(times, arc.times(), quaternion);
-      for(UInt idEpoch=0; idEpoch<prn2Quaternions[prn].rows(); idEpoch++)
-        prn2Quaternions[prn].row(idEpoch) /= norm(prn2Quaternions[prn].row(idEpoch));
+
+      // (optionally) resample attitude
+      std::vector<Time> prnTimes = arc.times();
+      if(times.size())
+      {
+        quaternion = polynomial.interpolate(times, prnTimes, quaternion);
+        prnTimes = times;
+      }
+
+      for(UInt idEpoch=0; idEpoch<quaternion.rows(); idEpoch++)
+        times2Records[prnTimes.at(idEpoch)].push_back(Record(prn, (quaternion.row(idEpoch)/norm(quaternion.row(idEpoch))).trans())); // normalize quaternions
     }
+
+    times.clear();
+    for(const auto &epoch : times2Records)
+      times.push_back(epoch.first);
 
     logStatus<<"writing ORBEX file to <"<<fileNameOrbex<<">"<<Log::endl;
     OutFile outfile(fileNameOrbex);
@@ -139,14 +169,14 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     outfile << "*ATT RECORDS: TRANSFORMATION FROM TERRESTRIAL FRAME COORDINATES (T) TO SAT. BODY FRAME ONES (B) SUCH AS" << std::endl;
     outfile << "*                                 (0,B) = q.(0,T).trans(q)" << std::endl;
     outfile << "*REC ID_              N ___q0_(scalar)_____ ____q1__x__________ ____q2__y__________ ____q3__z__________" << std::endl;
-    for(UInt idEpoch = 0; idEpoch < times.size(); idEpoch++)
+    for(const auto &epoch : times2Records)
     {
-      outfile << times.at(idEpoch)%"## %y %m %d %H %M %012.9S000 "s << transmitterList.size()%"%3i"s << std::endl; // ATTENTION: "fake" 15.12 precision due to max Time precision
-      for(const auto &prn : transmitterList)
+      outfile << epoch.first%"## %y %m %d %H %M %012.9S000 "s << epoch.second.size()%"%3i"s << std::endl; // ATTENTION: "fake" 15.12 precision due to max Time precision
+      for(const auto &record : epoch.second)
       {
-        outfile << " ATT " << prn << std::string(14, ' ') << prn2Quaternions[prn].columns();
-        for(UInt i = 0; i < prn2Quaternions[prn].columns(); i++)
-          outfile << prn2Quaternions[prn](idEpoch, i)%" %19.16f"s;
+        outfile << " ATT " << record.prn << std::string(14, ' ') << record.quaternion.size();
+        for(UInt i = 0; i < record.quaternion.size(); i++)
+          outfile << record.quaternion(i)%" %19.16f"s;
         outfile << std::endl;
       }
     }
