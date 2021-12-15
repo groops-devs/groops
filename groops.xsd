@@ -10602,7 +10602,7 @@
 								<xs:documentation>apriori earth rotation</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="parametrization" type="gnssParametrizationType" maxOccurs="unbounded" default="1">
+						<xs:element name="parametrization" type="gnssParametrizationType" minOccurs="0" maxOccurs="unbounded" default="1">
 							<xs:annotation>
 								<xs:documentation>models and parameters</xs:documentation>
 							</xs:annotation>
