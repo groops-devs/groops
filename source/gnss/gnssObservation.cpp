@@ -106,12 +106,11 @@ Bool GnssObservation::init(const GnssReceiver &receiver, const GnssTransmitter &
       at(i).sigma0 = sigma0(i);
       at(i).sigma  = acv(i); // temporarily misuse sigma for ACV pattern nan check
     }
-    auto iter = std::remove_if(obs.begin(), obs.end(), [](const auto &x)
+    obs.erase(std::remove_if(obs.begin(), obs.end(), [](const auto &x)
     {
       if(((x.type == GnssType::PHASE) || (x.type == GnssType::RANGE)) && (x.sigma0 <= 0)) return TRUE; // remove Phase/Range for sigma <= 0
       return std::isnan(x.sigma0) || std::isnan(x.sigma);                                              // remove all NAN values
-    });
-    obs.erase(iter, obs.end());
+    }), obs.end());
     obs.shrink_to_fit();
     if(size()==0)
       return FALSE;
@@ -269,6 +268,7 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
     STEC        = observation.STEC;
     dSTEC       = observation.dSTEC;
     types       = types_;
+    rankDeficit = 0;
     l           = Vector(obsCount);
     sigma       = Vector(obsCount);
     sigma0      = Vector(obsCount);
@@ -322,8 +322,7 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
 
     // design matrix
     // -------------
-    A = Matrix(obsCount, 9 + obsCount + T.columns());
-    B = Matrix();
+    A = Matrix(obsCount, 10 + obsCount + T.columns());
     for(UInt i=0; i<obsCount; i++)
     {
       if((types.at(i) == GnssType::RANGE) || (types.at(i) == GnssType::PHASE))
@@ -336,12 +335,14 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
         A(i, idxPosTrans+1) = k.y() * (-1+rDotTrans);  // transmitter coord y
         A(i, idxPosTrans+2) = k.z() * (-1+rDotTrans);  // transmitter coord z
         A(i, idxClockTrans) = -1.0;                    // transmitter clock correction
-        A(i, idxRange)      = 1.0;                     // range correction (troposphere, ...)
+        A(i, idxRange)      =  1.0;                    // range correction (troposphere, ...)
+        A(i, idxSTEC)       = types.at(i).ionosphericFactor();
       }
 
       A(i, idxUnit+i) = 1.0; // unit matrix
     }  // for(i=0..obsCount)
     copy(T, A.column(idxUnit + obsCount, T.columns()));
+    B = A.column(idxSTEC);
 
     // antenna correction and other corrections
     // ----------------------------------------
@@ -361,6 +362,36 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
         if(A.size()) A.row(i) *= 1/sigma(i);
         if(B.size()) B.row(i) *= 1/sigma(i);
       }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void GnssObservationEquation::eliminateGroupParameters(Bool removeRows)
+{
+  try
+  {
+    if(!B.size())
+      return;
+    const Vector tau = QR_decomposition(B);
+    for(Matrix &A : std::vector<std::reference_wrapper<Matrix>>{A, l})
+      if(A.size())
+      {
+        QTransMult(B, tau, A);
+        A.row(0, B.columns()).setNull();
+        if(removeRows)
+          A = A.row(B.columns(), A.rows()-B.columns());
+        else
+        {
+          rankDeficit += B.columns();
+          QMult(B, tau, A);
+        }
+      }
+    B = Matrix();
   }
   catch(std::exception &e)
   {

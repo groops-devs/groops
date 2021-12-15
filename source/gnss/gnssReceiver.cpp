@@ -197,14 +197,6 @@ GnssReceiver::ObservationEquationList::ObservationEquationList(const GnssReceive
         {
           auto e = new GnssObservationEquation(*obs, receiver, *transmitters.at(idTrans), rotationCrf2Trf, reduceModels, idEpoch, FALSE, types);
           eqn.at(idEpoch).at(idTrans) = std::unique_ptr<GnssObservationEquation>(e);
-          e->B = Vector(e->l.rows()); // STEC
-          for(UInt idType=0; idType<e->B.rows(); idType++)
-          {
-            if(e->types.at(idType) == GnssType::PHASE)
-              e->B(idType, 0) = -Ionosphere::Ap/std::pow(e->types.at(idType).frequency(), 2);
-            if(e->types.at(idType) == GnssType::RANGE)
-              e->B(idType, 0) =  Ionosphere::Ap/std::pow(e->types.at(idType).frequency(), 2);
-          }
         }
       }
     }
@@ -636,10 +628,7 @@ void GnssReceiver::estimateInitialClockErrorFromCodeObservations(const std::vect
             if(obs && obs->observationList(GnssObservation::RANGE, types))
             {
               eqnList.emplace_back(*obs, *this, *transmitters.at(idTrans), rotationCrf2Trf, reduceModels, idEpoch, TRUE, types);
-              Vector STEC(eqnList.back().l.rows());
-              for(UInt idType=0; idType<STEC.rows(); idType++)
-                STEC(idType) = eqnList.back().types.at(idType).ionosphericFactor();
-              eliminationParameter(STEC, {eqnList.back().A, eqnList.back().l}); // eliminate TEC
+              eqnList.back().eliminateGroupParameters();
               obsCount += eqnList.back().l.rows();
               if(!types.at(0).isInList(systems))
                 systems.push_back(types.at(0) & GnssType::SYSTEM);
@@ -1340,7 +1329,7 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
           // distance and TEC
           Matrix B(l.rows(), 2);
           copy(eqn.A.column(GnssObservationEquation::idxRange), B.column(0));
-          copy(eqn.B, B.column(1));
+          copy(eqn.A.column(GnssObservationEquation::idxSTEC),  B.column(1));
 
           // signal biases (includes ambiguities)
           UInt idx;

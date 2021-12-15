@@ -94,7 +94,8 @@ public:
         idxPosTrans   = 4, // x,y,z (CRF)
         idxClockTrans = 7,
         idxRange      = 8,
-        idxUnit       = 9};
+        idxSTEC       = 9,
+        idxUnit       = 10};
 
   UInt  idEpoch;
   const GnssTrack       *track; // phase ambiguities
@@ -102,9 +103,10 @@ public:
   const GnssTransmitter *transmitter;
 
   // weighted observations (with 1/sigma)
-  std::vector<GnssType> types;              // observed types (inclusive composed signals)
-  std::vector<GnssType> typesTransmitted;   // orginal transmitted signals (C2XG -> C2LG + C2SG), phases without attribute
-  Vector l;      ///< weighted reduced observations
+  std::vector<GnssType> types;            ///< observed types (inclusive composed signals)
+  std::vector<GnssType> typesTransmitted; ///< orginal transmitted signals (C2XG -> C2LG + C2SG), phases without attribute
+  UInt   rankDeficit;  ///< from eliminated group parameters
+  Vector l;            ///< weighted reduced observations
   Vector sigma;
   Vector sigma0;
 
@@ -131,6 +133,8 @@ public:
   void compute(const GnssObservation &observation, const GnssReceiver &receiver, const GnssTransmitter &transmitter,
                const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
                UInt idEpoch, Bool decorrelate, const std::vector<GnssType> &types);
+
+  void eliminateGroupParameters(Bool removeRows=TRUE);
 };
 
 /***********************************************/

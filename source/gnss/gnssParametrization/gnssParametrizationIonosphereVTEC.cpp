@@ -131,11 +131,7 @@ void GnssParametrizationIonosphereVTEC::designMatrix(const GnssNormalEquationInf
       return;
 
     // VTEC at station per epoch
-    Vector iono(eqn.l.rows());
-    for(UInt idType=0; idType<eqn.types.size(); idType++)
-      if((eqn.types.at(idType) == GnssType::PHASE) || (eqn.types.at(idType) == GnssType::RANGE))
-        axpy(eqn.B(idType, 0)*eqn.sigma(idType), eqn.A.column(GnssObservationEquation::idxUnit + idType), iono);
-    axpy(mapping(eqn.elevationRecvLocal), iono, A.column(index.at(eqn.receiver->idRecv()).at(eqn.idEpoch)));
+    axpy(mapping(eqn.elevationRecvLocal), eqn.A.column(GnssObservationEquation::idxSTEC), A.column(index.at(eqn.receiver->idRecv()).at(eqn.idEpoch)));
   }
   catch(std::exception &e)
   {

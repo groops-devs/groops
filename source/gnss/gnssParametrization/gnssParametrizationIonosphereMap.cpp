@@ -224,12 +224,8 @@ void GnssParametrizationIonosphereMap::designMatrix(const GnssNormalEquationInfo
     }
 
     // VTEC -> STEC
-    Vector iono(eqn.l.rows());
-    for(UInt idType=0; idType<eqn.types.size(); idType++)
-      if((eqn.types.at(idType) == GnssType::PHASE) || (eqn.types.at(idType) == GnssType::RANGE))
-        axpy(eqn.B(idType, 0)*eqn.sigma(idType), eqn.A.column(GnssObservationEquation::idxUnit + idType), iono);
     Matrix B(eqn.l.rows(), Ynm.columns());
-    matMult(mapping(eqn.elevationRecvLocal), iono, Ynm, B);
+    matMult(mapping(eqn.elevationRecvLocal), eqn.A.column(GnssObservationEquation::idxSTEC), Ynm, B);
 
     // temporal representation
     std::vector<UInt>   idx;

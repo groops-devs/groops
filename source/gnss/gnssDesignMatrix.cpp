@@ -216,7 +216,7 @@ void GnssDesignMatrix::accumulateNormals(MatrixDistributed &normals, std::vector
         const const_MatrixSlice Ai(A.slice(row, blockIndices[blocki]+index, rows, count).trans());
 
         // right hand side
-        matMult(1., Ai, l, n.at(blocki).row(index, count));
+        matMult(1., Ai, l.row(row, rows), n.at(blocki).row(index, count));
 
         // diagonal block
         rankKUpdate(1., Ai.trans(), normals.N(blocki, blocki).slice(index, index, count, count));

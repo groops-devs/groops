@@ -167,6 +167,7 @@ void GnssParametrizationIonosphereSTEC::observationCorrections(GnssObservationEq
         if(apply3rdOrder) eqn.B(i,0) += r/f4 * 2*STEC;
       }
     }
+    copy(eqn.B, eqn.A.column(GnssObservationEquation::idxSTEC));
     if(!estimateSTEC)
       eqn.B = Vector();
 

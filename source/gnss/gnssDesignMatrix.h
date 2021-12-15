@@ -39,7 +39,7 @@ public:
  ~GnssDesignMatrix() {}
 
   void              init(const_MatrixSliceRef l);
-  GnssDesignMatrix &selectRows(UInt row_, UInt rows_);
+  GnssDesignMatrix &selectRows(UInt row, UInt rows);
   MatrixSlice       column(const GnssParameterIndex &index);
   Matrix            mult(const_MatrixSliceRef x);
   Matrix            mult(const std::vector<Matrix> &x, UInt startBlock, UInt countBlock);

@@ -308,41 +308,31 @@ void GnssProcessingStep::State::buildNormals(Bool constraintsOnly, Bool solveEpo
             for(UInt idTrans=0; idTrans<gnss->receivers.at(idRecv)->idTransmitterSize(idEpoch); idTrans++)
               if(gnss->basicObservationEquations(normalEquationInfo, idRecv, idTrans, idEpoch, eqns.at(countEqn)))
               {
-                if(eqns.at(countEqn).B.size()) // eliminate STEC
-                  eliminationParameter(Matrix(eqns.at(countEqn).B), {eqns.at(countEqn).A, eqns.at(countEqn).l});
+                eqns.at(countEqn).eliminateGroupParameters();
+                if(!normalEquationInfo.accumulateEpochObservations)
+                {
+                  A.init(eqns.at(countEqn).l);
+                  gnss->designMatrix(normalEquationInfo, eqns.at(countEqn), A);
+                  A.accumulateNormals(normals, n, lPl(0), obsCount);
+                  obsCount -= eqns.at(countEqn).rankDeficit;
+                }
                 countEqn++;
               }
 
-            if(!normalEquationInfo.accumulateEpochObservations)
-            {
-              for(UInt i=0; i<countEqn; i++)
-              {
-                A.init(eqns.at(i).l);
-                gnss->designMatrix(normalEquationInfo, eqns.at(i), A);
-                A.accumulateNormals(normals, n, lPl(0), obsCount);
-              }
-            }
-            else
+            if(normalEquationInfo.accumulateEpochObservations)
             {
               // copy all observations to a single vector
-              Vector l(std::accumulate(eqns.begin(), eqns.end(), UInt(0), [](UInt count, auto &e) {return count+e.l.rows();}));
+              A.init(Vector(std::accumulate(eqns.begin(), eqns.end(), UInt(0), [](UInt count, auto &eqn) {return count+eqn.l.rows();})));
               UInt idx=0;
               for(UInt i=0; i<countEqn; i++)
               {
-                copy(eqns.at(i).l, l.row(idx, eqns.at(i).l.rows()));
+                copy(eqns.at(i).l, A.l.row(idx, eqns.at(i).l.rows()));
+                gnss->designMatrix(normalEquationInfo, eqns.at(i), A);
                 idx += eqns.at(i).l.rows();
               }
-              A.init(l);
-
-              idx=0;
-              for(UInt i=0; i<countEqn; i++)
-              {
-                gnss->designMatrix(normalEquationInfo, eqns.at(i), A.selectRows(idx, eqns.at(i).l.rows()));
-                idx += eqns.at(i).l.rows();
-              }
-
               A.selectRows(0, 0); // select all
               A.accumulateNormals(normals, n, lPl(0), obsCount);
+              obsCount -= std::accumulate(eqns.begin(), eqns.end(), UInt(0), [](UInt count, auto &eqn) {return count+eqn.rankDeficit;});
             }
          } // for(idRecv)
 
@@ -458,19 +448,16 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
 
     // solve (Backward step)
     // ---------------------
-    if(!solveEpochParameters)
+    normals.triangularSolve(n, blockStart, normals.blockCount()-blockStart);
+    if(computeResiduals)
     {
-      normals.triangularSolve(n);
-      if(computeResiduals)
-      {
-        monteCarlo.resize(normals.blockCount());
-        for(UInt i=0; i<normals.blockCount(); i++)
-          monteCarlo.at(i) = Matrix(normals.blockSize(i), monteCarloColumns);
-        if(Parallel::isMaster(normalEquationInfo.comm))
-          for(UInt i=0; i<blockCount; i++) // possible without resolved ambiguity parameters
-            monteCarlo.at(i) = Vce::monteCarlo(monteCarlo.at(i).rows(), monteCarlo.at(i).columns());
-        normals.triangularSolve(monteCarlo, 0, blockCount);
-      }
+      monteCarlo.resize(normals.blockCount());
+      for(UInt i=blockStart; i<normals.blockCount(); i++)
+        monteCarlo.at(i) = Matrix(normals.blockSize(i), monteCarloColumns);
+      if(Parallel::isMaster(normalEquationInfo.comm))
+        for(UInt i=blockStart; i<blockStart+blockCount; i++) // possible without resolved ambiguity parameters
+          monteCarlo.at(i) = Vce::monteCarlo(monteCarlo.at(i).rows(), monteCarlo.at(i).columns());
+      normals.triangularSolve(monteCarlo, blockStart, blockCount);
     }
 
     // ========================================================================================
@@ -480,24 +467,7 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
     if(solveEpochParameters)
     {
       logStatus<<"Reconstruct epoch parameters"<<Log::endl;
-
-      // solve other parameters (Backward step)
-      // --------------------------------------
-      normals.triangularSolve(n, blockStart, normals.blockCount()-blockStart);
-
-      if(computeResiduals)
-      {
-        monteCarlo.resize(normals.blockCount());
-        for(UInt i=blockStart; i<normals.blockCount(); i++)
-          monteCarlo.at(i) = Matrix(normals.blockSize(i), monteCarloColumns);
-        if(Parallel::isMaster(normalEquationInfo.comm))
-          for(UInt i=blockStart; i<blockStart+blockCount; i++) // possible without resolved ambiguity parameters
-            monteCarlo.at(i) = Vce::monteCarlo(monteCarlo.at(i).rows(), monteCarlo.at(i).columns());
-        normals.triangularSolve(monteCarlo, blockStart, blockCount);
-      }
-
-      // free N12, N22
-      normals.eraseBlocks(blockStart, normals.blockCount()-blockStart);
+      normals.eraseBlocks(blockStart, normals.blockCount()-blockStart); // free N12, N22
 
       // broadcast n, Wz
       // ---------------
@@ -529,8 +499,7 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
             for(UInt idTrans=0; idTrans<gnss->receivers.at(idRecv)->idTransmitterSize(idEpoch); idTrans++)
               if(gnss->basicObservationEquations(normalEquationInfo, idRecv, idTrans, idEpoch, eqn))
               {
-                if(eqn.B.size()) // eliminate STEC
-                  eliminationParameter(Matrix(eqn.B), {eqn.A, eqn.l});
+                eqn.eliminateGroupParameters();
                 A.init(eqn.l);
                 gnss->designMatrix(normalEquationInfo, eqn, A);
                 A.transMult(eqn.l-A.mult(n, blockStart, normalEquationInfo.blockCount()-blockStart), n, 0, blockStart);
