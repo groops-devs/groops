@@ -141,10 +141,13 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
               Double z = String::toDouble(line.substr(32, 14));
               Double c = String::toDouble(line.substr(46, 14));
 
-              OrbitEpoch epoch;
-              epoch.time     = time;
-              epoch.position = 1e3*Vector3d(x,y,z); // km -> m
-              orbit.push_back(epoch);
+              if(x != 0. && y != 0. && z != 0.)
+              {
+                OrbitEpoch epoch;
+                epoch.time     = time;
+                epoch.position = 1e3*Vector3d(x,y,z); // km -> m
+                orbit.push_back(epoch);
+              }
               if(c < 999999)
               {
                 MiscValueEpoch epoch;
@@ -179,7 +182,8 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
             Double x = String::toDouble(line.substr(4, 14));
             Double y = String::toDouble(line.substr(18, 14));
             Double z = String::toDouble(line.substr(32, 14));
-            orbit.at(orbit.size()-1).velocity = 0.1*Vector3d(x,y,z);  // dm/s -> m/s
+            if(x != 0. && y != 0. && z != 0.)
+              orbit.at(orbit.size()-1).velocity = 0.1*Vector3d(x,y,z);  // dm/s -> m/s
           }
 
           // end of file

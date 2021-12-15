@@ -7,6 +7,7 @@
 - Bugfix:           gnssProcessingStepResolveAmbiguities: for writing empty ambiguity file.
 - Bugfix:           gnssParametrizationLeoDynamicOrbits: in parallel excecution.
 - Bugfix:           gnssParametrizationKinematicPositions: in parallel excecution.
+- Bugfix:           sp3Format2Orbit: no/invalid orbit positions/velocities are now excluded.
 - Other:            Removed inputfileGlobal option.
 
 # Release 2021-09-06
