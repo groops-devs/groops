@@ -41,7 +41,7 @@ namespace String
   /** @brief Convert to Int. Returns 0 if substring is all white spaces. */
   Int toInt(const std::string &str);
 
-  /** @brief test wether the @a str starts with @p test. */
+  /** @brief test whether the @a str starts with @p test. */
   Bool startsWith(const std::string &str, const std::string &test);
 
   /** @brief Replace all occurrences of @p search in @p str with the @p substitute string. */

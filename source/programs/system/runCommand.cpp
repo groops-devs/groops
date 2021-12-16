@@ -15,7 +15,7 @@
 static const char *docstring = R"(
 Execute system \config{command}s. If \config{executeParallel} is set and
 multiple \config{command}s are given they are executed in parallel at
-distributed nodes, otherwise they are exceuted consecutively at master node only.
+distributed nodes, otherwise they are executed consecutively at master node only.
 )";
 
 /***********************************************/

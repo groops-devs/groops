@@ -45,7 +45,7 @@ ParametrizationGravity::ParametrizationGravity(Config &config, const std::string
     std::string type;
     while(readConfigChoice(config, name, type, Config::OPTIONAL, "", "parametrization of the gravity field"))
     {
-      if(readConfigChoiceElement(config, "sphericalHarmonics",   type, "potential coefficents!"))
+      if(readConfigChoiceElement(config, "sphericalHarmonics",   type, "potential coefficients!"))
         parametrizations.push_back(new ParametrizationGravitySphericalHarmonics(config));
       if(readConfigChoiceElement(config, "radialBasis",          type, "harmonic radial basis functions"))
         parametrizations.push_back(new ParametrizationGravityRadialBasis(config));

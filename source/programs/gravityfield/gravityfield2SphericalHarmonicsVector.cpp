@@ -62,7 +62,7 @@ void Gravityfield2SphericalHarmonicsVector::run(Config &config, Parallel::Commun
 
     readConfig(config, "outputfileVector", outName,  Config::MUSTSET,  "",  "");
     readConfig(config, "gravityfield", gravityfield, Config::MUSTSET,  "",  "");
-    readConfig(config, "startIndex",   startIndex,   Config::DEFAULT,  "0", "start index to put the coefficents in the solution vector");
+    readConfig(config, "startIndex",   startIndex,   Config::DEFAULT,  "0", "start index to put the coefficients in the solution vector");
     readConfig(config, "minDegree",    minDegree,    Config::MUSTSET,  "2", "");
     readConfig(config, "maxDegree",    maxDegree,    Config::MUSTSET,  "",  "");
     readConfig(config, "GM",           GM,           Config::DEFAULT,  STRING_DEFAULT_GM, "Geocentric gravitational constant");

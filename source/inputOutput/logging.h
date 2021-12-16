@@ -41,7 +41,7 @@
 
 namespace Log
 {
-  std::function<void(UInt type, const std::string &str)> getRecieve();
+  std::function<void(UInt type, const std::string &str)> getReceive();
   void setSend(std::function<void(UInt type, const std::string &str)> send);
   void setRank(UInt rank);
   Bool enableOutput(Bool enable);

@@ -34,7 +34,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(NoiseOrbit, PARALLEL, "add noise to orbit postions and velocities", Simulation, Noise, Instrument)
+GROOPS_REGISTER_PROGRAM(NoiseOrbit, PARALLEL, "add noise to orbit positions and velocities", Simulation, Noise, Instrument)
 
 /***********************************************/
 

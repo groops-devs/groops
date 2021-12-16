@@ -19,7 +19,7 @@ static const char *docstringParametrizationAcceleration = R"(
 \section{ParametrizationAcceleration}\label{parametrizationAccelerationType}
 This class defines parameters of satellite accelerations.
 It will be used to set up the design matrix in a least squares adjustment.
-If multiple parametrizations are given the coefficents in the parameter vector
+If multiple parametrizations are given the coefficients in the parameter vector
 are sequently appended.
 )";
 #endif

@@ -39,10 +39,10 @@ namespace Parallel
   CommunicatorPtr init(int argc, char *argv[]);
 
   /** @brief Add an extra communcation channel to @p comm.
-  * @p recieve is called on main process, if the returned send function is called by an arbitrary process.
+  * @p receive is called on main process, if the returned send function is called by an arbitrary process.
   * This function is used for the log.
   * Must be called by every process in @a comm. */
-  std::function<void(UInt type, const std::string &str)> addChannel(std::function<void(UInt type, const std::string &str)> recieve, CommunicatorPtr comm);
+  std::function<void(UInt type, const std::string &str)> addChannel(std::function<void(UInt type, const std::string &str)> receive, CommunicatorPtr comm);
 
   // =========================================================
 

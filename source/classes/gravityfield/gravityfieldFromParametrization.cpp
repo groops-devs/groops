@@ -37,7 +37,7 @@ GravityfieldFromParametrization::GravityfieldFromParametrization(Config &config)
     readConfig(config, "inputfileSigmax",   sigmaxName,      Config::OPTIONAL, "",    "standards deviations or covariance matrix of the solution");
     readConfig(config, "indexStart",        indexStart,      Config::DEFAULT,  "0",   "position in the solution vector");
     readConfig(config, "rightSide",         rightSide,       Config::DEFAULT,  "0",   "if solution contains several right hand sides, select one");
-    readConfig(config, "factor",            factor,          Config::DEFAULT,  "1.0", "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",            factor,          Config::DEFAULT,  "1.0", "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
 
     Matrix mx;

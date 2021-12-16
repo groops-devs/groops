@@ -265,7 +265,7 @@ public:
 
 static const char *docstringGnssAntennaDefintionListResample = R"(
 \subsection{Resample}
-The azimuth and elevation dependend antenna center variations (patterns) of all \config{antenna}s
+The azimuth and elevation dependent antenna center variations (patterns) of all \config{antenna}s
 are resampled to a new resolution.
 )";
 

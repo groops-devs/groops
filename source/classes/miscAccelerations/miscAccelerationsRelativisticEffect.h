@@ -60,7 +60,7 @@ inline MiscAccelerationsRelativisticEffect::MiscAccelerationsRelativisticEffect(
     readConfig(config, "gamma",  gamma,    Config::DEFAULT,  "1.0",   "PPN (parameterized post-Newtonian) parameter");
     readConfig(config, "J",      momentum, Config::DEFAULT,  "9.8e8", "Earth’s angular momentum per unit mass [m**2/s]");
     readConfig(config, "GM",     GM,       Config::DEFAULT,  STRING_DEFAULT_GM, "Geocentric gravitational constant");
-    readConfig(config, "factor", factor,   Config::DEFAULT,  "1.0",   "the result is multplied by this factor");
+    readConfig(config, "factor", factor,   Config::DEFAULT,  "1.0",   "the result is multiplied by this factor");
     if(isCreateSchema(config)) return;
 
     J = Vector3d(0, 0, momentum);

@@ -45,7 +45,7 @@ Further, one should apply constraints to the normal equations by \program{GnssAn
 Last the solved normal equation can be parsed to a \file{antenna definition file}{gnssAntennaDefinition}
  with the program \program{ParameterVector2GnssAntennaDefinition}.
 
-As example refering to the cookbook \reference{GNSS satellite orbit determination and station network analysis}{cookbook.gnssNetwork},
+As example referring to the cookbook \reference{GNSS satellite orbit determination and station network analysis}{cookbook.gnssNetwork},
 one could add additionally \configClass{receiverAntennas}{gnssParametrizationType:receiverAntennas} as parametrization.
 Since the estimations are done on a daily basis for each receiver we add an additional
 \configClass{selectParametrizations}{gnssProcessingStepType:selectParametrizations} which
@@ -54,7 +54,7 @@ adds \verb|parameter.receiverAntenna| with \configClass{selectParametrizations}{
  to the current selected parametrizations.
 The last \configClass{processingStep}{gnssProcessingStepType} is \configClass{GnssProcessing:processingStep:writeNormalEquations}{gnssProcessingStepType:writeNormalEquations}
 to write the daily normal equations including the parametrization \configClass{receiverAntennas}{gnssParametrizationType:receiverAntennas} into files.
-These normal equation files are then processed with the programms:
+These normal equation files are then processed with the programs:
 
 \begin{itemize}
   \item \program{NormalsAccumulate}: accumulates normal equations.

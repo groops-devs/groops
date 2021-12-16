@@ -94,9 +94,9 @@ void Instrument2Histogram::run(Config &config, Parallel::CommunicatorPtr comm)
       const Double lowerBound = exprMin->evaluate(varList);
       const Double upperBound = exprMax->evaluate(varList);
 
-      const UInt orginalSize = globalData.size();
+      const UInt originalSize = globalData.size();
       globalData.erase(std::remove_if(globalData.begin(), globalData.end(), [lowerBound, upperBound](Double x) {return (x<lowerBound) || (x>upperBound);}), globalData.end());
-      logInfo<<"Discarded "<<orginalSize-globalData.size()<<" elements."<<Log::endl;
+      logInfo<<"Discarded "<<originalSize-globalData.size()<<" elements."<<Log::endl;
 
       // compute number of bins based on Freedman-Diaconis' choice
       if(binCount == 0)

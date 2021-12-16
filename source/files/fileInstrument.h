@@ -302,7 +302,7 @@ public:
       if(arc.size())
       {
         if((type != Epoch::EMPTY) && (type != arc.getType()))
-          throw(Exception("arcList contain different intruments types"+Epoch::getTypeName(type)+", "+arc.getTypeName()));
+          throw(Exception("arcList contain different instruments types"+Epoch::getTypeName(type)+", "+arc.getTypeName()));
         type = arc.getType();
       }
     return type;
@@ -446,7 +446,7 @@ public:
   Arc readArc(UInt arcNo);
 
   /** @brief Test number of arcs of multiple files.
-  * Test wether files are divided into the same number of arcs otherwise an expection is thrown.
+  * Test whether files are divided into the same number of arcs otherwise an expection is thrown.
   * Files which are not open are ignored. */
   static void checkArcCount(const std::vector<std::reference_wrapper<const InstrumentFile>> &fileList);
 

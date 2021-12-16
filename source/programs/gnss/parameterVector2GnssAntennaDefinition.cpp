@@ -19,7 +19,7 @@ from \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}.
 The antenna center variations representend by the \configFile{inputfileSolution}{matrix} are added
 to the matching antennas.
 
-The \file{GnssAntennaDefinition file}{gnssAntennaDefinition} can be modifed to the demands before with
+The \file{GnssAntennaDefinition file}{gnssAntennaDefinition} can be modified to the demands before with
 \program{GnssAntennaDefinitionCreate}.
 
 The following steps are used to estimate antenna center variations:

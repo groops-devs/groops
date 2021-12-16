@@ -36,7 +36,7 @@ The variance $\sigma^2(\epsilon)$ is estimated iteratively by variance component
 Clock jumps are treated as outliers and are automatically downweighted as described in
 \configClass{GnssProcessing:processingStep:estimate}{gnssProcessingStepType:estimate}.
 
-The absolute inital clock error and clock drift cannot be determined if all receiver
+The absolute initial clock error and clock drift cannot be determined if all receiver
 and transmitter clocks are estimated together due to their linear dependency.
 This linear dependency would lead to a rank deficiency in the normal equation matrix in the same
 manner as described in \configClass{parametrization:clocks}{gnssParametrizationType:clocks}.

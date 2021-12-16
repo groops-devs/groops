@@ -19,7 +19,7 @@ matching the wildcard patterns of \config{name}, \config{serial}, \config{radome
 The provided values at the grid points of the pattern of each gnssType are used as pseudo-observations.
 A subset of patterns can be selected with \configClass{types}{gnssType}.
 
-The \file{GnssAntennaDefinition file}{gnssAntennaDefinition} can be modifed to the demands before with
+The \file{GnssAntennaDefinition file}{gnssAntennaDefinition} can be modified to the demands before with
 \program{GnssAntennaDefinitionCreate}.
 
 See also \program{ParameterVector2GnssAntennaDefinition}.

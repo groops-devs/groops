@@ -13,7 +13,7 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 Compute rotation (\file{StarCamera file}{instrument}) from local level frame (ellipsoidal north, east, down)
-to TRF for postions given in \configFile{inputfileInstrument}{instrument} (first 3 data columns).
+to TRF for positions given in \configFile{inputfileInstrument}{instrument} (first 3 data columns).
 )";
 
 /***********************************************/

@@ -45,7 +45,7 @@ namespace System
   /** @brief Checks if the given file or path corresponds to an existing file or directory. */
   Bool exists(const FileName &fileName);
 
-  /** @brief Check wether fileName is an existing directory */
+  /** @brief Check whether fileName is an existing directory */
   Bool isDirectory(const FileName &fileName);
 
   /** @brief Current working directory as FileName. */

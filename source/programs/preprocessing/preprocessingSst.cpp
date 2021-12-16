@@ -16,7 +16,7 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program processes satellite-to-satellite-tracking (SST) and kinematic orbit observations in a GRACE like configuration.
-Three different observation groups are considered separatly: SST and POD1/POD2 for the two satellites.
+Three different observation groups are considered separately: SST and POD1/POD2 for the two satellites.
 This program works similar to \program{PreprocessingPod}, see there for details. Here only deviations
 in the settings are explained.
 

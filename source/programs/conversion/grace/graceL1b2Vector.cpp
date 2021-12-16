@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program reads vector orientation data (positions of intruments in the satellite frame) from the GRACE SDS format.
+This program reads vector orientation data (positions of instruments in the satellite frame) from the GRACE SDS format.
 The \configFile{outputfileVector}{matrix} is a $(3n\times1)$ matrix containing $(x,y,z)$ for each record.
 The GRACE SDS format is described in "GRACE Level 1B Data Product User Handbook JPL D-22027"
 given at \url{http://podaac.jpl.nasa.gov/grace/documentation.html}.

@@ -25,7 +25,7 @@ This is useful for computing the total mass in the basin.
 The \configFile{outputfileTimeSeries}{instrument} is an instrument file, where the first columns are the
 mean value each data column in the grid files, followed by the the weighted RMS
 for each data column in the grid files if \config{computeRms} is set.
-If the number of data columns differs between the grid files, the remaing columns are padded with zeros.
+If the number of data columns differs between the grid files, the remaining columns are padded with zeros.
 
 See also \program{Gravityfield2AreaMeanTimeSeries}.
 )";
@@ -71,7 +71,7 @@ void GriddedData2AreaMeanTimeSeries::run(Config &config, Parallel::CommunicatorP
     readConfig(config, "timeSeries",           timeSeries,         Config::MUSTSET,  "", "");
     readConfig(config, "multiplyWithArea",     multiplyWithArea,   Config::DEFAULT,  "0", "multiply time series with total area (useful for mass estimates)");
     readConfig(config, "removeMean",           removeMean,         Config::DEFAULT,  "0", "remove the temporal mean of the series");
-    readConfig(config, "computeRms",           computeRms,         Config::DEFAULT,  "0", "addtional rms each time step");
+    readConfig(config, "computeRms",           computeRms,         Config::DEFAULT,  "0", "additional rms each time step");
     if(isCreateSchema(config)) return;
 
     const UInt fileCount = inputName.size();

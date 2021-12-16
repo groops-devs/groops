@@ -37,7 +37,7 @@ The filter coefficients for the $k$-th derivative are obtained by taking the app
 \begin{equation}
   b_n = \prod_{i=0}^{k-1} (k-i) \mathbf{w}_{2,:}.
 \end{equation}
-The \config{polynomialDegree} shoud be even if no phase shift should be introduced.
+The \config{polynomialDegree} should be even if no phase shift should be introduced.
 )";
 #endif
 

@@ -12,7 +12,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This programm estimates neutral mass densities along the satellite trajectory based on \file{accelerometer data}{instrument}.
+This program estimates neutral mass densities along the satellite trajectory based on \file{accelerometer data}{instrument}.
 In order to determine the neutral mass density the accelerometer input should only reflect the accelerations due to drag
 (e.g. \configClass{miscAccelerations:atmosphericDrag}{miscAccelerationsType:atmosphericDrag}).
 Thus, influences from solar and Earth radiation pressure must be reduced beforehand.

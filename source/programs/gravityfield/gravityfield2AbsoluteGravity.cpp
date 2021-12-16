@@ -21,7 +21,7 @@ the centrifugal part, see \configClass{gravityfield:tides:centrifugal}{tidesType
 The values will be saved together with points expressed as ellipsoidal coordinates (longitude, latitude, height)
 based on a reference ellipsoid with parameters \config{R} and \config{inverseFlattening}.
 
-It is intended to compute gravity anomalies from abolute gravity observations.
+It is intended to compute gravity anomalies from absolute gravity observations.
 To visualize the results use \program{PlotMap}.
 )";
 
@@ -61,7 +61,7 @@ void Gravityfield2AbsoluteGravity::run(Config &config, Parallel::CommunicatorPtr
     readConfig(config, "outputfileGriddedData", outFileNameGrid, Config::MUSTSET,  "", "");
     readConfig(config, "grid",                  grid,            Config::MUSTSET,  "", "");
     readConfig(config, "gravityfield",          gravityfield,    Config::MUSTSET,  "", "");
-    readConfig(config, "factor",                factor,          Config::DEFAULT,   "1.0", "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",                factor,          Config::DEFAULT,   "1.0", "the result is multiplied by this factor, set -1 to subtract the field");
     readConfig(config, "time",                  time,            Config::OPTIONAL,  "", "at this time the gravity field will be evaluated");
     readConfig(config, "R",                     a,               Config::DEFAULT,   STRING_DEFAULT_GRS80_a, "reference radius for ellipsoidal coordinates on output");
     readConfig(config, "inverseFlattening",     f,               Config::DEFAULT,   STRING_DEFAULT_GRS80_f, "reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates");

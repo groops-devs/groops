@@ -52,7 +52,7 @@ void GriddedData2Matrix::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     Double   a, f;
     std::vector<ExpressionVariablePtr> expr1(3), expr2;
 
-    readConfig(config, "outputfileMatrix",     fileNameOut,  Config::MUSTSET,  "", "point list as matrix with longitude and latitude values in columns and possible addtional columns");
+    readConfig(config, "outputfileMatrix",     fileNameOut,  Config::MUSTSET,  "", "point list as matrix with longitude and latitude values in columns and possible additional columns");
     readConfig(config, "inputfileGriddedData", fileNameGrid, Config::MUSTSET,  "",      "");
     readConfig(config, "R",                    a,            Config::DEFAULT,  STRING_DEFAULT_GRS80_a, "reference radius for ellipsoidal coordinates on output");
     readConfig(config, "inverseFlattening",    f,            Config::DEFAULT,  STRING_DEFAULT_GRS80_f, "reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates");

@@ -59,7 +59,7 @@ IntegralEquation(UInt integrationDegree=7, UInt interpolationDegree=7);
 * @param interpolationDegree Degree of polynomial used for interpolation. */
 void init(UInt integrationDegree=7, UInt interpolationDegree=7);
 
-/** @brief Observation equations for postions, velocities, and accelerations.
+/** @brief Observation equations for positions, velocities, and accelerations.
 * @param orbit Approximate positions.
 * @param rotEarth Rotation matricies CRF -> TRF at each epoch.
 * @param gradientfield Gravity field for indirect effect (gravity gradients)

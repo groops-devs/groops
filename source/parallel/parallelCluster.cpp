@@ -91,7 +91,7 @@ public:
     check(MPI_Comm_free(&comm));
   }
 
-  virtual void recievedSignal() = 0;
+  virtual void receivedSignal() = 0;
 };
 
 typedef std::shared_ptr<HiddenChannel> HiddenChannelPtr;
@@ -105,12 +105,12 @@ class LogChannel : public HiddenChannel
   unsigned int             type, count;
   std::vector<char>        data;
   std::vector<MPI_Request> sendRequests;
-  std::function<void(UInt type, const std::string &str)> recieve;
+  std::function<void(UInt type, const std::string &str)> receive;
 
 public:
   LogChannel(MPI_Comm communicator, std::function<void(UInt type, const std::string &str)> recv);
  ~LogChannel();
-  void recievedSignal() override;
+  void receivedSignal() override;
   void sendSignal(UInt type, const std::string &str);
 };
 
@@ -118,7 +118,7 @@ typedef std::shared_ptr<LogChannel> LogChannelPtr;
 
 /***********************************************/
 
-LogChannel::LogChannel(MPI_Comm communicator, std::function<void(UInt type, const std::string &str)> recv) : HiddenChannel(communicator), sendRequests(4, MPI_REQUEST_NULL), recieve(recv)
+LogChannel::LogChannel(MPI_Comm communicator, std::function<void(UInt type, const std::string &str)> recv) : HiddenChannel(communicator), sendRequests(4, MPI_REQUEST_NULL), receive(recv)
 {
   try
   {
@@ -150,7 +150,7 @@ LogChannel::~LogChannel()
 
 /***********************************************/
 
-void LogChannel::recievedSignal()
+void LogChannel::receivedSignal()
 {
   try
   {
@@ -162,7 +162,7 @@ void LogChannel::recievedSignal()
       data.resize(count);
       if(count)
         check(MPI_Recv(data.data(), count, MPI_CHAR, sendRank, 444, comm, MPI_STATUS_IGNORE));
-      recieve(static_cast<UInt>(type), std::string(data.data(), count));
+      receive(static_cast<UInt>(type), std::string(data.data(), count));
       data.clear();
       check(MPI_Irecv(&sendRank, 1, MPI_INT, MPI_ANY_SOURCE, 111, comm, &request));
       check(MPI_Test(&request, &completed, MPI_STATUS_IGNORE));
@@ -183,7 +183,7 @@ void LogChannel::sendSignal(UInt type_, const std::string &str)
   {
     if(rank == 0)
     {
-      recieve(type_, str);
+      receive(type_, str);
       return;
     }
 
@@ -248,7 +248,7 @@ inline void Communicator::peek()
         int flag = 0;
         check(MPI_Test(&channel->request, &flag, MPI_STATUS_IGNORE));
         if(flag)
-          channel->recievedSignal();
+          channel->receivedSignal();
       }
   }
   catch(std::exception &e)
@@ -298,7 +298,7 @@ inline void Communicator::wait(MPI_Request &request)
       // check extra channels
       for(int index : indices)
         if(index > 0)
-          channels.at(index-1)->recievedSignal();
+          channels.at(index-1)->receivedSignal();
 
       if(std::find(indices.begin(), indices.end(), 0) != indices.end()) // is our request finished?
         break;
@@ -330,11 +330,11 @@ CommunicatorPtr init(int argc, char *argv[])
 
 /***********************************************/
 
-std::function<void(UInt type, const std::string &str)> addChannel(std::function<void(UInt type, const std::string &str)> recieve, CommunicatorPtr comm)
+std::function<void(UInt type, const std::string &str)> addChannel(std::function<void(UInt type, const std::string &str)> receive, CommunicatorPtr comm)
 {
   try
   {
-    LogChannelPtr channel = std::make_shared<LogChannel>(MPI_COMM_WORLD, recieve);
+    LogChannelPtr channel = std::make_shared<LogChannel>(MPI_COMM_WORLD, receive);
     comm->channels.push_back(channel);
     return std::bind(&LogChannel::sendSignal, channel.get(), std::placeholders::_1, std::placeholders::_2);
   }
@@ -493,7 +493,7 @@ class ErrorChannel : public HiddenChannel
 
 public:
   ErrorChannel(MPI_Comm communicator);
-  void recievedSignal() override;
+  void receivedSignal() override;
   void broadCastException(const std::string &msg);
   void synchronizeAndThrowException(const std::string &msg);
 };
@@ -516,7 +516,7 @@ ErrorChannel::ErrorChannel(MPI_Comm communicator)  : HiddenChannel(communicator)
 
 /***********************************************/
 
-void ErrorChannel::recievedSignal()
+void ErrorChannel::receivedSignal()
 {
   try
   {
@@ -546,7 +546,7 @@ void ErrorChannel::broadCastException(const std::string &msg)
       if(i != rank)
         check(MPI_Issend(&code, 1, MPI_INT, i, 666, comm, &requests.at(i)));
 
-    // wait for all processed (corresponding barrier() in recievedSignal())
+    // wait for all processed (corresponding barrier() in receivedSignal())
     check(MPI_Barrier(comm));
 
     // cleanup all pending requests

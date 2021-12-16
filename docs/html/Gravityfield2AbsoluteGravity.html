@@ -76,7 +76,7 @@ of a <a class="groops-class" href="gravityfieldType.html">gravityfield</a> on a 
 The result is multiplicated with <strong class="groops-config-element">factor</strong>.
 To get the full gravity vector in a terrestrial frame add
 the centrifugal part, see <a class="groops-class" href="tidesType.html#centrifugal">gravityfield:tides:centrifugal</a>.</p><p>The values will be saved together with points expressed as ellipsoidal coordinates (longitude, latitude, height)
-based on a reference ellipsoid with parameters <strong class="groops-config-element">R</strong> and <strong class="groops-config-element">inverseFlattening</strong>.</p><p>It is intended to compute gravity anomalies from abolute gravity observations.
+based on a reference ellipsoid with parameters <strong class="groops-config-element">R</strong> and <strong class="groops-config-element">inverseFlattening</strong>.</p><p>It is intended to compute gravity anomalies from absolute gravity observations.
 To visualize the results use <a class="groops-program" href="PlotMap.html">PlotMap</a>.
 </p>
 <table class="table table-hover">
@@ -84,7 +84,7 @@ To visualize the results use <a class="groops-program" href="PlotMap.html">PlotM
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileGriddedData</div></div></td><td>filename</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">grid</div></div></td><td><a href="gridType.html">grid</a></td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">gravityfield</div></div></td><td><a href="gravityfieldType.html">gravityfield</a></td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor, set -1 to subtract the field</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">time</div></div></td><td>time</td><td>at this time the gravity field will be evaluated</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">R</div></div></td><td>double</td><td>reference radius for ellipsoidal coordinates on output</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inverseFlattening</div></div></td><td>double</td><td>reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates</td></tr>

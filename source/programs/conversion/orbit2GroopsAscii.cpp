@@ -17,7 +17,7 @@ Convert groops orbits and corresponding covariance information to ASCII format.
 The format is used to publish TUG orbits. It contains a two line header
 with a short description of the orbit defined in \config{firstLine}.
 The orbit is rotated to the Earth fixed frame (TRF) with \configClass{earthRotation}{earthRotationType} and given as one line per epoch.
-The epoch lines containe time [MJD GPS time], position x, y and z [m], and the epoch covariance xx, yy, zz, xy, xz and yz [$m^2$].
+The epoch lines contained time [MJD GPS time], position x, y and z [m], and the epoch covariance xx, yy, zz, xy, xz and yz [$m^2$].
 
 See also \program{GroopsAscii2Orbit}.
 )";

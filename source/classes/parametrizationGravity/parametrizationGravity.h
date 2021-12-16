@@ -20,7 +20,7 @@ static const char *docstringParametrizationGravity = R"(
 This class gives a parametrization of the time depending gravity field.
 Together with the class \configClass{oberservation}{observationType} it will be used
 to set up the design matrix in a least squares adjustment.
-If multiple parametrizations are given the coefficents in the parameter vector
+If multiple parametrizations are given the coefficients in the parameter vector
 are sequently appended.
 )";
 #endif
@@ -133,7 +133,7 @@ public:
   SphericalHarmonics sphericalHarmonics(const Time &time, const Vector &x, UInt maxDegree=INFINITYDEGREE) const;
 
   /** @brief Conversion of parameter Vector into SphericalHarmonics.
-  * Additionaly the variances of the parameters can be provided. */
+  * Additionally the variances of the parameters can be provided. */
   SphericalHarmonics sphericalHarmonics(const Time &time, const Vector &x, const Vector &sigma2x, UInt maxDegree=INFINITYDEGREE) const;
 
   /** @brief creates an derived instance of this class. */

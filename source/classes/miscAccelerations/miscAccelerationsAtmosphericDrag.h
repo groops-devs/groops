@@ -77,7 +77,7 @@ inline MiscAccelerationsAtmosphericDrag::MiscAccelerationsAtmosphericDrag(Config
     readConfig(config, "earthRotation",       angleVelocity,  Config::DEFAULT, "7.29211585531e-5", "[rad/s]");
     readConfig(config, "considerTemperature", useTemperature, Config::DEFAULT, "1",   "compute drag and lift, otherwise simple drag coefficient is used");
     readConfig(config, "considerWind",        useWind,        Config::DEFAULT, "1",   "");
-    readConfig(config, "factor",              factor,         Config::DEFAULT, "1.0", "the result is multplied by this factor");
+    readConfig(config, "factor",              factor,         Config::DEFAULT, "1.0", "the result is multiplied by this factor");
     if(isCreateSchema(config)) return;
 
     omega = Vector3d(0, 0, angleVelocity);

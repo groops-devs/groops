@@ -264,7 +264,7 @@ Matrix DigitalFilterBase::pad(const_MatrixSliceRef input, UInt length, PadType p
       return input;
 
     if(input.rows()<1)
-      throw(Exception("Trying to pad a zero lenth array ("+input.rows()%"%i"s + " x "+ input.columns()%"%i"s+")."));
+      throw(Exception("Trying to pad a zero length array ("+input.rows()%"%i"s + " x "+ input.columns()%"%i"s+")."));
 
     Matrix padded(2*length+input.rows(), input.columns());
     copy(input, padded.row(length, input.rows()));

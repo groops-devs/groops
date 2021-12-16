@@ -32,7 +32,7 @@ Furthermore these files may include for each residual \configClass{type}{gnssTyp
 information about the redundancy and the accuracy relation $\sigma/\sigma_0$
 of the estimated $\sigma$ versus the apriori $\sigma_0$ from the least squares adjustment.
 The 3 values (residuals, redundancy, $\sigma/\sigma_0$) are coded with the same type.
-To get acess to all values the coresponding type must be repeated in \configClass{type}{gnssType}.
+To get access to all values the corresponding type must be repeated in \configClass{type}{gnssType}.
 
 \fig{!hb}{0.5}{gnssResiduals2Skyplot}{fig:gnssResiduals2Skyplot}{GPS C2W residuals of GRAZ station at 2012-01-01}
 )";

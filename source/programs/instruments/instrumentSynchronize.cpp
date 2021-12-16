@@ -26,7 +26,7 @@ A specific region can be selected with \configClass{border}{borderType}.
 In this case one of the instrument data must an orbit.
 
 If \configClass{timeIntervals}{timeSeriesType} is given the data are also divided into time bins.
-The assignement of arcs to the bins can be saved in \configFile{outputfileArcList}{arcList}.
+The assignment of arcs to the bins can be saved in \configFile{outputfileArcList}{arcList}.
 This file can be used for the variational equation approach or \program{KalmanBuildNormals}.
 
 Instrument files from \config{irregularData} are not synchronized but

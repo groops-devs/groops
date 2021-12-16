@@ -34,7 +34,7 @@ public:
   /// Default constructor.
   GriddedData() = default;
 
-  /// Constructor with points, area elements, and mutiple values for each point.
+  /// Constructor with points, area elements, and multiple values for each point.
   GriddedData(const Ellipsoid &ellip, const std::vector<Vector3d> &_points, const std::vector<Double> &_areas, const std::vector<std::vector<Double>> &_values) : ellipsoid(ellip), points(_points), areas(_areas), values(_values) {}
 
   /** @brief Sort points geographically (North/West->South/East). */

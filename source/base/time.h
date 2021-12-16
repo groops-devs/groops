@@ -41,7 +41,7 @@ public:
   /// Constructor.
   explicit Time(Int mjdInt, Double mjdMod);
 
-  /// Time as MJD (modifed julian date)
+  /// Time as MJD (modified julian date)
   Double mjd() const;
 
   /// Time in seconds.
@@ -101,7 +101,7 @@ public:
 
 /***** FUNCTIONS *******************************/
 
-/// MJD (modifed julian date) to Time representation.
+/// MJD (modified julian date) to Time representation.
 inline Time mjd2time(LongDouble mjd);
 
 /// Seconds to Time representation.

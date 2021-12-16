@@ -97,16 +97,16 @@ Functions with 2 arguments: <code>atan2(y,x)</code>, <code>min(x,y)</code>, <cod
 </li><li>
 Time functions: <code>now()</code>: local time in MJD, <code>date2mjd(year, month, day)</code>, <code>gps2utc(mjd)</code>, <code>utc2gps(mjd)</code>, <code>dayofyear(mjd)</code>, <code>decimalyear(mjd)</code>
 </li><li>
-Condition: <code>if(c,x,y)</code>: If the first argument is true (not 0), the second argument is evalutated, otherwise the third.
+Condition: <code>if(c,x,y)</code>: If the first argument is true (not 0), the second argument is evaluated, otherwise the third.
 </li></ul>
 </p><p>
 <h2 id="text">Text parser</h2><p>
 Before the mathematical expression parser evaluates the expression, a simple text parser is applied.
 The text parser is used for all input fields (also file names). It scans the text for terms like
-<code>{variable}</code> and replaces it by the text content of the <code>variable</code> defined in the global section.</p><p>The text parser also evaluates terms in the form <code>{expression:format}</code> and replaces it by a formated
+<code>{variable}</code> and replaces it by the text content of the <code>variable</code> defined in the global section.</p><p>The text parser also evaluates terms in the form <code>{expression:format}</code> and replaces it by a formatted
 output. The <code>format</code> contains the text to be written as output.
 It can contain embedded format specifiers that are replaced by the value of the expression
-and formated as requested (also multiple times). In the following, the resulting formated output is given in the
+and formatted as requested (also multiple times). In the following, the resulting formatted output is given in the
 brackets for an expression with the example value of 57493.8:
 <ul>
 

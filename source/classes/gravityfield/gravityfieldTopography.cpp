@@ -42,7 +42,7 @@ GravityfieldTopography::GravityfieldTopography(Config &config)
     readConfig(config, "distancePrism",            cosPsiPrism,     Config::DEFAULT,  "15",    "[km] max. distance for prism formular");
     readConfig(config, "distanceLine",             cosPsiLine,      Config::DEFAULT,  "100",   "[km] max. distance for radial integration");
     readConfig(config, "distanceMax",              cosPsiMax,       Config::OPTIONAL, "",      "[km] max. influence distance (ignore far zone)");
-    readConfig(config, "factor",                   factor,          Config::DEFAULT,  "1.0",   "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",                   factor,          Config::DEFAULT,  "1.0",   "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
 
     cosPsiMin   /= DEFAULT_R*1e-3; if(cosPsiMin  >PI) cosPsiMin   = PI; cosPsiMin   = std::cos(cosPsiMin);

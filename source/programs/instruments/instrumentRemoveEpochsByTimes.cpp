@@ -19,7 +19,7 @@ Epochs contained within the time series (including a defined margin)
 are removed from the instrument file. The margin is added on
 both sides of the epochs. The arcs of the instrument file are
 concatenated to one arc. The removed epochs can be saved
-in a seperate instrument file.
+in a separate instrument file.
 )";
 
 /***********************************************/

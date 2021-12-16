@@ -16,7 +16,7 @@ static const char *docstring = R"(
 This program integrates an orbit dynamically using the given forces and setup the state transition matrix
 for each time step. These are the prerequisite for a least squares adjustement (e.g. gravity field determination) using
 the variational equation approach. The variational equations are computed arc wise as defined by \configFile{inputfileOrbit}{instrument}.
-This means for each arc new inital state parameters are setup.
+This means for each arc new initial state parameters are setup.
 
 In a first step the \configClass{forces}{forcesType} acting on the satellite are evaluated at the apriori positions given
 by \configFile{inputfileOrbit}{instrument}. Non-conservative forces like solar radiation pressure needs the orientation of the
@@ -40,7 +40,7 @@ afterwards more digits are available for the computation.
 The integrated orbit should be fitted to observations afterwards by the programs
 \program{PreprocessingVariationalEquationOrbitFit} and/or \program{PreprocessingVariationalEquationSstFit}.
 They apply a least squares adjustment by estimating some satellite parameters (e.g. an accelerometer bias).
-If the fitted orbit is to far away from the orginal \configFile{inputfileOrbit}{instrument} the linearization may not be
+If the fitted orbit is to far away from the original \configFile{inputfileOrbit}{instrument} the linearization may not be
 accurate enough. In this case \program{PreprocessingVariationalEquation} should be run again with the fitted orbit
 as \configFile{inputfileOrbit}{instrument} and introducing the \config{estimatedParameters} as additional forces.
 )";

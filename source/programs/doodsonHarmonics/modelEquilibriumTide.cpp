@@ -14,7 +14,7 @@
 static const char *docstring = R"(
 Computes the equilibrium ocean tide of the long periodic \config{tideGeneratingPotential}.
 
-The ocean surface is repesented by \configClass{gridOcean}{gridType} and the gravitational
+The ocean surface is represented by \configClass{gridOcean}{gridType} and the gravitational
 effect is numerical integrated to spherical harmonics using \config{maxDegree}, \config{GM},
 and \config{R}.
 

@@ -70,7 +70,7 @@ void GriddedTopography2PotentialCoefficients::run(Config &config, Parallel::Comm
     readConfig(config, "density",                  expressionRho,   Config::DEFAULT,  "2670",  "expression [kg/m**3]");
     readConfig(config, "radialUpperBound",         expressionUpper, Config::DEFAULT,  "data0", "expression (variables 'L', 'B', 'height', 'data', and 'area' are taken from the gridded data");
     readConfig(config, "radialLowerBound",         expressionLower, Config::DEFAULT,  "0",     "expression (variables 'L', 'B', 'height', 'data', and 'area' are taken from the gridded data");
-    readConfig(config, "factor",                   factor,          Config::DEFAULT,  "1.0",   "the result is multplied by this factor");
+    readConfig(config, "factor",                   factor,          Config::DEFAULT,  "1.0",   "the result is multiplied by this factor");
     readConfig(config, "minDegree",                minDegree,       Config::DEFAULT,  "0",     "");
     readConfig(config, "maxDegree",                maxDegree,       Config::MUSTSET,  "",      "");
     readConfig(config, "GM",                       GM,              Config::DEFAULT,  STRING_DEFAULT_GM, "Geocentric gravitational constant");

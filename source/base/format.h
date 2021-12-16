@@ -49,7 +49,7 @@ using namespace std::literals::string_literals;
 * ẂARNING: Using multiple %S and/or %T specifiers with different precisions in the same format string
 *          can lead to incorrect rounding (60 sec) since the maximum precision is used for rounding!
 *
-* The output can be specifed further with %[width][.precision]specifier,
+* The output can be specified further with %[width][.precision]specifier,
 * there [width] is the minimum number of characters to be printed. If the value to be printed
 * is shorter than this number, the result is padded with blank spaces (or zeros if [width] starts
 * with a zero). The [.precision] defines the number of digits after the period (for %g the number

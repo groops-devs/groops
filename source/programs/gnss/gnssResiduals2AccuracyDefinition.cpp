@@ -28,7 +28,7 @@ where $e_i$ are the azimuth and elevation dependent residuals and $r_i$ the
 corresponding redundancies (number of observations minus the contribution to
 the estimated parameters).
 
-The \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition} can be modifed
+The \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition} can be modified
 to the demands before with \program{GnssAntennaDefinitionCreate}
 (e.g. with \config{antenna:resample}).
 

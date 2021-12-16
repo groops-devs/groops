@@ -15,7 +15,7 @@
 static const char *docstring = R"(
 Replaces single potential coefficients in a gravity field.
 Both \configClass{gravityfield}{gravityfieldType}
-and \configClass{gravityfieldReplacement}{gravityfieldType} are evalutated
+and \configClass{gravityfieldReplacement}{gravityfieldType} are evaluated
 at \config{time} and converted to spherical harmonic coefficients.
 Single \config{coefficients} are then replaced in \configClass{gravityfield}{gravityfieldType}
 by the values from \configClass{gravityfieldReplacement}{gravityfieldType}

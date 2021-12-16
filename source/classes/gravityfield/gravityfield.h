@@ -22,7 +22,7 @@ e.g potential, gravity anomalies or gravity gradients.
 
 If several instances of the class are given the results are summed up.
 Before summation every single result is multiplicated by a \config{factor}.
-To substract a normal field like GRS80 from a potential
+To subtract a normal field like GRS80 from a potential
 to get the disturbance potential you must choose one factor by 1
 and the other by -1. To get the mean of two fields just set each factor to 0.5.
 

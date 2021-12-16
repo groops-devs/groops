@@ -425,7 +425,7 @@ void Arc::divide(const Time &minGap, UInt minArcLen, std::vector<Arc> &arcList) 
     // check types
     Epoch::Type typeList = Arc::getType(arcList);
     if((typeList != Epoch::EMPTY) && (typeList != type))
-      throw(Exception("intruments types are different: "+getTypeName()+", "+Epoch::getTypeName(typeList)));
+      throw(Exception("instruments types are different: "+getTypeName()+", "+Epoch::getTypeName(typeList)));
 
     // quick return possible?
     if((minGap == Time()) && (size() >= minArcLen))
@@ -461,7 +461,7 @@ void Arc::insert(UInt index, const Epoch &e)
     if(getType()==Epoch::EMPTY)
       type = e.getType();
     if(type != e.getType())
-      throw(Exception("intruments types are different: "+getTypeName()+", "+e.getTypeName()));
+      throw(Exception("instruments types are different: "+getTypeName()+", "+e.getTypeName()));
     epoch.insert(epoch.begin()+index, std::unique_ptr<Epoch>(e.clone()));
   }
   catch(std::exception &e)
@@ -479,7 +479,7 @@ void Arc::push_back(const Epoch &e)
     if(getType()==Epoch::EMPTY)
       type = e.getType();
     if(type != e.getType())
-      throw(Exception("intruments types are different: "+getTypeName()+", "+e.getTypeName()));
+      throw(Exception("instruments types are different: "+getTypeName()+", "+e.getTypeName()));
     epoch.push_back(std::unique_ptr<Epoch>(e.clone()));
   }
   catch(std::exception &e)

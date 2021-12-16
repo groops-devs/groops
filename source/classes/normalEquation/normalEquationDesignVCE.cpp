@@ -3,7 +3,7 @@
 * @file normalEquationDesignVCE.cpp
 *
 * @brief Accumulate normals from observation equations.
-* With indivdual weights of each arc by variance component estimation.
+* With individual weights of each arc by variance component estimation.
 * @f[ N = A^TPA,\quad n=A^TPl @f]
 * @see NormalEquation
 * @see Observation

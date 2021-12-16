@@ -83,7 +83,7 @@ void GnssSimulateReceiver::run(Config &config, Parallel::CommunicatorPtr comm)
     readConfig(config, "earthRotation",           earthRotation,        Config::MUSTSET,  "",    "apriori earth rotation");
     readConfig(config, "parametrization",         gnssParametrization,  Config::DEFAULT,  "1",   "models and parameters");
     readConfig(config, "observationType",         obsTypes,             Config::MUSTSET,  "",    "simulated observation types");
-    readConfig(config, "noiseObservation",        noiseObs,             Config::DEFAULT,  "",    "[-] noise is multplied with type accuracy pattern of receiver");
+    readConfig(config, "noiseObservation",        noiseObs,             Config::DEFAULT,  "",    "[-] noise is multiplied with type accuracy pattern of receiver");
     readConfig(config, "noiseClockReceiver",      noiseClock,           Config::DEFAULT,  "",    "[m] noise added to the simulated receiver clock");
     if(isCreateSchema(config)) return;
 

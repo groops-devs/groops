@@ -34,7 +34,7 @@ GravityfieldPotentialCoefficients::GravityfieldPotentialCoefficients(Config &con
     readConfig(config, "inputfilePotentialCoefficients", fileName, Config::MUSTSET, "{groopsDataDir}/potential/", "");
     readConfig(config, "minDegree",       minDegree,    Config::DEFAULT,  "0",   "");
     readConfig(config, "maxDegree",       maxDegree,    Config::OPTIONAL, "",    "");
-    readConfig(config, "factor",          factor,       Config::DEFAULT,  "1.0", "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",          factor,       Config::DEFAULT,  "1.0", "the result is multiplied by this factor, set -1 to subtract the field");
     readConfig(config, "setSigmasToZero", zeroVariance, Config::DEFAULT,  "0",   "set variances to zero, should be used by adding back reference fields");
     if(isCreateSchema(config)) return;
 

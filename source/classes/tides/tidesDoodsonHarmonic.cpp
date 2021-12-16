@@ -41,7 +41,7 @@ TidesDoodsonHarmonic::TidesDoodsonHarmonic(Config &config)
     readConfig(config, "minDegree",           minDegree,      Config::DEFAULT,  "2",   "");
     readConfig(config, "maxDegree",           maxDegree,      Config::OPTIONAL, "",    "");
     readConfig(config, "nodeCorr",            nCorr,          Config::DEFAULT,  "0",   "nodal corrections: 0-no corr, 1-IHO, 2-Schureman");
-    readConfig(config, "factor",              factor,         Config::DEFAULT,  "1.0", "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",              factor,         Config::DEFAULT,  "1.0", "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
 
     // read tide file

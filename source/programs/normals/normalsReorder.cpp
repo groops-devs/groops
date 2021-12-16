@@ -14,7 +14,7 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 Reorder \configFile{inputfileNormalEquation}{normalEquation} by selecting parameters in a specific order.
-The \configClass{parameterSelection}{parameterSelectorType} also allows to change dimension of the normal equations,
+The \configClass{parameterSelection}{parameterSelectorType} also allows one to change dimension of the normal equations,
 either by cutting parameters or by inserting zero rows/columns for additional parameters.
 Without \configClass{parameterSelection}{parameterSelectorType} the order of parameters remains the same.
 Additionally the block sizes of the files can be adjusted. If \config{outBlockSize} is set to zero,

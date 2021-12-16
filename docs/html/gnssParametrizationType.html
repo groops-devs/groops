@@ -221,7 +221,7 @@ of the preceding epoch and an unknown clock drift
    0 = \Delta t_{i+1} - \Delta t_{i} - t_{drift} dt + \epsilon_i.
 \]The variance $\sigma^2(\epsilon)$ is estimated iteratively by variance component estimation (VCE).
 Clock jumps are treated as outliers and are automatically downweighted as described in
-<a class="groops-class" href="gnssProcessingStepType.html#estimate">GnssProcessing:processingStep:estimate</a>.</p><p>The absolute inital clock error and clock drift cannot be determined if all receiver
+<a class="groops-class" href="gnssProcessingStepType.html#estimate">GnssProcessing:processingStep:estimate</a>.</p><p>The absolute initial clock error and clock drift cannot be determined if all receiver
 and transmitter clocks are estimated together due to their linear dependency.
 This linear dependency would lead to a rank deficiency in the normal equation matrix in the same
 manner as described in <a class="groops-class" href="gnssParametrizationType.html#clocks">parametrization:clocks</a>.
@@ -543,7 +543,7 @@ The written normal equations can then be accumulated with <a class="groops-progr
 Further, one should apply constraints to the normal equations by <a class="groops-program" href="GnssAntennaNormalsConstraint.html">GnssAntennaNormalsConstraint</a> since the estimation
  of ACO and ACV can lead to rank deficiencies in the normal equation matrix.
 Last the solved normal equation can be parsed to a <a class="groops-file" href="fileFormat_gnssAntennaDefinition.html">antenna definition file</a>
- with the program <a class="groops-program" href="ParameterVector2GnssAntennaDefinition.html">ParameterVector2GnssAntennaDefinition</a>.</p><p>As example refering to the cookbook <a class="groops-ref" href="cookbook.gnssNetwork.html">GNSS satellite orbit determination and station network analysis</a>,
+ with the program <a class="groops-program" href="ParameterVector2GnssAntennaDefinition.html">ParameterVector2GnssAntennaDefinition</a>.</p><p>As example referring to the cookbook <a class="groops-ref" href="cookbook.gnssNetwork.html">GNSS satellite orbit determination and station network analysis</a>,
 one could add additionally <a class="groops-class" href="gnssParametrizationType.html#receiverAntennas">receiverAntennas</a> as parametrization.
 Since the estimations are done on a daily basis for each receiver we add an additional
 <a class="groops-class" href="gnssProcessingStepType.html#selectParametrizations">selectParametrizations</a> which
@@ -552,7 +552,7 @@ adds <code>parameter.receiverAntenna</code> with <a class="groops-class" href="g
  to the current selected parametrizations.
 The last <a class="groops-class" href="gnssProcessingStepType.html">processingStep</a> is <a class="groops-class" href="gnssProcessingStepType.html#writeNormalEquations">GnssProcessing:processingStep:writeNormalEquations</a>
 to write the daily normal equations including the parametrization <a class="groops-class" href="gnssParametrizationType.html#receiverAntennas">receiverAntennas</a> into files.
-These normal equation files are then processed with the programms:</p><p><ul>
+These normal equation files are then processed with the programs:</p><p><ul>
 
   <li><a class="groops-program" href="NormalsAccumulate.html">NormalsAccumulate</a>: accumulates normal equations.
   </li><li>

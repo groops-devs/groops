@@ -32,7 +32,7 @@ is approximated by a grid defined by
 To separate from station coordinates use \config{constraint:centerMean}
 and from slant TEC parameters use \config{constraint:TEC}.
 
-The constraints are applied separatly to all antennas matching
+The constraints are applied separately to all antennas matching
 the wildcard patterns of \config{name}, \config{serial}, \config{radome}.
 
 See also \program{ParameterVector2GnssAntennaDefinition}.

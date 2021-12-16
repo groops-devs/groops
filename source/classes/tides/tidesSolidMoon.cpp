@@ -25,7 +25,7 @@ TidesSolidMoon::TidesSolidMoon(Config &config)
   {
     readConfig(config, "k20",    kReal20, Config::DEFAULT,  "0.0213", "");
     readConfig(config, "k30",    kReal30, Config::DEFAULT,  "0.0",    "");
-    readConfig(config, "factor", factor,  Config::DEFAULT,  "1.0",    "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor", factor,  Config::DEFAULT,  "1.0",    "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
   }
   catch(std::exception &e)

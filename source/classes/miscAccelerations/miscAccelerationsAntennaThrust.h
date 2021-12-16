@@ -51,7 +51,7 @@ inline MiscAccelerationsAntennaThrust::MiscAccelerationsAntennaThrust(Config &co
   try
   {
 
-    readConfig(config, "factor", factor, Config::DEFAULT, "1.0", "the result is multplied by this factor");
+    readConfig(config, "factor", factor, Config::DEFAULT, "1.0", "the result is multiplied by this factor");
     if(isCreateSchema(config)) return;
   }
   catch(std::exception &e)

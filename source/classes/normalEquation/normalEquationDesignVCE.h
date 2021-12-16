@@ -3,7 +3,7 @@
 * @file normalEquationDesignVCE.h
 *
 * @brief Accumulate normals from observation equations.
-* With indivdual weights of each arc by variance component estimation.
+* With individual weights of each arc by variance component estimation.
 * @f[ N = A^TPA,\quad n=A^TPl @f]
 * @see NormalEquation
 * @see Observation
@@ -54,7 +54,7 @@ iteration step a zero vector is assumed.
 
 /** @brief Accumulate normals from observation equations.
 * @ingroup normalEquationGroup
-* With indivdual weights of each arc by variance component estimation.
+* With individual weights of each arc by variance component estimation.
 * @f[ N = A^TPA,\quad n=A^TPl @f]
 * @see NormalEquation
 * @see Observation */

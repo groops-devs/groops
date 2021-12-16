@@ -21,7 +21,7 @@ height. Each point can also have an associated area
 (projected on the unit sphere with a total area of $4\pi$).
 This file format supports multiple values per point (called \verb|data0|, \verb|data1| and so on).
 
-For regular gridded data and binary format (\verb|*.dat|) a more efficent storage scheme is used.
+For regular gridded data and binary format (\verb|*.dat|) a more efficient storage scheme is used.
 
 See also: \program{GriddedDataCreate}.
 

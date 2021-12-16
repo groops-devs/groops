@@ -3130,7 +3130,7 @@
 						<xs:element name="maxDegree" type="uint" minOccurs="0"/>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="setSigmasToZero" type="boolean" minOccurs="0" default="0">
@@ -3152,7 +3152,7 @@
 						<xs:element name="maxDegree" type="uint" minOccurs="0"/>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="setSigmasToZero" type="boolean" minOccurs="0" default="0">
@@ -3193,7 +3193,7 @@
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -3211,7 +3211,7 @@
 						<xs:element name="maxDegree" type="uint" minOccurs="0"/>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -3346,7 +3346,7 @@
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4122,7 +4122,7 @@
 					<xs:sequence>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>simple ASCII file with mutiple columns (separated by whitespace)</xs:documentation>
+								<xs:documentation>simple ASCII file with multiple columns (separated by whitespace)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="startLine" type="uint" minOccurs="0" default="0">
@@ -4758,7 +4758,7 @@
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4778,7 +4778,7 @@
 						<xs:element name="eclipse" type="eclipseType"/>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4800,7 +4800,7 @@
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4826,7 +4826,7 @@
 						<xs:element name="considerWind" type="boolean" minOccurs="0" default="1"/>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4840,7 +4840,7 @@
 					<xs:sequence>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4870,7 +4870,7 @@
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -6628,7 +6628,7 @@
 		<xs:choice>
 			<xs:element name="sphericalHarmonics">
 				<xs:annotation>
-					<xs:documentation>potential coefficents!</xs:documentation>
+					<xs:documentation>potential coefficients!</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
@@ -8806,7 +8806,7 @@
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -8826,7 +8826,7 @@
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -8859,7 +8859,7 @@
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -8886,7 +8886,7 @@
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -8906,7 +8906,7 @@
 						<xs:element name="inputfileMeanPole" type="filename" default="{groopsDataDir}/tides/secularPole2018.xml"/>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -8920,7 +8920,7 @@
 					<xs:sequence>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -8936,7 +8936,7 @@
 						<xs:element name="k30" type="double" minOccurs="0" default="0.0"/>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -9566,7 +9566,7 @@
 						<xs:element name="maxDegree" type="uint" minOccurs="0"/>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the values on grid are multplied by this factor</xs:documentation>
+								<xs:documentation>the values on grid are multiplied by this factor</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="R" type="double" minOccurs="0" default="6378137.0">
@@ -10614,7 +10614,7 @@
 						</xs:element>
 						<xs:element name="noiseObservation" type="noiseGeneratorType" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>[-] noise is multplied with type accuracy pattern of receiver</xs:documentation>
+								<xs:documentation>[-] noise is multiplied with type accuracy pattern of receiver</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="noiseClockReceiver" type="noiseGeneratorType" minOccurs="0" maxOccurs="unbounded">
@@ -11369,7 +11369,7 @@
 						<xs:element name="gravityfield" type="gravityfieldType" maxOccurs="unbounded"/>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="time" type="time" minOccurs="0">
@@ -11867,7 +11867,7 @@
 						<xs:element name="gravityfield" type="gravityfieldType" maxOccurs="unbounded"/>
 						<xs:element name="startIndex" type="uint" minOccurs="0" default="0">
 							<xs:annotation>
-								<xs:documentation>start index to put the coefficents in the solution vector</xs:documentation>
+								<xs:documentation>start index to put the coefficients in the solution vector</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="minDegree" type="uint" default="2"/>
@@ -12136,7 +12136,7 @@
 						</xs:element>
 						<xs:element name="computeRms" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
-								<xs:documentation>addtional rms each time step</xs:documentation>
+								<xs:documentation>additional rms each time step</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -12272,7 +12272,7 @@
 					<xs:sequence>
 						<xs:element name="outputfileMatrix" type="filename">
 							<xs:annotation>
-								<xs:documentation>point list as matrix with longitude and latitude values in columns and possible addtional columns</xs:documentation>
+								<xs:documentation>point list as matrix with longitude and latitude values in columns and possible additional columns</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileGriddedData" type="filename"/>
@@ -12712,7 +12712,7 @@
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor, set -1 to substract the field</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="minDegree" type="uint" minOccurs="0" default="0"/>
@@ -12762,7 +12762,7 @@
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multplied by this factor</xs:documentation>
+								<xs:documentation>the result is multiplied by this factor</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="minDegree" type="uint" minOccurs="0" default="0"/>
@@ -15491,7 +15491,7 @@
 			</xs:element>
 			<xs:element name="NormalsCreate">
 				<xs:annotation>
-					<xs:documentation>create normal equations from calulated matrices</xs:documentation>
+					<xs:documentation>create normal equations from calculated matrices</xs:documentation>
 					<xs:appinfo>rename: outputfileNormalequation = outputfileNormalEquation</xs:appinfo>
 					<xs:appinfo>rename: inputfileNormalequationObsCount = inputfileNormalEquationObsCount</xs:appinfo>
 					<xs:appinfo>tag: NormalEquation</xs:appinfo>
@@ -18238,7 +18238,7 @@
 			</xs:element>
 			<xs:element name="NoiseOrbit">
 				<xs:annotation>
-					<xs:documentation>add noise to orbit postions and velocities</xs:documentation>
+					<xs:documentation>add noise to orbit positions and velocities</xs:documentation>
 					<xs:appinfo>tag: Simulation</xs:appinfo>
 					<xs:appinfo>tag: Noise</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
@@ -18949,7 +18949,7 @@
 			</xs:element>
 			<xs:element name="LoopPrograms">
 				<xs:annotation>
-					<xs:documentation>Runs programs mutiple times.</xs:documentation>
+					<xs:documentation>Runs programs multiple times.</xs:documentation>
 					<xs:appinfo>rename: programme = program</xs:appinfo>
 					<xs:appinfo>rename: parallelLoops = processCountPerLoopStep</xs:appinfo>
 					<xs:appinfo>rename: processCountPerLoopStep = processCountPerIteration</xs:appinfo>

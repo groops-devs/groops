@@ -24,7 +24,7 @@ can be modified via the parameter selection. Block size of the output normal mat
 is written to a single block file.
 
 For example the normal equations are divided into two groups of
-paramters $\hat{\M x}_1$ and $\hat{\M x}_2$ according to
+parameters $\hat{\M x}_1$ and $\hat{\M x}_2$ according to
 \begin{equation}
 \begin{pmatrix}
   \M N_{11} & \M N_{12} \\

@@ -23,7 +23,7 @@ The $\sigma_n$
 stand for the gravity field accuracies (from degree \config{minDegree} to \config{maxDegree}), if they are given.
 If no accuracies are provided, the $\sigma_n$
 represent the square root of the degree variances of the gravity field.
-If \config{maxDegree} excedes the maximum degree given by \configClass{gravityfield}{gravityfieldType},
+If \config{maxDegree} exceeds the maximum degree given by \configClass{gravityfield}{gravityfieldType},
 the higher degrees are complemented by Kaula's rule
 The output of the coefficients is given in the file  \configFile{outputfileCoefficients}{matrix}.
 )";

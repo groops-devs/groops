@@ -59,7 +59,7 @@ inline LoopFileAsciiTable::LoopFileAsciiTable(Config &config)
     std::vector<FileName> fileNames;
     UInt     startRow, countRows = MAX_UINT;
 
-    readConfig(config, "inputfile",          fileNames,  Config::MUSTSET,  "",           "simple ASCII file with mutiple columns (separated by whitespace)");
+    readConfig(config, "inputfile",          fileNames,  Config::MUSTSET,  "",           "simple ASCII file with multiple columns (separated by whitespace)");
     readConfig(config, "startLine",          startRow,   Config::DEFAULT,  "0",          "start at line startLine (counting from 0)");
     readConfig(config, "countLines",         countRows,  Config::OPTIONAL, "",           "read count lines (default: all)");
     readConfig(config, "variableLoopString", nameString, Config::MUSTSET,  "loopString", "1. variable name for the 1. column, next variable name for the 2. column, ... ");

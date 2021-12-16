@@ -84,19 +84,19 @@ according to IERS2010 conventions.
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">gamma</div></div></td><td>double</td><td>PPN (parameterized post-Newtonian) parameter</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">J</div></div></td><td>double</td><td>Earth’s angular momentum per unit mass [m**2/s]</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">GM</div></div></td><td>double</td><td>Geocentric gravitational constant</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor</td></tr>
 </table>
 
 <h2 id="solarRadiationPressure">SolarRadiationPressure</h2><p>
 Solar radiation pressure model.
-Algorithmm for the solar radiation pressure is described in:</p><p>Lemoine, F. G., et al. ( 2013), High-degree gravity models from GRAIL primary mission data,
+Algorithm for the solar radiation pressure is described in:</p><p>Lemoine, F. G., et al. ( 2013), High-degree gravity models from GRAIL primary mission data,
 J. Geophys. Res. Planets, 118, 1676 1698 doi:10.1002/jgre.20118.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">solarflux</div></div></td><td>double</td><td>solar flux constant in 1 AU [W/m**2]</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">eclipse</div></div></td><td><a href="eclipseType.html">eclipse</a></td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor, set -1 to subtract the field</td></tr>
 </table>
 
 <h2 id="albedo">Albedo</h2><p>
@@ -110,7 +110,7 @@ Proceedings of the AIAA/AAS Astrodynamics Conference, 88-4292-CP, 577-87. DOI: 1
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileReflectivity</div></div></td><td>filename</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileEmissivity</div></div></td><td>filename</td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">solarflux</div></div></td><td>double</td><td>solar flux constant in 1 AU [W/m**2]</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor, set -1 to subtract the field</td></tr>
 </table>
 
 <h2 id="atmosphericDrag">AtmosphericDrag</h2><p>
@@ -132,7 +132,7 @@ winds in the calculation process.
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">earthRotation</div></div></td><td>double</td><td>[rad/s]</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">considerTemperature</div></div></td><td>boolean</td><td>compute drag and lift, otherwise simple drag coefficient is used</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">considerWind</div></div></td><td>boolean</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor</td></tr>
 </table>
 
 <h2 id="antennaThrust">Antenna thrust</h2><p>
@@ -142,7 +142,7 @@ The thrust is defined in the satellite macro model.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor</td></tr>
 </table>
 
 <h2 id="fromParametrization">FromParametrization</h2><p>
@@ -159,7 +159,7 @@ one with number <strong class="groops-config-element">rightSide</strong> (counti
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileSolution</div></div></td><td>filename</td><td>solution vector</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">indexStart</div></div></td><td>uint</td><td>position in the solution vector</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">rightSide</div></div></td><td>uint</td><td>if solution contains several right hand sides, select one</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multplied by this factor, set -1 to substract the field</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor, set -1 to subtract the field</td></tr>
 </table>
 
         </div>

@@ -19,7 +19,7 @@
 static const char *docstringMiscAccelerationsSolarRadiationPressure = R"(
 \subsection{SolarRadiationPressure}\label{miscAccelerationsType:solarRadiationPressure}
 Solar radiation pressure model.
-Algorithmm for the solar radiation pressure is described in:
+Algorithm for the solar radiation pressure is described in:
 
 Lemoine, F. G., et al. ( 2013), High-degree gravity models from GRAIL primary mission data,
 J. Geophys. Res. Planets, 118, 1676 1698 doi:10.1002/jgre.20118.
@@ -59,7 +59,7 @@ inline MiscAccelerationsSolarRadiationPressure::MiscAccelerationsSolarRadiationP
 
     readConfig(config, "solarflux", solarflux, Config::DEFAULT, "1367", "solar flux constant in 1 AU [W/m**2]");
     readConfig(config, "eclipse",   eclipse,   Config::MUSTSET, "",     "");
-    readConfig(config, "factor",    factor,    Config::DEFAULT, "1.0",  "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",    factor,    Config::DEFAULT, "1.0",  "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
   }
   catch(std::exception &e)

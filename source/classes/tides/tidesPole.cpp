@@ -32,7 +32,7 @@ TidesPole::TidesPole(Config &config)
     readConfig(config, "inputfileMeanPole",      fileNameMeanPole,       Config::MUSTSET, "{groopsDataDir}/tides/secularPole2018.xml", "");
     readConfig(config, "horizontalDisplacement", horizontalDisplacement, Config::DEFAULT, "0.009",    "[m]");
     readConfig(config, "verticalDisplacement",   verticalDisplacement,   Config::DEFAULT, "0.033",    "[m]");
-    readConfig(config, "factor",                 factor,                 Config::DEFAULT, "1.0",      "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",                 factor,                 Config::DEFAULT, "1.0",      "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
 
     readFileMeanPolarMotion(fileNameMeanPole, meanPole);

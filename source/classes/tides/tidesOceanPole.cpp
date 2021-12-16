@@ -38,7 +38,7 @@ TidesOceanPole::TidesOceanPole(Config &config)
     readConfig(config, "gammaReal",          gammaR,           Config::DEFAULT,  "0.6870", "");
     readConfig(config, "gammaImaginary",     gammaI,           Config::DEFAULT,  "0.0036", "");
     readConfig(config, "inputfileMeanPole",  fileNameMeanPole, Config::MUSTSET,  "{groopsDataDir}/tides/secularPole2018.xml", "");
-    readConfig(config, "factor",             factor,           Config::DEFAULT,  "1.0", "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",             factor,           Config::DEFAULT,  "1.0", "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
 
     // read ocean spherical harmonics

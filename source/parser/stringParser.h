@@ -22,10 +22,10 @@ Before the mathematical expression parser evaluates the expression, a simple tex
 The text parser is used for all input fields (also file names). It scans the text for terms like
 \verb|{variable}| and replaces it by the text content of the \verb|variable| defined in the global section.
 
-The text parser also evaluates terms in the form \verb|{expression:format}| and replaces it by a formated
+The text parser also evaluates terms in the form \verb|{expression:format}| and replaces it by a formatted
 output. The \verb|format| contains the text to be written as output.
 It can contain embedded format specifiers that are replaced by the value of the expression
-and formated as requested (also multiple times). In the following, the resulting formated output is given in the
+and formatted as requested (also multiple times). In the following, the resulting formatted output is given in the
 brackets for an expression with the example value of 57493.8:
 \begin{itemize}
 \item \verb|%i|: Integer [57494]
@@ -84,7 +84,7 @@ namespace StringParser
   /** @brief string manipulation.
   * {variable} is replaced by the content of the variable list.
   * {expression:format} is replaced by the format string. Before the expression is evaluated and
-  * the result is inserted and formated at every format identifier:
+  * the result is inserted and formatted at every format identifier:
   * - %%: the single % character.
   * - %c: character.
   * - %i: integer.

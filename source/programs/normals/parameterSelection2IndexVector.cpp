@@ -15,7 +15,7 @@ static const char *docstring = R"(
 Generate index vector from parameter selection in \file{matrix format}{matrix}.
 This vector can be used in \program{MatrixCalculate}
 with \configClass{matrix:reorder}{matrixGeneratorType:reorder}
-to reorder arbitary vectors and matrices similar to \program{NormalsReorder}.
+to reorder arbitrary vectors and matrices similar to \program{NormalsReorder}.
 
 The \configClass{parameterSelection}{parameterSelectorType} allows reordering and dimension changes,
 either by cutting parameters or by inserting additional parameters.

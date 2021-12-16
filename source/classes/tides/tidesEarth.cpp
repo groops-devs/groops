@@ -29,7 +29,7 @@ TidesEarth::TidesEarth(Config &config)
     FileName earthTidesName;
     readConfig(config, "inputfileEarthtide",   earthTidesName,       Config::MUSTSET, "{groopsDataDir}/tides/earthAnelastic2003.xml", "");
     readConfig(config, "includePermanentTide", includePermanentTide, Config::DEFAULT, "0",   "results in FALSE: zero tide, TRUE: tide free gravity field");
-    readConfig(config, "factor",               factor,               Config::DEFAULT, "1.0", "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",               factor,               Config::DEFAULT, "1.0", "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
 
     readFileEarthTide(earthTidesName, kReal, kImag, kPlus, doodson20, doodson21, doodson22,

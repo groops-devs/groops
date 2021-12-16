@@ -82,7 +82,7 @@ If the same filter is applied in both directions, the combined filter has zero p
 Setting <strong class="groops-config-element">inFrequencyDomain</strong> to true applies the transfer function of the filter to the DFT of the input and synthesizes the result, i.e.:
 \[
   y_n = \mathcal{F}^{-1}\{H\cdot\mathcal{F}\{x_n\}\}.
-\]This is equivalent to setting <strong class="groops-config-element">padType</strong> to <strong class="groops-config-element">periodic</strong>.</p><p>To reduce warmup effects, the input time series can be padded by chosing a <strong class="groops-config-element">padType</strong>:
+\]This is equivalent to setting <strong class="groops-config-element">padType</strong> to <strong class="groops-config-element">periodic</strong>.</p><p>To reduce warmup effects, the input time series can be padded by choosing a <strong class="groops-config-element">padType</strong>:
 <ul>
 
 <li><strong class="groops-config-element">none</strong>: no padding is applied
@@ -148,7 +148,7 @@ Symmetric MA filter for numerical differentiation using polynomial approximation
 The filter coefficients for the $k$-th derivative are obtained by taking the appropriate row of the inverse coefficient matrix $\mathbf{W}$:
 \[
   b_n = \prod_{i=0}^{k-1} (k-i) \mathbf{w}_{2,:}.
-\]The <strong class="groops-config-element">polynomialDegree</strong> shoud be even if no phase shift should be introduced.
+\]The <strong class="groops-config-element">polynomialDegree</strong> should be even if no phase shift should be introduced.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

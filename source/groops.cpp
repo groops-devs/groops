@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     {
       // init logging
       // ------------
-      Log::setSend(Parallel::addChannel(Log::getRecieve(), comm));
+      Log::setSend(Parallel::addChannel(Log::getReceive(), comm));
       Log::setRank(Parallel::myRank(comm));
       Log::enableOutput(Parallel::isMaster(comm));
 

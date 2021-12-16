@@ -35,7 +35,7 @@ operations and functions are defined:
                     \verb|deg2rad(x)|, \verb|rad2deg(x)|
 \item Functions with 2 arguments: \verb|atan2(y,x)|, \verb|min(x,y)|, \verb|max(x,y)|, \verb|mod(x,y)|
 \item Time functions: \verb|now()|: local time in MJD, \verb|date2mjd(year, month, day)|, \verb|gps2utc(mjd)|, \verb|utc2gps(mjd)|, \verb|dayofyear(mjd)|, \verb|decimalyear(mjd)|
-\item Condition: \verb|if(c,x,y)|: If the first argument is true (not 0), the second argument is evalutated, otherwise the third.
+\item Condition: \verb|if(c,x,y)|: If the first argument is true (not 0), the second argument is evaluated, otherwise the third.
 \end{itemize}
 )";
 #endif

@@ -30,7 +30,7 @@ namespace Fourier
   * A data sequence with @f$j=0\ldots n-1@f$ elements is transformed with
   * @f[ y_k = \sum_{j=0}^{n-1} x_j e^{-2\pi jk/n}, @f]
   * where @f$k = 0 \ldots [n/2]@f$.
-  * This transform is normalized since a call of fft followed by a call of synthesis gives the orginal result.
+  * This transform is normalized since a call of fft followed by a call of synthesis gives the original result.
   * @param data data series
   * @return complex representation of the fourier transform */
   std::vector<std::complex<Double>> fft(const Vector &data);

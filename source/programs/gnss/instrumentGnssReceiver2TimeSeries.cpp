@@ -42,7 +42,7 @@ Furthermore these files may include for each residual \configClass{type}{gnssTyp
 information about the redundancy and the accuracy relation $\sigma/\sigma_0$
 of the estimated $\sigma$ versus the apriori $\sigma_0$ from the least squares adjustment.
 The three values (residuals, redundancy, $\sigma/\sigma_0$) are coded with the same type.
-To get acess to all values the corresponding type must be repeated in \configClass{type}{gnssType}.
+To get access to all values the corresponding type must be repeated in \configClass{type}{gnssType}.
 
 Example: Selected GPS phase residuals (\configClass{type}{gnssType}='\verb|L1*G|' and \configClass{type}{gnssType}='\verb|L2*G|').
 Plotted with \program{PlotGraph} with two \configClass{layer:linesAndPoints}{plotGraphLayerType}

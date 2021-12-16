@@ -32,7 +32,7 @@ GravityfieldTimeSplines::GravityfieldTimeSplines(Config &config)
     readConfig(config, "inputfileTimeSplinesCovariance",   covName,   Config::OPTIONAL, "",    "");
     readConfig(config, "minDegree",                        minDegree, Config::DEFAULT,  "0",   "");
     readConfig(config, "maxDegree",                        maxDegree, Config::OPTIONAL, "",    "");
-    readConfig(config, "factor",                           factor,    Config::DEFAULT,  "1.0", "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",                           factor,    Config::DEFAULT,  "1.0", "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
 
     splinesFile.open(fileName, maxDegree, minDegree);

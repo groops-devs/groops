@@ -245,7 +245,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~kernel & \hfuzz=500pt \hyperref[kernelType]{kernel} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the values on grid are multplied by this factor\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the values on grid are multiplied by this factor\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates on output\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates\\
 \hline
@@ -323,7 +323,7 @@ Name & Type & Annotation\\
 \subsection{ModelEquilibriumTide}\label{ModelEquilibriumTide}
 Computes the equilibrium ocean tide of the long periodic \config{tideGeneratingPotential}.
 
-The ocean surface is repesented by \configClass{gridOcean}{gridType} and the gravitational
+The ocean surface is represented by \configClass{gridOcean}{gridType} and the gravitational
 effect is numerical integrated to spherical harmonics using \config{maxDegree}, \config{GM},
 and \config{R}.
 
@@ -401,7 +401,7 @@ matching the wildcard patterns of \config{name}, \config{serial}, \config{radome
 The provided values at the grid points of the pattern of each gnssType are used as pseudo-observations.
 A subset of patterns can be selected with \configClass{types}{gnssType}.
 
-The \file{GnssAntennaDefinition file}{gnssAntennaDefinition} can be modifed to the demands before with
+The \file{GnssAntennaDefinition file}{gnssAntennaDefinition} can be modified to the demands before with
 \program{GnssAntennaDefinitionCreate}.
 
 See also \program{ParameterVector2GnssAntennaDefinition}.
@@ -507,7 +507,7 @@ is approximated by a grid defined by
 To separate from station coordinates use \config{constraint:centerMean}
 and from slant TEC parameters use \config{constraint:TEC}.
 
-The constraints are applied separatly to all antennas matching
+The constraints are applied separately to all antennas matching
 the wildcard patterns of \config{name}, \config{serial}, \config{radome}.
 
 See also \program{ParameterVector2GnssAntennaDefinition}.
@@ -952,7 +952,7 @@ where $e_i$ are the azimuth and elevation dependent residuals and $r_i$ the
 corresponding redundancies (number of observations minus the contribution to
 the estimated parameters).
 
-The \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition} can be modifed
+The \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition} can be modified
 to the demands before with \program{GnssAntennaDefinitionCreate}
 (e.g. with \config{antenna:resample}).
 
@@ -1010,7 +1010,7 @@ Furthermore these files may include for each residual \configClass{type}{gnssTyp
 information about the redundancy and the accuracy relation $\sigma/\sigma_0$
 of the estimated $\sigma$ versus the apriori $\sigma_0$ from the least squares adjustment.
 The 3 values (residuals, redundancy, $\sigma/\sigma_0$) are coded with the same type.
-To get acess to all values the coresponding type must be repeated in \configClass{type}{gnssType}.
+To get access to all values the corresponding type must be repeated in \configClass{type}{gnssType}.
 
 \fig{!hb}{0.5}{gnssResiduals2Skyplot}{fig:gnssResiduals2Skyplot}{GPS C2W residuals of GRAZ station at 2012-01-01}
 
@@ -1087,7 +1087,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt apriori earth rotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~parametrization & \hfuzz=500pt \hyperref[gnssParametrizationType]{gnssParametrization} & \hfuzz=500pt models and parameters\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~observationType & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt simulated observation types\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~noiseObservation & \hfuzz=500pt \hyperref[noiseGeneratorType]{noiseGenerator} & \hfuzz=500pt [-] noise is multplied with type accuracy pattern of receiver\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~noiseObservation & \hfuzz=500pt \hyperref[noiseGeneratorType]{noiseGenerator} & \hfuzz=500pt [-] noise is multiplied with type accuracy pattern of receiver\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~noiseClockReceiver & \hfuzz=500pt \hyperref[noiseGeneratorType]{noiseGenerator} & \hfuzz=500pt [m] noise added to the simulated receiver clock\\
 \hline
 \end{tabularx}
@@ -1184,7 +1184,7 @@ Furthermore these files may include for each residual \configClass{type}{gnssTyp
 information about the redundancy and the accuracy relation $\sigma/\sigma_0$
 of the estimated $\sigma$ versus the apriori $\sigma_0$ from the least squares adjustment.
 The three values (residuals, redundancy, $\sigma/\sigma_0$) are coded with the same type.
-To get acess to all values the corresponding type must be repeated in \configClass{type}{gnssType}.
+To get access to all values the corresponding type must be repeated in \configClass{type}{gnssType}.
 
 Example: Selected GPS phase residuals (\configClass{type}{gnssType}='\verb|L1*G|' and \configClass{type}{gnssType}='\verb|L2*G|').
 Plotted with \program{PlotGraph} with two \configClass{layer:linesAndPoints}{plotGraphLayerType}
@@ -1213,7 +1213,7 @@ from \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}.
 The antenna center variations representend by the \configFile{inputfileSolution}{matrix} are added
 to the matching antennas.
 
-The \file{GnssAntennaDefinition file}{gnssAntennaDefinition} can be modifed to the demands before with
+The \file{GnssAntennaDefinition file}{gnssAntennaDefinition} can be modified to the demands before with
 \program{GnssAntennaDefinitionCreate}.
 
 The following steps are used to estimate antenna center variations:
@@ -1324,7 +1324,7 @@ This program is \reference{parallelized}{general.parallelization}.
 \subsection{GraceSstResidualAnalysis}\label{GraceSstResidualAnalysis}
 This program applies the Multi-Resolution Analysis (MRA) using
 Discrete Wavelet Transform (DWT) to the monthly GRACE SST post-fit residuals.
-First, the residuals are transfered into wavelet domain by applying an 8 level
+First, the residuals are transferred into wavelet domain by applying an 8 level
 Daubechies wavelet transform (default).
 In the next step, detail coefficients are merged into three major groups
 due to their approximate frequency subbands:
@@ -1586,7 +1586,7 @@ the centrifugal part, see \configClass{gravityfield:tides:centrifugal}{tidesType
 The values will be saved together with points expressed as ellipsoidal coordinates (longitude, latitude, height)
 based on a reference ellipsoid with parameters \config{R} and \config{inverseFlattening}.
 
-It is intended to compute gravity anomalies from abolute gravity observations.
+It is intended to compute gravity anomalies from absolute gravity observations.
 To visualize the results use \program{PlotMap}.
 
 
@@ -1598,7 +1598,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~grid & \hfuzz=500pt \hyperref[gridType]{grid} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~time & \hfuzz=500pt time & \hfuzz=500pt at this time the gravity field will be evaluated\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates on output\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates\\
@@ -2056,7 +2056,7 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileVector & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~startIndex & \hfuzz=500pt uint & \hfuzz=500pt start index to put the coefficents in the solution vector\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~startIndex & \hfuzz=500pt uint & \hfuzz=500pt start index to put the coefficients in the solution vector\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
@@ -2118,7 +2118,7 @@ If \config{computeCorrelation} is set, the program returns the correlation accor
 \begin{equation}
 r_{ij} = \frac{\sigma_{ij}}{\sigma_i \sigma_j}
 \end{equation}
-in the range of [-1, 1] instead ofthe covariance.
+in the range of [-1, 1] instead of the covariance.
 
 See also \program{Gravityfield2GridCovarianceMatrix}, \program{GravityfieldVariancesPropagation2GriddedData}.
 
@@ -2148,7 +2148,7 @@ This program is \reference{parallelized}{general.parallelization}.
 \subsection{GravityfieldReplacePotentialCoefficients}\label{GravityfieldReplacePotentialCoefficients}
 Replaces single potential coefficients in a gravity field.
 Both \configClass{gravityfield}{gravityfieldType}
-and \configClass{gravityfieldReplacement}{gravityfieldType} are evalutated
+and \configClass{gravityfieldReplacement}{gravityfieldType} are evaluated
 at \config{time} and converted to spherical harmonic coefficients.
 Single \config{coefficients} are then replaced in \configClass{gravityfield}{gravityfieldType}
 by the values from \configClass{gravityfieldReplacement}{gravityfieldType}
@@ -2223,7 +2223,7 @@ This is useful for computing the total mass in the basin.
 The \configFile{outputfileTimeSeries}{instrument} is an instrument file, where the first columns are the
 mean value each data column in the grid files, followed by the the weighted RMS
 for each data column in the grid files if \config{computeRms} is set.
-If the number of data columns differs between the grid files, the remaing columns are padded with zeros.
+If the number of data columns differs between the grid files, the remaining columns are padded with zeros.
 
 See also \program{Gravityfield2AreaMeanTimeSeries}.
 
@@ -2239,7 +2239,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~multiplyWithArea & \hfuzz=500pt boolean & \hfuzz=500pt multiply time series with total area (useful for mass estimates)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~removeMean & \hfuzz=500pt boolean & \hfuzz=500pt remove the temporal mean of the series\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~computeRms & \hfuzz=500pt boolean & \hfuzz=500pt addtional rms each time step\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~computeRms & \hfuzz=500pt boolean & \hfuzz=500pt additional rms each time step\\
 \hline
 \end{tabularx}
 
@@ -2329,7 +2329,7 @@ see \reference{dataVariables}{general.parser:dataVariables}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMatrix & \hfuzz=500pt filename & \hfuzz=500pt point list as matrix with longitude and latitude values in columns and possible addtional columns\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMatrix & \hfuzz=500pt filename & \hfuzz=500pt point list as matrix with longitude and latitude values in columns and possible additional columns\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates on output\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates\\
@@ -2656,7 +2656,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~ny & \hfuzz=500pt double & \hfuzz=500pt Constant for Atmosphere\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~radialLowerBound & \hfuzz=500pt expression & \hfuzz=500pt expression (variables 'L', 'B', 'height', 'data', and 'area' are taken from the gridded data\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~upperAtmosphericBoundary & \hfuzz=500pt double & \hfuzz=500pt constant upper bound [m]\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
@@ -2683,7 +2683,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~density & \hfuzz=500pt expression & \hfuzz=500pt expression [kg/m**3]\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~radialUpperBound & \hfuzz=500pt expression & \hfuzz=500pt expression (variables 'L', 'B', 'height', 'data', and 'area' are taken from the gridded data\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~radialLowerBound & \hfuzz=500pt expression & \hfuzz=500pt expression (variables 'L', 'B', 'height', 'data', and 'area' are taken from the gridded data\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
@@ -3119,7 +3119,7 @@ This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{InstrumentAccelerometer2ThermosphericDensity}\label{InstrumentAccelerometer2ThermosphericDensity}
-This programm estimates neutral mass densities along the satellite trajectory based on \file{accelerometer data}{instrument}.
+This program estimates neutral mass densities along the satellite trajectory based on \file{accelerometer data}{instrument}.
 In order to determine the neutral mass density the accelerometer input should only reflect the accelerations due to drag
 (e.g. \configClass{miscAccelerations:atmosphericDrag}{miscAccelerationsType:atmosphericDrag}).
 Thus, influences from solar and Earth radiation pressure must be reduced beforehand.
@@ -3227,7 +3227,7 @@ The algorithm to compute the output is as follows:
 The expressions in \config{outColumn} are evaluated once for each epoch of the input.
 The variables \verb|data0|,~\verb|data1|,~\ldots are replaced by the according values from the input columns before.
 If no \config{outColumn} are specified all input columns are used instead directly.
-The \configClass{instrument type}{instrumentTypeType} can be specifed with \config{outType} and must be agree with the number of columns.
+The \configClass{instrument type}{instrumentTypeType} can be specified with \config{outType} and must be agree with the number of columns.
 
 An extra \config{statistics} file can be generated with one mid epoch per arc. For the computation of the \config{outColumn} values
 all~\reference{dataVariables}{general.parser:dataVariables} are available (e.g. \verb|epochmin|, \verb|data0mean|, \verb|data1std|, \ldots)
@@ -3640,7 +3640,7 @@ Epochs contained within the time series (including a defined margin)
 are removed from the instrument file. The margin is added on
 both sides of the epochs. The arcs of the instrument file are
 concatenated to one arc. The removed epochs can be saved
-in a seperate instrument file.
+in a separate instrument file.
 
 
 \keepXColumns
@@ -3889,7 +3889,7 @@ A specific region can be selected with \configClass{border}{borderType}.
 In this case one of the instrument data must an orbit.
 
 If \configClass{timeIntervals}{timeSeriesType} is given the data are also divided into time bins.
-The assignement of arcs to the bins can be saved in \configFile{outputfileArcList}{arcList}.
+The assignment of arcs to the bins can be saved in \configFile{outputfileArcList}{arcList}.
 This file can be used for the variational equation approach or \program{KalmanBuildNormals}.
 
 Instrument files from \config{irregularData} are not synchronized but
@@ -3947,7 +3947,7 @@ Name & Type & Annotation\\
 %==================================
 \subsection{LocalLevelFrame2StarCamera}\label{LocalLevelFrame2StarCamera}
 Compute rotation (\file{StarCamera file}{instrument}) from local level frame (ellipsoidal north, east, down)
-to TRF for postions given in \configFile{inputfileInstrument}{instrument} (first 3 data columns).
+to TRF for positions given in \configFile{inputfileInstrument}{instrument} (first 3 data columns).
 
 
 \keepXColumns
@@ -4615,7 +4615,7 @@ The $\sigma_n$
 stand for the gravity field accuracies (from degree \config{minDegree} to \config{maxDegree}), if they are given.
 If no accuracies are provided, the $\sigma_n$
 represent the square root of the degree variances of the gravity field.
-If \config{maxDegree} excedes the maximum degree given by \configClass{gravityfield}{gravityfieldType},
+If \config{maxDegree} exceeds the maximum degree given by \configClass{gravityfield}{gravityfieldType},
 the higher degrees are complemented by Kaula's rule
 The output of the coefficients is given in the file  \configFile{outputfileCoefficients}{matrix}.
 
@@ -4934,7 +4934,7 @@ This program is \reference{parallelized}{general.parallelization}.
 %==================================
 \subsection{NormalsCreate}\label{NormalsCreate}
 Create \file{normal equations}{normalEquation}
-from calulated matrices (\configClass{matrixGenerator}{matrixGeneratorType}).
+from calculated matrices (\configClass{matrixGenerator}{matrixGeneratorType}).
 
 The \configFile{inputfileParameterNames}{parameterName} can be created with \program{ParameterNamesCreate}.
 
@@ -4982,7 +4982,7 @@ can be modified via the parameter selection. Block size of the output normal mat
 is written to a single block file.
 
 For example the normal equations are divided into two groups of
-paramters $\hat{\M x}_1$ and $\hat{\M x}_2$ according to
+parameters $\hat{\M x}_1$ and $\hat{\M x}_2$ according to
 \begin{equation}
 \begin{pmatrix}
   \M N_{11} & \M N_{12} \\
@@ -5124,7 +5124,7 @@ Name & Type & Annotation\\
 %==================================
 \subsection{NormalsReorder}\label{NormalsReorder}
 Reorder \configFile{inputfileNormalEquation}{normalEquation} by selecting parameters in a specific order.
-The \configClass{parameterSelection}{parameterSelectorType} also allows to change dimension of the normal equations,
+The \configClass{parameterSelection}{parameterSelectorType} also allows one to change dimension of the normal equations,
 either by cutting parameters or by inserting zero rows/columns for additional parameters.
 Without \configClass{parameterSelection}{parameterSelectorType} the order of parameters remains the same.
 Additionally the block sizes of the files can be adjusted. If \config{outBlockSize} is set to zero,
@@ -5180,7 +5180,7 @@ This program is \reference{parallelized}{general.parallelization}.
 \subsection{NormalsSolverVCE}\label{NormalsSolverVCE}
 This program accumulates \configClass{normalEquation}{normalEquationType}
 and solves the total combined system.
-The relative weigthing between the indivdual normals is determined iteratively
+The relative weigthing between the individual normals is determined iteratively
 by means of variance component estimation (VCE). For a detailed description
 of the used algorithm see \configClass{normalEquation}{normalEquationType}.
 
@@ -5263,7 +5263,7 @@ Name & Type & Annotation\\
 Generate index vector from parameter selection in \file{matrix format}{matrix}.
 This vector can be used in \program{MatrixCalculate}
 with \configClass{matrix:reorder}{matrixGeneratorType:reorder}
-to reorder arbitary vectors and matrices similar to \program{NormalsReorder}.
+to reorder arbitrary vectors and matrices similar to \program{NormalsReorder}.
 
 The \configClass{parameterSelection}{parameterSelectorType} allows reordering and dimension changes,
 either by cutting parameters or by inserting additional parameters.
@@ -5458,7 +5458,7 @@ This program is \reference{parallelized}{general.parallelization}.
 \subsection{PlanetOrbit}\label{PlanetOrbit}
 Creates an \file{orbit file}{instrument} of sun, moon, or planets.
 The orbit is given in the celestial reference frame (CRF)
-or alternatively in the terrestrial refernce frame (TRF)
+or alternatively in the terrestrial reference frame (TRF)
 if \configClass{earthRotation}{earthRotationType} is provided.
 
 
@@ -5728,7 +5728,7 @@ Name & Type & Annotation\\
 \section{Programs: Preprocessing}
 \subsection{PreprocessingDualSst}\label{PreprocessingDualSst}
 This programs processes satellite-to-satellite-tracking (SST) and orbit observations in a GRACE like configuration.
-Four different observation groups are considered separatly: two types of SST and POD1/POD2 for the two satellites.
+Four different observation groups are considered separately: two types of SST and POD1/POD2 for the two satellites.
 This program works similar to \program{PreprocessingSst}, see there for details. Here only the settings explained,
 which are different.
 
@@ -5971,7 +5971,7 @@ This program is \reference{parallelized}{general.parallelization}.
 %==================================
 \subsection{PreprocessingSst}\label{PreprocessingSst}
 This program processes satellite-to-satellite-tracking (SST) and kinematic orbit observations in a GRACE like configuration.
-Three different observation groups are considered separatly: SST and POD1/POD2 for the two satellites.
+Three different observation groups are considered separately: SST and POD1/POD2 for the two satellites.
 This program works similar to \program{PreprocessingPod}, see there for details. Here only deviations
 in the settings are explained.
 
@@ -6104,7 +6104,7 @@ This program is \reference{parallelized}{general.parallelization}.
 This program integrates an orbit dynamically using the given forces and setup the state transition matrix
 for each time step. These are the prerequisite for a least squares adjustement (e.g. gravity field determination) using
 the variational equation approach. The variational equations are computed arc wise as defined by \configFile{inputfileOrbit}{instrument}.
-This means for each arc new inital state parameters are setup.
+This means for each arc new initial state parameters are setup.
 
 In a first step the \configClass{forces}{forcesType} acting on the satellite are evaluated at the apriori positions given
 by \configFile{inputfileOrbit}{instrument}. Non-conservative forces like solar radiation pressure needs the orientation of the
@@ -6128,7 +6128,7 @@ afterwards more digits are available for the computation.
 The integrated orbit should be fitted to observations afterwards by the programs
 \program{PreprocessingVariationalEquationOrbitFit} and/or \program{PreprocessingVariationalEquationSstFit}.
 They apply a least squares adjustment by estimating some satellite parameters (e.g. an accelerometer bias).
-If the fitted orbit is to far away from the orginal \configFile{inputfileOrbit}{instrument} the linearization may not be
+If the fitted orbit is to far away from the original \configFile{inputfileOrbit}{instrument} the linearization may not be
 accurate enough. In this case \program{PreprocessingVariationalEquation} should be run again with the fitted orbit
 as \configFile{inputfileOrbit}{instrument} and introducing the \config{estimatedParameters} as additional forces.
 
@@ -6897,7 +6897,7 @@ This program runs a list of programs in a \configClass{loop}{loopType}.
 If \config{continueAfterError}=\verb|yes| and an error occurs, the remaining programs in the current iteration
 are skipped and the loop continues with the next iteration. Otherwise an exception is thrown.
 
-If this program is excecuted on multpile processing nodes, the iterations can be computed in parallel,
+If this program is executed on multpile processing nodes, the iterations can be computed in parallel,
 see \reference{parallelization}{general.parallelization}. The first process serves as load balancer
 and the other processes are assigned to iterations according to \config{processCountPerIteration}.
 For example, running a loop containing three iterations on 13 processes with \config{processCountPerIteration}=\verb|4|,
@@ -6924,7 +6924,7 @@ This program is \reference{parallelized}{general.parallelization}.
 \subsection{RunCommand}\label{RunCommand}
 Execute system \config{command}s. If \config{executeParallel} is set and
 multiple \config{command}s are given they are executed in parallel at
-distributed nodes, otherwise they are exceuted consecutively at master node only.
+distributed nodes, otherwise they are executed consecutively at master node only.
 
 
 \keepXColumns
@@ -7973,7 +7973,7 @@ from the GRACE SDS format into \file{instrument file (SATELLITETRACKING)}{instru
 The \config{inputfile}s contain also corrections to antenna offsets
 and the so called light time correction. The corrections can be stored in additional files
 in the same format as the observations.
-If a phase break is found an artifical gap is created.
+If a phase break is found an artificial gap is created.
 For further information see \program{GraceL1b2Accelerometer}.
 
 
@@ -8100,7 +8100,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GraceL1b2Vector}\label{GraceL1b2Vector}
-This program reads vector orientation data (positions of intruments in the satellite frame) from the GRACE SDS format.
+This program reads vector orientation data (positions of instruments in the satellite frame) from the GRACE SDS format.
 The \configFile{outputfileVector}{matrix} is a $(3n\times1)$ matrix containing $(x,y,z)$ for each record.
 The GRACE SDS format is described in "GRACE Level 1B Data Product User Handbook JPL D-22027"
 given at \url{http://podaac.jpl.nasa.gov/grace/documentation.html}.
@@ -8189,7 +8189,7 @@ from the GRAIL format into \file{instrument file (SATELLITETRACKING)}{instrument
 The \config{inputfile}s contain also corrections for antenna offsets
 and the so called light time correction.
 The corrections can be stored in additional files in the same format as the observations.
-If a phase break is found an artifical gap is created.
+If a phase break is found an artificial gap is created.
 
 
 \keepXColumns
@@ -8654,7 +8654,7 @@ Convert groops orbits and corresponding covariance information to ASCII format.
 The format is used to publish TUG orbits. It contains a two line header
 with a short description of the orbit defined in \config{firstLine}.
 The orbit is rotated to the Earth fixed frame (TRF) with \configClass{earthRotation}{earthRotationType} and given as one line per epoch.
-The epoch lines containe time [MJD GPS time], position x, y and z [m], and the epoch covariance xx, yy, zz, xy, xz and yz [$m^2$].
+The epoch lines contained time [MJD GPS time], position x, y and z [m], and the epoch covariance xx, yy, zz, xy, xz and yz [$m^2$].
 
 See also \program{GroopsAscii2Orbit}.
 

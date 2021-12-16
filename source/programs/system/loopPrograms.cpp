@@ -2,7 +2,7 @@
 /**
 * @file loopPrograms.cpp
 *
-* @brief Runs programs mutiple times.
+* @brief Runs programs multiple times.
 *
 * @author Sebastian Strasser
 * @author Torsten Mayer-Guerr
@@ -18,7 +18,7 @@ This program runs a list of programs in a \configClass{loop}{loopType}.
 If \config{continueAfterError}=\verb|yes| and an error occurs, the remaining programs in the current iteration
 are skipped and the loop continues with the next iteration. Otherwise an exception is thrown.
 
-If this program is excecuted on multpile processing nodes, the iterations can be computed in parallel,
+If this program is executed on multpile processing nodes, the iterations can be computed in parallel,
 see \reference{parallelization}{general.parallelization}. The first process serves as load balancer
 and the other processes are assigned to iterations according to \config{processCountPerIteration}.
 For example, running a loop containing three iterations on 13 processes with \config{processCountPerIteration}=\verb|4|,
@@ -33,7 +33,7 @@ With \config{parallelLog}=\verb|yes| all processes write output to screen and th
 
 /***** CLASS ***********************************/
 
-/** @brief  Runs programs mutiple times.
+/** @brief  Runs programs multiple times.
 * @ingroup programsGroup */
 class LoopPrograms
 {
@@ -41,7 +41,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(LoopPrograms, PARALLEL, "Runs programs mutiple times.", System)
+GROOPS_REGISTER_PROGRAM(LoopPrograms, PARALLEL, "Runs programs multiple times.", System)
 GROOPS_RENAMED_PROGRAM(LoopProgramme, LoopPrograms, date2time(2020, 6, 3))
 
 /***********************************************/

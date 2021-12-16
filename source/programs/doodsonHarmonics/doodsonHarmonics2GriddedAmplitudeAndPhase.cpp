@@ -72,7 +72,7 @@ void DoodsonHarmonics2GriddedAmplitudeAndPhase::run(Config &config, Parallel::Co
     readConfig(config, "kernel",                    kernel,       Config::MUSTSET,   "",    "");
     readConfig(config, "minDegree",                 minDegree,    Config::DEFAULT,   "0",   "");
     readConfig(config, "maxDegree",                 maxDegree,    Config::OPTIONAL, "",    "");
-    readConfig(config, "factor",                    factor,       Config::DEFAULT,   "1.0", "the values on grid are multplied by this factor");
+    readConfig(config, "factor",                    factor,       Config::DEFAULT,   "1.0", "the values on grid are multiplied by this factor");
     readConfig(config, "R",                         a,            Config::DEFAULT,   STRING_DEFAULT_GRS80_a, "reference radius for ellipsoidal coordinates on output");
     readConfig(config, "inverseFlattening",         f,            Config::DEFAULT,   STRING_DEFAULT_GRS80_f, "reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates");
     if(isCreateSchema(config)) return;

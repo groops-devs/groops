@@ -84,9 +84,9 @@ Name & Type & Annotation\\
 
 \section{Border}\label{borderType}
 With this class you can select one or more region on the surface of the Earth.
-In every instance of Border you can choose wether the specific region is excluded
+In every instance of Border you can choose whether the specific region is excluded
 from the overall result with the switch \config{exclude}.
-To determine wether a specific point will be used furthermore the following algorithm will be applied:
+To determine whether a specific point will be used furthermore the following algorithm will be applied:
 In a first step all points are selected if first border excludes points otherwise all points excluded.
 When every point will be tested for each instance of border from top to bottom.
 If the point is not in the selected region nothing happens.
@@ -442,7 +442,7 @@ Setting \config{inFrequencyDomain} to true applies the transfer function of the 
 \end{equation}
 This is equivalent to setting \config{padType} to \config{periodic}.
 
-To reduce warmup effects, the input time series can be padded by chosing a \config{padType}:
+To reduce warmup effects, the input time series can be padded by choosing a \config{padType}:
 \begin{itemize}
 \item \config{none}: no padding is applied
 \item \config{zero}: zeros are appended at the beginning and end of the input time series
@@ -520,7 +520,7 @@ The filter coefficients for the $k$-th derivative are obtained by taking the app
 \begin{equation}
   b_n = \prod_{i=0}^{k-1} (k-i) \mathbf{w}_{2,:}.
 \end{equation}
-The \config{polynomialDegree} shoud be even if no phase shift should be introduced.
+The \config{polynomialDegree} should be even if no phase shift should be introduced.
 
 
 \keepXColumns
@@ -1158,7 +1158,7 @@ Name & Type & Annotation\\
 
 
 \subsection{Resample}
-The azimuth and elevation dependend antenna center variations (patterns) of all \config{antenna}s
+The azimuth and elevation dependent antenna center variations (patterns) of all \config{antenna}s
 are resampled to a new resolution.
 
 
@@ -1434,7 +1434,7 @@ The variance $\sigma^2(\epsilon)$ is estimated iteratively by variance component
 Clock jumps are treated as outliers and are automatically downweighted as described in
 \configClass{GnssProcessing:processingStep:estimate}{gnssProcessingStepType:estimate}.
 
-The absolute inital clock error and clock drift cannot be determined if all receiver
+The absolute initial clock error and clock drift cannot be determined if all receiver
 and transmitter clocks are estimated together due to their linear dependency.
 This linear dependency would lead to a rank deficiency in the normal equation matrix in the same
 manner as described in \configClass{parametrization:clocks}{gnssParametrizationType:clocks}.
@@ -1879,7 +1879,7 @@ Further, one should apply constraints to the normal equations by \program{GnssAn
 Last the solved normal equation can be parsed to a \file{antenna definition file}{gnssAntennaDefinition}
  with the program \program{ParameterVector2GnssAntennaDefinition}.
 
-As example refering to the cookbook \reference{GNSS satellite orbit determination and station network analysis}{cookbook.gnssNetwork},
+As example referring to the cookbook \reference{GNSS satellite orbit determination and station network analysis}{cookbook.gnssNetwork},
 one could add additionally \configClass{receiverAntennas}{gnssParametrizationType:receiverAntennas} as parametrization.
 Since the estimations are done on a daily basis for each receiver we add an additional
 \configClass{selectParametrizations}{gnssProcessingStepType:selectParametrizations} which
@@ -1888,7 +1888,7 @@ adds \verb|parameter.receiverAntenna| with \configClass{selectParametrizations}{
  to the current selected parametrizations.
 The last \configClass{processingStep}{gnssProcessingStepType} is \configClass{GnssProcessing:processingStep:writeNormalEquations}{gnssProcessingStepType:writeNormalEquations}
 to write the daily normal equations including the parametrization \configClass{receiverAntennas}{gnssParametrizationType:receiverAntennas} into files.
-These normal equation files are then processed with the programms:
+These normal equation files are then processed with the programs:
 
 \begin{itemize}
   \item \program{NormalsAccumulate}: accumulates normal equations.
@@ -2745,7 +2745,7 @@ e.g potential, gravity anomalies or gravity gradients.
 
 If several instances of the class are given the results are summed up.
 Before summation every single result is multiplicated by a \config{factor}.
-To substract a normal field like GRS80 from a potential
+To subtract a normal field like GRS80 from a potential
 to get the disturbance potential you must choose one factor by 1
 and the other by -1. To get the mean of two fields just set each factor to 0.5.
 
@@ -2775,7 +2775,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfilePotentialCoefficients & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~setSigmasToZero & \hfuzz=500pt boolean & \hfuzz=500pt set variances to zero, should be used by adding back reference fields\\
 \hline
 \end{tabularx}
@@ -2798,7 +2798,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfilePotentialCoefficients & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~setSigmasToZero & \hfuzz=500pt boolean & \hfuzz=500pt set variances to zero, should be used by adding back reference fields\\
 \hline
 \end{tabularx}
@@ -2827,7 +2827,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSigmax & \hfuzz=500pt filename & \hfuzz=500pt standards deviations or covariance matrix of the solution\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~indexStart & \hfuzz=500pt uint & \hfuzz=500pt position in the solution vector\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~rightSide & \hfuzz=500pt uint & \hfuzz=500pt if solution contains several right hand sides, select one\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -2854,7 +2854,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileTimeSplinesCovariance & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -2983,7 +2983,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~distancePrism & \hfuzz=500pt double & \hfuzz=500pt [km] max. distance for prism formular\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~distanceLine & \hfuzz=500pt double & \hfuzz=500pt [km] max. distance for radial integration\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~distanceMax & \hfuzz=500pt double & \hfuzz=500pt [km] max. influence distance (ignore far zone)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -3806,7 +3806,7 @@ Each row must have the same number of columns.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt simple ASCII file with mutiple columns (separated by whitespace)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt simple ASCII file with multiple columns (separated by whitespace)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~startLine & \hfuzz=500pt uint & \hfuzz=500pt start at line startLine (counting from 0)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~countLines & \hfuzz=500pt uint & \hfuzz=500pt read count lines (default: all)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt 1. variable name for the 1. column, next variable name for the 2. column, ... \\
@@ -4301,14 +4301,14 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~gamma & \hfuzz=500pt double & \hfuzz=500pt PPN (parameterized post-Newtonian) parameter\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~J & \hfuzz=500pt double & \hfuzz=500pt Earth’s angular momentum per unit mass [m**2/s]\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor\\
 \hline
 \end{tabularx}
 
 
 \subsection{SolarRadiationPressure}\label{miscAccelerationsType:solarRadiationPressure}
 Solar radiation pressure model.
-Algorithmm for the solar radiation pressure is described in:
+Algorithm for the solar radiation pressure is described in:
 
 Lemoine, F. G., et al. ( 2013), High-degree gravity models from GRAIL primary mission data,
 J. Geophys. Res. Planets, 118, 1676 1698 doi:10.1002/jgre.20118.
@@ -4321,7 +4321,7 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~solarflux & \hfuzz=500pt double & \hfuzz=500pt solar flux constant in 1 AU [W/m**2]\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~eclipse & \hfuzz=500pt \hyperref[eclipseType]{eclipse} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -4345,7 +4345,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileReflectivity & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileEmissivity & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~solarflux & \hfuzz=500pt double & \hfuzz=500pt solar flux constant in 1 AU [W/m**2]\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -4381,7 +4381,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt double & \hfuzz=500pt [rad/s]\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~considerTemperature & \hfuzz=500pt boolean & \hfuzz=500pt compute drag and lift, otherwise simple drag coefficient is used\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~considerWind & \hfuzz=500pt boolean & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor\\
 \hline
 \end{tabularx}
 
@@ -4397,7 +4397,7 @@ The thrust is defined in the satellite macro model.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor\\
 \hline
 \end{tabularx}
 
@@ -4422,7 +4422,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSolution & \hfuzz=500pt filename & \hfuzz=500pt solution vector\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~indexStart & \hfuzz=500pt uint & \hfuzz=500pt position in the solution vector\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~rightSide & \hfuzz=500pt uint & \hfuzz=500pt if solution contains several right hand sides, select one\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -4700,7 +4700,7 @@ This class set up the oberservation equations in linearized Gauss-Makoff model
 \M l  = \M A \M x + \M e\qquad\text{and}\qquad\mathcal{C}(\M e) = \sigma^2\M P^{-1}.
 \end{equation}
 The observations are divided into short data blocks which can computed independently
-and so easily can be parallized. Usually this data blocks are short arcs of a
+and so easily can be parallelized. Usually this data blocks are short arcs of a
 satellites orbit. In most cases the unknown parameter vector contains coefficients
 of a gravity field parametrization given by \configClass{parametrizationGravity}{parametrizationGravityType}.
 Additional parameters like instrument calibrations parameters are appended at the
@@ -4799,7 +4799,7 @@ The kinematic positions~${\M r}_\epsilon(\tau)$ as pseudo observations are taken
 is subtracted which are computed with the background models in \configClass{rightHandSide}{podRightSideType}.
 The integral is solved by the integration of a moving interpolation polynomial of degree \config{integrationDegree}.
 The boundary values ${\M r}_A$ and ${\M r}_B$ (satellite's state vector) are estimated per arc
-and are usally directly eliminated if \config{keepSatelliteStates} is not set.
+and are usually directly eliminated if \config{keepSatelliteStates} is not set.
 
 The unknown gravity field $\nabla V(\M r, t)$ parametrized by \configClass{parametrizationGravity}{parametrizationGravityType}
 is not evaluated at the observed positions but at the orbit given by \configFile{inputfileOrbit}{instrument}.
@@ -5689,7 +5689,7 @@ Name & Type & Annotation\\
 \section{ParametrizationAcceleration}\label{parametrizationAccelerationType}
 This class defines parameters of satellite accelerations.
 It will be used to set up the design matrix in a least squares adjustment.
-If multiple parametrizations are given the coefficents in the parameter vector
+If multiple parametrizations are given the coefficients in the parameter vector
 are sequently appended.
 
 
@@ -5886,7 +5886,7 @@ Name & Type & Annotation\\
 This class gives a parametrization of the time depending gravity field.
 Together with the class \configClass{oberservation}{observationType} it will be used
 to set up the design matrix in a least squares adjustment.
-If multiple parametrizations are given the coefficents in the parameter vector
+If multiple parametrizations are given the coefficients in the parameter vector
 are sequently appended.
 
 
@@ -6027,7 +6027,7 @@ Name & Type & Annotation\\
 \section{ParametrizationSatelliteTracking}\label{parametrizationSatelliteTrackingType}
 This class defines parameters of Satellite-to-Satellite tracking observations.
 It will be used to set up the design matrix in a least squares adjustment.
-If multiple parametrizations are given the coefficents in the parameter vector
+If multiple parametrizations are given the coefficients in the parameter vector
 are sequently appended.
 
 
@@ -6156,7 +6156,7 @@ Name & Type & Annotation\\
 \section{ParametrizationTemporal}\label{parametrizationTemporalType}
 This class gives a parametrization of time depending parameters (gravity field, positions, ...).
 It will be used to set up the design matrix in a least squares adjustment.
-If multiple parametrizations are given the coefficents in the parameter vector
+If multiple parametrizations are given the coefficients in the parameter vector
 are sequently appended.
 
 Useally time intervals are defined half open meaning the last time belongs not to the interval.
@@ -7479,7 +7479,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~usePlanets & \hfuzz=500pt boolean & \hfuzz=500pt TGP of planets\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~useEarth & \hfuzz=500pt boolean & \hfuzz=500pt TGP of Earth\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~c20Earth & \hfuzz=500pt double & \hfuzz=500pt J2 flattening of the Earth\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -7501,7 +7501,7 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileEarthtide & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~includePermanentTide & \hfuzz=500pt boolean & \hfuzz=500pt results in FALSE: zero tide, TRUE: tide free gravity field\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -7551,7 +7551,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileMeanPole & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~horizontalDisplacement & \hfuzz=500pt double & \hfuzz=500pt [m]\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~verticalDisplacement & \hfuzz=500pt double & \hfuzz=500pt [m]\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -7603,7 +7603,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~gammaReal & \hfuzz=500pt double & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~gammaImaginary & \hfuzz=500pt double & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileMeanPole & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -7647,7 +7647,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~nodeCorr & \hfuzz=500pt uint & \hfuzz=500pt nodal corrections: 0-no corr, 1-IHO, 2-Schureman\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -7672,7 +7672,7 @@ anomalies) is not meaningful.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 
@@ -7691,7 +7691,7 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~k20 & \hfuzz=500pt double & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~k30 & \hfuzz=500pt double & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multplied by this factor, set -1 to substract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}
 

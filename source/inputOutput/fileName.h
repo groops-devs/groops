@@ -41,7 +41,7 @@ public:
   Bool empty() const {return name_.empty();}
 
   /** @brief Append a fileName to a directory.
-  * Directory and file will be seperated by the directory separator (e.g. '/') if needed. */
+  * Directory and file will be separated by the directory separator (e.g. '/') if needed. */
   FileName append(const FileName& fileName) const;
 
   /** @brief Extension.

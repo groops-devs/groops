@@ -75,7 +75,7 @@ This class set up the oberservation equations in linearized Gauss-Makoff model
 \[\label{gmm}
 \M l  = \M A \M x + \M e\qquad\text{and}\qquad\mathcal{C}(\M e) = \sigma^2\M P^{-1}.
 \]The observations are divided into short data blocks which can computed independently
-and so easily can be parallized. Usually this data blocks are short arcs of a
+and so easily can be parallelized. Usually this data blocks are short arcs of a
 satellites orbit. In most cases the unknown parameter vector contains coefficients
 of a gravity field parametrization given by <a class="groops-class" href="parametrizationGravityType.html">parametrizationGravity</a>.
 Additional parameters like instrument calibrations parameters are appended at the
@@ -151,7 +151,7 @@ The observation equations for precise orbit data (POD) of short arcs are given b
 is subtracted which are computed with the background models in <a class="groops-class" href="podRightSideType.html">rightHandSide</a>.
 The integral is solved by the integration of a moving interpolation polynomial of degree <strong class="groops-config-element">integrationDegree</strong>.
 The boundary values ${\M r}_A$ and ${\M r}_B$ (satellite's state vector) are estimated per arc
-and are usally directly eliminated if <strong class="groops-config-element">keepSatelliteStates</strong> is not set.</p><p>The unknown gravity field $\nabla V(\M r, t)$ parametrized by <a class="groops-class" href="parametrizationGravityType.html">parametrizationGravity</a>
+and are usually directly eliminated if <strong class="groops-config-element">keepSatelliteStates</strong> is not set.</p><p>The unknown gravity field $\nabla V(\M r, t)$ parametrized by <a class="groops-class" href="parametrizationGravityType.html">parametrizationGravity</a>
 is not evaluated at the observed positions but at the orbit given by <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>.
 The same is true for the reference forces. The linearized effect of the gravity field change by the position
 adjustment is taken into account by <strong class="groops-config-element">gradientfield</strong>. This may be a low order field up to a

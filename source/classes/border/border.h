@@ -18,9 +18,9 @@
 static const char *docstringBorder = R"(
 \section{Border}\label{borderType}
 With this class you can select one or more region on the surface of the Earth.
-In every instance of Border you can choose wether the specific region is excluded
+In every instance of Border you can choose whether the specific region is excluded
 from the overall result with the switch \config{exclude}.
-To determine wether a specific point will be used furthermore the following algorithm will be applied:
+To determine whether a specific point will be used furthermore the following algorithm will be applied:
 In a first step all points are selected if first border excludes points otherwise all points excluded.
 When every point will be tested for each instance of border from top to bottom.
 If the point is not in the selected region nothing happens.

@@ -18,7 +18,7 @@
 static const char *docstringStringList = R"(
 White space separated list of strings.
 Comments are allowed and all the text from the character '\verb|#|' to the end of the line is ignored.
-Strings containg white spaces or the '\verb|#|' character must be set in quotes ('\verb|""|').
+Strings containing white spaces or the '\verb|#|' character must be set in quotes ('\verb|""|').
 
 \begin{verbatim}
 # IGSR3 stations

@@ -57,7 +57,7 @@ public:
 
   /** @brief upper or lower triangle.
   * For SYMMETRIC or TRIANGULAR matrices.
-  * The other triangular is not acessed. */
+  * The other triangular is not accessed. */
   enum Uplo {UPPER, LOWER};
 
   const_MatrixSlice()                          = delete;  //!< Disallow default constructor.
@@ -98,13 +98,13 @@ public:
   Bool isUpper() const {return _uplo==UPPER;}
 
   /** @brief Pointer to the memory.
-  * Acess to the element `A(row,column)` with
+  * Access to the element `A(row,column)` with
   * `ptr = (A.isRowMajorOrder()) ? (A.field() + (column + row*A.ld())) : (A.field() + (row + column*A.ld()));` */
   inline const Double *field() const;
 
   /** @brief Leading Dimension.
   * Number of elements needed to reach the next column or row,
-  * depending wether `!isRowMajorOrder()` or `isRowMajorOrder()`.
+  * depending whether `!isRowMajorOrder()` or `isRowMajorOrder()`.
   * @see field() */
   UInt ld() const {return _ld;}
 
@@ -192,7 +192,7 @@ public:
   void setType(Type type, Uplo uplo) {_type=type; _uplo=uplo;}
 
   /** @brief Pointer to the memory.
-  * Acess to the element `A(row,column)` with
+  * Access to the element `A(row,column)` with
   * `ptr = (A.isRowMajorOrder()) ? (A.field() + (column + row*A.ld())) : (A.field() + (row + column*A.ld()));` */
   inline Double *field() const;
 

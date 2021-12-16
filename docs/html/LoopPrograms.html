@@ -72,7 +72,7 @@
             <h1>LoopPrograms</h1><p>
 
 This program runs a list of programs in a <a class="groops-class" href="loopType.html">loop</a>.</p><p>If <strong class="groops-config-element">continueAfterError</strong>=<code>yes</code> and an error occurs, the remaining programs in the current iteration
-are skipped and the loop continues with the next iteration. Otherwise an exception is thrown.</p><p>If this program is excecuted on multpile processing nodes, the iterations can be computed in parallel,
+are skipped and the loop continues with the next iteration. Otherwise an exception is thrown.</p><p>If this program is executed on multpile processing nodes, the iterations can be computed in parallel,
 see <a class="groops-ref" href="general.parallelization.html">parallelization</a>. The first process serves as load balancer
 and the other processes are assigned to iterations according to <strong class="groops-config-element">processCountPerIteration</strong>.
 For example, running a loop containing three iterations on 13 processes with <strong class="groops-config-element">processCountPerIteration</strong>=<code>4</code>,

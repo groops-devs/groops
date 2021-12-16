@@ -2,7 +2,7 @@
 /**
 * @file normalsCreate.cpp
 *
-* @brief Create normal equations from calulated matrices
+* @brief Create normal equations from calculated matrices
 *
 * @author Torsten Mayer-Guerr
 * @date 2017-09-04
@@ -13,7 +13,7 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 Create \file{normal equations}{normalEquation}
-from calulated matrices (\configClass{matrixGenerator}{matrixGeneratorType}).
+from calculated matrices (\configClass{matrixGenerator}{matrixGeneratorType}).
 
 The \configFile{inputfileParameterNames}{parameterName} can be created with \program{ParameterNamesCreate}.
 
@@ -42,7 +42,7 @@ The variable \verb|observationCount| can be used, if it is set by a normal equat
 
 /***** CLASS ***********************************/
 
-/** @brief Create normal equations from calulated matrices.
+/** @brief Create normal equations from calculated matrices.
 * @ingroup programsGroup */
 class NormalsCreate
 {
@@ -50,7 +50,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(NormalsCreate, SINGLEPROCESS, "create normal equations from calulated matrices", NormalEquation)
+GROOPS_REGISTER_PROGRAM(NormalsCreate, SINGLEPROCESS, "create normal equations from calculated matrices", NormalEquation)
 
 /***********************************************/
 

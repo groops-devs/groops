@@ -37,7 +37,7 @@ The kinematic positions~${\M r}_\epsilon(\tau)$ as pseudo observations are taken
 is subtracted which are computed with the background models in \configClass{rightHandSide}{podRightSideType}.
 The integral is solved by the integration of a moving interpolation polynomial of degree \config{integrationDegree}.
 The boundary values ${\M r}_A$ and ${\M r}_B$ (satellite's state vector) are estimated per arc
-and are usally directly eliminated if \config{keepSatelliteStates} is not set.
+and are usually directly eliminated if \config{keepSatelliteStates} is not set.
 
 The unknown gravity field $\nabla V(\M r, t)$ parametrized by \configClass{parametrizationGravity}{parametrizationGravityType}
 is not evaluated at the observed positions but at the orbit given by \configFile{inputfileOrbit}{instrument}.

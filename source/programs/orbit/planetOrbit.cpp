@@ -15,7 +15,7 @@
 static const char *docstring = R"(
 Creates an \file{orbit file}{instrument} of sun, moon, or planets.
 The orbit is given in the celestial reference frame (CRF)
-or alternatively in the terrestrial refernce frame (TRF)
+or alternatively in the terrestrial reference frame (TRF)
 if \configClass{earthRotation}{earthRotationType} is provided.
 )";
 

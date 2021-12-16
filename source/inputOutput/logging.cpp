@@ -41,7 +41,7 @@ public:
 
   std::ostream &startLine(Type type);
   std::ostream &endLine(std::ostream &stream);
-  void recieve(UInt type, const std::string &str);
+  void receive(UInt type, const std::string &str);
 
   // Timer
   std::stack<Time> startTime;
@@ -56,7 +56,7 @@ static Logging logging;
 
 Logging::Logging() : type(STATUS), rank(0), enabled(TRUE), silent(FALSE), newLine(FALSE)
 {
-  send = std::bind(&Logging::recieve, this, std::placeholders::_1, std::placeholders::_2);
+  send = std::bind(&Logging::receive, this, std::placeholders::_1, std::placeholders::_2);
   startTimer();
 }
 
@@ -119,7 +119,7 @@ std::ostream &Logging::endLine(std::ostream &stream)
       for(const std::string &str :  String::split(ss.str(), '\n'))
       {
         if(rank == 0)
-          recieve(type, str);
+          receive(type, str);
         else
           send(type, rank%"%4i. process: "s+str);
       }
@@ -135,8 +135,8 @@ std::ostream &Logging::endLine(std::ostream &stream)
 
 /***********************************************/
 
-// recieved log line at main node
-void Logging::recieve(UInt type, const std::string &str)
+// received log line at main node
+void Logging::receive(UInt type, const std::string &str)
 {
   try
   {
@@ -242,7 +242,7 @@ void Logging::loopTimerEnd(UInt count)
 /***********************************************/
 /***********************************************/
 
-std::function<void(UInt type, const std::string &str)> Log::getRecieve() {return std::bind(&Logging::recieve, &logging, std::placeholders::_1, std::placeholders::_2);}
+std::function<void(UInt type, const std::string &str)> Log::getReceive() {return std::bind(&Logging::receive, &logging, std::placeholders::_1, std::placeholders::_2);}
 void Log::setSend(std::function<void(UInt type, const std::string &str)> send) {logging.send = send;}
 void Log::setRank(UInt rank)                                 {logging.setRank(rank);}
 Bool Log::enableOutput(Bool enable)                          {return logging.enableOutput(enable);}

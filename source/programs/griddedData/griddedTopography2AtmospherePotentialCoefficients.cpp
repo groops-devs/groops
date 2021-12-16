@@ -80,7 +80,7 @@ void GriddedTopography2AtmospherePotentialCoefficients::run(Config &config, Para
     readConfig(config, "ny",                       ny,              Config::DEFAULT,  "680",    "Constant for Atmosphere");
     readConfig(config, "radialLowerBound",         expressionLower, Config::DEFAULT,  "data0",  "expression (variables 'L', 'B', 'height', 'data', and 'area' are taken from the gridded data");
     readConfig(config, "upperAtmosphericBoundary", upperBoundary,   Config::DEFAULT,  "11000",  "constant upper bound [m]");
-    readConfig(config, "factor",                   factor,          Config::DEFAULT,  "1.0",    "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",                   factor,          Config::DEFAULT,  "1.0",    "the result is multiplied by this factor, set -1 to subtract the field");
     readConfig(config, "minDegree",                minDegree,       Config::DEFAULT,  "0",      "");
     readConfig(config, "maxDegree",                maxDegree,       Config::MUSTSET,  "",       "");
     readConfig(config, "GM",                       GM,              Config::DEFAULT,  STRING_DEFAULT_GM, "Geocentric gravitational constant");

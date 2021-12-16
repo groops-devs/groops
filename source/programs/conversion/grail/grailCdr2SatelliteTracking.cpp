@@ -18,7 +18,7 @@ from the GRAIL format into \file{instrument file (SATELLITETRACKING)}{instrument
 The \config{inputfile}s contain also corrections for antenna offsets
 and the so called light time correction.
 The corrections can be stored in additional files in the same format as the observations.
-If a phase break is found an artifical gap is created.
+If a phase break is found an artificial gap is created.
 )";
 
 /***********************************************/

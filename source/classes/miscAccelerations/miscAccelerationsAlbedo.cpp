@@ -32,7 +32,7 @@ MiscAccelerationsAlbedo::MiscAccelerationsAlbedo(Config &config)
     readConfig(config, "inputfileReflectivity", fileNameReflectivity, Config::OPTIONAL, "{groopsDataDir}/albedo/earth_ceres_reflectivity_grid2.5.dat", "");
     readConfig(config, "inputfileEmissivity",   fileNameEmissivity,   Config::OPTIONAL, "{groopsDataDir}/albedo/earth_ceres_emissivity_grid2.5.dat", "");
     readConfig(config, "solarflux",             solarflux,            Config::DEFAULT,   "1367", "solar flux constant in 1 AU [W/m**2]");
-    readConfig(config, "factor",                factor,               Config::DEFAULT,   "1.0",  "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",                factor,               Config::DEFAULT,   "1.0",  "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
 
     // read reflectivity

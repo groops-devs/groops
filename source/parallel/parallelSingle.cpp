@@ -22,7 +22,7 @@ namespace Parallel
 /***********************************************/
 
 CommunicatorPtr init(int /*argc*/, char */*argv*/[]) {return nullptr;}
-std::function<void(UInt type, const std::string &str)> addChannel(std::function<void(UInt type, const std::string &str)> recieve, CommunicatorPtr /*comm*/) {return recieve;}
+std::function<void(UInt type, const std::string &str)> addChannel(std::function<void(UInt type, const std::string &str)> receive, CommunicatorPtr /*comm*/) {return receive;}
 CommunicatorPtr splitCommunicator(UInt /*color*/, UInt /*key*/, CommunicatorPtr /*comm*/) {return nullptr;}
 CommunicatorPtr createCommunicator(std::vector<UInt> /*ranks*/, CommunicatorPtr /*comm*/) {return nullptr;}
 CommunicatorPtr selfCommunicator() {return nullptr;}

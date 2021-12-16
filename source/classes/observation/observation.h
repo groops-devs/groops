@@ -25,7 +25,7 @@ This class set up the oberservation equations in linearized Gauss-Makoff model
 \M l  = \M A \M x + \M e\qquad\text{and}\qquad\mathcal{C}(\M e) = \sigma^2\M P^{-1}.
 \end{equation}
 The observations are divided into short data blocks which can computed independently
-and so easily can be parallized. Usually this data blocks are short arcs of a
+and so easily can be parallelized. Usually this data blocks are short arcs of a
 satellites orbit. In most cases the unknown parameter vector contains coefficients
 of a gravity field parametrization given by \configClass{parametrizationGravity}{parametrizationGravityType}.
 Additional parameters like instrument calibrations parameters are appended at the

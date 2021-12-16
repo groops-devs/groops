@@ -17,7 +17,7 @@
 static const char *docstring = R"(
 This program accumulates \configClass{normalEquation}{normalEquationType}
 and solves the total combined system.
-The relative weigthing between the indivdual normals is determined iteratively
+The relative weigthing between the individual normals is determined iteratively
 by means of variance component estimation (VCE). For a detailed description
 of the used algorithm see \configClass{normalEquation}{normalEquationType}.
 

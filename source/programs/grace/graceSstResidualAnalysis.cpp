@@ -14,7 +14,7 @@
 static const char *docstring = R"(
 This program applies the Multi-Resolution Analysis (MRA) using
 Discrete Wavelet Transform (DWT) to the monthly GRACE SST post-fit residuals.
-First, the residuals are transfered into wavelet domain by applying an 8 level
+First, the residuals are transferred into wavelet domain by applying an 8 level
 Daubechies wavelet transform (default).
 In the next step, detail coefficients are merged into three major groups
 due to their approximate frequency subbands:

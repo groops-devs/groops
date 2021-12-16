@@ -27,7 +27,7 @@ The algorithm to compute the output is as follows:
 The expressions in \config{outColumn} are evaluated once for each epoch of the input.
 The variables \verb|data0|,~\verb|data1|,~\ldots are replaced by the according values from the input columns before.
 If no \config{outColumn} are specified all input columns are used instead directly.
-The \configClass{instrument type}{instrumentTypeType} can be specifed with \config{outType} and must be agree with the number of columns.
+The \configClass{instrument type}{instrumentTypeType} can be specified with \config{outType} and must be agree with the number of columns.
 
 An extra \config{statistics} file can be generated with one mid epoch per arc. For the computation of the \config{outColumn} values
 all~\reference{dataVariables}{general.parser:dataVariables} are available (e.g. \verb|epochmin|, \verb|data0mean|, \verb|data1std|, \ldots)

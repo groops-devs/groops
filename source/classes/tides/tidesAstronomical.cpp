@@ -31,7 +31,7 @@ TidesAstronomical::TidesAstronomical(Config &config)
     readConfig(config, "usePlanets", usePlanets, Config::DEFAULT,  "1", "TGP of planets");
     readConfig(config, "useEarth",   useEarth,   Config::DEFAULT,  "1", "TGP of Earth");
     readConfig(config, "c20Earth",   c20,        Config::DEFAULT,  "-4.84166854896119e-04", "J2 flattening of the Earth");
-    readConfig(config, "factor",     factor,     Config::DEFAULT,  "1.0", "the result is multplied by this factor, set -1 to substract the field");
+    readConfig(config, "factor",     factor,     Config::DEFAULT,  "1.0", "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
 
     // Earth with flattening

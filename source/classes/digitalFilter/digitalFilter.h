@@ -34,7 +34,7 @@ Setting \config{inFrequencyDomain} to true applies the transfer function of the 
 \end{equation}
 This is equivalent to setting \config{padType} to \config{periodic}.
 
-To reduce warmup effects, the input time series can be padded by chosing a \config{padType}:
+To reduce warmup effects, the input time series can be padded by choosing a \config{padType}:
 \begin{itemize}
 \item \config{none}: no padding is applied
 \item \config{zero}: zeros are appended at the beginning and end of the input time series

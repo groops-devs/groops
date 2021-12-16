@@ -21,7 +21,7 @@ If \config{computeCorrelation} is set, the program returns the correlation accor
 \begin{equation}
 r_{ij} = \frac{\sigma_{ij}}{\sigma_i \sigma_j}
 \end{equation}
-in the range of [-1, 1] instead ofthe covariance.
+in the range of [-1, 1] instead of the covariance.
 
 See also \program{Gravityfield2GridCovarianceMatrix}, \program{GravityfieldVariancesPropagation2GriddedData}.
 )";

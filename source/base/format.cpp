@@ -40,7 +40,7 @@ std::string operator%(LongDouble value, const std::string &format)
         break;
       posFormat++;
       if(posFormat>=format.size())
-        throw(Exception("excpecting qualifier after '%'"));
+        throw(Exception("expecting qualifier after '%'"));
 
       // parse %[flags][width][.precision]specifier format
       std::stringstream ss;

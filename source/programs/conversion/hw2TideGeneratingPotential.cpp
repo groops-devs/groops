@@ -184,7 +184,7 @@ void Hw2TideGeneratingPotential::run(Config &config, Parallel::CommunicatorPtr /
     }
 
     logInfo<<"constituents used:     "<<tgp.size()<<Log::endl;
-    logInfo<<"constituents skiped:"<<Log::endl;
+    logInfo<<"constituents skipped:"<<Log::endl;
     logInfo<<"  permanent:           "<<countPermanent<<Log::endl;
     logInfo<<"  not degree 2:        "<<countNDegree<<Log::endl;
     logInfo<<"  not doodson codable: "<<countNDoodson<<Log::endl;
