@@ -12,37 +12,31 @@
 
 #include "base/import.h"
 #include "base/polynomial.h"
-#include "files/fileMatrix.h"
 #include "files/fileInstrument.h"
 #include "graceKBandGeometry.h"
 
 /***********************************************/
 
-SatelliteTrackingArc GraceKBandGeometry::antennaCenterCorrection(OrbitArc pos1, OrbitArc pos2, StarCameraArc rotSat1, StarCameraArc rotSat2, Vector3d center1, Vector3d center2, UInt degree)
+SatelliteTrackingArc GraceKBandGeometry::antennaCenterCorrection(const OrbitArc &orbit1, const OrbitArc &orbit2,
+                                                                 const StarCameraArc &starCamera1, const StarCameraArc &starCamera2,
+                                                                 const Vector3d &center1, const Vector3d &center2, UInt degree)
 {
   try
   {
-    Arc::checkSynchronized({pos1, pos2, rotSat1, rotSat2});
-    const UInt epochCount = pos1.size();
-    const Double dt = medianSampling(pos1.times()).seconds();
-
-    Matrix l(epochCount,4);
-    copy(pos1.matrix().column(0), l.column(0));
-
-
-    for(UInt i=0; i<epochCount; i++)
+    Matrix A(orbit1.size(), 4);
+    for(UInt i=0; i<A.rows(); i++)
     {
-      // u is center of mass vector, v is combined antenna offset vector
-      Vector u = (pos2.at(i).position - pos1.at(i).position).vector(); ///< size 3x1
-      Vector v = (rotSat2.at(i).rotary.rotate(center2) - rotSat1.at(i).rotary.rotate(center1)).vector(); ///< size 3x1
-      l(i,1) = norm(u) - norm(u+v);  // COM - ANT -> AOC
+      const Vector3d u = (orbit2.at(i).position - orbit1.at(i).position);                                       // center of mass vector
+      const Vector3d v = (starCamera2.at(i).rotary.rotate(center2) - starCamera1.at(i).rotary.rotate(center1)); // combined antenna offset vector
+      A(i,1) = u.r() - (u+v).r();  // COM - ANT -> AOC
     }
 
-    Polynomial p(degree);
-    copy( p.derivative(   dt, l.column(1)), l.column(2));
-    copy( p.derivative2nd(dt, l.column(1)), l.column(3));
+    const std::vector<Time> times = orbit1.times();
+    Polynomial p(times, degree);
+    copy(p.derivative(   times, A.column(1)), A.column(2));
+    copy(p.derivative2nd(times, A.column(1)), A.column(3));
 
-    return Arc(l, Epoch::Type::SATELLITETRACKING);
+    return Arc(times, A, Epoch::Type::SATELLITETRACKING);
   }
   catch(std::exception &e)
   {
@@ -52,11 +46,12 @@ SatelliteTrackingArc GraceKBandGeometry::antennaCenterCorrection(OrbitArc pos1, 
 
 /***********************************************/
 
-void GraceKBandGeometry::partialOfAntennaCenterCorrectionWrtRollPitchYaw(OrbitArc pos1, OrbitArc pos2, StarCameraArc rotSat1, StarCameraArc rotSat2, Vector3d center1, Vector3d center2, Matrix& SparseJacobian1, Matrix& SparseJacobian2)
+void GraceKBandGeometry::partialOfAntennaCenterCorrectionWrtRollPitchYaw(const OrbitArc &pos1, const OrbitArc &pos2, const StarCameraArc &rotSat1, const StarCameraArc &rotSat2,
+                                                                         const Vector3d &center1, const Vector3d &center2,
+                                                                         Matrix &SparseJacobian1, Matrix &SparseJacobian2)
 {
   try
   {
-
     Arc::checkSynchronized({pos1, pos2, rotSat1, rotSat2});
     const UInt epochCount = pos1.size();
 
@@ -172,33 +167,29 @@ void GraceKBandGeometry::partialOfAntennaCenterCorrectionWrtRollPitchYaw(OrbitAr
 /***********************************************/
 
 Matrix GraceKBandGeometry::sstResidual2RPYresidualProjector(const_MatrixSliceRef SparseJacobian, const_MatrixSliceRef CovarianceSca,
-                                                            const Double dt, const UInt degree, const UInt sstType)
+                                                            const std::vector<Time> &times, const UInt sstType, const UInt degree)
 {
   try
   {
-    const UInt epochCount = SparseJacobian.rows();
-
     // Each 3x3 block in CovarianceSca is Q_ij
     // Each 1x3 row in partialGrace is P_i
     // Each 3x1 block in I_ij := -1 * Q_ij * P_j.T
-    Matrix Improvement(3*epochCount, epochCount);
+    const UInt epochCount = SparseJacobian.rows();
+    Matrix A(3*epochCount, epochCount);
     for(UInt i=0; i<epochCount; i++)
       for(UInt j=0; j<epochCount; j++)
-        matMult(1.0, CovarianceSca.slice(i*3,j*3,3,3), SparseJacobian.row(j).trans(), Improvement.slice(3*i,j,3,1));
+        matMult(1.0, CovarianceSca.slice(i*3,j*3,3,3), SparseJacobian.row(j).trans(), A.slice(3*i,j,3,1));
 
     // Derivative
     // ----------
     if(sstType == 0)
-      return Improvement;
-
-    Polynomial p(degree);
+      return A;
+    Polynomial p(times, degree);
     if(sstType == 1) // range rate
-      return p.derivative(dt, Improvement.trans()).trans();
-
+      return p.derivative(times, A.trans()).trans();
     if(sstType == 2) // range rangeAcceleration
-      return p.derivative2nd(dt, Improvement.trans()).trans();
-
-    throw(Exception(sstType % "Unknown sst type <%i>"s));
+      return p.derivative2nd(times, A.trans()).trans();
+    throw(Exception("Unknown sst type"));
   }
   catch(std::exception &e)
   {
@@ -209,7 +200,7 @@ Matrix GraceKBandGeometry::sstResidual2RPYresidualProjector(const_MatrixSliceRef
 /***********************************************/
 
 Matrix GraceKBandGeometry::variancePropagationStarCamera2SatelliteRanging(const_MatrixSliceRef SparseJacobian, const_MatrixSliceRef CovarianceSca,
-                                                                          const Double dt, const UInt degree, const UInt sstType)
+                                                                          const std::vector<Time> &times, const UInt sstType, const UInt degree)
 {
   try
   {
@@ -230,26 +221,22 @@ Matrix GraceKBandGeometry::variancePropagationStarCamera2SatelliteRanging(const_
     if(sstType == 0)
       return Covariance;
 
-    Polynomial p(degree);
+    Polynomial p(times, degree);
+    fillSymmetric(Covariance);
     if(sstType == 1) // range rate
     {
-      fillSymmetric(Covariance);
-      Matrix D = p.derivative(dt, Covariance);
-      D        = p.derivative(dt, D.trans());
-      D.setType(Matrix::SYMMETRIC);
-      return D;
+      Covariance = p.derivative(times, Covariance);
+      Covariance = p.derivative(times, Covariance.trans());
     }
-
-    if(sstType == 2) // range rangeAcceleration
+    else if(sstType == 2) // range acceleration
     {
-      fillSymmetric(Covariance);
-      Matrix D = p.derivative2nd(dt, Covariance);
-      D        = p.derivative2nd(dt, D.trans());
-      D.setType(Matrix::SYMMETRIC);
-      return D;
+      Covariance = p.derivative2nd(times, Covariance);
+      Covariance = p.derivative2nd(times, Covariance.trans());
     }
-
-    throw(Exception(sstType % "Unknown sst type <%i>"s));
+    else
+      throw(Exception("Unknown sst type"));
+    Covariance.setType(Matrix::SYMMETRIC);
+    return Covariance;
   }
   catch(std::exception &e)
   {
@@ -260,31 +247,26 @@ Matrix GraceKBandGeometry::variancePropagationStarCamera2SatelliteRanging(const_
 /***********************************************/
 
 Vector GraceKBandGeometry::orientationResidual2rangingCorrection(const_MatrixSliceRef SparseJacobian, const_MatrixSliceRef deltaRpy,
-                                                                 const Double dt, const UInt degree, const UInt sstType)
+                                                                 const std::vector<Time> &times, const UInt sstType, const UInt degree)
 {
   try
   {
     // Observation corrections. The Jacobian of the range wrt. the quaternion elements is just the sparse representation
-    const UInt epochCount = SparseJacobian.rows();
-
     // Correction is c = Jacobian * deltaRpy
-    Vector correction(epochCount);
-    for(UInt i=0; i<epochCount; i++)
+    Vector correction(SparseJacobian.rows());
+    for(UInt i=0; i<correction.rows(); i++)
       correction(i) = inner(SparseJacobian.row(i).trans(), deltaRpy.row(i*3,3));
 
     // Derivative
     // ----------
     if(sstType == 0)
       return correction;
-
-    Polynomial p(degree);
+    Polynomial p(times, degree);
     if(sstType == 1) // range rate
-      return p.derivative(dt, correction);
-
+      return p.derivative(times, correction);
     if(sstType == 2) // range rangeAcceleration
-      return p.derivative2nd(dt, correction);
-
-    throw(Exception(sstType % "Unknown sst type <%i>"s));
+      return p.derivative2nd(times, correction);
+    throw(Exception("Unknown sst type"));
   }
   catch(std::exception &e)
   {

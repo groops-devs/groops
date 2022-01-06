@@ -54,7 +54,6 @@ void InstrumentStarCamera2AccAngularRate::run(Config &config, Parallel::Communic
 
     // init interpolation coefficients
     // -------------------------------
-    Polynomial polynomial(derivationDegree);
 
     // calculate angular rates & accelerations
     // ---------------------------------------
@@ -63,17 +62,14 @@ void InstrumentStarCamera2AccAngularRate::run(Config &config, Parallel::Communic
     std::list<Arc> angRateArcList, angAccArcList;
     Single::forEach(starCameraFile.arcCount(), [&](UInt arcNo)
     {
-      StarCameraArc scaArc = starCameraFile.readArc(arcNo);
-      const Double  dt     = (scaArc.at(1).time - scaArc.at(0).time).seconds();
-
-      // quaternions
-      // -----------
-      Matrix q   = scaArc.matrix().column(1,4);
-      Matrix dq  = polynomial.derivative(dt, q);
-      Matrix ddq = polynomial.derivative2nd(dt, q);
+      const StarCameraArc scaArc = starCameraFile.readArc(arcNo);
+      const std::vector<Time> times = scaArc.times();
+      const Matrix q = scaArc.matrix().column(1,4);
+      Polynomial polynomial(times, derivationDegree);
 
       // angular rate
       // ------------
+      Matrix dq = polynomial.derivative(times, q);
       Vector3dArc angRateArc;
       for(UInt i=0; i<scaArc.size(); i++)
       {
@@ -90,6 +86,7 @@ void InstrumentStarCamera2AccAngularRate::run(Config &config, Parallel::Communic
       // ---------------------
       if(!angAccName.empty())
       {
+        Matrix ddq = polynomial.derivative2nd(times, q);
         Vector3dArc angAccArc;
         for(UInt i=0; i<scaArc.size(); i++)
         {

@@ -63,8 +63,6 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
   {
     logStatus<<"init transmitters"<<Log::endl;
 
-    Polynomial polynomial(interpolationDegree);
-
     // read antenna defintion
     std::vector<GnssAntennaDefinitionPtr> antennaDefList;
     readFileGnssAntennaDefinition(fileNameAntennaDef, antennaDefList);
@@ -107,7 +105,12 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
           const Matrix data = arc.matrix();
           pos = data.column(1, 3);
           vel = data.column(4, 3);
-
+          // check possible data gaps
+          Polynomial polynomial(timesPosVel, interpolationDegree, FALSE/*throwException*/);
+          const Vector useable = polynomial.interpolate(times, Vector(pos.rows()));
+          for(UInt idEpoch=0; idEpoch<useable.rows(); idEpoch++)
+            if(std::isnan(useable(idEpoch)))
+              useableEpochs(idEpoch) = FALSE;
         }
         catch(std::exception &/*e*/)
         {
@@ -121,9 +124,13 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
         try
         {
           const StarCameraArc arc = InstrumentFile::read(fileNameAttitude(fileNameVariableList));
-          const Matrix quaternion = polynomial.interpolate(times, arc.times(), arc.matrix().column(1, 4));
+          Polynomial polynomial(arc.times(), interpolationDegree, FALSE/*throwException*/);
+          const Matrix quaternion = polynomial.interpolate(times, arc.matrix().column(1, 4));
           for(UInt idEpoch=0; idEpoch<quaternion.rows(); idEpoch++)
-            crf2srf.at(idEpoch) = inverse(Rotary3d(quaternion.row(idEpoch).trans()/norm(quaternion.row(idEpoch))));
+            if(!std::isnan(quaternion(idEpoch,0)))
+              crf2srf.at(idEpoch) = inverse(Rotary3d(quaternion.row(idEpoch).trans()/norm(quaternion.row(idEpoch))));
+            else
+              useableEpochs(idEpoch) = FALSE;
         }
         catch(std::exception &/*e*/)
         {
@@ -136,10 +143,12 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
         std::vector<Double> clock;
         try
         {
-          MiscValueArc arc = InstrumentFile::read(fileNameClock(fileNameVariableList));
-          // linear interpolation
-          Polynomial polynomial(1);
-          clock = Vector(polynomial.interpolate(times, arc.times(), arc.matrix().column(1)));
+          const MiscValueArc arc = InstrumentFile::read(fileNameClock(fileNameVariableList));
+          Polynomial polynomial(arc.times(), 1, FALSE/*throwException*/); // linear interpolation
+          clock = Vector(polynomial.interpolate(times, arc.matrix().column(1)));
+          for(UInt idEpoch=0; idEpoch<clock.size(); idEpoch++)
+            if(std::isnan(clock.at(idEpoch)))
+              useableEpochs(idEpoch) = FALSE;
         }
         catch(std::exception &/*e*/)
         {
@@ -154,14 +163,12 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
 
         std::vector<Vector3d>    offset(times.size());
         std::vector<Transform3d> srf2arf(times.size());
-        Bool useable = FALSE;
         for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
           if(useableEpochs(idEpoch))
           {
             const UInt idAnt = info.findAntenna(times.at(idEpoch));
             if(idAnt != NULLINDEX && info.antenna.at(idAnt).antennaDef)
             {
-              useable             = TRUE;
               offset.at(idEpoch)  = info.antenna.at(idAnt).position - info.referencePoint(times.at(idEpoch));
               srf2arf.at(idEpoch) = info.antenna.at(idAnt).local2antennaFrame;
             }
@@ -171,11 +178,14 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
 
         // test useable
         // ------------
-        if(!useable)
+        const UInt countUseableEpochs = static_cast<UInt>(sum(useableEpochs));
+        if(!countUseableEpochs)
         {
           logWarningOnce<<info.markerName<<"."<<info.markerNumber<<": No usable epochs, disabling transmitter."<<Log::endl;
           continue;
         }
+        if(countUseableEpochs < useableEpochs.rows())
+          logWarningOnce<<info.markerName<<"."<<info.markerNumber<<": "<<useableEpochs.rows()-countUseableEpochs<<" epochs disabled due to missing orbit/attitude/clock data"<<Log::endl;
 
         transmitters.push_back(std::make_shared<GnssTransmitter>(GnssType("***"+info.markerNumber), prn, info, noPatternFoundAction,
                                                                  useableEpochs, clock, offset, crf2srf, srf2arf, timesPosVel, pos, vel, interpolationDegree));

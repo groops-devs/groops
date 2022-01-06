@@ -24,8 +24,7 @@
 * @ingroup misc */
 class IntegralEquation
 {
-  Polynomial          polynomial;
-  UInt                integrationDegree;
+  UInt                integrationDegree, interpolationDegree;
   std::vector<Matrix> W;
   mutable Matrix      IntegrationPos;
   mutable Matrix      IntegrationVel;

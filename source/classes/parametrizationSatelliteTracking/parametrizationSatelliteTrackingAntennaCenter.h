@@ -47,7 +47,7 @@ public:
   Bool setInterval(const Time &/*timeStart*/, const Time &/*timeEnd*/) {return FALSE;}
   UInt parameterCount() const {return estimate1x+estimate1y+estimate1z+estimate2x+estimate2y+estimate2z;}
   void parameterName(std::vector<ParameterName> &name) const;
-  void compute(UInt sstType, const std::vector<Time> &time, const Vector &sst0,
+  void compute(UInt sstType, const std::vector<Time> &times, const Vector &sst0,
                const Vector &position1, const Vector &position2, const Vector &velocity1, const Vector &velocity2,
                const std::vector<Rotary3d> &rotSat1, const std::vector<Rotary3d> &rotSat2, MatrixSliceRef A);
 };
@@ -96,13 +96,13 @@ inline void ParametrizationSatelliteTrackingAntennaCenter::parameterName(std::ve
 
 /***********************************************/
 
-inline void ParametrizationSatelliteTrackingAntennaCenter::compute(UInt sstType, const std::vector<Time> &time, const Vector &/*sst0*/,
+inline void ParametrizationSatelliteTrackingAntennaCenter::compute(UInt sstType, const std::vector<Time> &times, const Vector &/*sst0*/,
                                                              const Vector &position1, const Vector &position2, const Vector &/*velocity1*/, const Vector &/*velocity2*/,
                                                              const std::vector<Rotary3d> &rotSat1, const std::vector<Rotary3d> &rotSat2, MatrixSliceRef A)
 {
   try
   {
-    for(UInt i=0; i<time.size(); i++)
+    for(UInt i=0; i<times.size(); i++)
     {
       Matrix e = (position2.row(3*i,3)-position1.row(3*i,3)).trans();
       e *= 1./norm(e);
@@ -118,16 +118,13 @@ inline void ParametrizationSatelliteTrackingAntennaCenter::compute(UInt sstType,
       if(estimate2z) A(i, idx++) = B(0, 5);
     }
 
+    if(sstType == 0) // range
+      return;
+    Polynomial polynomial(times, degree);
     if(sstType == 1) // range rate
-    {
-      Polynomial polynomial(degree);
-      copy(polynomial.derivative((time.at(1)-time.at(0)).seconds(), A), A);
-    }
+      copy(polynomial.derivative(times, A), A);
     else if(sstType == 2) // range acceleration
-    {
-      Polynomial polynomial(degree);
-      copy(polynomial.derivative2nd((time.at(1)-time.at(0)).seconds(), A), A);
-    }
+      copy(polynomial.derivative2nd(times, A), A);
   }
   catch(std::exception &e)
   {

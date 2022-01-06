@@ -70,7 +70,7 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "inputfileTransmitterList", fileNameTransmitterList, Config::MUSTSET,  "",      "ASCII list with transmitter PRNs");
     readConfig(config, "inputfileAttitude",        fileNameAttitude,        Config::MUSTSET,  "attitude.{prn}.dat", "instrument file containing attitude");
     readConfig(config, "variablePrn",              variablePrn,             Config::DEFAULT,  "prn",   "loop variable for PRNs from transmitter list");
-    readConfig(config, "timeSeries",               timeSeriesPtr,           Config::OPTIONAL, "",      "resample to these epochs (otherwise input file epochs are used)");
+    readConfig(config, "timeSeries",               timeSeriesPtr,           Config::DEFAULT,  "",      "resample to these epochs (otherwise input file epochs are used)");
     readConfig(config, "earthRotation",            earthRotation,           Config::OPTIONAL, "",      "rotate data into Earth-fixed frame");
     readConfig(config, "interpolationDegree",      interpolationDegree,     Config::MUSTSET,  "7",     "for attitude and Earth rotation interpolation");
     readConfig(config, "description",              description,             Config::MUSTSET,  "",      "description of file contents");
@@ -81,12 +81,7 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "comment",                  comments,                Config::OPTIONAL, "",      "");
     if(isCreateSchema(config)) return;
 
-    std::vector<Time> times;
-    if(timeSeriesPtr)
-    {
-      times = timeSeriesPtr->times();
-      polynomial = Polynomial(interpolationDegree);
-    }
+    std::vector<Time> times = timeSeriesPtr->times();
 
     std::vector<std::string> transmitterList;
     for(const auto &fileName : fileNameTransmitterList)
@@ -101,28 +96,22 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     for(const auto &prn : transmitterList)
     {
       fileNameVariableList[variablePrn]->setValue(prn);
-
       StarCameraArc arc = InstrumentFile::read(fileNameAttitude(fileNameVariableList));
-      Matrix quaternion(arc.size(), 4);
 
-      for(UInt idEpoch = 0; idEpoch < arc.size(); idEpoch++)
+      for(UInt idEpoch=0; idEpoch<arc.size(); idEpoch++)
       {
-        Rotary3d rot = inverse(arc.at(idEpoch).rotary);
+        arc.at(idEpoch).rotary = inverse(arc.at(idEpoch).rotary);
         if(earthRotation)
-          rot *= inverse(earthRotation->rotaryMatrix(arc.at(idEpoch).time));
-        copy(rot.quaternion().trans(), quaternion.row(idEpoch));
+          arc.at(idEpoch).rotary *= inverse(earthRotation->rotaryMatrix(arc.at(idEpoch).time));
       }
-
-      // ensure consistent sign of quaternions
-      for(UInt idEpoch=1; idEpoch<quaternion.rows(); idEpoch++)
-        if(inner(quaternion.row(idEpoch), quaternion.row(idEpoch-1))<0)
-          quaternion.row(idEpoch) *= -1;
+      Matrix quaternion = arc.matrix().column(1, 4);
 
       // (optionally) resample attitude
       std::vector<Time> prnTimes = arc.times();
       if(times.size())
       {
-        quaternion = polynomial.interpolate(times, prnTimes, quaternion);
+        Polynomial polynomial(prnTimes, interpolationDegree);
+        quaternion = polynomial.interpolate(times, quaternion);
         prnTimes = times;
       }
 

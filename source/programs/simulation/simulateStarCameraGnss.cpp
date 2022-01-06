@@ -221,9 +221,9 @@ void SimulateStarCameraGnss::run(Config &config, Parallel::CommunicatorPtr /*com
     std::vector<Time> times;
     for(UInt i=0; timesOrbit.front()+i*deltaTime<=timesOrbit.back(); i++)
       times.push_back(timesOrbit.front() + i*deltaTime);
-    Polynomial polynomial(interpolationDegree);
+    Polynomial polynomial(timesOrbit, interpolationDegree);
     {
-      Matrix positionVelocity = polynomial.interpolate(times, timesOrbit, orbitArc.matrix().column(1, 6), 1);
+      Matrix positionVelocity = polynomial.interpolate(times, orbitArc.matrix().column(1, 6), 1);
       for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
         epochs.push_back(createDefaultEpoch(times.at(idEpoch), Vector3d(positionVelocity.slice(idEpoch, 0, 1, 3)), Vector3d(positionVelocity.slice(idEpoch, 3, 1, 3))));
     }
@@ -296,7 +296,8 @@ void SimulateStarCameraGnss::run(Config &config, Parallel::CommunicatorPtr /*com
       if(idEpoch>0 && inner(quaternions.row(idEpoch), quaternions.row(idEpoch-1))<0.)
         quaternions.row(idEpoch) *= -1; // ensure same sign for correct interpolation
     }
-    quaternions = polynomial.interpolate(timesOrbit, times, quaternions, 1);
+    polynomial.init(times, interpolationDegree);
+    quaternions = polynomial.interpolate(timesOrbit, quaternions, 1);
     StarCameraArc starCameraArc;
     for(UInt idEpoch=0; idEpoch<timesOrbit.size(); idEpoch++)
     {

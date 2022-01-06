@@ -11,8 +11,6 @@
 /***********************************************/
 
 #include "base/import.h"
-#include "base/polynomial.h"
-#include "base/legendrePolynomial.h"
 #include "parallel/parallel.h"
 #include "files/fileInstrument.h"
 #include "files/fileSatelliteModel.h"
@@ -31,7 +29,6 @@ ObservationPodEnergy::ObservationPodEnergy(Config &config)
   {
     FileName fileNameSatellite;
     FileName orbitName, starCameraName;
-    UInt     integrationDegree;
 
     renameDeprecatedConfig(config, "satelliteModel", "inputfileSatelliteModel", date2time(2020, 8, 19));
     renameDeprecatedConfig(config, "representation", "parametrizationGravity",  date2time(2020, 6,  3));
@@ -72,7 +69,15 @@ ObservationPodEnergy::ObservationPodEnergy(Config &config)
     coeff(1) = 1.0;
     solveInPlace(P, coeff);
 
-    polynomial.init(integrationDegree);
+    // polynomial integration matrix
+    integrationMatrix = Matrix(integrationDegree+1, integrationDegree+1);
+    for(UInt i=0; i<integrationMatrix.rows(); i++)
+    {
+      integrationMatrix(0,i) = 1.0;
+      for(UInt n=1; n<integrationMatrix.columns(); n++)
+        integrationMatrix(n,i) = (i-integrationDegree/2.) * integrationMatrix(n-1,i);
+    }
+    inverse(integrationMatrix);
   }
   catch(std::exception &e)
   {
@@ -157,8 +162,26 @@ void ObservationPodEnergy::observation(UInt arcNo, Matrix &l, Matrix &A, Matrix 
       for(UInt k=1; k<obsCount; k++)
         l(k,j) = 0.5 * velocity.at(j).at(k).quadsum() - inner(velocity.at(j).at(k), crossProduct(rotAxis.at(k), position.at(j).at(k))) - l0;
     }
-    l -= polynomial.integration(dt, integrand);
 
+    // reduce integral
+    // ---------------
+    Matrix integral(integrand.rows(), integrand.columns());
+    Vector integralFactors;
+    for(UInt i=1; i<integrand.rows(); i++)
+    {
+      const UInt idx = std::min(std::max(i, integrationDegree/2)-integrationDegree/2, integrand.rows()-integrationDegree-1);
+      if((i<=integrationDegree/2) || (i>=integrand.rows()-(integrationDegree+1)/2))
+      {
+        integralFactors = Vector(integrationDegree+1);
+        const Double tau1 = i-idx-integrationDegree/2.-1;
+        const Double tau2 = i-idx-integrationDegree/2.;
+        for(UInt n=0; n<integralFactors.rows(); n++)
+          axpy(dt/(n+1)*(std::pow(tau2, n+1)-std::pow(tau1, n+1)), integrationMatrix.column(n), integralFactors);
+      }
+      integral.row(i) += integral.row(i-1);
+      matMult(-1., integralFactors.trans(), integrand.row(idx, integralFactors.rows()), integral.row(i));
+    }
+    l -= integral;
 
     // arc related parameters (energy constant)
     // ----------------------------------------

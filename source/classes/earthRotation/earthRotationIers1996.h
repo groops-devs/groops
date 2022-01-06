@@ -35,7 +35,6 @@ Very old.
 class EarthRotationIers1996 : public EarthRotation
 {
   Polynomial        polynomial;
-  std::vector<Time> times; // UTC
   Matrix            EOP;
   Matrix            argument, psiFactor, epsFactor; // nutation series
 

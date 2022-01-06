@@ -15,7 +15,6 @@
 
 /***********************************************/
 
-#include "base/polynomial.h"
 #include "files/fileInstrument.h"
 #include "classes/ephemerides/ephemerides.h"
 #include "classes/parametrizationGravity/parametrizationGravity.h"
@@ -37,7 +36,7 @@ class ObservationMiscPodVariational : public ObservationMiscPod
 {
   InstrumentFile                 podFile;
   VariationalEquationFromFile    variationalEquation;
-  Polynomial                     polynomial;
+  UInt                           interpolationDegree;
   UInt                           countArc;
   EphemeridesPtr                 ephemerides;
   ParametrizationGravityPtr      parameterGravity;

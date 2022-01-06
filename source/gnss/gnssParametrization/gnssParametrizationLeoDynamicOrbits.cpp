@@ -32,7 +32,6 @@ GnssParametrizationLeoDynamicOrbits::GnssParametrizationLeoDynamicOrbits(Config 
   try
   {
     TimeSeriesPtr stochasticPulse;
-    UInt          interpolationDegree;
 
     readConfig(config, "name",                        name,                        Config::OPTIONAL, "parameter.dynamicOrbits", "used for parameter selection");
     readConfig(config, "selectReceivers",             selectReceivers,             Config::MUSTSET,  "",     "");
@@ -48,7 +47,6 @@ GnssParametrizationLeoDynamicOrbits::GnssParametrizationLeoDynamicOrbits(Config 
     if(isCreateSchema(config)) return;
 
     pulses = stochasticPulse->times();
-    polynomial.init(interpolationDegree);
   }
   catch(std::exception &e)
   {
@@ -102,14 +100,15 @@ void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::Communicato
         para->pos       = variationalEquation.pos0;
         para->vel       = variationalEquation.vel0;
         para->x         = Vector(para->PosDesign.columns());
+        para->polynomial.init(para->times, interpolationDegree);
 
         std::vector<Time> times;
         for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
           if(para->recv->useable(idEpoch))
             times.push_back(para->recv->timeCorrected(idEpoch));
 
-        const Vector pos = polynomial.interpolate(times, para->times, para->pos, 3);
-        const Vector vel = polynomial.interpolate(times, para->times, para->vel, 3);
+        const Vector pos = para->polynomial.interpolate(times, para->pos, 3);
+        const Vector vel = para->polynomial.interpolate(times, para->vel, 3);
         UInt i=0;
         for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
           if(para->recv->useable(idEpoch))
@@ -213,7 +212,7 @@ void GnssParametrizationLeoDynamicOrbits::designMatrix(const GnssNormalEquationI
     auto para = parameters.at(eqn.receiver->idRecv());
     if(para && para->index)
       matMult(1., eqn.A.column(GnssObservationEquation::idxPosRecv, 3),
-              polynomial.interpolate({eqn.timeRecv}, para->times, para->PosDesign, 3),
+              para->polynomial.interpolate({eqn.timeRecv}, para->PosDesign, 3),
               A.column(para->index));
   }
   catch(std::exception &e)
@@ -243,8 +242,8 @@ Double GnssParametrizationLeoDynamicOrbits::updateParameter(const GnssNormalEqua
           if(para->recv->useable(idEpoch))
             times.push_back(para->recv->timeCorrected(idEpoch));
 
-        const Vector pos = polynomial.interpolate(times, para->times, para->pos, 3);
-        const Vector vel = polynomial.interpolate(times, para->times, para->vel, 3);
+        const Vector pos = para->polynomial.interpolate(times, para->pos, 3);
+        const Vector vel = para->polynomial.interpolate(times, para->vel, 3);
         UInt i=0;
         for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
           if(para->recv->useable(idEpoch))

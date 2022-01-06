@@ -65,7 +65,7 @@ public:
   EphemeridesPtr                 ephemerides;
   ParametrizationAccelerationPtr parameterAcceleration;
   ParametrizationGravityPtr      parameterGravity;
-  Polynomial                     polynomial;
+  UInt                           interpolationDegree;
   UInt                           arcCount;
 
   // normal equations
@@ -96,7 +96,6 @@ void PreprocessingVariationalEquationOrbitFit::run(Config &config, Parallel::Com
     FileName fileNameInVariational;
     FileName podName, covPodEpochName;
     UInt              integrationDegree;
-    UInt              interpolationDegree;
     UInt              iterCount;
     std::vector<Time> stochasticPulse;
     TimeSeriesPtr     stochasticPulsePtr;
@@ -131,7 +130,6 @@ void PreprocessingVariationalEquationOrbitFit::run(Config &config, Parallel::Com
     covPodEpochFile.open(covPodEpochName);
     InstrumentFile::checkArcCount({podFile, covPodEpochFile});
     variationalEquationFromFile.open(fileNameInVariational, parameterGravity, parameterAcceleration, stochasticPulse, ephemerides, integrationDegree);
-    polynomial.init(interpolationDegree);
 
     // =============================================
 
@@ -244,9 +242,10 @@ void PreprocessingVariationalEquationOrbitFit::buildNormals(UInt arcNo)
     }
 
     std::vector<Time> timePod = pod.times();
-    VariationalEquationFromFile::ObservationEquation eqn = variationalEquationFromFile.integrateArc(timePod.at(0), timePod.back(), TRUE/*position*/, FALSE/*velocity*/);
-    l -= polynomial.interpolate(timePod, eqn.times, eqn.pos0, 3); // reference orbit
-    Matrix A = polynomial.interpolate(timePod, eqn.times, eqn.PosDesign, 3);
+    VariationalEquationFromFile::ObservationEquation eqn = variationalEquationFromFile.integrateArc(timePod.front(), timePod.back(), TRUE/*position*/, FALSE/*velocity*/);
+    Polynomial polynomial(eqn.times, interpolationDegree);
+    l -= polynomial.interpolate(timePod, eqn.pos0, 3); // reference orbit
+    Matrix A = polynomial.interpolate(timePod, eqn.PosDesign, 3);
 
     // decorrelation
     Covariance3dArc covPod = covPodEpochFile.readArc(arcNo);

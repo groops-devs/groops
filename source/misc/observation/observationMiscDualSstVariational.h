@@ -15,7 +15,6 @@
 
 /***********************************************/
 
-#include "base/polynomial.h"
 #include "files/fileInstrument.h"
 #include "classes/observation/observation.h"
 #include "classes/ephemerides/ephemerides.h"
@@ -53,7 +52,7 @@ public:
   std::vector<InstrumentFilePtr>      sst1File, sst2File;
   VariationalEquationFromFile         variationalEquation1, variationalEquation2;
   InstrumentFile                      pod1File, pod2File;
-  Polynomial                          polynomial;
+  UInt                                interpolationDegree;
   UInt                                countArc;
   UInt                                sstType; // 0: biased range, 1: range-rate
   Bool                                computeVelocity;

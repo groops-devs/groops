@@ -1429,27 +1429,6 @@ with the unit vector in line of sight direction
 \begin{equation}
   \M e_{AB} = \frac{\M r_B - \M r_A}{\left\lVert{\M r_B - \M r_A}\right\rVert}.
 \end{equation}
-
-This program is also able to compute antenna offset correction covariance matrix,
-which is the propagated variance of each satellite orientation observation to the AOC:
-\begin{equation}
-  \pmb{\Sigma}_{\Delta\rho_{AOC}}^{Sat} = \M F_{\pmb{\alpha}}^{Sat}\pmb{\Sigma}_{\pmb{\alpha\alpha}}^{Sat}(\M F_{\pmb{\alpha}}^{Sat})^T,
-\end{equation}
-where $\M F_{\pmb{\alpha}}^{Sat}$ is the partial derivative of the AOC w.r.t. the small angle rotations $\pmb{\alpha}$,
-\begin{equation}
-  \M F_{\pmb{\alpha}}^{Sat} =
-  \begin{bmatrix}
-  \frac{\partial \Delta\rho_{AOC}^{Sat}(t_1)}{\partial\pmb{\alpha}(t_1)} &        &  \\
-          & \ddots &  \\
-          &        & \frac{\partial \Delta\rho_{AOC}^{Sat}(t_N)}{\partial\pmb{\alpha}(t_N)}
-  \end{bmatrix}.
-\end{equation}
-The contribution of indivudal satellite to AOC covariance matrix can be reported by
-\configFile{outputfileSatelliteTrackingCovariance1/2}{matrix}. The complete AOC covariance matrix
-\configFile{outputfileSatelliteTrackingCovariance}{matrix} considers the total influence of both satellites:
-\begin{equation}
-  \pmb{\Sigma}_{\Delta\rho_{AOC}} = \pmb{\Sigma}_{\Delta\rho_{AOC}}^{Sat1} + \pmb{\Sigma}_{\Delta\rho_{AOC}}^{Sat2}.
-\end{equation}
 The corrections for the range-rates and range-acceleration are computed by differentiating
 an interpolation polynomial of degree \config{interpolationDegree}.
 
@@ -1460,23 +1439,6 @@ an interpolation polynomial of degree \config{interpolationDegree}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSatelliteTracking & \hfuzz=500pt filename & \hfuzz=500pt corrections for range, range-rate, and range-accelerations\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variancePropagationStarCamera & \hfuzz=500pt sequence & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~outputFile & \hfuzz=500pt choice & \hfuzz=500pt \\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~combined & \hfuzz=500pt sequence & \hfuzz=500pt \\
-\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~outputfileSatelliteTrackingCovariance & \hfuzz=500pt filename & \hfuzz=500pt Covariance for chosen SST type\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~individual & \hfuzz=500pt sequence & \hfuzz=500pt \\
-\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~outputfileSatelliteTrackingCovariance1 & \hfuzz=500pt filename & \hfuzz=500pt Covariance for chosen SST type\\
-\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~outputfileSatelliteTrackingCovariance2 & \hfuzz=500pt filename & \hfuzz=500pt Covariance for chosen SST type\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputFileCovarianceSca1 & \hfuzz=500pt filename & \hfuzz=500pt Full covariance matrix from sensor fusion\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputFileCovarianceSca2 & \hfuzz=500pt filename & \hfuzz=500pt Full covariance matrix from sensor fusion\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~varianceFactors & \hfuzz=500pt sequence & \hfuzz=500pt \\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~sigmasCovarianceMatrixArc & \hfuzz=500pt filename & \hfuzz=500pt Vector with one sigma for each \$<\$inputfileCovarianceMatrixArc\$>\$\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~indexVarianceFactor1 & \hfuzz=500pt uint & \hfuzz=500pt in sigmasCovarianceMatrixArc\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~indexVarianceFactor2 & \hfuzz=500pt uint & \hfuzz=500pt in sigmasCovarianceMatrixArc\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~sstType & \hfuzz=500pt choice & \hfuzz=500pt \\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~range & \hfuzz=500pt  & \hfuzz=500pt \\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~rangeRate & \hfuzz=500pt  & \hfuzz=500pt \\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~rangeAcceleration & \hfuzz=500pt  & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit1 & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit2 & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStarCamera1 & \hfuzz=500pt filename & \hfuzz=500pt \\
@@ -3678,6 +3640,9 @@ This program resamples \file{instrument data}{instrument} to a given
 
   \fig{!hb}{0.5}{instrumentResample_leastSquares}{fig:instrumentResample_leastSquares}{Example of least squares polynomial fit when resampling from 5 to 1 minute sampling}
 \end{itemize}
+
+The elements \config{maxDataPointRange}, \config{maxDataPointDistance}, and \config{maxExtrapolationDistance}
+are given in the unit of seconds. If negative values are used, the unit is relative to the median input sampling.
 
 This program can also be used to reduce the sampling of an instrument file,
 but a better way to reduce the sampling of noisy data with regular sampling

@@ -38,7 +38,7 @@ EarthRotationIers1996::EarthRotationIers1996(Config &config)
       InFileArchive eopFile(eopName, "");
       UInt eopCount;
       eopFile>>nameValue("count", eopCount);
-      times.resize(eopCount);
+      std::vector<Time> times(eopCount);
       EOP = Matrix(eopCount, 7);
       Double mjd;
       for(UInt i=0; i<eopCount; i++)
@@ -64,7 +64,7 @@ EarthRotationIers1996::EarthRotationIers1996(Config &config)
       EOP.column(4) *= DEG2RAD/3600; // dPsi
       EOP.column(5) *= DEG2RAD/3600; // dEps
 
-      polynomial.init(3);
+      polynomial.init(times, 3);
     }
 
     // Nutationsserie einlesen
@@ -149,9 +149,7 @@ void EarthRotationIers1996::eop(const Time &timeGPS, Double &xp, Double &yp, Dou
     if(EOP.size())
     {
       const Time timeUTC = timeGPS2UTC(timeGPS);
-      if((timeUTC<times.at(0)) || (timeUTC>times.back()))
-        throw(Exception("No EOPs available: "+timeGPS.dateTimeStr()));
-      Matrix eop = polynomial.interpolate({timeUTC}, times, EOP, 1);
+      Matrix eop = polynomial.interpolate({timeUTC}, EOP);
       xp      = eop(0,0);
       yp      = eop(0,1);
       deltaUT = eop(0,2) + (timeGPS-timeUTC).seconds();

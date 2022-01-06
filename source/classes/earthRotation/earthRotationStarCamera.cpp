@@ -31,16 +31,8 @@ EarthRotationStarCamera::EarthRotationStarCamera(Config &config)
     if(isCreateSchema(config)) return;
 
     StarCameraArc arc = InstrumentFile::read(fileNameStarCamera);
-
-    quaternions = Matrix(arc.size(), 4);
-    times.reserve(arc.size());
-    for(UInt k = 0; k<arc.size(); k++)
-    {
-      times.push_back(arc.at(k).time);
-      copy(arc.at(k).data().trans(), quaternions.row(k));
-    }
-
-    polynomial.init(polynomialDegree);
+    quaternions = arc.matrix().column(1, 4);
+    polynomial.init(arc.times(), polynomialDegree);
   }
   catch(std::exception &e)
   {
@@ -54,9 +46,8 @@ Rotary3d EarthRotationStarCamera::rotaryMatrix(const Time &timeGPS) const
 {
   try
   {
-    Matrix interpolatedQuaternion = polynomial.interpolate({timeGPS}, times, quaternions);
-
-    return Rotary3d(1./norm(interpolatedQuaternion)*interpolatedQuaternion.trans());
+    Matrix q = polynomial.interpolate({timeGPS}, quaternions);
+    return Rotary3d(1./norm(q)*q.trans());
   }
   catch(std::exception &e)
   {

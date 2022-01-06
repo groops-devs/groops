@@ -41,7 +41,7 @@ EarthRotationIers2003::EarthRotationIers2003(Config &config)
     if(!eopName.empty())
     {
       readFileEarthOrientationParameter(eopName, EOP);
-      times.resize(EOP.rows());
+      std::vector<Time> times(EOP.rows());
       for(UInt i=0; i<times.size(); i++)
         times.at(i) = mjd2time(EOP(i,0));
       EOP = EOP.column(1, 6); // remove mjd
@@ -55,7 +55,7 @@ EarthRotationIers2003::EarthRotationIers2003(Config &config)
       EOP.column(4) *= DEG2RAD/3600; // dX
       EOP.column(5) *= DEG2RAD/3600; // dY
 
-      polynomial.init(3);
+      polynomial.init(times, 3);
     }
   }
   catch(std::exception &e)
@@ -80,9 +80,7 @@ void EarthRotationIers2003::earthOrientationParameter(const Time &timeGPS, Doubl
     if(EOP.size())
     {
       const Time timeUTC = timeGPS2UTC(timeGPS);
-      if((timeUTC<times.at(0)) || (timeUTC>times.back()))
-        throw(Exception("No EOPs available: "+timeGPS.dateTimeStr()));
-      Matrix eop = polynomial.interpolate({timeUTC}, times, EOP, 1);
+      Matrix eop = polynomial.interpolate({timeUTC}, EOP);
       xp      = eop(0,0);
       yp      = eop(0,1);
       deltaUT = eop(0,2) + (timeGPS-timeUTC).seconds();

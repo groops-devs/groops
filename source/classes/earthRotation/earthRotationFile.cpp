@@ -33,17 +33,15 @@ EarthRotationFile::EarthRotationFile(Config &config)
 
     readFileMatrix(fileNameEOP, EOP);
 
-    times.resize(EOP.rows());
+    std::vector<Time> times(EOP.rows());
     for(UInt i=0; i<times.size(); i++)
       times.at(i) = mjd2time(EOP(i,0));
-    if(!isRegular(times))
-      throw(Exception("Time series must be given with constant sampling"));
 
     // UT1-UTC => UT1-GPS (avoid leap seconds jumps for interpolation)
     for(UInt i=0; i<times.size(); i++)
       EOP(i,4) -= (times.at(i)-timeGPS2UTC(times.at(i))).seconds();
 
-    polynomial.init(interpolationDegree);
+    polynomial.init(times, interpolationDegree);
   }
   catch(std::exception &e)
   {
@@ -58,10 +56,7 @@ void EarthRotationFile::earthOrientationParameter(const Time &timeGPS, Double &x
 {
   try
   {
-    if((timeGPS<times.at(0)) || (timeGPS>times.back()))
-      throw(Exception("No EOPs available: "+timeGPS.dateTimeStr()));
-
-    Matrix eop = polynomial.interpolate({timeGPS}, times, EOP);
+    Matrix eop = polynomial.interpolate({timeGPS}, EOP);
     xp   = eop(0,1);
     yp   = eop(0,2);
     sp   = eop(0,3);

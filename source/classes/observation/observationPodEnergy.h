@@ -51,7 +51,6 @@ The accuracy or the full covariance matrix of the precise orbit data is provided
 
 /***********************************************/
 
-#include "base/polynomial.h"
 #include "files/fileInstrument.h"
 #include "files/fileSatelliteModel.h"
 #include "classes/earthRotation/earthRotation.h"
@@ -78,9 +77,9 @@ class ObservationPodEnergy : public Observation
   EphemeridesPtr               ephemerides;
   ParametrizationGravityPtr    parametrization;
   ParametrizationTemporalPtr   bias;
-  UInt                         interpolationDegree;
+  UInt                         interpolationDegree, integrationDegree;
   Vector                       coeff;
-  Polynomial                   polynomial;
+  Matrix                       integrationMatrix;
 
 public:
   ObservationPodEnergy(Config &config);

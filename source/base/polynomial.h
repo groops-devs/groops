@@ -23,46 +23,62 @@
 * @ingroup base */
 class Polynomial
 {
-  Matrix W;
+  Bool              throwException;
+  UInt              degree;
+  std::vector<Time> times;
+  Double            sampling;
+  Bool              isLeastSquares;
+  Double            range, extrapolation;
+  std::vector<Bool> isPrecomputed;
+  Matrix            W;
 
 public:
   /// Constructor
   Polynomial() {}
 
-  /// Constructor
-  explicit Polynomial(UInt degree) {init(degree);}
+  /** @brief Constructor.
+  * @see init(const std::vector<Time> &, UInt, Bool). */
+  Polynomial(const std::vector<Time> &times, UInt degree, Bool throwException=TRUE) {init(times, degree, throwException);}
 
-  /// Set the degree of the interpolation polynomial. */
-  void init(UInt degree);
+  /** @brief Initialize the interpolator.
+  * @param times epochs of the input data.
+  * @param degree of the polynomial.
+  * @param throwException otherwise the non-interpolated values filled with NaN.
+  * @param leastSquares use least squares fit polynomial instead of interpolation polynomial.
+  * @param range interpolation is only allowed if all nodal points are within this interval or
+  *              in case of least squares fit use all points within [t-range, t+range)
+  *              (given in [seconds] or if negative given in the input median sampling).
+  * @param extrapolation data will be extrapolated only if the nearest nodal point is less than this distance away
+  *              (given in [seconds] or if negative given in the input median sampling).
+  * @param margin to accelerate the interpolation check input times for equidistant sampling within margin [seconds].  */
+  void init(const std::vector<Time> &times, UInt degree, Bool throwException, Bool leastSquares,
+            Double range, Double extrapolation, Double margin=1e-5);
+
+  /** @brief Simplified initialization.
+  * Initialized with @a leastSquares=FALSE, @p range=-(degree+1.1), and @p Double extrapolation=-1.1
+  * (Allow inter/extrapolation of one missing epoch).
+  * @see init(const std::vector<Time> &, UInt, Bool, Bool, Double, Double, Double). */
+  void init(const std::vector<Time> &times, UInt degree, Bool throwException=TRUE) {init(times, degree, throwException, FALSE/*leastSquares*/, -(degree+1.1), -1.1, 1e-5);}
 
   /** @brief Interpolate a matrix to new epochs.
   * @param timesNew output epochs of the returned matrix.
-  * @param times epoch of the rows of @a A (must be constant sampling)
   * @param A input data of time series
   * @param rowsPerEpoch e.g. for @a A with positions (x,y,z) per epoch in separated rows.
+  * @param derivative compute the kth derivative.
   * @return Interpolated matrix with timesNew.size()*rowsPerEpoch rows. */
-  Matrix interpolate(const std::vector<Time> &timesNew, const std::vector<Time> &times, const_MatrixSliceRef A, UInt rowsPerEpoch=1) const;
+  Matrix interpolate(const std::vector<Time> &timesNew, const_MatrixSliceRef A, UInt rowsPerEpoch, UInt derivative) const;
+
+  /** @brief Interpolate a matrix to new epochs.
+  * @see interpolate(const std::vector<Time> &, const_MatrixSliceRef, UInt, UInt) */
+  Matrix interpolate(const std::vector<Time> &timesNew, const_MatrixSliceRef A, UInt rowsPerEpoch=1) const {return interpolate(timesNew, A, rowsPerEpoch, 0);}
 
   /** @brief Compute derivatives of a time series.
-  * @param sampling in seconds
-  * @param A input data of time series with constant sampling
-  * @param rowsPerEpoch e.g. for @a A with positions (x,y,z) per epoch in separated rows.
-  * @return Matrix with derivatives at same epochs as @a A. */
-  Matrix derivative(Double sampling, const_MatrixSliceRef A, UInt rowsPerEpoch=1) const;
+  * @see interpolate(const std::vector<Time> &, const_MatrixSliceRef, UInt, UInt) */
+  Matrix derivative(const std::vector<Time> &timesNew, const_MatrixSliceRef A, UInt rowsPerEpoch=1) const {return interpolate(timesNew, A, rowsPerEpoch, 1);}
 
   /** @brief Compute 2nd derivatives of a time series.
-  * @param sampling in seconds
-  * @param A input data of time series with constant sampling
-  * @param rowsPerEpoch e.g. for @a A with positions (x,y,z) per epoch in separated rows.
-  * @return Matrix with 2nd derivatives at same epochs as @a A. */
-  Matrix derivative2nd(Double sampling, const_MatrixSliceRef A, UInt rowsPerEpoch=1) const;
-
-  /** @brief Integration of a time series.
-  * @param sampling in seconds
-  * @param A input data of time series with constant sampling
-  * @param rowsPerEpoch e.g. for @a A with positions (x,y,z) per epoch in separated rows.
-  * @return Integrals from start to epoch at each row (first row is zero). */
-  Matrix integration(Double sampling, const_MatrixSliceRef A, UInt rowsPerEpoch=1) const;
+  * @see interpolate(const std::vector<Time> &, const_MatrixSliceRef, UInt, UInt) */
+  Matrix derivative2nd(const std::vector<Time> &timesNew, const_MatrixSliceRef A, UInt rowsPerEpoch=1) const {return interpolate(timesNew, A, rowsPerEpoch, 2);}
 };
 
 /***********************************************/

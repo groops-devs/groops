@@ -11,6 +11,7 @@
 /***********************************************/
 
 #include "base/import.h"
+#include "base/polynomial.h"
 #include "files/fileInstrument.h"
 #include "classes/parametrizationGravity/parametrizationGravity.h"
 #include "classes/parametrizationAcceleration/parametrizationAcceleration.h"
@@ -29,7 +30,6 @@ ObservationMiscSstVariational::ObservationMiscSstVariational(Config &config)
     FileName              fileNamePod1, fileNamePod2;
     FileName              fileNameVariational1, fileNameVariational2;
     UInt                  integrationDegree;
-    UInt                  interpolationDegree;
     sstType = 0;
 
     renameDeprecatedConfig(config, "representation", "parametrizationGravity",       date2time(2020, 6, 3));
@@ -83,7 +83,6 @@ ObservationMiscSstVariational::ObservationMiscSstVariational(Config &config)
 
     countArc = sstFile.at(0)->arcCount();
     computeVelocity = (sstType==1);
-    polynomial.init(interpolationDegree);
 
     // =======================
 
@@ -233,6 +232,7 @@ ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UIn
     std::vector<Time> timesSst = sst.at(0).times();
     VariationalEquationFromFile::ObservationEquation eqn1 = variationalEquation1.integrateArc(timesSst.at(0), timesSst.back(), TRUE/*position*/, computeVelocity, rotSat1);
     VariationalEquationFromFile::ObservationEquation eqn2 = variationalEquation2.integrateArc(timesSst.at(0), timesSst.back(), TRUE/*position*/, computeVelocity, rotSat2);
+    Polynomial polynomial(eqn1.times, interpolationDegree);
 
     // =============================================
 
@@ -246,9 +246,9 @@ ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UIn
         l(3*k+1+idxPod1,0) = pod1.at(k).position.y();
         l(3*k+2+idxPod1,0) = pod1.at(k).position.z();
       }
-      l.row(idxPod1, countPod1) -= polynomial.interpolate(pod1.times(), eqn1.times, eqn1.pos0, 3);
+      l.row(idxPod1, countPod1) -= polynomial.interpolate(pod1.times(), eqn1.pos0, 3);
 
-      Matrix D = polynomial.interpolate(pod1.times(), eqn1.times, eqn1.PosDesign, 3);
+      Matrix D = polynomial.interpolate(pod1.times(), eqn1.PosDesign, 3);
       if(gravityCount)
         copy(D.column(0, gravityCount),         A.slice(idxPod1, idxGravity, countPod1, gravityCount));
       copy(D.column(gravityCount, state1Count), A.slice(idxPod1, idxState1,  countPod1, state1Count));
@@ -262,9 +262,9 @@ ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UIn
         l(3*k+1+idxPod2,0) = pod2.at(k).position.y();
         l(3*k+2+idxPod2,0) = pod2.at(k).position.z();
       }
-      l.row(idxPod2, countPod2) -= polynomial.interpolate(pod2.times(), eqn1.times, eqn2.pos0, 3);
+      l.row(idxPod2, countPod2) -= polynomial.interpolate(pod2.times(), eqn2.pos0, 3);
 
-      Matrix D = polynomial.interpolate(pod2.times(), eqn1.times, eqn2.PosDesign, 3);
+      Matrix D = polynomial.interpolate(pod2.times(), eqn2.PosDesign, 3);
       if(gravityCount)
         copy(D.column(0, gravityCount),         A.slice(idxPod2, idxGravity, countPod2, gravityCount));
       copy(D.column(gravityCount, state2Count), A.slice(idxPod2, idxState2,  countPod2, state2Count));
@@ -281,7 +281,7 @@ ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UIn
       std::vector<Vector3d> e12  (epochCount);
       Vector sst0(epochCount);
 
-      Vector dpos0 = polynomial.interpolate(timesSst, eqn1.times, eqn2.pos0-eqn1.pos0, 3);
+      Vector dpos0 = polynomial.interpolate(timesSst, eqn2.pos0-eqn1.pos0, 3);
       for(UInt i=0; i<epochCount; i++)
       {
         pos12.at(i) = Vector3d(dpos0(3*i+0), dpos0(3*i+1), dpos0(3*i+2));
@@ -290,7 +290,7 @@ ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UIn
 
       if(computeVelocity)
       {
-        Vector dvel0 = polynomial.interpolate(timesSst, eqn1.times, eqn2.vel0-eqn1.vel0, 3);
+        Vector dvel0 = polynomial.interpolate(timesSst, eqn2.vel0-eqn1.vel0, 3);
         for(UInt i=0; i<epochCount; i++)
           vel12.at(i) = Vector3d(dvel0(3*i+0), dvel0(3*i+1), dvel0(3*i+2));
       }
@@ -300,9 +300,9 @@ ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UIn
       {
         Matrix PosGravity;
         if(gravityCount) axpy(-1, eqn1.PosDesign.column(0, gravityCount), eqn2.PosDesign.column(0, gravityCount)); // gravity field difference
-        if(gravityCount) PosGravity = polynomial.interpolate(timesSst, eqn2.times, eqn2.PosDesign.column(0, gravityCount));
-        Matrix PosState1  = polynomial.interpolate(timesSst, eqn1.times, eqn1.PosDesign.column(gravityCount,state1Count), 3);
-        Matrix PosState2  = polynomial.interpolate(timesSst, eqn2.times, eqn2.PosDesign.column(gravityCount,state2Count), 3);
+        if(gravityCount) PosGravity = polynomial.interpolate(timesSst, eqn2.PosDesign.column(0, gravityCount));
+        Matrix PosState1  = polynomial.interpolate(timesSst, eqn1.PosDesign.column(gravityCount,state1Count), 3);
+        Matrix PosState2  = polynomial.interpolate(timesSst, eqn2.PosDesign.column(gravityCount,state2Count), 3);
 
         Double rho0  = pos12.at(0).r();
         for(UInt i=0; i<epochCount; i++)
@@ -329,12 +329,12 @@ ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UIn
         Matrix PosGravity, VelGravity;
         if(gravityCount) axpy(-1, eqn1.PosDesign.column(0, gravityCount), eqn2.PosDesign.column(0, gravityCount)); // gravity field difference
         if(gravityCount) axpy(-1, eqn1.VelDesign.column(0, gravityCount), eqn2.VelDesign.column(0, gravityCount)); // gravity field difference
-        if(gravityCount) PosGravity = polynomial.interpolate(timesSst, eqn2.times, eqn2.PosDesign.column(0, gravityCount), 3);
-        if(gravityCount) VelGravity = polynomial.interpolate(timesSst, eqn2.times, eqn2.VelDesign.column(0, gravityCount), 3);
-        Matrix PosState1  = polynomial.interpolate(timesSst, eqn1.times, eqn1.PosDesign.column(gravityCount,state1Count), 3);
-        Matrix PosState2  = polynomial.interpolate(timesSst, eqn2.times, eqn2.PosDesign.column(gravityCount,state2Count), 3);
-        Matrix VelState1  = polynomial.interpolate(timesSst, eqn1.times, eqn1.VelDesign.column(gravityCount,state1Count), 3);
-        Matrix VelState2  = polynomial.interpolate(timesSst, eqn2.times, eqn2.VelDesign.column(gravityCount,state2Count), 3);
+        if(gravityCount) PosGravity = polynomial.interpolate(timesSst, eqn2.PosDesign.column(0, gravityCount), 3);
+        if(gravityCount) VelGravity = polynomial.interpolate(timesSst, eqn2.VelDesign.column(0, gravityCount), 3);
+        Matrix PosState1  = polynomial.interpolate(timesSst, eqn1.PosDesign.column(gravityCount,state1Count), 3);
+        Matrix PosState2  = polynomial.interpolate(timesSst, eqn2.PosDesign.column(gravityCount,state2Count), 3);
+        Matrix VelState1  = polynomial.interpolate(timesSst, eqn1.VelDesign.column(gravityCount,state1Count), 3);
+        Matrix VelState2  = polynomial.interpolate(timesSst, eqn2.VelDesign.column(gravityCount,state2Count), 3);
 
         for(UInt i=0; i<epochCount; i++)
         {

@@ -36,7 +36,6 @@ This file can be created with \program{EarthOrientationParameterTimeSeries}.
 class EarthRotationFile : public EarthRotation
 {
   Polynomial        polynomial;
-  std::vector<Time> times;
   Matrix            EOP;
 
 public:

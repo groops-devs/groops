@@ -83,7 +83,6 @@ void Instrument2Scaleogram::run(Config &config, Parallel::CommunicatorPtr /*comm
     logInfo<<"  levels = "<<levels.size()<<Log::endl;
 
     Matrix scaleogramGrid(times.size()*levels.size(), 3);
-    Polynomial poly(0); // interpolation
     for(UInt k=0; k<levels.size(); k++)
     {
       std::vector<Time> interpTimes(levels.at(k).rows());
@@ -102,9 +101,10 @@ void Instrument2Scaleogram::run(Config &config, Parallel::CommunicatorPtr /*comm
         writeFileMatrix(fileNameLevels(fileNameVariableList), output);
       }
 
-      copy(data.column(0),                                     scaleogramGrid.slice(k*times.size(), 0, times.size(), 1));
-      copy(Vector(data.rows(), k),                             scaleogramGrid.slice(k*times.size(), 1, times.size(), 1));
-      copy(poly.interpolate(times, interpTimes, levels.at(k)), scaleogramGrid.slice(k*times.size(), 2, times.size(), 1));
+      copy(data.column(0),         scaleogramGrid.slice(k*times.size(), 0, times.size(), 1));
+      copy(Vector(data.rows(), k), scaleogramGrid.slice(k*times.size(), 1, times.size(), 1));
+      Polynomial poly(interpTimes, 0); // interpolation
+      copy(poly.interpolate(times, levels.at(k)), scaleogramGrid.slice(k*times.size(), 2, times.size(), 1));
     }
 
     logStatus<<"write scaleogram to <"<<fileNameOutGrid<<">"<<Log::endl;

@@ -11,6 +11,7 @@
 /***********************************************/
 
 #include "base/import.h"
+#include "base/polynomial.h"
 #include "files/fileInstrument.h"
 #include "misc/observation/variationalEquationFromFile.h"
 #include "observationMiscPodVariational.h"
@@ -24,7 +25,6 @@ ObservationMiscPodVariational::ObservationMiscPodVariational(Config &config)
     FileName              fileNamePod;
     FileName              fileNameVariational;
     UInt                  integrationDegree;
-    UInt                  interpolationDegree;
 
     renameDeprecatedConfig(config, "representation", "parametrizationGravity",      date2time(2020, 6, 3));
     renameDeprecatedConfig(config, "parameter",      "parametrizationAcceleration", date2time(2020, 6, 3));
@@ -50,7 +50,6 @@ ObservationMiscPodVariational::ObservationMiscPodVariational(Config &config)
     podFile.open(fileNamePod);
     countArc = podFile.arcCount();
     variationalEquation.open(fileNameVariational, parameterGravity, parameterAcceleration, std::vector<Time>(), ephemerides, integrationDegree);
-    polynomial.init(interpolationDegree);
 
     // =======================
 
@@ -125,6 +124,7 @@ ObservationMiscPod::Arc ObservationMiscPodVariational::computeArc(UInt arcNo, Co
 
     const std::vector<Time> timePod = pod.times();
     VariationalEquationFromFile::ObservationEquation eqn = variationalEquation.integrateArc(timePod.at(0), timePod.back(), TRUE/*position*/, FALSE/*velocity*/);
+    Polynomial polynomial(eqn.times, interpolationDegree);
 
     // kinematic orbit observations
     // ----------------------------
@@ -135,7 +135,7 @@ ObservationMiscPod::Arc ObservationMiscPodVariational::computeArc(UInt arcNo, Co
       l(3*k+1,0) = pod.at(k).position.y();
       l(3*k+2,0) = pod.at(k).position.z();
     }
-    l -= polynomial.interpolate(timePod, eqn.times, eqn.pos0, 3);
+    l -= polynomial.interpolate(timePod, eqn.pos0, 3);
 
     // =============================================
 
@@ -144,7 +144,7 @@ ObservationMiscPod::Arc ObservationMiscPodVariational::computeArc(UInt arcNo, Co
     {
       // design matrix
       // -------------
-      A = polynomial.interpolate(timePod, eqn.times, eqn.PosDesign, 3);
+      A = polynomial.interpolate(timePod, eqn.PosDesign, 3);
 
       // decorrelation
       // -------------
@@ -154,7 +154,7 @@ ObservationMiscPod::Arc ObservationMiscPodVariational::computeArc(UInt arcNo, Co
     else
     {
       A = eqn.PosDesign;
-      Matrix B = polynomial.interpolate(timePod, eqn.times, identityMatrix(A.rows()), 3);
+      Matrix B = polynomial.interpolate(timePod, identityMatrix(A.rows()), 3);
       if(covPod)
         covPod->decorrelate(arcNo, pod, {l, B});
       const Vector tau = QR_decomposition(B);

@@ -38,7 +38,6 @@ class EarthRotationIers2010 : public EarthRotation
 {
   Bool              useTruncated;
   Polynomial        polynomial;
-  std::vector<Time> times; // UTC
   Matrix            EOP;
 
 public:

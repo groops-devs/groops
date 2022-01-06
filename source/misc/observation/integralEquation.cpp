@@ -30,6 +30,7 @@ void IntegralEquation::init(UInt integrationDegree, UInt interpolationDegree)
 {
   try
   {
+    this->interpolationDegree = interpolationDegree;
     this->integrationDegree   = integrationDegree;
     if(integrationDegree%2 == 0)
       throw(Exception("polnomial degree for integration must be odd."));
@@ -58,10 +59,6 @@ void IntegralEquation::init(UInt integrationDegree, UInt interpolationDegree)
           W.at(k+half)(n,i) = ((n==0) ? 1.0 : pow(static_cast<Double>(i)-half-k, n));
       inverse(W.at(k+half));
     }
-
-    // orbit interpolation matrix
-    // --------------------------
-    polynomial.init(interpolationDegree);
   }
   catch(std::exception &e)
   {
@@ -287,11 +284,11 @@ void IntegralEquation::interpolateArc(const std::vector<OrbitArc> &pod, const Or
         l(3*k+2,j) = pod.at(j).at(k).position.z();
       }
 
+    Polynomial polynomial(orbit.times(), interpolationDegree);
     auto timesPod = pod.at(0).times();
-    auto times    = orbit.times();
-    l            -= polynomial.interpolate(timesPod, times, arc.vPos,         3);
-    VPos          = polynomial.interpolate(timesPod, times, arc.VPos,         3);
-    VPosBoundary  = polynomial.interpolate(timesPod, times, arc.VPosBoundary, 3);
+    l            -= polynomial.interpolate(timesPod, arc.vPos,         3);
+    VPos          = polynomial.interpolate(timesPod, arc.VPos,         3);
+    VPosBoundary  = polynomial.interpolate(timesPod, arc.VPosBoundary, 3);
   }
   catch(std::exception &e)
   {

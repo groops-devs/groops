@@ -84,7 +84,8 @@ This program resamples <a class="groops-file" href="fileFormat_instrument.html">
   used to predict the resampling point. A resampling point will be extrapolated if there are only data
   points before/after as long as the closest one is within <strong class="groops-config-element">maxExtrapolationDistance</strong>.</p><p>  <figure><img class="figure" style="width:50%;" src="../figures/instrumentResample_leastSquares.png" alt="instrumentResample_leastSquares"><figcaption class="center">Figure: Example of least squares polynomial fit when resampling from 5 to 1 minute sampling</figcaption></figure>
 </li></ul>
-</p><p>This program can also be used to reduce the sampling of an instrument file,
+</p><p>The elements <strong class="groops-config-element">maxDataPointRange</strong>, <strong class="groops-config-element">maxDataPointDistance</strong>, and <strong class="groops-config-element">maxExtrapolationDistance</strong>
+are given in the unit of seconds. If negative values are used, the unit is relative to the median input sampling.</p><p>This program can also be used to reduce the sampling of an instrument file,
 but a better way to reduce the sampling of noisy data with regular sampling
 is to use a low pass filter first with <a class="groops-program" href="InstrumentFilter.html">InstrumentFilter</a> and then thin
 out the data with <a class="groops-program" href="InstrumentReduceSampling.html">InstrumentReduceSampling</a>.

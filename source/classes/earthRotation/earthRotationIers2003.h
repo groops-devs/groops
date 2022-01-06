@@ -53,7 +53,6 @@ from \url{ftp://maia.usno.navy.mil/conv2000/chapter8/}
 class EarthRotationIers2003 : public EarthRotation
 {
   Polynomial        polynomial;
-  std::vector<Time> times; // UTC
   Matrix            EOP;
 
 public:

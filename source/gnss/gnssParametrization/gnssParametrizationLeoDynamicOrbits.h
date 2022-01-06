@@ -55,6 +55,7 @@ class GnssParametrizationLeoDynamicOrbits : public GnssParametrizationBase
     Matrix                     PosDesign, VelDesign;
     Vector                     pos, vel;
     Vector                     x;
+    Polynomial                 polynomial;
   };
 
   Gnss                          *gnss;
@@ -65,9 +66,8 @@ class GnssParametrizationLeoDynamicOrbits : public GnssParametrizationBase
   ParametrizationAccelerationPtr parametrizationAcceleration;
   EphemeridesPtr                 ephemerides;
   Double                         minEstimableEpochsRatio;
-  UInt                           integrationDegree;
+  UInt                           integrationDegree, interpolationDegree;
   std::vector<Parameter*>        parameters;
-  Polynomial                     polynomial;
 
 public:
   GnssParametrizationLeoDynamicOrbits(Config &config);

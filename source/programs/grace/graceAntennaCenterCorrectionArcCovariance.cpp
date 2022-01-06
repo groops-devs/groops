@@ -132,7 +132,6 @@ void GraceAntennaCenterCorrectionArcCovariance::run(Config &config, Parallel::Co
 
       const std::vector<Time> times = orbit1.times();
       const UInt   epochCount = times.size();
-      const Double dt = medianSampling(times).seconds();
 
       MatrixDistributed normals[2];
       rotaryCholesky(times, starCameraCovariance1, sigmaAxisAcc, degree, normals[0]);
@@ -142,7 +141,7 @@ void GraceAntennaCenterCorrectionArcCovariance::run(Config &config, Parallel::Co
       GraceKBandGeometry::partialOfAntennaCenterCorrectionWrtRollPitchYaw(orbit1, orbit2, starCamera1, starCamera2, center1, center2, SparseJacobian[0], SparseJacobian[1]);
 
       Matrix Cov(epochCount, Matrix::SYMMETRIC);
-      Polynomial p(degree);
+      Polynomial p(times, degree);
       for(UInt id=0; id<2; id++) // GRACE A/B
       {
         Matrix A(epochCount, 3*epochCount);
@@ -152,9 +151,9 @@ void GraceAntennaCenterCorrectionArcCovariance::run(Config &config, Parallel::Co
         if(sstType == 0)      // range
           A = A.trans();
         else if(sstType == 1) // range rate
-          A = p.derivative(dt, A).trans();
+          A = p.derivative(times, A).trans();
         else if(sstType == 2) // range acceleration
-          A = p.derivative2nd(dt, A).trans();
+          A = p.derivative2nd(times, A).trans();
 
         // apply covariance
         normals[id].triangularTransSolve(A);

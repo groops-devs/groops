@@ -74,16 +74,22 @@ void GnssParametrizationTemporalBias::init(Gnss *gnss, Parallel::CommunicatorPtr
         para->bias = Vector(gnss->times.size());
         if(!fileNameIn.empty())
         {
+          fileNameVariableList["prn"]->setValue(para->trans->name());
+          MiscValueArc arc;
           try
           {
-            fileNameVariableList["prn"]->setValue(para->trans->name());
-            MiscValueArc arc = InstrumentFile::read(fileNameIn(fileNameVariableList));
-            Polynomial polynomial(3);
-            para->bias = polynomial.interpolate(gnss->times, arc.times(), arc.matrix().column(1));
+            arc = InstrumentFile::read(fileNameIn(fileNameVariableList));
             foundAnyFile = TRUE;
           }
           catch(std::exception &/*e*/)
           {
+          }
+
+          if(arc.size())
+          {
+            Polynomial polynomial;
+            polynomial.init(arc.times(), 3);
+            para->bias = polynomial.interpolate(gnss->times, arc.matrix().column(1));
           }
         }
 

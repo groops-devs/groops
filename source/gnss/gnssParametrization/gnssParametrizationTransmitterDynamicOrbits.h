@@ -51,6 +51,7 @@ class GnssParametrizationTransmitterDynamicOrbits : public GnssParametrizationBa
     std::vector<Time>          times;
     Matrix                     PosDesign, VelDesign;
     Vector                     x;
+    Polynomial                 polynomial;
   };
 
   Gnss                          *gnss;
@@ -61,9 +62,8 @@ class GnssParametrizationTransmitterDynamicOrbits : public GnssParametrizationBa
   ParametrizationAccelerationPtr parametrizationAcceleration;
   EphemeridesPtr                 ephemerides;
   Double                         minEstimableEpochsRatio;
-  UInt                           integrationDegree;
+  UInt                           integrationDegree, interpolationDegree;
   std::vector<Parameter*>        parameters;
-  Polynomial                     polynomial;
 
 public:
   GnssParametrizationTransmitterDynamicOrbits(Config &config);

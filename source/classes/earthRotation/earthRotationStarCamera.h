@@ -34,9 +34,8 @@ This class reads quaternions from an instrument file and interpolates to the giv
 * @see EarthRotation */
 class EarthRotationStarCamera : public EarthRotation
 {
-  Polynomial        polynomial;
-  std::vector<Time> times;
-  Matrix quaternions;
+  Polynomial polynomial;
+  Matrix     quaternions;
 
 public:
   EarthRotationStarCamera(Config &config);

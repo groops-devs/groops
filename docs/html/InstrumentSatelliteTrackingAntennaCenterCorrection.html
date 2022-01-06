@@ -80,62 +80,27 @@ reference frame. These offsets are rotated into the the inertial frame with $\M 
 \]with the unit vector in line of sight direction
 \[
   \M e_{AB} = \frac{\M r_B - \M r_A}{\left\lVert{\M r_B - \M r_A}\right\rVert}.
-\]
-This program is also able to compute antenna offset correction covariance matrix,
-which is the propagated variance of each satellite orientation observation to the AOC:
-\[
-  \pmb{\Sigma}_{\Delta\rho_{AOC}}^{Sat} = \M F_{\pmb{\alpha}}^{Sat}\pmb{\Sigma}_{\pmb{\alpha\alpha}}^{Sat}(\M F_{\pmb{\alpha}}^{Sat})^T,
-\]where $\M F_{\pmb{\alpha}}^{Sat}$ is the partial derivative of the AOC w.r.t. the small angle rotations $\pmb{\alpha}$,
-\[
-  \M F_{\pmb{\alpha}}^{Sat} =
-  \begin{bmatrix}
-  \frac{\partial \Delta\rho_{AOC}^{Sat}(t_1)}{\partial\pmb{\alpha}(t_1)} &        &  \\
-          & \ddots &  \\
-          &        & \frac{\partial \Delta\rho_{AOC}^{Sat}(t_N)}{\partial\pmb{\alpha}(t_N)}
-  \end{bmatrix}.
-\]The contribution of indivudal satellite to AOC covariance matrix can be reported by
-<a class="groops-class" href="fileFormat_matrix.html">outputfileSatelliteTrackingCovariance1/2</a>. The complete AOC covariance matrix
-<a class="groops-class" href="fileFormat_matrix.html">outputfileSatelliteTrackingCovariance</a> considers the total influence of both satellites:
-\[
-  \pmb{\Sigma}_{\Delta\rho_{AOC}} = \pmb{\Sigma}_{\Delta\rho_{AOC}}^{Sat1} + \pmb{\Sigma}_{\Delta\rho_{AOC}}^{Sat2}.
 \]The corrections for the range-rates and range-acceleration are computed by differentiating
 an interpolation polynomial of degree <strong class="groops-config-element">interpolationDegree</strong>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileSatelliteTracking</div></div></td><td>filename</td><td>corrections for range, range-rate, and range-accelerations</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variancePropagationStarCamera</div></div></td><td>sequence</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">outputFile</div></div></td><td>choice</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">combined</div></div></td><td>sequence</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset">outputfileSatelliteTrackingCovariance</div></div></td><td>filename</td><td>Covariance for chosen SST type</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">individual</div></div></td><td>sequence</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset">outputfileSatelliteTrackingCovariance1</div></div></td><td>filename</td><td>Covariance for chosen SST type</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset">outputfileSatelliteTrackingCovariance2</div></div></td><td>filename</td><td>Covariance for chosen SST type</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">inputFileCovarianceSca1</div></div></td><td>filename</td><td>Full covariance matrix from sensor fusion</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">inputFileCovarianceSca2</div></div></td><td>filename</td><td>Full covariance matrix from sensor fusion</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">varianceFactors</div></div></td><td>sequence</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">sigmasCovarianceMatrixArc</div></div></td><td>filename</td><td>Vector with one sigma for each <inputfileCovarianceMatrixArc></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">indexVarianceFactor1</div></div></td><td>uint</td><td>in sigmasCovarianceMatrixArc</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">indexVarianceFactor2</div></div></td><td>uint</td><td>in sigmasCovarianceMatrixArc</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">sstType</div></div></td><td>choice</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">range</div></div></td><td></td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">rangeRate</div></div></td><td></td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">rangeAcceleration</div></div></td><td></td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit1</div></div></td><td>filename</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit2</div></div></td><td>filename</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStarCamera1</div></div></td><td>filename</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStarCamera2</div></div></td><td>filename</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">antennaCenters</div></div></td><td>choice</td><td>KBR antenna phase center</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">value</div></div></td><td>sequence</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center1X</div></div></td><td>double</td><td>x-coordinate of antenna position in SRF [m] for GRACEA</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center1Y</div></div></td><td>double</td><td>y-coordinate of antenna position in SRF [m] for GRACEA</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center1Z</div></div></td><td>double</td><td>z-coordinate of antenna position in SRF [m] for GRACEA</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center2X</div></div></td><td>double</td><td>x-coordinate of antenna position in SRF [m] for GRACEB</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center2Y</div></div></td><td>double</td><td>y-coordinate of antenna position in SRF [m] for GRACEB</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center2Z</div></div></td><td>double</td><td>z-coordinate of antenna position in SRF [m] for GRACEB</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">file</div></div></td><td>sequence</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputAntennaCenters</div></div></td><td>filename</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>differentiation by polynomial approximation of degree n</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit1</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit2</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStarCamera1</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStarCamera2</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">antennaCenters</div></div></td><td>choice</td><td>KBR antenna phase center</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">value</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center1X</div></div></td><td>double</td><td>x-coordinate of antenna position in SRF [m] for GRACEA</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center1Y</div></div></td><td>double</td><td>y-coordinate of antenna position in SRF [m] for GRACEA</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center1Z</div></div></td><td>double</td><td>z-coordinate of antenna position in SRF [m] for GRACEA</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center2X</div></div></td><td>double</td><td>x-coordinate of antenna position in SRF [m] for GRACEB</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center2Y</div></div></td><td>double</td><td>y-coordinate of antenna position in SRF [m] for GRACEB</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">center2Z</div></div></td><td>double</td><td>z-coordinate of antenna position in SRF [m] for GRACEB</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">file</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputAntennaCenters</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>differentiation by polynomial approximation of degree n</td></tr>
 </table>
 This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.
 

@@ -11087,85 +11087,6 @@
 								<xs:documentation>corrections for range, range-rate, and range-accelerations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="variancePropagationStarCamera" minOccurs="0">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="outputFile">
-										<xs:complexType>
-											<xs:choice>
-												<xs:element name="combined">
-													<xs:complexType>
-														<xs:sequence>
-															<xs:element name="outputfileSatelliteTrackingCovariance" type="filename" default="grace_sigmaAoc.dat">
-																<xs:annotation>
-																	<xs:documentation>Covariance for chosen SST type</xs:documentation>
-																</xs:annotation>
-															</xs:element>
-														</xs:sequence>
-													</xs:complexType>
-												</xs:element>
-												<xs:element name="individual">
-													<xs:complexType>
-														<xs:sequence>
-															<xs:element name="outputfileSatelliteTrackingCovariance1" type="filename" default="grace1_sigmaAoc.dat">
-																<xs:annotation>
-																	<xs:documentation>Covariance for chosen SST type</xs:documentation>
-																</xs:annotation>
-															</xs:element>
-															<xs:element name="outputfileSatelliteTrackingCovariance2" type="filename" default="grace2_sigmaAoc.dat">
-																<xs:annotation>
-																	<xs:documentation>Covariance for chosen SST type</xs:documentation>
-																</xs:annotation>
-															</xs:element>
-														</xs:sequence>
-													</xs:complexType>
-												</xs:element>
-											</xs:choice>
-										</xs:complexType>
-									</xs:element>
-									<xs:element name="inputFileCovarianceSca1" type="filename">
-										<xs:annotation>
-											<xs:documentation>Full covariance matrix from sensor fusion</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="inputFileCovarianceSca2" type="filename">
-										<xs:annotation>
-											<xs:documentation>Full covariance matrix from sensor fusion</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="varianceFactors" minOccurs="0">
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="sigmasCovarianceMatrixArc" type="filename">
-													<xs:annotation>
-														<xs:documentation>Vector with one sigma for each &lt;inputfileCovarianceMatrixArc&gt;</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="indexVarianceFactor1" type="uint">
-													<xs:annotation>
-														<xs:documentation>in sigmasCovarianceMatrixArc</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="indexVarianceFactor2" type="uint">
-													<xs:annotation>
-														<xs:documentation>in sigmasCovarianceMatrixArc</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-									<xs:element name="sstType">
-										<xs:complexType>
-											<xs:choice>
-												<xs:element name="range"/>
-												<xs:element name="rangeRate"/>
-												<xs:element name="rangeAcceleration"/>
-											</xs:choice>
-										</xs:complexType>
-									</xs:element>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
 						<xs:element name="inputfileOrbit1" type="filename"/>
 						<xs:element name="inputfileOrbit2" type="filename"/>
 						<xs:element name="inputfileStarCamera1" type="filename"/>
@@ -14030,17 +13951,17 @@
 										</xs:annotation>
 										<xs:complexType>
 											<xs:sequence>
-												<xs:element name="polynomialDegree" type="uint">
+												<xs:element name="polynomialDegree" type="uint" default="3">
 													<xs:annotation>
 														<xs:documentation>degree of the moving polynomial</xs:documentation>
 													</xs:annotation>
 												</xs:element>
-												<xs:element name="maxDataPointRange" type="double">
+												<xs:element name="maxDataPointRange" type="double" default="-(3+1.1)">
 													<xs:annotation>
 														<xs:documentation>[seconds] all degree+1 data points must be within this range for a valid polynomial</xs:documentation>
 													</xs:annotation>
 												</xs:element>
-												<xs:element name="maxExtrapolationDistance" type="double" minOccurs="0" default="0">
+												<xs:element name="maxExtrapolationDistance" type="double" minOccurs="0" default="-1.1">
 													<xs:annotation>
 														<xs:documentation>[seconds] resampling points within this range of the polynomial will be extrapolated</xs:documentation>
 													</xs:annotation>

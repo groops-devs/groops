@@ -32,7 +32,6 @@ GnssParametrizationTransmitterDynamicOrbits::GnssParametrizationTransmitterDynam
   try
   {
     TimeSeriesPtr stochasticPulse;
-    UInt          interpolationDegree;
 
     readConfig(config, "name",                        name,                        Config::OPTIONAL, "parameter.transmitterDynamicOrbits", "used for parameter selection");
     readConfig(config, "selectTransmitters",          selectTransmitters,          Config::MUSTSET,  "",     "");
@@ -48,7 +47,6 @@ GnssParametrizationTransmitterDynamicOrbits::GnssParametrizationTransmitterDynam
     if(isCreateSchema(config)) return;
 
     pulses = stochasticPulse->times();
-    polynomial.init(interpolationDegree);
   }
   catch(std::exception &e)
   {
@@ -95,6 +93,7 @@ void GnssParametrizationTransmitterDynamicOrbits::init(Gnss *gnss, Parallel::Com
         para->PosDesign = variationalEquation.PosDesign;
         para->VelDesign = variationalEquation.VelDesign;
         para->x         = Vector(para->PosDesign.columns());
+        para->polynomial.init(para->times, interpolationDegree);
 
         // parameter names
         file.parameterNameSatellite(para->parameterNames);
@@ -182,7 +181,7 @@ void GnssParametrizationTransmitterDynamicOrbits::designMatrix(const GnssNormalE
     auto para = parameters.at(eqn.transmitter->idTrans());
     if(para && para->index)
       matMult(1., eqn.A.column(GnssObservationEquation::idxPosTrans, 3),
-              polynomial.interpolate({eqn.timeTrans}, para->times, para->PosDesign, 3),
+              para->polynomial.interpolate({eqn.timeTrans}, para->PosDesign, 3),
               A.column(para->index));
   }
   catch(std::exception &e)
@@ -204,8 +203,8 @@ Double GnssParametrizationTransmitterDynamicOrbits::updateParameter(const GnssNo
       {
         const Vector dx = x.row(normalEquationInfo.index(para->index), para->x.rows());
         para->x += dx;
-        const Vector dpos = polynomial.interpolate(para->trans->timesPosVel, para->times, para->PosDesign * dx, 3);
-        const Vector dvel = polynomial.interpolate(para->trans->timesPosVel, para->times, para->VelDesign * dx, 3);
+        const Vector dpos = para->polynomial.interpolate(para->trans->timesPosVel, para->PosDesign * dx, 3);
+        const Vector dvel = para->polynomial.interpolate(para->trans->timesPosVel, para->VelDesign * dx, 3);
         para->trans->pos += reshape(dpos, 3, para->trans->pos.rows()).trans();
         para->trans->vel += reshape(dvel, 3, para->trans->vel.rows()).trans();
 

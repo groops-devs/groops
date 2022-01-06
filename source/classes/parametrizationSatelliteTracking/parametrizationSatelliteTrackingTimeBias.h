@@ -35,7 +35,6 @@ Estimate time shift in seconds in SST observations, with defined temporal variat
 * @see ParametrizationSatelliteTracking */
 class ParametrizationSatelliteTrackingTimeBias : public ParametrizationSatelliteTrackingBase
 {
-  Polynomial                 polynomial;
   UInt                       degree;
   ParametrizationTemporalPtr temporal;
   Bool                       perArc;
@@ -47,7 +46,7 @@ public:
   Bool setInterval(const Time &timeStart, const Time &timeEnd);
   UInt parameterCount() const {return temporal->parameterCount();}
   void parameterName(std::vector<ParameterName> &name) const;
-  void compute(UInt sstType, const std::vector<Time> &time, const Vector &sst0,
+  void compute(UInt sstType, const std::vector<Time> &times, const Vector &sst0,
                const Vector &position1, const Vector &position2, const Vector &velocity1, const Vector &velocity2,
                const std::vector<Rotary3d> &rotSat1, const std::vector<Rotary3d> &rotSat2, MatrixSliceRef A);
 };
@@ -61,10 +60,6 @@ inline ParametrizationSatelliteTrackingTimeBias::ParametrizationSatelliteTrackin
     readConfig(config, "polynomialDegree",  degree,   Config::MUSTSET,  "10", "polynomial degree");
     readConfig(config, "temporal",          temporal, Config::MUSTSET,  "",  "");
     readConfig(config, "perArc",            perArc,   Config::DEFAULT,  "0", "");
-
-    if(isCreateSchema(config)) return;
-
-    polynomial.init(degree);
   }
   catch(std::exception &e)
   {
@@ -104,21 +99,22 @@ inline void ParametrizationSatelliteTrackingTimeBias::parameterName(std::vector<
 
 /***********************************************/
 
-inline void ParametrizationSatelliteTrackingTimeBias::compute(UInt /*sstType*/, const std::vector<Time> &time, const Vector &sst0,
-                                                        const Vector &/*position1*/, const Vector &/*position2*/, const Vector &/*velocity1*/, const Vector &/*velocity2*/,
-                                                        const std::vector<Rotary3d> &/*rotSat1*/, const std::vector<Rotary3d> &/*rotSat2*/, MatrixSliceRef A)
+inline void ParametrizationSatelliteTrackingTimeBias::compute(UInt /*sstType*/, const std::vector<Time> &times, const Vector &sst0,
+                                                              const Vector &/*position1*/, const Vector &/*position2*/, const Vector &/*velocity1*/, const Vector &/*velocity2*/,
+                                                              const std::vector<Rotary3d> &/*rotSat1*/, const std::vector<Rotary3d> &/*rotSat2*/, MatrixSliceRef A)
 {
   try
   {
-      const Vector rate = polynomial.derivative((time.at(1)-time.at(0)).seconds(), sst0); // drho/dt
-      for(UInt idEpoch=0; idEpoch<sst0.rows(); idEpoch++)
-      {
-        std::vector<UInt>   index;
-        std::vector<Double> factor;
-        temporal->factors(time.at(idEpoch), index, factor);
-        for(UInt i=0; i<index.size(); i++)
-          A(idEpoch, index.at(i)) = rate(idEpoch)*factor.at(i);
-      }
+    Polynomial polynomial(times, degree);
+    const Vector rate = polynomial.derivative(times, sst0); // drho/dt
+    for(UInt idEpoch=0; idEpoch<sst0.rows(); idEpoch++)
+    {
+      std::vector<UInt>   index;
+      std::vector<Double> factor;
+      temporal->factors(times.at(idEpoch), index, factor);
+      for(UInt i=0; i<index.size(); i++)
+        A(idEpoch, index.at(i)) = rate(idEpoch)*factor.at(i);
+    }
   }
   catch(std::exception &e)
   {

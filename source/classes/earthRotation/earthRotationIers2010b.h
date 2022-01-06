@@ -39,7 +39,6 @@ Includes additional high-frequency EOP models (\configFile{inputfileDoodsonEOP}{
 class EarthRotationIers2010b : public EarthRotation
 {
   Polynomial        polynomial;
-  std::vector<Time> times; // UTC
   Matrix            EOP;
   DoodsonEop        doodsonEop;
   Matrix            doodsonMatrix;

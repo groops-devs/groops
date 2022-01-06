@@ -48,7 +48,7 @@ public:
                   const std::vector<Transform3d> &crf2srf, const std::vector<Transform3d> &srf2arf,
                   const std::vector<Time> &timesPosVel, const_MatrixSliceRef position, const_MatrixSliceRef velocity, UInt interpolationDegree)
   : GnssTransceiver(name, info, noPatternFoundAction, useableEpochs),
-    type(prn), polynomial(interpolationDegree), clk(clock), offset(offset), crf2srf(crf2srf), srf2arf(srf2arf), timesPosVel(timesPosVel), pos(position), vel(velocity) {}
+    type(prn), polynomial(timesPosVel, interpolationDegree), clk(clock), offset(offset), crf2srf(crf2srf), srf2arf(srf2arf), timesPosVel(timesPosVel), pos(position), vel(velocity) {}
 
   /// Destructor.
   virtual ~GnssTransmitter() {}
@@ -87,7 +87,7 @@ inline Vector3d GnssTransmitter::positionCoM(const Time &time) const
 {
   try
   {
-    return Vector3d(polynomial.interpolate({time}, timesPosVel, pos));
+    return Vector3d(polynomial.interpolate({time}, pos));
   }
   catch(std::exception &e)
   {
@@ -101,7 +101,7 @@ inline Vector3d GnssTransmitter::velocity(const Time &time) const
 {
   try
   {
-    return Vector3d(polynomial.interpolate({time}, timesPosVel, vel));
+    return Vector3d(polynomial.interpolate({time}, vel));
   }
   catch(std::exception &e)
   {

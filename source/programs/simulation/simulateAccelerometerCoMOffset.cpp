@@ -65,8 +65,6 @@ void SimulateAccelerometerCoMOffset::run(Config &config, Parallel::CommunicatorP
     readConfig(config, "CoMOffsetZ",                offset(2),          Config::MUSTSET,  "50e-6", "offset [m]");
     if(isCreateSchema(config)) return;
 
-    Polynomial polynomial(derivationDegree);
-
     logStatus<<"compute accelerations (CoM)"<<Log::endl;
     InstrumentFile orbitFile(fileNameOrbit);
     InstrumentFile starCameraFile(fileNameStarCamera);
@@ -80,10 +78,11 @@ void SimulateAccelerometerCoMOffset::run(Config &config, Parallel::CommunicatorP
       Arc::checkSynchronized({orbit, starCamera});
 
       // quaternions
-      Double dt  = medianSampling(orbit.times()).seconds();
+      const std::vector<Time> times = orbit.times();
+      Polynomial polynomial(times, derivationDegree);
       Matrix q   = starCamera.matrix().column(1,4);
-      Matrix dq  = polynomial.derivative(dt, q);
-      Matrix ddq = polynomial.derivative2nd(dt, q);
+      Matrix dq  = polynomial.derivative(times, q);
+      Matrix ddq = polynomial.derivative2nd(times, q);
 
       AccelerometerArc accelerometerArc;
       for(UInt i=0; i<orbit.size(); i++)

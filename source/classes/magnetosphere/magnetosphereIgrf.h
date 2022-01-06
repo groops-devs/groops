@@ -36,7 +36,6 @@ International Geomagnetic Reference Field.
 class MagnetosphereIgrf : public Magnetosphere
 {
   Polynomial        polynomial;
-  std::vector<Time> times;
   Matrix            lonlat;
 
 public:
@@ -48,7 +47,7 @@ public:
 
 /***********************************************/
 
-MagnetosphereIgrf::MagnetosphereIgrf(Config &config) : polynomial(1)
+MagnetosphereIgrf::MagnetosphereIgrf(Config &config)
 {
   try
   {
@@ -59,8 +58,8 @@ MagnetosphereIgrf::MagnetosphereIgrf(Config &config) : polynomial(1)
     if(!fileName.empty())
     {
       MiscValuesArc arc = InstrumentFile::read(fileName);
-      times  = arc.times();
       lonlat = arc.matrix().column(1, 2);
+      polynomial.init(arc.times(), 1);
     }
   }
   catch(std::exception &e)
@@ -75,11 +74,9 @@ inline Vector3d MagnetosphereIgrf::geomagneticNorthPole(const Time &time) const
 {
   try
   {
-    if(!times.size())
+    if(!lonlat.size())
       throw(Exception("magentic north pole data not provided"));
-    if((time < times.front()) || (time > times.back()))
-      logWarning<<time.dateTimeStr()<<" extrapolation of magentic north pole data"<<Log::endl;
-    const Matrix ll = polynomial.interpolate({time}, times, lonlat, 1);
+    const Matrix ll = polynomial.interpolate({time}, lonlat);
     return polar(Angle(ll(0,0)*DEG2RAD), Angle(ll(0,1)*DEG2RAD), 1);
   }
   catch(std::exception &e)
