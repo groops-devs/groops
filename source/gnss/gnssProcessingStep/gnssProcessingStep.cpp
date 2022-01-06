@@ -327,7 +327,7 @@ void GnssProcessingStep::State::buildNormals(Bool constraintsOnly, Bool solveEpo
               for(UInt i=0; i<countEqn; i++)
               {
                 copy(eqns.at(i).l, A.l.row(idx, eqns.at(i).l.rows()));
-                gnss->designMatrix(normalEquationInfo, eqns.at(i), A);
+                gnss->designMatrix(normalEquationInfo, eqns.at(i), A.selectRows(idx, eqns.at(i).l.rows()));
                 idx += eqns.at(i).l.rows();
               }
               A.selectRows(0, 0); // select all

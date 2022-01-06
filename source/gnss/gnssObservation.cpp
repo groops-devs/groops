@@ -98,13 +98,16 @@ Bool GnssObservation::init(const GnssReceiver &receiver, const GnssTransmitter &
 
     // Accuracies and antenna pattern check
     // ------------------------------------
-    const Vector sigma0 = receiver.accuracy(timeRecv, azimutRecv, elevationRecv, types);
-    const Vector acv    = receiver.antennaVariations(timeRecv, azimutRecv, elevationRecv, types)
-                        + T * transmitter.antennaVariations(timeTrans, azimutTrans, elevationTrans, typesTransmitted);
+    const Vector sigma0   = receiver.accuracy(timeRecv, azimutRecv, elevationRecv, types);
+    const Vector acvRecv  = receiver.antennaVariations(timeRecv, azimutRecv, elevationRecv, types);
+    const Vector acvTrans = transmitter.antennaVariations(timeTrans, azimutTrans, elevationTrans, typesTransmitted);
     for(UInt i=0; i<size(); i++)
     {
       at(i).sigma0 = sigma0(i);
-      at(i).sigma  = acv(i); // temporarily misuse sigma for ACV pattern nan check
+      at(i).sigma  = acvRecv(i); // temporarily misuse sigma for ACV pattern nan check
+      for(UInt k=0; k<T.columns(); k++)
+        if(T(i,k))
+          at(i).sigma  += T(i,k) * acvTrans(k);
     }
     obs.erase(std::remove_if(obs.begin(), obs.end(), [](const auto &x)
     {

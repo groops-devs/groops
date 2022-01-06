@@ -7,6 +7,7 @@
 - Bugfix:           gnssProcessingStepResolveAmbiguities: for writing empty ambiguity file.
 - Bugfix:           gnssParametrizationLeoDynamicOrbits: in parallel excecution.
 - Bugfix:           gnssParametrizationKinematicPositions: in parallel excecution.
+- Bugfix:           gnssTransmitter: noAntennaPatternFound->ignoreObservation not working correctly.
 - Bugfix:           sp3Format2Orbit: no/invalid orbit positions/velocities are now excluded.
 - Other:            Removed inputfileGlobal option.
 - Other:            GnssAttitude2Orbex: can now handle different sampling per satellite.
