@@ -2,7 +2,7 @@
 /**
 * @file miscAccelerationsFromParametrization.h
 *
-* @brief .
+* @brief Acceleration from parametrization.
 * @see MiscAccelerations
 *
 * @author Torsten Mayer-Guerr
@@ -37,7 +37,7 @@ The computed result is multiplied with \config{factor}.
 
 /***** CLASS ***********************************/
 
-/** @brief .
+/** @brief Acceleration from parametrization.
 * @ingroup miscAccelerationsGroup
 * @see MiscAccelerations */
 class MiscAccelerationsFromParametrization : public MiscAccelerationsBase
