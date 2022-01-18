@@ -240,6 +240,7 @@ public:
   static const GnssType L6_C;
 
   static const GnssType C1CJ;
+  static const GnssType C1EJ;
   static const GnssType C1SJ;
   static const GnssType C1LJ;
   static const GnssType C1XJ;

@@ -7315,12 +7315,15 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssRinexNavigation2OrbitClock}\label{GnssRinexNavigation2OrbitClock}
-Evaluates orbit and clock parameters from \href{https://files.igs.org/pub/data/format/rinex305.pdf}{RINEX navigation file} \config{inputfileRinex}
-at epochs given by \configClass{timeSeries}{timeSeriesType} and writes them to \configFile{outputfileOrbit}{instrument} and
-\configFile{outputfileClock}{instrument}, respectively.
+Evaluates orbit and clock parameters from \href{https://files.igs.org/pub/data/format/rinex_4.00.pdf}{RINEX} (version 2, 3, and 4)
+navigation file \config{inputfileRinex} at epochs given by \configClass{timeSeries}{timeSeriesType} and writes them to
+\configFile{outputfileOrbit}{instrument} and \configFile{outputfileClock}{instrument}, respectively.
 
 Orbits are rotated from TRF (as broadcasted) to CRF via \configClass{earthRotation}{earthRotationType},
 but system-specific TRFs (WGS84, PZ-90, etc.) are not aligned to a common TRF.
+
+If \config{messageType} is set (e.g., to LNAV, CNAV, or other types defined in the RINEX 4 standard), only navigation records of this type are used.
+Otherwise, if multiple records are defined for the same epoch, the first one is used.
 
 See also \program{OrbitAddVelocityAndAcceleration}.
 
@@ -7336,6 +7339,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt orbit and clock evaluation epochs\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt for rotation from TRF to CRF\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~usePrn & \hfuzz=500pt string & \hfuzz=500pt only export these PRNs instead of all\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~messageType & \hfuzz=500pt string & \hfuzz=500pt (RINEX4) only use this navigation message (LNAV, CNAV, ...)\\
 \hline
 \end{tabularx}
 
@@ -8732,8 +8736,8 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{RinexObservation2GnssReceiver}\label{RinexObservation2GnssReceiver}
-Converts \href{https://files.igs.org/pub/data/format/rinex305.pdf}{RINEX} or
-\href{http://terras.gsi.go.jp/ja/crx2rnx.html}{Compact RINEX} files to
+Converts \href{https://files.igs.org/pub/data/format/rinex_4.00.pdf}{RINEX} (version 2, 3, and 4) and
+\href{https://terras.gsi.go.jp/ja/crx2rnx.html}{Compact RINEX} observation files to
 \file{GnssReceiver Instrument file}{instrument}.
 
 In case of \href{https://files.igs.org/pub/data/format/rinex211.txt}{RINEX v2.x} observation files

@@ -12,12 +12,15 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Evaluates orbit and clock parameters from \href{https://files.igs.org/pub/data/format/rinex305.pdf}{RINEX navigation file} \config{inputfileRinex}
-at epochs given by \configClass{timeSeries}{timeSeriesType} and writes them to \configFile{outputfileOrbit}{instrument} and
-\configFile{outputfileClock}{instrument}, respectively.
+Evaluates orbit and clock parameters from \href{https://files.igs.org/pub/data/format/rinex_4.00.pdf}{RINEX} (version 2, 3, and 4)
+navigation file \config{inputfileRinex} at epochs given by \configClass{timeSeries}{timeSeriesType} and writes them to
+\configFile{outputfileOrbit}{instrument} and \configFile{outputfileClock}{instrument}, respectively.
 
 Orbits are rotated from TRF (as broadcasted) to CRF via \configClass{earthRotation}{earthRotationType},
 but system-specific TRFs (WGS84, PZ-90, etc.) are not aligned to a common TRF.
+
+If \config{messageType} is set (e.g., to LNAV, CNAV, or other types defined in the RINEX 4 standard), only navigation records of this type are used.
+Otherwise, if multiple records are defined for the same epoch, the first one is used.
 
 See also \program{OrbitAddVelocityAndAcceleration}.
 )";
@@ -43,6 +46,7 @@ class GnssRinexNavigation2OrbitClock
     std::vector<Time>   epoch;
     std::vector<Vector> clockParam;
     std::vector<Matrix> orbitParam;
+    std::vector<std::string> messageTypes;
   };
 
   Double rinexVersion;
@@ -51,12 +55,14 @@ class GnssRinexNavigation2OrbitClock
   Double leapSeconds;
   std::map<GnssType, Satellite> satellites;
   std::vector<Time> times;
+  std::string useMessageType;
 
   void readHeader(InFile &file, UInt lineCount=MAX_UINT);
   void readData(InFile &file);
   Bool getLine(InFile &file, std::string &line, std::string &label) const;
   Bool testLabel(const std::string &labelInLine, const std::string &label, Bool optional=TRUE) const;
   OrbitEpoch rungeKutta4(const Time &time, const OrbitEpoch &refEpoch, const Vector3d &sunMoonAcceleration, EarthRotationPtr earthRotation) const;
+  void time2GpsWeekSecond(const Time &time, Double &gpsWeek, Double &gpsSecond) const;
 
 public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
@@ -75,12 +81,13 @@ void GnssRinexNavigation2OrbitClock::run(Config &config, Parallel::CommunicatorP
     EarthRotationPtr earthRotation;
     std::vector<std::string> usePrn;
 
-    readConfig(config, "outputfileOrbit", outNameOrbit,  Config::OPTIONAL, "", "PRN is appended to file name");
-    readConfig(config, "outputfileClock", outNameClock,  Config::OPTIONAL, "", "PRN is appended to file name");
-    readConfig(config, "inputfileRinex",  inNameRinex,   Config::MUSTSET,  "", "RINEX navigation file");
-    readConfig(config, "timeSeries",      timeSeriesPtr, Config::MUSTSET,  "", "orbit and clock evaluation epochs");
-    readConfig(config, "earthRotation",   earthRotation, Config::MUSTSET,  "", "for rotation from TRF to CRF");
-    readConfig(config, "usePrn",          usePrn,        Config::OPTIONAL, "", "only export these PRNs instead of all");
+    readConfig(config, "outputfileOrbit", outNameOrbit,   Config::OPTIONAL, "", "PRN is appended to file name");
+    readConfig(config, "outputfileClock", outNameClock,   Config::OPTIONAL, "", "PRN is appended to file name");
+    readConfig(config, "inputfileRinex",  inNameRinex,    Config::MUSTSET,  "", "RINEX navigation file");
+    readConfig(config, "timeSeries",      timeSeriesPtr,  Config::MUSTSET,  "", "orbit and clock evaluation epochs");
+    readConfig(config, "earthRotation",   earthRotation,  Config::MUSTSET,  "", "for rotation from TRF to CRF");
+    readConfig(config, "usePrn",          usePrn,         Config::OPTIONAL, "", "only export these PRNs instead of all");
+    readConfig(config, "messageType",     useMessageType, Config::OPTIONAL, "", "(RINEX4) only use this navigation message (LNAV, CNAV, ...)");
     if(isCreateSchema(config)) return;
 
     times = timeSeriesPtr->times();
@@ -133,6 +140,7 @@ void GnssRinexNavigation2OrbitClock::run(Config &config, Parallel::CommunicatorP
           OrbitEpoch epoch;
           epoch.time = times.at(idEpoch);
           const_MatrixSliceRef orbitParam = satellite.second.orbitParam.at(idx);
+          const std::string messageType = satellite.second.messageTypes.at(idx);;
 
           if(satellite.first == GnssType::GLONASS)
           {
@@ -157,8 +165,11 @@ void GnssRinexNavigation2OrbitClock::run(Config &config, Parallel::CommunicatorP
           }
           else // all systems using GPS-like ephemerides
           {
-            const Double toe_week = orbitParam(4,2);
-            const Double toe_sec  = orbitParam(2,0);
+            Double toe_week = orbitParam(4,2);
+            Double toe_sec  = orbitParam(2,0);
+            if(rinexVersion >= 4 && (satellite.first == GnssType::GPS || satellite.first == GnssType::QZSS) && messageType != "LNAV")
+              time2GpsWeekSecond(epoch.time, toe_week, toe_sec); // t_oe = t_oc
+
             const Double M0       = orbitParam(0,3);
             const Double a        = std::pow(orbitParam(1,3), 2);
             const Double delta_n  = orbitParam(0,2);
@@ -350,6 +361,22 @@ void GnssRinexNavigation2OrbitClock::readHeader(InFile &file, UInt lineCount)
       {
       }
       // ====================================
+      else if(testLabel(label, "DOI"))
+      {
+      }
+      // ====================================
+      else if(testLabel(label, "LICENCE OF USE"))
+      {
+      }
+      // ====================================
+      else if(testLabel(label, "STATION INFORMATION"))
+      {
+      }
+      // ====================================
+      else if(testLabel(label, "REC # / TYPE / VERS"))
+      {
+      }
+      // ====================================
       else
       {
         logWarning<<"Unknown header label:"<<Log::endl;
@@ -371,13 +398,40 @@ void GnssRinexNavigation2OrbitClock::readData(InFile &file)
 
   try
   {
+    std::map<std::string, UInt> message2LineCount {
+      {"LNAV", 7},
+      {"CNAV", 8},
+      {"CNV1", 9},
+      {"CNV2", 9},
+      {"CNV3", 8},
+      {"FNAV", 7},
+      {"INAV", 7},
+      {"D1",   7},
+      {"D2",   7},
+      {"FDMA", 4},
+      {"SBAS", 3}};
+
     while(getLine(file, line, label))
     {
+      // RINEX 4 record identifier
+      std::string messageType;
+      if(rinexVersion>=4)
+      {
+        if(line.substr(0,5) != "> EPH") // only ephemeris records are of interest
+          continue;
+        messageType = String::trim(line.substr(10,4));
+        if(useMessageType.size() && messageType != useMessageType) // message type filter
+          continue;
+        getLine(file, line, label);
+      }
+
       std::string prnStr = rinexVersion < 3 ? system+line.substr(0,2): line.substr(0,3);
       if(prnStr.at(1) == ' ') prnStr.at(1) = '0';
       GnssType prn("***" + prnStr);
 
-      const UInt lineCount = (prn == GnssType::GLONASS || prn == GnssType::SBAS) ? 3 : (rinexVersion < 2 ? 6 : 7);
+      UInt lineCount = (prn == GnssType::GLONASS || prn == GnssType::SBAS) ? 3 : (rinexVersion < 2 ? 6 : 7);
+      if(rinexVersion >= 4)
+        lineCount = message2LineCount[messageType];
 
       // epoch
       Int year   = String::toInt(line.substr(rinexVersion < 3 ?  3 :  4, rinexVersion < 3 ? 2 : 4));
@@ -398,6 +452,7 @@ void GnssRinexNavigation2OrbitClock::readData(InFile &file)
         continue;
       }
       satellites[prn].epoch.push_back(time);
+      satellites[prn].messageTypes.push_back(messageType);
 
       // clock polynomial
       Vector clockParam((prn != GnssType::GLONASS && prn != GnssType::SBAS) ? 3 : 2);
@@ -510,6 +565,21 @@ OrbitEpoch GnssRinexNavigation2OrbitClock::rungeKutta4(const Time &time, const O
     epoch.acceleration = acceleration(epoch);
 
     return epoch;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void GnssRinexNavigation2OrbitClock::time2GpsWeekSecond(const Time &time, Double &gpsWeek, Double &gpsSecond) const
+{
+  try
+  {
+    gpsWeek = (time.mjdInt()-44244)/7;
+    gpsSecond = std::fmod(time.mjd()-44244, 7)*86400;
   }
   catch(std::exception &e)
   {

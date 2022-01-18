@@ -190,6 +190,7 @@ const GnssType GnssType::L8_C      = GnssType::PHASE + GnssType::B2             
 const GnssType GnssType::L6_C      = GnssType::PHASE + GnssType::B3                + GnssType::BDS;
 
 const GnssType GnssType::C1CJ      = GnssType::RANGE + GnssType::L1  + GnssType::C + GnssType::QZSS;
+const GnssType GnssType::C1EJ      = GnssType::RANGE + GnssType::L1  + GnssType::E + GnssType::QZSS;
 const GnssType GnssType::C1SJ      = GnssType::RANGE + GnssType::L1  + GnssType::S + GnssType::QZSS;
 const GnssType GnssType::C1LJ      = GnssType::RANGE + GnssType::L1  + GnssType::L + GnssType::QZSS;
 const GnssType GnssType::C1XJ      = GnssType::RANGE + GnssType::L1  + GnssType::X + GnssType::QZSS;

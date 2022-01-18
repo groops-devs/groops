@@ -12,8 +12,8 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Converts \href{https://files.igs.org/pub/data/format/rinex305.pdf}{RINEX} or
-\href{http://terras.gsi.go.jp/ja/crx2rnx.html}{Compact RINEX} files to
+Converts \href{https://files.igs.org/pub/data/format/rinex_4.00.pdf}{RINEX} (version 2, 3, and 4) and
+\href{https://terras.gsi.go.jp/ja/crx2rnx.html}{Compact RINEX} observation files to
 \file{GnssReceiver Instrument file}{instrument}.
 
 In case of \href{https://files.igs.org/pub/data/format/rinex211.txt}{RINEX v2.x} observation files
@@ -442,6 +442,18 @@ void RinexObservation2GnssReceiver::readHeader(InFile &file, UInt lineCount)
       }
       // ====================================
       else if(testLabel(label, "SIGNAL STRENGTH UNIT"))
+      {
+      }
+      // ====================================
+      else if(testLabel(label, "DOI"))
+      {
+      }
+      // ====================================
+      else if(testLabel(label, "LICENCE OF USE"))
+      {
+      }
+      // ====================================
+      else if(testLabel(label, "STATION INFORMATION"))
       {
       }
       // ====================================
