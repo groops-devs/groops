@@ -15,7 +15,7 @@
 #include "base/string.h"
 #include "fileNetCdf.h"
 
-#ifdef NOLIB_NETCDF
+#ifdef GROOPS_DISABLE_NETCDF
 #else
 #include <netcdf.h>
 

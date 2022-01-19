@@ -21,7 +21,7 @@ The resulting rotation matrices rotate from satellite frame to inertial frame.
 
 #include "programs/program.h"
 #include "files/fileInstrument.h"
-#ifndef NOLIB_ERFA
+#ifndef GROOPS_DISABLE_ERFA
 #include <erfa.h>
 #endif
 
@@ -64,7 +64,7 @@ void SimulateStarCameraSentinel1::run(Config &config, Parallel::CommunicatorPtr 
       {
         // get rotation form inertial to TOD frame
         Double rc2i[3][3];
-#ifdef NOLIB_ERFA
+#ifdef GROOPS_DISABLE_ERFA
         throw(Exception("compiled without ERFA library"));
 #else
         const Time timeTT = timeGPS2TT(orbit.at(i).time);

@@ -18,7 +18,7 @@
 #include "files/fileEarthOrientationParameter.h"
 #include "classes/earthRotation/earthRotation.h"
 #include "classes/earthRotation/earthRotationIers2010.h"
-#ifndef NOLIB_ERFA
+#ifndef GROOPS_DISABLE_ERFA
 #include <erfa.h>
 #endif
 
@@ -33,8 +33,11 @@ EarthRotationIers2010::EarthRotationIers2010(Config &config)
     readConfig(config, "truncatedNutation", useTruncated,  Config::DEFAULT,  "0", "use truncated nutation model (IAU2006B)");
     if(isCreateSchema(config)) return;
 
-#ifdef NOLIB_ERFA
+#ifdef GROOPS_DISABLE_ERFA
     throw(Exception("Compiled without ERFA library"));
+#endif
+#ifdef GROOPS_DISABLE_IERS
+    logWarningOnce<<"Compiled without IERS sources -> ocean tidal and libration effects in EOP are not calculated"<<Log::endl;
 #endif
 
     // read Earth Orientation Parameter (EOP)
@@ -71,7 +74,7 @@ void EarthRotationIers2010::earthOrientationParameter(const Time &timeGPS, Doubl
 {
   try
   {
-#ifdef NOLIB_ERFA
+#ifdef GROOPS_DISABLE_ERFA
     throw(Exception("Compiled without ERFA library"));
 #else
     // interpolate EOP file
@@ -90,6 +93,7 @@ void EarthRotationIers2010::earthOrientationParameter(const Time &timeGPS, Doubl
       dY      = eop(0,5);
     }
 
+#ifndef GROOPS_DISABLE_IERS
     // Models
     // ------
     // diurnal and semidiurnal variations in EOP (x,y,UT1) from ocean tides
@@ -109,6 +113,7 @@ void EarthRotationIers2010::earthOrientationParameter(const Time &timeGPS, Doubl
     utlibr(mjdUTC, dut1, dlod);
     deltaUT += dut1*1e-6;
     LOD     += dlod*1e-6;
+#endif
 
     const Time timeTT = timeGPS2TT(timeGPS);
     sp = eraSp00(2400000.5+timeTT.mjdInt(), timeTT.mjdMod());

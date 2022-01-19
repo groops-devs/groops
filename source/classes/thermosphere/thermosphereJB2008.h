@@ -62,6 +62,10 @@ inline ThermosphereJB2008::ThermosphereJB2008(Config &config)
     readConfig(config, "hwm14DataDirectory",    fileNameHwm14Path,    Config::OPTIONAL, "{groopsDataDir}/thermosphere/hwm14",                "directory containing dwm07b104i.dat, gd2qd.dat, hwm123114.bin");
     if(isCreateSchema(config)) return;
 
+#ifdef GROOPS_DISABLE_JB2008
+    throw(Exception("Compiled without JB2008 sources"));
+#endif
+
     if(!fileNameSolfsmy.empty())
     {
       InFile file(fileNameSolfsmy);
@@ -104,6 +108,10 @@ inline ThermosphereJB2008::ThermosphereJB2008(Config &config)
     }
 
     magnetic3hAp = InstrumentFile::read(fileNameMagnetic3hAp);
+#ifdef GROOPS_DISABLE_HWM14
+    if(!fileNameHwm14Path.empty())
+      logWarningOnce<<"Compiled without HWM14 wind model sources -> thermospheric wind is not calculated"<<Log::endl;
+#endif
   }
   catch(std::exception &e)
   {
@@ -117,6 +125,7 @@ inline void ThermosphereJB2008::state(const Time &time, const Vector3d &position
 {
   try
   {
+#ifndef GROOPS_DISABLE_JB2008
     Ellipsoid ellipsoid;
     Angle     lon, lat;
     Double    height;
@@ -153,6 +162,7 @@ inline void ThermosphereJB2008::state(const Time &time, const Vector3d &position
     density     = rho;
     temperature = temp[1];
     velocity    = wind(time, position);
+#endif
   }
   catch(std::exception &e)
   {

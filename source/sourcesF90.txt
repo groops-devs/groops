@@ -1,11 +1,18 @@
-set(SOURCES ${SOURCES}
-external/hwm/hwm14.f90
-external/nrlmsis2/alt2gph.F90
-external/nrlmsis2/msis_constants.F90
-external/nrlmsis2/msis_init.F90
-external/nrlmsis2/msis_gfn.F90
-external/nrlmsis2/msis_tfn.F90
-external/nrlmsis2/msis_dfn.F90
-external/nrlmsis2/msis_calc.F90
-external/nrlmsis2/nrlmsis2Wrapper.F90
-)
+if((NOT ${DISABLE_HWM14}) OR (NOT DEFINED DISABLE_HWM14))
+    set(SOURCES ${SOURCES}
+    external/hwm/hwm14.f90
+    )
+endif()
+
+if((NOT ${DISABLE_NRLMSIS}) OR (NOT DEFINED DISABLE_NRLMSIS))
+    set(SOURCES ${SOURCES}
+    external/nrlmsis2/alt2gph.F90
+    external/nrlmsis2/msis_constants.F90
+    external/nrlmsis2/msis_init.F90
+    external/nrlmsis2/msis_gfn.F90
+    external/nrlmsis2/msis_tfn.F90
+    external/nrlmsis2/msis_dfn.F90
+    external/nrlmsis2/msis_calc.F90
+    external/nrlmsis2/nrlmsis2Wrapper.F90
+    )
+endif()

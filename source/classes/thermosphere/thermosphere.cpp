@@ -81,6 +81,9 @@ Vector3d Thermosphere::wind(const Time &time, const Vector3d &position) const
 {
   try
   {
+#ifdef GROOPS_DISABLE_HWM14
+    return Vector3d();
+#else
     if(fileNameHwm14Path.empty())
       return Vector3d();
 
@@ -112,6 +115,7 @@ Vector3d Thermosphere::wind(const Time &time, const Vector3d &position) const
 #endif
 
     return localNorthEastUp(position, ellipsoid).transform(Vector3d(outf[0], outf[1], 0));
+#endif // #ifndef GROOPS_DISABLE_HWM14
   }
   catch(std::exception &e)
   {

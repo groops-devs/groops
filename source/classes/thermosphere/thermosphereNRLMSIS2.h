@@ -61,10 +61,18 @@ inline ThermosphereNRLMSIS2::ThermosphereNRLMSIS2(Config &config)
     readConfig(config, "hwm14DataDirectory",       fileNameHwm14Path,    Config::OPTIONAL, "{groopsDataDir}/thermosphere/hwm14",                  "directory containing dwm07b104i.dat, gd2qd.dat, hwm123114.bin");
     if(isCreateSchema(config)) return;
 
-    msisData     = InstrumentFile::read(fileNameMsis);
-    magnetic3hAp = InstrumentFile::read(fileNameMagnetic3hAp);
+#ifdef GROOPS_DISABLE_NRLMSIS
+    throw(Exception("Compiled without NRLMSIS sources"));
+#endif
 
+    msisData = InstrumentFile::read(fileNameMsis);
     msisinitWrapper(fileNameParm.directory(), fileNameParm.stripDirectory());
+
+    magnetic3hAp = InstrumentFile::read(fileNameMagnetic3hAp);
+#ifdef GROOPS_DISABLE_HWM14
+    if(!fileNameHwm14Path.empty())
+      logWarningOnce<<"Compiled without HWM14 wind model sources -> thermospheric wind is not calculated"<<Log::endl;
+#endif
   }
   catch(std::exception &e)
   {
@@ -78,6 +86,7 @@ inline void ThermosphereNRLMSIS2::state(const Time &time, const Vector3d &positi
 {
   try
   {
+#ifndef GROOPS_DISABLE_NRLMSIS
     Ellipsoid ellipsoid;
     Angle     lon, lat;
     Double    height;
@@ -104,6 +113,7 @@ inline void ThermosphereNRLMSIS2::state(const Time &time, const Vector3d &positi
     density     = rho[0];
     temperature = tempAlt;
     velocity    = wind(time, position);
+#endif
   }
   catch(std::exception &e)
   {

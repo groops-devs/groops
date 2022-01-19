@@ -35,8 +35,8 @@ International Geomagnetic Reference Field.
 * @see Magnetosphere */
 class MagnetosphereIgrf : public Magnetosphere
 {
-  Polynomial        polynomial;
-  Matrix            lonlat;
+  Polynomial polynomial;
+  Matrix     lonlat;
 
 public:
   MagnetosphereIgrf(Config &config);
@@ -91,9 +91,13 @@ inline Vector3d MagnetosphereIgrf::magenticFieldVector(const Time &time, const V
 {
   try
   {
+#ifdef GROOPS_DISABLE_IGRF
+    throw(Exception("Compiled without International Geomagnetic Reference Field (IGRF) sources"));
+#else
     Double n,e,u,f;
     igrfSynthesis(0/*main-field*/, time.decimalYear(), 2/*geocentric*/, position.r()/1000, position.theta()*RAD2DEG, position.lambda()*RAD2DEG, n,e,u,f);
     return 1e-9*localNorthEastUp(position).transform(Vector3d(n,e,u));  // nT -> T (Tesla)
+#endif
   }
   catch(std::exception &e)
   {

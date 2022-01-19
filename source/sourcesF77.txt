@@ -1,13 +1,28 @@
 set(SOURCES ${SOURCES}
-external/iers/pmsdnut.f
-external/iers/ray.f
-external/iers/CNMTX.F
-external/iers/FUNDARG.f
-external/iers/ORTHO_EOP.F
-external/iers/PMSDNUT2.F
-external/iers/UTLIBR.F
-external/igrf/igrf13.f
-external/jb2008/JB2008.f
 external/lapack/blasWrapper.f
 external/lapack/lapackWrapper.f
 )
+
+if((NOT ${DISABLE_IERS}) OR (NOT DEFINED DISABLE_IERS))
+    set(SOURCES ${SOURCES}
+    external/iers/pmsdnut.f
+    external/iers/ray.f
+    external/iers/CNMTX.F
+    external/iers/FUNDARG.f
+    external/iers/ORTHO_EOP.F
+    external/iers/PMSDNUT2.F
+    external/iers/UTLIBR.F
+    )
+endif()
+
+if((NOT ${DISABLE_IGRF}) OR (NOT DEFINED DISABLE_IGRF))
+    set(SOURCES ${SOURCES}
+    external/igrf/igrf13.f
+    )
+endif()
+
+if((NOT ${DISABLE_JB2008}) OR (NOT DEFINED DISABLE_JB2008))
+    set(SOURCES ${SOURCES}
+    external/jb2008/JB2008.f
+    )
+endif()

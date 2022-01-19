@@ -21,9 +21,16 @@
 /***** DEFINES *********************************/
 
 /// Disable external libraries
-// #define NOLIB_ERFA     // compile without ERFA library
-// #define NOLIB_Z        // compile without Z library
-// #define NOLIB_NETCDF   // compile without NETCDF library
+// #define GROOPS_DISABLE_ERFA     // compile without ERFA library
+// #define GROOPS_DISABLE_Z        // compile without Z library
+// #define GROOPS_DISABLE_NETCDF   // compile without NETCDF library
+
+/// Disable external sources
+// #define GROOPS_DISABLE_NRLMSIS    // do not use external/nrlmsis2 sources
+// #define GROOPS_DISABLE_JB2008     // do not use external/jb2008 sources
+// #define GROOPS_DISABLE_HWM14      // do not use external/hwm14 sources
+// #define GROOPS_DISABLE_IGRF       // do not use external/igrf sources
+// #define GROOPS_DISABLE_IERS       // do not use external/iers sources
 
 /***** TYPES ***********************************/
 

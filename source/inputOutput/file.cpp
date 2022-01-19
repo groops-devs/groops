@@ -18,7 +18,7 @@
 
 /***** CLASS ***********************************/
 
-#ifdef NOLIB_Z
+#ifdef GROOPS_DISABLE_Z
 #else
 
 namespace zlib
@@ -199,7 +199,7 @@ void StreamBase::open(const FileName &fileName, std::ios::openmode openMode)
 
     if(fileFormat == "GZ")
     {
-#ifdef NOLIB_Z
+#ifdef GROOPS_DISABLE_Z
       throw(Exception("compiled without Z library"));
 #else
       buffer = new StreambufGZ();

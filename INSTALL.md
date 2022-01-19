@@ -366,3 +366,18 @@ working with GROOPS easier.
    ```
 
 2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` to the number of threads to use for matrix operations.
+
+## Disabling external source files
+
+While GROOPS is intended to be a standalone software package, some functionality depends on external software.
+Information about external source code contained in the repository which is licensed differently can be found in the
+[corresponding README](https://github.com/groops-devs/groops/blob/main/source/external/README.md).
+
+To compile GROOPS without these external source files, variables can be passed to CMake in the configuration step,
+for example:
+```
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/groops -DDISABLE_IERS=TRUE
+```
+Available variables are ```DISABLE_HWM14```, ```DISABLE_NRLMSIS```, ```DISABLE_JB2008```,
+```DISABLE_IGRF```, ```DISABLE_IERS```, ```DISABLE_ERFA```, ```DISABLE_Z```, and ```DISABLE_NETCDF```.
+Setting these to ```TRUE``` will skip compilation of the respective source files.

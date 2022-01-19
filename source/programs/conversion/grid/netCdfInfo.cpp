@@ -46,7 +46,7 @@ void NetCdfInfo::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "inputfileNetCdf", fileNameIn, Config::MUSTSET,  "", "");
     if(isCreateSchema(config)) return;
 
-#ifdef NOLIB_NETCDF
+#ifdef GROOPS_DISABLE_NETCDF
     throw(Exception("Compiled without NetCDF library"));
 #else
     // open netCDF file

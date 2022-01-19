@@ -31,6 +31,10 @@ EarthRotationIers1996::EarthRotationIers1996(Config &config)
     readConfig(config, "inputfileNutation", nutationName, Config::MUSTSET,  "{groopsDataDir}/earthRotation/nutationIAU1980.xml", "");
     if(isCreateSchema(config)) return;
 
+#ifdef GROOPS_DISABLE_IERS
+    logWarningOnce<<"Compiled without IERS sources -> ocean tidal effects in EOP are not calculated"<<Log::endl;
+#endif
+
     // read Earth Orientation Parameter (EOP)
     // --------------------------------------
     if(!eopName.empty())
@@ -158,6 +162,7 @@ void EarthRotationIers1996::eop(const Time &timeGPS, Double &xp, Double &yp, Dou
       ddeps   = eop(0,5);
     }
 
+#ifndef GROOPS_DISABLE_IERS
     // Models
     // ------
     // diurnal and semidiurnal variations in EOP (x,y,UT1) from ocean tides
@@ -167,6 +172,7 @@ void EarthRotationIers1996::eop(const Time &timeGPS, Double &xp, Double &yp, Dou
     xp      += corx * DEG2RAD/3600;
     yp      += cory * DEG2RAD/3600;
     deltaUT += cort;
+#endif
   }
   catch(std::exception &e)
   {

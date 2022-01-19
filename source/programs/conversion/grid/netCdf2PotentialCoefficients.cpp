@@ -69,7 +69,7 @@ void NetCdf2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr
     readConfig(config, "R",                               R,         Config::DEFAULT,  STRING_DEFAULT_R,  "reference radius for potential coefficients");
     if(isCreateSchema(config)) return;
 
-#ifdef NOLIB_NETCDF
+#ifdef GROOPS_DISABLE_NETCDF
     throw(Exception("Compiled without NetCDF library"));
 #else
     // set up grid

@@ -60,7 +60,7 @@ void NetCdf2GridRectangular::run(Config &config, Parallel::CommunicatorPtr /*com
     readConfig(config, "inverseFlattening",         f,        Config::DEFAULT,  STRING_DEFAULT_GRS80_f, "reference flattening for ellipsoidal coordinates");
     if(isCreateSchema(config)) return;
 
-#ifdef NOLIB_NETCDF
+#ifdef GROOPS_DISABLE_NETCDF
     throw(Exception("Compiled without NetCDF library"));
 #else
     // add variable for output files

@@ -127,7 +127,7 @@ void GridRectangular2NetCdf::run(Config &config, Parallel::CommunicatorPtr /*com
     readConfig(config, "globalAttribute",          globalAttributes, Config::OPTIONAL, "", "additional meta data");
     if(isCreateSchema(config)) return;
 
-#ifdef NOLIB_NETCDF
+#ifdef GROOPS_DISABLE_NETCDF
     throw(Exception("Compiled without NetCDF library"));
 #else
     // check input

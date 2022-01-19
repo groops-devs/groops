@@ -19,7 +19,7 @@
 #include "files/fileDoodsonEarthOrientationParameter.h"
 #include "classes/earthRotation/earthRotation.h"
 #include "classes/earthRotation/earthRotationIers2010b.h"
-#ifndef NOLIB_ERFA
+#ifndef GROOPS_DISABLE_ERFA
 #include <erfa.h>
 #endif
 
@@ -34,8 +34,11 @@ EarthRotationIers2010b::EarthRotationIers2010b(Config &config)
     readConfig(config, "inputfileDoodsonEOP", doodsonEopName, Config::OPTIONAL,  "{groopsDataDir}/earthRotation/doodsonEOP_desai_jgrb51665-sup-0002-ds01.txt", "");
     if(isCreateSchema(config)) return;
 
-#ifdef NOLIB_ERFA
+#ifdef GROOPS_DISABLE_ERFA
     throw(Exception("Compiled without ERFA library"));
+#endif
+#ifdef GROOPS_DISABLE_IERS
+    logWarningOnce<<"Compiled without IERS sources -> libration effects in EOP are not calculated"<<Log::endl;
 #endif
 
     // read Earth Orientation Parameter (EOP)
@@ -81,7 +84,7 @@ void EarthRotationIers2010b::earthOrientationParameter(const Time &timeGPS, Doub
 {
   try
   {
-#ifdef NOLIB_ERFA
+#ifdef GROOPS_DISABLE_ERFA
     throw(Exception("Compiled without ERFA library"));
 #else
     // interpolate EOP file
@@ -118,6 +121,7 @@ void EarthRotationIers2010b::earthOrientationParameter(const Time &timeGPS, Doub
       LOD     += inner(cosSin, doodsonEop.coeff.column(6, 2));
     }
 
+#ifndef GROOPS_DISABLE_IERS
     const Double mjdUTC = timeGPS2UTC(timeGPS).mjd();
     Double pm[2];
     pmsdnut2(mjdUTC, pm);
@@ -128,6 +132,7 @@ void EarthRotationIers2010b::earthOrientationParameter(const Time &timeGPS, Doub
     utlibr(mjdUTC, dut1, dlod);
     deltaUT += dut1*1e-6;
     LOD     += dlod*1e-6;
+#endif
 
     const Time timeTT = timeGPS2TT(timeGPS);
     sp = eraSp00(2400000.5+timeTT.mjdInt(), timeTT.mjdMod());
