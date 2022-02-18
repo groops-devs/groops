@@ -56,6 +56,7 @@ GnssReceiverGeneratorStationNetwork::GnssReceiverGeneratorStationNetwork(Config 
     readConfig(config, "inputfileReceiverDefinition",        fileNameReceiverDef,     Config::OPTIONAL, "", "observed signal types");
     readConfig(config, "inputfileAccuracyDefinition",        fileNameAccuracyDef,     Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/accuracyDefinition/accuracyDefinition.xml", "elevation and azimuth dependent accuracy");
     readConfig(config, "inputfileStationPosition",           fileNameStationPosition, Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/position/igs/igb14/stationPosition.{station}.dat", "variable {station} available.");
+    readConfig(config, "inputfileClock",                     fileNameClock,           Config::OPTIONAL, "",     "variable {station} available");
     readConfig(config, "inputfileObservations",              fileNameObs,             Config::OPTIONAL, "gnssReceiver_{loopTime:%D}.{station}.dat", "variable {station} available");
     readConfig(config, "loadingDisplacement",                gravityfield,            Config::DEFAULT,  "",     "loading deformation");
     readConfig(config, "tidalDisplacement",                  tides,                   Config::DEFAULT,  "",     "tidal deformation");
@@ -209,13 +210,52 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
             recv->readObservations(fileNameObs(fileNameVariableList), transmitters, rotationCrf2Trf, timeMargin, elevationCutOff,
                                   useType, ignoreType, GnssObservation::RANGE | GnssObservation::PHASE);
 
-            // count epochs with observations
-            UInt countEpochs = 0;
-            for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
-              if(recv->useable(idEpoch))
-                countEpochs++;
-            if(countEpochs*recv->observationSampling < minEstimableEpochsRatio*times.size()*medianSampling(times).seconds())
+            auto enoughEpochs = [&]()
+            {
+              // count epochs with observations
+              UInt countEpochs = 0;
+              for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
+                if(recv->useable(idEpoch))
+                  countEpochs++;
+              return (countEpochs*recv->observationSampling >= minEstimableEpochsRatio*times.size()*medianSampling(times).seconds());
+            };
+
+            if(!enoughEpochs())
               continue;
+
+            // clock file
+            // ----------
+            if(!fileNameClock.empty())
+            {
+              try
+              {
+                MiscValueArc arc = InstrumentFile::read(fileNameClock(fileNameVariableList));
+                UInt idEpoch = 0;
+                for(UInt arcEpoch=0; arcEpoch<arc.size(); arcEpoch++)
+                {
+                  while((idEpoch < recv->times.size()) && (recv->times.at(idEpoch)+timeMargin < arc.at(arcEpoch).time))
+                    recv->disable(idEpoch++);
+                  if(idEpoch >= recv->times.size())
+                    break;
+                  if((arc.at(arcEpoch).time+timeMargin < recv->times.at(idEpoch)) || !recv->useable(idEpoch))
+                    continue;
+                  recv->clk.at(idEpoch++) = arc.at(arcEpoch).value;
+                }
+                for(; idEpoch<times.size(); idEpoch++)
+                  recv->disable(idEpoch);
+
+                if(!enoughEpochs())
+                {
+                  logWarning<<"Not enough valid epochs in clock file <"<<fileNameClock(fileNameVariableList)<<">, disabling receiver."<<Log::endl;
+                  continue;
+                }
+              }
+              catch(std::exception &/*e*/)
+              {
+                logWarning<<"Unable to read clock file <"<<fileNameClock(fileNameVariableList)<<">, disabling receiver."<<Log::endl;
+                continue;
+              }
+            }
 
             // found valid station
             receiverAlternative(i) = k+1;
@@ -322,7 +362,8 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
           auto recv = receivers.at(idRecv);
           fileNameVariableList["station"]->setValue(recv->name());
           recv->createTracks(gnss->transmitters, minObsCountPerTrack, {GnssType::L5_G});
-          recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, codeMaxPosDiff, FALSE/*estimateKinematicPosition*/);
+          if(fileNameClock.empty())
+            recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, codeMaxPosDiff, FALSE/*estimateKinematicPosition*/);
           GnssReceiver::ObservationEquationList eqn(*recv, gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, GnssObservation::RANGE | GnssObservation::PHASE);
           recv->disableEpochsWithGrossCodeObservationOutliers(eqn, codeMaxPosDiff, 0.5);
           recv->writeTracks(fileNameTrackBefore, eqn, {GnssType::L5_G});

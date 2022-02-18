@@ -2719,6 +2719,11 @@
 								<xs:documentation>variable {station} available.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="inputfileClock" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="inputfileObservations" type="filename" minOccurs="0" default="gnssReceiver_{loopTime:%D}.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {station} available</xs:documentation>
