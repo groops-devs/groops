@@ -585,7 +585,7 @@ void cholesky(MatrixSliceRef A);
 * @param[out] rank Estimated rank of the matrix.
 * @param tolerance The algorithm terminates at the (K-1)st step if the pivot <= tolerance.
 * @return pivoting vector (@f$ P(piv[i],i)=1 @f$) */
-std::vector<UInt> choleskyPivoting(MatrixSliceRef A, UInt &rank, Double tolerance=0);
+std::vector<UInt> choleskyPivoting(MatrixSliceRef A, UInt &rank, Double tolerance=-1);
 
 /** @brief Inverte a matrix, if the cholesky decomposition of the matrix is given. */
 void cholesky2Inverse(MatrixSliceRef W);

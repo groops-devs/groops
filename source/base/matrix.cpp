@@ -397,13 +397,11 @@ void fillSymmetric(MatrixSliceRef A)
       throw(Exception("Dimension error"));
 
     if(A.isUpper())
-      for(UInt z=0; z<A.rows(); z++)
-        for(UInt s=0; s<z; s++)
-          A(z,s) = A(s,z);
+      for(UInt i=0; i<A.rows(); i++)
+        copy(A.slice(i, i+1, 1, A.columns()-i-1).trans(), A.slice(i+1, i, A.rows()-i-1, 1));
     else
-      for(UInt z=0; z<A.rows(); z++)
-        for(UInt s=0; s<z; s++)
-          A(s,z) = A(z,s);
+      for(UInt i=0; i<A.columns(); i++)
+        copy(A.slice(i+1, i, A.rows()-i-1, 1).trans(), A.slice(i, i+1, 1, A.columns()-i-1));
   }
   catch(std::exception &e)
   {
@@ -1295,7 +1293,7 @@ std::vector<UInt> choleskyPivoting(MatrixSliceRef A, UInt &rank, Double toleranc
     else
       const_cast<MatrixSlice&>(A)._rowMajorOrder = TRUE;
 
-    if(info!=0)
+    if(info<0)
       throw(Exception("cannot compute decomposition, error = "+info%"%i"s));
 
     rank = irank;
