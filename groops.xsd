@@ -2813,12 +2813,12 @@
 									</xs:element>
 									<xs:element name="outputfileTrackBefore" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track before cycle slip detection</xs:documentation>
+											<xs:documentation>variables {station}, {prn}, {trackTimeStart}, {trackTimeEnd}, {types}, TEC and MW-like combinations in cycles for each track before cycle slip detection</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="outputfileTrackAfter" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track after cycle slip detection</xs:documentation>
+											<xs:documentation>variables {station}, {prn}, {trackTimeStart}, {trackTimeEnd}, {types}, TEC and MW-like combinations in cycles for each track after cycle slip detection</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 								</xs:sequence>

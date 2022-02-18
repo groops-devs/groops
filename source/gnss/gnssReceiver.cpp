@@ -1048,37 +1048,38 @@ void GnssReceiver::writeTracks(const FileName &fileName, ObservationEquationList
       return;
 
     for(const auto &track : tracks)
-    {
-      std::vector<GnssType> typesPhase;
-      std::vector<UInt>     idEpochs;
-      Matrix                combinations;
-      Double                cycles2tecu;
-      Vector                range, tec;
-      linearCombinations(eqnList, track, extraTypes, typesPhase, idEpochs, combinations, cycles2tecu);
-      rangeAndTec(eqnList, track->transmitter->idTrans(), idEpochs, typesPhase, range, tec);
+      if(track->countObservations())
+      {
+        std::vector<GnssType> typesPhase;
+        std::vector<UInt>     idEpochs;
+        Matrix                combinations;
+        Double                cycles2tecu;
+        Vector                range, tec;
+        linearCombinations(eqnList, track, extraTypes, typesPhase, idEpochs, combinations, cycles2tecu);
+        rangeAndTec(eqnList, track->transmitter->idTrans(), idEpochs, typesPhase, range, tec);
 
-      Matrix A(idEpochs.size(), 2+combinations.columns());
-      axpy(1./cycles2tecu, tec, A.column(1));
-      copy(combinations, A.column(2, combinations.columns()));
+        Matrix A(idEpochs.size(), 2+combinations.columns());
+        axpy(1./cycles2tecu, tec, A.column(1));
+        copy(combinations, A.column(2, combinations.columns()));
 
-      std::vector<Time> timesTrack;
-      for(UInt idEpoch : idEpochs)
-        timesTrack.push_back(times.at(idEpoch));
-      for(UInt i=1; i<A.columns(); i++)
-        A.column(i) -= median(A.column(i));
+        std::vector<Time> timesTrack;
+        for(UInt idEpoch : idEpochs)
+          timesTrack.push_back(times.at(idEpoch));
+        for(UInt i=1; i<A.columns(); i++)
+          A.column(i) -= median(A.column(i));
 
-      std::string typeStr;
-      for(GnssType type : typesPhase)
-        typeStr += type.str().substr(0, 3);
-      typeStr = String::replaceAll(typeStr, "?", "");
-      VariableList varList;
-      addVariable("station",   name(),                     varList);
-      addVariable("prn",       track->transmitter->name(), varList);
-      addVariable("timeStart", timesTrack.front().mjd(),   varList);
-      addVariable("timeEnd",   timesTrack.back().mjd(),    varList);
-      addVariable("types",     typeStr,                    varList);
-      InstrumentFile::write(fileName(varList), Arc(timesTrack, A));
-    }
+        std::string typeStr;
+        for(GnssType type : typesPhase)
+          typeStr += type.str().substr(0, 3);
+        typeStr = String::replaceAll(typeStr, "?", "");
+        VariableList varList;
+        addVariable("station",        name(),                     varList);
+        addVariable("prn",            track->transmitter->name(), varList);
+        addVariable("trackTimeStart", timesTrack.front().mjd(),   varList);
+        addVariable("trackTimeEnd",   timesTrack.back().mjd(),    varList);
+        addVariable("types",          typeStr,                    varList);
+        InstrumentFile::write(fileName(varList), Arc(timesTrack, A));
+      }
   }
   catch(std::exception &e)
   {

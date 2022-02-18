@@ -76,8 +76,8 @@ GnssReceiverGeneratorStationNetwork::GnssReceiverGeneratorStationNetwork(Config 
       readConfig(config, "denoisingLambda",       denoisingLambda,     Config::DEFAULT,  "5",    "regularization parameter for total variation denoising used in cylce slip detection");
       readConfig(config, "tecWindowSize",         tecWindowSize,       Config::DEFAULT,  "15",   "(0 = disabled) window size for TEC smoothness evaluation used in cycle slip detection");
       readConfig(config, "tecSigmaFactor",        tecSigmaFactor,      Config::DEFAULT,  "3.5",  "factor applied to moving standard deviation used as threshold in TEC smoothness evaluation during cycle slip detection");
-      readConfig(config, "outputfileTrackBefore", fileNameTrackBefore, Config::OPTIONAL, "",     "variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track before cycle slip detection");
-      readConfig(config, "outputfileTrackAfter",  fileNameTrackAfter,  Config::OPTIONAL, "",     "variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track after cycle slip detection");
+      readConfig(config, "outputfileTrackBefore", fileNameTrackBefore, Config::OPTIONAL, "",     "variables {station}, {prn}, {trackTimeStart}, {trackTimeEnd}, {types}, TEC and MW-like combinations in cycles for each track before cycle slip detection");
+      readConfig(config, "outputfileTrackAfter",  fileNameTrackAfter,  Config::OPTIONAL, "",     "variables {station}, {prn}, {trackTimeStart}, {trackTimeEnd}, {types}, TEC and MW-like combinations in cycles for each track after cycle slip detection");
       endSequence(config);
     } // readConfigSequence(preprocessing)
     if(isCreateSchema(config)) return;
