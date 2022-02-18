@@ -1239,9 +1239,9 @@ void PreprocessingDualSst::computeEpochSigmas(UInt arcNo)
     const Double huber = 2.5;
 
     const UInt   countSst      = observationArc.at(arcNo).timesSst.size();
-    const Double thresholdSst1 = huber*huber*covFuncSst1(0,1);
-    const Double thresholdSst2 = huber*huber*covFuncSst2(0,1);
-    const Double thresholdAcc  = huber*huber*covFuncAcc (0,1);
+    const Double thresholdSst1 = huber*huber*covFuncSst1(0,1)*sigmaSst1(arcNo)*sigmaSst1(arcNo);
+    const Double thresholdSst2 = huber*huber*covFuncSst2(0,1)*sigmaSst2(arcNo)*sigmaSst2(arcNo);
+    const Double thresholdAcc  = huber*huber*covFuncAcc (0,1)*sigmaAcc(arcNo)*sigmaAcc(arcNo);
     for(UInt i=0; i<countSst; i++)
       arcListEpochSigmaSst1.at(arcNo).at(i).sigma = arcListEpochSigmaSst2.at(arcNo).at(i).sigma = arcListEpochSigmaAcc.at(arcNo).at(i).sigma = 0.0;
 
@@ -1257,7 +1257,7 @@ void PreprocessingDualSst::computeEpochSigmas(UInt arcNo)
     }
 
     const UInt   countPod1     = observationArc.at(arcNo).timesPod1.size();
-    const Double thresholdPod1 = huber*huber*(covFuncPod1(0,1)+covFuncPod1(0,2)+covFuncPod1(0,3));
+    const Double thresholdPod1 = huber*huber*(covFuncPod1(0,1)+covFuncPod1(0,2)+covFuncPod1(0,3))*sigmaPod1(arcNo)*sigmaPod1(arcNo);
     for(UInt i=0; i<countPod1; i++)
     {
       const Double e2 = std::pow(arcListResidualsPod1.at(arcNo).at(i).position.x(),2)+
@@ -1269,7 +1269,7 @@ void PreprocessingDualSst::computeEpochSigmas(UInt arcNo)
     }
 
     const UInt   countPod2     = observationArc.at(arcNo).timesPod2.size();
-    const Double thresholdPod2 = huber*huber*(covFuncPod2(0,1)+covFuncPod2(0,2)+covFuncPod2(0,3));
+    const Double thresholdPod2 = huber*huber*(covFuncPod2(0,1)+covFuncPod2(0,2)+covFuncPod2(0,3))*sigmaPod2(arcNo)*sigmaPod2(arcNo);
     for(UInt i=0; i<countPod2; i++)
     {
       const Double e2 = std::pow(arcListResidualsPod2.at(arcNo).at(i).position.x(),2)+
