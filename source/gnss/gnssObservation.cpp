@@ -141,7 +141,7 @@ Bool GnssObservation::init(const GnssReceiver &receiver, const GnssTransmitter &
     phaseWindupOld = phaseWindup;
     for(UInt i=0; i<size(); i++)
       if(at(i).type == GnssType::PHASE)
-        at(i).observation -= phaseWindup/(2*PI) * (LIGHT_VELOCITY/at(i).type.frequency());
+        at(i).observation -= phaseWindup/(2*PI) * (at(i).type.wavelength());
 
     return TRUE;
   }

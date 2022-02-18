@@ -23,7 +23,7 @@ Matrix GnssLambda::phaseDecorrelation(const std::vector<GnssType> &types, Double
     if(types.size() == 0)
       return Matrix();
     if(types.size() == 1)
-      return Matrix(1, 1, wavelengthFactor*LIGHT_VELOCITY/types.at(0).frequency());
+      return Matrix(1, 1, wavelengthFactor*types.at(0).wavelength());
 
     // design matrix
     // assume for every phase observation an additional range observation
@@ -35,7 +35,7 @@ Matrix GnssLambda::phaseDecorrelation(const std::vector<GnssType> &types, Double
       // phase observations:
       A(i, 0)   = 1.;                                                      // range
       A(i, 1)   = types.at(i).ionosphericFactor();                         // TEC
-      A(i, 2+i) = wavelengthFactor*LIGHT_VELOCITY/types.at(i).frequency(); // ambiguity
+      A(i, 2+i) = wavelengthFactor*types.at(i).wavelength(); // ambiguity
       // range observations (100 times less accurate):
       A(i+dim, 0) = 1./100.;       // range
       A(i+dim, 1) = -A(i, 1)/100.; // TEC
@@ -50,7 +50,7 @@ Matrix GnssLambda::phaseDecorrelation(const std::vector<GnssType> &types, Double
     // Transformation matrix cycles -> meter
     Matrix T = Z.transformBack(identityMatrix(types.size()));
     for(UInt idType=0; idType<types.size(); idType++)
-      T.row(idType) *= wavelengthFactor*LIGHT_VELOCITY/types.at(idType).frequency();
+      T.row(idType) *= wavelengthFactor*types.at(idType).wavelength();
 
     return T;
   }

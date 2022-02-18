@@ -563,7 +563,7 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
     {
       Vector value(track->types.size());
       for(UInt i=0; i<value.size(); i++)
-        value(i) = wavelengthFactor*LIGHT_VELOCITY/types.at(i).frequency() * ambiguityRandom(generator); // cycles to meter
+        value(i) = wavelengthFactor*track->types.at(i).wavelength() * ambiguityRandom(generator); // cycles to meter
       new Ambiguity(track.get(), value); // track is owner of ambiguity
     }
 
@@ -1189,7 +1189,7 @@ void GnssReceiver::cycleSlipsDetection(ObservationEquationList &eqnList, GnssTra
     for(GnssType type : extraTypes)
     {
       const UInt   idTrans    = track->transmitter->idTrans();
-      const Double wavelength = wavelengthFactor * LIGHT_VELOCITY/type.frequency();
+      const Double wavelength = wavelengthFactor * type.wavelength();
       const Double TEC        = type.ionosphericFactor();
       for(UInt idType=0; idType<track->types.size(); idType++)
         if(track->types.at(idType) == type)
@@ -1252,7 +1252,7 @@ void GnssReceiver::cycleSlipsRepairAtSameFrequency(ObservationEquationList &eqnL
                 continue;
               idxTrans.push_back(idTrans);
               idxEpoch.push_back(idEpoch);
-              values.push_back((eqn.l(idx)*eqn.types.at(idx).frequency() - eqn.l(idx1)*eqn.types.at(idx1).frequency())/LIGHT_VELOCITY); // diff in cycles
+              values.push_back((eqn.l(idx)-eqn.l(idx1))/eqn.types.at(idx).wavelength()); // diff in cycles
             }
 
         if(!values.size())
@@ -1264,12 +1264,15 @@ void GnssReceiver::cycleSlipsRepairAtSameFrequency(ObservationEquationList &eqnL
           v0s(i) = values.at(i)-std::round(values.at(i));
         const Double v0 = median(v0s);
 
+        if(std::fabs(std::fabs(v0)-0.5) < 0.05)
+          logWarning<<name()<<": a phase bias difference of near a half cycle ("<<v0<<") between "<<types.at(idType).str()<<" and "<<types.at(idType-1).str()<<" might causes problems"<<Log::endl;
+
         // fix jumps
         for(UInt i=0; i<values.size(); i++)
         {
           GnssObservationEquation &eqn = *eqnList(idxTrans.at(i), idxEpoch.at(i));
           const UInt   idx = GnssType::index(eqn.types, types.at(idType));
-          const Double v   = LIGHT_VELOCITY/eqn.types.at(idx).frequency() * std::round(values.at(i)-v0);
+          const Double v   = eqn.types.at(idx).wavelength() * std::round(values.at(i)-v0);
           eqn.l(idx) -= v;
           observation(idxTrans.at(i), idxEpoch.at(i))->at(eqn.types.at(idx)).observation -= v;
         }
@@ -1308,7 +1311,7 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
         if(types.at(idType) == GnssType::RANGE)
         {
           B(idType, 0) = 1.; //range
-          B(idType, 1) = Ionosphere::Ap/std::pow(types.at(idType).frequency(), 2); // TEC
+          B(idType, 1) = types.at(idType).ionosphericFactor(); // TEC
         }
       const Vector tau = QR_decomposition(B);
       QMult(B, tau, Bias);
@@ -1386,7 +1389,7 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
         for(UInt idType=0; idType<types.size(); idType++)
           if(types.at(idType) == GnssType::PHASE)
           {
-            const Double lambda = LIGHT_VELOCITY/types.at(idType).frequency();
+            const Double lambda = types.at(idType).wavelength();
             b(idType) = lambda * std::round(b(idType)/lambda);
             eqnList(idTrans, listEpoch.at(i))->l(GnssType::index(eqnList(idTrans, listEpoch.at(i))->types, types.at(idType))) -= b(idType);
             observation(idTrans, listEpoch.at(i))->at(types.at(idType)).observation -= b(idType);

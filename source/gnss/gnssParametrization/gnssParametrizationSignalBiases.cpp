@@ -115,7 +115,7 @@ void GnssParametrizationSignalBiases::writeResults(const GnssNormalEquationInfo 
           GnssSignalBias signalBias = trans->signalBias;
           for(UInt idType=0; idType<signalBias.types.size(); idType++)
             if(signalBias.types.at(idType) == GnssType::PHASE)
-              signalBias.biases.at(idType) = std::remainder(signalBias.biases.at(idType), LIGHT_VELOCITY/signalBias.types.at(idType).frequency());
+              signalBias.biases.at(idType) = std::remainder(signalBias.biases.at(idType), signalBias.types.at(idType).wavelength());
           fileNameVariableList["prn"]->setValue(trans->name());
           writeFileGnssSignalBias(fileNameOutTransmitter(fileNameVariableList).appendBaseName(suffix), signalBias);
         }
@@ -133,7 +133,7 @@ void GnssParametrizationSignalBiases::writeResults(const GnssNormalEquationInfo 
           GnssSignalBias signalBias = recv->signalBias;
           for(UInt idType=0; idType<signalBias.types.size(); idType++)
             if(signalBias.types.at(idType) == GnssType::PHASE)
-              signalBias.biases.at(idType) = std::remainder(signalBias.biases.at(idType), LIGHT_VELOCITY/signalBias.types.at(idType).frequency());
+              signalBias.biases.at(idType) = std::remainder(signalBias.biases.at(idType), signalBias.types.at(idType).wavelength());
           fileNameVariableList["station"]->setValue(recv->name());
           writeFileGnssSignalBias(fileNameOutReceiver(fileNameVariableList).appendBaseName(suffix), signalBias);
         }

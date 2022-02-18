@@ -840,7 +840,7 @@ void RinexObservation2GnssReceiver::addEpoch(const Time &time, const std::vector
           const UInt idType = std::distance(obsTypes.begin(), iter);
           epoch.observation.push_back(obs.at(idSat)(idType));
           if(type == GnssType::PHASE && obs.at(idSat)(idType) != 0.0)
-            epoch.observation.back() *= LIGHT_VELOCITY/(type+sat).frequency(); // cycles -> meters
+            epoch.observation.back() *= (type+sat).wavelength(); // cycles -> meters
         }
       }
 
