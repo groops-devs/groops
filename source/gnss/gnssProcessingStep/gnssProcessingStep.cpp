@@ -805,21 +805,26 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
     for(auto &info : infosResiduals)
       info.synchronizeAndPrint(normalEquationInfo.comm, 1e-3, maxChange);
 
+    logInfo<<"Parameter changes"<<Log::endl;
+
     // STEC analysis
     // -------------
-    Parallel::reduceMin(minSTEC,   0, normalEquationInfo.comm);
-    Parallel::reduceMax(maxSTEC,   0, normalEquationInfo.comm);
-    Parallel::reduceSum(meanSTEC,  0, normalEquationInfo.comm);
-    Parallel::reduceSum(stdSTEC,   0, normalEquationInfo.comm);
     Parallel::reduceSum(countSTEC, 0, normalEquationInfo.comm);
-    stdSTEC   = std::sqrt((stdSTEC-meanSTEC*meanSTEC/countSTEC)/(countSTEC-1));
-    meanSTEC /= countSTEC;
-    std::string infoTecStr = " (total: "+meanSTEC%"%.2f +- "s+stdSTEC%"%.2f ["s+minSTEC%"%.2f -- "s+maxSTEC%"%.2f])"s;
-    Parallel::broadCast(infoTecStr, 0, normalEquationInfo.comm);
-    infoTec.info += infoTecStr;
+    Parallel::broadCast(countSTEC, 0, normalEquationInfo.comm);
+    if(countSTEC)
+    {
+      Parallel::reduceMin(minSTEC,   0, normalEquationInfo.comm);
+      Parallel::reduceMax(maxSTEC,   0, normalEquationInfo.comm);
+      Parallel::reduceSum(meanSTEC,  0, normalEquationInfo.comm);
+      Parallel::reduceSum(stdSTEC,   0, normalEquationInfo.comm);
+      stdSTEC   = std::sqrt((stdSTEC-meanSTEC*meanSTEC/countSTEC)/(countSTEC-1));
+      meanSTEC /= countSTEC;
+      std::string infoTecStr = " (total: "+meanSTEC%"%.2f +- "s+stdSTEC%"%.2f ["s+minSTEC%"%.2f -- "s+maxSTEC%"%.2f])"s;
+      Parallel::broadCast(infoTecStr, 0, normalEquationInfo.comm);
+      infoTec.info += infoTecStr;
+      infoTec.synchronizeAndPrint(normalEquationInfo.comm, 0, maxChange);
+    }
 
-    logInfo<<"Parameter changes"<<Log::endl;
-    infoTec.synchronizeAndPrint(normalEquationInfo.comm, 0, maxChange);
     return gnss->updateParameter(normalEquationInfo, x, Wz);
   }
   catch(std::exception &e)

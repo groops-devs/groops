@@ -326,6 +326,7 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
     // design matrix
     // -------------
     A = Matrix(obsCount, 10 + obsCount + T.columns());
+    B = Matrix();
     for(UInt i=0; i<obsCount; i++)
     {
       if((types.at(i) == GnssType::RANGE) || (types.at(i) == GnssType::PHASE))
@@ -345,7 +346,6 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
       A(i, idxUnit+i) = 1.0; // unit matrix
     }  // for(i=0..obsCount)
     copy(T, A.column(idxUnit + obsCount, T.columns()));
-    B = A.column(idxSTEC);
 
     // antenna correction and other corrections
     // ----------------------------------------
