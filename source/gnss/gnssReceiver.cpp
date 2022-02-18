@@ -857,12 +857,16 @@ void GnssReceiver::deleteTrack(ObservationEquationList &eqnList, UInt idTrack)
 {
   try
   {
-    for(UInt idEpoch=tracks.at(idTrack)->idEpochStart; idEpoch<=tracks.at(idTrack)->idEpochEnd; idEpoch++)
+    const UInt idTrans      = tracks.at(idTrack)->transmitter->idTrans();
+    const UInt idEpochStart = tracks.at(idTrack)->idEpochStart;
+    const UInt idEpochEnd   = tracks.at(idTrack)->idEpochEnd;
+    for(UInt idEpoch=idEpochStart; idEpoch<=idEpochEnd; idEpoch++)
     {
-      deleteObservation(tracks.at(idTrack)->transmitter->idTrans(), idEpoch);
-      eqnList.deleteObservationEquation(tracks.at(idTrack)->transmitter->idTrans(), idEpoch);
+      deleteObservation(idTrans, idEpoch); // possibly disables receiver and clears all tracks
+      eqnList.deleteObservationEquation(idTrans, idEpoch);
     }
-    tracks.erase(tracks.begin()+idTrack);
+    if(tracks.size() > idTrack)
+      tracks.erase(tracks.begin()+idTrack);
   }
   catch(std::exception &e)
   {
