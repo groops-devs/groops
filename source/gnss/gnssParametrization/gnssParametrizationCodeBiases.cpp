@@ -146,7 +146,7 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
             Matrix A(types.size(), 1+T.columns());
             for(UInt i=0; i<types.size(); i++)
               if(types.at(i) == GnssType::RANGE)
-                A(i, 0) = 1.;  // clock
+                A(i, 0) = -1.;  // clock
             UInt idx;
             for(UInt i=0; i<typesTrans.size(); i++)
               if(typesTrans.at(i).isInList(para->trans->signalBias.types, idx))
@@ -364,7 +364,7 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
                 for(UInt i=0; i<types.size(); i++)
                   copy(paraRecv.at(recv->idRecv())->Bias.row(GnssType::index(recv->signalBias.types, types.at(i))),
                       A.slice(i, idxBiasRecv.at(recv->idRecv()), 1, paraRecv.at(recv->idRecv())->Bias.columns()));
-              if(idxBiasTrans.at(trans->idTrans()) != NULLINDEX)  // bias recv
+              if(idxBiasTrans.at(trans->idTrans()) != NULLINDEX)  // bias trans
                 for(UInt k=0; k<typesTrans.size(); k++)
                   matMult(1., T.column(k), paraTrans.at(trans->idTrans())->Bias.row(GnssType::index(trans->signalBias.types, typesTrans.at(k))),
                           A.column(idxBiasTrans.at(trans->idTrans()), paraTrans.at(trans->idTrans())->Bias.columns()));

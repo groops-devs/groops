@@ -78,7 +78,7 @@ void GnssParametrizationSignalBiases::init(Gnss *gnss, Parallel::CommunicatorPtr
           try
           {
             fileNameVariableList["station"]->setValue(gnss->receivers.at(idRecv)->name());
-            readFileGnssSignalBias(fileNameInTransmitter(fileNameVariableList), gnss->receivers.at(idRecv)->signalBias);
+            readFileGnssSignalBias(fileNameInReceiver(fileNameVariableList), gnss->receivers.at(idRecv)->signalBias);
           }
           catch(std::exception &/*e*/)
           {

@@ -40,6 +40,8 @@ class GnssReceiver : public GnssTransceiver
   std::vector<GnssObservation> obsMem;
   std::vector<std::vector<GnssObservation*>> observations_; // observations at receiver (for each epoch, for each transmitter)
 
+  void copyObservations2ContinuousMemoryBlock();
+
 public:
   // public variables
   // ----------------

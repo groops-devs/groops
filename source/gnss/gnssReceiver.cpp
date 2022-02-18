@@ -37,6 +37,38 @@ GnssReceiver::GnssReceiver(Bool isMyRank, Bool isEarthFixed, const std::string &
 
 /***********************************************/
 
+// this seems to improve the performance
+void GnssReceiver::copyObservations2ContinuousMemoryBlock()
+{
+  try
+  {
+    UInt count = 0;
+    for(const auto &obsEpoch : observations_)
+      for(const GnssObservation *obs : obsEpoch)
+        if(obs)
+          count++;
+    obsMem.resize(count);
+    obsMem.shrink_to_fit();
+    // copy
+    count = 0;
+    for(auto &obsEpoch : observations_)
+      for(GnssObservation *&obs : obsEpoch)
+        if(obs)
+        {
+          obsMem.at(count) = *obs;
+          obsMem.at(count).shrink_to_fit();
+          delete obs;
+          obs = &obsMem.at(count++);
+        }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
 void GnssReceiver::disable(UInt idEpoch)
 {
   try
@@ -228,8 +260,8 @@ void GnssReceiver::ObservationEquationList::deleteObservationEquation(UInt idTra
 /***********************************************/
 
 void GnssReceiver::readObservations(const FileName &fileName, const std::vector<GnssTransmitterPtr> &transmitters,
-                                      std::function<Rotary3d(const Time &time)> rotationCrf2Trf, const Time &timeMargin, Angle elevationCutOff,
-                                      const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group)
+                                    std::function<Rotary3d(const Time &time)> rotationCrf2Trf, const Time &timeMargin, Angle elevationCutOff,
+                                    const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group)
 {
   try
   {
@@ -362,31 +394,8 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
       logWarning<<name()<<": removed undefined observations"<<ss.str()<<Log::endl;
     }
 
-    // median sampling
-    // ---------------
     observationSampling = medianSampling(observationTimes).seconds();
-
-    // Copy observations to a continuous memory block
-    // ----------------------------------------------
-    // count observations
-    UInt count = 0;
-    for(const auto &obsEpoch : observations_)
-      for(const GnssObservation *obs : obsEpoch)
-        if(obs)
-          count++;
-    obsMem.resize(count);
-    obsMem.shrink_to_fit();
-    // copy
-    count = 0;
-    for(auto &obsEpoch : observations_)
-      for(GnssObservation *&obs : obsEpoch)
-        if(obs)
-        {
-          obsMem.at(count) = *obs;
-          obsMem.at(count).shrink_to_fit();
-          delete obs;
-          obs = &obsMem.at(count++);
-        }
+    copyObservations2ContinuousMemoryBlock();
   }
   catch(std::exception &e)
   {
@@ -505,31 +514,8 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
         disable(idEpoch);
     } // for(arcEpoch)
 
-    // median sampling
-    // ---------------
     observationSampling = medianSampling(times).seconds();
-
-    // Copy observations to a continuous memory block
-    // ----------------------------------------------
-    // count observations
-    UInt count = 0;
-    for(const auto &obsEpoch : observations_)
-      for(const GnssObservation *obs : obsEpoch)
-        if(obs)
-          count++;
-    obsMem.resize(count);
-    obsMem.shrink_to_fit();
-    // copy
-    count = 0;
-    for(auto &obsEpoch : observations_)
-      for(GnssObservation *&obs : obsEpoch)
-        if(obs)
-        {
-          obsMem.at(count) = *obs;
-          obsMem.at(count).shrink_to_fit();
-          delete obs;
-          obs = &obsMem.at(count++);
-        }
+    copyObservations2ContinuousMemoryBlock();
 
     // ambiguities
     // -----------
