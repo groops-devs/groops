@@ -78,8 +78,8 @@ class GnssParametrizationClocksModel : public GnssParametrizationBase
   std::vector<std::vector<GnssParameterIndex>> indexTrans, indexRecv;                 // for each trans/recv and epoch
   std::vector<GnssParameterIndex>              indexDriftTrans, indexDriftRecv;       // for each trans/recv
   Vector                                       isMyRank;                              // for each trans
-  Vector                                       driftTrans, clock0Trans;               // for each trans [m/s], [m]
-  Vector                                       driftRecv,  clock0Recv;                // for each recv  [m/s], [m]
+  Vector                                       driftTrans, drift0Trans, clock0Trans;  // for each trans [m/s], [m/s], [m]
+  Vector                                       driftRecv,  drift0Recv,  clock0Recv;   // for each recv  [m/s], [m/s], [m]
   Vector                                       sigma0Trans,     sigma0Recv;           // for each trans/recv  [m]
   std::vector<std::vector<Double>>             sigmaEpochTrans, sigmaEpochRecv;       // for each trans/recv and epoch  [m]
   std::vector<Bool>                            isFirstTrans,    isFirstRecv;          // for each trans/recv

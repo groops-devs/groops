@@ -7,6 +7,7 @@
 - Bugfix:           gnssProcessingStep: uninitialized normalEquationInfo.
 - Bugfix:           gnssProcessingStepForEachReceiverSeparately: variableReceiver was not set.
 - Bugfix:           gnssProcessingStepResolveAmbiguities: for writing empty ambiguity file.
+- Bugfix:           gnssParametrizationClocksModel: Fixed zero mean constraint.
 - Bugfix:           gnssParametrizationLeoDynamicOrbits: in parallel excecution.
 - Bugfix:           gnssParametrizationKinematicPositions: in parallel excecution.
 - Bugfix:           gnssTransmitter: noAntennaPatternFound->ignoreObservation not working correctly.

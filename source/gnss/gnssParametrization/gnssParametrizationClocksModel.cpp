@@ -60,7 +60,7 @@ void GnssParametrizationClocksModel::init(Gnss *gnss, Parallel::CommunicatorPtr 
     // -----------------------------------
     isMyRank     = Vector(gnss->transmitters.size());
     clock0Trans  = Vector(gnss->transmitters.size());
-    driftTrans   = Vector(gnss->transmitters.size());
+    drift0Trans  = Vector(gnss->transmitters.size());
     sigma0Trans  = Vector(gnss->transmitters.size(), 0.02);
     sigmaEpochTrans.resize(gnss->transmitters.size());
     isFirstTrans.resize(gnss->transmitters.size(), TRUE);
@@ -83,14 +83,15 @@ void GnssParametrizationClocksModel::init(Gnss *gnss, Parallel::CommunicatorPtr 
           }
         Vector x = leastSquares(Matrix(A), l);
         clock0Trans(idTrans) = x(0);
-        driftTrans(idTrans)  = x(1);
+        drift0Trans(idTrans) = x(1);
       }
     }
+    driftTrans = drift0Trans;
 
     // determine apriori receiver drift
     // --------------------------------
     clock0Recv = Vector(gnss->receivers.size());
-    driftRecv  = Vector(gnss->receivers.size());
+    drift0Recv  = Vector(gnss->receivers.size());
     sigma0Recv = Vector(gnss->receivers.size(), 0.05*LIGHT_VELOCITY); // 50 ms
     sigmaEpochRecv.resize(gnss->receivers.size());
     isFirstRecv.resize(gnss->receivers.size(), TRUE);
@@ -112,9 +113,10 @@ void GnssParametrizationClocksModel::init(Gnss *gnss, Parallel::CommunicatorPtr 
           }
         Vector x = leastSquares(Matrix(A), l);
         clock0Recv(idRecv) = x(0);
-        driftRecv(idRecv)  = x(1);
+        drift0Recv(idRecv) = x(1);
       }
     }
+    driftRecv = drift0Recv;
   }
   catch(std::exception &e)
   {
@@ -296,7 +298,7 @@ void GnssParametrizationClocksModel::constraintsEpoch(const GnssNormalEquationIn
           lTransEpoch = Vector(gnss->transmitters.size());
           for(UInt idTrans=0; idTrans<indexTrans.size(); idTrans++)
             if(selectedTransmittersZeroMean.at(idTrans) && indexTrans.at(idTrans).size() && indexTrans.at(idTrans).at(idEpoch) && isMyRank(idTrans))
-              lTransEpoch(idTrans) = clock0Trans(idTrans) + driftTrans(idTrans) * (gnss->times.at(idEpoch)-gnss->times.front()).seconds()
+              lTransEpoch(idTrans) = clock0Trans(idTrans) + drift0Trans(idTrans) * (gnss->times.at(idEpoch)-gnss->times.front()).seconds()
                                    - LIGHT_VELOCITY*gnss->transmitters.at(idTrans)->clockError(idEpoch);
           Parallel::reduceSum(lTransEpoch, 0, normalEquationInfo.comm);
         }
@@ -308,7 +310,7 @@ void GnssParametrizationClocksModel::constraintsEpoch(const GnssNormalEquationIn
           lRecvEpoch = Vector(gnss->receivers.size());
           for(UInt idRecv=0; idRecv<indexRecv.size(); idRecv++)
             if(selectedReceiversZeroMean.at(idRecv) && indexRecv.at(idRecv).size() && indexRecv.at(idRecv).at(idEpoch) && gnss->receivers.at(idRecv)->isMyRank())
-              lRecvEpoch(idRecv) = clock0Recv(idRecv) + driftRecv(idRecv) * (gnss->times.at(idEpoch)-gnss->times.front()).seconds()
+              lRecvEpoch(idRecv) = clock0Recv(idRecv) + drift0Recv(idRecv) * (gnss->times.at(idEpoch)-gnss->times.front()).seconds()
                                  - LIGHT_VELOCITY*gnss->receivers.at(idRecv)->clockError(idEpoch);
           Parallel::reduceSum(lRecvEpoch, 0, normalEquationInfo.comm);
         }
@@ -404,7 +406,7 @@ Double GnssParametrizationClocksModel::updateParameter(const GnssNormalEquationI
         {
           const Double dClock = x(normalEquationInfo.index(indexTrans.at(trans->idTrans()).at(idEpoch)), 0);
           trans->updateClockError(idEpoch, dClock/LIGHT_VELOCITY);
-          if(infoTrans.update(1e3*dClock))
+          if(trans->useable(idEpoch) && infoTrans.update(1e3*dClock))
             infoTrans.info = "clock transmitter ("+trans->name()+", "+gnss->times.at(idEpoch).dateTimeStr()+")";
         }
 
@@ -460,6 +462,7 @@ Double GnssParametrizationClocksModel::updateParameter(const GnssNormalEquationI
         sigma0Trans(idTrans) *= Vce::standardDeviation(ePe, sum(r), huber, huberPower);
         if(isFirstTrans.at(idTrans))
           sigma0Trans(idTrans) = 1.4826 * median(e);
+
         for(UInt i=0; i<normalEquationInfo.idEpochs.size()-1; i++)
         {
           const UInt idEpoch = normalEquationInfo.idEpochs.at(i);
