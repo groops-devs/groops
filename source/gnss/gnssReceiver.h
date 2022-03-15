@@ -55,7 +55,8 @@ public:
   Double                    observationSampling;
   Bool                      integerAmbiguities;
   Double                    wavelengthFactor; // Factor to account for half-wavelength observations (collected by codeless squaring techniques).
-
+  std::vector<std::string>  preprocessingInfos;
+  std::string               disableReason;
 
   GnssReceiver(Bool isMyRank, Bool isEarthFixed, const std::string &name, const GnssStationInfo &info,
                GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction, const Vector &useableEpochs,
@@ -68,7 +69,10 @@ public:
   UInt  idRecv() const {return id_;}
 
   /** @brief Disable given epoch (or all epochs). */
-  void disable(UInt idEpoch=NULLINDEX) override;
+  void disable(UInt idEpoch, const std::string &reason) override;
+
+  /** @brief Disable receiver completely. */
+  void disable(const std::string &reason) override;
 
   Bool isMyRank() const {return isMyRank_;}
 
@@ -133,15 +137,14 @@ public:
                             const std::function<void(GnssObservationEquation &eqn)> &reduceModels, GnssObservation::Group group);
 
     GnssObservationEquation *operator()(UInt idTrans, UInt idEpoch) const;
-    void deleteObservationEquation(UInt idTrans, UInt idEpoch);
   };
 
-  friend class ObservationEquationList;
+  void preprocessingInfo(const std::string &info, UInt countEpochs=NULLINDEX, UInt countObservations=NULLINDEX, UInt countTracks=NULLINDEX);
 
   /** @brief Reads observations from a file. Member variable @a times must be set.
   * Initializes observations. Receiver and Transmitter positions, orientations, ... must be initialized beforehand.
   * Delete observations that don't match the types from receiver and transmitter definition. */
-  void readObservations(const FileName &fileName, const std::vector<GnssTransmitterPtr> &transmitters, std::function<Rotary3d(const Time &time)> rotationCrf2Trf,
+  void readObservations(const FileName &fileName, const std::vector<GnssTransmitterPtr> &transmitters, const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
                         const Time &timeMargin, Angle elevationCutOff, const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group);
 
   /** @brief Simulate observations. Member variable @a times must be set.
@@ -149,14 +152,14 @@ public:
   * Delete observations that don't match the types from receiver and transmitter definition. */
   void simulateObservations(const std::vector<GnssType> &types, NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                             const std::vector<GnssTransmitterPtr> &transmitters,
-                            std::function<Rotary3d(const Time &time)> rotationCrf2Trf,
+                            const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
                             const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
                             UInt minObsCountPerTrack, Angle elevationCutOff, Angle elevationTrackMinimum,
                             const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group);
 
   /** @brief Estimate coarse receiver clock errors from a Precise Point Positioning (PPP) code solution.
   * If @p estimateKinematicPosition is TRUE, the receiver position is estimated at each epoch, otherwise it is estimated once for all epochs.*/
-  void estimateInitialClockErrorFromCodeObservations(const std::vector<GnssTransmitterPtr> &transmitters, std::function<Rotary3d(const Time &time)> rotationCrf2Trf,
+  void estimateInitialClockErrorFromCodeObservations(const std::vector<GnssTransmitterPtr> &transmitters, const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
                                                      const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
                                                      Double huber, Double huberPower, Double maxPosDiff, Bool estimateKinematicPosition);
 
@@ -170,7 +173,7 @@ public:
   void createTracks(const std::vector<GnssTransmitterPtr> &transmitters, UInt minObsCountPerTrack, const std::vector<GnssType> &extraTypes={});
 
   /** @brief delete track and all related observations. */
-  void deleteTrack(ObservationEquationList &eqn, UInt idTrack);
+  void deleteTrack(UInt idTrack);
 
   /** @brief Removes tracks that never exceed @p minElevation (in radian). */
   void removeLowElevationTracks(ObservationEquationList &eqn, Angle minElevation);

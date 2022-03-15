@@ -115,3 +115,57 @@ void GnssReceiverGenerator::simulation(const std::vector<GnssType> &types, Noise
 }
 
 /***********************************************/
+/***********************************************/
+
+void GnssReceiverGeneratorBase::printPreprocessingInfos(const std::string &header, const std::vector<GnssReceiverPtr> &receivers,
+                                                        Bool disabledOnly, Parallel::CommunicatorPtr comm)
+{
+  try
+  {
+    // distribute process id of receivers
+    // ----------------------------------
+    Vector recvProcess(receivers.size());
+    for(UInt idRecv=0; idRecv<receivers.size(); idRecv++)
+      if(receivers.at(idRecv)->isMyRank() || !receivers.at(idRecv)->disableReason.empty())
+        recvProcess(idRecv) = Parallel::myRank(comm)+1;
+    Parallel::reduceSum(recvProcess, 0, comm);
+    Parallel::broadCast(recvProcess, 0, comm);
+
+    // preprocessing infos
+    // -------------------
+    for(UInt idRecv=0; idRecv<receivers.size(); idRecv++)
+      if(recvProcess(idRecv))
+      {
+        std::string              reason = receivers.at(idRecv)->disableReason;
+        std::vector<std::string> infos  = receivers.at(idRecv)->preprocessingInfos;
+        if(recvProcess(idRecv) > 1)
+        {
+          if(recvProcess(idRecv)-1 == Parallel::myRank(comm))
+          {
+            Parallel::send(reason, 0, comm);
+            Parallel::send(infos,  0, comm);
+          }
+          if(Parallel::isMaster(comm))
+          {
+            Parallel::receive(reason, static_cast<UInt>(recvProcess(idRecv)-1), comm);
+            Parallel::receive(infos,  static_cast<UInt>(recvProcess(idRecv)-1), comm);
+          }
+        }
+
+        if(Parallel::isMaster(comm) && !(disabledOnly && reason.empty()))
+        {
+          logInfo<<receivers.at(idRecv)->name()<<": "<<header<<Log::endl;
+          if(!reason.empty())
+            logWarning<<receivers.at(idRecv)->name()<<" disabled: "<<reason<<Log::endl;
+          for(auto &info : infos)
+            logInfo<<"  "<<info<<Log::endl;
+        }
+      }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/

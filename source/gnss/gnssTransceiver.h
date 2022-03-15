@@ -55,8 +55,11 @@ public:
   /** @brief Is the platform usable at given epoch (or all epochs). */
   Bool useable(UInt idEpoch=NULLINDEX) const {return countUseableEpochs && ((idEpoch == NULLINDEX) || useableEpochs(idEpoch));}
 
-  /** @brief Disable given epoch (or all epochs). */
-  virtual void disable(UInt idEpoch=NULLINDEX);
+  /** @brief Disable given epoch. */
+  virtual void disable(UInt idEpoch, const std::string &reason);
+
+  /** @brief Disable transceiver. */
+  virtual void disable(const std::string &reason);
 
   /** @brief Allowed signal types. Empty if no  definition was provided. */
   std::vector<GnssType> definedTypes(const Time &time) const;
@@ -82,21 +85,30 @@ inline GnssTransceiver::GnssTransceiver(const std::string &name, const GnssStati
 
 /***********************************************/
 
-inline void GnssTransceiver::disable(UInt idEpoch)
+inline void GnssTransceiver::disable(UInt idEpoch, const std::string &reason)
 {
   try
   {
-    if(idEpoch != NULLINDEX)
-    {
-      if(useableEpochs(idEpoch))
-        countUseableEpochs--;
-      useableEpochs(idEpoch) = FALSE;
-    }
-    else
-    {
-      countUseableEpochs = 0;
-      useableEpochs.setNull();
-    }
+    if(useableEpochs(idEpoch))
+      countUseableEpochs--;
+    useableEpochs(idEpoch) = FALSE;
+    if(countUseableEpochs == 0)
+      disable(reason);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+inline void GnssTransceiver::disable(const std::string &/*reason*/)
+{
+  try
+  {
+    countUseableEpochs = 0;
+    useableEpochs.setNull();
   }
   catch(std::exception &e)
   {

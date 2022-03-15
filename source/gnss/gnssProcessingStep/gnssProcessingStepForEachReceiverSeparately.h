@@ -113,7 +113,7 @@ inline void GnssProcessingStepForEachReceiverSeparately::process(GnssProcessingS
         {
           logError<<state.gnss->receivers.at(idRecv)->name()<<": disabled due to exception in single receiver loop:"<<Log::endl;
           logError<<e.what()<<Log::endl;
-          state.gnss->receivers.at(idRecv)->disable();
+          state.gnss->receivers.at(idRecv)->disable(e.what());
         }
       } // for(idRecv)
 

@@ -87,9 +87,11 @@ void GnssParametrizationTemporalBias::init(Gnss *gnss, Parallel::CommunicatorPtr
 
           if(arc.size())
           {
-            Polynomial polynomial;
-            polynomial.init(arc.times(), 3);
+            Polynomial polynomial(arc.times(), 3, FALSE/*throwException*/); // linear interpolation
             para->bias = polynomial.interpolate(gnss->times, arc.matrix().column(1));
+            for(UInt idEpoch=0; idEpoch<para->bias.size(); idEpoch++)
+              if(std::isnan(para->bias.at(idEpoch)))
+                gnss->transmitters.at(idTrans)->disable(idEpoch, "no a priori temporalBias for "+type.str());
           }
         }
 

@@ -124,8 +124,8 @@ void Gnss::synchronizeTransceivers(Parallel::CommunicatorPtr comm)
     for(UInt idRecv=0; idRecv<receivers.size(); idRecv++)
       if(recvProcess(idRecv))
         Parallel::broadCast(static_cast<GnssTransceiver&>(*receivers.at(idRecv)), static_cast<UInt>(recvProcess(idRecv)-1), comm);
-      else
-        receivers.at(idRecv)->disable();
+      else if(receivers.at(idRecv)->useable())
+        receivers.at(idRecv)->disable("");
 
     // collect observation types
     // -------------------------
@@ -232,7 +232,7 @@ void Gnss::initParameter(GnssNormalEquationInfo &normalEquationInfo)
             {
               // logWarningOnce<<trans->name()<<" disabled epoch "<<times.at(idEpoch).dateTimeStr()<<Log::endl;
               disabledEpochsTrans++;
-              trans->disable(idEpoch);
+              trans->disable(idEpoch, "failed parametrization requirements");
               mustSync = TRUE;
               for(const auto &recv : receivers)
                 if(recv->isMyRank() && recv->observation(trans->idTrans(), idEpoch))
@@ -246,7 +246,7 @@ void Gnss::initParameter(GnssNormalEquationInfo &normalEquationInfo)
           if(epochCount < transCount.at(trans->idTrans()))
           {
             logWarningOnce<<trans->name()<<" disabled: not enough estimable epochs ("<<epochCount<<")"<<Log::endl;
-            trans->disable();
+            trans->disable("not enough estimable epochs ("+epochCount%"%i)"s);
             mustSync = TRUE;
             for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
               for(const auto &recv : receivers)
@@ -271,7 +271,7 @@ void Gnss::initParameter(GnssNormalEquationInfo &normalEquationInfo)
               {
                 // logWarning<<recv->name()<<" disabled epoch "<<times.at(idEpoch).dateTimeStr()<<Log::endl;
                 disabledEpochsRecv++;
-                recv->disable(idEpoch);
+                recv->disable(idEpoch, "failed parametrization requirements");
                 mustSync = TRUE;
               }
               else if(count > recvCountEpoch.at(recv->idRecv()))
@@ -281,7 +281,7 @@ void Gnss::initParameter(GnssNormalEquationInfo &normalEquationInfo)
           if(epochCount < recvCount.at(recv->idRecv()))
           {
             logWarning<<recv->name()<<" disabled: not enough estimable epochs ("<<epochCount<<")"<<Log::endl;
-            recv->disable();
+            recv->disable("not enough estimable epochs ("+epochCount%"%i)"s);
             mustSync = TRUE;
           }
         }

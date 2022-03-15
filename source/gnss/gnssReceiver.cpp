@@ -69,22 +69,35 @@ void GnssReceiver::copyObservations2ContinuousMemoryBlock()
 
 /***********************************************/
 
-void GnssReceiver::disable(UInt idEpoch)
+void GnssReceiver::disable(UInt idEpoch, const std::string &reason)
 {
   try
   {
-    GnssTransceiver::disable(idEpoch);
-    if((idEpoch != NULLINDEX) && (idEpoch < observations_.size()))
+    GnssTransceiver::disable(idEpoch, reason);
+    if(idEpoch < observations_.size())
       observations_.at(idEpoch).clear();
-    if(!useable())
-    {
-      isMyRank_ = FALSE;
-      obsMem.clear();
-      obsMem.shrink_to_fit();
-      observations_.clear();
-      observations_.shrink_to_fit();
-      tracks.clear();
-    }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void GnssReceiver::disable(const std::string &reason)
+{
+  try
+  {
+    GnssTransceiver::disable(reason);
+    if(!reason.empty() && isMyRank())
+      disableReason = reason;
+    isMyRank_ = FALSE;
+    obsMem.clear();
+    obsMem.shrink_to_fit();
+    observations_.clear();
+    observations_.shrink_to_fit();
+    tracks.clear();
   }
   catch(std::exception &e)
   {
@@ -111,7 +124,7 @@ void GnssReceiver::deleteObservation(UInt idTrans, UInt idEpoch)
       return;
     observations_[idEpoch][idTrans] = nullptr;
     if(std::all_of(observations_[idEpoch].begin(), observations_[idEpoch].end(), [](auto obs) {return obs == nullptr;}))
-      disable(idEpoch);
+      disable(idEpoch, "no valid epochs left");
   }
   catch(std::exception &e)
   {
@@ -249,23 +262,51 @@ GnssObservationEquation *GnssReceiver::ObservationEquationList::operator()(UInt 
 }
 
 /***********************************************/
+/***********************************************/
 
-void GnssReceiver::ObservationEquationList::deleteObservationEquation(UInt idTrans, UInt idEpoch)
+void GnssReceiver::preprocessingInfo(const std::string &info, UInt countEpochs, UInt countObservations, UInt countTracks)
 {
-  if((*this)(idTrans, idEpoch))
-    eqn[idEpoch][idTrans] = nullptr;
+  try
+  {
+    if(countEpochs == NULLINDEX)
+    {
+      countEpochs = 0;
+      for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
+        if(useable(idEpoch))
+          countEpochs++;
+    }
+
+    if(countObservations == NULLINDEX)
+    {
+      countObservations = 0;
+      for(UInt idEpoch=0; idEpoch<observations_.size(); idEpoch++)
+        for(UInt idTrans=0; idTrans<observations_.at(idEpoch).size(); idTrans++)
+          if(observations_[idEpoch][idTrans])
+            countObservations++;
+    }
+
+    if(countTracks == NULLINDEX)
+      countTracks = tracks.size();
+
+    preprocessingInfos.push_back(countEpochs%"%6i epochs,"s+countObservations%"%7i observations,"s+countTracks%"%4i tracks: "s+info);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
 
 /***********************************************/
-/***********************************************/
 
 void GnssReceiver::readObservations(const FileName &fileName, const std::vector<GnssTransmitterPtr> &transmitters,
-                                    std::function<Rotary3d(const Time &time)> rotationCrf2Trf, const Time &timeMargin, Angle elevationCutOff,
+                                    const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, const Time &timeMargin, Angle elevationCutOff,
                                     const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group)
 {
   try
   {
     GnssReceiverArc arc = InstrumentFile::read(fileName);
+    preprocessingInfo("in file <"+fileName.str()+">", arc.size(),
+                      std::accumulate(arc.begin(), arc.end(), UInt(0), [](UInt count, const auto &e){return count+e.satellite.size();}), 0);
 
     std::vector<Time> observationTimes;
     Vector phaseWindup(transmitters.size());
@@ -276,7 +317,7 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
     {
       // search time slot
       while((idEpoch < times.size()) && (times.at(idEpoch)+timeMargin < arc.at(arcEpoch).time))
-        disable(idEpoch++);
+        disable(idEpoch++, "missing epochs in file");
       if(idEpoch >= times.size())
         break;
       if((arc.at(arcEpoch).time+timeMargin < times.at(idEpoch)) || !useable(idEpoch))
@@ -320,17 +361,17 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
             // check completeness
             if(type.hasWildcard(GnssType::TYPE + GnssType::FREQUENCY + GnssType::SYSTEM + GnssType::PRN))
             {
-              logWarning<<name()<<" "<<type.str()<<" is not complete"<<Log::endl;
+              logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": "<<type.str()<<" is not complete"<<Log::endl;
               continue;
             }
             if((type.frequencyNumber() == 9999) && (type == GnssType::GLONASS) && ((type == GnssType::G1) || (type == GnssType::G2)))
             {
-              logWarning<<name()<<" "<<type.str()<<": GLONASS frequency number not set"<<Log::endl;
+              logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": "<<type.str()<<": GLONASS frequency number not set"<<Log::endl;
               continue;
             }
             if((type.frequencyNumber() != 9999) && !((type == GnssType::GLONASS) && ((type == GnssType::G1) || (type == GnssType::G2))))
             {
-              logWarning<<name()<<" "<<type.str()<<": GLONASS frequency number is set"<<Log::endl;
+              logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": "<<type.str()<<": GLONASS frequency number is set"<<Log::endl;
               continue;
             }
 
@@ -373,18 +414,18 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
         if(observations_.at(idEpoch).size() <= idTrans)
           observations_.at(idEpoch).resize(idTrans+1, nullptr);
         if(observations_[idEpoch][idTrans])
-          logWarning<<"observation already exists"<<Log::endl;
+          logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": observation already exists"<<Log::endl;
         std::swap(observations_[idEpoch][idTrans], obs);
         delete obs;
       } // for(satellite)
 
       if((observations_.size() <= idEpoch) || (observations_[idEpoch].size() == 0))
-        disable(idEpoch);
+        disable(idEpoch, "no useable observations found (elevationCutOff, use/ignoreTypes, defined receiver/transmitter types, missing antenna patterns)");
       idEpoch++;
     } // for(arcEpoch)
 
     for(UInt idEpoch=observations_.size(); idEpoch<times.size(); idEpoch++)
-      disable(idEpoch);
+      disable(idEpoch, "missing epochs in file");
 
     if(removedTypes.size())
     {
@@ -396,6 +437,7 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
 
     observationSampling = medianSampling(observationTimes).seconds();
     copyObservations2ContinuousMemoryBlock();
+    preprocessingInfo("readObservations()");
   }
   catch(std::exception &e)
   {
@@ -408,7 +450,7 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
 void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
                                         NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                                         const std::vector<GnssTransmitterPtr> &transmitters,
-                                        std::function<Rotary3d(const Time &time)> rotationCrf2Trf,
+                                        const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
                                         const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
                                         UInt minObsCountPerTrack, Angle elevationCutOff, Angle elevationTrackMinimum,
                                         const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group)
@@ -455,17 +497,17 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
             // check completeness
             if(type.hasWildcard(GnssType::TYPE + GnssType::FREQUENCY + GnssType::SYSTEM + GnssType::PRN))
             {
-              logWarning<<name()<<" "<<type.str()<<" is not complete"<<Log::endl;
+              logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": "<<type.str()<<" is not complete"<<Log::endl;
               continue;
             }
             if((type.frequencyNumber() == 9999) && (type == GnssType::GLONASS) && ((type == GnssType::G1) || (type == GnssType::G2)))
             {
-              logWarning<<name()<<" "<<type.str()<<": GLONASS frequency number not set"<<Log::endl;
+              logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": "<<type.str()<<": GLONASS frequency number not set"<<Log::endl;
               continue;
             }
             if((type.frequencyNumber() != 9999) && !((type == GnssType::GLONASS) && ((type == GnssType::G1) || (type == GnssType::G2))))
             {
-              logWarning<<name()<<" "<<type.str()<<": GLONASS frequency number is set"<<Log::endl;
+              logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": "<<type.str()<<": GLONASS frequency number is set"<<Log::endl;
               continue;
             }
 
@@ -505,17 +547,18 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
         if(observations_.at(idEpoch).size() <= idTrans)
           observations_.at(idEpoch).resize(idTrans+1, nullptr);
         if(observations_[idEpoch][idTrans])
-          logWarning<<"observation already exists"<<Log::endl;
+          logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": observation already exists"<<Log::endl;
         std::swap(observations_[idEpoch][idTrans], obs);
         delete obs;
       } // for(satellite)
 
       if((observations_.size() <= idEpoch) || (observations_[idEpoch].size() == 0))
-        disable(idEpoch);
+        disable(idEpoch, "no observations simulated (elevationCutOff, use/ignoreTypes, defined receiver/transmitter types, missing antenna patterns)");
     } // for(arcEpoch)
 
     observationSampling = medianSampling(times).seconds();
     copyObservations2ContinuousMemoryBlock();
+    preprocessingInfo("simulateObservations()");
 
     // ambiguities
     // -----------
@@ -564,7 +607,7 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
         const Matrix eps = noiseObs->noise(times.size(), typesTrans.at(idTrans).size()); // obs noise
         UInt idx;
         for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
-          if(eqnList(idTrans, idEpoch))
+          if(observation(idTrans, idEpoch))
           {
             const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
             GnssObservation *obs = observation(idTrans, idEpoch);
@@ -582,7 +625,7 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
 
 /***********************************************/
 
-void GnssReceiver::estimateInitialClockErrorFromCodeObservations(const std::vector<GnssTransmitterPtr> &transmitters, std::function<Rotary3d(const Time &time)> rotationCrf2Trf,
+void GnssReceiver::estimateInitialClockErrorFromCodeObservations(const std::vector<GnssTransmitterPtr> &transmitters, const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
                                                                  const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
                                                                  Double huber, Double huberPower, Double maxPosDiff, Bool estimateKinematicPosition)
 {
@@ -628,7 +671,7 @@ void GnssReceiver::estimateInitialClockErrorFromCodeObservations(const std::vect
 
           if(!obsCount || (eqnList.size() <= systems.size()+3-countStaticPosition)) // if not enough observations -> delete epoch
           {
-            disable(idEpoch);
+            disable(idEpoch, "not enough observations to estimate clock errors");
             continue;
           }
 
@@ -659,8 +702,7 @@ void GnssReceiver::estimateInitialClockErrorFromCodeObservations(const std::vect
 
       if(!listEpoch.size() || (maxSat < 4))
       {
-        logWarning<<"estimateInitialClockError: "<<name()<<" disabled because only "<<maxSat<<" satellites tracked"<<Log::endl;
-        disable();
+        disable("only "+maxSat%"%i satellites tracked"s);
         return;
       }
 
@@ -698,17 +740,15 @@ void GnssReceiver::estimateInitialClockErrorFromCodeObservations(const std::vect
 
     if(posDiffStatic > maxPosDiff)
     {
-      logWarning<<"estimateInitialClockError: "<<name()<<" disabled due to position differences: "<<posDiffStatic<<" m"<<Log::endl;
-      disable();
+      disable("due to position differences: "+posDiffStatic%"%f m"s);
       return;
     }
 
     for(UInt idEpoch=0; idEpoch<idEpochSize(); idEpoch++)
       if((std::fabs(clockDiff(idEpoch)) > maxPosDiff) || (posDiff(idEpoch) > maxPosDiff))
-      {
-        logWarning<<"estimateInitialClockError: "<<name()<<" disabled at "<<times.at(idEpoch).dateTimeStr()<<" due to differences: pos="<<posDiff(idEpoch)<<" m, clock="<<clockDiff(idEpoch)<<" m"<<Log::endl;
-        disable(idEpoch);
-      }
+        disable(idEpoch, "due to position or clock differences");
+
+    preprocessingInfo("estimateInitialClockErrorFromCodeObservations()");
   }
   catch(std::exception &e)
   {
@@ -722,9 +762,6 @@ void GnssReceiver::disableEpochsWithGrossCodeObservationOutliers(ObservationEqua
 {
   try
   {
-    UInt disabledEpochs = 0;
-    UInt outlierTotal = 0;
-    UInt countTotal   = 0;
     for(UInt idEpoch=0; idEpoch<idEpochSize(); idEpoch++)
       if(useable(idEpoch))
       {
@@ -732,37 +769,25 @@ void GnssReceiver::disableEpochsWithGrossCodeObservationOutliers(ObservationEqua
         UInt outlierCount = 0;
         UInt count   = 0;
         for(UInt idTrans=0; idTrans<idTransmitterSize(idEpoch); idTrans++)
-          if(eqnList(idTrans, idEpoch))
+          if(observation(idTrans, idEpoch))
           {
             const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
             for(UInt idType=0; idType<eqn.types.size(); idType++)
               if((eqn.types.at(idType) == GnssType::RANGE) && (std::fabs(eqn.l.at(idType)) >= threshold))
               {
                 deleteObservation(idTrans, idEpoch);
-                eqnList.deleteObservationEquation(idTrans, idEpoch);
                 outlierCount++;
                 break;
               }
             count++;
           }
 
-        // disable receiver at epoch if 50% or more of the observed satellites have gross code outliers
+        // disable receiver at epoch if outlierRatio or more of the observed satellites have gross code outliers
         if(outlierCount >= outlierRatio * count)
-        {
-          for(UInt idTrans=0; idTrans<idTransmitterSize(idEpoch); idTrans++)
-            eqnList.deleteObservationEquation(idTrans, idEpoch);
-          disable(idEpoch);
-          disabledEpochs++;
-        }
-
-        outlierTotal += outlierCount;
-        countTotal   += count;
+          disable(idEpoch, "too many gross code outliers");
       }
 
-//     if(disabledEpochs)
-//       logWarning<<"grossCodeOutlier: "<<name()<<" deleted "<<outlierTotal<<" of "<<countTotal<<" observations and disabled "<<disabledEpochs<<" epochs"<<Log::endl;
-//     else if(outlierTotal > 0.001*countTotal)
-//       logWarning<<"grossCodeOutlier: "<<name()<<" deleted "<<outlierTotal<<" of "<<countTotal<<" observations"<<Log::endl;
+    preprocessingInfo("disableEpochsWithGrossCodeObservationOutliers()");
   }
   catch(std::exception &e)
   {
@@ -838,12 +863,16 @@ void GnssReceiver::createTracks(const std::vector<GnssTransmitterPtr> &transmitt
               observation(idTrans, idEpoch)->track = tracks.back().get();
         }
         else
+        {
           for(UInt idEpoch=idEpochStart; idEpoch<=idEpochEnd; idEpoch++)
             deleteObservation(idTrans, idEpoch);
+        }
 
         idEpochStart = idEpochEnd + 1;
       } // for(;;)
     } // for(idTrans)
+
+    preprocessingInfo("createTracks()");
   }
   catch(std::exception &e)
   {
@@ -853,20 +882,17 @@ void GnssReceiver::createTracks(const std::vector<GnssTransmitterPtr> &transmitt
 
 /***********************************************/
 
-void GnssReceiver::deleteTrack(ObservationEquationList &eqnList, UInt idTrack)
+void GnssReceiver::deleteTrack(UInt idTrack)
 {
   try
   {
-    const UInt idTrans      = tracks.at(idTrack)->transmitter->idTrans();
-    const UInt idEpochStart = tracks.at(idTrack)->idEpochStart;
-    const UInt idEpochEnd   = tracks.at(idTrack)->idEpochEnd;
-    for(UInt idEpoch=idEpochStart; idEpoch<=idEpochEnd; idEpoch++)
+    for(UInt idEpoch=tracks.at(idTrack)->idEpochStart; idEpoch<=tracks.at(idTrack)->idEpochEnd; idEpoch++)
     {
-      deleteObservation(idTrans, idEpoch); // possibly disables receiver and clears all tracks
-      eqnList.deleteObservationEquation(idTrans, idEpoch);
+      deleteObservation(tracks.at(idTrack)->transmitter->idTrans(), idEpoch); // possibly disables receiver and clears all tracks
+      if(!useable())
+        return;
     }
-    if(tracks.size() > idTrack)
-      tracks.erase(tracks.begin()+idTrack);
+    tracks.erase(tracks.begin()+idTrack);
   }
   catch(std::exception &e)
   {
@@ -914,8 +940,10 @@ void GnssReceiver::removeLowElevationTracks(ObservationEquationList &eqnList, An
         }
 
       if(removeTrack)
-        deleteTrack(eqnList, idTrack);
+        deleteTrack(idTrack);
     }
+
+    preprocessingInfo("removeLowElevationTracks()");
   }
   catch(std::exception &e)
   {
@@ -944,7 +972,7 @@ GnssTrackPtr GnssReceiver::splitTrack(ObservationEquationList &eqnList, GnssTrac
 
     // connect observation equations to new track
     for(UInt idEpoch=trackNew->idEpochStart; idEpoch<=trackNew->idEpochEnd; idEpoch++)
-      if(eqnList(idTrans, idEpoch))
+      if(observation(idTrans, idEpoch))
         eqnList(idTrans, idEpoch)->track = trackNew.get();
 
     return trackNew;
@@ -1102,8 +1130,10 @@ void GnssReceiver::cycleSlipsDetection(ObservationEquationList &eqnList, UInt mi
       if(tracks.at(idTrack)->countObservations() >= std::max(minObsCountPerTrack, windowSize))
         cycleSlipsDetection(eqnList, tracks.at(idTrack), lambda, windowSize, tecSigmaFactor, extraTypes);
       if(tracks.at(idTrack)->countObservations() < minObsCountPerTrack)
-        deleteTrack(eqnList, idTrack--);
+        deleteTrack(idTrack--);
     }
+
+    preprocessingInfo("cycleSlipsDetection()");
   }
   catch(std::exception &e)
   {
@@ -1217,7 +1247,7 @@ void GnssReceiver::cycleSlipsRepairAtSameFrequency(ObservationEquationList &eqnL
     std::vector<GnssType> types;
     for(UInt idEpoch=0; idEpoch<idEpochSize(); idEpoch++)
       for(UInt idTrans=0; idTrans<idTransmitterSize(idEpoch); idTrans++)
-        if(eqnList(idTrans, idEpoch))
+        if(observation(idTrans, idEpoch))
         {
           const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
           for(UInt idType=0; idType<eqn.types.size(); idType++)
@@ -1235,7 +1265,7 @@ void GnssReceiver::cycleSlipsRepairAtSameFrequency(ObservationEquationList &eqnL
         std::vector<Double> values;
         for(UInt idEpoch=0; idEpoch<idEpochSize(); idEpoch++)
           for(UInt idTrans=0; idTrans<idTransmitterSize(idEpoch); idTrans++)
-            if(eqnList(idTrans, idEpoch))
+            if(observation(idTrans, idEpoch))
             {
               const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
               UInt idx, idx1;
@@ -1290,7 +1320,7 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
       // available observations for this track
       std::vector<GnssType> types;
       for(UInt idEpoch=idEpochStart; idEpoch<=idEpochEnd; idEpoch++)
-        if(eqnList(idTrans, idEpoch))
+        if(observation(idTrans, idEpoch))
           for(const GnssType &type : eqnList(idTrans, idEpoch)->types)
             if(!type.isInList(types) && !type.isInList(ignoreTypes))
               types.push_back(type);
@@ -1313,7 +1343,7 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
       std::vector<Matrix> listl, listA;
       std::vector<UInt>   listEpoch, listObsCount;
       for(UInt idEpoch=idEpochStart; idEpoch<=idEpochEnd; idEpoch++)
-        if(eqnList(idTrans, idEpoch))
+        if(observation(idTrans, idEpoch))
         {
           const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
 
@@ -1376,15 +1406,17 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
       // reduce integer ambiguities
       // --------------------------
       Vector b = Bias * x;
-      for(UInt i=0; i<listEpoch.size(); i++)
-        for(UInt idType=0; idType<types.size(); idType++)
-          if(types.at(idType) == GnssType::PHASE)
+      for(UInt idType=0; idType<types.size(); idType++)
+        if(types.at(idType) == GnssType::PHASE)
+        {
+          const Double lambda = types.at(idType).wavelength();
+          b(idType) = lambda * std::round(b(idType)/lambda);
+          for(UInt i=0; i<listEpoch.size(); i++)
           {
-            const Double lambda = types.at(idType).wavelength();
-            b(idType) = lambda * std::round(b(idType)/lambda);
             eqnList(idTrans, listEpoch.at(i))->l(GnssType::index(eqnList(idTrans, listEpoch.at(i))->types, types.at(idType))) -= b(idType);
             observation(idTrans, listEpoch.at(i))->at(types.at(idType)).observation -= b(idType);
           }
+        }
     }
   }
   catch(std::exception &e)

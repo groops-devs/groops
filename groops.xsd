@@ -2786,6 +2786,11 @@
 							</xs:annotation>
 							<xs:complexType>
 								<xs:sequence>
+									<xs:element name="printStatistics" type="boolean" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>print preprocesssing statistics for all receivers</xs:documentation>
+										</xs:annotation>
+									</xs:element>
 									<xs:element name="huber" type="double" minOccurs="0" default="2.5">
 										<xs:annotation>
 											<xs:documentation>residuals &gt; huber*sigma0 are downweighted</xs:documentation>
@@ -2936,6 +2941,11 @@
 							</xs:annotation>
 							<xs:complexType>
 								<xs:sequence>
+									<xs:element name="printStatistics" type="boolean" minOccurs="0" default="1">
+										<xs:annotation>
+											<xs:documentation>print preprocesssing statistics for all receivers</xs:documentation>
+										</xs:annotation>
+									</xs:element>
 									<xs:element name="huber" type="double" minOccurs="0" default="2.5">
 										<xs:annotation>
 											<xs:documentation>residuals &gt; huber*sigma0 are downweighted</xs:documentation>

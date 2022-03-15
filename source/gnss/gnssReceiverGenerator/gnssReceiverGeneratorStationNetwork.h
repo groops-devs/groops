@@ -70,6 +70,7 @@ class GnssReceiverGeneratorStationNetwork : public GnssReceiverGeneratorBase
   std::vector<GnssType> useType, ignoreType;
   GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction;
   Angle                 elevationCutOff;
+  Bool                  printInfo;
   UInt                  minObsCountPerTrack;
   Angle                 elevationTrackMinimum;
   Double                minEstimableEpochsRatio;

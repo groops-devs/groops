@@ -148,7 +148,10 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
           clock = Vector(polynomial.interpolate(times, arc.matrix().column(1)));
           for(UInt idEpoch=0; idEpoch<clock.size(); idEpoch++)
             if(std::isnan(clock.at(idEpoch)))
+            {
               useableEpochs(idEpoch) = FALSE;
+              clock.at(idEpoch) = 0.; // to prevent NAN propagation when using parametrization clocksModel
+            }
         }
         catch(std::exception &/*e*/)
         {

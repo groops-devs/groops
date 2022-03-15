@@ -59,6 +59,7 @@ GnssReceiverGeneratorLowEarthOrbiter::GnssReceiverGeneratorLowEarthOrbiter(Confi
     readConfig(config, "minObsCountPerTrack",          minObsCountPerTrack,     Config::DEFAULT,  "20",   "tracks with less number of epochs with observations are dropped");
     if(readConfigSequence(config, "preprocessing", Config::MUSTSET, "", "settings for preprocessing of observations/stations"))
     {
+      readConfig(config, "printStatistics",              printInfo,               Config::DEFAULT,  "1",    "print preprocesssing statistics for all receivers");
       readConfig(config, "huber",                        huber,                   Config::DEFAULT,  "2.5",  "residuals > huber*sigma0 are downweighted");
       readConfig(config, "huberPower",                   huberPower,              Config::DEFAULT,  "1.5",  "residuals > huber: sigma=(e/huber)^huberPower*sigma0");
       readConfig(config, "codeMaxPositionDiff",          codeMaxPosDiff,          Config::DEFAULT,  "100",  "[m] max. allowed position error by PPP code only clock error estimation");
@@ -114,8 +115,8 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
     recv = std::make_shared<GnssReceiver>(Parallel::isMaster(comm), FALSE/*isEarthFixed*/, info.markerName, info,
                                           noPatternFoundAction, Vector(times.size(), TRUE)/*useableEpochs*/,
                                           integerAmbiguities, wavelengthFactor);
+    receivers.push_back(recv);
 
-    Bool disabled = FALSE;
     if(Parallel::isMaster(comm))
     {
       try
@@ -136,19 +137,19 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
         for(UInt i=0; i<orbit.size(); i++)
         {
           while((idEpoch < times.size()) && (times.at(idEpoch) < orbit.at(i).time-timeMargin))
-            recv->disable(idEpoch++);
+            recv->disable(idEpoch++, "due to missing orbit/attitude data");
           if(idEpoch >= times.size())
             break;
           if(times.at(idEpoch) > orbit.at(i).time+timeMargin)
           {
-            recv->disable(idEpoch);
+            recv->disable(idEpoch, "due to missing orbit/attitude data");
             continue;
           }
 
           const UInt idAnt = info.findAntenna(times.at(idEpoch));
           if(idAnt == NULLINDEX || !info.antenna.at(idAnt).antennaDef || !info.antenna.at(idAnt).accuracyDef)
           {
-            recv->disable(idEpoch);
+            recv->disable(idEpoch, "missing antenna/accuracy patterns");
             continue;
           }
 
@@ -159,6 +160,7 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
           recv->local2antenna.at(idEpoch) = info.antenna.at(idAnt).local2antennaFrame;
           idEpoch++;
         }
+        recv->preprocessingInfo("init()");
 
         if(!fileNameObs.empty())
         {
@@ -166,32 +168,13 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
           auto rotationCrf2Trf = std::bind(&EarthRotation::rotaryMatrix, earthRotation, std::placeholders::_1);
           recv->readObservations(fileNameObs, transmitters,  rotationCrf2Trf, timeMargin, elevationCutOff,
                                  useType, ignoreType, GnssObservation::RANGE | GnssObservation::PHASE);
-
-          // count epochs with observations
-          UInt countEpochs = 0;
-          for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
-            if(recv->useable(idEpoch))
-              countEpochs++;
-
-          if(!countEpochs)
-          {
-            disabled = TRUE;
-            recv->disable();
-            logWarning<<recv->name()<<" disabled: no valid epochs"<<Log::endl;
-          }
         }
       }
       catch(std::exception &e)
       {
-        disabled = TRUE;
-        recv->disable();
-        logWarning<<recv->name()<<" disabled: "<<e.what()<<Log::endl;
+        recv->disable(e.what());
       }
     } // if(isMaster())
-
-    Parallel::broadCast(disabled, 0, comm);
-    if(!disabled)
-      receivers.push_back(recv);
   }
   catch(std::exception &e)
   {
@@ -201,7 +184,7 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
 
 /***********************************************/
 
-void GnssReceiverGeneratorLowEarthOrbiter::preprocessing(Gnss *gnss, Parallel::CommunicatorPtr /*comm*/)
+void GnssReceiverGeneratorLowEarthOrbiter::preprocessing(Gnss *gnss, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -213,10 +196,10 @@ void GnssReceiverGeneratorLowEarthOrbiter::preprocessing(Gnss *gnss, Parallel::C
     {
       try
       {
-        recv->createTracks(gnss->transmitters, minObsCountPerTrack, {GnssType::L5_G});
         recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, codeMaxPosDiff, TRUE/*estimateKinematicPosition*/);
         GnssReceiver::ObservationEquationList eqn(*recv, gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, GnssObservation::RANGE | GnssObservation::PHASE);
         recv->disableEpochsWithGrossCodeObservationOutliers(eqn, codeMaxPosDiff, 0.5);
+        recv->createTracks(gnss->transmitters, minObsCountPerTrack, {GnssType::L5_G});
         recv->writeTracks(fileNameTrackBefore, eqn, {GnssType::L5_G});
         recv->cycleSlipsDetection(eqn, minObsCountPerTrack, denoisingLambda, tecWindowSize, tecSigmaFactor, {GnssType::L5_G});
         recv->trackOutlierDetection(eqn, {GnssType::L5_G}, huber, huberPower);
@@ -263,25 +246,14 @@ void GnssReceiverGeneratorLowEarthOrbiter::preprocessing(Gnss *gnss, Parallel::C
               } // if(obs)
             } // for(idTrans, idEpoch)
         } // if(exprSigmaPhase || exprSigmaCode)
-
-        // count epochs with observations
-        UInt countEpochs = 0;
-        for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
-          if(recv->useable(idEpoch))
-            countEpochs++;
-
-        if(!countEpochs)
-        {
-          recv->disable();
-          logWarning<<recv->name()<<" disabled: no valid epochs"<<Log::endl;
-        }
       }
       catch(std::exception &e)
       {
-        recv->disable();
-        logWarning<<recv->name()<<" disabled: "<<e.what()<<Log::endl;
+        recv->disable(e.what());
       }
-    } // if(isMaster())
+    } // if(recv->isMyRank())
+
+    printPreprocessingInfos("preprocessing statistics after each step", {recv}, !printInfo/*disabledOnly*/, comm);
   }
   catch(std::exception &e)
   {
@@ -293,7 +265,7 @@ void GnssReceiverGeneratorLowEarthOrbiter::preprocessing(Gnss *gnss, Parallel::C
 
 void GnssReceiverGeneratorLowEarthOrbiter::simulation(const std::vector<GnssType> &types,
                                                       NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
-                                                      Gnss *gnss, Parallel::CommunicatorPtr /*comm*/)
+                                                      Gnss *gnss, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -309,10 +281,11 @@ void GnssReceiverGeneratorLowEarthOrbiter::simulation(const std::vector<GnssType
       }
       catch(std::exception &e)
       {
-        recv->disable();
-        logWarning<<recv->name()<<" disabled: "<<e.what()<<Log::endl;
+        recv->disable(e.what());
       }
     } // if(isMaster())
+
+    printPreprocessingInfos("simulation statistics after each step", {recv}, !printInfo/*disabledOnly*/, comm);
   }
   catch(std::exception &e)
   {

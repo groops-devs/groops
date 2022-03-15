@@ -48,6 +48,7 @@ class GnssReceiverGeneratorLowEarthOrbiter : public GnssReceiverGeneratorBase
   Angle                 elevationCutOff;
   std::vector<GnssType> useType, ignoreType;
   GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction;
+  Bool                  printInfo;
   Double                huber, huberPower;
   Double                codeMaxPosDiff;
   UInt                  minObsCountPerTrack;

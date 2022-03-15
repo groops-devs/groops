@@ -3,6 +3,7 @@
 - New class:        In MiscAccelerations: FromParametrization
 - New option:       GnssAntennaDefinitionCreate: rename antennas.
 - New option:       gnssReceiverGeneratorStationNetwork: inputfileClock.
+- New option:       gnssReceiverGenerator: print preprocessing infos.
 - Bugfix:           gnssProcessingStep: uninitialized normalEquationInfo.
 - Bugfix:           gnssProcessingStepForEachReceiverSeparately: variableReceiver was not set.
 - Bugfix:           gnssProcessingStepResolveAmbiguities: for writing empty ambiguity file.

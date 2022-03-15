@@ -143,6 +143,9 @@ public:
 
   virtual void simulation(const std::vector<GnssType> &types, NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                           Gnss *gnss, Parallel::CommunicatorPtr comm) = 0;
+
+  static void printPreprocessingInfos(const std::string &header, const std::vector<GnssReceiverPtr> &receivers,
+                                      Bool disabledOnly, Parallel::CommunicatorPtr comm);
 };
 
 /***********************************************/

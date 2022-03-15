@@ -71,6 +71,7 @@ GnssReceiverGeneratorStationNetwork::GnssReceiverGeneratorStationNetwork(Config 
     readConfig(config, "minEstimableEpochsRatio",            minEstimableEpochsRatio, Config::DEFAULT,  "0.75", "[0,1] drop stations with lower ratio of estimable epochs to total epochs");
     if(readConfigSequence(config, "preprocessing", Config::MUSTSET, "", "settings for preprocessing of observations/stations"))
     {
+      readConfig(config, "printStatistics",       printInfo,           Config::DEFAULT,  "0",    "print preprocesssing statistics for all receivers");
       readConfig(config, "huber",                 huber,               Config::DEFAULT,  "2.5",  "residuals > huber*sigma0 are downweighted");
       readConfig(config, "huberPower",            huberPower,          Config::DEFAULT,  "1.5",  "residuals > huber: sigma=(e/huber)^huberPower*sigma0");
       readConfig(config, "codeMaxPositionDiff",   codeMaxPosDiff,      Config::DEFAULT,  "100",  "[m] max. allowed position error by PPP code only clock error estimation");
@@ -196,8 +197,10 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
                 recv->local2antenna.at(idEpoch) = recv->info.antenna.at(idAnt).local2antennaFrame;
               }
               else
-                recv->disable(idEpoch);
+                recv->disable(idEpoch, "missing antenna/accuracy patterns");
             }
+
+            recv->preprocessingInfo("init()");
 
             // simulation case
             if(fileNameObs.empty())
@@ -234,7 +237,7 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
                 for(UInt arcEpoch=0; arcEpoch<arc.size(); arcEpoch++)
                 {
                   while((idEpoch < recv->times.size()) && (recv->times.at(idEpoch)+timeMargin < arc.at(arcEpoch).time))
-                    recv->disable(idEpoch++);
+                    recv->disable(idEpoch++, "missing clock data in file");
                   if(idEpoch >= recv->times.size())
                     break;
                   if((arc.at(arcEpoch).time+timeMargin < recv->times.at(idEpoch)) || !recv->useable(idEpoch))
@@ -242,8 +245,9 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
                   recv->clk.at(idEpoch++) = arc.at(arcEpoch).value;
                 }
                 for(; idEpoch<times.size(); idEpoch++)
-                  recv->disable(idEpoch);
+                  recv->disable(idEpoch, "missing clock data in file");
 
+                recv->preprocessingInfo("readClockFile()");
                 if(!enoughEpochs())
                 {
                   logWarning<<"Not enough valid epochs in clock file <"<<fileNameClock(fileNameVariableList)<<">, disabling receiver."<<Log::endl;
@@ -349,7 +353,6 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
   try
   {
     logStatus<<"init observations"<<Log::endl;
-    UInt disabledStations = 0;
     VariableList fileNameVariableList;
     addVariable("station", fileNameVariableList);
     Single::forEach(receivers.size(), [&](UInt idRecv)
@@ -361,11 +364,11 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
         {
           auto recv = receivers.at(idRecv);
           fileNameVariableList["station"]->setValue(recv->name());
-          recv->createTracks(gnss->transmitters, minObsCountPerTrack, {GnssType::L5_G});
           if(fileNameClock.empty())
             recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, codeMaxPosDiff, FALSE/*estimateKinematicPosition*/);
           GnssReceiver::ObservationEquationList eqn(*recv, gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, GnssObservation::RANGE | GnssObservation::PHASE);
           recv->disableEpochsWithGrossCodeObservationOutliers(eqn, codeMaxPosDiff, 0.5);
+          recv->createTracks(gnss->transmitters, minObsCountPerTrack, {GnssType::L5_G});
           recv->writeTracks(fileNameTrackBefore, eqn, {GnssType::L5_G});
           recv->cycleSlipsDetection(eqn, minObsCountPerTrack, denoisingLambda, tecWindowSize, tecSigmaFactor, {GnssType::L5_G});
           recv->removeLowElevationTracks(eqn, elevationTrackMinimum);
@@ -379,22 +382,16 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
             if(recv->useable(idEpoch))
               countEpochs++;
           if(countEpochs*recv->observationSampling < minEstimableEpochsRatio*gnss->times.size()*medianSampling(gnss->times).seconds())
-          {
-            recv->disable();
-            disabledStations++;
-          }
+            recv->disable("not enough epochs (< minEstimableEpochsRatio)");
         }
         catch(std::exception &e)
         {
-          logWarning<<receivers.at(idRecv)->name()<<" disabled: "<<e.what()<<Log::endl;
-          receivers.at(idRecv)->disable();
-          disabledStations++;
+          receivers.at(idRecv)->disable(e.what());
         }
       }
     });
 
-    Parallel::reduceSum(disabledStations, 0, comm);
-    logInfo<<"  "<<disabledStations<<" disabled stations"<<Log::endl;
+    printPreprocessingInfos("preprocessing statistics after each step", receivers, !printInfo/*disabledOnly*/, comm);
   }
   catch(std::exception &e)
   {
@@ -425,11 +422,12 @@ void GnssReceiverGeneratorStationNetwork::simulation(const std::vector<GnssType>
         }
         catch(std::exception &e)
         {
-          logWarning<<receivers.at(idRecv)->name()<<" disabled: "<<e.what()<<Log::endl;
-          receivers.at(idRecv)->disable();
+          receivers.at(idRecv)->disable(e.what());
         }
       }
     });
+
+    printPreprocessingInfos("simulation statistics after each step", receivers, !printInfo/*disabledOnly*/, comm);
   }
   catch(std::exception &e)
   {

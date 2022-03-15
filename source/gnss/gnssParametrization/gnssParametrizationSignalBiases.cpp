@@ -62,7 +62,7 @@ void GnssParametrizationSignalBiases::init(Gnss *gnss, Parallel::CommunicatorPtr
           catch(std::exception &/*e*/)
           {
             logWarningOnce<<"Unable to read signal bias file <"<<fileNameInTransmitter(fileNameVariableList)<<">, disabling transmitter."<<Log::endl;
-            gnss->transmitters.at(idTrans)->disable();
+            gnss->transmitters.at(idTrans)->disable("Unable to read signal bias file <"+fileNameInTransmitter(fileNameVariableList).str()+">");
           }
         }
     }
@@ -83,7 +83,7 @@ void GnssParametrizationSignalBiases::init(Gnss *gnss, Parallel::CommunicatorPtr
           catch(std::exception &/*e*/)
           {
             logWarningOnce<<"Unable to read signal bias file <"<<fileNameInReceiver(fileNameVariableList)<<">, disabling receiver."<<Log::endl;
-            gnss->receivers.at(idRecv)->disable();
+            gnss->receivers.at(idRecv)->disable("Unable to read signal bias file <"+fileNameInReceiver(fileNameVariableList).str()+">");
           }
         }
     }
