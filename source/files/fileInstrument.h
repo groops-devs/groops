@@ -238,9 +238,11 @@ public:
 
   /** @brief First epoch in arc */
   const Epoch &front() const {return at(0);}
+        Epoch &front()       {return at(0);}
 
   /** @brief Last epoch in arc */
   const Epoch &back() const {return at(size()-1);}
+        Epoch &back()       {return at(size()-1);}
 
   /** @brief Number of epochs. */
   UInt size() const {return epoch.size();}
@@ -374,9 +376,11 @@ public:
 
   /** @brief First epoch in arc */
   const EpochType &front() const {return at(0);}
+        EpochType &front()       {return at(0);}
 
   /** @brief Last epoch in arc */
   const EpochType &back() const {return at(size()-1);}
+        EpochType &back()       {return at(size()-1);}
 };
 
 /***** TYPES ***********************************/
