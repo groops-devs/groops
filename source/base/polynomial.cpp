@@ -30,7 +30,8 @@ void Polynomial::init(const std::vector<Time> &times, UInt degree, Bool throwExc
 
     if(times.size() < degree+1)
       throw(Exception("Not enough data points ("+times.size()%"%i) to interpolate with polynomial degree "s+degree%"%i"s));
-
+    if(std::adjacent_find(times.begin(), times.end(), [margin](const Time &t1, const Time &t2){return (t2-t1).seconds() <= margin;}) != times.end())
+      throw(Exception("Input time series is unordered or contains duplicates"));
 
     std::vector<Bool> isConstInterval(times.size()-1);
     for(UInt i=0; i<isConstInterval.size(); i++)
@@ -160,7 +161,9 @@ Matrix Polynomial::interpolate(const std::vector<Time> &timesNew, const_MatrixSl
           QMult(P, tau, coeff);                                                          // coeff := Q*R^(-T)*coeff
         }
         else
+        {
           solveInPlace(Matrix(P.trans()), coeff);
+        }
       }
 
       // interpolate
