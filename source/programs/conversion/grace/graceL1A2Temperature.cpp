@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts Level-1A temperature measurments to the GROOPS instrument file format.
+This program converts Level-1A temperature measurments (HRT1B or HRT1A) to the GROOPS instrument file format.
 The GRACE Level-1A format is described in GRACE given at \url{http://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/sw/GraceReadSW_L1_2010-03-31.tar.gz}.
 Multiple \config{inputfile}s must be given in the correct time order.
 The output is one arc of satellite data which can include data gaps.
@@ -38,7 +38,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1A2Temperature, SINGLEPROCESS, "read GRACE L1A data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1A2Temperature, SINGLEPROCESS, "read GRACE L1A data (HRT1B or HRT1A)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -46,11 +46,11 @@ void GraceL1A2Temperature::run(Config &config, Parallel::CommunicatorPtr /*comm*
 {
   try
   {
-    FileName fileNameTemp;
+    FileName fileNameOut;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileTemperature",   fileNameTemp,   Config::OPTIONAL, "", "");
-    readConfig(config, "inputfile",               fileNameIn,        Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileTemperature", fileNameOut, Config::MUSTSET, "", "MISCVALUES");
+    readConfig(config, "inputfile",             fileNameIn,  Config::MUSTSET, "", "HRT1B or HRT1A");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -66,7 +66,7 @@ void GraceL1A2Temperature::run(Config &config, Parallel::CommunicatorPtr /*comm*
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
         Int32 seconds, microSeconds;           // seconds, microseconds part
-        Byte  timeRef, GRACE_id, qualityFlag;  // time reference frame (R = Receiver Time, G = GPS time), GRACE satellite ID, data quality flag
+        Char  timeRef, GRACE_id;               // time reference frame (R = Receiver Time, G = GPS time), GRACE satellite ID
         Float TempMEPNegY;                     // I/F support structure to MEP -y  [°C]
         Float TempMEPPosY;                     // I/F support structure to MEP +y  [°C]
         Float TempMEPm;                        // I/F support structure to MEP mid [°C]
@@ -88,11 +88,21 @@ void GraceL1A2Temperature::run(Config &config, Parallel::CommunicatorPtr /*comm*
         Float TempRFSamp;                      // RF-Sampling unit [°C]
         Float TempUSONegY,  TempUSONegYRed;    // USO Temp. Ref. Point -y (+redundant) [°C]
         Float TempUSOPosY,  TempUSOPosYRed;    // USO Temp. Ref. Point +y (+redundant) [°C]
+        Byte  qualityFlag;                     // data quality flag
 
-        file>>seconds>>microSeconds>>timeRef>>GRACE_id>>TempMEPNegY>>TempMEPPosY>>TempMEPm>>TempICU>>TempICURed>>TempACCNegZ>>TempACCPosZ;
-        file>>TempCFRPPosX>>TempCFRPPosXRed>>TempCFRPNegX>>TempCFRPNegXRed>>TempCFRPNegY>>TempCFRPNegYRed>>TempACCSen>>TempICUSpec;
-        file>>TempMWANegY>>TempMWANegYOff>>TempMWAPosY>>TempMWAPosYOff>>TempHornPosX>>TempHornPosXRed>>TempHornPl>>TempHornPlRed;
-        file>>TempHWMANegY>>TempHWMAPosY>>TempRFSamp>>TempUSONegY>>TempUSONegYRed>>TempUSOPosY>>TempUSOPosYRed>>FileInGrace::flag(qualityFlag);
+        try
+        {
+          file>>seconds>>microSeconds>>timeRef>>GRACE_id>>TempMEPNegY>>TempMEPPosY>>TempMEPm>>TempICU>>TempICURed>>TempACCNegZ>>TempACCPosZ;
+          file>>TempCFRPPosX>>TempCFRPPosXRed>>TempCFRPNegX>>TempCFRPNegXRed>>TempCFRPNegY>>TempCFRPNegYRed>>TempACCSen>>TempICUSpec;
+          file>>TempMWANegY>>TempMWANegYOff>>TempMWAPosY>>TempMWAPosYOff>>TempHornPosX>>TempHornPosXRed>>TempHornPl>>TempHornPlRed;
+          file>>TempHWMANegY>>TempHWMAPosY>>TempRFSamp>>TempUSONegY>>TempUSONegYRed>>TempUSOPosY>>TempUSOPosYRed>>FileInGrace::flag(qualityFlag);
+        }
+        catch(std::exception &/*e*/)
+        {
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          break;
+        }
 
         {
           MiscValuesEpoch epoch(21);
@@ -125,27 +135,23 @@ void GraceL1A2Temperature::run(Config &config, Parallel::CommunicatorPtr /*comm*
 
     // =============================================
 
+    logStatus<<"sort epochs"<<Log::endl;
+    arc.sort();
+
+    logStatus<<"eliminate duplicates"<<Log::endl;
+    const UInt oldSize = arc.size();
+    arc.removeDuplicateEpochs(TRUE/*keepFirst*/);
+    if(arc.size() < oldSize)
+      logInfo<<" "<<oldSize-arc.size()<<" duplicates removed!"<<Log::endl;
+
     Arc::printStatistics(arc);
     if(arc.size() == 0)
       return;
 
-    // remove duplicates
-    arc.sort();
-    UInt countDuplicates = 0;
-    for(UInt idEpoch=1; idEpoch<arc.size(); idEpoch++)
+    if(!fileNameOut.empty())
     {
-      if(arc.at(idEpoch).time == arc.at(idEpoch-1).time)
-      {
-        arc.remove(idEpoch--);
-        countDuplicates++;
-      }
-    }
-    logInfo<<"  duplicates:      "<<countDuplicates<<Log::endl;
-
-    if(!fileNameTemp.empty())
-    {
-      logInfo<<"write temperature data to <"<<fileNameTemp<<">"<<Log::endl;
-      InstrumentFile::write(fileNameTemp, arc);
+      logInfo<<"write temperature data to <"<<fileNameOut<<">"<<Log::endl;
+      InstrumentFile::write(fileNameOut, arc);
     }
   }
   catch(std::exception &e)

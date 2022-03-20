@@ -30,6 +30,13 @@ class FileInGrace
   void changeByteOrder(char *bytes, UInt n) const;
 
 public:
+  class Int8
+  {
+  public:
+    Int value;
+    operator Byte() {return value;}
+  };
+
   class Flag
   {
   public:
@@ -49,7 +56,8 @@ public:
   FileInGrace &operator>>(UInt16 &x);
   FileInGrace &operator>>(UInt32 &x);
   FileInGrace &operator>>(UInt64 &x);
-  FileInGrace &operator>>(Byte   &x);
+  FileInGrace &operator>>(Char   &x);
+  FileInGrace &operator>>(Int8   &x);
   FileInGrace &operator>>(const Flag &x);
   FileInGrace &operator>>(Vector3d &vec);
 };

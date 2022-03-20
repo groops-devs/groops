@@ -14,7 +14,7 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program converts orientation data measured by the star cameras
-from the GRACE Level-1A format to the GROOPS instrument file format.
+from the GRACE Level-1A format (SCA1A) to the GROOPS instrument file format.
 For further information see \program{GraceL1A2Accelerometer}.
 )";
 
@@ -34,7 +34,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1A2StarCamera, SINGLEPROCESS, "read GRACE L1A data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1A2StarCamera, SINGLEPROCESS, "read GRACE L1A data (SCA1A)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -45,9 +45,9 @@ void GraceL1A2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/
     FileName fileNameSca1, fileNameSca2;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileStarCamera1", fileNameSca1, Config::MUSTSET,  "", "");
-    readConfig(config, "outputfileStarCamera2", fileNameSca2, Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",             fileNameIn,      Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileStarCamera1", fileNameSca1, Config::MUSTSET,  "", "STARCAMERA1A, head 1");
+    readConfig(config, "outputfileStarCamera2", fileNameSca2, Config::MUSTSET,  "", "STARCAMERA1A, head 2");
+    readConfig(config, "inputfile",             fileNameIn,   Config::MUSTSET,  "", "SCA1A, !GRACE-FO is not working!");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -62,23 +62,31 @@ void GraceL1A2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/
 
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
-        Int32  seconds;
-        Byte   GRACE_id, sca_id, scaDesign;
-        Double q0, q1, q2, q3;
-        Byte   nLocks, nStars;
-        Byte   scaConfig1, scaConfig2, scaConfig3, scaMode, qualityFlag;
+        Int32             seconds, microSeconds=0;
+        Char              GRACE_id;
+        FileInGrace::Int8 sca_id;
+        Char              scaDesign;
+        Double            q0, q1, q2, q3;
+        FileInGrace::Int8 nLocks, nStars;
+        FileInGrace::Int8 scaConfig1, scaConfig2, scaConfig3;
+        Byte              scaMode;
+        Byte              qualityFlag;
 
-        file>>seconds>>GRACE_id>>sca_id>>scaDesign>>q0>>q1>>q2>>q3>>nLocks>>nStars>>scaConfig1>>scaConfig2>>scaConfig3>>scaMode>>FileInGrace::flag(qualityFlag);
-
-        const Time time = mjd2time(51544.5) + seconds2time(seconds);
-        if(arc1.size() && (UInt(sca_id) == 1) && (time <= arc1.at(arc1.size()-1).time))
-          logWarning<<"SCA1: epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc1.at(arc1.size()-1).time.dateTimeStr()<<")"<<Log::endl;
-        if(arc2.size() && (UInt(sca_id) == 2) && (time <= arc2.at(arc2.size()-1).time))
-          logWarning<<"SCA2: epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc2.at(arc2.size()-1).time.dateTimeStr()<<")"<<Log::endl;
-
+        try
         {
+          file>>seconds>>/*microSeconds>>*/GRACE_id>>sca_id>>scaDesign>>q0>>q1>>q2>>q3; // microSeconds in GRACE-FO data only
+          file>>nLocks>>nStars>>scaConfig1>>scaConfig2>>scaConfig3>>FileInGrace::flag(scaMode)>>FileInGrace::flag(qualityFlag);
+        }
+        catch(std::exception &/*e*/)
+        {
+          // GRACE-FO number of records issue
+          logWarning<<arc1.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          break;
+        }
+
+       {
           StarCamera1AEpoch epoch;
-          epoch.time = mjd2time(51544.5) + seconds2time(seconds);
+          epoch.time = mjd2time(51544.5) + seconds2time(seconds) + seconds2time(1e-6*microSeconds);
           epoch.rcvTime = seconds;
           epoch.epsTime = 0.0;
           if(scaDesign == 'P') // primary = 1, secondary = 2
@@ -92,61 +100,51 @@ void GraceL1A2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/
           epoch.nLocks  = UInt(nLocks);
           epoch.nStars  = UInt(nStars);
 
-          if((UInt(sca_id) == 1) && (Bool(qualityFlag & (1 << 0)) == 0) && (UInt(scaConfig1) < 7)) // invalid data is removed
-          arc1.push_back(epoch);
+          if((UInt(sca_id) == 1) && !(qualityFlag & (1 << 0)) && (UInt(scaConfig1) < 7)) // invalid data is removed
+            arc1.push_back(epoch);
 
-          if((UInt(sca_id) == 2) && (Bool(qualityFlag & (1 << 0)) == 0) && (UInt(scaConfig1) < 7)) // invalid data is removed
-          arc2.push_back(epoch);
+          if((UInt(sca_id) == 2) && !(qualityFlag & (1 << 0)) && (UInt(scaConfig1) < 7)) // invalid data is removed
+            arc2.push_back(epoch);
         }
       } // for(idEpoch)
     } // for(idFile)
 
     // =============================================
 
-    logInfo<<"Star camera head 1:"<<Log::endl;
-    Arc::printStatistics(arc1);
-
-    // remove duplicates
-    arc1.sort();
-    UInt countDuplicates1 = 0;
-    for(UInt idEpoch=1; idEpoch<arc1.size(); idEpoch++)
-    {
-      if(arc1.at(idEpoch).time == arc1.at(idEpoch-1).time)
-      {
-        arc1.remove(idEpoch--);
-        countDuplicates1++;
-      }
-    }
-    logInfo<<"  duplicates:      "<<countDuplicates1<<Log::endl;
-
     if(!fileNameSca1.empty())
     {
-      logInfo<<"write data to <"<<fileNameSca1<<">"<<Log::endl;
-      InstrumentFile::write(fileNameSca1, arc1);
-    }
-
-    // =============================================
-
-    logInfo<<"Star camera head 2:"<<Log::endl;
-    Arc::printStatistics(arc2);
-
-    // remove duplicates
-    arc2.sort();
-    UInt countDuplicates2 = 0;
-    for(UInt idEpoch=1; idEpoch<arc2.size(); idEpoch++)
-    {
-      if(arc2.at(idEpoch).time == arc2.at(idEpoch-1).time)
+      logStatus<<"Star camera head 1:"<<Log::endl;
+      logStatus<<"sort epochs"<<Log::endl;
+      arc1.sort();
+      logStatus<<"eliminate duplicates"<<Log::endl;
+      const UInt oldSize = arc1.size();
+      arc1.removeDuplicateEpochs(TRUE/*keepFirst*/);
+      if(arc1.size() < oldSize)
+        logInfo<<" "<<oldSize-arc1.size()<<" duplicates removed!"<<Log::endl;
+      Arc::printStatistics(arc1);
+      if(arc1.size())
       {
-        arc2.remove(idEpoch--);
-        countDuplicates2++;
+        logStatus<<"write data to <"<<fileNameSca1<<">"<<Log::endl;
+        InstrumentFile::write(fileNameSca1, arc1);
       }
     }
-    logInfo<<"  duplicates:      "<<countDuplicates2<<Log::endl;
 
     if(!fileNameSca2.empty())
     {
-      logInfo<<"write data to <"<<fileNameSca2<<">"<<Log::endl;
-      InstrumentFile::write(fileNameSca2, arc2);
+      logStatus<<"Star camera head 2:"<<Log::endl;
+      logStatus<<"sort epochs"<<Log::endl;
+      arc2.sort();
+      logStatus<<"eliminate duplicates"<<Log::endl;
+      const UInt oldSize = arc2.size();
+      arc2.removeDuplicateEpochs(TRUE/*keepFirst*/);
+      if(arc2.size() < oldSize)
+        logInfo<<" "<<oldSize-arc2.size()<<" duplicates removed!"<<Log::endl;
+      Arc::printStatistics(arc2);
+      if(arc2.size())
+      {
+        logStatus<<"write data to <"<<fileNameSca2<<">"<<Log::endl;
+        InstrumentFile::write(fileNameSca2, arc2);
+      }
     }
   }
   catch(std::exception &e)

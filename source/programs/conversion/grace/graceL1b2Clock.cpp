@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts clock data from the GRACE SDS format into \file{instrument file (CLOCK)}{instrument}.
+This program converts clock data (CLK1B or LLK1B) from the GRACE SDS format into \file{instrument file (CLOCK)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 )";
 
@@ -33,7 +33,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2Clock, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2Clock, SINGLEPROCESS, "read GRACE L1B data (CLK1B or LLK1B)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -44,8 +44,8 @@ void GraceL1b2Clock::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     FileName              fileNameOut;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileClock", fileNameOut, Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",       fileNameIn,  Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileClock", fileNameOut, Config::MUSTSET, "", "CLOCK");
+    readConfig(config, "inputfile",       fileNameIn,  Config::MUSTSET, "", "CLK1B or LLK1B");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -61,31 +61,39 @@ void GraceL1b2Clock::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       Bool dummy = FALSE;
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
-        Int32    seconds;
-        Byte     GRACE_id, clock_id;
-        Double   eps_time, eps_err, eps_drift, drift_err;
-        Byte     qualflg;
+        Int32             seconds;
+        Char              GRACE_id;
+        FileInGrace::Int8 clock_id;
+        Double            eps_time, eps_err, eps_drift, drift_err;
+        Byte              qualflg;
 
-        file>>seconds>>GRACE_id>>clock_id>>eps_time>>eps_err>>eps_drift>>drift_err>>FileInGrace::flag(qualflg);
+        try
+        {
+          file>>seconds>>GRACE_id>>clock_id>>eps_time>>eps_err>>eps_drift>>drift_err>>FileInGrace::flag(qualflg);
+        }
+        catch(std::exception &/*e*/)
+        {
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          break;
+        }
 
         const Time time = mjd2time(51544.5) + seconds2time(seconds);
-        if(arc.size() && (time <= arc.at(arc.size()-1).time))
-          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.at(arc.size()-1).time.dateTimeStr()<<")"<<Log::endl;
+        if(arc.size() && (time <= arc.back().time))
+          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.back().time.dateTimeStr()<<")"<<Log::endl;
 
-        UInt quality = 0;
         // invalid time periods
-        if(Bool(qualflg & (1 << 0)) == 1)
-          quality = 1;
-        if(Bool(qualflg & (1 << 1)) == 1)
-          quality = 2;
+        UInt quality = 0;
+        if(qualflg & (1 << 0)) quality = 1;
+        if(qualflg & (1 << 1)) quality = 2;
 
         // boundaries - days
         if((idEpoch==0) && (quality == 2))
           quality = 0;
-        if((arc.size()) && (idEpoch==1) && (time == arc.at(arc.size()-1).time))
+        if((arc.size()) && (idEpoch==1) && (time == arc.back().time))
           continue;
 
-        if((arc.size()) && (idEpoch==numberOfRecords-1) && (quality == 1) && (time == arc.at(arc.size()-1).time))
+        if((arc.size()) && (idEpoch==numberOfRecords-1) && (quality == 1) && (time == arc.back().time))
           continue;
 
         ClockEpoch epoch;
@@ -111,9 +119,9 @@ void GraceL1b2Clock::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         if((dummy) && (quality == 2))
         {
           dummy = FALSE;
-          if((arc.size()) && (epoch.time == arc.at(arc.size()-1).time) && (arc.at(arc.size()-1).data().at(1) != 0))
+          if((arc.size()) && (epoch.time == arc.back().time) && (arc.back().data().at(1) != 0))
             continue;
-          if((arc.size()) && (epoch.time == arc.at(arc.size()-1).time) && (arc.at(arc.size()-1).data().at(1) == 0))
+          if((arc.size()) && (epoch.time == arc.back().time) && (arc.back().data().at(1) == 0))
           {
             arc.remove(arc.size()-1,1);
             if(epoch.epsTime != 0)

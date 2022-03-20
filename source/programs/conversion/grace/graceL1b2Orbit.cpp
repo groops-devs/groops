@@ -14,7 +14,7 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program converts the reduced dynamical orbit
-from the GRACE SDS format into \file{instrument file (ORBIT)}{instrument}.
+from the GRACE SDS format (GNV1B) into \file{instrument file (ORBIT)}{instrument}.
 The orbit is transformed into a celestial reference system (CRF).
 For further information see \program{GraceL1b2Accelerometer}.
 )";
@@ -36,7 +36,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2Orbit, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Orbit, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2Orbit, SINGLEPROCESS, "read GRACE L1B data (GNV1B)", Conversion, Grace, Orbit, Instrument)
 
 /***********************************************/
 
@@ -49,8 +49,8 @@ void GraceL1b2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     EarthRotationPtr      earthRotation;
 
     readConfig(config, "outputfileOrbit", fileNameOut,   Config::MUSTSET,  "", "");
-    readConfig(config, "earthRotation",   earthRotation, Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",       fileNameIn,    Config::MUSTSET,  "", "");
+    readConfig(config, "earthRotation",   earthRotation, Config::MUSTSET,  "", "to rotate into CRF");
+    readConfig(config, "inputfile",       fileNameIn,    Config::MUSTSET,  "", "GNV1B");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -66,24 +66,23 @@ void GraceL1b2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
         Int32    seconds;
-        Byte     GRACE_id, coord_ref;
+        Char     GRACE_id, coord_ref;
         Vector3d pos, pos_err, vel, vel_err;
         Byte     qualflg;
 
-        try //This block is added for GRACE-FO number of records issue
+        try
         {
-          file>>seconds;
+          file>>seconds>>GRACE_id>>coord_ref>>pos>>pos_err>>vel>>vel_err>>FileInGrace::flag(qualflg);
         }
         catch(std::exception &/*e*/)
         {
-          logWarning<<arc.at(arc.size()-1).time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
           break;
         }
 
-        file>>GRACE_id>>coord_ref>>pos>>pos_err>>vel>>vel_err>>FileInGrace::flag(qualflg);
-
         const Time time = mjd2time(51544.5) + seconds2time(seconds);
-        if(arc.size() && (time <= arc.at(arc.size()-1).time))
+        if(arc.size() && (time <= arc.back().time))
           continue;
 
         if(coord_ref != 'E')

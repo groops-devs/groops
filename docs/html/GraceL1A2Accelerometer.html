@@ -71,7 +71,7 @@
         <div id="content" class="container">
             <h1>GraceL1A2Accelerometer</h1><p>
 
-This program converts Level-1A accelerometer data to the GROOPS instrument file format.
+This program converts Level-1A accelerometer data (ACC1A) to the GROOPS instrument file format.
 The GRACE Level-1A format is described in <code>GRACEiolib.h</code> given at
 <a href="http://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/sw/GraceReadSW_L1_2010-03-31.tar.gz" target="_blank">http://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/sw/GraceReadSW_L1_2010-03-31.tar.gz</a>.
 Multiple <strong class="groops-config-element">inputfile</strong>s must be given in the correct time order.
@@ -80,11 +80,9 @@ To split the arc in multiple gap free arcs use <a class="groops-program" href="I
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileAccelerometer</div></div></td><td>filename</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileAccelerometerGaps</div></div></td><td>filename</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileAngularAccelerometer</div></div></td><td>filename</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileAccHousekeeping</div></div></td><td>filename</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileAccelerometer</div></div></td><td>filename</td><td>ACCELEROMETER1A</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileAngularAccelerometer</div></div></td><td>filename</td><td>ACCELEROMETER1A</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td>ACC1A</td></tr>
 </table>
 
         </div>

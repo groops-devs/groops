@@ -14,7 +14,7 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program converts orientation data measured by a star camera (SRF to CRF)
-from the GRACE SDS format into \file{instrument file (STARCAMERA)}{instrument}.
+from the GRACE SDS format (SCA1B) into \file{instrument file (STARCAMERA)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 )";
 
@@ -34,7 +34,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2StarCamera, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2StarCamera, SINGLEPROCESS, "read GRACE L1B data (SCA1B)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -46,8 +46,8 @@ void GraceL1b2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/
     std::vector<FileName> fileNameIn;
 
     readConfig(config, "outputfileStarCamera",      fileNameSca,   Config::OPTIONAL, "", "");
-    readConfig(config, "outputfileStarCameraFlags", FileNameFlags, Config::OPTIONAL, "", "");
-    readConfig(config, "inputfile",                 fileNameIn,    Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileStarCameraFlags", FileNameFlags, Config::OPTIONAL, "", "MISCVALUES(sca_id, qual_rss, qualflg)");
+    readConfig(config, "inputfile",                 fileNameIn,    Config::MUSTSET,  "", "SCA1B");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -62,32 +62,27 @@ void GraceL1b2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/
 
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
-        Int32    seconds, sca_id_fo;
-        Byte     GRACE_id, sca_id, qualflg;
-        Double   quatangle, quaticoeff, quatjcoeff, quatkcoeff, qual_rss;
+        Int32             seconds;
+        Char              GRACE_id;
+        FileInGrace::Int8 sca_id;
+        Double            quatangle, quaticoeff, quatjcoeff, quatkcoeff, qual_rss;
+        Byte              qualflg;
 
         try
         {
-          file>>seconds>>GRACE_id;
+          file>>seconds>>GRACE_id>>sca_id>>quatangle>>quaticoeff>>quatjcoeff>>quatkcoeff>>qual_rss>>FileInGrace::flag(qualflg);
         }
         catch(std::exception &/*e*/)
         {
-          logWarning<<arc.at(arc.size()-1).time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
           break;
         }
 
-        Bool GRACEFO = ((GRACE_id=='A')||(GRACE_id=='B')) ? FALSE : TRUE;
-        if (GRACEFO)
-          file>>sca_id_fo;
-        else
-        {
-          file>>sca_id; sca_id_fo = sca_id;
-        }
-        file>>quatangle>>quaticoeff>>quatjcoeff>>quatkcoeff>>qual_rss>>FileInGrace::flag(qualflg);
 
         const Time time = mjd2time(51544.5) + seconds2time(seconds);
-        if(arc.size() && (time <= arc.at(arc.size()-1).time))
-          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.at(arc.size()-1).time.dateTimeStr()<<")"<<Log::endl;
+        if(arc.size() && (time <= arc.back().time))
+          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.back().time.dateTimeStr()<<")"<<Log::endl;
 
         {
           StarCameraEpoch epoch;
@@ -99,7 +94,7 @@ void GraceL1b2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/
         {
           MiscValuesEpoch epoch(3);
           epoch.time   = time;
-          epoch.values = {Double(sca_id_fo), qual_rss, Double(qualflg)};
+          epoch.values = {Double(sca_id), qual_rss, Double(qualflg)};
           arcFlags.push_back(epoch);
         }
       } // for(idEpoch)

@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts magnetometer data from the GRACE SDS format into \file{instrument file (MAGNETOMETER)}{instrument}.
+This program converts magnetometer data (MAG1B or MAG1A) from the GRACE SDS format into \file{instrument file (MAGNETOMETER)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 )";
 
@@ -33,7 +33,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2Magnetometer, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2Magnetometer, SINGLEPROCESS, "read GRACE L1B data (MAG1B or MAG1A)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -44,8 +44,8 @@ void GraceL1b2Magnetometer::run(Config &config, Parallel::CommunicatorPtr /*comm
     FileName              fileNameOut;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileMagnetometer", fileNameOut, Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",              fileNameIn,  Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileMagnetometer", fileNameOut, Config::MUSTSET,  "", "MAGNETOMETER");
+    readConfig(config, "inputfile",              fileNameIn,  Config::MUSTSET,  "", "MAG1B or MAG1A");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -61,26 +61,29 @@ void GraceL1b2Magnetometer::run(Config &config, Parallel::CommunicatorPtr /*comm
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
         Int32    seconds, time_frac;
-        Byte     time_ref, GRACE_id;
+        Char     time_ref, GRACE_id;
         Float    MfvX_RAW, MfvY_RAW, MfvZ_RAW;
         Float    torque1A, torque2A, torque3A, torque1B, torque2B, torque3B;
         Float    MF_BCalX, MF_BCalY, MF_BCalZ, torque_cal;
         Byte     qualflg;
 
-        file>>seconds>>time_frac>>time_ref>>GRACE_id;
-        file>>MfvX_RAW>>MfvY_RAW>>MfvZ_RAW;
-        file>>torque1A>>torque2A>>torque3A>>torque1B>>torque2B>>torque3B;
-        file>>MF_BCalX>>MF_BCalY>>MF_BCalZ>>torque_cal>>FileInGrace::flag(qualflg);
+        try
+        {
+          file>>seconds>>time_frac>>time_ref>>GRACE_id; // GRACEFO: time_ref and GRACE_id are interschanged
+          file>>MfvX_RAW>>MfvY_RAW>>MfvZ_RAW;
+          file>>torque1A>>torque2A>>torque3A>>torque1B>>torque2B>>torque3B;
+          file>>MF_BCalX>>MF_BCalY>>MF_BCalZ>>torque_cal>>FileInGrace::flag(qualflg);
+        }
+        catch(std::exception &/*e*/)
+        {
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          break;
+        }
 
         const Time time = mjd2time(51544.5) + seconds2time(seconds) + seconds2time(1e-6*time_frac);
-        if(arc.size() && (time <= arc.at(arc.size()-1).time))
-          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.at(arc.size()-1).time.dateTimeStr()<<")"<<Log::endl;
-
-        if(time_ref != 'G')
-        {
-          logWarning<<time.dateTimeStr()<<" time is not GPS time"<<Log::endl;
-          continue;
-        }
+        if(arc.size() && (time <= arc.back().time))
+          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.back().time.dateTimeStr()<<")"<<Log::endl;
 
         MagnetometerEpoch epoch;
         epoch.time                     = time;

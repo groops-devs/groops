@@ -14,7 +14,7 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program converts GPS receiver data (phase and pseudo range) data
-from the GRACE SDS format into \file{instrument file (GNSSRECEIVER)}{instrument}.
+from the GRACE SDS format (GPS1B or GPS1A) into \file{instrument file (GNSSRECEIVER)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 )";
 
@@ -34,7 +34,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2GnssReceiver, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Gnss, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2GnssReceiver, SINGLEPROCESS, "read GRACE L1B data (GPS1B or GPS1A)", Conversion, Grace, Gnss, Instrument)
 
 /***********************************************/
 
@@ -45,8 +45,8 @@ void GraceL1b2GnssReceiver::run(Config &config, Parallel::CommunicatorPtr /*comm
     FileName              fileNameOut;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileGnssReceiver", fileNameOut, Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",              fileNameIn,  Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileGnssReceiver", fileNameOut, Config::MUSTSET,  "", "GNSSRECEIVER");
+    readConfig(config, "inputfile",              fileNameIn,  Config::MUSTSET,  "", "GPS1B or GPS1A");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -61,19 +61,47 @@ void GraceL1b2GnssReceiver::run(Config &config, Parallel::CommunicatorPtr /*comm
 
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
-        Int32    seconds, seconds_frac;
-        Byte     GRACE_id, prn_id, ant_id, qualflg;
-        UInt16   prod_flag;
-        Double   CA_range, L1_range, L2_range, CA_phase, L1_phase, L2_phase;
-        UInt16   CA_SNR,   L1_SNR,   L2_SNR,   CA_chan,  L1_chan,  L2_chan;
+        Int32             seconds, seconds_frac;
+        Char              GRACE_id;
+        FileInGrace::Int8 prn_id, ant_id;
+        UInt16            prodFlag;
+        Byte              qualflg;
+        Double            CA_range=NAN_EXPR, L1_range=NAN_EXPR, L2_range=NAN_EXPR;
+        Double            CA_phase=NAN_EXPR, L1_phase=NAN_EXPR, L2_phase=NAN_EXPR;
+        UInt16            CA_SNR=0, L1_SNR=0, L2_SNR=0, CA_chan=0,L1_chan=0, L2_chan=0;
+        Double            K_phase, Ka_phase;                 // K-Band carrier phase, Ka-Band carrier phase
+        UInt16            K_SNR, Ka_SNR;                     // K-Band SNR, Ka-Band SNR
 
-        file>>seconds>>seconds_frac>>GRACE_id>>prn_id>>ant_id>>FileInGrace::flag(prod_flag)>>FileInGrace::flag(qualflg);
-        file>>CA_range>>L1_range>>L2_range>>CA_phase>>L1_phase>>L2_phase;
-        file>>CA_SNR>>L1_SNR>>L2_SNR>>CA_chan>>L1_chan>>L2_chan;
+        try
+        {
+          file>>seconds>>seconds_frac>>GRACE_id>>prn_id>>ant_id>>FileInGrace::flag(prodFlag)>>FileInGrace::flag(qualflg);
+          if(prodFlag & (1<<0))  file>>CA_range;
+          if(prodFlag & (1<<1))  file>>L1_range;
+          if(prodFlag & (1<<2))  file>>L2_range;
+          if(prodFlag & (1<<3))  file>>CA_phase;
+          if(prodFlag & (1<<4))  file>>L1_phase;
+          if(prodFlag & (1<<5))  file>>L2_phase;
+          if(prodFlag & (1<<6))  file>>CA_SNR;
+          if(prodFlag & (1<<7))  file>>L1_SNR;
+          if(prodFlag & (1<<8))  file>>L2_SNR;
+          if(prodFlag & (1<<9))  file>>CA_chan;
+          if(prodFlag & (1<<10)) file>>L1_chan;
+          if(prodFlag & (1<<11)) file>>L2_chan;
+          if(prodFlag & (1<<12)) file>>K_phase;
+          if(prodFlag & (1<<13)) file>>Ka_phase;
+          if(prodFlag & (1<<14)) file>>K_SNR;
+          if(prodFlag & (1<<15)) file>>Ka_SNR;
+        }
+        catch(std::exception &/*e*/)
+        {
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          break;
+        }
 
         const Time time = mjd2time(51544.5) + seconds2time(seconds) + seconds2time(1e-6*seconds_frac);
-        if(arc.size() && (time < arc.at(arc.size()-1).time))
-          throw(Exception("time error: epoch("+time.dateTimeStr()+") < last epoch("+arc.at(arc.size()-1).time.dateTimeStr()+")"));
+        if(arc.size() && (time < arc.back().time))
+          throw(Exception("time error: epoch("+time.dateTimeStr()+") < last epoch("+arc.back().time.dateTimeStr()+")"));
 
         if(ant_id != 0)
         {
@@ -81,8 +109,8 @@ void GraceL1b2GnssReceiver::run(Config &config, Parallel::CommunicatorPtr /*comm
           continue;
         }
 
-        if((prod_flag & 0x3f) != 0x3f)
-          logWarning<<time.dateTimeStr()<<" (PRN = "<<prn_id%"%02i), Product: "s<<prod_flag<<Log::endl;
+        if((prodFlag & 0x3f) != 0x3f)
+          logWarning<<time.dateTimeStr()<<" (PRN = "<<prn_id%"%02i), Product: "s<<prodFlag<<Log::endl;
 
         // start new epoch?
         if((arc.size() == 0) || (arc.back().time != time))
@@ -101,16 +129,16 @@ void GraceL1b2GnssReceiver::run(Config &config, Parallel::CommunicatorPtr /*comm
           arc.push_back(epoch);
         }
 
-        arc.at(arc.size()-1).satellite.push_back(GnssType::GPS + GnssType(prn_id));
-        arc.at(arc.size()-1).observation.push_back(CA_range);
-        arc.at(arc.size()-1).observation.push_back(L1_range);
-        arc.at(arc.size()-1).observation.push_back(L2_range);
-        arc.at(arc.size()-1).observation.push_back(CA_phase);
-        arc.at(arc.size()-1).observation.push_back(L1_phase);
-        arc.at(arc.size()-1).observation.push_back(L2_phase);
-        arc.at(arc.size()-1).observation.push_back(CA_SNR);
-        arc.at(arc.size()-1).observation.push_back(L1_SNR);
-        arc.at(arc.size()-1).observation.push_back(L2_SNR);
+        arc.back().satellite.push_back(GnssType::GPS + GnssType(prn_id));
+        arc.back().observation.push_back(CA_range);
+        arc.back().observation.push_back(L1_range);
+        arc.back().observation.push_back(L2_range);
+        arc.back().observation.push_back(CA_phase);
+        arc.back().observation.push_back(L1_phase);
+        arc.back().observation.push_back(L2_phase);
+        arc.back().observation.push_back(CA_SNR);
+        arc.back().observation.push_back(L1_SNR);
+        arc.back().observation.push_back(L2_SNR);
       } // for(idEpoch)
     } // for(idFile)
 

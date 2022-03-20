@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts accelerometer data from the GRACE SDS format into \file{instrument file (ACCELEROMETER)}{instrument}.
+This program converts accelerometer data (ACC1B or ACT1B) from the GRACE SDS format into \file{instrument file (ACCELEROMETER)}{instrument}.
 
 Multiple \config{inputfile}s must be given in the correct time order.
 The output is one arc of satellite data which can include data gaps.
@@ -39,7 +39,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2Accelerometer, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2Accelerometer, SINGLEPROCESS, "read GRACE L1B data (ACC1B or ACT1B)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -50,10 +50,10 @@ void GraceL1b2Accelerometer::run(Config &config, Parallel::CommunicatorPtr /*com
     FileName fileNameOutAcc, fileNameOutAng, fileNameOutFlags;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileAccelerometer",        fileNameOutAcc,   Config::OPTIONAL, "", "");
-    readConfig(config, "outputfileAngularAccelerometer", fileNameOutAng,   Config::OPTIONAL, "", "");
-    readConfig(config, "outputfileFlags",                fileNameOutFlags, Config::OPTIONAL, "", "");
-    readConfig(config, "inputfile",                      fileNameIn,       Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileAccelerometer",        fileNameOutAcc,   Config::OPTIONAL, "", "ACCELEROMETER");
+    readConfig(config, "outputfileAngularAccelerometer", fileNameOutAng,   Config::OPTIONAL, "", "ACCELEROMETER");
+    readConfig(config, "outputfileFlags",                fileNameOutFlags, Config::OPTIONAL, "", "MISCVALUES(qualflg, acl_res.x, acl_res.y, acl_res.z)");
+    readConfig(config, "inputfile",                      fileNameIn,       Config::MUSTSET,  "", "ACC1B or ACT1B");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -69,24 +69,25 @@ void GraceL1b2Accelerometer::run(Config &config, Parallel::CommunicatorPtr /*com
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
         Int32    seconds;
-        Byte     GRACE_id, qualflg;
+        Char     GRACE_id;
         Vector3d lin_accl, ang_acc, acl_res;
+        Byte     qualflg;
 
-        try //This block is added for GRACE-FO number of records issue
+        try
         {
-          file>>seconds;
+          file>>seconds>>GRACE_id>>lin_accl>>ang_acc>>acl_res>>FileInGrace::flag(qualflg);
         }
         catch(std::exception &/*e*/)
         {
-          logWarning<<arc.at(arc.size()-1).time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
           break;
         }
 
-        file>>GRACE_id>>lin_accl>>ang_acc>>acl_res>>FileInGrace::flag(qualflg);
-
         const Time time = mjd2time(51544.5) + seconds2time(seconds);
-        if(arc.size() && (time <= arc.at(arc.size()-1).time))
-          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.at(arc.size()-1).time.dateTimeStr()<<")"<<Log::endl;
+        if(arc.size() && (time <= arc.back().time))
+          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.back().time.dateTimeStr()<<")"<<Log::endl;
+
         {
           AccelerometerEpoch epoch;
           epoch.time         = time;

@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts Level-1A accelerometer data to the GROOPS instrument file format.
+This program converts Level-1A accelerometer data (ACC1A) to the GROOPS instrument file format.
 The GRACE Level-1A format is described in \verb|GRACEiolib.h| given at
 \url{http://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/sw/GraceReadSW_L1_2010-03-31.tar.gz}.
 Multiple \config{inputfile}s must be given in the correct time order.
@@ -37,7 +37,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1A2Accelerometer, SINGLEPROCESS, "read GRACE L1A data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1A2Accelerometer, SINGLEPROCESS, "read GRACE L1A data (ACC1A)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -45,22 +45,18 @@ void GraceL1A2Accelerometer::run(Config &config, Parallel::CommunicatorPtr /*com
 {
   try
   {
-    FileName fileNameAcc, fileNameAccGap, fileNameAngAcc, fileNameHousekeeping;
+    FileName fileNameOutAcc, fileNameOutAng;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileAccelerometer",        fileNameAcc,          Config::OPTIONAL, "", "");
-    readConfig(config, "outputfileAccelerometerGaps",    fileNameAccGap,       Config::OPTIONAL, "", "");
-    readConfig(config, "outputfileAngularAccelerometer", fileNameAngAcc,       Config::OPTIONAL, "", "");
-    readConfig(config, "outputfileAccHousekeeping",      fileNameHousekeeping, Config::OPTIONAL, "", "");
-    readConfig(config, "inputfile",                      fileNameIn,           Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileAccelerometer",        fileNameOutAcc, Config::OPTIONAL, "", "ACCELEROMETER1A");
+    readConfig(config, "outputfileAngularAccelerometer", fileNameOutAng, Config::OPTIONAL, "", "ACCELEROMETER1A");
+    readConfig(config, "inputfile",                      fileNameIn,     Config::MUSTSET,  "", "ACC1A");
     if(isCreateSchema(config)) return;
 
     // =============================================
 
-    UInt countGaps           = 0;
-
     logStatus<<"read input files"<<Log::endl;
-    Arc arc, arcGap, arcAngAcc, arcHousekeeping;
+    Arc arc, arcAngAcc;
     for(UInt idFile=0; idFile<fileNameIn.size(); idFile++)
     {
       logStatus<<"read file <"<<fileNameIn.at(idFile)<<">"<<Log::endl;
@@ -69,218 +65,134 @@ void GraceL1A2Accelerometer::run(Config &config, Parallel::CommunicatorPtr /*com
 
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
-        Int32    seconds, microSeconds, MhzCount;            // seconds, microseconds part, MHz clock count
-        Byte     timeRef, GRACE_id, qualityFlag;             // time reference frame (R = Receiver Time, G = GPS time), GRACE satellite ID, data quality flag
-        Byte     prodFlag1, prodFlag2, prodFlag3, prodFlag4; // product flag
-        Byte     status, TenhzCount;                         // status, 10Hz clock count
-        Vector3d acceleration, angularAcceleration;          // linear acceleration, angular acceleration,
-        Double   biasVol;                                    // proof mass bias voltage (averaged) (V)
-        Float    vd;                                         // amplitude of the AC voltages that operates the position sensors (Vrms)
-        Float    x1Out, x2Out, x3Out;                        // displacement of capacitive sensor X1, X2, X3 (m)
-        Float    y1Out, y2Out, z1Out;                        // displacement of capacitive sensor Y1, Y2, Y3 (m)
-        Float    tesu;                                       // temperature of SU electronics (°C)
-        Float    taicu;                                      // temperature of ICU power supply board (°C)
-        Float    tisu;                                       // temperature of internal core (°C)
-        Float    v15Picu;                                    // ICU reference voltage +15 V
-        Float    v15Micu;                                    // ICU reference voltage -15 V
-        Float    vr5Picu;                                    // ICU reference voltage + 5 V
-        Float    tcicu;                                      // temperature of ICU A/D converter board (°C)
-        Float    v15Psu;                                     // SU voltage +15 V
-        Float    v15Msu;                                     // SU voltage -15 V
-        Float    v48Psu;                                     // SU voltage +48 V
-        Float    v48Msu;                                     // SU voltage -48 V
-        UInt16   icuBlkNr;                                   // ICU block number
+        Int32             seconds, microSeconds;
+        Char              time_ref, GRACE_id;
+        Byte              qualflg;
+        UInt32            prodFlag;
+        Vector3d          acceleration, angularAcceleration; // linear acceleration, angular acceleration,
+        Double            biasVol=NAN_EXPR;                  // proof mass bias voltage (averaged) (V)
+        Float             vd=NAN_EXPR;                       // amplitude of the AC voltages that operates the position sensors (Vrms)
+        Float             x1Out, x2Out, x3Out;               // displacement of capacitive sensor X1, X2, X3 (m)
+        Float             y1Out, y2Out, z1Out;               // displacement of capacitive sensor Y1, Y2, Y3 (m)
+        Float             tesu;                              // temperature of SU electronics (°C)
+        Float             taicu;                             // temperature of ICU power supply board (°C)
+        Float             tisu;                              // temperature of internal core (°C)
+        Float             v15Picu;                           // ICU reference voltage +15 V
+        Float             v15Micu;                           // ICU reference voltage -15 V
+        Float             vr5Picu;                           // ICU reference voltage + 5 V
+        Float             tcicu;                             // temperature of ICU A/D converter board (°C)
+        Float             v15Psu;                            // SU voltage +15 V
+        Float             v15Msu;                            // SU voltage -15 V
+        Float             v48Psu;                            // SU voltage +48 V
+        Float             v48Msu;                            // SU voltage -48 V
+        Byte              status;                            // status
+        UInt16            icuBlkNr=0;                        // ICU block number
+        FileInGrace::Int8 PPS_source;                        // 10Hz clock count
+        Int32             sync_quality_index;
+        UInt32            status_flag;
 
-        file>>seconds>>microSeconds;
-        file>>timeRef>>GRACE_id>>FileInGrace::flag(qualityFlag)>>FileInGrace::flag(prodFlag1)>>FileInGrace::flag(prodFlag2)>>FileInGrace::flag(prodFlag3)>>FileInGrace::flag(prodFlag4);
-
-        if((Bool(prodFlag4 & (1 << 0)) == 1) && (Bool(prodFlag4 & (1 << 1)) == 1) &&(Bool(prodFlag4 & (1 << 2)) == 1))
-          file>>acceleration;
-        if((Bool(prodFlag4 & (1 << 3)) == 1) && (Bool(prodFlag4 & (1 << 4)) == 1) &&(Bool(prodFlag4 & (1 << 5)) == 1))
-          file>>angularAcceleration;
-        if(Bool(prodFlag4 & (1 << 6)) == 1)
-          file>>biasVol;
-        if(Bool(prodFlag4 & (1 << 7)) == 1)
-          file>>vd;
-
-        if(Bool(prodFlag3 & (1 << 0)) == 1)
-          file>>x1Out;
-        if(Bool(prodFlag3 & (1 << 1)) == 1)
-          file>>x2Out;
-        if(Bool(prodFlag3 & (1 << 2)) == 1)
-          file>>x3Out;
-        if(Bool(prodFlag3 & (1 << 3)) == 1)
-          file>>y1Out;
-        if(Bool(prodFlag3 & (1 << 4)) == 1)
-          file>>y2Out;
-        if(Bool(prodFlag3 & (1 << 5)) == 1)
-          file>>z1Out;
-        if(Bool(prodFlag3 & (1 << 6)) == 1)
-          file>>tesu;
-        if(Bool(prodFlag3 & (1 << 7)) == 1)
-          file>>taicu;
-
-        if(Bool(prodFlag2 & (1 << 0)) == 1)
-          file>>tisu;
-        if(Bool(prodFlag2 & (1 << 1)) == 1)
-          file>>v15Picu;
-        if(Bool(prodFlag2 & (1 << 2)) == 1)
-          file>>v15Micu;
-        if(Bool(prodFlag2 & (1 << 3)) == 1)
-          file>>vr5Picu;
-        if(Bool(prodFlag2 & (1 << 4)) == 1)
-          file>>tcicu;
-        if(Bool(prodFlag2 & (1 << 5)) == 1)
-          file>>v15Psu;
-        if(Bool(prodFlag2 & (1 << 6)) == 1)
-          file>>v15Msu;
-        if(Bool(prodFlag2 & (1 << 7)) == 1)
-          file>>v48Psu;
-
-        if(Bool(prodFlag1 & (1 << 0)) == 1)
-          file>>v48Msu;
-        if(Bool(prodFlag1 & (1 << 1)) == 1)
-          file>>status;
-        if(Bool(prodFlag1 & (1 << 2)) == 1)
-          file>>icuBlkNr;
-        if(Bool(prodFlag1 & (1 << 3)) == 1)
-          file>>TenhzCount;
-        if(Bool(prodFlag1 & (1 << 4)) == 1)
-          file>>MhzCount;
-
-        if((Bool(qualityFlag & (1 << 1)) == 0) && (Bool(qualityFlag & (1 << 3)) == 0)) // data with no pulse sync and invalid time tag (?) is removed
+        try
         {
-          if(microSeconds >= 1'000'000)
-          {
-            seconds += 1;
-            microSeconds -= 1'000'000;
-          }
+          file>>seconds>>microSeconds>>time_ref>>GRACE_id>>FileInGrace::flag(qualflg)>>FileInGrace::flag(prodFlag);
+          if(prodFlag & (1 <<  0))  file>>acceleration.x();
+          if(prodFlag & (1 <<  1))  file>>acceleration.y();
+          if(prodFlag & (1 <<  2))  file>>acceleration.z();
+          if(prodFlag & (1 <<  3))  file>>angularAcceleration.x();
+          if(prodFlag & (1 <<  4))  file>>angularAcceleration.y();
+          if(prodFlag & (1 <<  5))  file>>angularAcceleration.z();
+          if(prodFlag & (1 <<  6))  file>>biasVol;
+          if(prodFlag & (1 <<  7))  file>>vd;
+          if(prodFlag & (1 <<  8))  file>>x1Out;
+          if(prodFlag & (1 <<  9))  file>>x2Out;
+          if(prodFlag & (1 << 10))  file>>x3Out;
+          if(prodFlag & (1 << 11))  file>>y1Out;
+          if(prodFlag & (1 << 12))  file>>y2Out;
+          if(prodFlag & (1 << 13))  file>>z1Out;
+          if(prodFlag & (1 << 14))  file>>tesu;
+          if(prodFlag & (1 << 15))  file>>taicu;
+          if(prodFlag & (1 << 16))  file>>tisu;
+          if(prodFlag & (1 << 17))  file>>v15Picu;
+          if(prodFlag & (1 << 18))  file>>v15Micu;
+          if(prodFlag & (1 << 19))  file>>vr5Picu;
+          if(prodFlag & (1 << 20))  file>>tcicu;
+          if(prodFlag & (1 << 21))  file>>v15Psu;
+          if(prodFlag & (1 << 22))  file>>v15Msu;
+          if(prodFlag & (1 << 23))  file>>v48Psu;
+          if(prodFlag & (1 << 24))  file>>v48Msu;
+          if(prodFlag & (1 << 25))  file>>FileInGrace::flag(status);
+          if(prodFlag & (1 << 26))  file>>icuBlkNr;
+          if(prodFlag & (1 << 27))  file>>PPS_source;
+          if(prodFlag & (1 << 28))  file>>sync_quality_index;
+          if(prodFlag & (1 << 29))  file>>FileInGrace::flag(status_flag);
+        }
+        catch(std::exception &/*e*/)
+        {
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          break;
+        }
 
-          const Time time = mjd2time(51544.5) + seconds2time(seconds) + seconds2time(microSeconds*1e-6);
-          if(arc.size() && (time <= arc.at(arc.size()-1).time))
-            logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.at(arc.size()-1).time.dateTimeStr()<<")"<<Log::endl;
+        if((qualflg & (1 << 1)) || (qualflg & (1 << 3))) // data with no pulse sync and invalid time tag (?) are removed
+          continue;
 
-          // data gaps (> 0.2 seconds)
-          if(arc.size() && ((time-arc.at(arc.size()-1).time).seconds()>0.2))
-          {
-            countGaps++;
-            arcGap.push_back(arc.at(arc.size()-1));
-          }
+        while(microSeconds >= 1'000'000)
+        {
+          seconds += 1;
+          microSeconds -= 1'000'000;
+        }
 
-          if((Bool(prodFlag4 & (1 << 0)) == 1) && (Bool(prodFlag4 & (1 << 1)) == 1) &&(Bool(prodFlag4 & (1 << 2)) == 1))
-          {
-            Accelerometer1AEpoch epoch;
-            epoch.time         = time;
-            epoch.rcvTimeInt   = seconds;
-            epoch.rcvTimeFrac  = microSeconds;
-            epoch.acceleration = acceleration;
-            arc.push_back(epoch);
-          }
+        const Time time = mjd2time(51544.5) + seconds2time(seconds) + seconds2time(microSeconds*1e-6);
+        if(arc.size() && (time <= arc.back().time))
+          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.back().time.dateTimeStr()<<")"<<Log::endl;
 
-          if((Bool(prodFlag4 & (1 << 3)) == 1) && (Bool(prodFlag4 & (1 << 4)) == 1) &&(Bool(prodFlag4 & (1 << 5)) == 1))
-          {
-            Accelerometer1AEpoch epoch;
-            epoch.time = time;
-            epoch.rcvTimeInt   = seconds;
-            epoch.rcvTimeFrac  = microSeconds;
-            epoch.acceleration = angularAcceleration;
-            arcAngAcc.push_back(epoch);
-          }
+        if((prodFlag & (1<<0)) && (prodFlag & (1<<1)) && (prodFlag & (1<<2)))
+        {
+          Accelerometer1AEpoch epoch;
+          epoch.time         = time;
+          epoch.rcvTimeInt   = seconds;
+          epoch.rcvTimeFrac  = microSeconds;
+          epoch.acceleration = acceleration;
+          arc.push_back(epoch);
+        }
 
-          if((Bool(prodFlag4 & (1 << 6)) == 1) && (Bool(prodFlag4 & (1 << 7)) == 1) &&
-             (Bool(prodFlag3 & (1 << 0)) == 1) && (Bool(prodFlag3 & (1 << 1)) == 1) && (Bool(prodFlag3 & (1 << 2)) == 1) &&
-             (Bool(prodFlag3 & (1 << 3)) == 1) && (Bool(prodFlag3 & (1 << 4)) == 1) && (Bool(prodFlag3 & (1 << 5)) == 1) &&
-             (Bool(prodFlag3 & (1 << 6)) == 1) && (Bool(prodFlag3 & (1 << 7)) == 1) &&
-             (Bool(prodFlag2 & (1 << 0)) == 1) && (Bool(prodFlag2 & (1 << 4)) == 1) && (Bool(prodFlag1 & (1 << 2)) == 1))
-          {
-            AccHousekeepingEpoch epoch;
-            epoch.time = time;
-            epoch.biasVoltage  = biasVol;
-            epoch.vd           = vd;
-            epoch.xOut.x()     = x1Out;
-            epoch.xOut.y()     = x2Out;
-            epoch.xOut.z()     = x3Out;
-            epoch.yOut.x()     = y1Out;
-            epoch.yOut.y()     = y2Out;
-            epoch.yOut.z()     = z1Out;
-            epoch.tempSU       = tesu;
-            epoch.tempICU      = taicu;
-            epoch.tempCore     = tisu;
-            epoch.tempICUConv  = tcicu;
-            epoch.blkNrICU     = icuBlkNr;
-            arcHousekeeping.push_back(epoch);
-          }
+        if((prodFlag & (1<<3)) && (prodFlag & (1<<4)) && (prodFlag & (1<<5)))
+        {
+          Accelerometer1AEpoch epoch;
+          epoch.time = time;
+          epoch.rcvTimeInt   = seconds;
+          epoch.rcvTimeFrac  = microSeconds;
+          epoch.acceleration = angularAcceleration;
+          arcAngAcc.push_back(epoch);
         }
       } // for(idEpoch)
     } // for(idFile)
 
      // =============================================
 
-    logInfo<<"Accelerometer:"<<Log::endl;
+    logStatus<<"sort epochs"<<Log::endl;
+    arc.sort();
+    arcAngAcc.sort();
+
+    logStatus<<"eliminate duplicates"<<Log::endl;
+    const UInt oldSize = arc.size();
+    arc.removeDuplicateEpochs(TRUE/*keepFirst*/);
+    arcAngAcc.removeDuplicateEpochs(TRUE/*keepFirst*/);
+    if(arc.size() < oldSize)
+      logInfo<<" "<<oldSize-arc.size()<<" duplicates removed!"<<Log::endl;
+
     Arc::printStatistics(arc);
-    logInfo<<"  gaps (> 0.2 s):  "<<countGaps<<Log::endl;
     if(arc.size() == 0)
       return;
 
-    // remove duplicates
-    arc.sort();
-    UInt countDuplicates = 0;
-    for(UInt idEpoch=1; idEpoch<arc.size(); idEpoch++)
+    if(!fileNameOutAcc.empty())
     {
-      if(arc.at(idEpoch).time == arc.at(idEpoch-1).time)
-      {
-        arc.remove(idEpoch--);
-        countDuplicates++;
-      }
+      logInfo<<"write linear  acceleration to <"<<fileNameOutAcc<<">"<<Log::endl;
+      InstrumentFile::write(fileNameOutAcc, arc);
     }
-    logInfo<<"  duplicates:      "<<countDuplicates<<Log::endl;
-
-    if(!fileNameAcc.empty())
+    if(!fileNameOutAng.empty())
     {
-      logInfo<<"write linear  acceleration to <"<<fileNameAcc<<">"<<Log::endl;
-      InstrumentFile::write(fileNameAcc, arc);
-    }
-    if(!fileNameAccGap.empty())
-    {
-      logInfo<<"write data gaps to <"<<fileNameAccGap<<">"<<Log::endl;
-      InstrumentFile::write(fileNameAccGap, arcGap);
-    }
-
-    // =============================================
-
-    logInfo<<"Angular accelerometer:"<<Log::endl;
-    Arc::printStatistics(arcAngAcc);
-
-    // remove duplicates
-    arc.sort();
-    countDuplicates = 0;
-    for(UInt idEpoch=1; idEpoch<arcAngAcc.size(); idEpoch++)
-    {
-      if(arcAngAcc.at(idEpoch).time == arcAngAcc.at(idEpoch-1).time)
-      {
-        arcAngAcc.remove(idEpoch--);
-        countDuplicates++;
-      }
-    }
-    logInfo<<"  duplicates:      "<<countDuplicates<<Log::endl;
-
-    if(!fileNameAngAcc.empty())
-    {
-      logInfo<<"write angular acceleration to <"<<fileNameAngAcc<<">"<<Log::endl;
-      InstrumentFile::write(fileNameAngAcc, arcAngAcc);
-    }
-
-    // =============================================
-
-    logInfo<<"Accelerometer housekeeping:"<<Log::endl;
-    Arc::printStatistics(arcHousekeeping);
-    if(arcHousekeeping.size() == 0)
-      return;
-
-    if(!fileNameHousekeeping.empty())
-    {
-      logInfo<<"write housekeeping data to <"<<fileNameHousekeeping<<">"<<Log::endl;
-      InstrumentFile::write(fileNameHousekeeping, arcHousekeeping);
+      logInfo<<"write angular acceleration to <"<<fileNameOutAng<<">"<<Log::endl;
+      InstrumentFile::write(fileNameOutAng, arcAngAcc);
     }
   }
   catch(std::exception &e)

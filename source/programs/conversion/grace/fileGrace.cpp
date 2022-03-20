@@ -217,7 +217,7 @@ FileInGrace &FileInGrace::operator>>(UInt64 &x)
 
 /***********************************************/
 
-FileInGrace &FileInGrace::operator>>(Byte &x)
+FileInGrace &FileInGrace::operator>>(Char &x)
 {
   try
   {
@@ -228,6 +228,28 @@ FileInGrace &FileInGrace::operator>>(Byte &x)
     }
     else
       file>>x;
+    return *this;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+FileInGrace &FileInGrace::operator>>(Int8 &x)
+{
+  try
+  {
+    if(isBinary)
+    {
+      Byte b;
+      file.read(&b, 1);
+      x.value = b;
+    }
+    else
+      file>>x.value;
     return *this;
   }
   catch(std::exception &e)

@@ -7701,7 +7701,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GraceL1A2Accelerometer}\label{GraceL1A2Accelerometer}
-This program converts Level-1A accelerometer data to the GROOPS instrument file format.
+This program converts Level-1A accelerometer data (ACC1A) to the GROOPS instrument file format.
 The GRACE Level-1A format is described in \verb|GRACEiolib.h| given at
 \url{http://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/sw/GraceReadSW_L1_2010-03-31.tar.gz}.
 Multiple \config{inputfile}s must be given in the correct time order.
@@ -7714,39 +7714,16 @@ To split the arc in multiple gap free arcs use \program{InstrumentSynchronize}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAccelerometerGaps & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAngularAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAccHousekeeping & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hline
-\end{tabularx}
-
-\clearpage
-%==================================
-\subsection{GraceL1A2AccelerometerHousekeeping}\label{GraceL1A2AccelerometerHousekeeping}
-This program converts Level-1A accelerometer housekeeping data to the GROOPS instrument file format.
-The GRACE Level-1A format is described in \verb|GRACEiolib.h| given at
-\url{http://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/sw/GraceReadSW_L1_2010-03-31.tar.gz}.
-Multiple \config{inputfile}s must be given in the correct time order.
-The output is one arc of satellite data which can include data gaps.
-To split the arc in multiple gap free arcs use \program{InstrumentSynchronize}.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAccHousekeeping & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt ACCELEROMETER1A\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAngularAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt ACCELEROMETER1A\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt ACC1A\\
 \hline
 \end{tabularx}
 
 \clearpage
 %==================================
 \subsection{GraceL1A2SatelliteTracking}\label{GraceL1A2SatelliteTracking}
-This program converts Level-1A satellite tracking data to the GROOPS instrument file format.
+This program converts Level-1A satellite tracking data (KBR1A) to the GROOPS instrument file format.
 The GRACE Level-1A format is described in \verb|GRACEiolib.h| given at
 \url{http://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/sw/GraceReadSW_L1_2010-03-31.tar.gz}.
 Multiple \config{inputfile}s must be given in the correct time order.
@@ -7759,8 +7736,8 @@ To split the arc in multiple gap free arcs use \program{InstrumentSynchronize}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSatelliteTracking & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSatelliteTracking & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES(seconds, microSeconds, ant\_id, K\_phase, Ka\_phase, K\_SNR, Ka\_SNR)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt KBR1A\\
 \hline
 \end{tabularx}
 
@@ -7768,7 +7745,7 @@ Name & Type & Annotation\\
 %==================================
 \subsection{GraceL1A2StarCamera}\label{GraceL1A2StarCamera}
 This program converts orientation data measured by the star cameras
-from the GRACE Level-1A format to the GROOPS instrument file format.
+from the GRACE Level-1A format (SCA1A) to the GROOPS instrument file format.
 For further information see \program{GraceL1A2Accelerometer}.
 
 
@@ -7777,16 +7754,16 @@ For further information see \program{GraceL1A2Accelerometer}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera1 & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera2 & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera1 & \hfuzz=500pt filename & \hfuzz=500pt STARCAMERA1A, head 1\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera2 & \hfuzz=500pt filename & \hfuzz=500pt STARCAMERA1A, head 2\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt SCA1A, !GRACE-FO is not working!\\
 \hline
 \end{tabularx}
 
 \clearpage
 %==================================
 \subsection{GraceL1A2Temperature}\label{GraceL1A2Temperature}
-This program converts Level-1A temperature measurments to the GROOPS instrument file format.
+This program converts Level-1A temperature measurments (HRT1B or HRT1A) to the GROOPS instrument file format.
 The GRACE Level-1A format is described in GRACE given at \url{http://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/sw/GraceReadSW_L1_2010-03-31.tar.gz}.
 Multiple \config{inputfile}s must be given in the correct time order.
 The output is one arc of satellite data which can include data gaps.
@@ -7798,15 +7775,15 @@ To split the arc in multiple gap free arcs use \program{InstrumentSynchronize}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTemperature & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileTemperature & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt HRT1B or HRT1A\\
 \hline
 \end{tabularx}
 
 \clearpage
 %==================================
 \subsection{GraceL1b2AccHousekeeping}\label{GraceL1b2AccHousekeeping}
-This program converts ACC housekeeping data from the GRACE SDS format into \file{instrument file (ACCHOUSEKEEPING)}{instrument}.
+This program converts ACC housekeeping data (AHK1B or AHK1A) from the GRACE SDS format into \file{instrument file (ACCHOUSEKEEPING)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 
 
@@ -7815,15 +7792,15 @@ For further information see \program{GraceL1b2Accelerometer}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileAccHousekeeping & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileAccHousekeeping & \hfuzz=500pt filename & \hfuzz=500pt ACCHOUSEKEEPING\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt AHK1B or AHK1A\\
 \hline
 \end{tabularx}
 
 \clearpage
 %==================================
 \subsection{GraceL1b2Accelerometer}\label{GraceL1b2Accelerometer}
-This program converts accelerometer data from the GRACE SDS format into \file{instrument file (ACCELEROMETER)}{instrument}.
+This program converts accelerometer data (ACC1B or ACT1B) from the GRACE SDS format into \file{instrument file (ACCELEROMETER)}{instrument}.
 
 Multiple \config{inputfile}s must be given in the correct time order.
 The output is one arc of satellite data which can include data gaps.
@@ -7838,17 +7815,17 @@ given at \url{https://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/docs/H
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAngularAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileFlags & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt ACCELEROMETER\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAngularAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt ACCELEROMETER\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileFlags & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES(qualflg, acl\_res.x, acl\_res.y, acl\_res.z)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt ACC1B or ACT1B\\
 \hline
 \end{tabularx}
 
 \clearpage
 %==================================
 \subsection{GraceL1b2Clock}\label{GraceL1b2Clock}
-This program converts clock data from the GRACE SDS format into \file{instrument file (CLOCK)}{instrument}.
+This program converts clock data (CLK1B or LLK1B) from the GRACE SDS format into \file{instrument file (CLOCK)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 
 
@@ -7857,8 +7834,8 @@ For further information see \program{GraceL1b2Accelerometer}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileClock & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileClock & \hfuzz=500pt filename & \hfuzz=500pt CLOCK\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt CLK1B or LLK1B\\
 \hline
 \end{tabularx}
 
@@ -7866,7 +7843,7 @@ Name & Type & Annotation\\
 %==================================
 \subsection{GraceL1b2GnssReceiver}\label{GraceL1b2GnssReceiver}
 This program converts GPS receiver data (phase and pseudo range) data
-from the GRACE SDS format into \file{instrument file (GNSSRECEIVER)}{instrument}.
+from the GRACE SDS format (GPS1B or GPS1A) into \file{instrument file (GNSSRECEIVER)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 
 
@@ -7875,15 +7852,15 @@ For further information see \program{GraceL1b2Accelerometer}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGnssReceiver & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGnssReceiver & \hfuzz=500pt filename & \hfuzz=500pt GNSSRECEIVER\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt GPS1B or GPS1A\\
 \hline
 \end{tabularx}
 
 \clearpage
 %==================================
 \subsection{GraceL1b2Magnetometer}\label{GraceL1b2Magnetometer}
-This program converts magnetometer data from the GRACE SDS format into \file{instrument file (MAGNETOMETER)}{instrument}.
+This program converts magnetometer data (MAG1B or MAG1A) from the GRACE SDS format into \file{instrument file (MAGNETOMETER)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 
 
@@ -7892,15 +7869,15 @@ For further information see \program{GraceL1b2Accelerometer}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMagnetometer & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMagnetometer & \hfuzz=500pt filename & \hfuzz=500pt MAGNETOMETER\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt MAG1B or MAG1A\\
 \hline
 \end{tabularx}
 
 \clearpage
 %==================================
 \subsection{GraceL1b2Mass}\label{GraceL1b2Mass}
-This program converts mass data from the GRACE SDS format into \file{instrument file (MASS)}{instrument}.
+This program converts mass data (MAS1B or MAS1A) from the GRACE SDS format into \file{instrument file (MASS)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 
 
@@ -7909,8 +7886,8 @@ For further information see \program{GraceL1b2Accelerometer}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMass & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMass & \hfuzz=500pt filename & \hfuzz=500pt MASS\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt MAS1B or MAS1A\\
 \hline
 \end{tabularx}
 
@@ -7918,7 +7895,7 @@ Name & Type & Annotation\\
 %==================================
 \subsection{GraceL1b2Orbit}\label{GraceL1b2Orbit}
 This program converts the reduced dynamical orbit
-from the GRACE SDS format into \file{instrument file (ORBIT)}{instrument}.
+from the GRACE SDS format (GNV1B) into \file{instrument file (ORBIT)}{instrument}.
 The orbit is transformed into a celestial reference system (CRF).
 For further information see \program{GraceL1b2Accelerometer}.
 
@@ -7929,8 +7906,8 @@ For further information see \program{GraceL1b2Accelerometer}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt to rotate into CRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt GNV1B\\
 \hline
 \end{tabularx}
 
@@ -7938,7 +7915,7 @@ Name & Type & Annotation\\
 %==================================
 \subsection{GraceL1b2SatelliteTracking}\label{GraceL1b2SatelliteTracking}
 This program converts low-low satellite data measured by the K-band ranging system
-from the GRACE SDS format into \file{instrument file (SATELLITETRACKING)}{instrument}.
+from the GRACE SDS format (KBR1B or LRI1B) into \file{instrument file (SATELLITETRACKING)}{instrument}.
 The \config{inputfile}s contain also corrections to antenna offsets
 and the so called light time correction. The corrections can be stored in additional files
 in the same format as the observations.
@@ -7951,12 +7928,12 @@ For further information see \program{GraceL1b2Accelerometer}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSatelliteTracking & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntCentr & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileLighttime & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSNR & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileIonoCorr & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSatelliteTracking & \hfuzz=500pt filename & \hfuzz=500pt SATELLITETRACKING\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntCentr & \hfuzz=500pt filename & \hfuzz=500pt SATELLITETRACKING\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileLighttime & \hfuzz=500pt filename & \hfuzz=500pt SATELLITETRACKING\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSNR & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES(K\_A\_SNR, Ka\_A\_SNR, K\_B\_SNR, Ka\_B\_SNR, qualflg)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileIonoCorr & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUE\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt KBR1B or LRI1B\\
 \hline
 \end{tabularx}
 
@@ -7964,7 +7941,7 @@ Name & Type & Annotation\\
 %==================================
 \subsection{GraceL1b2StarCamera}\label{GraceL1b2StarCamera}
 This program converts orientation data measured by a star camera (SRF to CRF)
-from the GRACE SDS format into \file{instrument file (STARCAMERA)}{instrument}.
+from the GRACE SDS format (SCA1B) into \file{instrument file (STARCAMERA)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 
 
@@ -7974,8 +7951,8 @@ For further information see \program{GraceL1b2Accelerometer}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileStarCameraFlags & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileStarCameraFlags & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES(sca\_id, qual\_rss, qualflg)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt SCA1B\\
 \hline
 \end{tabularx}
 
@@ -8002,7 +7979,7 @@ This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{GraceL1b2SteeringMirror}\label{GraceL1b2SteeringMirror}
-This program converts GRACE-FO Steering Mirror output to an \file{instrument file (STARCAMERA)}{instrument}.
+This program converts GRACE-FO Steering Mirror output (LSM1B) to an \file{instrument file (STARCAMERA)}{instrument}.
 
 
 \keepXColumns
@@ -8011,14 +7988,14 @@ This program converts GRACE-FO Steering Mirror output to an \file{instrument fil
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt LSM1B\\
 \hline
 \end{tabularx}
 
 \clearpage
 %==================================
 \subsection{GraceL1b2Thruster}\label{GraceL1b2Thruster}
-This program converts thruster data from the GRACE SDS format into \file{instrument file (THRUSTER)}{instrument}.
+This program converts thruster data (THR1B or THR1A) from the GRACE SDS format into \file{instrument file (THRUSTER)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 
 
@@ -8027,15 +8004,15 @@ For further information see \program{GraceL1b2Accelerometer}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileThruster & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileThruster & \hfuzz=500pt filename & \hfuzz=500pt THRUSTER\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt THR1B or THR1A\\
 \hline
 \end{tabularx}
 
 \clearpage
 %==================================
 \subsection{GraceL1b2Time}\label{GraceL1b2Time}
-This program converts time data from the GRACE SDS format into \file{instrument file (MISCVALUES)}{instrument}.
+This program converts time data (TIM1A or TIM1B) from the GRACE SDS format into \file{instrument file (MISCVALUES)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 
 
@@ -8044,15 +8021,15 @@ For further information see \program{GraceL1b2Accelerometer}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileTime & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileTime & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES(obdh\_time, TS\_suppid, gpstime\_intg, gpstime\_frac, first\_icu\_blknr, final\_icu\_blknr, qualflg)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt TIM1A or TIM1B\\
 \hline
 \end{tabularx}
 
 \clearpage
 %==================================
 \subsection{GraceL1b2Uso}\label{GraceL1b2Uso}
-This program converts clock data from the GRACE SDS format into \file{instrument file (MISCVALUES)}{instrument}.
+This program converts clock data (USO1B) from the GRACE SDS format into \file{instrument file (MISCVALUES)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 
 
@@ -8061,15 +8038,16 @@ For further information see \program{GraceL1b2Accelerometer}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileUso & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileUso & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES(uso\_freq, K\_freq, Ka\_freq)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt USO1B\\
 \hline
 \end{tabularx}
 
 \clearpage
 %==================================
 \subsection{GraceL1b2Vector}\label{GraceL1b2Vector}
-This program reads vector orientation data (positions of instruments in the satellite frame) from the GRACE SDS format.
+This program reads vector orientation data (positions of instruments in the satellite frame) from the GRACE SDS format
+(VGB1B, VGN1B, VGO1B, VKB1B, or VCM1B).
 The \configFile{outputfileVector}{matrix} is a $(3n\times1)$ matrix containing $(x,y,z)$ for each record.
 The GRACE SDS format is described in "GRACE Level 1B Data Product User Handbook JPL D-22027"
 given at \url{http://podaac.jpl.nasa.gov/grace/documentation.html}.
@@ -8081,7 +8059,7 @@ given at \url{http://podaac.jpl.nasa.gov/grace/documentation.html}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileVector & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt VGB1B, VGN1B, VGO1B, VKB1B, or VCM1B\\
 \hline
 \end{tabularx}
 

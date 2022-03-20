@@ -20440,125 +20440,181 @@
 			</xs:element>
 			<xs:element name="GraceL1A2Accelerometer">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1A data</xs:documentation>
+					<xs:documentation>read GRACE L1A data (ACC1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileAccelerometer" type="filename" minOccurs="0"/>
-						<xs:element name="outputfileAccelerometerGaps" type="filename" minOccurs="0"/>
-						<xs:element name="outputfileAngularAccelerometer" type="filename" minOccurs="0"/>
-						<xs:element name="outputfileAccHousekeeping" type="filename" minOccurs="0"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="GraceL1A2AccelerometerHousekeeping">
-				<xs:annotation>
-					<xs:documentation>read GRACE L1A data</xs:documentation>
-					<xs:appinfo>tag: Conversion</xs:appinfo>
-					<xs:appinfo>tag: Grace</xs:appinfo>
-					<xs:appinfo>tag: Instrument</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileAccHousekeeping" type="filename" minOccurs="0"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileAccelerometer" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>ACCELEROMETER1A</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileAngularAccelerometer" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>ACCELEROMETER1A</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>ACC1A</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1A2SatelliteTracking">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1A data</xs:documentation>
+					<xs:documentation>read GRACE L1A data (KBR1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileSatelliteTracking" type="filename" minOccurs="0"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileSatelliteTracking" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(seconds, microSeconds, ant_id, K_phase, Ka_phase, K_SNR, Ka_SNR)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>KBR1A</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1A2StarCamera">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1A data</xs:documentation>
+					<xs:documentation>read GRACE L1A data (SCA1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileStarCamera1" type="filename"/>
-						<xs:element name="outputfileStarCamera2" type="filename"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileStarCamera1" type="filename">
+							<xs:annotation>
+								<xs:documentation>STARCAMERA1A, head 1</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileStarCamera2" type="filename">
+							<xs:annotation>
+								<xs:documentation>STARCAMERA1A, head 2</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>SCA1A, !GRACE-FO is not working!</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1A2Temperature">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1A data</xs:documentation>
+					<xs:documentation>read GRACE L1A data (HRT1B or HRT1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileTemperature" type="filename" minOccurs="0"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileTemperature" type="filename">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>HRT1B or HRT1A</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2AccHousekeeping">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (AHK1B or AHK1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileAccHousekeeping" type="filename"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileAccHousekeeping" type="filename">
+							<xs:annotation>
+								<xs:documentation>ACCHOUSEKEEPING</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>AHK1B or AHK1A</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2Accelerometer">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (ACC1B or ACT1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileAccelerometer" type="filename" minOccurs="0"/>
-						<xs:element name="outputfileAngularAccelerometer" type="filename" minOccurs="0"/>
-						<xs:element name="outputfileFlags" type="filename" minOccurs="0"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileAccelerometer" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>ACCELEROMETER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileAngularAccelerometer" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>ACCELEROMETER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileFlags" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(qualflg, acl_res.x, acl_res.y, acl_res.z)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>ACC1B or ACT1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2Clock">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (CLK1B or LLK1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileClock" type="filename"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileClock" type="filename">
+							<xs:annotation>
+								<xs:documentation>CLOCK</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>CLK1B or LLK1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2GnssReceiver">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (GPS1B or GPS1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Gnss</xs:appinfo>
@@ -20566,42 +20622,66 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileGnssReceiver" type="filename"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileGnssReceiver" type="filename">
+							<xs:annotation>
+								<xs:documentation>GNSSRECEIVER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>GPS1B or GPS1A</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2Magnetometer">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (MAG1B or MAG1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileMagnetometer" type="filename"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileMagnetometer" type="filename">
+							<xs:annotation>
+								<xs:documentation>MAGNETOMETER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>MAG1B or MAG1A</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2Mass">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (MAS1B or MAS1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileMass" type="filename"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileMass" type="filename">
+							<xs:annotation>
+								<xs:documentation>MASS</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>MAS1B or MAS1A</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2Orbit">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (GNV1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Orbit</xs:appinfo>
@@ -20610,32 +20690,64 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileOrbit" type="filename"/>
-						<xs:element name="earthRotation" type="earthRotationType"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="earthRotation" type="earthRotationType">
+							<xs:annotation>
+								<xs:documentation>to rotate into CRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>GNV1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2SatelliteTracking">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (KBR1B or LRI1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileSatelliteTracking" type="filename" minOccurs="0"/>
-						<xs:element name="outputfileAntCentr" type="filename" minOccurs="0"/>
-						<xs:element name="outputfileLighttime" type="filename" minOccurs="0"/>
-						<xs:element name="outputfileSNR" type="filename" minOccurs="0"/>
-						<xs:element name="outputfileIonoCorr" type="filename" minOccurs="0"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileSatelliteTracking" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>SATELLITETRACKING</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileAntCentr" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>SATELLITETRACKING</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileLighttime" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>SATELLITETRACKING</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileSNR" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(K_A_SNR, Ka_A_SNR, K_B_SNR, Ka_B_SNR, qualflg)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileIonoCorr" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUE</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>KBR1B or LRI1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2StarCamera">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (SCA1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
@@ -20643,8 +20755,16 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileStarCamera" type="filename" minOccurs="0"/>
-						<xs:element name="outputfileStarCameraFlags" type="filename" minOccurs="0"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileStarCameraFlags" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(sca_id, qual_rss, qualflg)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>SCA1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -20671,7 +20791,7 @@
 			</xs:element>
 			<xs:element name="GraceL1b2SteeringMirror">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (LSM1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
@@ -20679,55 +20799,83 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileStarCamera" type="filename" minOccurs="0"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>LSM1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2Thruster">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (THR1B or THR1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileThruster" type="filename"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileThruster" type="filename">
+							<xs:annotation>
+								<xs:documentation>THRUSTER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>THR1B or THR1A</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2Time">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (TIM1A or TIM1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileTime" type="filename"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileTime" type="filename">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(obdh_time, TS_suppid, gpstime_intg, gpstime_frac, first_icu_blknr, final_icu_blknr, qualflg)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>TIM1A or TIM1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2Uso">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (USO1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileUso" type="filename"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outputfileUso" type="filename">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(uso_freq, K_freq, Ka_freq)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>USO1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="GraceL1b2Vector">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data</xs:documentation>
+					<xs:documentation>read GRACE L1B data (VGB1B, VGN1B, VGO1B, VKB1B, or VCM1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Matrix</xs:appinfo>
@@ -20735,7 +20883,11 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileVector" type="filename"/>
-						<xs:element name="inputfile" type="filename"/>
+						<xs:element name="inputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>VGB1B, VGN1B, VGO1B, VKB1B, or VCM1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>

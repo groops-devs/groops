@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts Level-1A satellite tracking data to the GROOPS instrument file format.
+This program converts Level-1A satellite tracking data (KBR1A) to the GROOPS instrument file format.
 The GRACE Level-1A format is described in \verb|GRACEiolib.h| given at
 \url{http://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/sw/GraceReadSW_L1_2010-03-31.tar.gz}.
 Multiple \config{inputfile}s must be given in the correct time order.
@@ -37,7 +37,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1A2SatelliteTracking, SINGLEPROCESS, "read GRACE L1A data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1A2SatelliteTracking, SINGLEPROCESS, "read GRACE L1A data (KBR1A)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -48,8 +48,8 @@ void GraceL1A2SatelliteTracking::run(Config &config, Parallel::CommunicatorPtr /
     FileName fileNameSst;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileSatelliteTracking", fileNameSst,    Config::OPTIONAL, "", "");
-    readConfig(config, "inputfile", fileNameIn, Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileSatelliteTracking", fileNameSst, Config::OPTIONAL, "", "MISCVALUES(seconds, microSeconds, ant_id, K_phase, Ka_phase, K_SNR, Ka_SNR)");
+    readConfig(config, "inputfile",                   fileNameIn,  Config::MUSTSET,  "", "KBR1A");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -64,43 +64,52 @@ void GraceL1A2SatelliteTracking::run(Config &config, Parallel::CommunicatorPtr /
 
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
-        Int32    seconds, microSeconds;             // receiver time, microseconds part
-        Byte     GRACE_id, prn_id, ant_id;          // GRACE satellite ID, GPS PRN id or GRACE id, KBR antenna id
-        Byte     prodFlag1, prodFlag2, qualityFlag; // product flag, quality flag
-        Double   CA_range, L1_range, L2_range;
-        Double   CA_phase, L1_phase, L2_phase;
-        UInt16   CA_SNR, L1_SNR, L2_SNR;
-        UInt16   CA_chan, L1_chan, L2_chan;
-        Double   K_phase, Ka_phase;                 // K-Band carrier phase, Ka-Band carrier phase
-        UInt16   K_SNR, Ka_SNR;                     // K-Band SNR, Ka-Band SNR
+        Int32             seconds, microSeconds;    // receiver time, microseconds part
+        Char              GRACE_id;                 // GRACE satellite ID
+        FileInGrace::Int8 prn_id, ant_id;           // GPS PRN id or GRACE id, KBR antenna id
+        UInt16            prodFlag;
+        Byte              qualityFlag;
+        Double            CA_range, L1_range, L2_range;
+        Double            CA_phase, L1_phase, L2_phase;
+        UInt16            CA_SNR, L1_SNR, L2_SNR;
+        UInt16            CA_chan, L1_chan, L2_chan;
+        Double            K_phase, Ka_phase;                 // K-Band carrier phase, Ka-Band carrier phase
+        UInt16            K_SNR, Ka_SNR;                     // K-Band SNR, Ka-Band SNR
 
-        file>>seconds>>microSeconds>>GRACE_id>>prn_id>>ant_id>>FileInGrace::flag(prodFlag1)>>FileInGrace::flag(prodFlag2)>>FileInGrace::flag(qualityFlag);
-        if(prodFlag2 & (1<<0)) file>>CA_range;
-        if(prodFlag2 & (1<<1)) file>>L1_range;
-        if(prodFlag2 & (1<<2)) file>>L2_range;
-        if(prodFlag2 & (1<<3)) file>>CA_phase;
-        if(prodFlag2 & (1<<4)) file>>L1_phase;
-        if(prodFlag2 & (1<<5)) file>>L2_phase;
-        if(prodFlag2 & (1<<6)) file>>CA_SNR;
-        if(prodFlag2 & (1<<7)) file>>L1_SNR;
-        if(prodFlag1 & (1<<0)) file>>L2_SNR;
-        if(prodFlag1 & (1<<1)) file>>CA_chan;
-        if(prodFlag1 & (1<<2)) file>>L1_chan;
-        if(prodFlag1 & (1<<3)) file>>L2_chan;
-        if(prodFlag1 & (1<<4)) file>>K_phase;
-        if(prodFlag1 & (1<<5)) file>>Ka_phase;
-        if(prodFlag1 & (1<<6)) file>>K_SNR;
-        if(prodFlag1 & (1<<7)) file>>Ka_SNR;
+        try
+        {
+          file>>seconds>>microSeconds>>GRACE_id>>prn_id>>ant_id>>FileInGrace::flag(prodFlag)>>FileInGrace::flag(qualityFlag);
+          if(prodFlag & (1<<0))  file>>CA_range;
+          if(prodFlag & (1<<1))  file>>L1_range;
+          if(prodFlag & (1<<2))  file>>L2_range;
+          if(prodFlag & (1<<3))  file>>CA_phase;
+          if(prodFlag & (1<<4))  file>>L1_phase;
+          if(prodFlag & (1<<5))  file>>L2_phase;
+          if(prodFlag & (1<<6))  file>>CA_SNR;
+          if(prodFlag & (1<<7))  file>>L1_SNR;
+          if(prodFlag & (1<<8))  file>>L2_SNR;
+          if(prodFlag & (1<<9))  file>>CA_chan;
+          if(prodFlag & (1<<10)) file>>L1_chan;
+          if(prodFlag & (1<<11)) file>>L2_chan;
+          if(prodFlag & (1<<12)) file>>K_phase;
+          if(prodFlag & (1<<13)) file>>Ka_phase;
+          if(prodFlag & (1<<14)) file>>K_SNR;
+          if(prodFlag & (1<<15)) file>>Ka_SNR;
+        }
+        catch(std::exception &/*e*/)
+        {
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          break;
+        }
 
-        //logInfo<<(mjd2time(51544.5) + seconds2time(seconds) + seconds2time(microSeconds*1e-6)).dateTimeStr()<<"  "<<GRACE_id<<"  "<<(int)prn_id<<"  "<<(int)ant_id<<"  "<<K_phase<<"  "<<Ka_phase<<"  "<<K_SNR<<"  "<<Ka_SNR<<Log::endl;
+        while(microSeconds >= 1'000'000)
+        {
+          seconds      += 1;
+          microSeconds -= 1'000'000;
+        }
 
-        if(microSeconds >= 1'000'000)
-          {
-            seconds += 1;
-            microSeconds -= 1'000'000;
-          }
-
-        if((ant_id == 11) || (ant_id == -11))
+        if((ant_id == 9) || (ant_id == 11) || (ant_id == -11))
         {
           MiscValuesEpoch epoch(7);
           epoch.time      = mjd2time(51544.5) + seconds2time(seconds) + seconds2time(microSeconds*1e-6);
@@ -113,27 +122,6 @@ void GraceL1A2SatelliteTracking::run(Config &config, Parallel::CommunicatorPtr /
           epoch.values(6) = Ka_SNR;
           arc.push_back(epoch);
         }
-
-        /*if((Bool(qualityFlag & (1 << 1)) == 0) && (Bool(qualityFlag & (1 << 3)) == 0)) // data with no pulse sync and invalid time tag (?) is removed
-        {
-          if(microSeconds >= 1e6)
-          {
-            seconds += 1;
-            microSeconds -= 1e6;
-          }
-
-          const Time time = mjd2time(51544.5) + seconds2time(seconds) + seconds2time(microSeconds*1e-6);
-          if(arc.size() && (time <= arc.at(arc.size()-1).time))
-            logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.at(arc.size()-1).time.dateTimeStr()<<")"<<Log::endl;
-
-          // data gaps (> 0.2 seconds)
-          if(arc.size() && ((time-arc.at(arc.size()-1).time).seconds()>0.2))
-          {
-            countGaps++;
-            arcGap.push_back(arc.at(arc.size()-1));
-          }
-
-        }*/
       } // for(idEpoch)
     } // for(idFile)
 

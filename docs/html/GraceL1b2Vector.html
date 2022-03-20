@@ -71,7 +71,8 @@
         <div id="content" class="container">
             <h1>GraceL1b2Vector</h1><p>
 
-This program reads vector orientation data (positions of instruments in the satellite frame) from the GRACE SDS format.
+This program reads vector orientation data (positions of instruments in the satellite frame) from the GRACE SDS format
+(VGB1B, VGN1B, VGO1B, VKB1B, or VCM1B).
 The <a class="groops-class" href="fileFormat_matrix.html">outputfileVector</a> is a $(3n\times1)$ matrix containing $(x,y,z)$ for each record.
 The GRACE SDS format is described in "GRACE Level 1B Data Product User Handbook JPL D-22027"
 given at <a href="http://podaac.jpl.nasa.gov/grace/documentation.html" target="_blank">http://podaac.jpl.nasa.gov/grace/documentation.html</a>.
@@ -79,7 +80,7 @@ given at <a href="http://podaac.jpl.nasa.gov/grace/documentation.html" target="_
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileVector</div></div></td><td>filename</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfile</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfile</div></div></td><td>filename</td><td>VGB1B, VGN1B, VGO1B, VKB1B, or VCM1B</td></tr>
 </table>
 
         </div>

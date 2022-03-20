@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts clock data from the GRACE SDS format into \file{instrument file (MISCVALUES)}{instrument}.
+This program converts clock data (USO1B) from the GRACE SDS format into \file{instrument file (MISCVALUES)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 )";
 
@@ -33,7 +33,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2Uso, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2Uso, SINGLEPROCESS, "read GRACE L1B data (USO1B)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -44,8 +44,8 @@ void GraceL1b2Uso::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     FileName              fileNameOut;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileUso", fileNameOut, Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",     fileNameIn,  Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileUso", fileNameOut, Config::MUSTSET,  "", "MISCVALUES(uso_freq, K_freq, Ka_freq)");
+    readConfig(config, "inputfile",     fileNameIn,  Config::MUSTSET,  "", "USO1B");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -60,16 +60,26 @@ void GraceL1b2Uso::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
-        Int32    seconds;
-        Byte     GRACE_id, uso_id;
-        Double   uso_freq, K_freq, Ka_freq;
-        Byte     qualflg;
+        Int32             seconds;
+        Char              GRACE_id;
+        FileInGrace::Int8 uso_id;
+        Double            uso_freq, K_freq, Ka_freq;
+        Byte              qualflg;
 
-        file>>seconds>>GRACE_id>>uso_id>>uso_freq>>K_freq>>Ka_freq>>FileInGrace::flag(qualflg);
+        try
+        {
+          file>>seconds>>GRACE_id>>uso_id>>uso_freq>>K_freq>>Ka_freq>>FileInGrace::flag(qualflg);
+        }
+        catch(std::exception &/*e*/)
+        {
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          break;
+        }
 
         const Time time = mjd2time(51544.5) + seconds2time(seconds);
-        if(arc.size() && (time <= arc.at(arc.size()-1).time))
-          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.at(arc.size()-1).time.dateTimeStr()<<")"<<Log::endl;
+        if(arc.size() && (time <= arc.back().time))
+          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.back().time.dateTimeStr()<<")"<<Log::endl;
 
         MiscValuesEpoch epoch(3);
         epoch.time      = time;

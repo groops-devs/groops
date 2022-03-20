@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts thruster data from the GRACE SDS format into \file{instrument file (THRUSTER)}{instrument}.
+This program converts thruster data (THR1B or THR1A) from the GRACE SDS format into \file{instrument file (THRUSTER)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 )";
 
@@ -33,7 +33,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2Thruster, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2Thruster, SINGLEPROCESS, "read GRACE L1B data (THR1B or THR1A)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -44,8 +44,8 @@ void GraceL1b2Thruster::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     FileName              fileNameOut;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileThruster", fileNameOut, Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",          fileNameIn,  Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileThruster", fileNameOut, Config::MUSTSET,  "", "THRUSTER");
+    readConfig(config, "inputfile",          fileNameIn,  Config::MUSTSET,  "", "THR1B or THR1A");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -62,21 +62,31 @@ void GraceL1b2Thruster::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       {
         constexpr UInt MAXTHRSTRS = 14;
         Int32    seconds, time_frac;
-        Byte     time_ref, GRACE_id, qualflg;
+        Char     time_ref, GRACE_id;
         UInt32   thrust_count[MAXTHRSTRS], on_time[MAXTHRSTRS], accum_dur[MAXTHRSTRS];
+        Byte     qualflg;
 
-        file>>seconds>>time_frac>>time_ref>>GRACE_id;
-        for(UInt k=0; k<MAXTHRSTRS; k++)
-          file>>thrust_count[k];
-        for(UInt k=0; k<MAXTHRSTRS; k++)
-          file>>on_time[k];
-        for(UInt k=0; k<MAXTHRSTRS; k++)
-          file>>accum_dur[k];
-        file>>FileInGrace::flag(qualflg);
+        try
+        {
+          file>>seconds>>time_frac>>time_ref>>GRACE_id;
+          for(UInt k=0; k<MAXTHRSTRS; k++)
+            file>>thrust_count[k];
+          for(UInt k=0; k<MAXTHRSTRS; k++)
+            file>>on_time[k];
+          for(UInt k=0; k<MAXTHRSTRS; k++)
+            file>>accum_dur[k];
+          file>>FileInGrace::flag(qualflg);
+        }
+        catch(std::exception &/*e*/)
+        {
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          break;
+        }
 
         const Time time = mjd2time(51544.5) + seconds2time(seconds) + seconds2time(1e-6*time_frac);
-        if(arc.size() && (time <= arc.at(arc.size()-1).time))
-          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.at(arc.size()-1).time.dateTimeStr()<<")"<<Log::endl;
+        if(arc.size() && (time <= arc.back().time))
+          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.back().time.dateTimeStr()<<")"<<Log::endl;
 
 //         if(time_ref != 'G')
 //         {

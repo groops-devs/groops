@@ -472,7 +472,6 @@ programs/conversion/grace/grace2PotentialCoefficients.cpp
 programs/conversion/grace/graceCoefficients2BlockMeanTimeSplines.cpp
 programs/conversion/grace/graceAccelerometer2L1bAscii.cpp
 programs/conversion/grace/graceL1A2Accelerometer.cpp
-programs/conversion/grace/graceL1A2AccelerometerHousekeeping.cpp
 programs/conversion/grace/graceL1A2SatelliteTracking.cpp
 programs/conversion/grace/graceL1A2StarCamera.cpp
 programs/conversion/grace/graceL1A2Temperature.cpp

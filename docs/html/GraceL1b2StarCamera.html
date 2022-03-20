@@ -72,14 +72,14 @@
             <h1>GraceL1b2StarCamera</h1><p>
 
 This program converts orientation data measured by a star camera (SRF to CRF)
-from the GRACE SDS format into <a class="groops-file" href="fileFormat_instrument.html">instrument file (STARCAMERA)</a>.
+from the GRACE SDS format (SCA1B) into <a class="groops-file" href="fileFormat_instrument.html">instrument file (STARCAMERA)</a>.
 For further information see <a class="groops-program" href="GraceL1b2Accelerometer.html">GraceL1b2Accelerometer</a>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileStarCamera</div></div></td><td>filename</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileStarCameraFlags</div></div></td><td>filename</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileStarCameraFlags</div></div></td><td>filename</td><td>MISCVALUES(sca_id, qual_rss, qualflg)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td>SCA1B</td></tr>
 </table>
 
         </div>

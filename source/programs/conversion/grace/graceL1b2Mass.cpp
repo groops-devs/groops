@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts mass data from the GRACE SDS format into \file{instrument file (MASS)}{instrument}.
+This program converts mass data (MAS1B or MAS1A) from the GRACE SDS format into \file{instrument file (MASS)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 )";
 
@@ -33,7 +33,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2Mass, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2Mass, SINGLEPROCESS, "read GRACE L1B data (MAS1B or MAS1A)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -44,8 +44,8 @@ void GraceL1b2Mass::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     FileName              fileNameOut;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileMass", fileNameOut, Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",      fileNameIn,  Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileMass", fileNameOut, Config::MUSTSET,  "", "MASS");
+    readConfig(config, "inputfile",      fileNameIn,  Config::MUSTSET,  "", "MAS1B or MAS1A");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -61,24 +61,33 @@ void GraceL1b2Mass::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       for(UInt idEpoch=0; idEpoch<numberOfRecords; idEpoch++)
       {
         Int32    seconds, time_frac;
-        Byte     time_ref, GRACE_id;
+        Char     time_ref, GRACE_id;
         Byte     qualflg, prod_flag;
         Double   mass_thr=0, mass_thr_err=0, mass_tnk=0, mass_tnk_err=0;
         Double   gas_mass_thr1=0, gas_mass_thr2=0, gas_mass_tnk1=0, gas_mass_tnk2=0;
 
-        file>>seconds>>time_frac>>time_ref>>GRACE_id>>FileInGrace::flag(qualflg)>>FileInGrace::flag(prod_flag);
-        if(prod_flag & (1<<0)) file>>mass_thr;
-        if(prod_flag & (1<<1)) file>>mass_thr_err;
-        if(prod_flag & (1<<2)) file>>mass_tnk;
-        if(prod_flag & (1<<3)) file>>mass_tnk_err;
-        if(prod_flag & (1<<4)) file>>gas_mass_thr1;
-        if(prod_flag & (1<<5)) file>>gas_mass_thr2;
-        if(prod_flag & (1<<6)) file>>gas_mass_tnk1;
-        if(prod_flag & (1<<7)) file>>gas_mass_tnk2;
+        try
+        {
+          file>>seconds>>time_frac>>time_ref>>GRACE_id>>FileInGrace::flag(qualflg)>>FileInGrace::flag(prod_flag);
+          if(prod_flag & (1<<0)) file>>mass_thr;
+          if(prod_flag & (1<<1)) file>>mass_thr_err;
+          if(prod_flag & (1<<2)) file>>mass_tnk;
+          if(prod_flag & (1<<3)) file>>mass_tnk_err;
+          if(prod_flag & (1<<4)) file>>gas_mass_thr1;
+          if(prod_flag & (1<<5)) file>>gas_mass_thr2;
+          if(prod_flag & (1<<6)) file>>gas_mass_tnk1;
+          if(prod_flag & (1<<7)) file>>gas_mass_tnk2;
+        }
+        catch(std::exception &/*e*/)
+        {
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          break;
+        }
 
         const Time time = mjd2time(51544.5) + seconds2time(seconds) + seconds2time(1e-6*time_frac);
-        if(arc.size() && (time <= arc.at(arc.size()-1).time))
-          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.at(arc.size()-1).time.dateTimeStr()<<")"<<Log::endl;
+        if(arc.size() && (time <= arc.back().time))
+          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.back().time.dateTimeStr()<<")"<<Log::endl;
 
         MassEpoch epoch;
         epoch.time     = time;

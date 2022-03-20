@@ -13,7 +13,8 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program reads vector orientation data (positions of instruments in the satellite frame) from the GRACE SDS format.
+This program reads vector orientation data (positions of instruments in the satellite frame) from the GRACE SDS format
+(VGB1B, VGN1B, VGO1B, VKB1B, or VCM1B).
 The \configFile{outputfileVector}{matrix} is a $(3n\times1)$ matrix containing $(x,y,z)$ for each record.
 The GRACE SDS format is described in "GRACE Level 1B Data Product User Handbook JPL D-22027"
 given at \url{http://podaac.jpl.nasa.gov/grace/documentation.html}.
@@ -35,7 +36,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2Vector, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Matrix)
+GROOPS_REGISTER_PROGRAM(GraceL1b2Vector, SINGLEPROCESS, "read GRACE L1B data (VGB1B, VGN1B, VGO1B, VKB1B, or VCM1B)", Conversion, Grace, Matrix)
 
 /***********************************************/
 
@@ -46,7 +47,7 @@ void GraceL1b2Vector::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     FileName fileNameOut, fileNameIn;
 
     readConfig(config, "outputfileVector", fileNameOut, Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",        fileNameIn,  Config::MUSTSET,  "", "");
+    readConfig(config, "inputfile",        fileNameIn,  Config::MUSTSET,  "", "VGB1B, VGN1B, VGO1B, VKB1B, or VCM1B");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -60,8 +61,9 @@ void GraceL1b2Vector::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     for(UInt i=0; i<numberOfRecords; i++)
     {
       Int32    seconds;
-      Byte     GRACE_id, qualflg;
+      Char     GRACE_id;
       Double   mag, x, y, z;
+      Byte     qualflg;
 
       file>>seconds>>GRACE_id>>mag>>x>>y>>z>>FileInGrace::flag(qualflg);
 

@@ -14,7 +14,7 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program converts low-low satellite data measured by the K-band ranging system
-from the GRACE SDS format into \file{instrument file (SATELLITETRACKING)}{instrument}.
+from the GRACE SDS format (KBR1B or LRI1B) into \file{instrument file (SATELLITETRACKING)}{instrument}.
 The \config{inputfile}s contain also corrections to antenna offsets
 and the so called light time correction. The corrections can be stored in additional files
 in the same format as the observations.
@@ -38,7 +38,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2SatelliteTracking, SINGLEPROCESS, "read GRACE L1B data", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2SatelliteTracking, SINGLEPROCESS, "read GRACE L1B data (KBR1B or LRI1B)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
@@ -49,12 +49,12 @@ void GraceL1b2SatelliteTracking::run(Config &config, Parallel::CommunicatorPtr /
     FileName              fileNameSst, fileNameAntCentr, fileNameLighttime, fileNameSnr, fileNameIonoCorr;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileSatelliteTracking", fileNameSst,       Config::OPTIONAL, "", "");
-    readConfig(config, "outputfileAntCentr",          fileNameAntCentr,  Config::OPTIONAL, "", "");
-    readConfig(config, "outputfileLighttime",         fileNameLighttime, Config::OPTIONAL, "", "");
-    readConfig(config, "outputfileSNR",               fileNameSnr,       Config::OPTIONAL, "", "");
-    readConfig(config, "outputfileIonoCorr",          fileNameIonoCorr,  Config::OPTIONAL, "", "");
-    readConfig(config, "inputfile",                   fileNameIn,        Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileSatelliteTracking", fileNameSst,       Config::OPTIONAL, "", "SATELLITETRACKING");
+    readConfig(config, "outputfileAntCentr",          fileNameAntCentr,  Config::OPTIONAL, "", "SATELLITETRACKING");
+    readConfig(config, "outputfileLighttime",         fileNameLighttime, Config::OPTIONAL, "", "SATELLITETRACKING");
+    readConfig(config, "outputfileSNR",               fileNameSnr,       Config::OPTIONAL, "", "MISCVALUES(K_A_SNR, Ka_A_SNR, K_B_SNR, Ka_B_SNR, qualflg)");
+    readConfig(config, "outputfileIonoCorr",          fileNameIonoCorr,  Config::OPTIONAL, "", "MISCVALUE");
+    readConfig(config, "inputfile",                   fileNameIn,        Config::MUSTSET,  "", "KBR1B or LRI1B");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -78,30 +78,30 @@ void GraceL1b2SatelliteTracking::run(Config &config, Parallel::CommunicatorPtr /
         UInt16   K_A_SNR, Ka_A_SNR, K_B_SNR, Ka_B_SNR;
         Byte     qualflg;
 
-        try //This block is added for GRACE-FO number of records issue
+        try
         {
           file>>seconds;
+          file>>biased_range>>range_rate>>range_accl>>iono_corr;
+          file>>lighttime_corr>>lighttime_rate>>lighttime_accl;
+          file>>ant_centr_corr>>ant_centr_rate>>ant_centr_accl;
+          file>>K_A_SNR>>Ka_A_SNR>>K_B_SNR>>Ka_B_SNR;
+          file>>FileInGrace::flag(qualflg);
         }
         catch(std::exception &/*e*/)
         {
-          logWarning<<arc.at(arc.size()-1).time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
+          // GRACE-FO number of records issue
+          logWarning<<arc.back().time.dateTimeStr()<<": file ended at "<<idEpoch<<" of "<<numberOfRecords<<" expected records"<<Log::endl;
           break;
         }
 
-        file>>biased_range>>range_rate>>range_accl>>iono_corr;
-        file>>lighttime_corr>>lighttime_rate>>lighttime_accl;
-        file>>ant_centr_corr>>ant_centr_rate>>ant_centr_accl;
-        file>>K_A_SNR>>Ka_A_SNR>>K_B_SNR>>Ka_B_SNR;
-        file>>FileInGrace::flag(qualflg);
-
         const Time time = mjd2time(51544.5) + seconds2time(seconds);
-        if(arc.size() && (time <= arc.at(arc.size()-1).time))
-          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.at(arc.size()-1).time.dateTimeStr()<<")"<<Log::endl;
+        if(arc.size() && (time <= arc.back().time))
+          logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.back().time.dateTimeStr()<<")"<<Log::endl;
 
-        if(((qualflg & 1) == 1) || (arc.size() && ((time-arc.at(arc.size()-1).time).seconds() <= 5.) && (fabs(biased_range-arc.at(arc.size()-1).range) > 100)))
+        if(((qualflg & 1) == 1) || (arc.size() && ((time-arc.back().time).seconds() <= 5.) && (std::fabs(biased_range-arc.back().range) > 100)))
         {
 //           if(arc.size())
-//             logWarning<<time.dateTimeStr()<<": skip epoch due to possible phase break, range change = "<<biased_range-arc.at(arc.size()-1).range<<Log::endl;
+//             logWarning<<time.dateTimeStr()<<": skip epoch due to possible phase break, range change = "<<biased_range-arc.back().range<<Log::endl;
 //           else
 //             logWarning<<time.dateTimeStr()<<": skip epoch due to possible phase break, first epoch in file"<<Log::endl;
           continue;
