@@ -40,6 +40,7 @@ PlotLegend::PlotLegend(Config &config, const std::string &name)
     readConfig(config, "positionY",   positionY, Config::DEFAULT,  "1.0",  "legend y-position in normalized (0-1) coordinates.");
     readConfig(config, "anchorPoint", anchor,    Config::DEFAULT,  "TL",   "Two character combination of L, C, R (for left, center, or right) and T, M, B for top, middle, or bottom. e.g., TL for top left");
     readConfig(config, "columns",     ncolumns,  Config::DEFAULT,  "1",    "number of columns in legend");
+    readConfig(config, "textColor",   textColor, Config::OPTIONAL, "",     "color of the legend text");
     readConfig(config, "fillColor",   fillColor, Config::OPTIONAL, "",     "fill color of the legend box");
     readConfig(config, "edgeLine",    edgeLine,  Config::OPTIONAL, "",     "style of the legend box edge");
     endSequence(config);
@@ -65,6 +66,8 @@ void PlotLegend::writeDataFile(const FileName &workingDirectory, const std::vect
     _hasEntries = TRUE;
     OutFile legendFile(workingDirectory.append("legend.txt"));
 
+    if(textColor)
+      legendFile<<"C "<<textColor->str()<<std::endl;
     legendFile<<"N "<<ncolumns<<std::endl;
     for(UInt i=0; i<legendText.size(); i++)
     {

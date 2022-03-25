@@ -7750,6 +7750,11 @@
 					<xs:documentation>number of columns in legend</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="textColor" type="plotColorType" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>color of the legend text</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element name="fillColor" type="plotColorType" minOccurs="0">
 				<xs:annotation>
 					<xs:documentation>fill color of the legend box</xs:documentation>

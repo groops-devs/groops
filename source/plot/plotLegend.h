@@ -47,7 +47,7 @@ class PlotLegend
   UInt         ncolumns;
   Double       width, height;
   PlotLinePtr  edgeLine;
-  PlotColorPtr fillColor;
+  PlotColorPtr textColor, fillColor;
   std::string  anchor;
   Bool         _hasEntries;
 
