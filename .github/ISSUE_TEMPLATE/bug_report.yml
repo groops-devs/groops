@@ -1,0 +1,51 @@
+name: Bug Report
+description: File a bug report.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        Please make sure you have checked the [GROOPS documentation](https://groops-devs.github.io/groops/html/) before submitting a bug report.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        - A clear and concise description of what the bug is.
+        - Also tell us what you expected to happen.
+        - If possible, append a **minimum working example** (GROOPS config file plus any required data) that leads to the bug.
+        - Otherwise, include step-by-step instructions on how to reproduce the bug.
+      placeholder: Tell us what the issue is about.
+    validations:
+      required: true
+  - type: dropdown
+    id: version
+    attributes:
+      label: GROOPS version
+      description: What version of GROOPS are you running?
+      options:
+        - main (latest commit)
+        - Release 2021-09-06
+        - Release 2021-02-02
+        - Release 2020-11-12
+        - Other (please specify in the description)
+    validations:
+      required: true
+  - type: checkboxes
+    id: operating-systems
+    attributes:
+      label: Operating systems
+      description: Which operating systems are you using? You may select more than one.
+      options:
+        - label: Linux
+        - label: Windows
+        - label: macOS
+        - label: Other (please specify in the description)
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log output
+      description: Please copy and paste any relevant log output. Run ```groops -l logfile.txt <config.xml>``` to create a log file. If the log output is too long, please attach the log file in the description instead.
+      placeholder: Paste any relevant log output here.
+      render: dircolors

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: GROOPS Documentation
+    url: https://groops-devs.github.io/groops/html/
+    about: Please check the GROOPS documentation before opening a new issue.

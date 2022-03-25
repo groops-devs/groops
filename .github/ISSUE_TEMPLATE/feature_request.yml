@@ -1,0 +1,20 @@
+name: Feature Request
+description: Suggest a new feature.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature!
+        Please make sure you have checked the [GROOPS documentation](https://groops-devs.github.io/groops/html/) before submitting a feature request.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: |
+        - Is your feature request related to a problem? Please describe.
+        - Describe the solution you would like.
+        - Describe alternatives you have considered.
+      placeholder: Tell us about the feature.
+    validations:
+      required: true
