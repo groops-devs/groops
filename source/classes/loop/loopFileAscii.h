@@ -57,7 +57,7 @@ inline LoopFileAscii::LoopFileAscii(Config &config)
   {
     std::vector<FileName> fileName;
     UInt startIndex;
-    UInt countElements;
+    UInt countElements = MAX_UINT;
     Bool sort;
     Bool removeDuplicates;
 

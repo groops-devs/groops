@@ -14,6 +14,7 @@
 - Bugfix:           gnssReceiver: Simulating GLONASS ambiguities now correctly considers frequency channel.
 - Bugfix:           sp3Format2Orbit: no/invalid orbit positions/velocities are now excluded.
 - Bugfix:           Conversion of GRACE L1B/L1A data: revised source code.
+- Bugfix:           loopFileAscii: Fixed uninitialized variable that could lead to the loop ending prematurely.
 - Other:            Removed inputfileGlobal option.
 - Other:            GnssAttitude2Orbex: can now handle different sampling per satellite.
 - Other:            GnssRinexNavigation2OrbitClock/RinexObservation2GnssReceiver: Added basic support for RINEX v4.00.
