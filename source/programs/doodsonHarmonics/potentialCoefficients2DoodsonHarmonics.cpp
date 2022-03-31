@@ -82,6 +82,12 @@ void PotentialCoefficients2DoodsonHarmonics::run(Config &config, Parallel::Commu
     readConfig(config, "applyXi",                          applyXi,     Config::DEFAULT,  "1",               "apply Doodson-Warburg phase correction (see IERS conventions)");
     if(isCreateSchema(config)) return;
 
+    // sort and check if doodson numbers defined multiple times
+    // --------------------------------------------------------
+    std::sort(constituent.begin(), constituent.end(), [](Constituent &a, Constituent &b) {return a.doodson < b.doodson;});
+    if(std::unique(constituent.begin(), constituent.end(), [](Constituent &a, Constituent &b) {return a.doodson == b.doodson;}) != constituent.end())
+      throw(Exception("The same doodson number is defined multiple times"));
+
     // read tide generating potential (TGP)
     // ------------------------------------
     TideGeneratingPotential tgp;
