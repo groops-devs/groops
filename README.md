@@ -1,5 +1,5 @@
-| :information_source: Release [2021-09-06](https://github.com/groops-devs/groops/releases/tag/2021-09-06) features a redesign of the GNSS processing interface to make usage a little bit easier and more flexible. In addition, we now provide GNSS [example scenarios](https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/) with config files and data. Since the structure of the [GNSS-related GROOPS data and metadata](https://ftp.tugraz.at/outgoing/ITSG/groops/data/gnss/) has changed, we recommend to download the latest version. More information can be found in the updated [cookbooks and documentation](https://groops-devs.github.io/groops/html/index.html). | 
-|:-------------------------| 
+| :information_source: Release [2021-09-06](https://github.com/groops-devs/groops/releases/tag/2021-09-06) features a redesign of the GNSS processing interface to make usage a little bit easier and more flexible. In addition, we now provide GNSS [example scenarios](https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/) with config files and data. Since the structure of the [GNSS-related GROOPS data and metadata](https://ftp.tugraz.at/outgoing/ITSG/groops/data/gnss/) has changed, we recommend to download the latest version. More information can be found in the updated [cookbooks and documentation](https://groops-devs.github.io/groops/html/index.html). |
+|:-------------------------|
 
 ![GROOPS Logo](https://github.com/groops-devs/groops/blob/main/docs/html/static/groops_banner.png)
 
@@ -96,4 +96,5 @@ Here is a list of current and past contributors:
 
 [Torsten Mayer-Guerr](https://github.com/tmayerguerr), Annette Eicker, Daniel Rieser, Norbert Zehentner,
 Christian Pock, [Matthias Ellmer](https://github.com/x49), Beate Koch, [Andreas Kvas](https://github.com/akvas), Saniya Behzadpour,
-[Sebastian Strasser](https://github.com/sestras), Sandro Krauss, Barbara Suesser-Rechberger, [Patrick Dumitraschkewitz](https://github.com/zhedumi)
+[Sebastian Strasser](https://github.com/sestras), Sandro Krauss, Barbara Suesser-Rechberger,
+[Patrick Dumitraschkewitz](https://github.com/zhedumi), Felix Oehlinger
