@@ -13,11 +13,11 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program computes the thermosperic state (density, temperature, wind)
+This program computes the thermosperic state (density, temperature, wind (x,y,z in CRF))
 based on emprical models along an \file{orbit}{instrument}
 and writes it as \file{instrument file}{instrument} (MISCVALUES).
 The wind is given in an celestial reference frame (CRF).
-The data of \configFile{inputfileInstrument}{instrument} are appended as values to each point.
+The data of \configFile{inputfileInstrument}{instrument} are appended as values to each epoch.
 )";
 
 /***********************************************/
@@ -51,7 +51,7 @@ void Orbit2ThermosphericState::run(Config &config, Parallel::CommunicatorPtr com
     ThermospherePtr       thermosphere;
     EarthRotationPtr      earthRotation;
 
-    readConfig(config, "outputfileThermosphericState", fileNameOut,         Config::MUSTSET,  "", "density, temperature, wind(x,y,z)(CRF)");
+    readConfig(config, "outputfileThermosphericState", fileNameOut,         Config::MUSTSET,  "", "instrument file (MISCVALUES: density, temperature, wind (x,y,z in CRF), ...)");
     readConfig(config, "inputfileOrbit",               fileNameOrbit,       Config::MUSTSET,  "", "");
     readConfig(config, "inputfileInstrument",          fileNamesInstrument, Config::OPTIONAL, "", "data are appended to output file");
     readConfig(config, "thermosphere",                 thermosphere,        Config::MUSTSET,  "", "");

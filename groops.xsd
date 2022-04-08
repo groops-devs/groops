@@ -15769,7 +15769,7 @@
 					<xs:sequence>
 						<xs:element name="outputfileArgOfLatitude" type="filename">
 							<xs:annotation>
-								<xs:documentation>instrument file (MISCVALUES)</xs:documentation>
+								<xs:documentation>instrument file (MISCVALUE(S): argLat, ...)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileOrbit" type="filename"/>
@@ -15791,7 +15791,7 @@
 					<xs:sequence>
 						<xs:element name="outputfileBetaAngle" type="filename">
 							<xs:annotation>
-								<xs:documentation>instrument file (MISCVALUES)</xs:documentation>
+								<xs:documentation>instrument file (MISCVALUE(S): beta&apos;, ...)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileOrbit" type="filename"/>
@@ -15813,7 +15813,11 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileEclipseFactor" type="filename"/>
+						<xs:element name="outputfileEclipseFactor" type="filename">
+							<xs:annotation>
+								<xs:documentation>instrument file (MISCVALUE(S): eclipse, ...)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="inputfileOrbit" type="filename"/>
 						<xs:element name="inputfileInstrument" type="filename" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
@@ -15874,7 +15878,7 @@
 					<xs:sequence>
 						<xs:element name="outputfileKepler" type="filename">
 							<xs:annotation>
-								<xs:documentation>each epoch: Omega, i, omega [degree], a [m], e, M [degree], tau [mjd]</xs:documentation>
+								<xs:documentation>instrument file (MISCVALUES: Omega, i, omega [degree], a [m], e, M [degree], tau [mjd], ...)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileOrbit" type="filename">
@@ -15905,7 +15909,7 @@
 					<xs:sequence>
 						<xs:element name="outputfileThermosphericState" type="filename">
 							<xs:annotation>
-								<xs:documentation>density, temperature, wind(x,y,z)(CRF)</xs:documentation>
+								<xs:documentation>instrument file (MISCVALUES: density, temperature, wind (x,y,z in CRF), ...)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileOrbit" type="filename"/>

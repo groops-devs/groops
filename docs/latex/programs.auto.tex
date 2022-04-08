@@ -5254,8 +5254,8 @@ Name & Type & Annotation\\
 \section{Programs: Orbit}
 \subsection{Orbit2ArgumentOfLatitude}\label{Orbit2ArgumentOfLatitude}
 This program computes the argument of latitude of an \file{orbit}{instrument}
-and writes it as \file{instrument file}{instrument} (MISCVALUES).
-The data of \configFile{inputfileInstrument}{instrument} are appended as values to each point.
+and writes it as \file{instrument file}{instrument} (MISCVALUE(S)).
+The data of \configFile{inputfileInstrument}{instrument} are appended as values to each epoch.
 
 \fig{!hb}{0.8}{instrumentOrbit2ArgumentOfLatitude}{fig:instrumentOrbit2ArgumentOfLatitude}{Derivation filtered GRACE range-rate residuals.}
 
@@ -5265,7 +5265,7 @@ The data of \configFile{inputfileInstrument}{instrument} are appended as values 
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileArgOfLatitude & \hfuzz=500pt filename & \hfuzz=500pt instrument file (MISCVALUES)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileArgOfLatitude & \hfuzz=500pt filename & \hfuzz=500pt instrument file (MISCVALUE(S): argLat, ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt data are appended\\
 \hline
@@ -5276,9 +5276,9 @@ This program is \reference{parallelized}{general.parallelization}.
 %==================================
 \subsection{Orbit2BetaPrimeAngle}\label{Orbit2BetaPrimeAngle}
 This program computes the beta prime angle (between the orbital plane and earth-sun direction)
-and writes it as MISCVALUES \file{instrument file}{instrument}. The angle is calculated w.r.t the sun (per default),
+and writes it as MISCVALUE(S) \file{instrument file}{instrument}. The angle is calculated w.r.t the sun (per default),
 but can be changed.
-The data of \configFile{inputfileInstrument}{instrument} are appended as values to each point.
+The data of \configFile{inputfileInstrument}{instrument} are appended as values to each epoch.
 
 
 \keepXColumns
@@ -5286,7 +5286,7 @@ The data of \configFile{inputfileInstrument}{instrument} are appended as values 
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileBetaAngle & \hfuzz=500pt filename & \hfuzz=500pt instrument file (MISCVALUES)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileBetaAngle & \hfuzz=500pt filename & \hfuzz=500pt instrument file (MISCVALUE(S): beta', ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt data are appended\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
@@ -5298,8 +5298,8 @@ This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{Orbit2EclipseFactor}\label{Orbit2EclipseFactor}
-This program generates an instrument file containing the eclipse factor for a given set of orbit.
-The data of \configFile{inputfileInstrument}{instrument} are appended as values to each point.
+This program generates an \file{instrument file}{instrument} (MISCVALUE(S)) containing the eclipse factor for a given set of orbit.
+The data of \configFile{inputfileInstrument}{instrument} are appended as values to each epoch.
 
 
 \keepXColumns
@@ -5307,7 +5307,7 @@ The data of \configFile{inputfileInstrument}{instrument} are appended as values 
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileEclipseFactor & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileEclipseFactor & \hfuzz=500pt filename & \hfuzz=500pt instrument file (MISCVALUE(S): eclipse, ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt data are appended\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
@@ -5359,6 +5359,7 @@ with the Keplerian elements at each epoch in the following order
 \item mean anomaly $M$ [degree]
 \item transit time of perigee $\tau$ [mjd]
 \end{itemize}
+The data of \configFile{inputfileInstrument}{instrument} are appended as values to each epoch.
 
 
 \keepXColumns
@@ -5366,7 +5367,7 @@ with the Keplerian elements at each epoch in the following order
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileKepler & \hfuzz=500pt filename & \hfuzz=500pt each epoch: Omega, i, omega [degree], a [m], e, M [degree], tau [mjd]\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileKepler & \hfuzz=500pt filename & \hfuzz=500pt instrument file (MISCVALUES: Omega, i, omega [degree], a [m], e, M [degree], tau [mjd], ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt position and velocity at each epoch define the kepler orbit\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt data is appended\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
@@ -5377,11 +5378,11 @@ This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{Orbit2ThermosphericState}\label{Orbit2ThermosphericState}
-This program computes the thermosperic state (density, temperature, wind)
+This program computes the thermosperic state (density, temperature, wind (x,y,z in CRF))
 based on emprical models along an \file{orbit}{instrument}
 and writes it as \file{instrument file}{instrument} (MISCVALUES).
 The wind is given in an celestial reference frame (CRF).
-The data of \configFile{inputfileInstrument}{instrument} are appended as values to each point.
+The data of \configFile{inputfileInstrument}{instrument} are appended as values to each epoch.
 
 
 \keepXColumns
@@ -5389,7 +5390,7 @@ The data of \configFile{inputfileInstrument}{instrument} are appended as values 
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileThermosphericState & \hfuzz=500pt filename & \hfuzz=500pt density, temperature, wind(x,y,z)(CRF)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileThermosphericState & \hfuzz=500pt filename & \hfuzz=500pt instrument file (MISCVALUES: density, temperature, wind (x,y,z in CRF), ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt data are appended to output file\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~thermosphere & \hfuzz=500pt \hyperref[thermosphereType]{thermosphere} & \hfuzz=500pt \\

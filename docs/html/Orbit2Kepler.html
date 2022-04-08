@@ -92,10 +92,11 @@ mean anomaly $M$ [degree]
 transit time of perigee $\tau$ [mjd]
 </li></ul>
 
+The data of <a class="groops-class" href="fileFormat_instrument.html">inputfileInstrument</a> are appended as values to each epoch.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileKepler</div></div></td><td>filename</td><td>each epoch: Omega, i, omega [degree], a [m], e, M [degree], tau [mjd]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileKepler</div></div></td><td>filename</td><td>instrument file (MISCVALUES: Omega, i, omega [degree], a [m], e, M [degree], tau [mjd], ...)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit</div></div></td><td>filename</td><td>position and velocity at each epoch define the kepler orbit</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">inputfileInstrument</div></div></td><td>filename</td><td>data is appended</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">GM</div></div></td><td>double</td><td>Geocentric gravitational constant</td></tr>

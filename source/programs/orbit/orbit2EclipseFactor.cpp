@@ -13,8 +13,8 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program generates an instrument file containing the eclipse factor for a given set of orbit.
-The data of \configFile{inputfileInstrument}{instrument} are appended as values to each point.
+This program generates an \file{instrument file}{instrument} (MISCVALUE(S)) containing the eclipse factor for a given set of orbit.
+The data of \configFile{inputfileInstrument}{instrument} are appended as values to each epoch.
 )";
 
 /***********************************************/
@@ -48,7 +48,7 @@ void Orbit2EclipseFactor::run(Config &config, Parallel::CommunicatorPtr comm)
     EphemeridesPtr        ephemerides;
     EclipsePtr            eclipse;
 
-    readConfig(config, "outputfileEclipseFactor", fileNameEclipse,     Config::MUSTSET,  "", "");
+    readConfig(config, "outputfileEclipseFactor", fileNameEclipse,     Config::MUSTSET,  "", "instrument file (MISCVALUE(S): eclipse, ...)");
     readConfig(config, "inputfileOrbit",          fileNameOrbit,       Config::MUSTSET,  "", "");
     readConfig(config, "inputfileInstrument",     fileNamesInstrument, Config::OPTIONAL, "", "data are appended");
     readConfig(config, "ephemerides",             ephemerides,         Config::MUSTSET,  "", "");

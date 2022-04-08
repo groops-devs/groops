@@ -15,9 +15,9 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program computes the beta prime angle (between the orbital plane and earth-sun direction)
-and writes it as MISCVALUES \file{instrument file}{instrument}. The angle is calculated w.r.t the sun (per default),
+and writes it as MISCVALUE(S) \file{instrument file}{instrument}. The angle is calculated w.r.t the sun (per default),
 but can be changed.
-The data of \configFile{inputfileInstrument}{instrument} are appended as values to each point.
+The data of \configFile{inputfileInstrument}{instrument} are appended as values to each epoch.
 )";
 
 /***********************************************/
@@ -51,7 +51,7 @@ void Orbit2BetaPrimeAngle::run(Config &config, Parallel::CommunicatorPtr comm)
     Ephemerides::Planet   planet;
     std::string           choice;
 
-    readConfig(config, "outputfileBetaAngle", fileNameOut,         Config::MUSTSET,  "",    "instrument file (MISCVALUES)");
+    readConfig(config, "outputfileBetaAngle", fileNameOut,         Config::MUSTSET,  "",    "instrument file (MISCVALUE(S): beta', ...)");
     readConfig(config, "inputfileOrbit",      fileNameOrbit,       Config::MUSTSET,  "",    "");
     readConfig(config, "inputfileInstrument", fileNamesInstrument, Config::OPTIONAL, "",    "data are appended");
     readConfig(config, "ephemerides",         ephemerides,         Config::MUSTSET,  "",    "");

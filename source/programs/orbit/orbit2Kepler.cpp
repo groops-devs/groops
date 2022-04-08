@@ -27,6 +27,7 @@ with the Keplerian elements at each epoch in the following order
 \item mean anomaly $M$ [degree]
 \item transit time of perigee $\tau$ [mjd]
 \end{itemize}
+The data of \configFile{inputfileInstrument}{instrument} are appended as values to each epoch.
 )";
 
 /***********************************************/
@@ -57,7 +58,7 @@ void Orbit2Kepler::run(Config &config, Parallel::CommunicatorPtr comm)
     std::vector<FileName> fileNamesInstrument;
     Double                GM;
 
-    readConfig(config, "outputfileKepler",    fileNameOut,         Config::MUSTSET,  "", "each epoch: Omega, i, omega [degree], a [m], e, M [degree], tau [mjd]");
+    readConfig(config, "outputfileKepler",    fileNameOut,         Config::MUSTSET,  "", "instrument file (MISCVALUES: Omega, i, omega [degree], a [m], e, M [degree], tau [mjd], ...)");
     readConfig(config, "inputfileOrbit",      fileNameOrbit,       Config::MUSTSET,  "", "position and velocity at each epoch define the kepler orbit");
     readConfig(config, "inputfileInstrument", fileNamesInstrument, Config::OPTIONAL, "", "data is appended");
     readConfig(config, "GM",                  GM,                  Config::DEFAULT,  STRING_DEFAULT_GM, "Geocentric gravitational constant");

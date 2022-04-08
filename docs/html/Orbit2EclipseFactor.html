@@ -71,12 +71,12 @@
         <div id="content" class="container">
             <h1>Orbit2EclipseFactor</h1><p>
 
-This program generates an instrument file containing the eclipse factor for a given set of orbit.
-The data of <a class="groops-class" href="fileFormat_instrument.html">inputfileInstrument</a> are appended as values to each point.
+This program generates an <a class="groops-file" href="fileFormat_instrument.html">instrument file</a> (MISCVALUE(S)) containing the eclipse factor for a given set of orbit.
+The data of <a class="groops-class" href="fileFormat_instrument.html">inputfileInstrument</a> are appended as values to each epoch.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileEclipseFactor</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileEclipseFactor</div></div></td><td>filename</td><td>instrument file (MISCVALUE(S): eclipse, ...)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit</div></div></td><td>filename</td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">inputfileInstrument</div></div></td><td>filename</td><td>data are appended</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>

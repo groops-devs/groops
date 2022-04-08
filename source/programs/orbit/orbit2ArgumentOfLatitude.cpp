@@ -14,8 +14,8 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program computes the argument of latitude of an \file{orbit}{instrument}
-and writes it as \file{instrument file}{instrument} (MISCVALUES).
-The data of \configFile{inputfileInstrument}{instrument} are appended as values to each point.
+and writes it as \file{instrument file}{instrument} (MISCVALUE(S)).
+The data of \configFile{inputfileInstrument}{instrument} are appended as values to each epoch.
 
 \fig{!hb}{0.8}{instrumentOrbit2ArgumentOfLatitude}{fig:instrumentOrbit2ArgumentOfLatitude}{Derivation filtered GRACE range-rate residuals.}
 )";
@@ -48,7 +48,7 @@ void Orbit2ArgumentOfLatitude::run(Config &config, Parallel::CommunicatorPtr com
     FileName fileNameOut, fileNameOrbit;
     std::vector<FileName> fileNamesInstrument;
 
-    readConfig(config, "outputfileArgOfLatitude", fileNameOut,         Config::MUSTSET,  "", "instrument file (MISCVALUES)");
+    readConfig(config, "outputfileArgOfLatitude", fileNameOut,         Config::MUSTSET,  "", "instrument file (MISCVALUE(S): argLat, ...)");
     readConfig(config, "inputfileOrbit",          fileNameOrbit,       Config::MUSTSET,  "", "");
     readConfig(config, "inputfileInstrument",     fileNamesInstrument, Config::OPTIONAL, "", "data are appended");
     if(isCreateSchema(config)) return;
