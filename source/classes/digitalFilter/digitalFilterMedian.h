@@ -66,7 +66,7 @@ inline Matrix DigitalFilterMedian::filter(const_MatrixSliceRef input) const
 {
   try
   {
-    Matrix padded = pad(input, length/2, padType);
+    Matrix padded = pad(input, length/2, 0, padType);
     Matrix output(padded.rows(), padded.columns());
 
     for(UInt k=0; k<output.columns(); k++)
@@ -77,7 +77,7 @@ inline Matrix DigitalFilterMedian::filter(const_MatrixSliceRef input) const
         output(i,k) = median(padded.slice(start, k, end-start, 1));
       }
 
-    return trim(output, length/2, padType);
+    return trim(output, length/2, 0, padType);
   }
   catch(std::exception &e)
   {

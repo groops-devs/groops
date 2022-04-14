@@ -118,8 +118,8 @@ class DigitalFilterBase
 public:
   enum class PadType {NONE, ZERO, CONSTANT, PERIODIC, SYMMETRIC};
 
-  static Matrix pad (const_MatrixSliceRef input, UInt length, PadType padType);
-  static Matrix trim(const_MatrixSliceRef input, UInt length, PadType padType);
+  static Matrix pad (const_MatrixSliceRef input, UInt length, UInt timeShift, PadType padType);
+  static Matrix trim(const_MatrixSliceRef input, UInt length, UInt timeShift, PadType padType);
 
 public:
   virtual ~DigitalFilterBase() {}

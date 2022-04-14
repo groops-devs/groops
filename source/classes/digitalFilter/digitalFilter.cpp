@@ -159,7 +159,7 @@ Matrix DigitalFilterARMA::filter(const_MatrixSliceRef input) const
     // --------------------------
     if(inFrequencyDomain)
     {
-      Matrix padded = pad(input, warmup(), padType);
+      Matrix padded = pad(input, warmup(), bnStartIndex, padType);
       auto H = frequencyResponse(padded.rows());
       for(UInt k=0; k<padded.columns(); k++) // Filter column-wise
       {
@@ -168,40 +168,58 @@ Matrix DigitalFilterARMA::filter(const_MatrixSliceRef input) const
           F.at(i) *= H.at(i);
         copy(Fourier::synthesis(F, (padded.rows()%2==0)), padded.column(k));
       }
-      return trim(padded, warmup(), padType);
+      return trim(padded, warmup(), bnStartIndex, padType);
     }
 
     // filter in time domain
     // ---------------------
-    Matrix padded = pad(input, warmup(), padType);
+    Matrix padded = pad(input, warmup(), bnStartIndex, padType);
+    if(backward)
+    {
+      for(UInt k = 0; k < padded.rows()/2; k++)
+        swap(padded.row(k), padded.row(padded.rows() - k - 1));
+    }
     Matrix output(padded.rows(), padded.columns());
 
-    // pre-fill state for non-causal filters
-    std::vector<Matrix> state(std::max(an.rows(), bn.rows()), Matrix(1, padded.columns()));
-    for(UInt k=0; k<bnStartIndex; k++)
+    const UInt blockSize = std::min(static_cast<UInt>(64), padded.rows());
+
+    Matrix B(bn.rows() + blockSize - 1, blockSize);
+    for(UInt k = 0; k < B.columns(); k++)
+      copy(bn, B.slice(k, k, bn.rows(), 1));
+
+    for(UInt idxStart = 0; idxStart < output.rows(); idxStart+=blockSize)
     {
-      const UInt idxIn   = backward ? padded.rows()-1-k : k;
-      for(UInt i=0; i<bn.rows(); i++)
-        axpy(bn(i), padded.row(idxIn), state.at((k+i+state.size()-bnStartIndex)%state.size()));
-      state.at((k+state.size()-bnStartIndex)%state.size()).setNull();
+      UInt columnCount = std::min(output.rows() - idxStart, blockSize);
+      UInt rowCount = std::min(output.rows() - idxStart, B.rows());
+      matMult(1.0, B.slice(0, 0, rowCount, columnCount), padded.row(idxStart, columnCount), output.row(idxStart, rowCount));
     }
 
-    // Transposed Direct form II
-    // A. V. Oppenheim and R. W. Schafer, Digital Signal Processing, 1975, p 155.
-    for(UInt k=0; k<padded.rows(); k++)
+    if(an.size() > 1)
     {
-      const UInt idxOut  = backward ? padded.rows()-1-k : k;
-      const UInt idxIn   = backward ? padded.rows()-1-k-bnStartIndex : k + bnStartIndex;
-      if(idxIn<padded.rows())
-        for(UInt i=0; i<bn.rows(); i++)
-          axpy(bn(i), padded.row(idxIn), state.at((k+i)%state.size()));
-      copy(state.at(k%state.size()), output.row(idxOut));
-      state.at(k%state.size()).setNull();
-      for(UInt i=1; i<an.rows(); i++)
-        axpy(-an(i), output.row(idxOut), state.at((k+i)%state.size()));
+      Matrix A(an.rows() + blockSize - 1, blockSize);
+      for(UInt k = 0; k < A.columns(); k++)
+        copy(an, A.slice(k, k, an.rows(), 1));
+
+      MatrixSlice A1(A);
+      A1.setType(Matrix::TRIANGULAR, Matrix::LOWER);
+
+      for(UInt idxStart = 0; idxStart < output.rows(); idxStart+=blockSize)
+      {
+        UInt columnCount = std::min(output.rows() - idxStart, blockSize);
+        if(idxStart > 0)
+          matMult(-1.0, A.row(blockSize, an.size() - 1), output.row(idxStart - blockSize, blockSize), output.row(idxStart, an.size() - 1));
+
+        triangularSolve(1.0, A1.slice(0, 0, columnCount, columnCount), output.row(idxStart, columnCount));
+      }
     }
 
-    return trim(output, warmup(), padType);
+    if(backward)
+    {
+      for(UInt k = 0; k < output.rows()/2; k++)
+        swap(output.row(k), output.row(output.rows() - k - 1));
+    }
+
+    return trim(output, warmup(), bnStartIndex, padType);
   }
   catch(std::exception &e)
   {
@@ -250,23 +268,32 @@ std::vector<std::complex<Double>> DigitalFilterARMA::frequencyResponse(UInt leng
 
 UInt DigitalFilterARMA::warmup() const
 {
-  return std::max(std::max(bn.rows()-bnStartIndex-1, bnStartIndex), 3*an.rows());  // warump length of filter
+  return std::max(std::max(bn.rows()-bnStartIndex-1, bnStartIndex), 3*an.rows());
 }
 
 /***********************************************/
 /***********************************************/
 
-Matrix DigitalFilterBase::pad(const_MatrixSliceRef input, UInt length, PadType padType)
+Matrix DigitalFilterBase::pad(const_MatrixSliceRef input, UInt length, UInt timeShift, PadType padType)
 {
   try
   {
     if(padType == PadType::NONE)
-      return input;
+    {
+      if(timeShift > 0)
+      {
+        Matrix padded(input.rows()+timeShift, input.columns());
+        copy(input, padded.row(0, input.rows()));
+        return padded;
+      }
+      else
+        return input;
+    }
 
     if(input.rows()<1)
       throw(Exception("Trying to pad a zero length array ("+input.rows()%"%i"s + " x "+ input.columns()%"%i"s+")."));
 
-    Matrix padded(2*length+input.rows(), input.columns());
+    Matrix padded(2*length+input.rows()+timeShift, input.columns());
     copy(input, padded.row(length, input.rows()));
 
     switch(padType)
@@ -316,13 +343,21 @@ Matrix DigitalFilterBase::pad(const_MatrixSliceRef input, UInt length, PadType p
 
 /***********************************************/
 
-Matrix DigitalFilterBase::trim(const_MatrixSliceRef input, UInt length, PadType padType)
+Matrix DigitalFilterBase::trim(const_MatrixSliceRef input, UInt length, UInt timeShift, PadType padType)
 {
   try
   {
     if(padType == PadType::NONE)
-      return input;
-    return Matrix(input.row(length, input.rows()-2*length));
+    {
+      if(timeShift > 0)
+      {
+        return Matrix(input.row(timeShift, input.rows() - timeShift));
+      }
+      else
+        return input;
+    }
+
+    return Matrix(input.row(length + timeShift, input.rows()-2*length - timeShift));
   }
   catch(std::exception &e)
   {
