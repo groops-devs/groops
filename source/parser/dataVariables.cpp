@@ -88,6 +88,7 @@ void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, Vari
     if(used(prefix+"count"))  addVariable(prefix+"count",  static_cast<Double>(data.size()), varList);
     if(used(prefix+"min"))    addVariable(prefix+"min",    min(data),                        varList);
     if(used(prefix+"max"))    addVariable(prefix+"max",    max(data),                        varList);
+    if(used(prefix+"sum"))    addVariable(prefix+"sum",    sum(data),                        varList);
     if(used(prefix+"mean"))   addVariable(prefix+"mean",   mean(data),                       varList);
     if(used(prefix+"rms"))    addVariable(prefix+"rms",    rootMeanSquare(data),             varList);
     if(used(prefix+"std"))    addVariable(prefix+"std",    standardDeviation(data),          varList);
