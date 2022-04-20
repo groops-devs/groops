@@ -138,15 +138,14 @@ Matrix Vce::robustLeastSquares(const_MatrixSliceRef A, const_MatrixSliceRef l, U
 Matrix Vce::cosTransform(UInt length)
 {
   Matrix T(length, length);
-  if(length)
-  {
-    for(UInt i=0; i<length; i++)
-      for(UInt k=0; k<length; k++)
-        T(i,k) = 2*cos(PI*i*k/(length-1));
-    T.column(0) *= 0.5;
-    T.column(length-1) *= 0.5;
-    T *= 1./sqrt(2.*(length-1)); // normalize
-  }
+  if(!length)
+    return T;
+  for(UInt i=0; i<length; i++)
+    for(UInt k=0; k<length; k++)
+      T(i,k) = 2*std::cos(PI*i*k/(length-1));
+  T.column(0)        *= 0.5;
+  T.column(length-1) *= 0.5;
+  T *= 1./std::sqrt(2.*(length-1)); // normalize
   return T;
 }
 
@@ -162,19 +161,20 @@ Matrix Vce::readCovarianceFunction(const FileName &name, UInt length, UInt colum
       readFileMatrix(name, covFunc);
       if(covFunc.columns() != columns+1)
         throw(Exception("input apriori covariance function <"+name.str()+"> seems not to be compatible"));
-      if(std::fabs(covFunc(1,0)-covFunc(0,0)-sampling) > 1e-3) // test sampling
-        throw(Exception("input apriori covariance function <"+name.str()+"> has wrong sampling"));
       if(covFunc.rows() < length)
-        throw(Exception("input apriori covariance function <"+name.str()+"> is to short"));
-       return covFunc.row(0,length);
+        throw(Exception("input apriori covariance function <"+name.str()+"> is too short"));
+      if(covFunc.rows() && (std::fabs(covFunc(1,0)-covFunc(0,0)-sampling) > 1e-3)) // test sampling
+        throw(Exception("input apriori covariance function <"+name.str()+"> has wrong sampling"));
+      return covFunc.row(0,length);
     }
 
     // default is white noise
     Matrix covFunc(length, 1+columns);
     for(UInt i=0; i<covFunc.rows(); i++)
       covFunc(i,0) = i*sampling;
-    for(UInt k=0; k<columns; k++)
-      covFunc(0,1+k) = 1.0;
+    if(covFunc.rows())
+      for(UInt k=0; k<columns; k++)
+        covFunc(0,1+k) = 1.0;
     return covFunc;
   }
   catch(std::exception &e)
@@ -268,7 +268,7 @@ void Vce::psd(const_MatrixSliceRef R, const_MatrixSliceRef WWe,
         const_MatrixSliceRef cov(CosTransform.column(idFreq));
         const Double ePeTmp        = pow(sigma,2) * Psd(idFreq, idAxis) * inner(e, cov);
         const Double redundancyTmp = pow(sigma,2) * Psd(idFreq, idAxis) * inner(r, cov);
-        if((ePeTmp>0)&&(ePeTmp==ePeTmp)&&(redundancyTmp>0)&&(redundancyTmp==redundancyTmp))
+        if((ePeTmp > 0) && !std::isnan(ePeTmp) && (redundancyTmp > 0) && !std::isnan(redundancyTmp))
         {
           ePe(idFreq, idAxis)        += ePeTmp;
           redundancy(idFreq, idAxis) += redundancyTmp;
@@ -290,6 +290,9 @@ void Vce::estimatePsd(MatrixSliceRef ePe, MatrixSliceRef redundancy, MatrixSlice
 {
   try
   {
+    if(!Psd.size())
+      return;
+
     // freq=0, special case: mean is usually removed -> not estimable
     // -> estimate first two frequencies together
     if(jointZeroFrequency)
@@ -304,7 +307,7 @@ void Vce::estimatePsd(MatrixSliceRef ePe, MatrixSliceRef redundancy, MatrixSlice
       for(UInt idFreq=0; idFreq<Psd.rows(); idFreq++) // frequencies 0, 1,2,3 ...
       {
         Double factor = ePe(idFreq, idAxis)/redundancy(idFreq, idAxis);
-        if((factor != factor) || (factor <= 0))
+        if(std::isnan(factor) || (factor <= 0))
         {
           logWarning<<idFreq<<". frequency, (idAxis="<<idAxis<<") negative factor = "<<ePe(idFreq, idAxis)<<" / "<<redundancy(idFreq, idAxis)<<Log::endl;
           factor = 1;
@@ -326,12 +329,16 @@ Double Vce::meanSigma(const Vector &sigma)
   try
   {
     std::vector<Double> s = sigma;
-    std::sort(s.begin(),  s.end());
+    std::sort(s.begin(), s.end());
+    s.erase(std::remove_if(s.begin(), s.end(), [](Double x){return x <= 0;}), s.end());
+    if(!s.size())
+      return 0;
 
-    Double sigma0 = 0;
-    for(UInt i=s.size()/4; i<s.size()*3/4; i++)
-      sigma0 += s.at(i);
-    sigma0 /= (s.size()*3/4-s.size()/4);
+    const UInt begin  = s.size()/4;
+    const UInt end    = s.size()-s.size()/4;
+    Double     sigma0 = 0;
+    for(UInt i=begin; i<end; i++)
+      sigma0 += s.at(i)/(end-begin);
     return sigma0;
   }
   catch(std::exception &e)

@@ -55,6 +55,12 @@ public:
   UInt idxState2,       state2Count;
   UInt idxSstPara;
 
+  static void interpolate(const Time &time, const std::vector<VariationalEquationFromFile::ObservationEquation> &eqn,
+                          Matrix &pos0, Matrix &vel0, Matrix &PosDesign, Matrix &VelDesign, Bool computeVelocity, UInt degree);
+
+  static std::vector<Rotary3d> interpolateStarCamera(const std::vector<Time> &timesNew,
+                                                     const std::vector<Time> &times, const std::vector<Rotary3d> &rot, UInt degree);
+
 public:
   ObservationMiscSstVariational(Config &config);
  ~ObservationMiscSstVariational() {}
@@ -66,9 +72,7 @@ public:
   UInt arcCount()                const override {return countArc;}
   void parameterName(std::vector<ParameterName> &name) const override;
 
-  Arc computeArc(UInt arcNo, CovarianceSstPtr covSst,
-                 CovariancePodPtr covPod1, CovariancePodPtr covPod2,
-                 const std::vector<Rotary3d> &rotSat1={}, const std::vector<Rotary3d> &rotSat2={}) override;
+  Arc computeArc(UInt arcNo, CovarianceSstPtr covSst, CovariancePodPtr covPod1, CovariancePodPtr covPod2) override;
 };
 
 /***********************************************/

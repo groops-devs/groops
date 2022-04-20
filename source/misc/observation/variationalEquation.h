@@ -33,6 +33,8 @@ public:
 
   void setArc(VariationalEquationArc &arc);
 
+  const VariationalEquationArc &arc() const {return arc_;}
+
   /** @brief recompute parameter count.
   * Must only be called if parameters in @a parameterGravity
   * or @a parameterAcceleration are changed (via @a setInterval).
@@ -91,7 +93,7 @@ public:
 
 private:
   SatelliteModelPtr              satellite;
-  VariationalEquationArc         arc;
+  VariationalEquationArc         arc_;
   EphemeridesPtr                 ephemerides;
   ParametrizationGravityPtr      parameterGravity;
   ParametrizationAccelerationPtr parameterAcceleration;

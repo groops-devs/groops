@@ -106,26 +106,22 @@ public:
   * The names are appended to @a name. */
   void parameterNameSatelliteArc(std::vector<ParameterName> &name) const;
 
-  /** @brief Replace the star camera from the variational file with this data. */
-  void replaceStarCamera(const UInt idEpochStart, const UInt idEpochEnd, std::vector<Rotary3d> rotSat);
-
   /** @brief Setup observation equations. */
-  ObservationEquation integrateArc(Time timeStart, Time timeEnd, Bool computePosition, Bool computeVelocity, std::vector<Rotary3d> rotSat={});
+  ObservationEquation integrateArc(Time timeStart, Time timeEnd, Bool computePosition, Bool computeVelocity);
 
   VariationalEquationArc refineVariationalEquationArc(UInt arcNo, const_MatrixSliceRef x);
 
+  const VariationalEquationArc &getArc(const Time &time);
+
 private:
   FileVariationalEquation file;
-  VariationalEquation     variationalEquation;
-  VariationalEquationArc  arc;
   UInt                    arcNo;
+  VariationalEquation     variationalEquation;
 
   UInt  _parameterCount;
   UInt  idxGravity, gravityCount;
   UInt  idxSat,     satCount;
   UInt  idxSatArc,  satArcCount;
-
-  void getArc(const Time &time);
 };
 
 /***********************************************/

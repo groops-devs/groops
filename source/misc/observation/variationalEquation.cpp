@@ -107,13 +107,13 @@ void VariationalEquation::setArc(VariationalEquationArc &arc)
 {
   try
   {
-    this->arc = arc;
-    if(arc.times.size() == 0)
+    arc_ = arc;
+    if(arc_.times.size() == 0)
       throw(Exception("empty arc"));
 
     if(parameterAcceleration)
     {
-      if(parameterAcceleration->setIntervalArc(arc.times.at(0), arc.times.back()+medianSampling(arc.times)))
+      if(parameterAcceleration->setIntervalArc(arc_.times.at(0), arc_.times.back()+medianSampling(arc_.times)))
         computeIndices();
     }
 
@@ -125,16 +125,16 @@ void VariationalEquation::setArc(VariationalEquationArc &arc)
     stochasticPulse.resize(timePulse.size());
     for(UInt i=0; i<timePulse.size(); i++)
     {
-      if(timePulse.at(i)>=arc.times.back()) break;
-      if(timePulse.at(i)<=arc.times.at(0))  continue;
+      if(timePulse.at(i)>=arc_.times.back()) break;
+      if(timePulse.at(i)<=arc_.times.at(0))  continue;
       UInt idEpoch = 0;
-      while(timePulse.at(i)>=arc.times.at(idEpoch+1))
+      while(timePulse.at(i)>=arc_.times.at(idEpoch+1))
         idEpoch++;
       stochasticPulse.at(i) = Matrix(6, 3);
       stochasticPulse.at(i)(3,0) = stochasticPulse.at(i)(4,1) = stochasticPulse.at(i)(5,2) = 1e-6; // [mum/s]
       Matrix Z(6,6);
-      copy(arc.PosState.row(3*idEpoch,3), Z.row(0,3));
-      copy(arc.VelState.row(3*idEpoch,3), Z.row(3,3));
+      copy(arc_.PosState.row(3*idEpoch,3), Z.row(0,3));
+      copy(arc_.VelState.row(3*idEpoch,3), Z.row(3,3));
       solveInPlace(Z, stochasticPulse.at(i));
     }
   }
@@ -207,9 +207,9 @@ void VariationalEquation::position(UInt idEpoch, MatrixSliceRef pos0, MatrixSlic
 {
   try
   {
-    if(arc.times.size() == 0)
+    if(arc_.times.size() == 0)
       throw(Exception("no variational arc given"));
-    if(idEpoch>=arc.times.size())
+    if(idEpoch>=arc_.times.size())
       throw(Exception("epoch outside arc"));
 
     computeAlpha(idEpoch);
@@ -217,7 +217,7 @@ void VariationalEquation::position(UInt idEpoch, MatrixSliceRef pos0, MatrixSlic
     // gravity and satellite parameters
     // --------------------------------
     if(gravityCount+satCount)
-      matMult(1., arc.PosState.row(3*idEpoch,3), Alpha.column(0, gravityCount+satCount), PosDesign.column(0, gravityCount+satCount));
+      matMult(1., arc_.PosState.row(3*idEpoch,3), Alpha.column(0, gravityCount+satCount), PosDesign.column(0, gravityCount+satCount));
 
     // stochastic pulses
     // -----------------
@@ -225,20 +225,20 @@ void VariationalEquation::position(UInt idEpoch, MatrixSliceRef pos0, MatrixSlic
     {
       if(stochasticPulse.at(i).size()==0)
         continue;
-      if(timePulse.at(i) >  arc.times.at(idEpoch))
+      if(timePulse.at(i) > arc_.times.at(idEpoch))
         break;
-      matMult(1., arc.PosState.row(3*idEpoch,3), stochasticPulse.at(i), PosDesign.column(3*i+idxPulse, 3));
+      matMult(1., arc_.PosState.row(3*idEpoch,3), stochasticPulse.at(i), PosDesign.column(3*i+idxPulse, 3));
     }
 
     // arc related parameters
     // ----------------------
     if(satArcCount-6)
-      matMult(1., arc.PosState.row(3*idEpoch,3), Alpha.column(gravityCount+satCount, satArcCount-6), PosDesign.column(idxSatArc, satArcCount-6));
+      matMult(1., arc_.PosState.row(3*idEpoch,3), Alpha.column(gravityCount+satCount, satArcCount-6), PosDesign.column(idxSatArc, satArcCount-6));
 
     // satellite state
     // ---------------
-    copy(arc.PosState.row(3*idEpoch,3), PosDesign.column(idxSatArc+satArcCount-6, 6));
-    copy(arc.pos0.row(3*idEpoch,3), pos0);
+    copy(arc_.PosState.row(3*idEpoch,3), PosDesign.column(idxSatArc+satArcCount-6, 6));
+    copy(arc_.pos0.row(3*idEpoch,3), pos0);
   }
   catch(std::exception &e)
   {
@@ -252,9 +252,9 @@ void VariationalEquation::velocity(UInt idEpoch, MatrixSliceRef vel0, MatrixSlic
 {
   try
   {
-    if(arc.times.size() == 0)
+    if(arc_.times.size() == 0)
       throw(Exception("no variational arc given"));
-    if(idEpoch>=arc.times.size())
+    if(idEpoch>=arc_.times.size())
       throw(Exception("epoch outside arc"));
 
     computeAlpha(idEpoch);
@@ -262,7 +262,7 @@ void VariationalEquation::velocity(UInt idEpoch, MatrixSliceRef vel0, MatrixSlic
     // gravity and satellite parameters
     // --------------------------------
     if(gravityCount+satCount)
-      matMult(1., arc.VelState.row(3*idEpoch,3), Alpha.column(0, gravityCount+satCount), VelDesign.column(0, gravityCount+satCount));
+      matMult(1., arc_.VelState.row(3*idEpoch,3), Alpha.column(0, gravityCount+satCount), VelDesign.column(0, gravityCount+satCount));
 
     // stochastic pulses
     // -----------------
@@ -270,20 +270,20 @@ void VariationalEquation::velocity(UInt idEpoch, MatrixSliceRef vel0, MatrixSlic
     {
       if(stochasticPulse.at(i).size()==0)
         continue;
-      if(timePulse.at(i) >  arc.times.at(idEpoch))
+      if(timePulse.at(i) >  arc_.times.at(idEpoch))
         break;
-      matMult(1., arc.VelState.row(3*idEpoch,3), stochasticPulse.at(i), VelDesign.column(3*i+idxPulse, 3));
+      matMult(1., arc_.VelState.row(3*idEpoch,3), stochasticPulse.at(i), VelDesign.column(3*i+idxPulse, 3));
     }
 
     // arc related parameters
     // ----------------------
     if(satArcCount-6)
-      matMult(1., arc.VelState.row(3*idEpoch,3), Alpha.column(gravityCount+satCount, satArcCount-6), VelDesign.column(idxSatArc, satArcCount-6));
+      matMult(1., arc_.VelState.row(3*idEpoch,3), Alpha.column(gravityCount+satCount, satArcCount-6), VelDesign.column(idxSatArc, satArcCount-6));
 
     // satellite state
     // ---------------
-    copy(arc.VelState.row(3*idEpoch,3), VelDesign.column(idxSatArc+satArcCount-6, 6));
-    copy(arc.vel0.row(3*idEpoch,3), vel0);
+    copy(arc_.VelState.row(3*idEpoch,3), VelDesign.column(idxSatArc+satArcCount-6, 6));
+    copy(arc_.vel0.row(3*idEpoch,3), vel0);
   }
   catch(std::exception &e)
   {
@@ -300,7 +300,7 @@ void VariationalEquation::initIntegration()
     Alpha        = Matrix(6, parameterCount_-6); // without satellite state
     idEpochAlpha = 0;
     idCoeff      = 0;
-    deltaT       = (arc.times.at(1) - arc.times.at(0)).seconds();
+    deltaT       = (arc_.times.at(1) - arc_.times.at(0)).seconds();
     Integrand.resize(integrationDegree+1);
     for(UInt i=0; i<Integrand.size(); i++)
       Integrand.at(i) = computeIntegrand(i);
@@ -332,7 +332,7 @@ void VariationalEquation::computeAlpha(UInt idEpoch)
       for(UInt i=0; i<coeffIntegral.at(idCoeff).rows(); i++)
         axpy(deltaT*coeffIntegral.at(idCoeff)(i), Integrand.at((idIntegrand+i)%Integrand.size()), Alpha);
 
-      if((idEpochAlpha<(integrationDegree+1)/2) || (idEpochAlpha+(integrationDegree+1)/2 >= arc.times.size()))
+      if((idEpochAlpha<(integrationDegree+1)/2) || (idEpochAlpha+(integrationDegree+1)/2 >= arc_.times.size()))
         idCoeff++; // select next integration interval within polynomial
       else
       {
@@ -357,25 +357,25 @@ Matrix VariationalEquation::computeIntegrand(UInt idEpoch)
     if(Alpha.columns()==0)
       return Matrix(6,0);
 
-    Vector3d pos  = Vector3d(arc.pos0(3*idEpoch+0,0),
-                             arc.pos0(3*idEpoch+1,0),
-                             arc.pos0(3*idEpoch+2,0));
-    Vector3d vel  = Vector3d(arc.vel0(3*idEpoch+0,0),
-                             arc.vel0(3*idEpoch+1,0),
-                             arc.vel0(3*idEpoch+2,0));
+    Vector3d pos  = Vector3d(arc_.pos0(3*idEpoch+0,0),
+                             arc_.pos0(3*idEpoch+1,0),
+                             arc_.pos0(3*idEpoch+2,0));
+    Vector3d vel  = Vector3d(arc_.vel0(3*idEpoch+0,0),
+                             arc_.vel0(3*idEpoch+1,0),
+                             arc_.vel0(3*idEpoch+2,0));
 
     Matrix F(6, Alpha.columns());
     if(gravityCount)
-      parameterGravity->gravity(arc.times.at(idEpoch), arc.rotEarth.at(idEpoch).rotate(pos), F.slice(3, idxGravity, 3, gravityCount));
+      parameterGravity->gravity(arc_.times.at(idEpoch), arc_.rotEarth.at(idEpoch).rotate(pos), F.slice(3, idxGravity, 3, gravityCount));
     if(satCount || satArcCount)
     {
-      parameterAcceleration->compute(satellite, arc.times.at(idEpoch), pos, vel, arc.rotSat.at(idEpoch), arc.rotEarth.at(idEpoch), ephemerides,
+      parameterAcceleration->compute(satellite, arc_.times.at(idEpoch), pos, vel, arc_.rotSat.at(idEpoch), arc_.rotEarth.at(idEpoch), ephemerides,
                                      F.slice(3, idxSat, 3, satCount), F.slice(3, idxSatArc, 3, satArcCount-6));
     }
 
     Matrix Z(6,6);
-    matMult(1., arc.rotEarth.at(idEpoch).matrix(), arc.PosState.row(3*idEpoch,3), Z.row(0,3));
-    matMult(1., arc.rotEarth.at(idEpoch).matrix(), arc.VelState.row(3*idEpoch,3), Z.row(3,3));
+    matMult(1., arc_.rotEarth.at(idEpoch).matrix(), arc_.PosState.row(3*idEpoch,3), Z.row(0,3));
+    matMult(1., arc_.rotEarth.at(idEpoch).matrix(), arc_.VelState.row(3*idEpoch,3), Z.row(3,3));
     solveInPlace(Z, F);
 
     return F;

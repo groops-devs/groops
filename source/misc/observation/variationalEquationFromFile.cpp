@@ -28,7 +28,7 @@ void VariationalEquationFromFile::open(const FileName &fileName, Parametrization
 
     variationalEquation.init(file.satellite(), parameterGravity, parameterAcceleration, stochasticPulse, ephemerides, integrationDegree);
     arcNo = 0;
-    arc = file.readArc(arcNo);
+    VariationalEquationArc arc = file.readArc(arcNo);
     variationalEquation.setArc(arc);
     computeIndices();
   }
@@ -154,30 +154,21 @@ void VariationalEquationFromFile::parameterNameSatelliteArc(std::vector<Paramete
 
 /***********************************************/
 
-VariationalEquationFromFile::ObservationEquation VariationalEquationFromFile::integrateArc(Time timeStart, Time timeEnd, Bool computePosition, Bool computeVelocity, std::vector<Rotary3d> rotSat)
+VariationalEquationFromFile::ObservationEquation VariationalEquationFromFile::integrateArc(Time timeStart, Time timeEnd, Bool computePosition, Bool computeVelocity)
 {
   try
   {
-    getArc(timeStart);
-    if(timeEnd>arc.times.back())
+    const VariationalEquationArc &arc = getArc(timeStart);
+    if(timeEnd > arc.times.back())
     {
       timeEnd = arc.times.back();
 //       throw(Exception("cannot integrate over different variational arcs ("+timeStart.dateTimeStr()+" - "+timeEnd.dateTimeStr()+") vs. ("+arc.times.at(0).dateTimeStr()+" - "+arc.times.back().dateTimeStr()+")"));
     }
 
     // find epoch interval
-    UInt epochStart = 0;
-    while(timeStart>=arc.times.at(epochStart+1))
-      epochStart++;
-    UInt epochEnd = epochStart;
-    while(timeEnd>arc.times.at(epochEnd))
-      epochEnd++;
-
-    if(rotSat.size())
-      replaceStarCamera(epochStart, epochEnd, rotSat);
-
+    const UInt epochStart = std::distance(arc.times.begin(), std::upper_bound(arc.times.begin(), arc.times.end(), timeStart))-1;
     ObservationEquation eqn;
-    for(UInt idEpoch=epochStart; idEpoch<=epochEnd; idEpoch++)
+    for(UInt idEpoch=epochStart; (idEpoch<arc.times.size()) && (arc.times.at(idEpoch)<=timeEnd); idEpoch++)
       eqn.times.push_back(arc.times.at(idEpoch));
 
     if(computePosition)
@@ -231,38 +222,31 @@ VariationalEquationFromFile::ObservationEquation VariationalEquationFromFile::in
 
 /***********************************************/
 
-void VariationalEquationFromFile::getArc(const Time &time)
+const VariationalEquationArc &VariationalEquationFromFile::getArc(const Time &time)
 {
   try
   {
-    Bool init = FALSE;
+    if((variationalEquation.arc().times.front() <= time) && (time <= variationalEquation.arc().times.back()))
+      return variationalEquation.arc();
 
     // restart file?
-    if(time < arc.times.at(0))
-    {
-      arcNo = 0;
-      arc = file.readArc(arcNo);
-      init  = TRUE;
-    }
+    VariationalEquationArc arc = variationalEquation.arc();
+    if(time < arc.times.front())
+      arc = file.readArc(arcNo = 0);
 
     // find arc
-    while((time > arc.times.back()) && (arcNo+1<file.arcCount()))
-    {
-      arcNo++;
-      arc  = file.readArc(arcNo);
-      init = TRUE;
-    }
+    while((time > arc.times.back()) && (++arcNo < file.arcCount()))
+      arc = file.readArc(arcNo);
 
-    if((time > arc.times.back()) || (time < arc.times.at(0)))
+    if((time > arc.times.back()) || (time < arc.times.front()))
       throw(Exception("no variational arc found for "+time.dateTimeStr()));
 
-    if(init)
-    {
-      const UInt countOld = variationalEquation.parameterCountSatellite();
-      variationalEquation.setArc(arc);
-      if(variationalEquation.parameterCountSatellite() != countOld)
-        throw(Exception("size of arc related parameters changed from arc to arc."));
-    }
+    const UInt countOld = variationalEquation.parameterCountSatellite();
+    variationalEquation.setArc(arc);
+    if(variationalEquation.parameterCountSatellite() != countOld)
+      throw(Exception("size of arc related parameters changed from arc to arc."));
+
+    return variationalEquation.arc();
   }
   catch(std::exception &e)
   {
@@ -306,24 +290,6 @@ VariationalEquationArc VariationalEquationFromFile::refineVariationalEquationArc
     } // for(idEpoch)
 
     return arc;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-void VariationalEquationFromFile::replaceStarCamera(const UInt idEpochStart, const UInt idEpochEnd, std::vector<Rotary3d> rotSat)
-{
-  try
-  {
-    UInt idEpoch = idEpochStart;
-    for(UInt i=0; i<rotSat.size() &&  idEpoch<=idEpochEnd; i++)
-    {
-      arc.rotSat.at(idEpoch++) = rotSat.at(i);
-    }
   }
   catch(std::exception &e)
   {

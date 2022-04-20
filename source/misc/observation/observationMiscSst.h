@@ -37,12 +37,9 @@ public:
   class Arc
   {
   public:
-    Matrix l, A, B;
-    std::vector<Time>     timesSst;
-    std::vector<Time>     timesPod1, timesPod2;
-    OrbitArc              pod1, pod2;
-    std::vector<Rotary3d> rotSat1, rotSat2;
-    Matrix                pos1, pos2;
+    Matrix   l, A, B;
+    std::array<std::vector<Time>, 3> times; // SST, POD1, POD2
+    OrbitArc pod1, pod2;
   };
 
   virtual ~ObservationMiscSst() {}
@@ -50,9 +47,7 @@ public:
   virtual Arc computeArc(UInt arcNo,
                          CovarianceSstPtr covSst =nullptr,
                          CovariancePodPtr covPod1=nullptr,
-                         CovariancePodPtr covPod2=nullptr,
-                         const std::vector<Rotary3d> &rotSat1={},
-                         const std::vector<Rotary3d> &rotSat2={}) = 0;
+                         CovariancePodPtr covPod2=nullptr) = 0;
 
   void observation(UInt arcNo, Matrix &l, Matrix &A, Matrix &B) override;
 

@@ -266,9 +266,9 @@ void PreprocessingVariationalEquationSstFit::buildNormals(UInt arcNo)
 
     // count observations and calculate index
     // --------------------------------------
-    const UInt countSst  = observationArc.at(arcNo).timesSst.size();
-    const UInt countPod1 = observationArc.at(arcNo).timesPod1.size();
-    const UInt countPod2 = observationArc.at(arcNo).timesPod2.size();
+    const UInt countSst  = observationArc.at(arcNo).times.at(0).size();
+    const UInt countPod1 = observationArc.at(arcNo).times.at(1).size();
+    const UInt countPod2 = observationArc.at(arcNo).times.at(2).size();
 
     UInt obsCount = 0;
     const UInt idxSst  = obsCount; obsCount += countSst;

@@ -223,8 +223,7 @@ void ObservationMiscSstIntegral::parameterName(std::vector<ParameterName> &name)
 
 /***********************************************/
 
-ObservationMiscSst::Arc ObservationMiscSstIntegral::computeArc(UInt arcNo, CovarianceSstPtr covSst, CovariancePodPtr covPod1, CovariancePodPtr covPod2,
-                                                               const std::vector<Rotary3d> &rotSat1, const std::vector<Rotary3d> &rotSat2)
+ObservationMiscSst::Arc ObservationMiscSstIntegral::computeArc(UInt arcNo, CovarianceSstPtr covSst, CovariancePodPtr covPod1, CovariancePodPtr covPod2)
 {
   try
   {
@@ -235,20 +234,6 @@ ObservationMiscSst::Arc ObservationMiscSstIntegral::computeArc(UInt arcNo, Covar
     ::Arc::checkSynchronized({orbit1, orbit2, starCamera1, starCamera2});
     const UInt    rhsCount    = rhs.size();
     const UInt    epochCount  = orbit1.size();
-
-    if(rotSat1.size())
-    {
-      // Everything must be synced
-      if(rotSat1.size() != epochCount || rotSat2.size() != epochCount)
-        throw(Exception("Replacement star camera arcs have wrong length."));
-
-      for(UInt i=0; i<epochCount; i++)
-      {
-        starCamera1.at(i).rotary = rotSat1.at(i);
-        starCamera2.at(i).rotary = rotSat2.at(i);
-      }
-    }
-
 
     parameterAcceleration1->setIntervalArc(orbit1.at(0).time, orbit1.back().time+medianSampling(orbit1.times()));
     parameterAcceleration2->setIntervalArc(orbit2.at(0).time, orbit2.back().time+medianSampling(orbit2.times()));
@@ -641,19 +626,12 @@ ObservationMiscSst::Arc ObservationMiscSstIntegral::computeArc(UInt arcNo, Covar
     // =============================================
 
     Arc observationArc;
-    observationArc.l = l;
-    observationArc.A = A;
-    observationArc.B = B;
-    observationArc.timesSst  = times;
-    observationArc.timesPod1 = pod1.at(0).times();
-    observationArc.timesPod2 = pod2.at(0).times();
-    observationArc.pod1      = pod1.at(0);
-    observationArc.pod2      = pod2.at(0);
-    observationArc.rotSat1   = rotSat1;
-    observationArc.rotSat2   = rotSat2;
-    observationArc.pos1      = arc1.vPos;
-    observationArc.pos2      = arc2.vPos;
-
+    observationArc.l     = l;
+    observationArc.A     = A;
+    observationArc.B     = B;
+    observationArc.times = {times, pod1.front().times(), pod2.front().times()};
+    observationArc.pod1  = pod1.front();
+    observationArc.pod2  = pod2.front();
     return observationArc;
   }
   catch(std::exception &e)

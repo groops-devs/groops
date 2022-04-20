@@ -16839,6 +16839,11 @@
 											<xs:documentation>Vector with one sigma for each &lt;inputfileCovarianceMatrixArc&gt;</xs:documentation>
 										</xs:annotation>
 									</xs:element>
+									<xs:element name="sampling" type="double" minOccurs="0" default="2">
+										<xs:annotation>
+											<xs:documentation>[seconds] sampling of the covariance function</xs:documentation>
+										</xs:annotation>
+									</xs:element>
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
@@ -16852,7 +16857,7 @@
 									</xs:element>
 									<xs:element name="inputfileSigmasPerArc" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>apriori different accuaries for each arc (multplicated with sigma)</xs:documentation>
+											<xs:documentation>apriori different accuaries for each arc (multiplicated with sigma)</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="inputfileSigmasPerEpoch" type="filename" minOccurs="0">
@@ -16873,6 +16878,11 @@
 									<xs:element name="inputfileSigmasCovarianceMatrixArc" type="filename" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Vector with one sigma for each &lt;inputfileCovarianceMatrixArc&gt;</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="sampling" type="double" minOccurs="0" default="5">
+										<xs:annotation>
+											<xs:documentation>[seconds] sampling of the covariance function</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 								</xs:sequence>

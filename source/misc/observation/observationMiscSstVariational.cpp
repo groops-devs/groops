@@ -77,12 +77,16 @@ ObservationMiscSstVariational::ObservationMiscSstVariational(Config &config)
     // ---------------------
     for(UInt i=1; i<sstFile.size(); i++)
       InstrumentFile::checkArcCount({*sstFile.at(i), *sstFile.at(0)});
+    if(sstFile.size())
+      InstrumentFile::checkArcCount({pod1File, *sstFile.at(0)});
+    InstrumentFile::checkArcCount({pod2File, pod1File});
+
+    countArc = std::max(pod1File.arcCount(), pod2File.arcCount());
+    if(sstFile.size()) countArc = std::max(countArc, sstFile.at(0)->arcCount());
+    computeVelocity = (sstType==1);
 
     variationalEquation1.open(fileNameVariational1, parameterGravity, parameterAcceleration1, std::vector<Time>(), ephemerides, integrationDegree);
     variationalEquation2.open(fileNameVariational2, parameterGravity, parameterAcceleration2, std::vector<Time>(), ephemerides, integrationDegree);
-
-    countArc = sstFile.at(0)->arcCount();
-    computeVelocity = (sstType==1);
 
     // =======================
 
@@ -166,12 +170,9 @@ void ObservationMiscSstVariational::parameterName(std::vector<ParameterName> &na
       name.push_back(name2.at(i));
     }
 
-    if(parameterSst)
-    {
-      parameterSst->parameterName(name);
-      for(UInt i=name.size()-parameterSst->parameterCount(); i<name.size(); i++)
-        name.at(i).object = satelliteName1+"."+satelliteName2;
-    }
+    parameterSst->parameterName(name);
+    for(UInt i=name.size()-parameterSst->parameterCount(); i<name.size(); i++)
+      name.at(i).object = satelliteName1+"."+satelliteName2;
   }
   catch(std::exception &e)
   {
@@ -181,8 +182,7 @@ void ObservationMiscSstVariational::parameterName(std::vector<ParameterName> &na
 
 /***********************************************/
 
-ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UInt arcNo, CovarianceSstPtr covSst, CovariancePodPtr covPod1, CovariancePodPtr covPod2,
-                                                                             const std::vector<Rotary3d> &rotSat1, const std::vector<Rotary3d> &rotSat2)
+ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UInt arcNo, CovarianceSstPtr covSst, CovariancePodPtr covPod1, CovariancePodPtr covPod2)
 {
   try
   {
@@ -193,33 +193,45 @@ ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UIn
       sst.at(k) = sstFile.at(k)->readArc(arcNo);
     for(UInt k=1; k<sst.size(); k++)
       ::Arc::checkSynchronized({sst.at(0), sst.at(k)});
+    const std::vector<Time> timesSst = (sst.size() && (sstType!=99)) ? sst.at(0).times() : std::vector<Time>();
 
     // read POD observations
     // ---------------------
     OrbitArc pod1 = pod1File.readArc(arcNo);
     OrbitArc pod2 = pod2File.readArc(arcNo);
+    const std::vector<Time> timesPod1 = pod1.times();
+    const std::vector<Time> timesPod2 = pod2.times();
 
-    // =============================================
+    // Init variational equations
+    // --------------------------
+    Time timeStart(std::numeric_limits<Int>::max(), 0), timeEnd;
+    if(timesSst.size())  {timeStart = std::min(timeStart, timesSst.front());  timeEnd = std::max(timeEnd, timesSst.back());}
+    if(timesPod1.size()) {timeStart = std::min(timeStart, timesPod1.front()); timeEnd = std::max(timeEnd, timesPod1.back());}
+    if(timesPod2.size()) {timeStart = std::min(timeStart, timesPod2.front()); timeEnd = std::max(timeEnd, timesPod2.back());}
+    const VariationalEquationArc &arc1 = variationalEquation1.getArc(timeStart);
+    const VariationalEquationArc &arc2 = variationalEquation2.getArc(timeStart);
 
-    const UInt epochCount = sst.at(0).size();
-    parameterSst->setIntervalArc(sst.at(0).at(0).time, sst.at(0).back().time+medianSampling(sst.at(0).times()));
+    if((arc1.times != arc2.times) || (timeStart < arc1.times.front()) || (arc1.times.back() < timeEnd))
+      throw(Exception("no variational arc found for ["+timeStart.dateTimeStr()+", "+timeEnd.dateTimeStr()+"]"));
+
+    // integration times (and interpolation intervals inbetween)
+    std::vector<Time> times;
+    const UInt epochStart = std::distance(arc1.times.begin(), std::upper_bound(arc1.times.begin(), arc1.times.end(), timeStart))-1;
+    for(UInt idEpoch=epochStart; (idEpoch < arc1.times.size()) && (arc1.times.at(idEpoch) <= timeEnd); idEpoch++)
+      times.push_back(arc1.times.at(idEpoch));
 
     // count observations and calculate index
     // --------------------------------------
-    const UInt countSst  = (sst.size() && (sstType!=99)) ? sst.at(0).size() : 0;
-    const UInt countPod1 = (pod1.size()<2) ? 0 : 3*pod1.size();
-    const UInt countPod2 = (pod2.size()<2) ? 0 : 3*pod2.size();
-
     UInt obsCount = 0;
-    const UInt idxSst   = obsCount; obsCount += countSst;
-    const UInt idxPod1  = obsCount; obsCount += countPod1;
-    const UInt idxPod2  = obsCount; obsCount += countPod2;
+    const UInt idxSst  = obsCount; obsCount += timesSst.size();
+    const UInt idxPod1 = obsCount; obsCount += 3*timesPod1.size();
+    const UInt idxPod2 = obsCount; obsCount += 3*timesPod2.size();
 
     // arc related parameters (in matrix B)
     // ------------------------------------
+    if(timesSst.size()) parameterSst->setIntervalArc(timesSst.front(), timesSst.back()+medianSampling(timesSst));
     UInt countBParameter = 0;
     const UInt idxSstParaArc = countBParameter; countBParameter += parameterSst->parameterCountArc();
-
     if(obsCount <= countBParameter)
       return Arc();
 
@@ -227,172 +239,153 @@ ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UIn
     Matrix A(obsCount, countAParameter);
     Matrix B(obsCount, countBParameter);
 
-    // =============================================
+    // needed for parameterSst
+    Vector sstComputed(timesSst.size());
+    Vector sstPos1(3*timesSst.size()), sstPos2(3*timesSst.size());
+    Vector sstVel1(3*timesSst.size()), sstVel2(3*timesSst.size());
 
-    std::vector<Time> timesSst = sst.at(0).times();
-    VariationalEquationFromFile::ObservationEquation eqn1 = variationalEquation1.integrateArc(timesSst.at(0), timesSst.back(), TRUE/*position*/, computeVelocity, rotSat1);
-    VariationalEquationFromFile::ObservationEquation eqn2 = variationalEquation2.integrateArc(timesSst.at(0), timesSst.back(), TRUE/*position*/, computeVelocity, rotSat2);
-    Polynomial polynomial(eqn1.times, interpolationDegree);
-
-    // =============================================
-
-    // kinematic orbit observations
-    // ----------------------------
-    if(countPod1)
+    // observation equations within each integration interval
+    // ------------------------------------------------------
+    UInt idEpochSst=0, idEpochPod1=0, idEpochPod2=0;
+    std::vector<VariationalEquationFromFile::ObservationEquation> eqn1(interpolationDegree+1);
+    std::vector<VariationalEquationFromFile::ObservationEquation> eqn2(interpolationDegree+1);
+    for(UInt idInterval=0; idInterval<times.size()-1; idInterval++)
     {
-      for(UInt k=0; k<countPod1/3; k++)
+      // integration of eqn1, eqn2  which are cyclicly updated
+      // -----------------------------------------------------
+      const UInt start = idInterval ? std::max(interpolationDegree+1, idInterval+(interpolationDegree+1)/2) : 0;
+      const UInt end   = std::min(std::max(idInterval+(interpolationDegree+1)/2+1, interpolationDegree+1), times.size());
+      for(UInt i=start; i<end; i++)
       {
-        l(3*k+0+idxPod1,0) = pod1.at(k).position.x();
-        l(3*k+1+idxPod1,0) = pod1.at(k).position.y();
-        l(3*k+2+idxPod1,0) = pod1.at(k).position.z();
-      }
-      l.row(idxPod1, countPod1) -= polynomial.interpolate(pod1.times(), eqn1.pos0, 3);
-
-      Matrix D = polynomial.interpolate(pod1.times(), eqn1.PosDesign, 3);
-      if(gravityCount)
-        copy(D.column(0, gravityCount),         A.slice(idxPod1, idxGravity, countPod1, gravityCount));
-      copy(D.column(gravityCount, state1Count), A.slice(idxPod1, idxState1,  countPod1, state1Count));
-    }
-
-    if(countPod2)
-    {
-      for(UInt k=0; k<countPod2/3; k++)
-      {
-        l(3*k+0+idxPod2,0) = pod2.at(k).position.x();
-        l(3*k+1+idxPod2,0) = pod2.at(k).position.y();
-        l(3*k+2+idxPod2,0) = pod2.at(k).position.z();
-      }
-      l.row(idxPod2, countPod2) -= polynomial.interpolate(pod2.times(), eqn2.pos0, 3);
-
-      Matrix D = polynomial.interpolate(pod2.times(), eqn2.PosDesign, 3);
-      if(gravityCount)
-        copy(D.column(0, gravityCount),         A.slice(idxPod2, idxGravity, countPod2, gravityCount));
-      copy(D.column(gravityCount, state2Count), A.slice(idxPod2, idxState2,  countPod2, state2Count));
-    }
-
-    // =============================================
-
-    if(countSst)
-    {
-      // inter satellite vectors
-      // -----------------------
-      std::vector<Vector3d> pos12(epochCount);
-      std::vector<Vector3d> vel12(epochCount);
-      std::vector<Vector3d> e12  (epochCount);
-      Vector sst0(epochCount);
-
-      Vector dpos0 = polynomial.interpolate(timesSst, eqn2.pos0-eqn1.pos0, 3);
-      for(UInt i=0; i<epochCount; i++)
-      {
-        pos12.at(i) = Vector3d(dpos0(3*i+0), dpos0(3*i+1), dpos0(3*i+2));
-        e12.at(i)   = normalize(pos12.at(i));
+        eqn1.at(i%eqn1.size()) = variationalEquation1.integrateArc(times.at(i), times.at(i), TRUE/*position*/, computeVelocity);
+        eqn2.at(i%eqn2.size()) = variationalEquation2.integrateArc(times.at(i), times.at(i), TRUE/*position*/, computeVelocity);
       }
 
-      if(computeVelocity)
+      // satellite to satellite tracking
+      // -------------------------------
+      for(; (idEpochSst < timesSst.size()) && (timesSst.at(idEpochSst) <= times.at(idInterval+1)); idEpochSst++)
       {
-        Vector dvel0 = polynomial.interpolate(timesSst, eqn2.vel0-eqn1.vel0, 3);
-        for(UInt i=0; i<epochCount; i++)
-          vel12.at(i) = Vector3d(dvel0(3*i+0), dvel0(3*i+1), dvel0(3*i+2));
-      }
+        Matrix pos1, vel1, PosDesign1, VelDesign1;
+        Matrix pos2, vel2, PosDesign2, VelDesign2;
+        interpolate(timesSst.at(idEpochSst), eqn1, pos1, vel1, PosDesign1, VelDesign1, computeVelocity, interpolationDegree);
+        interpolate(timesSst.at(idEpochSst), eqn2, pos2, vel2, PosDesign2, VelDesign2, computeVelocity, interpolationDegree);
 
-      // range
-      if(sstType==0)
-      {
-        Matrix PosGravity;
-        if(gravityCount) axpy(-1, eqn1.PosDesign.column(0, gravityCount), eqn2.PosDesign.column(0, gravityCount)); // gravity field difference
-        if(gravityCount) PosGravity = polynomial.interpolate(timesSst, eqn2.PosDesign.column(0, gravityCount));
-        Matrix PosState1  = polynomial.interpolate(timesSst, eqn1.PosDesign.column(gravityCount,state1Count), 3);
-        Matrix PosState2  = polynomial.interpolate(timesSst, eqn2.PosDesign.column(gravityCount,state2Count), 3);
-
-        Double rho0  = pos12.at(0).r();
-        for(UInt i=0; i<epochCount; i++)
+        copy(pos1, sstPos1.row(3*idEpochSst, 3));
+        copy(pos2, sstPos2.row(3*idEpochSst, 3));
+        if(computeVelocity)
         {
-          Matrix e    = e12.at(i).vector().trans();
-          Double rho  = pos12.at(i).r();
-          sst0(i) = rho;
+          copy(vel1, sstVel1.row(3*idEpochSst, 3));
+          copy(vel2, sstVel2.row(3*idEpochSst, 3));
+        }
 
+        if(sstType == 0) // range
+        {
+          Vector3d e12(pos2-pos1);
+          const Double rho = e12.normalize();
+
+          sstComputed(idEpochSst) = rho;
           for(UInt k=0; k<sst.size(); k++)
-            l(idxSst+i,0) += (sst.at(k).at(i).range - sst.at(k).at(0).range);
-          l(idxSst+i,0) -= (rho-rho0);
+            l(idxSst+idEpochSst, 0) += (sst.at(k).at(idEpochSst).range - sst.at(k).at(0).range);
+          l(idxSst+idEpochSst, 0) -= (sstComputed(idEpochSst)-sstComputed(0));
 
           // dRange/dPos12
+          Matrix e = e12.vector().trans();
           if(gravityCount)
-            matMult( 1., e, PosGravity.row(3*i,3), A.slice(idxSst+i, idxGravity, 1, gravityCount));
-          matMult(-1., e, PosState1.row(3*i,3),  A.slice(idxSst+i, idxState1,  1, state1Count));
-          matMult( 1., e, PosState2.row(3*i,3),  A.slice(idxSst+i, idxState2,  1, state2Count));
+            matMult( 1., e, PosDesign2.column(0, gravityCount)-PosDesign1.column(0, gravityCount), A.slice(idxSst+idEpochSst, idxGravity, 1, gravityCount));
+          matMult(-1., e, PosDesign1.column(gravityCount, state1Count),  A.slice(idxSst+idEpochSst, idxState1,  1, state1Count));
+          matMult( 1., e, PosDesign2.column(gravityCount, state2Count),  A.slice(idxSst+idEpochSst, idxState2,  1, state2Count));
         }
-      } // if(sstType==0)
-
-      // range rate
-      if(sstType==1)
-      {
-        Matrix PosGravity, VelGravity;
-        if(gravityCount) axpy(-1, eqn1.PosDesign.column(0, gravityCount), eqn2.PosDesign.column(0, gravityCount)); // gravity field difference
-        if(gravityCount) axpy(-1, eqn1.VelDesign.column(0, gravityCount), eqn2.VelDesign.column(0, gravityCount)); // gravity field difference
-        if(gravityCount) PosGravity = polynomial.interpolate(timesSst, eqn2.PosDesign.column(0, gravityCount), 3);
-        if(gravityCount) VelGravity = polynomial.interpolate(timesSst, eqn2.VelDesign.column(0, gravityCount), 3);
-        Matrix PosState1  = polynomial.interpolate(timesSst, eqn1.PosDesign.column(gravityCount,state1Count), 3);
-        Matrix PosState2  = polynomial.interpolate(timesSst, eqn2.PosDesign.column(gravityCount,state2Count), 3);
-        Matrix VelState1  = polynomial.interpolate(timesSst, eqn1.VelDesign.column(gravityCount,state1Count), 3);
-        Matrix VelState2  = polynomial.interpolate(timesSst, eqn2.VelDesign.column(gravityCount,state2Count), 3);
-
-        for(UInt i=0; i<epochCount; i++)
+        else if(sstType == 1) // range rate
         {
-          Double rho  = pos12.at(i).r();
-          Double drho = inner(e12.at(i),vel12.at(i));
+          Vector3d e12(pos2-pos1);
+          const Double rho = e12.normalize();
+          Vector3d vel12(vel2-vel1);
+          const Double drho = inner(e12, vel12);
 
+          sstComputed(idEpochSst) = drho;
           for(UInt k=0; k<sst.size(); k++)
-            l(idxSst+i,0) += sst.at(k).at(i).rangeRate;
-          l(idxSst+i,0) -= drho;
-          sst0(i) = drho;
+            l(idxSst+idEpochSst,0) += sst.at(k).at(idEpochSst).rangeRate;
+          l(idxSst+idEpochSst,0) -= sstComputed(idEpochSst);
 
           // dRate/dPos12
-          Matrix e = ((1/rho)*vel12.at(i) - (drho/rho) * e12.at(i)).vector().trans();
+          Matrix e = ((1/rho)*vel12 - (drho/rho) * e12).vector().trans();
           if(gravityCount)
-            matMult( 1., e, PosGravity.row(3*i,3), A.slice(idxSst+i, idxGravity, 1, gravityCount));
-          matMult(-1., e, PosState1.row(3*i,3),  A.slice(idxSst+i, idxState1,  1, state1Count));
-          matMult( 1., e, PosState2.row(3*i,3),  A.slice(idxSst+i, idxState2,  1, state2Count));
+            matMult( 1., e, PosDesign2.column(0, gravityCount)-PosDesign1.column(0, gravityCount), A.slice(idxSst+idEpochSst, idxGravity, 1, gravityCount));
+          matMult(-1., e, PosDesign1.column(gravityCount, state1Count),  A.slice(idxSst+idEpochSst, idxState1,  1, state1Count));
+          matMult( 1., e, PosDesign2.column(gravityCount, state2Count),  A.slice(idxSst+idEpochSst, idxState2,  1, state2Count));
 
           // dRate/dVel12 = e12
-          e = e12.at(i).vector().trans();
+          e = e12.vector().trans();
           if(gravityCount)
-            matMult( 1., e, VelGravity.row(3*i,3), A.slice(idxSst+i, idxGravity, 1, gravityCount));
-          matMult(-1., e, VelState1.row(3*i,3),  A.slice(idxSst+i, idxState1,  1, state1Count));
-          matMult( 1., e, VelState2.row(3*i,3),  A.slice(idxSst+i, idxState2,  1, state2Count));
+            matMult( 1., e, VelDesign2.column(0, gravityCount)-VelDesign1.column(0, gravityCount), A.slice(idxSst+idEpochSst, idxGravity, 1, gravityCount));
+          matMult(-1., e, VelDesign1.column(gravityCount, state1Count),  A.slice(idxSst+idEpochSst, idxState1,  1, state1Count));
+          matMult( 1., e, VelDesign2.column(gravityCount, state2Count),  A.slice(idxSst+idEpochSst, idxState2,  1, state2Count));
         }
-      } // if(sstType==1)
+      } // for(idEpochSst)
 
-      if(parameterSst)
+      // POD 1
+      // -----
+      for(; (idEpochPod1 < timesPod1.size()) && (timesPod1.at(idEpochPod1) <= times.at(idInterval+1)); idEpochPod1++)
       {
-        parameterSst->compute(sstType, timesSst, sst0, eqn1.pos0, eqn2.pos0, eqn1.vel0, eqn2.vel0, eqn1.rotSat, eqn2.rotSat,
-                              A.slice(idxSst, idxSstPara,    countSst, parameterSst->parameterCount()),
-                              B.slice(idxSst, idxSstParaArc, countSst, parameterSst->parameterCountArc()));
-      }
-    } // if(countSst)
+        Matrix pos1, vel1, PosDesign1, VelDesign1;
+        interpolate(timesPod1.at(idEpochPod1), eqn1, pos1, vel1, PosDesign1, VelDesign1, FALSE, interpolationDegree);
+
+        l(idxPod1+3*idEpochPod1+0, 0) = pod1.at(idEpochPod1).position.x();
+        l(idxPod1+3*idEpochPod1+1, 0) = pod1.at(idEpochPod1).position.y();
+        l(idxPod1+3*idEpochPod1+2, 0) = pod1.at(idEpochPod1).position.z();
+        l.row(idxPod1+3*idEpochPod1, 3) -= pos1;
+
+        if(gravityCount)
+          copy(PosDesign1.column(0, gravityCount),         A.slice(idxPod1+3*idEpochPod1, idxGravity, 3, gravityCount));
+        copy(PosDesign1.column(gravityCount, state1Count), A.slice(idxPod1+3*idEpochPod1, idxState1,  3, state1Count));
+      } // for(idEpochPod1)
+
+      // POD 2
+      // -----
+      for(; (idEpochPod2 < timesPod2.size()) && (timesPod2.at(idEpochPod2) <= times.at(idInterval+1)); idEpochPod2++)
+      {
+        Matrix pos2, vel2, PosDesign2, VelDesign2;
+        interpolate(timesPod2.at(idEpochPod2), eqn2, pos2, vel2, PosDesign2, VelDesign2, FALSE, interpolationDegree);
+
+        l(idxPod2+3*idEpochPod2+0, 0) = pod2.at(idEpochPod2).position.x();
+        l(idxPod2+3*idEpochPod2+1, 0) = pod2.at(idEpochPod2).position.y();
+        l(idxPod2+3*idEpochPod2+2, 0) = pod2.at(idEpochPod2).position.z();
+        l.row(idxPod2+3*idEpochPod2, 3) -= pos2;
+
+        if(gravityCount)
+          copy(PosDesign2.column(0, gravityCount),         A.slice(idxPod2+3*idEpochPod2, idxGravity, 3, gravityCount));
+        copy(PosDesign2.column(gravityCount, state2Count), A.slice(idxPod2+3*idEpochPod2, idxState2,  3, state2Count));
+      } // for(idEpochPod2)
+    } // for(idInterval)
+
+    // =============================================
+
+    if(parameterSst && timesSst.size())
+    {
+      parameterSst->compute(sstType, timesSst, sstComputed, sstPos1, sstPos2, sstVel1, sstVel2,
+                            interpolateStarCamera(timesSst, arc1.times, arc1.rotSat, 1),  // linear interpolation
+                            interpolateStarCamera(timesSst, arc2.times, arc2.rotSat, 1),
+                            A.slice(idxSst, idxSstPara,    timesSst.size(), parameterSst->parameterCount()),
+                            B.slice(idxSst, idxSstParaArc, timesSst.size(), parameterSst->parameterCountArc()));
+    }
 
     // =============================================
 
     // decorrelation
     // -------------
-    if(covSst  && countSst)  covSst->decorrelate (arcNo, timesSst, {l.row(idxSst,  countSst),  A.row(idxSst,  countSst),  B.row(idxSst,  countSst)});
-    if(covPod1 && countPod1) covPod1->decorrelate(arcNo, pod1,     {l.row(idxPod1, countPod1), A.row(idxPod1, countPod1), B.row(idxPod1, countPod1)});
-    if(covPod2 && countPod2) covPod2->decorrelate(arcNo, pod2,     {l.row(idxPod2, countPod2), A.row(idxPod2, countPod2), B.row(idxPod2, countPod2)});
+    if(covSst  && timesSst.size())  covSst->decorrelate (arcNo, timesSst, {l.row(idxSst,  timesSst.size()),    A.row(idxSst,  timesSst.size()),    B.row(idxSst,  timesSst.size())});
+    if(covPod1 && timesPod1.size()) covPod1->decorrelate(arcNo, pod1,     {l.row(idxPod1, 3*timesPod1.size()), A.row(idxPod1, 3*timesPod1.size()), B.row(idxPod1, 3*timesPod1.size())});
+    if(covPod2 && timesPod2.size()) covPod2->decorrelate(arcNo, pod2,     {l.row(idxPod2, 3*timesPod2.size()), A.row(idxPod2, 3*timesPod2.size()), B.row(idxPod2, 3*timesPod2.size())});
 
    // =============================================
 
     Arc observationArc;
-    observationArc.l = l;
-    observationArc.A = A;
-    observationArc.B = B;
-    observationArc.timesSst  = timesSst;
-    observationArc.timesPod1 = pod1.times();
-    observationArc.timesPod2 = pod2.times();
-    observationArc.pod1      = pod1;
-    observationArc.pod2      = pod2;
-    observationArc.rotSat1   = eqn1.rotSat;
-    observationArc.rotSat2   = eqn2.rotSat;
-    observationArc.pos1      = eqn1.pos0;
-    observationArc.pos2      = eqn2.pos0;
+    observationArc.l     = l;
+    observationArc.A     = A;
+    observationArc.B     = B;
+    observationArc.times = {timesSst, timesPod1, timesPod2};
+    observationArc.pod1  = pod1;
+    observationArc.pod2  = pod2;
     return observationArc;
   }
   catch(std::exception &e)
@@ -402,4 +395,81 @@ ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UIn
 }
 
 /***********************************************/
+
+void ObservationMiscSstVariational::interpolate(const Time &time, const std::vector<VariationalEquationFromFile::ObservationEquation> &eqn,
+                                                Matrix &pos0, Matrix &vel0, Matrix &PosDesign, Matrix &VelDesign, Bool computeVelocity, UInt degree)
+{
+  try
+  {
+    // time matches? -> no interpolation needed
+    for(auto &e : eqn)
+      if(std::fabs((time-e.times.front()).seconds()) < 1e-9)
+      {
+        pos0      = e.pos0;
+        PosDesign = e.PosDesign;
+        if(computeVelocity) vel0      = e.vel0;
+        if(computeVelocity) VelDesign = e.VelDesign;
+        return;
+      }
+
+    // time does not match, interpolation required
+    // -------------------------------------------
+    // polynomial interpolation matrix
+    Matrix W(degree+1, degree+1);
+    for(UInt i=0; i<W.rows(); i++)
+    {
+      const Double dt = (eqn.at(i).times.front()-time).seconds();
+      W(i, 0) = 1.0;
+      for(UInt n=1; n<W.columns(); n++)
+        W(i, n) = dt * W(i, n-1);
+    }
+    inverse(W); // interpolation weights are the first line of W^-1, because a_0 is the first column
+
+    pos0      = W(0, 0) * eqn.front().pos0;
+    PosDesign = W(0, 0) * eqn.front().PosDesign;
+    if(computeVelocity) vel0      = W(0, 0) * eqn.front().vel0;
+    if(computeVelocity) VelDesign = W(0, 0) * eqn.front().VelDesign;
+    for(UInt k=1; k<eqn.size(); k++)
+    {
+      axpy(W(0, k), eqn.at(k).pos0,      pos0);
+      axpy(W(0, k), eqn.at(k).PosDesign, PosDesign);
+      if(computeVelocity) axpy(W(0, k), eqn.at(k).vel0,      vel0);
+      if(computeVelocity) axpy(W(0, k), eqn.at(k).VelDesign, VelDesign);
+    }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+std::vector<Rotary3d> ObservationMiscSstVariational::interpolateStarCamera(const std::vector<Time> &timesNew, const std::vector<Time> &times, const std::vector<Rotary3d> &rot, UInt degree)
+{
+  try
+  {
+    Matrix A(4, rot.size());
+    for(UInt i=0; i<rot.size(); i++)
+      copy(rot.at(i).quaternion(), A.column(i));
+
+    for(UInt i=1; i<A.columns(); i++)
+      if(inner(A.column(i-1), A.column(i)) < 0)
+        A.column(i) *= -1.;
+
+    Polynomial polynomial(times, degree);
+    A = polynomial.interpolate(timesNew, A.trans()).trans();
+
+    std::vector<Rotary3d> rotNew(A.columns());
+    for(UInt i=0; i<rotNew.size(); i++)
+      rotNew.at(i) = Rotary3d(A.column(i)/norm(A.column(i)));
+
+    return rotNew;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
 /***********************************************/

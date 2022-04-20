@@ -69,6 +69,10 @@ private:
   std::vector<UInt>                    arcsInterval;
   std::vector<Time>                    timesInterval;
 
+  static constexpr UInt TYPESIZE = 3;
+  enum Type : UInt {SST, POD1, POD2};
+  std::array<std::string, TYPESIZE> typeName; // = {"SST", "POD1", "POD2"};
+
   Bool estimateCovarianceFunctionVCE;
   Bool estimateSigmasCovSst;
   Bool estimateArcSigmas;
@@ -83,25 +87,20 @@ private:
   Matrix Wz; // monte carlo vector for redundancy computation
 
   // covariance
-  // ----------
-  Vector  sigmaSst, sigmaPod1, sigmaPod2;
-  Vector  sigmaSstNew, sigmaPod1New, sigmaPod2New;
-  std::vector<ObservationSigmaArc> arcListEpochSigmaSst, arcListEpochSigmaPod1, arcListEpochSigmaPod2;
+  std::array<UInt,   TYPESIZE> covColumns;
+  std::array<Vector, TYPESIZE> sigma, sigmaNew;
+  std::array<Matrix, TYPESIZE> covFunc, Psd, ePe, redundancy, CosTransform;
+  std::array<Double, TYPESIZE> sampling;
+  std::array<std::vector<ObservationSigmaArc>, TYPESIZE> arcListEpochSigma;
+
   std::vector<std::vector<Matrix>> CovSst; // Several independant matrices per arc
   Vector  sigmasCovSst, ePeCovSst, redundancyCovSst;
-  Matrix  covFuncSst, covFuncPod1, covFuncPod2;
-  Matrix  PsdSst, PsdPod1, PsdPod2;
-  Matrix  ePeSst, ePePod1, ePePod2;
-  Matrix  redundancySst, redundancyPod1, redundancyPod2; // one row for each frequency, one column for each component
-  Matrix  CosTransformSst, CosTransformPod1, CosTransformPod2;
-  Double  samplingSst, samplingPod1, samplingPod2;
 
   // residuals
-  std::vector<SatelliteTrackingArc> arcListResidualsSst;
-  std::vector<OrbitArc> arcListResidualsPod1, arcListResidualsPod2;
+  std::array<std::vector<Arc>, TYPESIZE> arcListResiduals;
 
   UInt findInterval(UInt arcNo) const;
-  void decorrelate(UInt arcNo, UInt countSst, UInt countPod1, UInt countPod2, Matrix &WSst, Matrix &WPod1, Matrix &WPod2, const std::list<MatrixSlice> &A);
+  void decorrelate(UInt arcNo, const std::array<UInt, TYPESIZE> &count, std::array<Matrix, TYPESIZE> &W, const std::list<MatrixSlice> &A);
   void buildNormals(UInt arcNo);
   void computeRedundancies(UInt arcNo);
   void computeResiduals(UInt arcNo);
@@ -117,33 +116,26 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
+    typeName   = {"SST", "POD1", "POD2"};
+    covColumns = {1, 3, 3};
     estimateCovarianceFunctionVCE = estimateArcSigmas = estimateEpochSigmas = estimateResiduals = FALSE;
     estimateSigmaShortTimeModel = FALSE;
     estimateSigmasCovSst = FALSE;
 
-    FileName fileNameSolution,         fileNameSigmax,            fileNameParaName;
-    FileName fileNameOutArcSigmaSst,   fileNameOutArcSigmaPod1,   fileNameOutArcSigmaPod2;
-    FileName fileNameOutEpochSigmaSst, fileNameOutEpochSigmaPod1, fileNameOutEpochSigmaPod2;
-    FileName fileNameOutCovSst,        fileNameOutCovPod1,        fileNameOutCovPod2;
-    FileName fileNameOutSigmasCovSst;
-    FileName fileNameResidualsSst,     fileNameResidualsPod1,     fileNameResidualsPod2;
-
-    FileName fileNameArcList;
-    FileName fileNameInArcSigmaSst,   fileNameInArcSigmaPod1,   fileNameInArcSigmaPod2;
-    FileName fileNameInEpochSigmaSst, fileNameInEpochSigmaPod1, fileNameInEpochSigmaPod2;
-    FileName fileNameInCovSst,        fileNameInCovPod1,        fileNameInCovPod2;
-    FileName fileNameInSigmasCovSst;
-    std::vector<FileName> fileNamesCovSst;
-
-    FileName    fileNameInCovEpochPod1,  fileNameInCovEpochPod2;
-    Double      sigma0Sst=1, sigma0Pod1=1, sigma0Pod2=1;
-    UInt        iterCount;
-    std::string iterVariableName;
-    Double      downweightPod;
-    UInt        defaultBlockSize;
-
+    FileName                       fileNameSolution, fileNameSigmax, fileNameParaName;
+    std::array<FileName, TYPESIZE> fileNameOutArcSigma, fileNameOutEpochSigma, fileNameOutCovFunc, fileNameResiduals;
+    std::array<FileName, TYPESIZE> fileNameInArcSigma, fileNameInEpochSigma, fileNameInCovFunc;
+    FileName                       fileNameOutSigmasCovSst, fileNameInSigmasCovSst;
+    FileName                       fileNameInCovEpochPod1,  fileNameInCovEpochPod2;
+    std::vector<FileName>          fileNamesCovSst;
+    std::array<Double, TYPESIZE>   sigma0; sigma0.fill(1.0);
     AutoregressiveModelSequencePtr arSequence;
     ParameterSelectorPtr           parameterShortTime;
+    Double                         downweightPod;
+    FileName                       fileNameArcList;
+    UInt                           iterCount;
+    std::string                    iterVariableName;
+    UInt                           defaultBlockSize;
 
     readConfig(config, "outputfileSolution",      fileNameSolution, Config::OPTIONAL, "", "estimated parameter vector (static part only)");
     readConfig(config, "outputfileSigmax",        fileNameSigmax,   Config::OPTIONAL, "", "standard deviations of the parameters (sqrt of the diagonal of the inverse normal equation)");
@@ -151,25 +143,25 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
     if(readConfigSequence(config, "estimateArcSigmas", Config::OPTIONAL, "", ""))
     {
       estimateArcSigmas = TRUE;
-      readConfig(config, "outputfileSigmasPerArcSst",  fileNameOutArcSigmaSst,  Config::OPTIONAL, "", "accuracies of each arc (SST)");
-      readConfig(config, "outputfileSigmasPerArcPod1", fileNameOutArcSigmaPod1, Config::OPTIONAL, "", "accuracies of each arc (POD1)");
-      readConfig(config, "outputfileSigmasPerArcPod2", fileNameOutArcSigmaPod2, Config::OPTIONAL, "", "accuracies of each arc (POD2)");
+      readConfig(config, "outputfileSigmasPerArcSst",  fileNameOutArcSigma.at(SST),  Config::OPTIONAL, "", "accuracies of each arc (SST)");
+      readConfig(config, "outputfileSigmasPerArcPod1", fileNameOutArcSigma.at(POD1), Config::OPTIONAL, "", "accuracies of each arc (POD1)");
+      readConfig(config, "outputfileSigmasPerArcPod2", fileNameOutArcSigma.at(POD2), Config::OPTIONAL, "", "accuracies of each arc (POD2)");
       endSequence(config);
     }
     if(readConfigSequence(config, "estimateEpochSigmas", Config::OPTIONAL, "", ""))
     {
       estimateEpochSigmas = TRUE;
-      readConfig(config, "outputfileSigmasPerEpochSst",  fileNameOutEpochSigmaSst,  Config::OPTIONAL, "", "accuracies of each epoch (SST)");
-      readConfig(config, "outputfileSigmasPerEpochPod1", fileNameOutEpochSigmaPod1, Config::OPTIONAL, "", "accuracies of each epoch (POD1)");
-      readConfig(config, "outputfileSigmasPerEpochPod2", fileNameOutEpochSigmaPod2, Config::OPTIONAL, "", "accuracies of each epoch (POD2)");
+      readConfig(config, "outputfileSigmasPerEpochSst",  fileNameOutEpochSigma.at(SST),  Config::OPTIONAL, "", "accuracies of each epoch (SST)");
+      readConfig(config, "outputfileSigmasPerEpochPod1", fileNameOutEpochSigma.at(POD1), Config::OPTIONAL, "", "accuracies of each epoch (POD1)");
+      readConfig(config, "outputfileSigmasPerEpochPod2", fileNameOutEpochSigma.at(POD2), Config::OPTIONAL, "", "accuracies of each epoch (POD2)");
       endSequence(config);
     }
     if(readConfigSequence(config, "estimateCovarianceFunctions", Config::OPTIONAL, "", ""))
     {
       estimateCovarianceFunctionVCE = TRUE;
-      readConfig(config, "outputfileCovarianceFunctionSst",  fileNameOutCovSst,  Config::OPTIONAL, "", "covariance function");
-      readConfig(config, "outputfileCovarianceFunctionPod1", fileNameOutCovPod1, Config::OPTIONAL, "", "covariance functions for along, cross, radial direction");
-      readConfig(config, "outputfileCovarianceFunctionPod2", fileNameOutCovPod2, Config::OPTIONAL, "", "covariance functions for along, cross, radial direction");
+      readConfig(config, "outputfileCovarianceFunctionSst",  fileNameOutCovFunc.at(SST),  Config::OPTIONAL, "", "covariance function");
+      readConfig(config, "outputfileCovarianceFunctionPod1", fileNameOutCovFunc.at(POD1), Config::OPTIONAL, "", "covariance functions for along, cross, radial direction");
+      readConfig(config, "outputfileCovarianceFunctionPod2", fileNameOutCovFunc.at(POD2), Config::OPTIONAL, "", "covariance functions for along, cross, radial direction");
       endSequence(config);
     }
     if(readConfigSequence(config, "estimateSstArcCovarianceSigmas", Config::OPTIONAL, "", ""))
@@ -181,41 +173,41 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
     if(readConfigSequence(config, "computeResiduals", Config::OPTIONAL, "", ""))
     {
       estimateResiduals = TRUE;
-      readConfig(config, "outputfileSstResiduals",  fileNameResidualsSst,  Config::OPTIONAL, "", "");
-      readConfig(config, "outputfilePod1Residuals", fileNameResidualsPod1, Config::OPTIONAL, "", "");
-      readConfig(config, "outputfilePod2Residuals", fileNameResidualsPod2, Config::OPTIONAL, "", "");
+      readConfig(config, "outputfileSstResiduals",  fileNameResiduals.at(SST),  Config::OPTIONAL, "", "");
+      readConfig(config, "outputfilePod1Residuals", fileNameResiduals.at(POD1), Config::OPTIONAL, "", "");
+      readConfig(config, "outputfilePod2Residuals", fileNameResiduals.at(POD2), Config::OPTIONAL, "", "");
       endSequence(config);
     }
     readConfig(config, "observation", observationMisc, Config::MUSTSET,  "", "");
     if(readConfigSequence(config, "covarianceSst", Config::MUSTSET, "", ""))
     {
-      readConfig(config, "sigma",                              sigma0Sst,               Config::DEFAULT,  "1", "apriori factor of covariance function");
-      readConfig(config, "inputfileSigmasPerArc",              fileNameInArcSigmaSst,   Config::OPTIONAL, "",  "apriori different accuaries for each arc (multiplicated with sigma)");
-      readConfig(config, "inputfileSigmasPerEpoch",            fileNameInEpochSigmaSst, Config::OPTIONAL, "",  "apriori different accuaries for each epoch");
-      readConfig(config, "inputfileCovarianceFunction",        fileNameInCovSst,        Config::OPTIONAL, "",  "approximate covariances in time");
-      readConfig(config, "inputfileCovarianceMatrixArc",       fileNamesCovSst,         Config::OPTIONAL, "",  "Must be given per sst arc with correct dimensions.");
-      readConfig(config, "inputfileSigmasCovarianceMatrixArc", fileNameInSigmasCovSst,  Config::OPTIONAL, "",  "Vector with one sigma for each <inputfileCovarianceMatrixArc>");
-      readConfig(config, "sampling",                           samplingSst,             Config::DEFAULT,  "5", "[seconds] sampling of the covariance function");
+      readConfig(config, "sigma",                              sigma0.at(SST),               Config::DEFAULT,  "1", "apriori factor of covariance function");
+      readConfig(config, "inputfileSigmasPerArc",              fileNameInArcSigma.at(SST),   Config::OPTIONAL, "",  "apriori different accuaries for each arc (multiplicated with sigma)");
+      readConfig(config, "inputfileSigmasPerEpoch",            fileNameInEpochSigma.at(SST), Config::OPTIONAL, "",  "apriori different accuaries for each epoch");
+      readConfig(config, "inputfileCovarianceFunction",        fileNameInCovFunc.at(SST),    Config::OPTIONAL, "",  "approximate covariances in time");
+      readConfig(config, "inputfileCovarianceMatrixArc",       fileNamesCovSst,              Config::OPTIONAL, "",  "Must be given per sst arc with correct dimensions.");
+      readConfig(config, "inputfileSigmasCovarianceMatrixArc", fileNameInSigmasCovSst,       Config::OPTIONAL, "",  "Vector with one sigma for each <inputfileCovarianceMatrixArc>");
+      readConfig(config, "sampling",                           sampling.at(SST),             Config::DEFAULT,  "5", "[seconds] sampling of the covariance function");
       endSequence(config);
     }
     if(readConfigSequence(config, "covariancePod1", Config::MUSTSET, "", ""))
     {
-      readConfig(config, "sigma",                        sigma0Pod1,               Config::DEFAULT,  "1",  "apriori factor of covariance function");
-      readConfig(config, "inputfileSigmasPerArc",        fileNameInArcSigmaPod1,   Config::OPTIONAL, "",   "apriori different accuaries for each arc (multiplicated with sigma)");
-      readConfig(config, "inputfileSigmasPerEpoch",      fileNameInEpochSigmaPod1, Config::OPTIONAL, "",   "apriori different accuaries for each epoch");
-      readConfig(config, "inputfileCovarianceFunction",  fileNameInCovPod1,        Config::OPTIONAL, "",   "approximate covariances in time");
-      readConfig(config, "inputfileCovariancePodEpoch",  fileNameInCovEpochPod1,   Config::OPTIONAL, "",   "3x3 epoch covariances");
-      readConfig(config, "sampling",                     samplingPod1,             Config::DEFAULT,  "30", "[seconds] sampling of the covariance function");
+      readConfig(config, "sigma",                        sigma0.at(POD1),               Config::DEFAULT,  "1",  "apriori factor of covariance function");
+      readConfig(config, "inputfileSigmasPerArc",        fileNameInArcSigma.at(POD1),   Config::OPTIONAL, "",   "apriori different accuaries for each arc (multiplicated with sigma)");
+      readConfig(config, "inputfileSigmasPerEpoch",      fileNameInEpochSigma.at(POD1), Config::OPTIONAL, "",   "apriori different accuaries for each epoch");
+      readConfig(config, "inputfileCovarianceFunction",  fileNameInCovFunc.at(POD1),    Config::OPTIONAL, "",   "approximate covariances in time");
+      readConfig(config, "inputfileCovariancePodEpoch",  fileNameInCovEpochPod1,        Config::OPTIONAL, "",   "3x3 epoch covariances");
+      readConfig(config, "sampling",                     sampling.at(POD1),             Config::DEFAULT,  "30", "[seconds] sampling of the covariance function");
       endSequence(config);
     }
     if(readConfigSequence(config, "covariancePod2", Config::MUSTSET, "", ""))
     {
-      readConfig(config, "sigma",                        sigma0Pod2,               Config::DEFAULT,  "1",  "apriori factor of covariance function");
-      readConfig(config, "inputfileSigmasPerArc",        fileNameInArcSigmaPod2,   Config::OPTIONAL, "",   "apriori different accuaries for each arc (multiplicated with sigma)");
-      readConfig(config, "inputfileSigmasPerEpoch",      fileNameInEpochSigmaPod2, Config::OPTIONAL, "",   "apriori different accuaries for each epoch");
-      readConfig(config, "inputfileCovarianceFunction",  fileNameInCovPod2,        Config::OPTIONAL, "",   "approximate covariances in time");
-      readConfig(config, "inputfileCovariancePodEpoch",  fileNameInCovEpochPod2,   Config::OPTIONAL, "",   "3x3 epoch covariances");
-      readConfig(config, "sampling",                     samplingPod2,             Config::DEFAULT,  "30", "[seconds] sampling of the covariance function");
+      readConfig(config, "sigma",                        sigma0.at(POD2),               Config::DEFAULT,  "1",  "apriori factor of covariance function");
+      readConfig(config, "inputfileSigmasPerArc",        fileNameInArcSigma.at(POD2),   Config::OPTIONAL, "",   "apriori different accuaries for each arc (multiplicated with sigma)");
+      readConfig(config, "inputfileSigmasPerEpoch",      fileNameInEpochSigma.at(POD2), Config::OPTIONAL, "",   "apriori different accuaries for each epoch");
+      readConfig(config, "inputfileCovarianceFunction",  fileNameInCovFunc.at(POD2),    Config::OPTIONAL, "",   "approximate covariances in time");
+      readConfig(config, "inputfileCovariancePodEpoch",  fileNameInCovEpochPod2,        Config::OPTIONAL, "",   "3x3 epoch covariances");
+      readConfig(config, "sampling",                     sampling.at(POD2),             Config::DEFAULT,  "30", "[seconds] sampling of the covariance function");
       endSequence(config);
     }
     if(readConfigSequence(config, "estimateShortTimeVariations", Config::OPTIONAL, "", "co-estimate short time gravity field variations"))
@@ -249,15 +241,14 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
 
     // init arc sigmas
     // ---------------
-    sigmaSst = sigmaPod1 = sigmaPod2 = Vector(arcCount);
-    for(UInt arcNo=0; arcNo<arcCount; arcNo++)
-      sigmaSst(arcNo) = sigmaPod1(arcNo) = sigmaPod2(arcNo) = 1.0;
-    if(!fileNameInArcSigmaSst.empty())  readFileMatrix(fileNameInArcSigmaSst,  sigmaSst);
-    if(!fileNameInArcSigmaPod1.empty()) readFileMatrix(fileNameInArcSigmaPod1, sigmaPod1);
-    if(!fileNameInArcSigmaPod1.empty()) readFileMatrix(fileNameInArcSigmaPod2, sigmaPod2);
-    if(sigmaSst.rows()  != arcCount) throw(Exception("sigmasPerArc (SST) contains wrong number of arcs"));
-    if(sigmaPod1.rows() != arcCount) throw(Exception("sigmasPerArc (POD1) contains wrong number of arcs"));
-    if(sigmaPod2.rows() != arcCount) throw(Exception("sigmasPerArc (POD2) contains wrong number of arcs"));
+    for(UInt idType : {SST, POD1, POD2})
+    {
+      sigma.at(idType) = Vector(arcCount, 1.0);
+      if(!fileNameInArcSigma.at(idType).empty())
+        readFileMatrix(fileNameInArcSigma.at(idType), sigma.at(idType));
+      if(sigma.at(idType).rows()  != arcCount)
+        throw(Exception("sigmasPerArc "+typeName.at(idType)+" contains wrong number of arcs"));
+    }
 
     fileCovEpochPod1.open(fileNameInCovEpochPod1);
     fileCovEpochPod2.open(fileNameInCovEpochPod2);
@@ -336,87 +327,43 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
 
     // =============================================
 
-    // Determine max. length of ovariance functions
-    // --------------------------------------------
-    UInt covLengthSst  = 0;
-    UInt covLengthPod1 = 0;
-    UInt covLengthPod2 = 0;
-    for(UInt arcNo=0; arcNo<arcCount; arcNo++)
+    std::array<UInt, TYPESIZE> covLength; covLength.fill(0);
+    for(UInt idType : {SST, POD1, POD2})
     {
-      covLengthSst  = std::max(covLengthSst,  observationArc.at(arcNo).timesSst.size());
-      covLengthPod1 = std::max(covLengthPod1, observationArc.at(arcNo).timesPod1.size() ? static_cast<UInt>(std::round((observationArc.at(arcNo).timesPod1.back() - observationArc.at(arcNo).timesPod1.front()).seconds()/samplingPod1) + 1) : 0);
-      covLengthPod2 = std::max(covLengthPod2, observationArc.at(arcNo).timesPod2.size() ? static_cast<UInt>(std::round((observationArc.at(arcNo).timesPod2.back() - observationArc.at(arcNo).timesPod2.front()).seconds()/samplingPod2) + 1) : 0);
-    }
-    Parallel::reduceMax(covLengthSst,  0, comm); Parallel::broadCast(covLengthSst,  0, comm);
-    Parallel::reduceMax(covLengthPod1, 0, comm); Parallel::broadCast(covLengthPod1, 0, comm);
-    Parallel::reduceMax(covLengthPod2, 0, comm); Parallel::broadCast(covLengthPod2, 0, comm);
-
-    // ===================================================
-
-    // transformation PSD <-> covFunc
-    // ------------------------------
-    CosTransformSst  = Vce::cosTransform(covLengthSst);
-    CosTransformPod1 = Vce::cosTransform(covLengthPod1);
-    CosTransformPod2 = Vce::cosTransform(covLengthPod2);
-
-    // init covariance function
-    // ------------------------
-    covFuncSst  = Vce::readCovarianceFunction(fileNameInCovSst,  covLengthSst,  1, samplingSst);
-    covFuncPod1 = Vce::readCovarianceFunction(fileNameInCovPod1, covLengthPod1, 3, samplingPod1);
-    covFuncPod2 = Vce::readCovarianceFunction(fileNameInCovPod2, covLengthPod2, 3, samplingPod2);
-    covFuncSst.column(1,1)  *= std::pow(sigma0Sst, 2);
-    covFuncPod1.column(1,3) *= std::pow(sigma0Pod1,2);
-    covFuncPod2.column(1,3) *= std::pow(sigma0Pod2,2);
-    PsdSst  = CosTransformSst  * covFuncSst.column(1,1);
-    PsdPod1 = CosTransformPod1 * covFuncPod1.column(1,3);
-    PsdPod2 = CosTransformPod2 * covFuncPod2.column(1,3);
-
-    // =============================================
-
-    // init epoch sigmas
-    // -----------------
-    arcListEpochSigmaSst.resize(arcCount);
-    arcListEpochSigmaPod1.resize(arcCount);
-    arcListEpochSigmaPod2.resize(arcCount);
-
-    if(estimateEpochSigmas)
-    {
-      InstrumentFile fileSst (fileNameInEpochSigmaSst);
-      InstrumentFile filePod1(fileNameInEpochSigmaPod1);
-      InstrumentFile filePod2(fileNameInEpochSigmaPod2);
-
+      // Determine max. length of ovariance functions
       for(UInt arcNo=0; arcNo<arcCount; arcNo++)
-        if(Parallel::myRank(comm) == processNo.at(arcNo))
-        {
-          arcListEpochSigmaSst.at(arcNo)  = fileSst.readArc(arcNo);
-          arcListEpochSigmaPod1.at(arcNo) = filePod1.readArc(arcNo);
-          arcListEpochSigmaPod2.at(arcNo) = filePod2.readArc(arcNo);
+        if(observationArc.at(arcNo).times.at(idType).size())
+          covLength.at(idType) = std::max(covLength.at(idType), static_cast<UInt>(std::round((observationArc.at(arcNo).times.at(idType).back()-observationArc.at(arcNo).times.at(idType).front()).seconds()/sampling.at(idType))+1));
+      Parallel::reduceMax(covLength.at(idType), 0, comm);
+      Parallel::broadCast(covLength.at(idType), 0, comm);
 
-          if(arcListEpochSigmaSst.at(arcNo).size()==0)
-            for(UInt i=0; i<observationArc.at(arcNo).timesSst.size(); i++)
-            {
-              ObservationSigmaEpoch epoch;
-              epoch.time = observationArc.at(arcNo).timesSst.at(i);
-              arcListEpochSigmaSst.at(arcNo).push_back(epoch);
-            }
+      // transformation PSD <-> covFunc
+      CosTransform.at(idType) = Vce::cosTransform(covLength.at(idType));
 
-          if(arcListEpochSigmaPod1.at(arcNo).size()==0)
-            for(UInt i=0; i<observationArc.at(arcNo).timesPod1.size(); i++)
-            {
-              ObservationSigmaEpoch epoch;
-              epoch.time = observationArc.at(arcNo).timesPod1.at(i);
-              arcListEpochSigmaPod1.at(arcNo).push_back(epoch);
-            }
+      // init covariance function
+      covFunc.at(idType)  = Vce::readCovarianceFunction(fileNameInCovFunc.at(idType),  covLength.at(idType),  covColumns.at(idType), sampling.at(idType));
+      covFunc.at(idType).column(1, covColumns.at(idType))  *= std::pow(sigma0.at(idType), 2);
+      Psd.at(idType) = CosTransform.at(idType) * covFunc.at(idType).column(1, covColumns.at(idType));
 
-          if(arcListEpochSigmaPod2.at(arcNo).size()==0)
-            for(UInt i=0; i<observationArc.at(arcNo).timesPod2.size(); i++)
-            {
-              ObservationSigmaEpoch epoch;
-              epoch.time = observationArc.at(arcNo).timesPod2.at(i);
-              arcListEpochSigmaPod2.at(arcNo).push_back(epoch);
-            }
-        }
-    } // if(estimateEpochSigmas)
+      // init epoch sigmas
+      arcListEpochSigma.at(idType).resize(arcCount);
+      if(estimateEpochSigmas)
+      {
+        InstrumentFile file(fileNameInEpochSigma.at(idType));
+        for(UInt arcNo=0; arcNo<arcCount; arcNo++)
+          if(Parallel::myRank(comm) == processNo.at(arcNo))
+          {
+            arcListEpochSigma.at(idType).at(arcNo) = file.readArc(arcNo);
+            if(!arcListEpochSigma.at(idType).at(arcNo).size())
+              for(UInt i=0; i<observationArc.at(arcNo).times.at(idType).size(); i++)
+              {
+                ObservationSigmaEpoch epoch;
+                epoch.time = observationArc.at(arcNo).times.at(idType).at(i);
+                arcListEpochSigma.at(idType).at(arcNo).push_back(epoch);
+              }
+          }
+      } // if(estimateEpochSigmas)
+    } // for(idType)
 
     // =============================================
 
@@ -476,176 +423,116 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
           logStatus<<"compute standard deviation of short time gravity model"<<Log::endl;
           Double s2 = normals.estimateShortTimeNormalsVariance(sigma2ShortTimeModel, normalsShortTime, x, Wz);
           logInfo<<"  sigma: "<<std::sqrt(s2)<<Log::endl;
-          if((s2==s2) && (s2>0))
+          if(!std::isnan(s2) && (s2 > 0))
             sigma2ShortTimeModel = s2;
         }
       } // if(countAParameter)
       Parallel::barrier(comm);
 
-      // =============================================
-
+      // compute residuals
+      // --------------------
       if(estimateResiduals || estimateEpochSigmas)
       {
         logStatus<<"compute residuals"<<Log::endl;
-        arcListResidualsSst.clear();  arcListResidualsSst.resize(arcCount);
-        arcListResidualsPod1.clear(); arcListResidualsPod1.resize(arcCount);
-        arcListResidualsPod2.clear(); arcListResidualsPod2.resize(arcCount);
-        Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeResiduals(arcNo);}, processNo, comm);
-        Parallel::forEachProcess(arcListResidualsSst,  [this](UInt arcNo) {return arcListResidualsSst.at(arcNo);},  processNo, comm);
-        Parallel::forEachProcess(arcListResidualsPod1, [this](UInt arcNo) {return arcListResidualsPod1.at(arcNo);}, processNo, comm);
-        Parallel::forEachProcess(arcListResidualsPod2, [this](UInt arcNo) {return arcListResidualsPod2.at(arcNo);}, processNo, comm);
-
-        if(Parallel::isMaster(comm) && (!fileNameResidualsSst.empty()))
+        for(UInt idType : {SST, POD1, POD2})
+          arcListResiduals.at(idType).resize(arcCount);
+        Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeResiduals(arcNo);}, processNo, comm, FALSE/*timing*/);
+        for(UInt idType : {SST, POD1, POD2})
         {
-          logStatus<<"write residual (SST) file <"<<fileNameResidualsSst(variableIteration)<<">"<<Log::endl;
-          InstrumentFile::write(fileNameResidualsSst(variableIteration), arcListResidualsSst);
+          Parallel::forEachProcess(arcListResiduals.at(idType), [this, idType](UInt arcNo) {return arcListResiduals.at(idType).at(arcNo);}, processNo, comm, FALSE/*timing*/);
+          if(Parallel::isMaster(comm) && (!fileNameResiduals.at(idType).empty()))
+          {
+            logStatus<<"write residual file <"<<fileNameResiduals.at(idType)(variableIteration)<<">"<<Log::endl;
+            InstrumentFile::write(fileNameResiduals.at(idType)(variableIteration), arcListResiduals.at(idType));
+          }
         }
-
-        if(Parallel::isMaster(comm) && (!fileNameResidualsPod1.empty()))
-        {
-          logStatus<<"write residual (POD1) file <"<<fileNameResidualsPod1(variableIteration)<<">"<<Log::endl;
-          InstrumentFile::write(fileNameResidualsPod1(variableIteration), arcListResidualsPod1);
-        }
-
-        if(Parallel::isMaster(comm) && (!fileNameResidualsPod2.empty()))
-        {
-          logStatus<<"write residual (POD2) file <"<<fileNameResidualsPod2(variableIteration)<<">"<<Log::endl;
-          InstrumentFile::write(fileNameResidualsPod2(variableIteration), arcListResidualsPod2);
-        }
-      } // if(estimateResiduals)
-
-      // =============================================
+      }
 
       // compute redundancies
       // --------------------
       if((estimateArcSigmas || estimateCovarianceFunctionVCE || estimateSigmasCovSst))
       {
         logStatus<<"compute redundancies"<<Log::endl;
-        sigmaSstNew = sigmaPod1New = sigmaPod2New = Vector(arcCount);
-        ePeSst  = redundancySst  = Matrix(covLengthSst,  1);
-        ePePod1 = redundancyPod1 = Matrix(covLengthPod1, 3); // for x,y,z
-        ePePod2 = redundancyPod2 = Matrix(covLengthPod2, 3); // for x,y,z
+        for(UInt idType : {SST, POD1, POD2})
+        {
+          sigmaNew.at(idType) = Vector(arcCount);
+          ePe.at(idType) = redundancy.at(idType) = Matrix(covLength.at(idType), covColumns.at(idType));
+        }
         ePeCovSst = redundancyCovSst = Vector(sigmasCovSst.rows());
         Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeRedundancies(arcNo);}, processNo, comm);
       }
-
-      // =============================================
 
       // sigmas per arc
       // --------------
       if(estimateArcSigmas)
       {
-        Parallel::reduceSum(sigmaSstNew,  0, comm);
-        Parallel::reduceSum(sigmaPod1New, 0, comm);
-        Parallel::reduceSum(sigmaPod2New, 0, comm);
-        if(Parallel::isMaster(comm))
+        for(UInt idType : {SST, POD1, POD2})
         {
-          sigmaSst  = sigmaSstNew;
-          sigmaPod1 = sigmaPod1New;
-          sigmaPod2 = sigmaPod2New;
-
-          Double sigma0Sst  = Vce::meanSigma(sigmaSst);
-          Double sigma0Pod1 = Vce::meanSigma(sigmaPod1);
-          Double sigma0Pod2 = Vce::meanSigma(sigmaPod2);
-
-          sigmaSst  *= 1./sigma0Sst;
-          sigmaPod1 *= 1./sigma0Pod1;
-          sigmaPod2 *= 1./sigma0Pod2;
-
-          logInfo<<"  SST  sigma per arc (median): "<<sigma0Sst<<Log::endl;
-          logInfo<<"  POD1 sigma per arc (median): "<<sigma0Pod1<<Log::endl;
-          logInfo<<"  POD2 sigma per arc (median): "<<sigma0Pod2<<Log::endl;
-
-          if(!fileNameOutArcSigmaSst.empty())
+          Parallel::reduceSum(sigmaNew.at(idType), 0, comm);
+          if(Parallel::isMaster(comm))
           {
-            logStatus<<"write arc sigma file <"<<fileNameOutArcSigmaSst(variableIteration)<<">"<<Log::endl;
-            writeFileMatrix(fileNameOutArcSigmaSst(variableIteration), sigmaSst);
+            sigma.at(idType) = (1./Vce::meanSigma(sigmaNew.at(idType))) * sigmaNew.at(idType);
+            logInfo<<"  "<<typeName.at(idType)<<" sigma per arc (median): "<<Vce::meanSigma(sigmaNew.at(idType))<<Log::endl;
           }
-          if(!fileNameOutArcSigmaPod1.empty())
-          {
-            logStatus<<"write arc sigma file <"<<fileNameOutArcSigmaPod1(variableIteration)<<">"<<Log::endl;
-            writeFileMatrix(fileNameOutArcSigmaPod1(variableIteration), sigmaPod1);
-          }
-          if(!fileNameOutArcSigmaPod2.empty())
-          {
-            logStatus<<"write arc sigma file <"<<fileNameOutArcSigmaPod2(variableIteration)<<">"<<Log::endl;
-            writeFileMatrix(fileNameOutArcSigmaPod2(variableIteration), sigmaPod2);
-          }
+          Parallel::broadCast(sigma.at(idType), 0, comm);
         }
-        Parallel::broadCast(sigmaSst,  0, comm);
-        Parallel::broadCast(sigmaPod1, 0, comm);
-        Parallel::broadCast(sigmaPod2, 0, comm);
-      } // if(estimateArcSigmas)
 
-      // =============================================
+        for(UInt idType : {SST, POD1, POD2})
+          if(Parallel::isMaster(comm) && !fileNameOutArcSigma.at(idType).empty())
+          {
+            logStatus<<"write arc sigma file <"<<fileNameOutArcSigma.at(idType)(variableIteration)<<">"<<Log::endl;
+            writeFileMatrix(fileNameOutArcSigma.at(idType)(variableIteration), sigma.at(idType));
+          }
+      }
 
+      // sigmas per epoch
+      // --------------
       if(estimateEpochSigmas)
       {
-        logStatus<<"compute epoch sigmas"<<Log::endl;
+        logStatus<<"estimate epoch sigmas"<<Log::endl;
         Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeEpochSigmas(arcNo);}, processNo, comm);
-
-        logStatus<<"collect epoch sigmas"<<Log::endl;
-        Parallel::forEachProcess(arcListEpochSigmaSst,  [this](UInt arcNo) {return arcListEpochSigmaSst.at(arcNo);},  processNo, comm);
-        Parallel::forEachProcess(arcListEpochSigmaPod1, [this](UInt arcNo) {return arcListEpochSigmaPod1.at(arcNo);}, processNo, comm);
-        Parallel::forEachProcess(arcListEpochSigmaPod2, [this](UInt arcNo) {return arcListEpochSigmaPod2.at(arcNo);}, processNo, comm);
-
-        if(Parallel::isMaster(comm) && (!fileNameOutEpochSigmaSst.empty()))
+        for(UInt idType : {SST, POD1, POD2})
         {
-          logStatus<<"write epoch sigma (SST) file <"<<fileNameOutEpochSigmaSst(variableIteration)<<">"<<Log::endl;
-          InstrumentFile::write(fileNameOutEpochSigmaSst(variableIteration), arcListEpochSigmaSst);
+          Parallel::forEachProcess(arcListEpochSigma.at(idType), [this, idType](UInt arcNo) {return arcListEpochSigma.at(idType).at(arcNo);}, processNo, comm, FALSE/*timing*/);
+          if(Parallel::isMaster(comm) && !fileNameOutEpochSigma.at(idType).empty())
+          {
+            logStatus<<"write epoch sigma file <"<<fileNameOutEpochSigma.at(idType)(variableIteration)<<">"<<Log::endl;
+            InstrumentFile::write(fileNameOutEpochSigma.at(idType)(variableIteration), arcListEpochSigma.at(idType));
+          }
         }
-
-        if(Parallel::isMaster(comm) && (!fileNameOutEpochSigmaPod1.empty()))
-        {
-          logStatus<<"write epoch sigma (POD1) file <"<<fileNameOutEpochSigmaPod1(variableIteration)<<">"<<Log::endl;
-          InstrumentFile::write(fileNameOutEpochSigmaPod1(variableIteration), arcListEpochSigmaPod1);
-        }
-
-        if(Parallel::isMaster(comm) && (!fileNameOutEpochSigmaPod2.empty()))
-        {
-          logStatus<<"write epoch sigma (POD2) file <"<<fileNameOutEpochSigmaPod2(variableIteration)<<">"<<Log::endl;
-          InstrumentFile::write(fileNameOutEpochSigmaPod2(variableIteration), arcListEpochSigmaPod2);
-        }
-
         Parallel::barrier(comm);
       } // if(estimateEpochSigmas)
-
-      // =============================================
 
       // estimate new PSD through variance component estimation
       // ------------------------------------------------------
       if(estimateCovarianceFunctionVCE)
       {
-        Parallel::reduceSum(ePeSst,         0, comm);
-        Parallel::reduceSum(ePePod1,        0, comm);
-        Parallel::reduceSum(ePePod2,        0, comm);
-        Parallel::reduceSum(redundancySst,  0, comm);
-        Parallel::reduceSum(redundancyPod1, 0, comm);
-        Parallel::reduceSum(redundancyPod2, 0, comm);
-
-        logStatus<<"compute psd through variance component estimation"<<Log::endl;
-        if(Parallel::isMaster(comm))
+        logStatus<<"estimate PSDs"<<Log::endl;
+        for(UInt idType : {SST, POD1, POD2})
         {
-          Double maxFactorSst = 0;
-          Double maxFactorPod = 0;
-          Vce::estimatePsd(ePeSst,  redundancySst,  PsdSst,  maxFactorSst);
-          Vce::estimatePsd(ePePod1, redundancyPod1, PsdPod1, maxFactorPod);
-          Vce::estimatePsd(ePePod2, redundancyPod2, PsdPod2, maxFactorPod);
+          Parallel::reduceSum(ePe.at(idType), 0, comm);
+          Parallel::reduceSum(redundancy.at(idType), 0, comm);
+          if(Parallel::isMaster(comm))
+          {
+            Double maxFactor = 0;
+            Vce::estimatePsd(ePe.at(idType), redundancy.at(idType), Psd.at(idType), maxFactor);
+            if((idType == POD1) || (idType == POD2))
+              maxFactor /= downweightPod;
+            logInfo<<"  max. PSD adjustment factor "<<typeName.at(idType)<<": "<<maxFactor<<Log::endl;
+          }
+          Parallel::broadCast(Psd.at(idType), 0, comm);
+          // compute new covariance function
+          copy(CosTransform.at(idType) * Psd.at(idType), covFunc.at(idType).column(1, covColumns.at(idType)));
+        }
 
-          maxFactorPod /= downweightPod;
-          logInfo<<"  max. PSD adjustment factor (SST): "<<maxFactorSst<<Log::endl;
-          logInfo<<"  max. PSD adjustment factor (POD): "<<maxFactorPod<<Log::endl;
-        } // if(Parallel::isMaster(comm))
-        Parallel::broadCast(PsdSst,  0, comm);
-        Parallel::broadCast(PsdPod1, 0, comm);
-        Parallel::broadCast(PsdPod2, 0, comm);
-        // compute new covariance function
-        copy(CosTransformSst  * PsdSst,  covFuncSst.column(1,1));
-        copy(CosTransformPod1 * PsdPod1, covFuncPod1.column(1,3));
-        copy(CosTransformPod2 * PsdPod2, covFuncPod2.column(1,3));
-      } // if(estimateCovarianceFunctions)
-
-      // =============================================
+        // Write covariance function to file
+        for(UInt idType : {SST, POD1, POD2})
+          if(Parallel::isMaster(comm) && !fileNameOutCovFunc.at(idType).empty())
+          {
+            logStatus<<"write covariance function file <"<<fileNameOutCovFunc.at(idType)(variableIteration)<<">"<<Log::endl;
+            writeFileMatrix(fileNameOutCovFunc.at(idType)(variableIteration), covFunc.at(idType));
+          }
+      }
 
       // estimate variance factor for arc-wise SST covariance matrices
       // -------------------------------------------------------------
@@ -663,40 +550,21 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
           }
         }
         Parallel::broadCast(sigmasCovSst, 0, comm);
+
+        if(Parallel::isMaster(comm) && !fileNameOutSigmasCovSst.empty())
+        {
+          logStatus<<"write arc-wise SST variance factors <"<<fileNameOutSigmasCovSst(variableIteration)<<">"<<Log::endl;
+          writeFileMatrix(fileNameOutSigmasCovSst(variableIteration), sigmasCovSst);
+        }
       }
 
-      // =============================================
-
-      // Write covariance function to file
-      // ---------------------------------
-      if(Parallel::isMaster(comm) && !fileNameOutCovSst.empty())
+      // downweight POD
+      // --------------
+      for(UInt idType : {POD1, POD2})
       {
-        logStatus<<"write covariance function file <"<<fileNameOutCovSst(variableIteration)<<">"<<Log::endl;
-        writeFileMatrix(fileNameOutCovSst(variableIteration), covFuncSst);
+        Psd.at(idType) *= std::pow(downweightPod, 2);
+        covFunc.at(idType).column(1, covColumns.at(idType)) *= std::pow(downweightPod, 2);
       }
-      if(Parallel::isMaster(comm) && !fileNameOutCovPod1.empty())
-      {
-        logStatus<<"write covariance function file <"<<fileNameOutCovPod1(variableIteration)<<">"<<Log::endl;
-        writeFileMatrix(fileNameOutCovPod1(variableIteration), covFuncPod1);
-      }
-      if(Parallel::isMaster(comm) && !fileNameOutCovPod2.empty())
-      {
-        logStatus<<"write covariance function file <"<<fileNameOutCovPod2(variableIteration)<<">"<<Log::endl;
-        writeFileMatrix(fileNameOutCovPod2(variableIteration), covFuncPod2);
-      }
-
-      // Write variance factor to file
-      // -----------------------------
-      if(Parallel::isMaster(comm) && !fileNameOutSigmasCovSst.empty())
-      {
-        logStatus<<"write arc-wise SST variance factors <"<<fileNameOutSigmasCovSst(variableIteration)<<">"<<Log::endl;
-        writeFileMatrix(fileNameOutSigmasCovSst(variableIteration), sigmasCovSst);
-      }
-
-      PsdPod1                 *= std::pow(downweightPod, 2);
-      PsdPod2                 *= std::pow(downweightPod, 2);
-      covFuncPod1.column(1,3) *= std::pow(downweightPod, 2);
-      covFuncPod2.column(1,3) *= std::pow(downweightPod, 2);
     } // for(iter)
   }
   catch(std::exception &e)
@@ -717,48 +585,41 @@ UInt PreprocessingSst::findInterval(UInt arcNo) const
 
 /***********************************************/
 
-void PreprocessingSst::decorrelate(UInt arcNo, UInt countSst, UInt countPod1, UInt countPod2,
-                                   Matrix &WSst, Matrix &WPod1, Matrix &WPod2, const std::list<MatrixSlice> &A)
+void PreprocessingSst::decorrelate(UInt arcNo, const std::array<UInt, TYPESIZE> &count, std::array<Matrix, TYPESIZE> &W, const std::list<MatrixSlice> &A)
 {
   try
   {
+    // count observations and calculate index
+    // --------------------------------------
+    std::array<UInt, TYPESIZE> idx;
+    std::array<std::list<MatrixSlice>, TYPESIZE> WA; // type specific slices of A
     UInt obsCount = 0;
-    const UInt idxSst  = obsCount; obsCount += countSst;
-    const UInt idxPod1 = obsCount; obsCount += 3*countPod1;
-    const UInt idxPod2 = obsCount; obsCount += 3*countPod2;
-
-    if(countSst)
+    for(UInt idType : {SST, POD1, POD2})
     {
-      std::list<MatrixSlice> WA;
+      idx.at(idType) = obsCount;
+      obsCount      += covColumns.at(idType) * count.at(idType);
       for(const MatrixSlice &a : A)
-        WA.push_back(a.row(idxSst, countSst));
+        WA.at(idType).push_back(a.row(idx.at(idType), covColumns.at(idType) * count.at(idType)));
+    }
 
-      WSst = Matrix();
+    if(count.at(SST))
+    {
+      W.at(SST) = Matrix();
       if(CovSst.at(arcNo).size())
       {
-        WSst = std::pow(sigmasCovSst.at(0),2) * CovSst.at(arcNo).at(0);
+        W.at(SST) = std::pow(sigmasCovSst.at(0),2) * CovSst.at(arcNo).at(0);
         for(UInt i=1; i<CovSst.at(arcNo).size(); i++)
-          axpy(std::pow(sigmasCovSst.at(i),2), CovSst.at(arcNo).at(i), WSst);
+          axpy(std::pow(sigmasCovSst.at(i),2), CovSst.at(arcNo).at(i), W.at(SST));
       }
 
-      CovarianceSst::decorrelate(observationArc.at(arcNo).timesSst, sigmaSst(arcNo), arcListEpochSigmaSst.at(arcNo), covFuncSst, WSst, WA);
+      CovarianceSst::decorrelate(observationArc.at(arcNo).times.at(SST), sigma.at(SST)(arcNo), arcListEpochSigma.at(SST).at(arcNo), covFunc.at(SST), W.at(SST), WA.at(SST));
     }
 
-    if(countPod1)
-    {
-      std::list<MatrixSlice> WA;
-      for(const MatrixSlice &a : A)
-        WA.push_back(a.row(idxPod1, 3*countPod1));
-      WPod1 = CovariancePod::decorrelate(observationArc.at(arcNo).pod1, sigmaPod1(arcNo), arcListEpochSigmaPod1.at(arcNo), fileCovEpochPod1.readArc(arcNo), covFuncPod1, WA);
-    }
+    if(count.at(POD1))
+      W.at(POD1) = CovariancePod::decorrelate(observationArc.at(arcNo).pod1, sigma.at(POD1)(arcNo), arcListEpochSigma.at(POD1).at(arcNo), fileCovEpochPod1.readArc(arcNo), covFunc.at(POD1), WA.at(POD1));
 
-    if(countPod2)
-    {
-      std::list<MatrixSlice> WA;
-      for(const MatrixSlice &a : A)
-        WA.push_back(a.row(idxPod2, 3*countPod2));
-      WPod2 = CovariancePod::decorrelate(observationArc.at(arcNo).pod2, sigmaPod2(arcNo), arcListEpochSigmaPod2.at(arcNo), fileCovEpochPod2.readArc(arcNo), covFuncPod2, WA);
-    }
+    if(count.at(POD2))
+      W.at(POD2) = CovariancePod::decorrelate(observationArc.at(arcNo).pod2, sigma.at(POD2)(arcNo), arcListEpochSigma.at(POD2).at(arcNo), fileCovEpochPod2.readArc(arcNo), covFunc.at(POD2), WA.at(POD2));
   }
   catch(std::exception &e)
   {
@@ -780,10 +641,9 @@ void PreprocessingSst::buildNormals(UInt arcNo)
     Matrix Wl = observationArc.at(arcNo).l;
     Matrix WA = observationArc.at(arcNo).A;
     Matrix WB = observationArc.at(arcNo).B;
-    Matrix WSst, WPod1, WPod2;
-    decorrelate(arcNo, observationArc.at(arcNo).timesSst.size(),
-                observationArc.at(arcNo).timesPod1.size(), observationArc.at(arcNo).timesPod2.size(),
-                WSst, WPod1, WPod2, {Wl, WA, WB});
+    std::array<Matrix, TYPESIZE> W;
+    decorrelate(arcNo, {observationArc.at(arcNo).times.at(SST).size(), observationArc.at(arcNo).times.at(POD1).size(), observationArc.at(arcNo).times.at(POD2).size()},
+                W, {Wl, WA, WB});
 
     normals.accumulate(findInterval(arcNo), Wl, WA, WB);
   }
@@ -804,22 +664,22 @@ void PreprocessingSst::computeRedundancies(UInt arcNo)
 
     // count observations and calculate index
     // --------------------------------------
-    const UInt countSst  = observationArc.at(arcNo).timesSst.size();
-    const UInt countPod1 = observationArc.at(arcNo).timesPod1.size();
-    const UInt countPod2 = observationArc.at(arcNo).timesPod2.size();
-
+    std::array<UInt, TYPESIZE> count, idx;
     UInt obsCount = 0;
-    const UInt idxSst   = obsCount; obsCount += countSst;
-    const UInt idxPod1  = obsCount; obsCount += 3*countPod1;
-    const UInt idxPod2  = obsCount; obsCount += 3*countPod2;
+    for(UInt idType : {SST, POD1, POD2})
+    {
+      count.at(idType) = observationArc.at(arcNo).times.at(idType).size();
+      idx.at(idType)   = obsCount;
+      obsCount        += covColumns.at(idType) * count.at(idType);
+    }
 
     // Decorrelation
     // -------------
     Matrix Wl = observationArc.at(arcNo).l;
     Matrix WA = observationArc.at(arcNo).A;
     Matrix WB = observationArc.at(arcNo).B;
-    Matrix WSst, WPod1, WPod2;
-    decorrelate(arcNo, countSst, countPod1, countPod2, WSst, WPod1, WPod2, {Wl, WA, WB});
+    std::array<Matrix, TYPESIZE> W;
+    decorrelate(arcNo, count, W, {Wl, WA, WB});
 
     // eliminate arc dependent parameters
     // ----------------------------------
@@ -851,41 +711,39 @@ void PreprocessingSst::computeRedundancies(UInt arcNo)
 
     if(!estimateCovarianceFunctionVCE)
     {
-      if(countSst)
-      {
-        const Double redundancy = countSst - quadsum(WAz.row(idxSst, countSst)) - quadsum(WB.row(idxSst, countSst));
-        sigmaSstNew(arcNo) = std::sqrt(quadsum(We.row(idxSst,  countSst))/redundancy) * sigmaSst(arcNo);
-      }
-      if(countPod1)
-      {
-        const Double redundancy = 3*countPod1 - quadsum(WAz.row(idxPod1, 3*countPod1)) - quadsum(WB.row(idxPod1, 3*countPod1));
-        sigmaPod1New(arcNo) = std::sqrt(quadsum(We.row(idxPod1,  3*countPod1))/redundancy) * sigmaPod1(arcNo);
-      }
-      if(countPod2)
-      {
-        const Double redundancy = 3*countPod2 - quadsum(WAz.row(idxPod2, 3*countPod2)) - quadsum(WB.row(idxPod2, 3*countPod2));
-        sigmaPod2New(arcNo) = std::sqrt(quadsum(We.row(idxPod2,  3*countPod2))/redundancy) * sigmaPod2(arcNo);
-      }
+      for(UInt idType : {SST, POD1, POD2})
+        if(count.at(idType))
+        {
+          const Double redundancy = covColumns.at(idType)*count.at(idType)
+                                  - quadsum(WAz.row(idx.at(idType), covColumns.at(idType)*count.at(idType)))
+                                  - quadsum(WB.row (idx.at(idType), covColumns.at(idType)*count.at(idType)));
+          if(redundancy > 0.3)
+            sigmaNew.at(idType)(arcNo) = std::sqrt(quadsum(We.row(idx.at(idType),  covColumns.at(idType)*count.at(idType)))/redundancy) * sigma.at(idType)(arcNo);
+        }
       return;
     } // if(!estimateCovarianceFunctionVCE)
 
     // ============================================
 
-    // variance component estimation (Sst)
-    // -----------------------------------
-    if(countSst)
+    // variance component estimation
+    // -----------------------------
+    Matrix R;
+    Vector WWe;
+    std::array<std::vector<UInt>, TYPESIZE> index;
+    std::array<Double, TYPESIZE> ePeSum, redundancySum; ePeSum.fill(0); redundancySum.fill(0);
+    for(UInt idType : {SST, POD1, POD2})
     {
-      std::vector<UInt> index(countSst);
-      for(UInt i=0; i<index.size(); i++)
-        index.at(i) = i;
-      Double ePeSum=0, redundancySum=0;
-      Matrix R;
-      Vector WWe;
-      Vce::redundancy(WSst, We.row(idxSst,  countSst), WAz.row(idxSst, countSst), WB.row(idxSst, countSst), R, WWe);
+      index.at(idType).resize(observationArc.at(arcNo).times.at(idType).size());
+      for(UInt i=0; i<index.at(idType).size(); i++)
+        index.at(idType).at(i) = static_cast<UInt>(std::round((observationArc.at(arcNo).times.at(idType).at(i)-observationArc.at(arcNo).times.at(idType).front()).seconds()/sampling.at(idType)));
+    }
 
-      // Toeplitz covariance function
-      Vce::psd(R, WWe, index, sigmaSst(arcNo), CosTransformSst, PsdSst, ePeSst, redundancySst, ePeSum, redundancySum);
-      sigmaSstNew(arcNo) = std::sqrt(ePeSum/redundancySum) * sigmaSst(arcNo);  // compute new sigma (for this arc)
+    if(count.at(SST))
+    {
+      Vce::redundancy(W.at(SST), We.row(idx.at(SST), count.at(SST)),
+                      WAz.row(idx.at(SST), count.at(SST)), WB.row(idx.at(SST), count.at(SST)), R, WWe);
+      Vce::psd(R, WWe, index.at(SST), sigma.at(SST)(arcNo), CosTransform.at(SST), Psd.at(SST),
+               ePe.at(SST), redundancy.at(SST), ePeSum.at(SST), redundancySum.at(SST));
 
       // Arc-wise covariance matrices
       if(estimateSigmasCovSst)
@@ -893,35 +751,19 @@ void PreprocessingSst::computeRedundancies(UInt arcNo)
           Vce::matrix(R, WWe, std::pow(sigmasCovSst(i),2) * CovSst.at(arcNo).at(i), ePeCovSst(i), redundancyCovSst(i));
     }
 
-    // variance component estimation (pod1)
-    // ------------------------------------
-    if(countPod1)
-    {
-      std::vector<UInt> index(countPod1);
-      for(UInt i=0; i<index.size(); i++)
-        index.at(i) = static_cast<UInt>(std::round((observationArc.at(arcNo).timesPod1.at(i)-observationArc.at(arcNo).timesPod1.at(0)).seconds()/samplingPod1));
-      Double ePeSum=0, redundancySum=0;
-      Matrix R;
-      Vector WWe;
-      Vce::redundancy(WPod1, We.row(idxPod1, 3*countPod1), WAz.row(idxPod1, 3*countPod1), WB.row(idxPod1, 3*countPod1), R, WWe);
-      Vce::psd(R, WWe, index, sigmaPod1(arcNo), CosTransformPod1, PsdPod1, ePePod1, redundancyPod1, ePeSum, redundancySum);
-      sigmaPod1New(arcNo) = std::sqrt(ePeSum/redundancySum) * sigmaPod1(arcNo);  // compute new sigma (for this arc)
-    }
+    for(UInt idType : {POD1, POD2})
+      if(count.at(idType))
+      {
+        Vce::redundancy(W.at(idType), We.row(idx.at(idType), 3*count.at(idType)),
+                        WAz.row(idx.at(idType), 3*count.at(idType)), WB.row(idx.at(idType), 3*count.at(idType)), R, WWe);
+        Vce::psd(R, WWe, index.at(idType), sigma.at(idType)(arcNo), CosTransform.at(idType), Psd.at(idType),
+                 ePe.at(idType), redundancy.at(idType), ePeSum.at(SST), redundancySum.at(SST));
+      }
 
-    // variance component estimation (pod2)
-    // ------------------------------------
-    if(countPod2)
-    {
-      std::vector<UInt> index(countPod2);
-      for(UInt i=0; i<index.size(); i++)
-        index.at(i) = static_cast<UInt>(std::round((observationArc.at(arcNo).timesPod2.at(i)-observationArc.at(arcNo).timesPod2.at(0)).seconds()/samplingPod2));
-      Double ePeSum=0, redundancySum=0;
-      Matrix R;
-      Vector WWe;
-      Vce::redundancy(WPod2, We.row(idxPod2, 3*countPod2), WAz.row(idxPod2, 3*countPod2), WB.row(idxPod2, 3*countPod2), R, WWe);
-      Vce::psd(R, WWe, index, sigmaPod2(arcNo), CosTransformPod2, PsdPod2, ePePod2, redundancyPod2, ePeSum, redundancySum);
-      sigmaPod2New(arcNo) = std::sqrt(ePeSum/redundancySum) * sigmaPod2(arcNo);  // compute new sigma (for this arc)
-    }
+
+    for(UInt idType : {SST, POD1, POD2})  // compute new sigma (for this arc)
+      if(redundancySum.at(idType) > 0.3)
+        sigmaNew.at(idType)(arcNo) = std::sqrt(ePeSum.at(idType)/redundancySum.at(idType)) * sigma.at(idType)(arcNo);
   }
   catch(std::exception &e)
   {
@@ -940,14 +782,14 @@ void PreprocessingSst::computeResiduals(UInt arcNo)
 
     // count observations and calculate index
     // --------------------------------------
-    const UInt countSst  = observationArc.at(arcNo).timesSst.size();
-    const UInt countPod1 = observationArc.at(arcNo).timesPod1.size();
-    const UInt countPod2 = observationArc.at(arcNo).timesPod2.size();
-
+    std::array<UInt, TYPESIZE> count, idx;
     UInt obsCount = 0;
-    const UInt idxSst   = obsCount; obsCount += countSst;
-    const UInt idxPod1  = obsCount; obsCount += 3*countPod1;
-    const UInt idxPod2  = obsCount; obsCount += 3*countPod2;
+    for(UInt idType : {SST, POD1, POD2})
+    {
+      count.at(idType) = observationArc.at(arcNo).times.at(idType).size();
+      idx.at(idType)   = obsCount;
+      obsCount        += covColumns.at(idType) * count.at(idType);
+    }
 
     // Residuals
     // ---------
@@ -960,8 +802,8 @@ void PreprocessingSst::computeResiduals(UInt arcNo)
     {
       Matrix We = e;
       Matrix WB = observationArc.at(arcNo).B;
-      Matrix WSst, WPod1, WPod2;
-      decorrelate(arcNo, countSst, countPod1, countPod2, WSst, WPod1, WPod2, {We, WB});
+      std::array<Matrix, TYPESIZE> W;
+      decorrelate(arcNo, count, W, {We, WB});
       Vector tau = QR_decomposition(WB);
       QTransMult(WB, tau, We); // transform observations: l:= Q'l
       Matrix y = We.row(0, tau.rows());
@@ -971,33 +813,24 @@ void PreprocessingSst::computeResiduals(UInt arcNo)
 
     // create Sst arc
     // --------------
-    for(UInt i=0; i<countSst; i++)
+    for(UInt i=0; i<count.at(SST); i++)
     {
       SatelliteTrackingEpoch epoch;
-      epoch.time  = observationArc.at(arcNo).timesSst.at(i);
-      epoch.range = epoch.rangeRate = epoch.rangeAcceleration = e(idxSst+i,0);
-      arcListResidualsSst.at(arcNo).push_back(epoch);
+      epoch.time  = observationArc.at(arcNo).times.at(SST).at(i);
+      epoch.range = epoch.rangeRate = epoch.rangeAcceleration = e(idx.at(SST)+i,0);
+      arcListResiduals.at(SST).at(arcNo).push_back(epoch);
     }
 
-    // create Pod1 arc
+    // create Pod arcs
     // ---------------
-    for(UInt i=0; i<countPod1; i++)
-    {
-      OrbitEpoch epoch;
-      epoch.time     = observationArc.at(arcNo).timesPod1.at(i);
-      epoch.position = Vector3d(e(idxPod1+3*i+0,0), e(idxPod1+3*i+1,0), e(idxPod1+3*i+2,0));
-      arcListResidualsPod1.at(arcNo).push_back(epoch);
-    }
-
-    // create Pod2 arc
-    // ---------------
-    for(UInt i=0; i<countPod2; i++)
-    {
-      OrbitEpoch epoch;
-      epoch.time     = observationArc.at(arcNo).timesPod2.at(i);
-      epoch.position = Vector3d(e(idxPod2+3*i+0,0), e(idxPod2+3*i+1,0), e(idxPod2+3*i+2,0));
-      arcListResidualsPod2.at(arcNo).push_back(epoch);
-    }
+    for(UInt idType : {POD1, POD2})
+      for(UInt i=0; i<count.at(idType); i++)
+      {
+        OrbitEpoch epoch;
+        epoch.time     = observationArc.at(arcNo).times.at(idType).at(i);
+        epoch.position = Vector3d(e.row(idx.at(idType)+3*i, 3));
+        arcListResiduals.at(idType).at(arcNo).push_back(epoch);
+      }
   }
   catch(std::exception &e)
   {
@@ -1013,39 +846,30 @@ void PreprocessingSst::computeEpochSigmas(UInt arcNo)
   {
     const Double huber = 2.5;
 
-    const UInt   countSst = observationArc.at(arcNo).timesSst.size();
-    const Double thresholdSst = huber*huber*covFuncSst(0,1)*sigmaSst(arcNo)*sigmaSst(arcNo);
-    for(UInt i=0; i<countSst; i++)
+    if(covFunc.at(SST).size())
     {
-      const Double e2 = std::pow(arcListResidualsSst.at(arcNo).at(i).rangeRate, 2);
-      arcListEpochSigmaSst.at(arcNo).at(i).sigma = 0.;
-      if(e2 > thresholdSst)
-        arcListEpochSigmaSst.at(arcNo).at(i).sigma = std::sqrt(e2-thresholdSst);
+      const Double threshold2 = std::pow(huber*sigma.at(SST)(arcNo), 2) * covFunc.at(SST)(0,1);
+      for(UInt i=0; i<observationArc.at(arcNo).times.at(SST).size(); i++)
+      {
+        const Double e2 = std::pow(dynamic_cast<const SatelliteTrackingEpoch &>(arcListResiduals.at(SST).at(arcNo).at(i)).rangeRate, 2);
+        arcListEpochSigma.at(SST).at(arcNo).at(i).sigma = 0.;
+        if(e2 > threshold2)
+          arcListEpochSigma.at(SST).at(arcNo).at(i).sigma = std::sqrt(e2-threshold2);
+      }
     }
 
-    const UInt   countPod1     = observationArc.at(arcNo).timesPod1.size();
-    const Double thresholdPod1 = huber*huber*(covFuncPod1(0,1)+covFuncPod1(0,2)+covFuncPod1(0,3))*sigmaPod1(arcNo)*sigmaPod1(arcNo);
-    for(UInt i=0; i<countPod1; i++)
-    {
-      const Double e2 = std::pow(arcListResidualsPod1.at(arcNo).at(i).position.x(),2)+
-                        std::pow(arcListResidualsPod1.at(arcNo).at(i).position.y(),2)+
-                        std::pow(arcListResidualsPod1.at(arcNo).at(i).position.z(),2);
-      arcListEpochSigmaPod1.at(arcNo).at(i).sigma = 0.;
-      if(e2 > thresholdPod1)
-        arcListEpochSigmaPod1.at(arcNo).at(i).sigma = std::sqrt((e2-thresholdPod1)/3);
-    }
-
-    const UInt   countPod2     = observationArc.at(arcNo).timesPod2.size();
-    const Double thresholdPod2 = huber*huber*(covFuncPod2(0,1)+covFuncPod2(0,2)+covFuncPod2(0,3))*sigmaPod2(arcNo)*sigmaPod2(arcNo);
-    for(UInt i=0; i<countPod2; i++)
-    {
-      const Double e2 = std::pow(arcListResidualsPod2.at(arcNo).at(i).position.x(),2)+
-                        std::pow(arcListResidualsPod2.at(arcNo).at(i).position.y(),2)+
-                        std::pow(arcListResidualsPod2.at(arcNo).at(i).position.z(),2);
-      arcListEpochSigmaPod2.at(arcNo).at(i).sigma = 0.;
-      if(e2 > thresholdPod2)
-        arcListEpochSigmaPod2.at(arcNo).at(i).sigma = std::sqrt((e2-thresholdPod2)/3);
-    }
+    for(UInt idType : {POD1, POD2})
+      if(covFunc.at(idType).size())
+      {
+        const Double threshold2 = std::pow(huber*sigma.at(idType)(arcNo), 2) * sum(covFunc.at(idType).slice(0, 1, 1, 3));
+        for(UInt i=0; i<observationArc.at(arcNo).times.at(idType).size(); i++)
+        {
+          const Double e2 = dynamic_cast<const OrbitEpoch &>(arcListResiduals.at(idType).at(arcNo).at(i)).position.quadsum();
+          arcListEpochSigma.at(idType).at(arcNo).at(i).sigma = 0.;
+          if(e2 > threshold2)
+            arcListEpochSigma.at(idType).at(arcNo).at(i).sigma = std::sqrt((e2-threshold2)/3);
+        }
+      }
   }
   catch(std::exception &e)
   {
@@ -1053,5 +877,4 @@ void PreprocessingSst::computeEpochSigmas(UInt arcNo)
   }
 }
 
-/***********************************************/
 /***********************************************/

@@ -41,12 +41,9 @@ public:
   class Arc
   {
   public:
-    Matrix l, A, B;
-    std::vector<Time>     timesSst;
-    std::vector<Time>     timesPod1, timesPod2;
-    OrbitArc              pod1, pod2;
-    std::vector<Rotary3d> rotSat1, rotSat2;
-    Matrix                pos1, pos2;
+    Matrix   l, A, B;
+    std::array<std::vector<Time>, 5> times; // SST1, SST2, ACC, POD1, POD2
+    OrbitArc pod1, pod2;
   };
 
   std::vector<InstrumentFilePtr>      sst1File, sst2File;
@@ -66,7 +63,13 @@ public:
   UInt idxGravity,      gravityCount;
   UInt idxState1,       state1Count;
   UInt idxState2,       state2Count;
-  UInt idxSstPara1,     idxSstPara2;
+  UInt idxSst1Para,     idxSst2Para;
+
+  static void interpolate(const Time &time, const std::vector<VariationalEquationFromFile::ObservationEquation> &eqn,
+                          Matrix &pos0, Matrix &vel0, Matrix &PosDesign, Matrix &VelDesign, Bool computeVelocity, UInt degree);
+
+  static std::vector<Rotary3d> interpolateStarCamera(const std::vector<Time> &timesNew,
+                                                     const std::vector<Time> &times, const std::vector<Rotary3d> &rot, UInt degree);
 
 public:
   ObservationMiscDualSstVariational(Config &config);
@@ -80,12 +83,13 @@ public:
   void parameterName(std::vector<ParameterName> &name) const override;
 
   Arc computeArc(UInt arcNo, CovarianceSstPtr covSst1=nullptr, CovarianceSstPtr covSst2=nullptr, CovarianceSstPtr covAcc=nullptr,
-                 CovariancePodPtr covPod1=nullptr, CovariancePodPtr covPod2=nullptr,
-                 std::vector<Rotary3d> rotSat1={}, std::vector<Rotary3d> rotSat2={});
+                 CovariancePodPtr covPod1=nullptr, CovariancePodPtr covPod2=nullptr);
 
   void observation(UInt arcNo, Matrix &l, Matrix &A, Matrix &B) override;
 
-  static Matrix decorrelate(const_MatrixSliceRef covSst1, const_MatrixSliceRef covSst2, MatrixSliceRef covAcc, const std::list<MatrixSlice> &A);
+  static Matrix decorrelate(const std::vector<Time> &timesSst1, const std::vector<Time> &timesSst2, const std::vector<Time> &timesAcc,
+                            const_MatrixSliceRef CovSst1, const_MatrixSliceRef CovSst2, MatrixSliceRef CovAcc, UInt interpolationDegree,
+                            const std::list<MatrixSlice> &A);
 
    /** @brief creates an derived instance of this class. */
   static ObservationMiscDualSstVariationalPtr create(Config &config, const std::string &name);
