@@ -24,6 +24,8 @@ and the other processes are assigned to iterations according to \config{processC
 For example, running a loop containing three iterations on 13 processes with \config{processCountPerIteration}=\verb|4|,
 runs the three iterations in parallel, with each iteration being assigned four processes.
 With \config{parallelLog}=\verb|yes| all processes write output to screen and the log file.
+As the ouput can be quite confusing in this case, running \program{GroupPrograms} with an extra \config{outputfileLog}
+for each iteration (use the loop variables for the name of the log files) might be helpful.
 )";
 
 /***********************************************/

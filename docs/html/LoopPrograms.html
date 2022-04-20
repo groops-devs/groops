@@ -78,6 +78,8 @@ and the other processes are assigned to iterations according to <strong class="g
 For example, running a loop containing three iterations on 13 processes with <strong class="groops-config-element">processCountPerIteration</strong>=<code>4</code>,
 runs the three iterations in parallel, with each iteration being assigned four processes.
 With <strong class="groops-config-element">parallelLog</strong>=<code>yes</code> all processes write output to screen and the log file.
+As the ouput can be quite confusing in this case, running <a class="groops-program" href="GroupPrograms.html">GroupPrograms</a> with an extra <strong class="groops-config-element">outputfileLog</strong>
+for each iteration (use the loop variables for the name of the log files) might be helpful.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

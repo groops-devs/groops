@@ -18855,6 +18855,16 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
+						<xs:element name="outputfileLog" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>additional log file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="silently" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>without showing the output.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="program" type="programType" minOccurs="0" maxOccurs="unbounded"/>
 						<xs:element name="catchErrors" minOccurs="0">
 							<xs:complexType>

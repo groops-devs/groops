@@ -4,6 +4,7 @@
 - New option:       GnssAntennaDefinitionCreate: rename antennas.
 - New option:       gnssReceiverGeneratorStationNetwork: inputfileClock.
 - New option:       gnssReceiverGenerator: print preprocessing infos.
+- New option:       GroupPrograms: silently and additional outputfileLog.
 - Bugfix:           gnssProcessingStep: uninitialized normalEquationInfo.
 - Bugfix:           gnssProcessingStepForEachReceiverSeparately: variableReceiver was not set.
 - Bugfix:           gnssProcessingStepResolveAmbiguities: for writing empty ambiguity file.

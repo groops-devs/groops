@@ -74,10 +74,14 @@
 Runs <strong class="groops-config-element">program</strong>s in a group, which can be used to structure a config file.
 If <strong class="groops-config-element">catchErrors</strong> is enabled and an error occurs, the remaining <strong class="groops-config-element">program</strong>s
 are skipped and execution continues with <strong class="groops-config-element">errorProgram</strong>s, in case any are defined.
-Otherwise an exception is thrown.
+Otherwise an exception is thrown.</p><p>The <strong class="groops-config-element">silently</strong> option disables the screen ouput of the <strong class="groops-config-element">program</strong>s.
+With <strong class="groops-config-element">outputfileLog</strong> a log file is written for this group additional to a global log file.
+This might be helpful within <a class="groops-program" href="LoopPrograms.html">LoopPrograms</a> with parallel iterations.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileLog</div></div></td><td>filename</td><td>additional log file</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">silently</div></div></td><td>boolean</td><td>without showing the output.</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">program</div></div></td><td>programType</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">catchErrors</div></div></td><td>sequence</td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional-unbounded">errorProgram</div></div></td><td>programType</td><td>executed if an error occured</td></tr>

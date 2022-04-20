@@ -6823,12 +6823,18 @@ If \config{catchErrors} is enabled and an error occurs, the remaining \config{pr
 are skipped and execution continues with \config{errorProgram}s, in case any are defined.
 Otherwise an exception is thrown.
 
+The \config{silently} option disables the screen ouput of the \config{program}s.
+With \config{outputfileLog} a log file is written for this group additional to a global log file.
+This might be helpful within \program{LoopPrograms} with parallel iterations.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
 \hline
 Name & Type & Annotation\\
 \hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileLog & \hfuzz=500pt filename & \hfuzz=500pt additional log file\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~silently & \hfuzz=500pt boolean & \hfuzz=500pt without showing the output.\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~program & \hfuzz=500pt programType & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~catchErrors & \hfuzz=500pt sequence & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-unbounded.pdf}~errorProgram & \hfuzz=500pt programType & \hfuzz=500pt executed if an error occured\\
@@ -6869,6 +6875,8 @@ and the other processes are assigned to iterations according to \config{processC
 For example, running a loop containing three iterations on 13 processes with \config{processCountPerIteration}=\verb|4|,
 runs the three iterations in parallel, with each iteration being assigned four processes.
 With \config{parallelLog}=\verb|yes| all processes write output to screen and the log file.
+As the ouput can be quite confusing in this case, running \program{GroupPrograms} with an extra \config{outputfileLog}
+for each iteration (use the loop variables for the name of the log files) might be helpful.
 
 
 \keepXColumns
