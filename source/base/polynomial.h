@@ -65,8 +65,9 @@ public:
   * @param A input data of time series
   * @param rowsPerEpoch e.g. for @a A with positions (x,y,z) per epoch in separated rows.
   * @param derivative compute the kth derivative.
+  * @param adjoint Apply the adjoint (transpose) operator (rows of A relates to timesNew, ouput rows relates to times).
   * @return Interpolated matrix with timesNew.size()*rowsPerEpoch rows. */
-  Matrix interpolate(const std::vector<Time> &timesNew, const_MatrixSliceRef A, UInt rowsPerEpoch, UInt derivative) const;
+  Matrix interpolate(const std::vector<Time> &timesNew, const_MatrixSliceRef A, UInt rowsPerEpoch, UInt derivative, Bool adjoint=FALSE) const;
 
   /** @brief Interpolate a matrix to new epochs.
   * @see interpolate(const std::vector<Time> &, const_MatrixSliceRef, UInt, UInt) */

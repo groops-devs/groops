@@ -61,14 +61,14 @@ void Polynomial::init(const std::vector<Time> &times, UInt degree, Bool throwExc
 
 /***********************************************/
 
-Matrix Polynomial::interpolate(const std::vector<Time> &timesNew, const_MatrixSliceRef A, UInt rowsPerEpoch, UInt derivative) const
+Matrix Polynomial::interpolate(const std::vector<Time> &timesNew, const_MatrixSliceRef A, UInt rowsPerEpoch, UInt derivative, Bool adjoint) const
 {
   try
   {
     if(!derivative && !isLeastSquares && (timesNew == times)) // need interpolation?
       return A;
 
-    Matrix B(rowsPerEpoch*timesNew.size(), A.columns());
+    Matrix B(rowsPerEpoch*(adjoint ? times.size() : timesNew.size()), A.columns());
     UInt count = degree+1;
     auto searchStart = times.begin();
     for(UInt i=0; i<timesNew.size(); i++)
@@ -89,9 +89,9 @@ Matrix Polynomial::interpolate(const std::vector<Time> &timesNew, const_MatrixSl
 
         if((times.at(idx+degree)-times.at(idx)).seconds() > range) // polynomial data points not within range
         {
-          B.row(i*rowsPerEpoch, rowsPerEpoch).fill(NAN_EXPR);
-          if(throwException)
+          if(throwException || adjoint)
             throw(Exception("cannot interpolate at "+timesNew.at(i).dateTimeStr()));
+          B.row(i*rowsPerEpoch, rowsPerEpoch).fill(NAN_EXPR);
           continue;
         }
       }
@@ -102,9 +102,9 @@ Matrix Polynomial::interpolate(const std::vector<Time> &timesNew, const_MatrixSl
         count = static_cast<UInt>(std::distance(searchStart, searchEnd));
         if(count < degree+1) // not enough points
         {
-          B.row(i*rowsPerEpoch, rowsPerEpoch).fill(NAN_EXPR);
-          if(throwException)
+          if(throwException || adjoint)
             throw(Exception("not enough points to fit at "+timesNew.at(i).dateTimeStr()));
+          B.row(i*rowsPerEpoch, rowsPerEpoch).fill(NAN_EXPR);
           continue;
         }
         idx = std::distance(times.begin(), searchStart);
@@ -115,9 +115,9 @@ Matrix Polynomial::interpolate(const std::vector<Time> &timesNew, const_MatrixSl
       if(((times.at(idx) - timesNew.at(i)).seconds()         > extrapolation) || // all points are after newTime and we are too far away
          ((timesNew.at(i) - times.at(idx+count-1)).seconds() > extrapolation))   // all points are before newTime and we are too far away
       {
-        B.row(i*rowsPerEpoch, rowsPerEpoch).fill(NAN_EXPR);
-        if(throwException)
+        if(throwException || adjoint)
           throw(Exception("cannot extrapolate at "+timesNew.at(i).dateTimeStr()));
+        B.row(i*rowsPerEpoch, rowsPerEpoch).fill(NAN_EXPR);
         continue;
       }
 
@@ -168,11 +168,22 @@ Matrix Polynomial::interpolate(const std::vector<Time> &timesNew, const_MatrixSl
 
       // interpolate
       // -----------
-      if(rowsPerEpoch == 1)
-        matMult(1., coeff.trans(), A.row(idx, coeff.rows()), B.row(i, rowsPerEpoch));
+      if(!adjoint)
+      {
+        if(rowsPerEpoch == 1)
+          matMult(1., coeff.trans(), A.row(idx, coeff.rows()), B.row(i, rowsPerEpoch));
+        else
+          for(UInt k=0; k<coeff.rows(); k++)
+            axpy(coeff(k), A.row(rowsPerEpoch*(idx+k), rowsPerEpoch), B.row(rowsPerEpoch*i, rowsPerEpoch));
+      }
       else
-        for(UInt k=0; k<coeff.rows(); k++)
-          axpy(coeff(k), A.row(rowsPerEpoch*(idx+k), rowsPerEpoch), B.row(rowsPerEpoch*i, rowsPerEpoch));
+      {
+        if(rowsPerEpoch == 1)
+          matMult(1., coeff, A.row(i, rowsPerEpoch), B.row(idx, coeff.rows()));
+        else
+          for(UInt k=0; k<coeff.rows(); k++)
+            axpy(coeff(k), A.row(rowsPerEpoch*i, rowsPerEpoch), B.row(rowsPerEpoch*(idx+k), rowsPerEpoch));
+      }
     }
 
     return B;
