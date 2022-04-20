@@ -291,10 +291,10 @@ void GnssProcessingStep::State::buildNormals(Bool constraintsOnly, Bool solveEpo
     UInt blockStart = 0; // first block, which is not regularized and reduced
     UInt blockCount = 0;
     UInt idLoop     = 0;
-    logTimerStart;
+    Log::Timer timer(normalEquationInfo.idEpochs.size());
     for(UInt idEpoch : normalEquationInfo.idEpochs)
     {
-      logTimerLoop(idLoop++, normalEquationInfo.idEpochs.size());
+      timer.loopStep(idLoop++);
 
       gnss->constraintsEpoch(normalEquationInfo, idEpoch, normals, n, lPl(0), obsCount);
 
@@ -371,7 +371,7 @@ void GnssProcessingStep::State::buildNormals(Bool constraintsOnly, Bool solveEpo
       blockCount  = 0;
     } // for(idEpoch)
     Parallel::barrier(normalEquationInfo.comm);
-    logTimerLoopEnd(normalEquationInfo.idEpochs.size());
+    timer.loopEnd();
 
     // other observations and constraints
     // ----------------------------------
@@ -487,10 +487,10 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
       // ---------------
       GnssDesignMatrix A(normalEquationInfo);
       UInt idLoop = 0;
-      logTimerStart;
+      Log::Timer timer(normalEquationInfo.idEpochs.size());;
       for(UInt idEpoch : normalEquationInfo.idEpochs)
       {
-        logTimerLoop(idLoop++, normalEquationInfo.idEpochs.size());
+        timer.loopStep(idLoop++);
 
         // loop over all receivers
         GnssObservationEquation eqn;
@@ -507,7 +507,7 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
               }
       } // for(idEpoch)
       Parallel::barrier(normalEquationInfo.comm);
-      logTimerLoopEnd(normalEquationInfo.idEpochs.size());
+      timer.loopEnd();
 
       // collect
       // -------
@@ -603,10 +603,10 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
     logStatus<<"Compute residuals"<<Log::endl;
     GnssDesignMatrix A(normalEquationInfo);
     UInt idLoop = 0;
-    logTimerStart;
+    Log::Timer timer(normalEquationInfo.idEpochs.size());
     for(UInt idEpoch : normalEquationInfo.idEpochs)
     {
-      logTimerLoop(idLoop++, normalEquationInfo.idEpochs.size());
+      timer.loopStep(idLoop++);
 
       // loop over all receivers
       for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
@@ -677,7 +677,7 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
         } // for(idRecv)
     } // for(idEpoch)
     Parallel::barrier(normalEquationInfo.comm);
-    logTimerLoopEnd(normalEquationInfo.idEpochs.size());
+    timer.loopEnd();
 
     // new weights
     // -----------

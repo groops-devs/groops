@@ -53,6 +53,7 @@ void RunCommand::run(Config &config, Parallel::CommunicatorPtr comm)
     if(isCreateSchema(config)) return;
 
     // lambda function
+    // ---------------
     auto run = [&](UInt i)
     {
       logStatus<<"Run command: \""<<command.at(i)<<"\""<<Log::endl;
@@ -68,9 +69,13 @@ void RunCommand::run(Config &config, Parallel::CommunicatorPtr comm)
         for(const auto &output : outputs)
           logInfo<<output<<Log::endl;
     };
+    // ---------------
 
     if(executeParallel)
-      Parallel::forEach(command.size(), run, comm);
+    {
+      Log::GroupPtr groupPtr = Log::group(TRUE, FALSE); // group is freed in the destructor
+      Parallel::forEach(command.size(), run, comm, FALSE);
+    }
     else if(Parallel::isMaster(comm))
       for(UInt i=0; i<command.size(); i++)
         run(i);

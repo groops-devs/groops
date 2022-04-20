@@ -109,17 +109,14 @@ static void groopsHelp(const std::string &progName, Parallel::CommunicatorPtr co
 int main(int argc, char *argv[])
 {
   Parallel::CommunicatorPtr comm = Parallel::init(argc, argv);
+  // init parallel logging
+  Log::init(Parallel::myRank(comm), Parallel::size(comm), Parallel::addChannel(Log::getReceive(), comm));
+  Log::GroupPtr groupPtr;
 
   try
   {
     Parallel::broadCastExceptions(comm, [&](Parallel::CommunicatorPtr comm)
     {
-      // init logging
-      // ------------
-      Log::setSend(Parallel::addChannel(Log::getReceive(), comm));
-      Log::setRank(Parallel::myRank(comm));
-      Log::enableOutput(Parallel::isMaster(comm));
-
       // handle commandline options
       // --------------------------
       FileName logFileName;
@@ -180,10 +177,13 @@ int main(int argc, char *argv[])
 
       // start logging
       // -------------
-      Log::setSilent(silent);
+      groupPtr = Log::group(Parallel::isMaster(comm), silent);
       if(!System::isDirectory(logFileName))
         Log::setLogFile(logFileName);
-      logStatus<<"=== Starting GROOPS ==="<<Log::endl;
+      if(Parallel::size(comm) > 1)
+        logStatus<<"=== Starting GROOPS with "<<Parallel::size(comm)<<" processes ==="<<Log::endl;
+      else
+        logStatus<<"=== Starting GROOPS ==="<<Log::endl;
 
       // read default settings and constants
       // -----------------------------------
@@ -270,6 +270,7 @@ int main(int argc, char *argv[])
     {
       logError<<"****** Error ******"<<Log::endl;
       logError<<e.what()<<Log::endl;
+      logStatus<<"=== Finished GROOPS with error ==="<<Log::endl;
     }
     return EXIT_FAILURE;
   }

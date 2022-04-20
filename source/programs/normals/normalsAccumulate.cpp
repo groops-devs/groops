@@ -103,12 +103,12 @@ void NormalsAccumulate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     // ==================================
 
     logStatus<<"read and write block normals"<<Log::endl;
-    logTimerStart;
+    Log::Timer timer(infoOut.blockIndex.size()*(infoOut.blockIndex.size()-1)/2);
     UInt idx = 0;
     for(UInt z=0; z<infoOut.blockIndex.size()-1; z++)
       for(UInt s=z; s<infoOut.blockIndex.size()-1; s++)
       {
-        logTimerLoop(idx++, infoOut.blockIndex.size()*(infoOut.blockIndex.size()-1)/2);
+        timer.loopStep(idx++);
 
         if(infoOut.usedBlocks(z,s) == 0)
           continue;
@@ -133,7 +133,7 @@ void NormalsAccumulate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         logStatus<<"write matrix <"<<fileNameOut.appendBaseName(ext)<<">"<<Log::endl;
         writeFileMatrix(fileNameOut.appendBaseName(ext), N);
       }
-    logTimerLoopEnd(infoOut.blockIndex.size()*(infoOut.blockIndex.size()-1)/2);
+    timer.loopEnd();
 
     // ==================================
 

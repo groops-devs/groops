@@ -106,7 +106,6 @@ void GroopsAscii2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     if(earthRotation)
     {
       logStatus<<"rotation from TRF to CRF"<<Log::endl;
-      Log::startTimer();
       Single::forEach(orbit.size(), [&](UInt i)
       {
         const Rotary3d rotation = inverse(earthRotation->rotaryMatrix(orbit.at(i).time));

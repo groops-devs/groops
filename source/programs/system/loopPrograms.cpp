@@ -67,7 +67,6 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     readConfig(config, "program",                  programs,           Config::OPTIONAL, "",  "");
     if(isCreateSchema(config)) return;
 
-    logStatus<<"Run programs"<<Log::endl;
     auto varList = config.getVarList();
 
     // Every process executes every iteration
@@ -75,11 +74,11 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     if((processCount == 0) || (processCount+1 >= Parallel::size(comm)) || (Parallel::size(comm) < 3))
     {
       UInt iter = 0;
-      Log::startTimer();
+      Log::Timer timer(loopPtr->count());
       while(loopPtr->iteration(varList))
       {
         logStatus<<"=== "<<iter+1<<". loop ==="<<Log::endl;
-        Log::loopTimer(iter++, loopPtr->count());
+        timer.loopStep(iter++);
         try
         {
           Parallel::broadCastExceptions(comm, [&](Parallel::CommunicatorPtr comm)
@@ -90,13 +89,13 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
         }
         catch(std::exception &e)
         {
-          if(!continueAfterError)
+          if(!continueAfterError || Parallel::isExternal(e))
             throw;
           if(Parallel::isMaster(comm))
             logError<<e.what()<<"  continue..."<<Log::endl;
         }
       }
-      Log::loopTimerEnd(loopPtr->count());
+      timer.loopEnd();
       return;
     }
 
@@ -104,18 +103,19 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     // ----------------------
     processCount = std::min(processCount, Parallel::size(comm)-1);
     UInt rank = Parallel::myRank(comm);
-    auto commLocal = Parallel::splitCommunicator(rank ? (rank-1)/processCount : NULLINDEX, rank, comm); // processes of an iteration
+    auto commLocal = Parallel::splitCommunicator((rank > 0) ? (rank-1)/processCount : NULLINDEX, rank, comm); // processes of an iteration
     auto commLoop  = Parallel::splitCommunicator(((rank == 0) || ((rank-1)%processCount == 0)) ?  0 : NULLINDEX, rank, comm); // 'main' processes of all iterations
+    Log::GroupPtr groupPtr = Log::group(((rank == 0) || ((rank-1)%processCount == 0)), (rank>0) && !parallelLog); // group is freed in the destructor
 
     if(commLoop && Parallel::isMaster(commLoop))
     {
       // parallel version: main node
       // ---------------------------
       UInt iter = 0;
-      Log::startTimer();
+      Log::Timer timer(loopPtr->count(), Parallel::size(commLoop)-1, TRUE);
       while(loopPtr->iteration(varList))
       {
-        Log::loopTimer(iter, loopPtr->count(), Parallel::size(commLoop)-1);
+        timer.loopStep(iter);
         UInt process;
         Parallel::receive(process, NULLINDEX, commLoop); // which process needs work?
         Parallel::send(iter++, process, commLoop);       // send new loop number to be computed at process
@@ -128,7 +128,7 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
         Parallel::send(NULLINDEX, process, commLoop);    // end signal
       }
       Parallel::barrier(comm);
-      Log::loopTimerEnd(loopPtr->count());
+      timer.loopEnd();
     }
     else
     {
@@ -149,7 +149,6 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
         for(; k<=i; k++) // step to current loop number
           loopPtr->iteration(varList);
 
-        Bool outputOld = Log::enableOutput(parallelLog && Parallel::isMaster(commLocal));
         try
         {
           Parallel::broadCastExceptions(commLocal, [&](Parallel::CommunicatorPtr commLocal)
@@ -160,15 +159,11 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
         }
         catch(std::exception &e)
         {
-          if(!continueAfterError)
-          {
-            Log::enableOutput(outputOld);
+          if(!continueAfterError || Parallel::isExternal(e))
             throw;
-          }
           if(Parallel::isMaster(commLocal))
             logError<<e.what()<<"  continue..."<<Log::endl;
         }
-        Log::enableOutput(outputOld);
       }
       Parallel::barrier(comm);
     } // clients

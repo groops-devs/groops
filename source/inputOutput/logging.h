@@ -22,31 +22,33 @@
 #define __GROOPS_LOGGING__
 
 #include "base/importStd.h"
+#include "base/time.h"
 
 /** @addtogroup inputOutputGroup */
 /// @{
 
 /***** DEFINES *********************************/
 
-#define logStatus               Log::status()
-#define logInfo                 Log::info()
-#define logWarning              Log::warning()
-#define logWarningOnce          Log::warningOnce()
-#define logError                Log::error()
-#define logTimerStart           Log::startTimer();
-#define logTimerLoop(idx,count) Log::loopTimer(idx, count);
-#define logTimerLoopEnd(count)  Log::loopTimerEnd(count);
+#define logStatus      Log::status()
+#define logInfo        Log::info()
+#define logWarning     Log::warning()
+#define logWarningOnce Log::warningOnce()
+#define logError       Log::error()
 
 /***********************************************/
 
 namespace Log
 {
-  std::function<void(UInt type, const std::string &str)> getReceive();
-  void setSend(std::function<void(UInt type, const std::string &str)> send);
-  void setRank(UInt rank);
-  Bool enableOutput(Bool enable);
-  void setSilent(Bool silent);
-  void setLogFile(const std::string &name);
+  class Group;
+  typedef std::shared_ptr<Group> GroupPtr;
+
+  std::function<void(UInt rank, UInt type, const std::string &str)> getReceive();
+  void init(UInt rank, UInt size, const std::function<void(UInt type, const std::string &str)> &send);
+
+  GroupPtr group(Bool isMain, Bool silently);  // sub groups of parallel processes
+  void setLogFile(const std::string &name);    // set log file for current group (must be called by every process in group)
+  void logFilesOnly(Bool enable);              // write only to log file(s) (must be called by every process in group)
+  void currentLogFileOnly(Bool enable);        // write only to the current log file in this group (must be called by every process in group)
 
   std::ostream &status();
   std::ostream &info();
@@ -55,9 +57,18 @@ namespace Log
   std::ostream &error();
   std::ostream &endl(std::ostream &stream);
 
-  void startTimer();
-  void loopTimer(UInt idx, UInt count, UInt processCount=1);
-  void loopTimerEnd(UInt count);
+  class Timer
+  {
+    Time start;
+    UInt count, processCount;
+    Bool use;
+
+  public:
+    Timer();
+    Timer(UInt count, UInt processCount=1, Bool use=TRUE);
+    void loopStep(UInt idx);
+    void loopEnd() const;
+  };
 }
 
 /***********************************************/

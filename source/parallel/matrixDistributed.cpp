@@ -420,12 +420,12 @@ void MatrixDistributed::reduceSum(Bool timing)
     if(Parallel::size(comm)<=1)
       return;
 
-    if(timing) logTimerStart;
+    Log::Timer timer(_N.size(), 1, timing);
     UInt idxBlock = 0;
     for(UInt i=0; i<blockCount(); i++)
       loopBlockRow(i, {i, blockCount()}, [&](UInt k, UInt ik)
       {
-        if(timing) logTimerLoop(idxBlock++, _N.size());
+        timer.loopStep(idxBlock++);
         if(isMyRank(ik) && (_N[ik].size() == 0))
           _N[ik] = ((i==k) ? Matrix(blockSize(i), Matrix::SYMMETRIC) : Matrix(blockSize(i), blockSize(k)));
         UInt color = _N[ik].size()  ? idxBlock : NULLINDEX;
@@ -437,7 +437,7 @@ void MatrixDistributed::reduceSum(Bool timing)
           _N[ik] = Matrix();
       });
     Parallel::barrier(comm);
-    if(timing) logTimerLoopEnd(_N.size());
+    timer.loopEnd();
   }
   catch(std::exception &e)
   {
@@ -452,11 +452,11 @@ void MatrixDistributed::cholesky(Bool timing, UInt startBlock, UInt countBlock, 
 {
   try
   {
-    if(timing) logTimerStart;
+    Log::Timer timer(blockCount()-startBlock, 1, timing);
     for(UInt i=startBlock; i<blockCount(); i++)
       if(blockSize(i))
       {
-        if(timing) logTimerLoop(i-startBlock, blockCount()-startBlock);
+        timer.loopStep(i-startBlock);
         UInt ii = index(i,i);
         if((ii == NULLINDEX) && (i < startBlock+countBlock))
           throw(Exception("Diagonal block ("+i%"%i, "s+i%"%i) is not set."s));
@@ -532,7 +532,7 @@ void MatrixDistributed::cholesky(Bool timing, UInt startBlock, UInt countBlock, 
         }
       }
     Parallel::barrier(comm);
-    if(timing) logTimerLoopEnd(blockCount()-startBlock);
+    timer.loopEnd();
   }
   catch(std::exception &e)
   {
@@ -762,11 +762,11 @@ void MatrixDistributed::choleskyInverse(Bool timing, UInt startBlock, UInt count
 {
   try
   {
-    if(timing) logTimerStart;
+    Log::Timer timer(countBlock, 1, timing);
     for(UInt i=startBlock; i<startBlock+countBlock; i++)
       if(blockSize(i))
       {
-        if(timing) logTimerLoop(i-startBlock, countBlock);
+        timer.loopStep(i-startBlock);
         const UInt ii = index(i,i);
 
         // distribute top column elements to left triangular
@@ -842,7 +842,7 @@ void MatrixDistributed::choleskyInverse(Bool timing, UInt startBlock, UInt count
           ::inverse(_N[ii]);
       }
     Parallel::barrier(comm);
-    if(timing) logTimerLoopEnd(countBlock);
+    timer.loopEnd();
   }
   catch(std::exception &e)
   {
@@ -857,11 +857,11 @@ void MatrixDistributed::choleskyProduct(Bool timing)
 {
   try
   {
-    if(timing) logTimerStart;
+    Log::Timer timer(blockCount(), 1, timing);
     for(UInt i=0; i<blockCount(); i++)
       if(blockSize(i))
       {
-        if(timing) logTimerLoop(i, blockCount());
+        timer.loopStep(i);
         const UInt ii = index(i,i);
 
         // distribute diagonal element to top column
@@ -945,7 +945,7 @@ void MatrixDistributed::choleskyProduct(Bool timing)
         });
       }
     Parallel::barrier(comm);
-    if(timing) logTimerLoopEnd(blockCount());
+    timer.loopEnd();
   }
   catch(std::exception &e)
   {
@@ -959,11 +959,11 @@ void MatrixDistributed::cholesky2SparseInverse(Bool timing)
 {
   try
   {
-    if(timing) logTimerStart;
+    Log::Timer timer(blockCount(), 1, timing);
     for(UInt i=blockCount(); i-->0;)
       if(blockSize(i))
       {
-        if(timing) logTimerLoop(blockCount()-1-i, blockCount());
+        timer.loopStep(blockCount()-1-i);
 
         const UInt ii = index(i, i);
 
@@ -1044,7 +1044,7 @@ void MatrixDistributed::cholesky2SparseInverse(Bool timing)
         reduceSum(_N[ii], ii, rowRanks);
         _N[ii].setType(Matrix::SYMMETRIC);
       }
-    if(timing) logTimerLoopEnd(blockCount());
+    timer.loopEnd();
   }
   catch(std::exception &e)
   {

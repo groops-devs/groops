@@ -67,10 +67,10 @@ void GnssLambda::choleskyReversePivot(Matrix &N, Transformation &Z, Bool timing)
   try
   {
     Vector tmp(N.rows());
-    if(timing) logTimerStart;
+    Log::Timer timer(N.rows(), 1, timing);
     for(UInt i=0; i<N.rows(); i++)
     {
-      if(timing) logTimerLoop(i, N.rows());
+      timer.loopStep(i);
 
       // find minimium
       UInt   k    = i;
@@ -103,7 +103,7 @@ void GnssLambda::choleskyReversePivot(Matrix &N, Transformation &Z, Bool timing)
           tmp(k) += std::pow(N(i,k), 2);
       }
     }
-    if(timing) logTimerLoopEnd(N.rows());
+    timer.loopEnd();
     N.setType(Matrix::TRIANGULAR);
   }
   catch(std::exception &e)
@@ -162,11 +162,11 @@ Vector GnssLambda::choleskyTransform(MatrixSliceRef W, Transformation &Z, Bool t
       if(delta[i] < d[i+1])
         ratio.insert(std::make_pair(delta[i]/d[i+1], i));
 
-    if(timing) logTimerStart;
+    Log::Timer timer(1, 1, timing);
     UInt iter = 0;
     while(!ratio.empty())
     {
-      if(timing) logTimerLoop(iter, iter+1);
+      timer.loopStep(iter);
       iter++;
 
       // find maximum change
@@ -210,7 +210,7 @@ Vector GnssLambda::choleskyTransform(MatrixSliceRef W, Transformation &Z, Bool t
           ratio.insert(std::make_pair(delta[i]/d[i+1], i));
       }
     }
-    if(timing) logTimerLoopEnd(iter);
+    timer.loopEnd();
 
     // decorrelate rest of the triangle
     for(UInt i=dim; i-->0;)
@@ -343,10 +343,10 @@ Vector GnssLambda::searchIntegerBlocked(const_MatrixSliceRef xFloat, MatrixSlice
     UInt blockStart    = dim-blockSize;
     UInt blockStartOld = dim;
     UInt iter=0;
-    if(timing) logTimerStart;
+    Log::Timer timer((dim-minIndex)/(defaultBlockSize/2), 1, timing);
     for(;;)
     {
-      if(timing) logTimerLoop(iter++, (dim-minIndex)/(defaultBlockSize/2));
+      timer.loopStep(iter++);
 
       // compute xBar for found solution so far
       Vector xBar = xFloat-xInt;
@@ -404,7 +404,7 @@ Vector GnssLambda::searchIntegerBlocked(const_MatrixSliceRef xFloat, MatrixSlice
         break;
       blockStart = std::max(blockStart, minIndex+defaultBlockSize/2) - defaultBlockSize/2;
     } // for(blocks)
-    if(timing) logTimerLoopEnd(iter);
+    timer.loopEnd();
 
     xInt.row(0, idxSolved).fill(0);
     isNotFixed.row(0, idxSolved).fill(1);

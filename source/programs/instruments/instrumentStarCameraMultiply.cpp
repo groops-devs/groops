@@ -80,7 +80,6 @@ void InstrumentStarCameraMultiply::run(Config &config, Parallel::CommunicatorPtr
     UInt arcCount = instrumentFile.at(0)->arcCount();
     std::vector<Arc> arcList;
 
-    Log::startTimer();
     Single::forEach(arcCount, [&](UInt arcNo)
     {
       StarCameraArc starCamera = instrumentFile.at(0)->readArc(arcNo);

@@ -168,11 +168,11 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
     // ---------------------------------
     logStatus<<"read observations"<<Log::endl;
     Vector receiverAlternative(receiversWithAlternatives.size());
-    logTimerStart;
+    Log::Timer timer(receiversWithAlternatives.size());
     for(UInt i=0; i<receiversWithAlternatives.size(); i++)
       if(i%Parallel::size(comm) == Parallel::myRank(comm)) // distribute to nodes
       {
-        logTimerLoop(i, receiversWithAlternatives.size());
+        timer.loopStep(i);
         for(UInt k=0; k<receiversWithAlternatives.at(i).size(); k++) // test alternatives
         {
           try
@@ -272,7 +272,7 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
         }
       }
     Parallel::barrier(comm);
-    logTimerLoopEnd(receiversWithAlternatives.size());
+    timer.loopEnd();
     Parallel::reduceSum(receiverAlternative, 0, comm);
     Parallel::broadCast(receiverAlternative, 0, comm);
 

@@ -307,13 +307,13 @@ inline std::vector<UInt> Parallel::forEachInterval(UInt count, const std::vector
       // single process version
       if(isMaster(comm))
       {
-        if(timing) Log::startTimer();
+        Log::Timer timer(count, 1, timing);
         for(UInt i=0; i<count; i++)
         {
-          if(timing) Log::loopTimer(i,count);
+          timer.loopStep(i);
           func(i);
         }
-        if(timing) Log::loopTimerEnd(count);
+        timer.loopEnd();
       }
       return processNo;
     }
@@ -330,7 +330,7 @@ inline std::vector<UInt> Parallel::forEachInterval(UInt count, const std::vector
 
       // master distributes the loop numbers
       UInt process, index;
-      if(timing) Log::startTimer();
+      Log::Timer timer(count, size(comm)-1, timing);
       for(UInt i=0; i<count; i++)
       {
         receive(process, NULLINDEX, comm); // which process needs work?
@@ -364,7 +364,7 @@ inline std::vector<UInt> Parallel::forEachInterval(UInt count, const std::vector
         countInInterval.at(idInterval)++;
         send(id, process, comm);       // send new loop number to be computed at process
         processNo.at(id) = process;
-        if(timing) Log::loopTimer(i, count, size(comm)-1);
+        timer.loopStep(i);
       }
       // send to all processes the end signal (NULLINDEX)
       for(UInt i=1; i<size(comm); i++)
@@ -373,7 +373,7 @@ inline std::vector<UInt> Parallel::forEachInterval(UInt count, const std::vector
         receive(index,   process, comm);  // loop numer be computed at process
         send(NULLINDEX, process, comm);    // end signal
       }
-      if(timing) Log::loopTimerEnd(count);
+      timer.loopEnd();
     }
     else // clients
     {
@@ -416,13 +416,13 @@ inline std::vector<UInt> Parallel::forEachInterval(std::vector<A> &vec, const st
       // single process version
       if(isMaster(comm))
       {
-        if(timing) Log::startTimer();
+        Log::Timer timer(vec.size(), 1, timing);
         for(UInt i=0; i<vec.size(); i++)
         {
-          if(timing) Log::loopTimer(i, vec.size());
+          timer.loopStep(i);
           vec[i] = func(i);
         }
-        if(timing) Log::loopTimerEnd(vec.size());
+        timer.loopEnd();
       }
       return processNo;
     }
@@ -439,7 +439,7 @@ inline std::vector<UInt> Parallel::forEachInterval(std::vector<A> &vec, const st
 
       // master distributes the loop numbers
       UInt process, index;
-      if(timing) Log::startTimer();
+      Log::Timer timer(vec.size(), size(comm)-1, timing);
       for(UInt i=0; i<vec.size(); i++)
       {
         receive(process, NULLINDEX, comm); // which process needs work?
@@ -477,7 +477,7 @@ inline std::vector<UInt> Parallel::forEachInterval(std::vector<A> &vec, const st
         countInInterval.at(idInterval)++;
         send(id, process, comm);           // send new loop number to be computed at process
         processNo.at(id) = process;
-        if(timing) Log::loopTimer(i, vec.size(), size(comm)-1);
+        timer.loopStep(i);
       }
       // send to all processes the end signal (NULLINDEX)
       for(UInt i=1; i<size(comm); i++)
@@ -488,7 +488,7 @@ inline std::vector<UInt> Parallel::forEachInterval(std::vector<A> &vec, const st
           receive(vec[index], process, comm); // receive result
         send(NULLINDEX, process, comm);       // end signal
       }
-      if(timing) Log::loopTimerEnd(vec.size());
+      timer.loopEnd();
     }
     else // clients
     {
@@ -528,10 +528,10 @@ inline void Parallel::forEachProcess(UInt count, T func, const std::vector<UInt>
       procs.insert(p);
 
     UInt idx;
-    if(timing) Log::startTimer();
+    Log::Timer timer(count, procs.size(), timing);
     for(UInt i=0; i<count; i++)
     {
-      if(timing) Log::loopTimer(i, count, procs.size());
+      timer.loopStep(i);
       if(myRank(comm) == processNo.at(i))
       {
         func(i);
@@ -542,8 +542,8 @@ inline void Parallel::forEachProcess(UInt count, T func, const std::vector<UInt>
         receive(idx, NULLINDEX, comm);
       }
     } // for(i)
-    if(timing) Log::loopTimerEnd(count);
     barrier(comm);
+    timer.loopEnd();
   }
   catch(std::exception &e)
   {
@@ -563,10 +563,10 @@ inline void Parallel::forEachProcess(std::vector<A> &vec, T func, const std::vec
       procs.insert(p);
 
     UInt idx = 0;
-    if(timing) Log::startTimer();
+    Log::Timer timer(vec.size(), procs.size(), timing);
     for(UInt i=0; i<vec.size(); i++)
     {
-      if(timing) Log::loopTimer(i, vec.size(), procs.size());
+      timer.loopStep(i);
       if(myRank(comm) == processNo.at(i))
       {
         vec[i] = func(i);
@@ -579,8 +579,8 @@ inline void Parallel::forEachProcess(std::vector<A> &vec, T func, const std::vec
         receive(vec[idx], processNo.at(idx), comm);
       }
     } // for(i)
-    if(timing) Log::loopTimerEnd(vec.size());
     barrier(comm);
+    timer.loopEnd();
   }
   catch(std::exception &e)
   {
@@ -597,13 +597,13 @@ inline void Single::forEach(UInt count, T func, Bool timing)
 {
   try
   {
-    if(timing) Log::startTimer();
+    Log::Timer timer(count, 1, timing);
     for(UInt i=0; i<count; i++)
     {
-      if(timing) Log::loopTimer(i, count);
+      timer.loopStep(i);
       func(i);
     } // for(i)
-    if(timing) Log::loopTimerEnd(count);
+    timer.loopEnd();
   }
   catch(std::exception &e)
   {

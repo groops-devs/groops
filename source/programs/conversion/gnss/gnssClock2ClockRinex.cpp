@@ -357,14 +357,14 @@ void GnssClock2ClockRinex::run(Config &config, Parallel::CommunicatorPtr /*comm*
       satelliteDataPtrs.push_back(std::make_shared<Data>(data));
     for(auto & data : stationData)
       stationDataPtrs.push_back(std::make_shared<Data>(data));
-    logTimerStart
+    Log::Timer timer(times.size());
     for(const auto &time : times)
     {
-      logTimerLoop(++i, times.size())
+      timer.loopStep(i++);
       writeEpoch(time, 'S', satelliteDataPtrs, file);
       writeEpoch(time, 'R', stationDataPtrs,   file);
     }
-    logTimerLoopEnd(times.size());
+    timer.loopEnd();
   }
   catch(std::exception &e)
   {
