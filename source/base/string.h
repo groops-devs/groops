@@ -44,6 +44,9 @@ namespace String
   /** @brief test whether the @a str starts with @p test. */
   Bool startsWith(const std::string &str, const std::string &test);
 
+  /** @brief test whether the @a str ends with @p test. */
+  Bool endsWith(const std::string &str, const std::string &test);
+
   /** @brief Replace all occurrences of @p search in @p str with the @p substitute string. */
   std::string replaceAll(const std::string &str, const std::string &search, const std::string &substitute);
 

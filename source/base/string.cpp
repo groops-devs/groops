@@ -99,6 +99,13 @@ Bool String::startsWith(const std::string &str, const std::string &test)
 
 /***********************************************/
 
+Bool String::endsWith(const std::string &str, const std::string &test)
+{
+  return (str.size() >= test.size()) && (str.compare(str.size()-test.size(), test.size(), test) == 0);
+}
+
+/***********************************************/
+
 std::vector<std::string> String::split(const std::string &str, Char seperator)
 {
   try
