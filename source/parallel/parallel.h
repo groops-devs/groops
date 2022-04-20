@@ -42,7 +42,7 @@ namespace Parallel
   * @p receive is called on main process, if the returned send function is called by an arbitrary process.
   * This function is used for the log.
   * Must be called by every process in @a comm. */
-  std::function<void(UInt type, const std::string &str)> addChannel(std::function<void(UInt type, const std::string &str)> receive, CommunicatorPtr comm);
+  std::function<void(UInt type, const std::string &str)> addChannel(const std::function<void(UInt rank, UInt type, const std::string &str)> &receive, CommunicatorPtr comm);
 
   // =========================================================
 
@@ -80,6 +80,9 @@ namespace Parallel
   * Exceptions causes memory leaks due to unfinished communications.
   * Based on the idea: https://arxiv.org/abs/1804.04481 */
   void broadCastExceptions(CommunicatorPtr comm, std::function<void(CommunicatorPtr)> func);
+
+  /** @brief Is @a broadCastExceptions interrupted by an external process?. */
+  Bool isExternal(std::exception &e);
 
   // =========================================================
 

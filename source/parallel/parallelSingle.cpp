@@ -22,7 +22,10 @@ namespace Parallel
 /***********************************************/
 
 CommunicatorPtr init(int /*argc*/, char */*argv*/[]) {return nullptr;}
-std::function<void(UInt type, const std::string &str)> addChannel(std::function<void(UInt type, const std::string &str)> receive, CommunicatorPtr /*comm*/) {return receive;}
+std::function<void(UInt type, const std::string &str)> addChannel(const std::function<void(UInt rank, UInt type, const std::string &str)> &receive, CommunicatorPtr /*comm*/)
+{
+  return std::bind(receive, 0, std::placeholders::_1, std::placeholders::_2);
+}
 CommunicatorPtr splitCommunicator(UInt /*color*/, UInt /*key*/, CommunicatorPtr /*comm*/) {return nullptr;}
 CommunicatorPtr createCommunicator(std::vector<UInt> /*ranks*/, CommunicatorPtr /*comm*/) {return nullptr;}
 CommunicatorPtr selfCommunicator() {return nullptr;}
@@ -31,6 +34,7 @@ UInt size(CommunicatorPtr /*comm*/)   {return 1;}
 void barrier(CommunicatorPtr /*comm*/) {}
 void peek(CommunicatorPtr /*comm*/) {}
 void broadCastExceptions(CommunicatorPtr comm, std::function<void(CommunicatorPtr)> func) {func(comm);}
+Bool isExternal(std::exception &/*e*/) {return FALSE;}
 void send(const Byte */*x*/, UInt /*size*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
 void receive  (Byte  */*x*/, UInt /*size*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
 void broadCast(Byte  */*x*/, UInt /*size*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}

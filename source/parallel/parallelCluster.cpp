@@ -11,6 +11,7 @@
 /***********************************************/
 
 #include "base/import.h"
+#include "base/string.h"
 #include "base/gnssType.h"
 #include "parallel/parallel.h"
 
@@ -36,25 +37,6 @@ inline void check(int errorcode)
     throw(Exception("MPI Error: "+std::string(errorStr, resultlen)));
   }
 }
-
-/***********************************************/
-/***********************************************/
-
-class Mpi
-{
-public:
-  Mpi(int argc, char *argv[])
-  {
-    int provided;
-    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
-  }
-
- ~Mpi()
-  {
-    MPI_Finalize();
-  }
-};
-
 
 /***********************************************/
 /***********************************************/
@@ -94,118 +76,27 @@ public:
   virtual void receivedSignal() = 0;
 };
 
-typedef std::shared_ptr<HiddenChannel> HiddenChannelPtr;
-
 /***********************************************/
 /***********************************************/
 
-class LogChannel : public HiddenChannel
+class Mpi
 {
-  int                      rank, sendRank;
-  unsigned int             type, count;
-  std::vector<char>        data;
-  std::vector<MPI_Request> sendRequests;
-  std::function<void(UInt type, const std::string &str)> receive;
-
 public:
-  LogChannel(MPI_Comm communicator, std::function<void(UInt type, const std::string &str)> recv);
- ~LogChannel();
-  void receivedSignal() override;
-  void sendSignal(UInt type, const std::string &str);
+  std::vector<std::shared_ptr<HiddenChannel>> channels;
+
+  Mpi(int argc, char *argv[])
+  {
+    int provided;
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
+  }
+
+ ~Mpi()
+  {
+    channels.clear();
+    MPI_Finalize();
+  }
 };
 
-typedef std::shared_ptr<LogChannel> LogChannelPtr;
-
-/***********************************************/
-
-LogChannel::LogChannel(MPI_Comm communicator, std::function<void(UInt type, const std::string &str)> recv) : HiddenChannel(communicator), sendRequests(4, MPI_REQUEST_NULL), receive(recv)
-{
-  try
-  {
-    check(MPI_Comm_rank(comm, &rank));
-    if(rank == 0)
-      check(MPI_Irecv(&sendRank, 1, MPI_INT, MPI_ANY_SOURCE, 111, comm, &request));
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-LogChannel::~LogChannel()
-{
-  for(MPI_Request sendRequest : sendRequests)
-  {
-    int completed;
-    check(MPI_Test(&sendRequest, &completed, MPI_STATUS_IGNORE));
-    if(!completed)
-    {
-      check(MPI_Cancel(&sendRequest));
-      check(MPI_Request_free(&sendRequest));
-    }
-  }
-}
-
-/***********************************************/
-
-void LogChannel::receivedSignal()
-{
-  try
-  {
-    int completed = 0;
-    do
-    {
-      check(MPI_Recv(&type,  1, MPI_UNSIGNED, sendRank, 222, comm, MPI_STATUS_IGNORE));
-      check(MPI_Recv(&count, 1, MPI_UNSIGNED, sendRank, 333, comm, MPI_STATUS_IGNORE));
-      data.resize(count);
-      if(count)
-        check(MPI_Recv(data.data(), count, MPI_CHAR, sendRank, 444, comm, MPI_STATUS_IGNORE));
-      receive(static_cast<UInt>(type), std::string(data.data(), count));
-      data.clear();
-      check(MPI_Irecv(&sendRank, 1, MPI_INT, MPI_ANY_SOURCE, 111, comm, &request));
-      check(MPI_Test(&request, &completed, MPI_STATUS_IGNORE));
-    }
-    while(completed);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-void LogChannel::sendSignal(UInt type_, const std::string &str)
-{
-  try
-  {
-    if(rank == 0)
-    {
-      receive(type_, str);
-      return;
-    }
-
-    // wait for pending sends
-    check(MPI_Waitall(sendRequests.size(), sendRequests.data(), MPI_STATUSES_IGNORE));
-
-    type  = static_cast<unsigned int>(type_);
-    count = str.size();
-    data.resize(count);
-    std::copy(str.begin(), str.end(), data.begin());
-
-    check(MPI_Isend(&rank,  1, MPI_INT,      0, 111, comm, &sendRequests.at(0)));
-    check(MPI_Isend(&type,  1, MPI_UNSIGNED, 0, 222, comm, &sendRequests.at(1)));
-    check(MPI_Isend(&count, 1, MPI_UNSIGNED, 0, 333, comm, &sendRequests.at(2)));
-    if(count)
-      check(MPI_Isend(data.data(), count, MPI_CHAR, 0, 444, comm, &sendRequests.at(3)));
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
 
 /***********************************************/
 /***********************************************/
@@ -215,15 +106,11 @@ class Communicator
 public:
   std::shared_ptr<Mpi> mpi;
   MPI_Comm             comm;
-  std::vector<HiddenChannelPtr> channels;
 
   Communicator(CommunicatorPtr commParent, MPI_Comm comm_) : comm(comm_)
   {
     if(commParent)
-    {
-      mpi      = commParent->mpi;
-      channels = commParent->channels;
-    }
+      mpi = commParent->mpi;
   }
 
  ~Communicator()
@@ -242,14 +129,15 @@ inline void Communicator::peek()
 {
   try
   {
-    for(auto &channel : channels)
-      if(channel->request != MPI_REQUEST_NULL)
-      {
-        int flag = 0;
-        check(MPI_Test(&channel->request, &flag, MPI_STATUS_IGNORE));
-        if(flag)
-          channel->receivedSignal();
-      }
+    if(mpi)
+      for(auto &channel : mpi->channels)
+        if(channel->request != MPI_REQUEST_NULL)
+        {
+          int flag = 0;
+          check(MPI_Test(&(channel->request), &flag, MPI_STATUS_IGNORE));
+          if(flag)
+            channel->receivedSignal();
+        }
   }
   catch(std::exception &e)
   {
@@ -273,35 +161,26 @@ inline void Communicator::wait(MPI_Request &request)
     for(;;)
     {
       std::vector<MPI_Request> requests(1, request);
-      for(auto &channel : channels)
-        requests.push_back(channel->request);
+      if(mpi)
+        for(auto &channel : mpi->channels)
+          requests.push_back(channel->request);
 
-      int count = -1;
-      std::vector<int> indices(requests.size());
-      std::vector<MPI_Status> statuses(requests.size());
-      int error = MPI_Waitsome(requests.size(), requests.data(), &count, indices.data(), statuses.data());
-      if(error == MPI_ERR_IN_STATUS)
-        for(int i=0; i<count; i++)
-          check(statuses.at(i).MPI_ERROR);
-      else
-        check(error);
-      if(count == MPI_UNDEFINED)
+      int index = -1;
+      check(MPI_Waitany(requests.size(), requests.data(), &index, MPI_STATUS_IGNORE));
+      if((index == MPI_UNDEFINED) || (index < 0))
         throw(Exception("no active handles"));
-      indices.resize(count);
 
-      // copy back requests
-      UInt idx = 0;
-      request = requests.at(idx++);
-      for(auto &channel : channels)
-        channel->request = requests.at(idx++);
+      // our is request finished
+      if(index == 0)
+      {
+        request = requests.at(0); // should be MPI_REQUEST_NULL
+        peek();
+        break;
+      }
 
       // check extra channels
-      for(int index : indices)
-        if(index > 0)
-          channels.at(index-1)->receivedSignal();
-
-      if(std::find(indices.begin(), indices.end(), 0) != indices.end()) // is our request finished?
-        break;
+      mpi->channels.at(index-1)->request = requests.at(index); // should be MPI_REQUEST_NULL
+      mpi->channels.at(index-1)->receivedSignal();
     }
   }
   catch(std::exception &e)
@@ -330,29 +209,13 @@ CommunicatorPtr init(int argc, char *argv[])
 
 /***********************************************/
 
-std::function<void(UInt type, const std::string &str)> addChannel(std::function<void(UInt type, const std::string &str)> receive, CommunicatorPtr comm)
-{
-  try
-  {
-    LogChannelPtr channel = std::make_shared<LogChannel>(MPI_COMM_WORLD, receive);
-    comm->channels.push_back(channel);
-    return std::bind(&LogChannel::sendSignal, channel.get(), std::placeholders::_1, std::placeholders::_2);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
 CommunicatorPtr splitCommunicator(UInt color, UInt key, CommunicatorPtr comm)
 {
   try
   {
     barrier(comm); // check for possible exceptions
     MPI_Comm commNew;
-    check(MPI_Comm_split(comm->comm, ((color==NULLINDEX) ? (MPI_UNDEFINED) : (color)), key, &commNew));
+    check(MPI_Comm_split(comm->comm, ((color==NULLINDEX) ? MPI_UNDEFINED : color), key, &commNew));
     if(color==NULLINDEX)
       return nullptr;
     return std::make_shared<Communicator>(comm, commNew);
@@ -478,6 +341,146 @@ void peek(CommunicatorPtr comm)
 /***********************************************/
 /***********************************************/
 
+class LogChannel : public HiddenChannel
+{
+  int                      rank, sendRank;
+  unsigned int             type, count;
+  std::vector<char>        data;
+  std::vector<MPI_Request> sendRequests;
+  std::function<void(UInt rank, UInt type, const std::string &str)> receive;
+
+public:
+  LogChannel(MPI_Comm communicator, std::function<void(UInt rank, UInt type, const std::string &str)> recv);
+ ~LogChannel();
+  void receivedSignal() override;
+  void sendSignal(UInt type, const std::string &str);
+};
+
+/***********************************************/
+
+LogChannel::LogChannel(MPI_Comm communicator, std::function<void(UInt rank, UInt type, const std::string &str)> recv) : HiddenChannel(communicator), sendRequests(4, MPI_REQUEST_NULL), receive(recv)
+{
+  try
+  {
+    check(MPI_Comm_rank(comm, &rank));
+    if(rank == 0)
+      check(MPI_Irecv(&sendRank, 1, MPI_INT, MPI_ANY_SOURCE, 111, comm, &request));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+LogChannel::~LogChannel()
+{
+  for(MPI_Request sendRequest : sendRequests)
+  {
+    int completed;
+    check(MPI_Test(&sendRequest, &completed, MPI_STATUS_IGNORE));
+    if(!completed)
+    {
+      check(MPI_Cancel(&sendRequest));
+      check(MPI_Request_free(&sendRequest));
+    }
+  }
+}
+
+/***********************************************/
+
+void LogChannel::sendSignal(UInt type_, const std::string &str)
+{
+  try
+  {
+    if(rank == 0)
+    {
+      receive(0, type_, str);
+      return;
+    }
+
+    // wait for pending sends
+    check(MPI_Waitall(sendRequests.size(), sendRequests.data(), MPI_STATUSES_IGNORE));
+
+    type  = static_cast<unsigned int>(type_);
+    count = str.size();
+    data.resize(count);
+    std::copy(str.begin(), str.end(), data.begin());
+
+    check(MPI_Isend(&rank,  1, MPI_INT,      0, 111, comm, &sendRequests.at(0)));
+    check(MPI_Isend(&type,  1, MPI_UNSIGNED, 0, 222, comm, &sendRequests.at(1)));
+    check(MPI_Isend(&count, 1, MPI_UNSIGNED, 0, 333, comm, &sendRequests.at(2)));
+    if(count)
+      check(MPI_Isend(data.data(), count, MPI_CHAR, 0, 444, comm, &sendRequests.at(3)));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void LogChannel::receivedSignal()
+{
+  try
+  {
+    int completed = 0;
+    do
+    {
+      check(MPI_Recv(&type,  1, MPI_UNSIGNED, sendRank, 222, comm, MPI_STATUS_IGNORE));
+      check(MPI_Recv(&count, 1, MPI_UNSIGNED, sendRank, 333, comm, MPI_STATUS_IGNORE));
+      data.resize(count);
+      if(count)
+        check(MPI_Recv(data.data(), count, MPI_CHAR, sendRank, 444, comm, MPI_STATUS_IGNORE));
+      receive(static_cast<UInt>(sendRank), static_cast<UInt>(type), std::string(data.data(), count));
+      data.clear();
+      check(MPI_Irecv(&sendRank, 1, MPI_INT, MPI_ANY_SOURCE, 111, comm, &request));
+      check(MPI_Test(&request, &completed, MPI_STATUS_IGNORE));
+    }
+    while(completed);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+std::function<void(UInt type, const std::string &str)> addChannel(const std::function<void(UInt rank, UInt type, const std::string &str)> &receive, CommunicatorPtr comm)
+{
+  try
+  {
+    auto channel = std::make_shared<LogChannel>(MPI_COMM_WORLD, receive);
+    comm->mpi->channels.insert(comm->mpi->channels.begin(), channel); // handle logs before exceptions
+    return std::bind(&LogChannel::sendSignal, channel.get(), std::placeholders::_1, std::placeholders::_2);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+class ErrorChannel : public HiddenChannel
+{
+  std::shared_ptr<Mpi> mpi;
+  int                  code;
+  unsigned int         isExternalSignal;
+
+public:
+  ErrorChannel(CommunicatorPtr comm);
+  void receivedSignal() override;
+  void broadCastException(const std::string &msg);
+  void synchronizeAndThrowException(const std::string &msg);
+};
+
+/***********************************************/
+
 class BroadCastedException
 {
 public:
@@ -485,28 +488,15 @@ public:
   BroadCastedException(const std::string &msg)  : message(msg) {}
 };
 
-/***********************************************/
-
-class ErrorChannel : public HiddenChannel
-{
-  int code;
-
-public:
-  ErrorChannel(MPI_Comm communicator);
-  void receivedSignal() override;
-  void broadCastException(const std::string &msg);
-  void synchronizeAndThrowException(const std::string &msg);
-};
-
-typedef std::shared_ptr<ErrorChannel> ErrorChannelPtr;
+static const std::string STRING_EXCEPTION_EXTERNAL("interrupted by exception from other process");
 
 /***********************************************/
 
-ErrorChannel::ErrorChannel(MPI_Comm communicator)  : HiddenChannel(communicator), code(0)
+ErrorChannel::ErrorChannel(CommunicatorPtr comm)  : HiddenChannel(comm->comm), mpi(comm->mpi), code(0), isExternalSignal(0)
 {
   try
   {
-    check(MPI_Irecv(&code, 1, MPI_INT, MPI_ANY_SOURCE, 666, comm, &request));
+    check(MPI_Irecv(&code, 1, MPI_INT, MPI_ANY_SOURCE, 666, this->comm, &request));
   }
   catch(std::exception &e)
   {
@@ -518,15 +508,22 @@ ErrorChannel::ErrorChannel(MPI_Comm communicator)  : HiddenChannel(communicator)
 
 void ErrorChannel::receivedSignal()
 {
-  try
-  {
-    check(MPI_Barrier(comm));
-    synchronizeAndThrowException(std::string());
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
+  // mark all subgroups
+  Bool isSubGroup = FALSE;
+  auto iter = std::find_if(mpi->channels.begin(), mpi->channels.end(), [this](auto &x) {return x.get() == this;});
+  if(iter != mpi->channels.end())
+    while(++iter != mpi->channels.end())
+    {
+      if(dynamic_cast<ErrorChannel*>(iter->get()))
+        dynamic_cast<ErrorChannel*>(iter->get())->isExternalSignal = 1;
+      isSubGroup = TRUE;
+    }
+
+  if(isSubGroup)
+    throw(Exception(STRING_EXCEPTION_EXTERNAL)); // handle subgroup first
+
+  check(MPI_Barrier(comm));
+  synchronizeAndThrowException(std::string());
 }
 
 /***********************************************/
@@ -584,12 +581,18 @@ void ErrorChannel::synchronizeAndThrowException(const std::string &msg)
       check(MPI_Test(&request, &completed, MPI_STATUS_IGNORE));
     }
 
+    // check for any external signals
+    unsigned int isExternalSignalSum = 0;
+    check(MPI_Allreduce(&isExternalSignal, &isExternalSignalSum, 1, MPI_UNSIGNED, MPI_SUM, comm));
+    if(isExternalSignalSum)
+      throw(BroadCastedException(STRING_EXCEPTION_EXTERNAL));
+
     int rank, size;
     check(MPI_Comm_rank(comm, &rank));
     check(MPI_Comm_size(comm, &size));
 
     // collect and broadCast all messages
-    std::stringstream completeMsg;
+    std::vector<std::pair<UInt, std::string>> msgs;
     for(int process=0; process<size; process++)
     {
       unsigned int count = msg.size();
@@ -600,9 +603,30 @@ void ErrorChannel::synchronizeAndThrowException(const std::string &msg)
       if(process == rank)
         std::copy(msg.begin(), msg.end(), data.begin());
       check(MPI_Bcast(data.data(), count, MPI_CHAR, process, comm));
-      completeMsg<<"in process "<<process<<" of "<<size<<":"<<std::endl<<std::string(data.data(), count)<<std::endl;
+      msgs.push_back(std::pair<UInt, std::string>(process, std::string(data.data(), count)));
     }
-    throw(BroadCastedException(completeMsg.str()));
+
+    // remove duplicates
+    std::sort(msgs.begin(), msgs.end(), [](const auto &x, const auto &y){return (x.second == y.second) ? (x.first<y.first) : (x.second<y.second);});
+    msgs.erase(std::unique(msgs.begin(), msgs.end(), [](const auto &x, const auto &y){return (x.second == y.second);}), msgs.end());
+    std::sort(msgs.begin(), msgs.end(), [](const auto &x, const auto &y){return (x.first<y.first);});
+
+    // collect messages
+    std::string completeMsg;
+    Bool newLine = FALSE;
+    for(auto &msg : msgs)
+      if(msg.second.find(STRING_EXCEPTION_EXTERNAL) == std::string::npos)
+      {
+        if(newLine)
+          completeMsg += "\n";
+        newLine = TRUE;
+        if(msg.first)
+          completeMsg += "in process "+msg.first%"%i of "s+size%"%i:\n"s;
+        completeMsg += msg.second;
+      }
+    if(completeMsg.empty())
+      throw(BroadCastedException("no message"));
+    throw(BroadCastedException(completeMsg));
   }
   catch(std::exception &e)
   {
@@ -614,20 +638,19 @@ void ErrorChannel::synchronizeAndThrowException(const std::string &msg)
 
 void broadCastExceptions(CommunicatorPtr commOld, std::function<void(CommunicatorPtr)> func)
 {
-  if(size(commOld) == 1)
-  {
-    func(commOld);
-    return;
-  }
-
   try // distributed exceptions
   {
-    // duplicate communicator and setup error channel
+    // duplicate communicator
+    // as comm might be unusable after exception due to unfinished communications
+    if(!commOld->mpi)
+      throw(Exception("self communicator not allowed"));
     MPI_Comm commDuplicate;
     check(MPI_Comm_dup(commOld->comm, &commDuplicate));
     CommunicatorPtr comm = std::make_shared<Communicator>(commOld, commDuplicate);
-    ErrorChannelPtr errorChannel = std::make_shared<ErrorChannel>(commDuplicate);
-    comm->channels.push_back(errorChannel);
+
+    // and setup error channel
+    auto errorChannel = std::make_shared<ErrorChannel>(comm);
+    comm->mpi->channels.push_back(errorChannel);
 
     try // local exceptions
     {
@@ -646,9 +669,12 @@ void broadCastExceptions(CommunicatorPtr commOld, std::function<void(Communicato
     {
       errorChannel->broadCastException("Unknown ERROR");
     }
+
+    comm->mpi->channels.pop_back();
   }
   catch(BroadCastedException &e)
   {
+    commOld->mpi->channels.pop_back();
     throw(Exception(e.message));
   }
   catch(std::exception &e)
@@ -664,6 +690,13 @@ void broadCastExceptions(CommunicatorPtr commOld, std::function<void(Communicato
     MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     exit(EXIT_FAILURE);
   }
+}
+
+/***********************************************/
+
+Bool isExternal(std::exception &e)
+{
+  return e.what() == STRING_EXCEPTION_EXTERNAL;
 }
 
 /***********************************************/
