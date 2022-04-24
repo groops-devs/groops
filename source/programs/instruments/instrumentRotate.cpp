@@ -57,7 +57,7 @@ void InstrumentRotate::run(Config &config, Parallel::CommunicatorPtr comm)
     InstrumentFile starCameraFile(fileNameStarCamera);
     InstrumentFile::checkArcCount({instrumentFile, starCameraFile});
 
-    std::vector<Arc> arcList(instrumentFile.arcCount(), instrumentFile.getType());
+    std::vector<Arc> arcList(instrumentFile.arcCount());
     Parallel::forEach(arcList, [&](UInt arcNo)
     {
       Arc           arc        = instrumentFile.readArc(arcNo);

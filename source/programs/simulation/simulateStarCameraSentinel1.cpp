@@ -55,7 +55,7 @@ void SimulateStarCameraSentinel1::run(Config &config, Parallel::CommunicatorPtr 
     Ellipsoid      ellipsoid(DEFAULT_GRS80_a, DEFAULT_GRS80_f);
     InstrumentFile orbitFile(orbitName);
 
-    std::vector<Arc> arcList(orbitFile.arcCount(), Epoch::STARCAMERA);
+    std::vector<Arc> arcList(orbitFile.arcCount());
     Parallel::forEach(arcList, [&](UInt arcNo)
     {
       OrbitArc orbit = orbitFile.readArc(arcNo);

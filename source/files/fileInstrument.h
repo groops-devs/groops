@@ -86,7 +86,8 @@ class Epoch
 public:
   /// Instrument data type (type > 0: MISCVALUES where type is the number of data columns).
   enum Type : Int  {EMPTY             =  0,
-                    MISCVALUESOLD     = -1,
+                    MISCVALUESOLD     = -9999,
+                    MISCVALUES        = -1, // MISCVALUES with unknown or zero size
                     INSTRUMENTTIME    = -2,
                     MISCVALUE         = -3,
                     VECTOR3D          = -4,
@@ -158,8 +159,13 @@ public:
 class Arc
 {
 protected:
-  Epoch::Type type;
   std::vector<std::unique_ptr<Epoch>> epoch;
+
+  virtual void checkType(Epoch::Type type)
+  {
+    if((type != Epoch::EMPTY) && (getType() != Epoch::EMPTY) && (type != getType()))
+      throw(Exception("In Arc<"+Epoch::getTypeName(getType())+">: assignment of wrong data type: "+Epoch::getTypeName(type)));
+  }
 
   /** @brief Random access iterator with implicit double dereferencing to directly access epochs of type @a T.
    * Constness of iterator is defined via template parameter @a isConstIterator. */
@@ -215,10 +221,10 @@ public:
   const_reverse_iterator crend()   const { return const_reverse_iterator(this->cbegin()); }
 
 public:
-  Arc(Epoch::Type type_=Epoch::EMPTY) : type(type_) {} //!< Default Constructor
-  Arc(const Arc &arc);                                 //!< Copy constructor
-  Arc(Arc &&) = default;                               //!< Move constructor
- ~Arc() = default;                                     //!< Destructor
+  Arc() = default;       //!< Default Constructor
+  Arc(const Arc &arc);   //!< Copy constructor
+  Arc(Arc &&) = default; //!< Move constructor
+ ~Arc() = default;       //!< Destructor
 
   /// Constructor from matrix (first column is MJD)
   explicit Arc(const_MatrixSliceRef A, Epoch::Type type=Epoch::EMPTY);
@@ -248,7 +254,7 @@ public:
   UInt size() const {return epoch.size();}
 
   /** @brief Data type (e.g. ORBIT, ACCELEROMETER). */
-  Epoch::Type getType() const {return epoch.size() ? type : Epoch::EMPTY;}
+  Epoch::Type getType() const {return epoch.size() ? front().getType() : Epoch::EMPTY;}
 
   /** @brief Name of data type (e.g. ORBIT, ACCELEROMETER). */
   std::string getTypeName() const {return Epoch::getTypeName(getType());}
@@ -304,7 +310,7 @@ public:
       if(arc.size())
       {
         if((type != Epoch::EMPTY) && (type != arc.getType()))
-          throw(Exception("arcList contain different instruments types"+Epoch::getTypeName(type)+", "+arc.getTypeName()));
+          throw(Exception("arcList contain different instruments types "+Epoch::getTypeName(type)+", "+arc.getTypeName()));
         type = arc.getType();
       }
     return type;
@@ -329,12 +335,11 @@ public:
 template<class EpochType>
 class ArcTemplate : public Arc
 {
-  void testType()
+  void checkType(Epoch::Type type) override
   {
-    if(getType() == Epoch::EMPTY)
-      type = EpochType::type;
-    if((EpochType::type != Epoch::EMPTY) && (type != EpochType::type))
-      throw(Exception("In Arc<"+Epoch::getTypeName(EpochType::type)+">: assignment of wrong data type: "+getTypeName()));
+    Arc::checkType(type);
+    if((type != Epoch::EMPTY) && (type != EpochType::type) && !((EpochType::type == Epoch::MISCVALUES) && (static_cast<Int>(type) > 0)))
+      throw(Exception("In Arc<"+Epoch::getTypeName(EpochType::type)+">: assignment of wrong data type: "+Epoch::getTypeName(type)));
   }
 
 public:
@@ -357,16 +362,16 @@ public:
   const_reverse_iterator crend()   const { return const_reverse_iterator(this->cbegin()); }
 
 public:
-  ArcTemplate() : Arc(EpochType::type) {}                            //!< Default Constructor
-  ArcTemplate(const ArcTemplate<EpochType> &arc) : Arc(arc) {}       //!< Copy constructor
-  ArcTemplate(const Arc &arc) : Arc(arc) {testType();}               //!< Copy constructor
-  ArcTemplate(ArcTemplate<EpochType> &&arc) : Arc(std::move(arc)) {} //!< Move constructor
-  ArcTemplate(Arc &&arc) : Arc(std::move(arc)) {testType();}         //!< Move constructor
+  ArcTemplate() = default;                                             //!< Default Constructor
+  ArcTemplate(const ArcTemplate<EpochType> &arc) = default;            //!< Copy constructor
+  ArcTemplate(const Arc &arc) : Arc(arc) {checkType(getType());}       //!< Copy constructor
+  ArcTemplate(ArcTemplate<EpochType> &&arc) = default;                 //!< Move constructor
+  ArcTemplate(Arc &&arc) : Arc(std::move(arc)) {checkType(getType());} //!< Move constructor
 
-  ArcTemplate &operator=(const ArcTemplate<EpochType> &arc) {Arc::operator=(arc); return *this;}                        //!< Assignement
-  ArcTemplate &operator=(const Arc &arc)                    {Arc::operator=(arc); testType(); return *this;}            //!< Assignement
-  ArcTemplate &operator=(ArcTemplate<EpochType> &&arc)      {Arc::operator=(std::move(arc));  return *this;}            //!< Move assignment
-  ArcTemplate &operator=(Arc &&arc)                         {Arc::operator=(std::move(arc)); testType(); return *this;} //!< Move assignment
+  ArcTemplate &operator=(const ArcTemplate<EpochType> &arc) {Arc::operator=(arc); return *this;}                                  //!< Assignement
+  ArcTemplate &operator=(const Arc &arc)                    {Arc::operator=(arc); checkType(getType()); return *this;}            //!< Assignement
+  ArcTemplate &operator=(ArcTemplate<EpochType> &&arc)      {Arc::operator=(std::move(arc)); return *this;}                       //!< Move assignment
+  ArcTemplate &operator=(Arc &&arc)                         {Arc::operator=(std::move(arc)); checkType(getType()); return *this;} //!< Move assignment
 
   /** @brief Instrument specific epoch at index @a i. */
   const EpochType &at(UInt i) const  {return *dynamic_cast<EpochType*>(epoch.at(i).get());}
@@ -421,7 +426,7 @@ public:
   explicit InstrumentFile(const FileName &name) {open(name);}  //!< Constructor.
   InstrumentFile(const InstrumentFile &) = delete;             //!< Disallow copy constructor
   InstrumentFile &operator=(const InstrumentFile &x) = delete; //!< Disallow copying
- ~InstrumentFile() {close();}                                 //!< Destructor.
+ ~InstrumentFile() {close();}                                  //!< Destructor.
 
   /** @brief Open a new file.
   * Old open file is closed before. */
@@ -525,11 +530,10 @@ class MiscValuesEpoch : public Epoch
 public:
   Vector values;
 
-  [[deprecated("Use MiscValuesEpoch(UInt size) instead")]] MiscValuesEpoch() {}
   MiscValuesEpoch(UInt size) : values(size) {}
 
-  static const Type type = EMPTY;
-  virtual Type   getType() const {return static_cast<Type>(values.size());}
+  static constexpr Type type = MISCVALUES;
+  virtual Type   getType() const {return values.size() ? static_cast<Type>(values.size()) : MISCVALUES;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
   virtual Epoch *clone()   const {return new MiscValuesEpoch(*this);}
@@ -545,7 +549,7 @@ typedef ArcTemplate<MiscValuesEpoch> MiscValuesArc;
 class InstrumentTimeEpoch : public Epoch
 {
 public:
-  static const Type type = INSTRUMENTTIME;
+  static constexpr Type type = INSTRUMENTTIME;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -566,7 +570,7 @@ public:
 
   MiscValueEpoch() : value(0) {}
 
-  static const Type type = MISCVALUE;
+  static constexpr Type type = MISCVALUE;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -585,7 +589,7 @@ class Vector3dEpoch : public Epoch
 public:
   Vector3d vector3d;
 
-  static const Type type = VECTOR3D;
+  static constexpr Type type = VECTOR3D;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -604,7 +608,7 @@ class Covariance3dEpoch : public Epoch
 public:
   Tensor3d covariance;
 
-  static const Type type = COVARIANCE3D;
+  static constexpr Type type = COVARIANCE3D;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -625,7 +629,7 @@ public:
   Vector3d velocity;
   Vector3d acceleration;
 
-  static const Type type = ORBIT;
+  static constexpr Type type = ORBIT;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -644,7 +648,7 @@ class StarCameraEpoch : public Epoch
 public:
   Rotary3d rotary;
 
-  static const Type type = STARCAMERA;
+  static constexpr Type type = STARCAMERA;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -663,7 +667,7 @@ class AccelerometerEpoch : public Epoch
 public:
   Vector3d acceleration;
 
-  static const Type type = ACCELEROMETER;
+  static constexpr Type type = ACCELEROMETER;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -686,7 +690,7 @@ public:
 
   SatelliteTrackingEpoch() : range(0), rangeRate(0), rangeAcceleration(0) {}
 
-  static const Type type = SATELLITETRACKING;
+  static constexpr Type type = SATELLITETRACKING;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -705,7 +709,7 @@ class GradiometerEpoch : public Epoch
 public:
   Tensor3d gravityGradient;
 
-  static const Type type = GRADIOMETER;
+  static constexpr Type type = GRADIOMETER;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -729,7 +733,7 @@ public:
 
   GnssReceiverEpoch() : clockError(0.) {}
 
-  static const Type type = GNSSRECEIVER;
+  static constexpr Type type = GNSSRECEIVER;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -751,7 +755,7 @@ public:
 
   ObservationSigmaEpoch() : sigma(0) {}
 
-  static const Type type = OBSERVATIONSIGMA;
+  static constexpr Type type = OBSERVATIONSIGMA;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -771,7 +775,7 @@ public:
   Double massThr;
   Double massTank;
 
-  static const Type type = MASS;
+  static constexpr Type type = MASS;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -791,7 +795,7 @@ public:
   UInt onTime1, onTime2, onTime3,  onTime4,  onTime5,  onTime6,  onTime7,
          onTime8, onTime9, onTime10, onTime11, onTime12, onTime13, onTime14;
 
-  static const Type type = THRUSTER;
+  static constexpr Type type = THRUSTER;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -814,7 +818,7 @@ public:
   Vector3d magneticFieldCalibration;
   Double   torquerCalibration;
 
-  static const Type type = MAGNETOMETER;
+  static constexpr Type type = MAGNETOMETER;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -841,7 +845,7 @@ public:
   Double   tempICUConv; // temperature of ICU A/D converter board [°C]
   UInt     blkNrICU;    // ICU block number
 
-  static const Type type = ACCHOUSEKEEPING;
+  static constexpr Type type = ACCHOUSEKEEPING;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -863,7 +867,7 @@ public:
   Double epsError, epsDrift, driftError;
   UInt   qualityFlag;
 
-  static const Type type = CLOCK;
+  static constexpr Type type = CLOCK;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -887,7 +891,7 @@ public:
   UInt   nLocks;
   UInt   nStars;
 
-  static const Type type = STARCAMERA1A;
+  static constexpr Type type = STARCAMERA1A;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);
@@ -908,7 +912,7 @@ public:
   Double   rcvTimeFrac;
   Vector3d acceleration;
 
-  static const Type type = ACCELEROMETER1A;
+  static constexpr Type type = ACCELEROMETER1A;
   virtual Type   getType() const {return type;}
   virtual Vector data()    const; // data without time
   virtual void   setData(const Vector &x);

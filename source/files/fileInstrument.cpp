@@ -59,6 +59,7 @@ Epoch *Epoch::create(Type type)
       case Epoch::STARCAMERA1A:         return new StarCamera1AEpoch();
       case Epoch::ACCELEROMETER1A:      return new Accelerometer1AEpoch();
       case Epoch::MISCVALUESOLD:        return new MiscValuesOldEpoch();
+      case Epoch::MISCVALUES:           break;
       case Epoch::EMPTY:                break;
     }
 
@@ -99,6 +100,7 @@ std::string Epoch::getTypeName(Type type)
       case Epoch::STARCAMERA1A:         return "STARCAMERA1A";
       case Epoch::ACCELEROMETER1A:      return "ACCELEROMETER1A";
       case Epoch::MISCVALUESOLD:        return "MISCVALUES";
+      case Epoch::MISCVALUES:           return "MISCVALUES(0)";
       case Epoch::EMPTY:                return "EMPTY";
     }
     return "unknown";
@@ -186,6 +188,7 @@ UInt Epoch::dataCount(Type type, Bool mustDefined)
       case Epoch::ACCELEROMETER1A:   return 5;
       case Epoch::GNSSRECEIVER:      if(mustDefined) throw(Exception("GNSSRECEIVER: Data columns not defined.")); return NULLINDEX;
       case Epoch::MISCVALUESOLD:     if(mustDefined) throw(Exception("Cannot determine the number of data columns of old file format (use FileConvert)")); return NULLINDEX;
+      case Epoch::MISCVALUES:        if(mustDefined) throw(Exception("EMPTY: Cannot determine the number of data columns.")); return NULLINDEX;
       case Epoch::EMPTY:             if(mustDefined) throw(Exception("EMPTY: Cannot determine the number of data columns.")); return NULLINDEX;
     }
     throw(Exception("unknown instrument type ("+static_cast<Int>(type)%"%i)"s));
@@ -199,7 +202,7 @@ UInt Epoch::dataCount(Type type, Bool mustDefined)
 /***********************************************/
 /***********************************************/
 
-Arc::Arc(const Arc &x) : type(x.type), epoch(x.epoch.size())
+Arc::Arc(const Arc &x) : epoch(x.epoch.size())
 {
   try
   {
@@ -218,20 +221,19 @@ Arc::Arc(const_MatrixSliceRef A, Epoch::Type type)
 {
   try
   {
-    this->type = type;
     if(type == Epoch::EMPTY)
     {
-      if(A.columns() == 1) this->type = Epoch::INSTRUMENTTIME;
-      if(A.columns() == 2) this->type = Epoch::MISCVALUE;
-      if(A.columns() >= 3) this->type = static_cast<Epoch::Type>(A.columns()-1);
+      if(A.columns() == 1) type = Epoch::INSTRUMENTTIME;
+      if(A.columns() == 2) type = Epoch::MISCVALUE;
+      if(A.columns() >= 3) type = static_cast<Epoch::Type>(A.columns()-1);
     }
 
     epoch.resize(A.rows());
     for(UInt i=0; i<A.rows(); i++)
     {
-      epoch.at(i) = std::unique_ptr<Epoch>(Epoch::create(this->type));
+      epoch.at(i) = std::unique_ptr<Epoch>(Epoch::create(type));
       epoch.at(i)->time = mjd2time(A(i,0));
-      if(A.columns()>1)
+      if(A.columns() > 1)
         epoch.at(i)->setData(A.slice(i,1,1,A.columns()-1).trans());
     }
   }
@@ -264,7 +266,6 @@ Arc &Arc::operator=(const Arc &x)
 {
   try
   {
-    type  = x.type;
     epoch.resize(x.epoch.size());
     for(UInt i=0; i<x.epoch.size(); i++)
       epoch.at(i) = std::unique_ptr<Epoch>(x.epoch.at(i)->clone());
@@ -320,11 +321,11 @@ Arc Arc::subArc(UInt start, UInt len) const
   try
   {
     if(len==0)
-      return Arc(type);
+      return Arc();
     if((start+len)>size())
       throw(Exception("Length of sub-arc ("+len%"%i) starting at ("s+start%"%i) exceeds arc length ("s+size()%"%i)."s));
 
-    Arc arc(type);
+    Arc arc;
     arc.epoch.resize(len);
     for(UInt i=0; i<len; i++)
       arc.epoch.at(i) = std::unique_ptr<Epoch>(epoch.at(start+i)->clone());
@@ -364,10 +365,7 @@ void Arc::append(const Arc &arc)
       throw(Exception("append same arc: not implemented"));
     if(arc.size() == 0)
       return;
-    if(size() == 0)
-      type = arc.type;
-    if(type != arc.getType())
-      throw(Exception("instruments types are different: "+getTypeName()+", "+arc.getTypeName()));
+    checkType(arc.getType());
 
     const UInt index = size();
     epoch.resize(index+arc.size());
@@ -422,11 +420,6 @@ void Arc::divide(const Time &minGap, UInt minArcLen, std::vector<Arc> &arcList) 
     if(size() == 0)
       return;
 
-    // check types
-    Epoch::Type typeList = Arc::getType(arcList);
-    if((typeList != Epoch::EMPTY) && (typeList != type))
-      throw(Exception("instruments types are different: "+getTypeName()+", "+Epoch::getTypeName(typeList)));
-
     // quick return possible?
     if((minGap == Time()) && (size() >= minArcLen))
     {
@@ -458,10 +451,7 @@ void Arc::insert(UInt index, const Epoch &e)
 {
   try
   {
-    if(getType()==Epoch::EMPTY)
-      type = e.getType();
-    if(type != e.getType())
-      throw(Exception("instruments types are different: "+getTypeName()+", "+e.getTypeName()));
+    checkType(e.getType());
     epoch.insert(epoch.begin()+index, std::unique_ptr<Epoch>(e.clone()));
   }
   catch(std::exception &e)
@@ -476,10 +466,7 @@ void Arc::push_back(const Epoch &e)
 {
   try
   {
-    if(getType()==Epoch::EMPTY)
-      type = e.getType();
-    if(type != e.getType())
-      throw(Exception("instruments types are different: "+getTypeName()+", "+e.getTypeName()));
+    checkType(e.getType());
     epoch.push_back(std::unique_ptr<Epoch>(e.clone()));
   }
   catch(std::exception &e)
@@ -675,12 +662,11 @@ void Arc::load(InArchive  &ia)
     UInt typeInt, count;
     ia>>nameValue("type",       typeInt);
     ia>>nameValue("pointCount", count);
-    type = static_cast<Epoch::Type>(typeInt);
     epoch.resize(count);
     for(UInt i=0; i<count; i++)
     {
       ia>>beginGroup("epoch");
-      epoch.at(i) = std::unique_ptr<Epoch>(Epoch::create(type));
+      epoch.at(i) = std::unique_ptr<Epoch>(Epoch::create(static_cast<Epoch::Type>(typeInt)));
       epoch.at(i)->load(ia);
       ia>>endGroup("epoch");
     }
@@ -695,9 +681,9 @@ void Arc::load(InArchive  &ia)
 
 void Arc::save(OutArchive &oa) const
 {
-  oa<<nameValue("type",       static_cast<Int>(type));
+  oa<<nameValue("type",       static_cast<Int>(getType()));
   oa<<nameValue("pointCount", size());
-  std::string comment = Epoch::fileFormatString(type);
+  std::string comment = Epoch::fileFormatString(getType());
   oa.comment(comment);
   oa.comment(std::string(comment.size(), '='));
   for(UInt i=0; i<size(); i++)
@@ -819,7 +805,7 @@ Arc InstrumentFile::readArc(UInt i)
     auto epoch = std::unique_ptr<Epoch>(Epoch::create(type));
     while(index <= i)
     {
-      arc = Arc(type);
+      arc = Arc();
       UInt count;
       file>>beginGroup("arc");
       file>>nameValue("pointCount", count);

@@ -56,7 +56,7 @@ void InstrumentFilter::run(Config &config, Parallel::CommunicatorPtr comm)
     logStatus<<"read instrument data <"<<fileNameIn<<"> and filter"<<Log::endl;
     InstrumentFile instrumentFile(fileNameIn);
 
-    std::vector<Arc> arcList(instrumentFile.arcCount(), instrumentFile.getType());
+    std::vector<Arc> arcList(instrumentFile.arcCount());
     Parallel::forEach(arcList, [&](UInt arcNo)
     {
       Arc arc = instrumentFile.readArc(arcNo);

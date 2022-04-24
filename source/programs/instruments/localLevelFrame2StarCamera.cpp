@@ -55,7 +55,7 @@ void LocalLevelFrame2StarCamera::run(Config &config, Parallel::CommunicatorPtr c
     logStatus<<"compute local level frame rotation"<<Log::endl;
     Ellipsoid ellipsoid(a, f);
     InstrumentFile epochFile(fileNameInstrument);
-    std::vector<Arc> arcList(epochFile.arcCount(), Epoch::STARCAMERA);
+    std::vector<Arc> arcList(epochFile.arcCount());
     Parallel::forEach(arcList, [&](UInt arcNo)
     {
       Arc      arc = epochFile.readArc(arcNo);

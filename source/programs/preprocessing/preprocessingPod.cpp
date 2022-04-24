@@ -348,7 +348,7 @@ void PreprocessingPod::run(Config &config, Parallel::CommunicatorPtr comm)
       if(estimateResiduals)
       {
         logStatus<<"compute residuals"<<Log::endl;
-        arcListPod.clear(); arcListPod.resize(arcCount, Epoch::ORBIT);
+        arcListPod.clear(); arcListPod.resize(arcCount);
         Parallel::forEachProcess(arcCount,   [this](UInt arcNo) {computeResiduals(arcNo);},     processNo, comm);
         Parallel::forEachProcess(arcListPod, [this](UInt arcNo) {return collectArcPod(arcNo);}, processNo, comm);
 

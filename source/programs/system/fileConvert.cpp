@@ -98,7 +98,7 @@ void FileConvert::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       InstrumentFile file(fileNameInput);
       const Epoch::Type type = file.getType();
       logInfo<<"  instr   = "<<Epoch::getTypeName(type)<<" ("<<static_cast<Int>(type)<<")"<<Log::endl;
-      std::vector<Arc> arcList(file.arcCount(), type);
+      std::vector<Arc> arcList(file.arcCount());
       for(UInt arcNo=0; arcNo<file.arcCount(); arcNo++)
         arcList.at(arcNo) = file.readArc(arcNo);
       Arc::printStatistics(arcList);

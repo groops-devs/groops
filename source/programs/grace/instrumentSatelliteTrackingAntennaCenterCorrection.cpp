@@ -100,7 +100,7 @@ void InstrumentSatelliteTrackingAntennaCenterCorrection::run(Config &config, Par
     InstrumentFile  starCamera2File(starCamera2Name);
     InstrumentFile::checkArcCount({orbit1File, orbit2File, starCamera1File, starCamera2File});
 
-    std::vector<Arc> arcList(orbit1File.arcCount(), Epoch::SATELLITETRACKING);
+    std::vector<Arc> arcList(orbit1File.arcCount());
     Parallel::forEach(arcList, [&](UInt arcNo)
     {
       OrbitArc      orbit1      = orbit1File.readArc(arcNo);
