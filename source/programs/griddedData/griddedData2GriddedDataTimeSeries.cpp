@@ -66,17 +66,17 @@ void GriddedData2GriddedDataTimeSeries::run(Config &config, Parallel::Communicat
 
     GriddedData         grid;
     std::vector<Matrix> data;
-    for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
+    for(UInt idNode=0; idNode<fileNamesGrid.size(); idNode++)
     {
       try
       {
-        logStatus<<"read gridded data <"<<fileNamesGrid.at(idEpoch)<<">"<<Log::endl;
-        readFileGriddedData(fileNamesGrid.at(idEpoch), grid);
+        logStatus<<"read gridded data <"<<fileNamesGrid.at(idNode)<<">"<<Log::endl;
+        readFileGriddedData(fileNamesGrid.at(idNode), grid);
         if(!data.size())
-          data.resize(times.size(), Matrix(grid.points.size(), grid.values.size()));
+          data.resize(fileNamesGrid.size(), Matrix(grid.points.size(), grid.values.size()));
         for(UInt k=0; k<grid.values.size(); k++)
           for(UInt i=0; i<grid.values.at(k).size(); i++)
-            data.at(idEpoch)(i,k) = grid.values.at(k).at(i);
+            data.at(idNode)(i,k) = grid.values.at(k).at(i);
       }
       catch(std::exception &e)
       {

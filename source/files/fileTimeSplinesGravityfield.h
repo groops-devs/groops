@@ -52,15 +52,15 @@ const char *const FILE_TIMESPLINESCOVARIANCE_TYPE   = "timeSplinesCovariance";
 /** @brief Time variable gravity field represented by splines in time domain. */
 class InFileTimeSplinesGravityfield
 {
-  InFileArchive      file;
-  Double             GM, R;
-  UInt               count, index;
-  UInt               degree;
-  UInt               _maxDegree, _minDegree;
-  std::vector<Time>  times;
+  InFileArchive       file;
+  UInt                splineDegree_;
+  std::vector<Time>   times_;
+  Double              GM, R;
+  UInt                maxDegree_, minDegree_;
+  UInt                indexFile, indexData;
+  std::streampos      seekStart;
+  std::streamoff      seekSize;
   std::vector<SphericalHarmonics> harmonics;
-  std::streampos     dataStart;
-  std::streamoff     dataEpochSize;
 
 public:
   InFileTimeSplinesGravityfield() {}
@@ -70,10 +70,15 @@ public:
   void  open(const FileName &name, UInt maxDegree=INFINITYDEGREE, UInt minDegree=0);
   void  close();
 
-  SphericalHarmonics sphericalHarmonics(const Time &time, Double factor=1.0);
+  UInt splineDegree() const {return splineDegree_;}
+  UInt nodeCount()    const {return times_.size()+splineDegree_-1;}  //!< number of spline nodal points (agree with times().size() for spline degree 1)
+  const std::vector<Time> &times() const {return times_;}
 
-  UInt maxDegree() const {return _maxDegree;}
-  UInt minDegree() const {return _minDegree;}
+  /// at spline nodal point
+  SphericalHarmonics sphericalHarmonics(UInt idNode);
+
+  /// interpolated at @p time.
+  SphericalHarmonics sphericalHarmonics(const Time &time, Double factor=1.0);
 };
 
 /***** FUNCTIONS *******************************/
@@ -98,12 +103,14 @@ void readFileTimeSplinesGravityfield(const FileName &fileName,
 class InFileTimeSplinesCovariance
 {
   InFileArchive       file;
-  Double              _GM, _R;
-  UInt                _maxDegree, _minDegree;
+  UInt                splineDegree_;
+  std::vector<Time>   times_;
+  Double              GM_, R_;
   Bool                mustCut;
-  UInt                count, index;
-  UInt                degree;
-  std::vector<Time>   times;
+  UInt                maxDegree_, minDegree_;
+  UInt                indexFile, indexData;
+  std::streampos      seekStart;
+  std::streamoff      seekSize;
   std::vector<Matrix> cov;
 
 public:
@@ -114,17 +121,23 @@ public:
   void  open(const FileName &name, UInt maxDegree=INFINITYDEGREE, UInt minDegree=0);
   void  close();
 
+  UInt   splineDegree() const {return splineDegree_;}
+  UInt   nodeCount()    const {return times_.size()+splineDegree_-1;}  //!< number of spline nodal points (agree with times().size() for spline degree 1)
+  Double GM()           const {return GM_;}
+  Double R()            const {return R_;}
+  UInt   maxDegree()    const {return maxDegree_;}
+  UInt   minDegree()    const {return minDegree_;}
+  const std::vector<Time> &times() const {return times_;}
+
+  /// at spline nodal point
+  Matrix covariance(UInt idNode);
+
   /** @brief interpolated covariances at time t.
   * The result is a full covariance matrix or a vector containing only the variances
   * of a spherical harmonics expansion.
   * The coefficients are given in a degree wise sequence with alternating sin, cos:
   * ..., c20,c21,s21,c22,s22,..., beginning with c00.  */
   Matrix covariance(const Time &time, Double factor, UInt maxDegree=INFINITYDEGREE, UInt minDegree=0, Double GM=0.0, Double R=0.0);
-
-  Double GM()        const {return _GM;}
-  Double R()         const {return _R;}
-  UInt   maxDegree() const {return _maxDegree;}
-  UInt   minDegree() const {return _minDegree;}
 };
 
 /***** FUNCTIONS *******************************/

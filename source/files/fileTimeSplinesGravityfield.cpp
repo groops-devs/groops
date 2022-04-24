@@ -30,39 +30,30 @@ void InFileTimeSplinesGravityfield::open(const FileName &name, UInt maxDegree, U
 {
   try
   {
-    this->_maxDegree = maxDegree;
-    this->_minDegree = minDegree;
+    maxDegree_ = maxDegree;
+    minDegree_ = minDegree;
 
     close();
     if(!name.empty())
     {
+      UInt epochCount;
       file.open(name, FILE_TIMESPLINESGRAVITYFIELD_TYPE);
-      file>>nameValue("GM", GM);
-      file>>nameValue("R",  R);
-      file>>nameValue("degree",  degree);
-      file>>nameValue("timeCount", count);
-      times.resize(count);
-      for(UInt i=0; i<times.size(); i++)
-        file>>nameValue("time", times.at(i));
+      file>>nameValue("GM",        GM);
+      file>>nameValue("R",         R);
+      file>>nameValue("degree",    splineDegree_);
+      file>>nameValue("timeCount", epochCount);
+      times_.resize(epochCount);
+      for(UInt i=0; i<times_.size(); i++)
+        file>>nameValue("time", times_.at(i));
 
       // If we have a binary file, we can efficiently seek to the needed position in the file.
       if(file.canSeek())
-        dataStart = file.position();
-      harmonics.resize(degree+1);
-      for(UInt i=0; i<harmonics.size(); i++)
-      {
-        Matrix cnm, snm;
-        file>>beginGroup("node");
-        file>>nameValue("cnm", cnm);
-        file>>nameValue("snm", snm);
-        harmonics.at(i) = SphericalHarmonics(GM, R, cnm, snm).get(maxDegree, minDegree);
-        file>>endGroup("node");
-        this->_maxDegree = harmonics.at(i).maxDegree();
-        if(file.canSeek() && (i==0))
-          dataEpochSize = file.position() - dataStart;
-      }
+        seekStart = file.position();
+      seekSize = 0;
 
-      index = 0;
+      indexFile = 0;
+      indexData = nodeCount();
+      harmonics.resize(splineDegree_+1);
     }
   }
   catch(std::exception &e)
@@ -76,6 +67,56 @@ void InFileTimeSplinesGravityfield::open(const FileName &name, UInt maxDegree, U
 void InFileTimeSplinesGravityfield::close()
 {
   file.close();
+  times_.clear();
+  splineDegree_ = 0;
+}
+
+/***********************************************/
+
+SphericalHarmonics InFileTimeSplinesGravityfield::sphericalHarmonics(UInt idNode)
+{
+  try
+  {
+    if(file.fileName().empty())
+      throw(Exception("no file open"));
+
+    // must restart?
+    if(indexFile > idNode)
+    {
+      if(file.canSeek() && seekSize)
+        indexFile = 0;
+      else
+        open(file.fileName());
+    }
+
+    SphericalHarmonics harmonics;
+    while(indexFile <= idNode)
+    {
+      // Seek to appropriate interval.
+      if(file.canSeek() && seekSize)
+      {
+        file.seek(seekStart + static_cast<std::streamoff>(idNode * seekSize));
+        indexFile = idNode;
+      }
+
+      Matrix cnm, snm;
+      file>>beginGroup("node");
+      file>>nameValue("cnm", cnm);
+      file>>nameValue("snm", snm);
+      file>>endGroup("node");
+      harmonics = SphericalHarmonics(GM, R, cnm, snm).get(maxDegree_, minDegree_);
+
+      if(file.canSeek() && (indexFile == 0))
+        seekSize = file.position() - seekStart;
+      indexFile++;
+    }
+
+    return harmonics;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
 
 /***********************************************/
@@ -85,47 +126,24 @@ SphericalHarmonics InFileTimeSplinesGravityfield::sphericalHarmonics(const Time 
   try
   {
     if(file.fileName().empty())
-      return SphericalHarmonics();
+      throw(Exception("no file open"));
+    if((time < times_.front()) || (time > times_.back()))
+      throw(Exception(time.dateTimeStr()+" outside interval ["+times_.front().dateTimeStr()+", "+times_.back().dateTimeStr()+"] of <"+file.fileName().str()+">"));
 
-    if((time<times.at(0)) || (time>=times.at(times.size()-1)))
-    {
-      logWarning<<"No TimeSplinesGravityfield data for time "<<time.dateTimeStr()<<Log::endl;
-      return SphericalHarmonics();
-    }
+    // find time interval and read missing nodes
+    const UInt idx   = std::min(static_cast<UInt>(std::distance(times_.begin(), std::upper_bound(times_.begin(), times_.end(), time))), times_.size()-1)-1;
+    const UInt start = (idx > indexData) ? std::max(idx, indexData+harmonics.size()) : idx;
+    const UInt end   = (idx > indexData) ? idx+harmonics.size() : std::min(idx+harmonics.size(), indexData);
+    for(UInt i=start; i<end; i++)
+      harmonics.at(i%harmonics.size()) = sphericalHarmonics(i);
+    indexData = idx;
 
-    // Schon ueberlesen? -> dann von vorne anfangen
-    if(time<times.at(index))
-      open(FileName(file.fileName()), this->_maxDegree, this->_minDegree);
-
-    // Seek to appropriate interval. The current position in the file is degree+1 intervals ahead of index
-    if(file.canSeek() && (time>times.at(index+1))) // If the time is larger than the last index that has already been read in
-    {
-      UInt seekIndex = index;
-      while(time>=times.at(seekIndex+1))
-        seekIndex++;
-      index = seekIndex - (degree+1);
-      file.seek(dataStart + static_cast<std::streamoff>(seekIndex * dataEpochSize));
-    }
-
-    // Interpolationsintervall suchen
-    while(time>=times.at(index+1))
-    {
-      for(UInt i=0; i+1<harmonics.size(); i++)
-        harmonics.at(i) = harmonics.at(i+1);
-      Matrix cnm, snm;
-      file>>beginGroup("node");
-      file>>nameValue("cnm", cnm);
-      file>>nameValue("snm", snm);
-      file>>endGroup("node");
-      harmonics.at(degree) = SphericalHarmonics(GM, R, cnm, snm).get(_maxDegree, _minDegree);
-      index++;
-    }
-
-    const Double       t     = (time-times.at(index)).mjd()/(times.at(index+1)-times.at(index)).mjd();
-    const Vector       coeff = BasisSplines::compute(t, degree);
-    SphericalHarmonics harm  = factor*coeff(0) * harmonics.at(0);
+    // spline interpolation in interval
+    const Double       t     = (time-times_.at(idx)).mjd()/(times_.at(idx+1)-times_.at(idx)).mjd();
+    const Vector       coeff = BasisSplines::compute(t, splineDegree_);
+    SphericalHarmonics harm  = factor * coeff(0) * harmonics.at(indexData%harmonics.size());
     for(UInt i=1; i<coeff.rows(); i++)
-      harm += factor * coeff(i) * harmonics.at(i);
+      harm += factor * coeff(i) * harmonics.at((indexData+i)%harmonics.size());
     return harm;
   }
   catch(std::exception &e)
@@ -215,36 +233,30 @@ void InFileTimeSplinesCovariance::open(const FileName &name, UInt maxDegree, UIn
     close();
     if(!name.empty())
     {
+      UInt epochCount;
       file.open(name, FILE_TIMESPLINESCOVARIANCE_TYPE);
-      file>>nameValue("GM",        _GM);
-      file>>nameValue("R",         _R);
-      file>>nameValue("minDegree", _minDegree);
-      file>>nameValue("maxDegree", _maxDegree);
-      file>>nameValue("degree",    degree);
+      file>>nameValue("GM",        GM_);
+      file>>nameValue("R",         R_);
+      file>>nameValue("minDegree", minDegree_);
+      file>>nameValue("maxDegree", maxDegree_);
+      file>>nameValue("degree",    splineDegree_);
+      file>>nameValue("timeCount", epochCount);
+      times_.resize(epochCount);
+      for(UInt i=0; i<times_.size(); i++)
+        file>>nameValue("time", times_.at(i));
 
-      mustCut    = (maxDegree < _maxDegree);
-      _maxDegree = std::min(maxDegree, _maxDegree);
-      _minDegree = std::max(minDegree, _minDegree);
+      mustCut    = (maxDegree < maxDegree_);
+      maxDegree_ = std::min(maxDegree, maxDegree_);
+      minDegree_ = std::max(minDegree, minDegree_);
 
-      file>>nameValue("timeCount", count);
-      times.resize(count);
-      for(UInt i=0; i<times.size(); i++)
-        file>>nameValue("time", times.at(i));
+      // If we have a binary file, we can efficiently seek to the needed position in the file.
+      if(file.canSeek())
+        seekStart = file.position();
+      seekSize = 0;
 
-      cov.resize(degree+1);
-      for(UInt i=0; i<cov.size(); i++)
-      {
-        file>>nameValue("node", cov.at(i));
-        if(mustCut)
-        {
-          if(cov.at(i).getType() == Matrix::SYMMETRIC) // full covariance matrix?
-            cov.at(i) = cov.at(i).slice(0,0,(_maxDegree+1)*(_maxDegree+1),(_maxDegree+1)*(_maxDegree+1));
-          else
-            cov.at(i) = cov.at(i).row(0,(_maxDegree+1)*(_maxDegree+1));
-        }
-      }
-
-      index = 0;
+      indexFile = 0;
+      indexData = nodeCount();;
+      cov.resize(splineDegree_+1);
     }
   }
   catch(std::exception &e)
@@ -258,6 +270,58 @@ void InFileTimeSplinesCovariance::open(const FileName &name, UInt maxDegree, UIn
 void InFileTimeSplinesCovariance::close()
 {
   file.close();
+  times_.clear();
+  splineDegree_ = 0;
+}
+
+/***********************************************/
+
+Matrix InFileTimeSplinesCovariance::covariance(UInt idNode)
+{
+  try
+  {
+    if(file.fileName().empty())
+      throw(Exception("no file open"));
+
+    // must restart?
+    if(indexFile > idNode)
+    {
+      if(file.canSeek() && seekSize)
+        indexFile = 0;
+      else
+        open(file.fileName(), maxDegree(), minDegree());
+    }
+
+    Matrix C;
+    while(indexFile <= idNode)
+    {
+      // Seek to appropriate interval.
+      if(file.canSeek() && seekSize)
+      {
+        file.seek(seekStart + static_cast<std::streamoff>(idNode * seekSize));
+        indexFile = idNode;
+      }
+
+      file>>nameValue("node", C);
+      if(mustCut)
+      {
+        if(C.getType() == Matrix::SYMMETRIC) // full covariance matrix?
+          C = C.slice(0,0,(maxDegree_+1)*(maxDegree_+1),(maxDegree_+1)*(maxDegree_+1));
+        else
+          C = C.row(0,(maxDegree_+1)*(maxDegree_+1));
+      }
+
+      if(file.canSeek() && (indexFile == 0))
+        seekSize = file.position() - seekStart;
+      indexFile++;
+    }
+
+    return C;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
 
 /***********************************************/
@@ -267,84 +331,68 @@ Matrix InFileTimeSplinesCovariance::covariance(const Time &time, Double factor, 
   try
   {
     if(file.fileName().empty())
-      return Matrix();
+      throw(Exception("no file open"));
+    if((time < times_.front()) || (time > times_.back()))
+      throw(Exception(time.dateTimeStr()+" outside interval ["+times_.front().dateTimeStr()+", "+times_.back().dateTimeStr()+"] of <"+file.fileName().str()+">"));
 
-    if((time<times.at(0)) || (time>=times.at(times.size()-1)))
-    {
-      logWarning<<"No TimeSplinesCovariance data for time "<<time.dateTimeStr()<<Log::endl;
-      return Matrix();
-    }
+    // find time interval and read missing nodes
+    const UInt idx   = std::min(static_cast<UInt>(std::distance(times_.begin(), std::upper_bound(times_.begin(), times_.end(), time))), times_.size()-1)-1;
+    const UInt start = (idx > indexData) ? std::max(idx, indexData+cov.size()) : idx;
+    const UInt end   = (idx > indexData) ? idx+cov.size() : std::min(idx+cov.size(), indexData);
+    for(UInt i=start; i<end; i++)
+      cov.at(i%cov.size()) = covariance(i);
+    indexData = idx;
 
-    // Schon ueberlesen? -> dann von vorne anfangen
-    if(time<times.at(index))
-      open(FileName(file.fileName()), this->_maxDegree, this->_minDegree);
-
-    // Interpolationsintervall suchen
-    while(time>=times.at(index+1))
-    {
-      for(UInt i=0; i+1<cov.size(); i++)
-        cov.at(i) = cov.at(i+1);
-      file>>nameValue("node", cov.at(degree));
-      if(mustCut)
-      {
-        if(cov.at(degree).getType() == Matrix::SYMMETRIC) // full covariance matrix?
-          cov.at(degree) = cov.at(degree).slice(0,0,(_maxDegree+1)*(_maxDegree+1),(_maxDegree+1)*(_maxDegree+1));
-        else
-          cov.at(degree) = cov.at(degree).row(0,(_maxDegree+1)*(_maxDegree+1));
-      }
-      index++;
-    }
-
-    const Double t     = (time-times.at(index)).mjd()/(times.at(index+1)-times.at(index)).mjd();
-    const Vector coeff = BasisSplines::compute(t, degree);
-
-    Matrix C = coeff(0) * cov.at(0);
+    // spline interpolation in interval
+    const Double  t     = (time-times_.at(idx)).mjd()/(times_.at(idx+1)-times_.at(idx)).mjd();
+    const Vector  coeff = BasisSplines::compute(t, splineDegree_);
+    Matrix        C     = factor * coeff(0) * cov.at(indexData%cov.size());
     for(UInt i=1; i<coeff.rows(); i++)
-      C += coeff(i) * cov.at(i);
+      axpy(factor * coeff(i), cov.at((indexData+i)%cov.size()), C);
 
-    if(GM<=0) GM = _GM;
-    if(R<=0)  R  = _R;
-    if(maxDegree==INFINITYDEGREE) maxDegree = _maxDegree;
+    if(GM <= 0)  GM = GM_;
+    if(R  <= 0)  R  = R_;
+    if(maxDegree == INFINITYDEGREE) maxDegree = maxDegree_;
     minDegree = std::min(minDegree, maxDegree);
 
-    if(_GM/GM*factor != 1.0)
-      C *= pow(_GM/GM*factor, 2);
+    if(GM_/GM*factor != 1.0)
+      C *= std::pow(GM_/GM*factor, 2);
 
     // minDegree
     // ---------
     if(C.getType() == Matrix::SYMMETRIC) // full covariance matrix?
     {
-      for(UInt idx=0; idx<pow(std::max(_minDegree, minDegree),2); idx++)
+      for(UInt idx=0; idx<std::pow(std::max(minDegree_, minDegree),2); idx++)
       {
         C.row(idx)    *= 0;
         C.column(idx) *= 0;
       }
     }
     else
-      for(UInt idx=0; idx<pow(std::max(_minDegree, minDegree),2); idx++)
+      for(UInt idx=0; idx<std::pow(std::max(minDegree_, minDegree),2); idx++)
         C.row(idx) *= 0;
 
     // Quick return possible?
     // ----------------------
-    if((R==_R)&&(maxDegree==_maxDegree))
+    if((R == R_) && (maxDegree == maxDegree_))
       return C;
 
     // full covariance matrix?
     // -----------------------
     if(C.getType() == Matrix::SYMMETRIC)
     {
-      if(maxDegree<_maxDegree)
+      if(maxDegree < maxDegree_)
         C = C.slice(0, 0, (maxDegree+1)*(maxDegree+1), (maxDegree+1)*(maxDegree+1));
-      else if(maxDegree>_maxDegree)
+      else if(maxDegree>maxDegree_)
       {
         Matrix tmp = C;
         C = Matrix((maxDegree+1)*(maxDegree+1), Matrix::SYMMETRIC);
         copy(tmp, C.slice(0, 0, tmp.rows(), tmp.columns()));
       }
 
-      if(R!=_R)
+      if(R != R_)
       {
-        Double factor = _R/R;
+        Double factor = R_/R;
         UInt idx = 0;
         for(UInt n=0; n<=maxDegree; n++)
         {
@@ -354,35 +402,35 @@ Matrix InFileTimeSplinesCovariance::covariance(const Time &time, Double factor, 
             C.column(idx) *= factor;
             idx++;
           }
-          factor *= _R/R;
+          factor *= R_/R;
         }
-      } // (R!=_R)
+      } // (R!=R_)
 
       return C;
     }
 
     // only variances
     // --------------
-    if(maxDegree<_maxDegree)
+    if(maxDegree < maxDegree_)
       C = C.row(0, (maxDegree+1)*(maxDegree+1));
-    else if(maxDegree>_maxDegree)
+    else if(maxDegree > maxDegree_)
     {
       Matrix tmp = C;
       C = Matrix((maxDegree+1)*(maxDegree+1), tmp.columns());
       copy(tmp, C.row(0, tmp.rows()));
     }
 
-    if(R!=_R)
+    if(R != R_)
     {
-      Double factor = _R/R;
+      Double factor = R_/R;
       UInt idx = 0;
       for(UInt n=0; n<=maxDegree; n++)
       {
         for(UInt m=0; m<2*n+1; m++)
-          C.row(idx++) *= pow(factor,2);
-        factor *= _R/R;
+          C.row(idx++) *= std::pow(factor, 2);
+        factor *= R_/R;
       }
-    } // (R!=_R)
+    } // (R!=R_)
 
     return C;
   }

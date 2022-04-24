@@ -76,7 +76,7 @@ Matrix InFileGriddedDataTimeSeries::data(UInt idNode) // points x data columns
   try
   {
     if(file.fileName().empty())
-      return Matrix();
+      throw(Exception("no file open"));
 
     // must restart?
     if(indexFile > idNode)
@@ -126,12 +126,13 @@ Matrix InFileGriddedDataTimeSeries::data(const Time &time)
 {
   try
   {
+    if(file.fileName().empty())
+      throw(Exception("no file open"));
     if((time < times_.front()) || (time > times_.back()))
-      throw(Exception(time.dateTimeStr()+" outside interval ["+times_.front()%"%D_%T, "s+times_.back()%"%D_%T] of <"s+file.fileName().str()+">"));
+      throw(Exception(time.dateTimeStr()+" outside interval ["+times_.front().dateTimeStr()+", "+times_.back().dateTimeStr()+"] of <"+file.fileName().str()+">"));
 
     // find time interval and read missing nodes
-    const UInt idx   = std::min(std::distance(times_.begin(), std::upper_bound(times_.begin(), times_.end(), time)),
-                                static_cast<std::vector<Time>::difference_type>(times_.size()-1))-1;
+    const UInt idx   = std::min(static_cast<UInt>(std::distance(times_.begin(), std::upper_bound(times_.begin(), times_.end(), time))), times_.size()-1)-1;
     const UInt start = (idx > indexData) ? std::max(idx, indexData+data_.size()) : idx;
     const UInt end   = (idx > indexData) ? idx+data_.size() : std::min(idx+data_.size(), indexData);
     for(UInt i=start; i<end; i++)

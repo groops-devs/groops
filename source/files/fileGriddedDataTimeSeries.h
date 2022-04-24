@@ -60,8 +60,8 @@ public:
   void close();
 
   UInt splineDegree() const {return splineDegree_;}
-  UInt nodeCount()    const {return times_.size()+splineDegree_;}  //!< number of spline nodal points (agree with times().size() for spline degree 1)
-  UInt dataCount()    const {return dataCount_;}                   //!< number of data columns
+  UInt nodeCount()    const {return times_.size()+splineDegree_-1;}  //!< number of spline nodal points (agree with times().size() for spline degree 1)
+  UInt dataCount()    const {return dataCount_;}                     //!< number of data columns
 
   const GriddedData       &grid()  const {return grid_;}
   const std::vector<Time> &times() const {return times_;}

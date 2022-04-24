@@ -173,9 +173,10 @@ void FileConvert::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     {
       InFileGriddedDataTimeSeries file(fileNameInput);
       logInfo<<"  spline degree = "<<file.splineDegree()<<Log::endl;
+      logInfo<<"  node count    = "<<file.nodeCount()<<Log::endl;
       logInfo<<"  data columns  = "<<file.dataCount()<<Log::endl;
       logInfo<<"  sampling      = "<<medianSampling(file.times()).mjd()<<" days"<<Log::endl;
-      logInfo<<"  interval      = ["<<file.times().front().dateTimeStr()<<", "<<file.times().back().dateTimeStr()<<")"<<Log::endl;
+      logInfo<<"  interval      = ["<<file.times().front().dateTimeStr()<<", "<<file.times().back().dateTimeStr()<<"]"<<Log::endl;
       MiscGriddedData::printStatistics(file.grid());
 
       if(!fileNameOutput.empty())
@@ -185,6 +186,59 @@ void FileConvert::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
           data.at(i) = file.data(i);
         writeFileGriddedDataTimeSeries(fileNameOutput, file.splineDegree(), file.times(), file.grid(), data);
       }
+      return;
+    }
+
+    // =============================================
+
+    if(type == FILE_TIMESPLINESGRAVITYFIELD_TYPE)
+    {
+      InFileTimeSplinesGravityfield file(fileNameInput);
+      logInfo<<"  spline degree = "<<file.splineDegree()<<Log::endl;
+      logInfo<<"  node count    = "<<file.nodeCount()<<Log::endl;
+      logInfo<<"  sampling      = "<<medianSampling(file.times()).mjd()<<" days"<<Log::endl;
+      logInfo<<"  interval      = ["<<file.times().front().dateTimeStr()<<", "<<file.times().back().dateTimeStr()<<"]"<<Log::endl;
+
+      if(!fileNameOutput.empty())
+      {
+        Double GM = DEFAULT_GM, R = DEFAULT_R;
+        std::vector<Matrix> cnm(file.nodeCount());
+        std::vector<Matrix> snm(file.nodeCount());
+        for(UInt i=0; i<file.nodeCount(); i++)
+        {
+          SphericalHarmonics harm = file.sphericalHarmonics(i);
+          GM        = harm.GM();
+          R         = harm.R();
+          cnm.at(i) = harm.cnm();
+          snm.at(i) = harm.snm();
+        }
+        writeFileTimeSplinesGravityfield(fileNameOutput, GM, R, file.splineDegree(), file.times(), cnm, snm);
+      }
+      return;
+    }
+
+    // =============================================
+
+    if(type == FILE_TIMESPLINESCOVARIANCE_TYPE)
+    {
+      InFileTimeSplinesCovariance file(fileNameInput);
+      logInfo<<"  GM            = "<<file.GM()<<Log::endl;
+      logInfo<<"  R             = "<<file.R()<<Log::endl;
+      logInfo<<"  minDegree     = "<<file.minDegree()<<Log::endl;
+      logInfo<<"  maxDegree     = "<<file.maxDegree()<<Log::endl;
+      logInfo<<"  spline degree = "<<file.splineDegree()<<Log::endl;
+      logInfo<<"  node count    = "<<file.nodeCount()<<Log::endl;
+      logInfo<<"  sampling      = "<<medianSampling(file.times()).mjd()<<" days"<<Log::endl;
+      logInfo<<"  interval      = ["<<file.times().front().dateTimeStr()<<", "<<file.times().back().dateTimeStr()<<"]"<<Log::endl;
+
+      if(!fileNameOutput.empty())
+      {
+        std::vector<Matrix> C(file.nodeCount());
+        for(UInt i=0; i<file.nodeCount(); i++)
+          C.at(i) = file.covariance(i);
+        writeFileTimeSplinesCovariance(fileNameOutput, file.GM(), file.R(), file.minDegree(), file.maxDegree(), file.splineDegree(), file.times(), C);
+      }
+      return;
     }
 
     // =============================================
@@ -305,27 +359,10 @@ void FileConvert::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       readFileTideGeneratingPotential (fileNameInput,  x);
       writeFileTideGeneratingPotential(fileNameOutput, x);
     }
-    else if(type == FILE_TIMESPLINESGRAVITYFIELD_TYPE)
-    {
-      Double GM, R;
-      UInt splineDegree;
-      std::vector<Time> times;
-      std::vector<Matrix> cnm, snm;
-      readFileTimeSplinesGravityfield (fileNameInput,  GM, R, splineDegree, times, cnm, snm);
-      writeFileTimeSplinesGravityfield(fileNameOutput, GM, R, splineDegree, times, cnm, snm);
-    }
-    else if(type == FILE_TIMESPLINESCOVARIANCE_TYPE)
-    {
-      Double GM, R;
-      UInt minDegree, maxDegree;
-      UInt splineDegree;
-      std::vector<Time> times;
-      std::vector<Matrix> sigma2;
-      readFileTimeSplinesCovariance (fileNameInput,  GM, R, minDegree, maxDegree, splineDegree, times, sigma2);
-      writeFileTimeSplinesCovariance(fileNameOutput, GM, R, minDegree, maxDegree, splineDegree, times, sigma2);
-    }
-    // else if(type == FILE_VALUEGRID_TYPE)  see above
-    // else if(type == FILE_VARIATIONALEQUATION_TYPE)  see above
+    // else if(type == FILE_TIMESPLINESGRAVITYFIELD_TYPE) see above
+    // else if(type == FILE_TIMESPLINESCOVARIANCE_TYPE)   see above
+    // else if(type == FILE_VALUEGRID_TYPE)               see above
+    // else if(type == FILE_VARIATIONALEQUATION_TYPE)     see above
     else
       throw(Exception("Conversion of file type not implemented."));
   }
