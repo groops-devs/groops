@@ -757,7 +757,7 @@ void PreprocessingSst::computeRedundancies(UInt arcNo)
         Vce::redundancy(W.at(idType), We.row(idx.at(idType), 3*count.at(idType)),
                         WAz.row(idx.at(idType), 3*count.at(idType)), WB.row(idx.at(idType), 3*count.at(idType)), R, WWe);
         Vce::psd(R, WWe, index.at(idType), sigma.at(idType)(arcNo), CosTransform.at(idType), Psd.at(idType),
-                 ePe.at(idType), redundancy.at(idType), ePeSum.at(SST), redundancySum.at(SST));
+                 ePe.at(idType), redundancy.at(idType), ePeSum.at(idType), redundancySum.at(idType));
       }
 
 
