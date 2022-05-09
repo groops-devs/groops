@@ -435,7 +435,10 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
       {
         logStatus<<"compute residuals"<<Log::endl;
         for(UInt idType : {SST, POD1, POD2})
+        {
+          arcListResiduals.at(idType).clear();
           arcListResiduals.at(idType).resize(arcCount);
+        }
         Parallel::forEachProcess(arcCount, [this](UInt arcNo) {computeResiduals(arcNo);}, processNo, comm, FALSE/*timing*/);
         for(UInt idType : {SST, POD1, POD2})
         {
