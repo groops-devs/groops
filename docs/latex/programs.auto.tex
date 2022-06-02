@@ -183,7 +183,7 @@ Name & Type & Annotation\\
 \subsection{DoodsonAdmittanceTimeSeries}\label{DoodsonAdmittanceTimeSeries}
 To visualize the interpolation of the minor tides it computes cosine multipliers of all major tides.
 Without admittance this would be a simple cos oscillation.
-The \config{outputfileTimeSeries} is an \file{instrument file}{instrument} containining the cos of all the major tides.
+The \config{outputfileTimeSeries} is an \file{instrument file}{instrument} (MISCVALUES) containining the cos of all the major tides.
 
 \fig{!hb}{0.8}{doodsonAdmittanceTimeSeries}{fig:doodsonAdmittanceTimeSeries}{Cosine of the Mf tidal frequency with modulation from the interpolated minor tides.}
 
@@ -193,7 +193,7 @@ The \config{outputfileTimeSeries} is an \file{instrument file}{instrument} conta
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt columns: mjd, cos of major tides\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES (cos of major tides, ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAdmittance & \hfuzz=500pt filename & \hfuzz=500pt cos/sin multipliers of the major tides\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt \\
 \hline

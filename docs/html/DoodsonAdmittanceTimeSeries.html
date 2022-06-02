@@ -73,11 +73,11 @@
 
 To visualize the interpolation of the minor tides it computes cosine multipliers of all major tides.
 Without admittance this would be a simple cos oscillation.
-The <strong class="groops-config-element">outputfileTimeSeries</strong> is an <a class="groops-file" href="fileFormat_instrument.html">instrument file</a> containining the cos of all the major tides.</p><p><figure><img class="figure" style="width:80%;" src="../figures/doodsonAdmittanceTimeSeries.png" alt="doodsonAdmittanceTimeSeries"><figcaption class="center">Figure: Cosine of the Mf tidal frequency with modulation from the interpolated minor tides.</figcaption></figure>
+The <strong class="groops-config-element">outputfileTimeSeries</strong> is an <a class="groops-file" href="fileFormat_instrument.html">instrument file</a> (MISCVALUES) containining the cos of all the major tides.</p><p><figure><img class="figure" style="width:80%;" src="../figures/doodsonAdmittanceTimeSeries.png" alt="doodsonAdmittanceTimeSeries"><figcaption class="center">Figure: Cosine of the Mf tidal frequency with modulation from the interpolated minor tides.</figcaption></figure>
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileTimeSeries</div></div></td><td>filename</td><td>columns: mjd, cos of major tides</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileTimeSeries</div></div></td><td>filename</td><td>MISCVALUES (cos of major tides, ...)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAdmittance</div></div></td><td>filename</td><td>cos/sin multipliers of the major tides</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td></td></tr>
 </table>

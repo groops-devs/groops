@@ -15,7 +15,7 @@
 static const char *docstring = R"(
 To visualize the interpolation of the minor tides it computes cosine multipliers of all major tides.
 Without admittance this would be a simple cos oscillation.
-The \config{outputfileTimeSeries} is an \file{instrument file}{instrument} containining the cos of all the major tides.
+The \config{outputfileTimeSeries} is an \file{instrument file}{instrument} (MISCVALUES) containining the cos of all the major tides.
 
 \fig{!hb}{0.8}{doodsonAdmittanceTimeSeries}{fig:doodsonAdmittanceTimeSeries}{Cosine of the Mf tidal frequency with modulation from the interpolated minor tides.}
 )";
@@ -50,7 +50,7 @@ void DoodsonAdmittanceTimeSeries::run(Config &config, Parallel::CommunicatorPtr 
     FileName      fileNameOut, fileNameAdmittance;
     TimeSeriesPtr timeSeries;
 
-    readConfig(config, "outputfileTimeSeries", fileNameOut,        Config::MUSTSET, "", "columns: mjd, cos of major tides");
+    readConfig(config, "outputfileTimeSeries", fileNameOut,        Config::MUSTSET, "", "MISCVALUES (cos of major tides, ...)");
     readConfig(config, "inputfileAdmittance",  fileNameAdmittance, Config::MUSTSET, "", "cos/sin multipliers of the major tides");
     readConfig(config, "timeSeries",           timeSeries,         Config::MUSTSET, "", "");
     if(isCreateSchema(config)) return;
