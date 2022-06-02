@@ -313,7 +313,11 @@ void Logging::receive(UInt rank, UInt type, const std::string &str)
         if((type == STATUS) || (type == INFO))
           std::cout<<(rank ? rank%"(process%3i) "s : ""s)<<str<<std::endl<<std::flush;
         else
+#ifdef _WIN32
+          std::cerr<<(rank ? rank%"(process%3i) "s : ""s)<<str<<std::endl<<std::flush;
+#else
           std::cerr<<"\033[1;31m"<<(rank ? rank%"(process%3i) "s : ""s)<<str<<"\033[0m"<<std::endl<<std::flush; // ANSI escape sequence: red and bold
+#endif
       }
 
     // log files
