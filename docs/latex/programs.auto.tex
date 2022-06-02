@@ -4463,6 +4463,28 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{MagneticField2GriddedData}\label{MagneticField2GriddedData}
+Computes x, y, z of the magentic field vector.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt x, y, z [Tesla = kg/A/s**2]\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~magnetosphere & \hfuzz=500pt \hyperref[magnetosphereType]{magnetosphere} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~grid & \hfuzz=500pt \hyperref[gridType]{grid} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~time & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~localReferenceFrame & \hfuzz=500pt boolean & \hfuzz=500pt local left handed reference frame (north, east, up)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates on output\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates\\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
 \subsection{MatrixCalculate}\label{MatrixCalculate}
 This program creates a \file{matrix}{matrix} from multiple matrices.
 All \configClass{matrices}{matrixGeneratorType} are summed up. The size of the resulting matrix is exandeded to fit all matrices.
@@ -5371,6 +5393,28 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt position and velocity at each epoch define the kepler orbit\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt data is appended\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
+\subsection{Orbit2MagneticField}\label{Orbit2MagneticField}
+This program computes the magentic field vector($x, y, z$ $[Tesla = kg/A/s^2]$ in CRF))
+along an \file{orbit}{instrument} and writes it as \file{instrument file}{instrument} (MISCVALUES).
+The data of \configFile{inputfileInstrument}{instrument} are appended as data columns to each epoch.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMagneticField & \hfuzz=500pt filename & \hfuzz=500pt instrument file (x,y,z in CRF [Tesla = kg/A/s\textasciicircum{}2]), ...)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt data are appended to output file\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~magnetosphere & \hfuzz=500pt \hyperref[magnetosphereType]{magnetosphere} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 

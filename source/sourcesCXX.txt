@@ -365,6 +365,7 @@ programs/misc/kaula2SigmaPotentialCoefficients.cpp
 programs/misc/kernel2SigmaPotentialCoefficients.cpp
 programs/misc/kernel2Coefficients.cpp
 programs/misc/kernelEvaluate.cpp
+programs/misc/magneticField2GriddedData.cpp
 programs/misc/matrixCalculate.cpp
 programs/misc/potentialCoefficients2BlockMeanTimeSplines.cpp
 programs/misc/potentialCoefficients2DegreeAmplitudes.cpp
@@ -394,6 +395,7 @@ programs/orbit/orbit2BetaPrimeAngle.cpp
 programs/orbit/orbit2EclipseFactor.cpp
 programs/orbit/orbit2Groundtracks.cpp
 programs/orbit/orbit2Kepler.cpp
+programs/orbit/orbit2MagneticField.cpp
 programs/orbit/orbit2ThermosphericState.cpp
 programs/orbit/orbitAddVelocityAndAcceleration.cpp
 programs/orbit/planetOrbit.cpp

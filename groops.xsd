@@ -14871,6 +14871,40 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="MagneticField2GriddedData">
+				<xs:annotation>
+					<xs:documentation>magentic field vector</xs:documentation>
+					<xs:appinfo>tag: Misc</xs:appinfo>
+					<xs:appinfo>tag: Grid</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileGriddedData" type="filename">
+							<xs:annotation>
+								<xs:documentation>x, y, z [Tesla = kg/A/s**2]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="magnetosphere" type="magnetosphereType"/>
+						<xs:element name="grid" type="gridType" maxOccurs="unbounded"/>
+						<xs:element name="time" type="time" minOccurs="0" default="51544.5"/>
+						<xs:element name="localReferenceFrame" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>local left handed reference frame (north, east, up)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="R" type="double" minOccurs="0" default="6378137.0">
+							<xs:annotation>
+								<xs:documentation>reference radius for ellipsoidal coordinates on output</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inverseFlattening" type="double" minOccurs="0" default="298.2572221010">
+							<xs:annotation>
+								<xs:documentation>reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="MatrixCalculate">
 				<xs:annotation>
 					<xs:documentation>Matrix manipulation</xs:documentation>
@@ -15896,6 +15930,30 @@
 								<xs:documentation>Geocentric gravitational constant</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Orbit2MagneticField">
+				<xs:annotation>
+					<xs:documentation>Thermospheric state along orbit.</xs:documentation>
+					<xs:appinfo>tag: Orbit</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileMagneticField" type="filename">
+							<xs:annotation>
+								<xs:documentation>instrument file (x,y,z in CRF [Tesla = kg/A/s^2]), ...)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit" type="filename"/>
+						<xs:element name="inputfileInstrument" type="filename" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>data are appended to output file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="magnetosphere" type="magnetosphereType"/>
+						<xs:element name="earthRotation" type="earthRotationType"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>

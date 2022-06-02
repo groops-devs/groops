@@ -1,5 +1,6 @@
 # main
-- New programs:     GriddedData2GriddedDataTimeSeries and GriddedDataTimeSeries2GriddedData
+- New programs:     GriddedData2GriddedDataTimeSeries and GriddedDataTimeSeries2GriddedData.
+- New programs:     MagneticField2GriddedData and Orbit2MagneticField.
 - New class:        In MiscAccelerations: FromParametrization
 - New option:       GnssAntennaDefinitionCreate: rename antennas.
 - New option:       gnssReceiverGeneratorStationNetwork: inputfileClock.
