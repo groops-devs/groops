@@ -167,8 +167,9 @@ VariationalEquationFromFile::ObservationEquation VariationalEquationFromFile::in
 
     // find epoch interval
     const UInt epochStart = std::distance(arc.times.begin(), std::upper_bound(arc.times.begin(), arc.times.end(), timeStart))-1;
+    const UInt epochEnd   = std::distance(arc.times.begin(), std::lower_bound(arc.times.begin(), arc.times.end(), timeEnd));
     ObservationEquation eqn;
-    for(UInt idEpoch=epochStart; (idEpoch<arc.times.size()) && (arc.times.at(idEpoch)<=timeEnd); idEpoch++)
+    for(UInt idEpoch=epochStart; idEpoch<=epochEnd; idEpoch++)
       eqn.times.push_back(arc.times.at(idEpoch));
 
     if(computePosition)
