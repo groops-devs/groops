@@ -10,6 +10,7 @@
 */
 /***********************************************/
 
+#include <cstring>
 #include "base/importStd.h"
 #include "base/constants.h"
 #include "base/string.h"

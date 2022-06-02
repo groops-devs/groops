@@ -156,7 +156,7 @@ void GnssClockRinex2InstrumentClock::readFile(const FileName &fileName, std::vec
     while(std::getline(file, line))
     {
       std::string lineID = line.substr(0,7+v3Offset);
-      lineID.erase(std::find_if(lineID.rbegin(), lineID.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), lineID.end()); // right trim spaces
+      lineID.erase(std::find_if(lineID.rbegin(), lineID.rend(), [](auto c){return !std::isspace(c);}).base(), lineID.end()); // right trim spaces
       std::transform(lineID.begin(), lineID.end(), lineID.begin(), ::toupper);
 
       auto iter = std::find_if(identifier.begin(), identifier.end(), [lineID](std::string id)
