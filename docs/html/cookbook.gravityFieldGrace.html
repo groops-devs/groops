@@ -69,7 +69,386 @@
     </header>
     <main class="container px-0 pt-2 top-buffer">
         <div id="content" class="container">
-            <h1 id="cookbook.gravityFieldGrace">GRACE gravity field recovery</h1><p></p><p>
+            <h1 id="cookbook.gravityFieldGrace">GRACE gravity field recovery</h1><p>
+This cookbook chapter describes an example of estimating a gravity field solution using GRACE observation
+data. For the respective month a set of spherical harmonic coefficients up to a maximum degree is determined.
+An example scenario for this task can be found at
+<a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGraceGravityfieldRecovery.zip" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGraceGravityfieldRecovery.zip</a>
+including the required GROOPS scripts and data sets for the gravity field recovery process.
+The background models are provided at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/data/" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/data/</a>.</p><p>
+<h2 id="backgroundModels">Background models</h2><p>
+The following background models were used during the data processing:
+<ul>
+
+  <li><b>Earth rotation</b>: <a href="https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html">IERS 2010</a> 
+  </li><li>
+<b>Moon, sun and planets ephemerides</b>: <a href="https://ipnpr.jpl.nasa.gov/progress_report/42-196/196C.pdf">JPL DE432</a> 
+  </li><li>
+<b>Earth tide</b>: <a href="https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html">IERS 2010</a> 
+  </li><li>
+<b>Ocean tide</b>: <a href="https://www.aviso.altimetry.fr/es/data/products/auxiliary-products/global-tide-fes/description-fes2014.html">FES2014b</a> 
+  </li><li>
+<b>Pole tide</b>: <a href="https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html">IERS 2010</a> 
+  </li><li>
+<b>Ocean pole tide</b>: <a href="https://doi.org/10.1029/2001JC001224">Desai 2004</a> 
+  </li><li>
+<b>Atmospheric tides</b>: <a href="https://doi.org/10.1093/gji/ggx302">AOD1B RL06</a> 
+  </li><li>
+<b>Atmosphere and Ocean Dealiasing</b>: <a href="https://doi.org/10.1093/gji/ggx302">AOD1B RL06</a> 
+  </li><li>
+<b>Sub-monthly continental hydrology</b>: <a href="https://doi.org/10.2312/GFZ.b103-08095">LSDM (ESMGFZ)</a> 
+  </li><li>
+<b>Relativistic corrections</b>: <a href="https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html">IERS 2010</a> 
+</li></ul>
+
+These models were reduced during the analysis process and are not present in the solution.
+The <a href="https://doi.org/10.5194/essd-13-99-2021">GOCO06s</a>
+model was used as the static gravity field as well as for the trend component and annual oscillation.
+In the script <code>000groopsBackgroundModels.xml</code> a monthly mean of the GOCO06s including the time-variable components is determined
+in form of time splines using <a class="groops-program" href="Gravityfield2TimeSplines.html">Gravityfield2TimeSplines</a>. This model is later added back to the final gravity solution.</p><p><h2 id="metadata">Instrument data preparation</h2><p>
+The ITSG gravity field solutions are computed from the official GRACE L1B <a href="https://doi.org/10.5067/GRJPL-L1B03">JPL (2018)</a>
+and GRACE-FO L1B <a href="https://doi.org/10.5067/GFL1B-ASJ04">JPL (2019)</a> observation data. The data sets for this example are provided
+in GROOPS file format in the scenario folder.</p><p>The satellite-to-satellite-tracking (SST) data consists of:
+<ul>
+
+  <li><b>K-band range rates</b>
+  </li><li>
+<b>Light time correction</b>
+  </li><li>
+<b>Antenna offset corrections</b>
+</li></ul>
+</p><p>Additional observation data required for the processing comprises:
+<ul>
+
+  <li><b>Star camera observations</b>
+  </li><li>
+<b>Accelerometer data</b>
+  </li><li>
+<b>Approximate orbits</b> 
+  </li><li>
+<b>Thruster data</b>
+</li></ul>
+</p><p>The determination of
+<ul>
+
+  <li><b>Kinematic orbits</b>
+  </li><li>
+<b>3x3 epoch covariances</b>
+</li></ul>
+
+is depicted in <a class="groops-ref" href="cookbook.kinematicOrbit.html">Kinematic orbit determination of LEO satellites</a>.
+These data sets are also provided in the scenario folder.</p><p>Data preparation is handled in the script <code>010groopsInstruments.xml</code>. The approximate orbits (initial dynamic orbits)
+of the satellites, the star camera observations, the accelerometer data and the thruster data are resampled with a 5s sampling
+and small gaps in the data are filled using <a class="groops-program" href="InstrumentResample.html">InstrumentResample</a>. Gross outliers are removed using <a class="groops-program" href="InstrumentRemoveEpochsByCriteria.html">InstrumentRemoveEpochsByCriteria</a>
+and the data is synchronized using  <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>.</p><p>The approximate orbits are later used as a priori information for the dynamic orbit integration.
+In addition to the observed orientation of the spacecrafts (star camera observations),
+the nominal orientation is computed using <a class="groops-program" href="SimulateStarCameraGrace.html">SimulateStarCameraGrace</a>. The difference between
+observed and simulated orientation is determined using <a class="groops-program" href="InstrumentStarCameraMultiply.html">InstrumentStarCameraMultiply</a>
+and is employed in the outlier detection.</p><p>The accelerometer data is initially calibrated by estimating a bias using
+<a class="groops-program" href="InstrumentAccelerometerEstimateBiasScale.html">InstrumentAccelerometerEstimateBiasScale</a> with respect to simulated data created
+with <a class="groops-program" href="SimulateAccelerometer.html">SimulateAccelerometer</a>. For simulating accelerometer data a satellite model
+implying the satellite's mass and surfaces is required. Such a model can be created with
+<a class="groops-program" href="SatelliteModelCreate.html">SatelliteModelCreate</a>. Models for the GRACE and GRACE-FO satellites are also provided
+at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/data/satelliteModel/" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/data/satelliteModel/</a>. Non-gravitational forces
+comprising atmospheric drag, solar radiation pressure and albedo have to modeled when simulating
+the accelerometer data. The acceleration bias parameters are determined as degree 3 time splines
+with 6h nodes. When determining these parameters the thruster events are excluded from the estimation.</p><p>The SST observations, the light time corrections and the antenna center corrections are synchronized
+with a 5s sampling together with simulated SST data created with <a class="groops-program" href="SimulateSatelliteTracking.html">SimulateSatelliteTracking</a>.
+Simulated data is used for the outlier detection of the original SST observations.</p><p>The sampling of the kinematic orbits is reduced to 60s using <a class="groops-program" href="InstrumentReduceSampling.html">InstrumentReduceSampling</a> and
+an outlier detection is performed using the approximate dynamic orbits.</p><p>The approximate orbits, the star camera observations and the accelerometer data are divided into 24h arcs
+(variational arcs). The kinematic orbits, its 3x3 epoch covariances, KBR observations,
+light time corrections, antenna center corrections and star camera observations are divided into 3h arcs
+per day (short arcs). Additionally the approximate orbits and the star camera observations are also
+synchronized to short arcs.</p><p>Further information on instrument data preparation can be found in
+<a class="groops-ref" href="cookbook.instrument.html">Instrument data handling</a>.</p><p><h2 id="variational">Variational equations</h2><p>
+In this processing step dynamic orbits are computed for a complete 24h orbit arc by integrating
+the forces acting on the GRACE/GRACE-FO satellites. Additionally, the state transition matrix is set up.
+The dynamic orbits are then fitted to kinematic orbits and SST observations in a least squares adjustment
+by co-estimating additional accelerometer calibration parameters together with the initial state vector.
+The newly estimated parameters are then used to re-estimate the dynamic orbits and setting up the new
+state transition matrix.</p><p>The script <code>020groopsVariational.xml</code> in the scenario folder implements the required processing steps.
+Time splines from a time-variable gravity field are estimated using <a class="groops-program" href="Gravityfield2TimeSplines.html">Gravityfield2TimeSplines</a>.
+In this step the static gravity field (GOCO06s) is combined with the following time-variable components:
+<ul>
+
+    <li><a class="groops-class" href="gravityfieldType.html#potentialCoefficients">gravityfield:potentialCoefficients</a>:
+    static gravity field
+    </li><li>
+<a class="groops-class" href="gravityfieldType.html#trend">gravityfield:trend</a>
+    <ul>
+
+        </li><li>
+<a class="groops-class" href="gravityfieldType.html#potentialCoefficients">gravityfield:potentialCoefficients</a>:
+      trend component of gravity field
+    </li></ul>
+
+    <li><a class="groops-class" href="gravityfieldType.html#oscillation">gravityfield:oscillation</a>
+    <ul>
+
+        </li><li>
+<a class="groops-class" href="gravityfieldType.html#potentialCoefficients">gravityfieldCos:potentialCoefficients</a>:
+      annual cosine component of gravity field
+        </li><li>
+<a class="groops-class" href="gravityfieldType.html#potentialCoefficients">gravityfieldSin:potentialCoefficients</a>:
+      annual sine component of gravity field
+    </li></ul>
+
+    <li><a class="groops-class" href="gravityfieldType.html#timeSplines">gravityfield:timeSplines</a>: atmosphere and ocean dealiasing (AOD1B RL06)
+    </li><li>
+<a class="groops-class" href="gravityfieldType.html#timeSplines">gravityfield:timeSplines</a>: hydrology dealiasing (LSDM)
+    </li><li>
+<a class="groops-class" href="tidesType.html#doodsonHarmonicTide">doodsonHarmonicTide</a>: ocean tides (FES2014b)
+    </li><li>
+<a class="groops-class" href="tidesType.html#doodsonHarmonicTide">doodsonHarmonicTide</a>: atmospheric tides (AOD1B RL06)
+    </li><li>
+<a class="groops-class" href="tidesType.html#poleTide">tides:poleTide</a>: pole tides (IERS 2010)
+    </li><li>
+<a class="groops-class" href="tidesType.html#oceanPoleTide">tides:poleOceanTide</a>: ocean pole tides (IERS 2010)
+</li></ul>
+
+<strong class="groops-config-element">maxDegree</strong>=<code>220</code> and <strong class="groops-config-element">sampling</strong>=<code>10/1440</code> is sufficient.</p><p>In <a class="groops-program" href="PreprocessingVariationalEquation.html">PreprocessingVariationalEquation</a> the <a class="groops-file" href="fileFormat_variationalEquation.html">variational equations</a>
+comprising the integrated orbit together with the state transition matrix are stored in
+<a class="groops-class" href="fileFormat_variationalEquation.html">outputfileVariational</a>.</p><p>This program has to be executed for both GRACE or GRACE-FO satellites and it is recommended
+to use <a class="groops-program" href="LoopPrograms.html">LoopPrograms</a>.
+<ul>
+
+    <li><a class="groops-class" href="fileFormat_satelliteModel.html">inputfileSatelliteModel</a>: satellite model from <code>020groopsInstruments.xml</code>
+    </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>: the approximate orbits from <code>020groopsInstruments.xml</code>
+    </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileStarCamera</a>: the attitude file from <code>020groopsInstruments.xml</code>
+    </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileAccelerometer</a>: the accelerometer data from
+    <code>020groopsInstruments.xml</code>
+    </li><li>
+<strong class="groops-config-element">forces</strong>: see below
+    </li><li>
+<a class="groops-class" href="ephemeridesType.html">ephemerides</a>: JPL DE432
+    </li><li>
+<a class="groops-class" href="gravityfieldType.html#potentialCoefficients">gradientfield:potentialCoefficients</a>: a static gravity field (GOCO06s) with <strong class="groops-config-element">maxDegree</strong>=<code>10</code> is more than sufficient.
+</li></ul>
+</p><p>The <a class="groops-class" href="forcesType.html">force models</a> include:
+<ul>
+
+  <li><a class="groops-class" href="gravityfieldType.html#timeSplines">gravityfield:timeSplines</a>:
+        the previously estimated time-variable gravity field
+  </li><li>
+<a class="groops-class" href="tidesType.html#astronomicalTide">tides:astronomicalTide</a>: astronomical tides (based on JPL DE432 ephemerides)
+  </li><li>
+<a class="groops-class" href="tidesType.html#earthTide">tides:earthTide</a>: Earth tide (IERS conventions)
+  </li><li>
+<a class="groops-class" href="miscAccelerationsType.html#relativisticEffect">miscAccelerations:relativisticEffect</a>:
+        relativistic effects (IERS conventions)
+</li></ul>
+</p><p>In <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a> the integrated orbit
+(<a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational</a>) is fitted to the kinematic orbit
+(<a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>) by least squares adjustment. The additional accelerometer
+calibration parameters can be defined by
+<ul>
+
+  <li><a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration</a>: accelerometer scale factor (once per day)
+  </li><li>
+<a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration</a>: accelerometer bias (time spline with 6h nodes)
+</li></ul>
+</p><p>The observation equations (parameter sensitivity matrix) are computed by integration of the variational
+equations (<a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational</a>) using a polynomial with
+<strong class="groops-config-element">integrationDegree</strong>=<code>7</code>. <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a> has to be
+executed per satellite.</p><p><a class="groops-program" href="PreprocessingVariationalEquationSstFit.html">PreprocessingVariationalEquationSstFit</a> fits two dynamic orbits
+<a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational1/2</a> to the SST observations and the kinematic orbits.
+<ul>
+
+    <li><strong class="groops-config-element">rightHandSide</strong>: input for observation vectors
+        <ul>
+
+            </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a>: K-band range rate observations
+            </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a>: light time correction
+            </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a>: antenna offset corrections
+            </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit1</a>: kinematic orbit of satellite 1
+            </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit2</a>: kinematic orbit of satellite 2
+        </li></ul>
+
+    <li><strong class="groops-config-element">sstType</strong>: rangeRate
+    </li><li>
+<a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational1</a>: dynamic orbit and integrated state matrix of satellite 1
+    </li><li>
+<a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational2</a>: dynamic orbit and integrated state matrix of satellite 2
+    </li><li>
+<a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration1</a>: same as in In <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a>
+    </li><li>
+<a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration2</a>: same as in In <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a>
+    </li><li>
+<strong class="groops-config-element">integrationDegree</strong>: <code>7</code>
+    </li><li>
+<strong class="groops-config-element">interpolationDegree</strong>: <code>7</code>
+    </li><li>
+<a class="groops-class" href="covarianceSstType.html">covarianceSst</a>
+        <ul>
+
+            </li><li>
+<strong class="groops-config-element">sigma</strong>: <code>1</code>
+        </li></ul>
+
+    <li><a class="groops-class" href="covariancePodType.html">covariancePod1</a>
+        <ul>
+
+            </li><li>
+<strong class="groops-config-element">sigma</strong>: 1
+            </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileCovariancePodEpoch</a>: 3x3 epoch covariances
+        </li></ul>
+
+    <li><a class="groops-class" href="covariancePodType.html">covariancePod2</a>
+        <ul>
+
+            </li><li>
+<strong class="groops-config-element">sigma</strong>: 1
+            </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileCovariancePodEpoch</a>: 3x3 epoch covariances
+        </li></ul>
+
+</ul>
+The estimated accelerometer calibration parameters from <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a>
+and <a class="groops-program" href="PreprocessingVariationalEquationSstFit.html">PreprocessingVariationalEquationSstFit</a> are determined as corrections and stored
+in <a class="groops-class" href="fileFormat_matrix.html">outputfileSolution</a>. Both correction estimates have to be summed up using
+<a class="groops-program" href="FunctionsCalculate.html">FunctionsCalculate</a>.</p><p>The dynamic orbit and the resulting accelerometer calibration parameters are now used to re-integrate
+the orbit once more using <a class="groops-program" href="PreprocessingVariationalEquation.html">PreprocessingVariationalEquation</a> and introducing
+<a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration</a> as <strong class="groops-config-element">estimatedParameters</strong>.
+This step usually ensures convergence. If the maximum orbit difference is still not sufficient this step
+can be repeated again.</p><p><h2 id="preprocessing">Preprocessing</h2><p>
+The script <code>030groopsPreprocessing.xml</code> implements the following steps and settings.
+The program <a class="groops-program" href="PreprocessingSst.html">PreprocessingSst</a> processes SST observations and kinematic orbit data and performs
+a complete least squares adjustment for gravity field determination by computing the observations equations.
+Force model parameters (gravitational potential coefficients and accelerometer calibration parameters)
+are computed by integrating the parameter sensitivity matrix from the variational equations.
+Parameters describing effects due to the SST observation system and geometry (KBR antenna phase
+center variations) are computed using the dynamic orbits as a Taylor point.
+Short time gravity variations can be co-estimated together with the monthly mean gravity field.
+The autoregressive model sequence constraining the short time parameters is provided in the data folder.
+See <a href="https://doi.org/10.1007/s00190-019-01314-1">Kvas 2019</a> for more information about
+this co-estimation.
+<ul>
+
+    <li><a class="groops-class" href="observationType.html">observation</a>: sstVariational
+        <ul>
+
+            </li><li>
+<strong class="groops-config-element">rightHandSide</strong>:
+            <ul>
+
+                </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a>: KBR range rates
+                </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a>: light time correction
+                </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a>: antenna offset corrections
+                </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit1</a>: kinematic orbit of satellite 1
+                </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit2</a>: kinematic orbit of satellite 2
+            </li></ul>
+
+            <li><strong class="groops-config-element">sstType</strong>: rangeRate
+            </li><li>
+<a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational1</a>: dynamic orbit and integrated state matrix of satellite 1
+            </li><li>
+<a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational2</a>: dynamic orbit and integrated state matrix of satellite 2
+            </li><li>
+<a class="groops-class" href="ephemeridesType.html">ephemerides</a>: JPL DE432
+            </li><li>
+<a class="groops-class" href="parametrizationGravityType.html">parametrizationGravity</a>: spherical harmonics from <strong class="groops-config-element">minDegree</strong>=<code>2</code> to <strong class="groops-config-element">maxDegree</strong>=<code>60</code>
+            </li><li>
+<a class="groops-class" href="parametrizationGravityType.html">parametrizationGravity</a>: high frequency parametrization
+            </li><li>
+<a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration1</a>: same as in In <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a>
+            </li><li>
+<a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration2</a>: same as in In <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a>
+            </li><li>
+<a class="groops-class" href="parametrizationSatelliteTrackingType.html">parametrizationSst</a>: antenna phase center variations (y and z for both satellites)
+            </li><li>
+<strong class="groops-config-element">integrationDegree</strong>: 7
+            </li><li>
+<strong class="groops-config-element">interpolationDegree</strong>: 7
+        </li></ul>
+
+    <li><a class="groops-class" href="covarianceSstType.html">covarianceSst</a>
+        <ul>
+
+            </li><li>
+<strong class="groops-config-element">sigma</strong>: <code>1e-7</code>
+            </li><li>
+<strong class="groops-config-element">sampling</strong>: 5 [seconds]
+        </li></ul>
+
+    <li><a class="groops-class" href="covariancePodType.html">covariancePod1/2</a>
+        <ul>
+
+            </li><li>
+<strong class="groops-config-element">sigma</strong>:  <code>2</code>
+            </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileCovariancePodEpoch</a>: 3x3 epoch covariances
+            </li><li>
+<strong class="groops-config-element">sampling</strong>: 60 [seconds]
+        </li></ul>
+
+    <li><strong class="groops-config-element">estimateShortTimeVariations</strong>
+        <ul>
+
+            </li><li>
+<a class="groops-class" href="autoregressiveModelSequenceType.html">autoregressiveModelSequence</a>: AR models
+            </li><li>
+<a class="groops-class" href="parameterSelectorType.html">parameterSelection</a>: names
+                <ul>
+
+                    </li><li>
+<a class="groops-class" href="parameterNamesType.html">parameterName</a>: parametrizationGravity
+                    <ul>
+
+                        </li><li>
+<a class="groops-class" href="parametrizationGravityType.html">parametrization</a>: high frequency parametrization
+                    </li></ul>
+
+                </ul>
+        </ul>
+</ul></p><p><a class="groops-program" href="ParameterSelection2IndexVector.html">ParameterSelection2IndexVector</a> and <a class="groops-program" href="MatrixCalculate.html">MatrixCalculate</a> with
+<a class="groops-class" href="matrixGeneratorType.html#reorder">matrix:reorder</a> can be used to extract the desired
+spherical harmonic coefficients from <a class="groops-class" href="fileFormat_matrix.html">outputfileSolution</a> and the respective
+standard deviations from <a class="groops-class" href="fileFormat_matrix.html">outputfileSigmax</a> up to a certain degree.</p><p>In the program <a class="groops-program" href="Gravityfield2PotentialCoefficients.html">Gravityfield2PotentialCoefficients</a> the estimated spherical harmonics
+coefficients are read with
+<a class="groops-class" href="gravityfieldType.html#fromParametrization">gravityfield:fromParametrization</a>.
+The monthly mean gravity field can be added back by additionaly selecting the time splines created
+in <code>000groopsBackgroundModels.xml</code> using
+<a class="groops-class" href="gravityfieldType.html#timeSplines">gravityfield:timeSplines</a>. The preprocessing solution
+is saved as a <a class="groops-file" href="fileFormat_potentialCoefficients.html">spherical harmonics file</a>.</p><p><h2 id="monthlyNormals">Setting up normal equations</h2><p>
+Normal equations are set up in the script <code>040groopsMonthlyNormals120.xml</code> using
+the program <a class="groops-program" href="NormalsBuildShortTimeStaticLongTime.html">NormalsBuildShortTimeStaticLongTime</a>. The time intervals which the normal
+equations are divided into are defined in <a class="groops-class" href="fileFormat_arcList.html">inputfileArcList</a>.
+The normal equations are based on <a class="groops-class" href="observationType.html">observation</a> including the SST data,
+the kinematic orbits and the variational equations. The parametrization of the gravity field can
+be set with <a class="groops-class" href="parametrizationGravityType.html">observation:parametrizationGravity</a>
+(e.g. spherical harmonics up to degree and order 120). Accelerometer calibration parameters
+and KBR antenna phase center variations can be parameterized using
+<a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration</a> and
+<a class="groops-class" href="parametrizationSatelliteTrackingType.html">parametrizationSst</a>.
+With <strong class="groops-config-element">estimateShortTimeVariations</strong> short time variations of the gravity
+field can be co-estimated. The parameters selected by
+<a class="groops-class" href="parameterSelectorType.html">parameterSelection</a> (e.g. linear splines with 6h nodes) are
+constrained by an <a class="groops-class" href="autoregressiveModelSequenceType.html">autoregressiveModelSequence</a>.
+Additional temporal variations (e.g. trend and annual oscillation) could be estimated with
+<strong class="groops-config-element">estimateLongTimeVariations</strong>.</p><p><h2 id="monhtlySolve">Solving normal equations</h2><p>
+The desired spherical harmonic coefficients are determined in the script <code>050groopsMonthlySolve.xml</code>.
+<a class="groops-program" href="NormalsSolverVCE.html">NormalsSolverVCE</a> accumulates <a class="groops-class" href="normalEquationType.html">normalEquation</a> and solves
+the total combined system. Variance component estimation is used to determine the relative weighting
+of the individual normals. The estimated parameter vector (<a class="groops-class" href="fileFormat_matrix.html">outputfileSolution</a>)
+the estimated accuracies (<a class="groops-class" href="fileFormat_matrix.html">outputfileSigmax</a>) and the full covariance matrix
+(<a class="groops-class" href="fileFormat_matrix.html">outputfileCovariance</a>) can be saved.
+Using <a class="groops-program" href="Gravityfield2PotentialCoefficients.html">Gravityfield2PotentialCoefficients</a> the final solution can be saved as
+a <a class="groops-file" href="fileFormat_potentialCoefficients.html">spherical harmonics file</a> by adding back the monthly mean gravity
+field to the estimated spherical harmonic coefficients.</p><p>
 </p>
 
         </div>

@@ -1,3 +1,316 @@
 \section{GRACE gravity field recovery}\label{cookbook.gravityFieldGrace}
+This cookbook chapter describes an example of estimating a gravity field solution using GRACE observation
+data. For the respective month a set of spherical harmonic coefficients up to a maximum degree is determined.
+An example scenario for this task can be found at
+\url{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGraceGravityfieldRecovery.zip}
+including the required GROOPS scripts and data sets for the gravity field recovery process.
+The background models are provided at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/data/}.
+
+
+\subsection{Background models}\label{cookbook.gravityFieldGrace:backgroundModels}
+The following background models were used during the data processing:
+\begin{itemize}
+  \item \textbf{Earth rotation}: \href{https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html}{IERS 2010} % IERS 2010
+  \item \textbf{Moon, sun and planets ephemerides}: \href{https://ipnpr.jpl.nasa.gov/progress_report/42-196/196C.pdf}{JPL DE432} %JPL DE432
+  \item \textbf{Earth tide}: \href{https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html}{IERS 2010} % IERS 2010
+  \item \textbf{Ocean tide}: \href{https://www.aviso.altimetry.fr/es/data/products/auxiliary-products/global-tide-fes/description-fes2014.html}{FES2014b} % FES2014b
+  \item \textbf{Pole tide}: \href{https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html}{IERS 2010} % IERS 2010
+  \item \textbf{Ocean pole tide}: \href{https://doi.org/10.1029/2001JC001224}{Desai 2004} % Desai 2004 (IERS 2010)
+  \item \textbf{Atmospheric tides}: \href{https://doi.org/10.1093/gji/ggx302}{AOD1B RL06} % AOD1B RL06
+  \item \textbf{Atmosphere and Ocean Dealiasing}: \href{https://doi.org/10.1093/gji/ggx302}{AOD1B RL06} % AOD1B RL06
+  \item \textbf{Sub-monthly continental hydrology}: \href{https://doi.org/10.2312/GFZ.b103-08095}{LSDM (ESMGFZ)} % LSDM (ESMGFZ)
+  \item \textbf{Relativistic corrections}: \href{https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html}{IERS 2010} % IERS 2010
+\end{itemize}
+These models were reduced during the analysis process and are not present in the solution.
+The \href{https://doi.org/10.5194/essd-13-99-2021}{GOCO06s}
+model was used as the static gravity field as well as for the trend component and annual oscillation.
+In the script \verb|000groopsBackgroundModels.xml| a monthly mean of the GOCO06s including the time-variable components is determined
+in form of time splines using \program{Gravityfield2TimeSplines}. This model is later added back to the final gravity solution.
+
+\subsection{Instrument data preparation}\label{cookbook.gravityFieldGrace:metadata}
+The ITSG gravity field solutions are computed from the official GRACE L1B \href{https://doi.org/10.5067/GRJPL-L1B03}{JPL (2018)}
+and GRACE-FO L1B \href{https://doi.org/10.5067/GFL1B-ASJ04}{JPL (2019)} observation data. The data sets for this example are provided
+in GROOPS file format in the scenario folder.
+
+The satellite-to-satellite-tracking (SST) data consists of:
+\begin{itemize}
+  \item \textbf{K-band range rates}
+  \item \textbf{Light time correction}
+  \item \textbf{Antenna offset corrections}
+\end{itemize}
+
+Additional observation data required for the processing comprises:
+\begin{itemize}
+  \item \textbf{Star camera observations}
+  \item \textbf{Accelerometer data}
+  \item \textbf{Approximate orbits} % \textbf{Initial dynamic orbits}
+  \item \textbf{Thruster data}
+\end{itemize}
+
+The determination of
+\begin{itemize}
+  \item \textbf{Kinematic orbits}
+  \item \textbf{3x3 epoch covariances}
+\end{itemize}
+is depicted in \reference{Kinematic orbit determination of LEO satellites}{cookbook.kinematicOrbit}.
+These data sets are also provided in the scenario folder.
+
+Data preparation is handled in the script \verb|010groopsInstruments.xml|. The approximate orbits (initial dynamic orbits)
+of the satellites, the star camera observations, the accelerometer data and the thruster data are resampled with a 5s sampling
+and small gaps in the data are filled using \program{InstrumentResample}. Gross outliers are removed using \program{InstrumentRemoveEpochsByCriteria}
+and the data is synchronized using  \program{InstrumentSynchronize}.
+
+The approximate orbits are later used as a priori information for the dynamic orbit integration.
+In addition to the observed orientation of the spacecrafts (star camera observations),
+the nominal orientation is computed using \program{SimulateStarCameraGrace}. The difference between
+observed and simulated orientation is determined using \program{InstrumentStarCameraMultiply}
+and is employed in the outlier detection.
+
+The accelerometer data is initially calibrated by estimating a bias using
+\program{InstrumentAccelerometerEstimateBiasScale} with respect to simulated data created
+with \program{SimulateAccelerometer}. For simulating accelerometer data a satellite model
+implying the satellite's mass and surfaces is required. Such a model can be created with
+\program{SatelliteModelCreate}. Models for the GRACE and GRACE-FO satellites are also provided
+at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/data/satelliteModel/}. Non-gravitational forces
+comprising atmospheric drag, solar radiation pressure and albedo have to modeled when simulating
+the accelerometer data. The acceleration bias parameters are determined as degree 3 time splines
+with 6h nodes. When determining these parameters the thruster events are excluded from the estimation.
+
+The SST observations, the light time corrections and the antenna center corrections are synchronized
+with a 5s sampling together with simulated SST data created with \program{SimulateSatelliteTracking}.
+Simulated data is used for the outlier detection of the original SST observations.
+
+The sampling of the kinematic orbits is reduced to 60s using \program{InstrumentReduceSampling} and
+an outlier detection is performed using the approximate dynamic orbits.
+
+The approximate orbits, the star camera observations and the accelerometer data are divided into 24h arcs
+(variational arcs). The kinematic orbits, its 3x3 epoch covariances, KBR observations,
+light time corrections, antenna center corrections and star camera observations are divided into 3h arcs
+per day (short arcs). Additionally the approximate orbits and the star camera observations are also
+synchronized to short arcs.
+
+Further information on instrument data preparation can be found in
+\reference{Instrument data handling}{cookbook.instrument}.
+
+\subsection{Variational equations}\label{cookbook.gravityFieldGrace:variational}
+In this processing step dynamic orbits are computed for a complete 24h orbit arc by integrating
+the forces acting on the GRACE/GRACE-FO satellites. Additionally, the state transition matrix is set up.
+The dynamic orbits are then fitted to kinematic orbits and SST observations in a least squares adjustment
+by co-estimating additional accelerometer calibration parameters together with the initial state vector.
+The newly estimated parameters are then used to re-estimate the dynamic orbits and setting up the new
+state transition matrix.
+
+The script \verb|020groopsVariational.xml| in the scenario folder implements the required processing steps.
+Time splines from a time-variable gravity field are estimated using \program{Gravityfield2TimeSplines}.
+In this step the static gravity field (GOCO06s) is combined with the following time-variable components:
+\begin{itemize}
+    \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
+    static gravity field
+    \item \configClass{gravityfield:trend}{gravityfieldType:trend}
+    \begin{itemize}
+        \item \configClass{gravityfield:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
+      trend component of gravity field
+    \end{itemize}
+    \item \configClass{gravityfield:oscillation}{gravityfieldType:oscillation}
+    \begin{itemize}
+        \item \configClass{gravityfieldCos:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
+      annual cosine component of gravity field
+        \item \configClass{gravityfieldSin:potentialCoefficients}{gravityfieldType:potentialCoefficients}:
+      annual sine component of gravity field
+    \end{itemize}
+    \item \configClass{gravityfield:timeSplines}{gravityfieldType:timeSplines}: atmosphere and ocean dealiasing (AOD1B RL06)
+    \item \configClass{gravityfield:timeSplines}{gravityfieldType:timeSplines}: hydrology dealiasing (LSDM)
+    \item \configClass{doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: ocean tides (FES2014b)
+    \item \configClass{doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: atmospheric tides (AOD1B RL06)
+    \item \configClass{tides:poleTide}{tidesType:poleTide}: pole tides (IERS 2010)
+    \item \configClass{tides:poleOceanTide}{tidesType:oceanPoleTide}: ocean pole tides (IERS 2010)
+\end{itemize}
+\config{maxDegree}=\verb|220| and \config{sampling}=\verb|10/1440| is sufficient.
+
+In \program{PreprocessingVariationalEquation} the \file{variational equations}{variationalEquation}
+comprising the integrated orbit together with the state transition matrix are stored in
+\configFile{outputfileVariational}{variationalEquation}.
+
+This program has to be executed for both GRACE or GRACE-FO satellites and it is recommended
+to use \program{LoopPrograms}.
+\begin{itemize}
+    \item \configFile{inputfileSatelliteModel}{satelliteModel}: satellite model from \verb|020groopsInstruments.xml|
+    \item \configFile{inputfileOrbit}{instrument}: the approximate orbits from \verb|020groopsInstruments.xml|
+    \item \configFile{inputfileStarCamera}{instrument}: the attitude file from \verb|020groopsInstruments.xml|
+    \item \configFile{inputfileAccelerometer}{instrument}: the accelerometer data from
+    \verb|020groopsInstruments.xml|
+    \item \config{forces}: see below
+    \item \configClass{ephemerides}{ephemeridesType}: JPL DE432
+    \item \configClass{gradientfield:potentialCoefficients}{gravityfieldType:potentialCoefficients}: a static gravity field (GOCO06s) with \config{maxDegree}=\verb|10| is more than sufficient.
+\end{itemize}
+
+The \configClass{force models}{forcesType} include:
+\begin{itemize}
+  \item \configClass{gravityfield:timeSplines}{gravityfieldType:timeSplines}:
+        the previously estimated time-variable gravity field
+  \item \configClass{tides:astronomicalTide}{tidesType:astronomicalTide}: astronomical tides (based on JPL DE432 ephemerides)
+  \item \configClass{tides:earthTide}{tidesType:earthTide}: Earth tide (IERS conventions)
+  \item \configClass{miscAccelerations:relativisticEffect}{miscAccelerationsType:relativisticEffect}:
+        relativistic effects (IERS conventions)
+\end{itemize}
+
+In \program{PreprocessingVariationalEquationOrbitFit} the integrated orbit
+(\configFile{inputfileVariational}{variationalEquation}) is fitted to the kinematic orbit
+(\configFile{inputfileOrbit}{instrument}) by least squares adjustment. The additional accelerometer
+calibration parameters can be defined by
+\begin{itemize}
+  \item \configClass{parametrizationAcceleration}{parametrizationAccelerationType}: accelerometer scale factor (once per day)
+  \item \configClass{parametrizationAcceleration}{parametrizationAccelerationType}: accelerometer bias (time spline with 6h nodes)
+\end{itemize}
+
+The observation equations (parameter sensitivity matrix) are computed by integration of the variational
+equations (\configFile{inputfileVariational}{variationalEquation}) using a polynomial with
+\config{integrationDegree}=\verb|7|. \program{PreprocessingVariationalEquationOrbitFit} has to be
+executed per satellite.
+
+\program{PreprocessingVariationalEquationSstFit} fits two dynamic orbits
+\configFile{inputfileVariational1/2}{variationalEquation} to the SST observations and the kinematic orbits.
+\begin{itemize}
+    \item \config{rightHandSide}: input for observation vectors
+        \begin{itemize}
+            \item \configFile{inputfileSatelliteTracking}{instrument}: K-band range rate observations
+            \item \configFile{inputfileSatelliteTracking}{instrument}: light time correction
+            \item \configFile{inputfileSatelliteTracking}{instrument}: antenna offset corrections
+            \item \configFile{inputfileOrbit1}{instrument}: kinematic orbit of satellite 1
+            \item \configFile{inputfileOrbit2}{instrument}: kinematic orbit of satellite 2
+        \end{itemize}
+    \item \config{sstType}: rangeRate
+    \item \configFile{inputfileVariational1}{variationalEquation}: dynamic orbit and integrated state matrix of satellite 1
+    \item \configFile{inputfileVariational2}{variationalEquation}: dynamic orbit and integrated state matrix of satellite 2
+    \item \configClass{parametrizationAcceleration1}{parametrizationAccelerationType}: same as in In \program{PreprocessingVariationalEquationOrbitFit}
+    \item \configClass{parametrizationAcceleration2}{parametrizationAccelerationType}: same as in In \program{PreprocessingVariationalEquationOrbitFit}
+    \item \config{integrationDegree}: \verb|7|
+    \item \config{interpolationDegree}: \verb|7|
+    \item \configClass{covarianceSst}{covarianceSstType}
+        \begin{itemize}
+            \item \config{sigma}: \verb|1|
+        \end{itemize}
+    \item \configClass{covariancePod1}{covariancePodType}
+        \begin{itemize}
+            \item \config{sigma}: 1
+            \item \configFile{inputfileCovariancePodEpoch}{instrument}: 3x3 epoch covariances
+        \end{itemize}
+    \item \configClass{covariancePod2}{covariancePodType}
+        \begin{itemize}
+            \item \config{sigma}: 1
+            \item \configFile{inputfileCovariancePodEpoch}{instrument}: 3x3 epoch covariances
+        \end{itemize}
+\end{itemize}
+The estimated accelerometer calibration parameters from \program{PreprocessingVariationalEquationOrbitFit}
+and \program{PreprocessingVariationalEquationSstFit} are determined as corrections and stored
+in \configFile{outputfileSolution}{matrix}. Both correction estimates have to be summed up using
+\program{FunctionsCalculate}.
+
+The dynamic orbit and the resulting accelerometer calibration parameters are now used to re-integrate
+the orbit once more using \program{PreprocessingVariationalEquation} and introducing
+\configClass{parametrizationAcceleration}{parametrizationAccelerationType} as \config{estimatedParameters}.
+This step usually ensures convergence. If the maximum orbit difference is still not sufficient this step
+can be repeated again.
+
+\subsection{Preprocessing}\label{cookbook.gravityFieldGrace:preprocessing}
+The script \verb|030groopsPreprocessing.xml| implements the following steps and settings.
+The program \program{PreprocessingSst} processes SST observations and kinematic orbit data and performs
+a complete least squares adjustment for gravity field determination by computing the observations equations.
+Force model parameters (gravitational potential coefficients and accelerometer calibration parameters)
+are computed by integrating the parameter sensitivity matrix from the variational equations.
+Parameters describing effects due to the SST observation system and geometry (KBR antenna phase
+center variations) are computed using the dynamic orbits as a Taylor point.
+Short time gravity variations can be co-estimated together with the monthly mean gravity field.
+The autoregressive model sequence constraining the short time parameters is provided in the data folder.
+See \href{https://doi.org/10.1007/s00190-019-01314-1}{Kvas 2019} for more information about
+this co-estimation.
+\begin{itemize}
+    \item \configClass{observation}{observationType}: sstVariational
+        \begin{itemize}
+            \item \config{rightHandSide}:
+            \begin{itemize}
+                \item \configFile{inputfileSatelliteTracking}{instrument}: KBR range rates
+                \item \configFile{inputfileSatelliteTracking}{instrument}: light time correction
+                \item \configFile{inputfileSatelliteTracking}{instrument}: antenna offset corrections
+                \item \configFile{inputfileOrbit1}{instrument}: kinematic orbit of satellite 1
+                \item \configFile{inputfileOrbit2}{instrument}: kinematic orbit of satellite 2
+            \end{itemize}
+            \item \config{sstType}: rangeRate
+            \item \configFile{inputfileVariational1}{variationalEquation}: dynamic orbit and integrated state matrix of satellite 1
+            \item \configFile{inputfileVariational2}{variationalEquation}: dynamic orbit and integrated state matrix of satellite 2
+            \item \configClass{ephemerides}{ephemeridesType}: JPL DE432
+            \item \configClass{parametrizationGravity}{parametrizationGravityType}: spherical harmonics from \config{minDegree}=\verb|2| to \config{maxDegree}=\verb|60|
+            \item \configClass{parametrizationGravity}{parametrizationGravityType}: high frequency parametrization
+            \item \configClass{parametrizationAcceleration1}{parametrizationAccelerationType}: same as in In \program{PreprocessingVariationalEquationOrbitFit}
+            \item \configClass{parametrizationAcceleration2}{parametrizationAccelerationType}: same as in In \program{PreprocessingVariationalEquationOrbitFit}
+            \item \configClass{parametrizationSst}{parametrizationSatelliteTrackingType}: antenna phase center variations (y and z for both satellites)
+            \item \config{integrationDegree}: 7
+            \item \config{interpolationDegree}: 7
+        \end{itemize}
+    \item \configClass{covarianceSst}{covarianceSstType}
+        \begin{itemize}
+            \item \config{sigma}: \verb|1e-7|
+            \item \config{sampling}: 5 [seconds]
+        \end{itemize}
+    \item \configClass{covariancePod1/2}{covariancePodType}
+        \begin{itemize}
+            \item \config{sigma}:  \verb|2|
+            \item \configFile{inputfileCovariancePodEpoch}{instrument}: 3x3 epoch covariances
+            \item \config{sampling}: 60 [seconds]
+        \end{itemize}
+    \item \config{estimateShortTimeVariations}
+        \begin{itemize}
+            \item \configClass{autoregressiveModelSequence}{autoregressiveModelSequenceType}: AR models
+            \item \configClass{parameterSelection}{parameterSelectorType}: names
+                \begin{itemize}
+                    \item \configClass{parameterName}{parameterNamesType}: parametrizationGravity
+                    \begin{itemize}
+                        \item \configClass{parametrization}{parametrizationGravityType}: high frequency parametrization
+                    \end{itemize}
+                \end{itemize}
+        \end{itemize}
+\end{itemize}
+
+\program{ParameterSelection2IndexVector} and \program{MatrixCalculate} with
+\configClass{matrix:reorder}{matrixGeneratorType:reorder} can be used to extract the desired
+spherical harmonic coefficients from \configFile{outputfileSolution}{matrix} and the respective
+standard deviations from \configFile{outputfileSigmax}{matrix} up to a certain degree.
+
+In the program \program{Gravityfield2PotentialCoefficients} the estimated spherical harmonics
+coefficients are read with
+\configClass{gravityfield:fromParametrization}{gravityfieldType:fromParametrization}.
+The monthly mean gravity field can be added back by additionaly selecting the time splines created
+in \verb|000groopsBackgroundModels.xml| using
+\configClass{gravityfield:timeSplines}{gravityfieldType:timeSplines}. The preprocessing solution
+is saved as a \file{spherical harmonics file}{potentialCoefficients}.
+
+\subsection{Setting up normal equations}\label{cookbook.gravityFieldGrace:monthlyNormals}
+Normal equations are set up in the script \verb|040groopsMonthlyNormals120.xml| using
+the program \program{NormalsBuildShortTimeStaticLongTime}. The time intervals which the normal
+equations are divided into are defined in \configFile{inputfileArcList}{arcList}.
+The normal equations are based on \configClass{observation}{observationType} including the SST data,
+the kinematic orbits and the variational equations. The parametrization of the gravity field can
+be set with \configClass{observation:parametrizationGravity}{parametrizationGravityType}
+(e.g. spherical harmonics up to degree and order 120). Accelerometer calibration parameters
+and KBR antenna phase center variations can be parameterized using
+\configClass{parametrizationAcceleration}{parametrizationAccelerationType} and
+\configClass{parametrizationSst}{parametrizationSatelliteTrackingType}.
+With \config{estimateShortTimeVariations} short time variations of the gravity
+field can be co-estimated. The parameters selected by
+\configClass{parameterSelection}{parameterSelectorType} (e.g. linear splines with 6h nodes) are
+constrained by an \configClass{autoregressiveModelSequence}{autoregressiveModelSequenceType}.
+Additional temporal variations (e.g. trend and annual oscillation) could be estimated with
+\config{estimateLongTimeVariations}.
+
+\subsection{Solving normal equations}\label{cookbook.gravityFieldGrace:monhtlySolve}
+The desired spherical harmonic coefficients are determined in the script \verb|050groopsMonthlySolve.xml|.
+\program{NormalsSolverVCE} accumulates \configClass{normalEquation}{normalEquationType} and solves
+the total combined system. Variance component estimation is used to determine the relative weighting
+of the individual normals. The estimated parameter vector (\configFile{outputfileSolution}{matrix})
+the estimated accuracies (\configFile{outputfileSigmax}{matrix}) and the full covariance matrix
+(\configFile{outputfileCovariance}{matrix}) can be saved.
+Using \program{Gravityfield2PotentialCoefficients} the final solution can be saved as
+a \file{spherical harmonics file}{potentialCoefficients} by adding back the monthly mean gravity
+field to the estimated spherical harmonic coefficients.
 
 % =============================================================
