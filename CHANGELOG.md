@@ -24,6 +24,7 @@
 - Other:            Removed inputfileGlobal option.
 - Other:            GnssAttitude2Orbex: can now handle different sampling per satellite.
 - Other:            GnssRinexNavigation2OrbitClock/RinexObservation2GnssReceiver: Added basic support for RINEX v4.00.
+- Other:            GnssLowEarthOrbiter: createTracks() before removing outlier epochs leads to less track splits.
 
 # Release 2021-09-06
 - Interface change: Complete redesign of GnssProcessing to make usage a little bit easier and more flexible.
