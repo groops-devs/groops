@@ -79,6 +79,11 @@ inline void GnssProcessingStepWriteNormalEquations::process(GnssProcessingStep::
   try
   {
     logStatus<<"=== write normal equations =================================="<<Log::endl;
+    if(!state.normalEquationInfo.parameterCount())
+    {
+      logWarningOnce<<"Empty normal equations matrix"<<Log::endl;
+      return;
+    }
     Bool eliminateEpochParameters = FALSE;
     std::vector<UInt> blockIndex, indexVector(state.normalEquationInfo.parameterCount());
     std::iota(indexVector.begin(), indexVector.end(), 0);

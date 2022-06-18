@@ -59,7 +59,7 @@ void Orbit2MagneticField::run(Config &config, Parallel::CommunicatorPtr comm)
 
     logStatus<<"computing thermospheric state"<<Log::endl;
     InstrumentFile orbitFile(fileNameOrbit);
-    UInt dataCount = 3; // (x,y, z)
+    UInt dataCount = 4; // (time, x, y, z)
     std::vector<InstrumentFilePtr> instrumentFile;
     for(auto &fileName : fileNamesInstrument)
     {
@@ -83,7 +83,7 @@ void Orbit2MagneticField::run(Config &config, Parallel::CommunicatorPtr comm)
         A(i, 3) = field.z();
       }
 
-      UInt idx = 3;
+      UInt idx = 4;
       for(auto &file: instrumentFile)
       {
         Arc arc = file->readArc(arcNo);

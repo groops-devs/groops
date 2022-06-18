@@ -68,7 +68,7 @@ public:
   UInt arcCount()                const override {return observationMisc->arcCount();}
   void parameterName(std::vector<ParameterName> &name) const override {observationMisc->parameterName(name);}
 
-  void observation(UInt arc, Matrix &l, Matrix &A, Matrix &B);
+  void observation(UInt arc, Matrix &l, Matrix &A, Matrix &B) override;
 };
 
 /***********************************************/

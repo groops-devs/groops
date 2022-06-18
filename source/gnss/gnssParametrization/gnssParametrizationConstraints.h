@@ -54,7 +54,7 @@ class GnssParametrizationConstraints : public GnssParametrizationBase
 public:
   GnssParametrizationConstraints(Config &config);
 
-  void init(Gnss *gnss, Parallel::CommunicatorPtr /*comm*/) {this->gnss = gnss;}
+  void init(Gnss *gnss, Parallel::CommunicatorPtr /*comm*/) override {this->gnss = gnss;}
   void constraints(const GnssNormalEquationInfo &normalEquationInfo, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount) const override;
 };
 

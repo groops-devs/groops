@@ -122,7 +122,7 @@ void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::Communicato
         file.parameterNameSatellite(para->parameterNames);
         file.parameterNameSatelliteArc(para->parameterNames);
         for(auto &name : para->parameterNames)
-          name.object = gnss->receivers.at(idRecv)->name();
+          name.object = para->recv->name();
       }
 
     // distribute process id of receivers

@@ -81,7 +81,7 @@ public:
   UInt gravityParameterCount() const override {return parametrization->parameterCount();}
   UInt rightSideCount()        const override {return rhs.size();}
   UInt arcCount()              const override {return orbitFile.arcCount();}
-  void parameterName(std::vector<ParameterName> &name) const;
+  void parameterName(std::vector<ParameterName> &name) const override;
 
   void observation(UInt arc, Matrix &l, Matrix &A, Matrix &B) override;
 };

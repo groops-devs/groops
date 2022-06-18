@@ -71,7 +71,7 @@ public:
   UInt arcCount()                const override {return countArc;}
   void parameterName(std::vector<ParameterName> &name) const override;
 
-  Arc computeArc(UInt arcNo, CovariancePodPtr covPod);
+  Arc computeArc(UInt arcNo, CovariancePodPtr covPod) override;
 };
 
 /***********************************************/

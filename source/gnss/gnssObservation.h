@@ -123,7 +123,7 @@ public:
   Angle    azimutTrans,     elevationTrans;
   Double   STEC, dSTEC;
 
-  GnssObservationEquation() : track(nullptr), receiver(nullptr), transmitter(nullptr) {}
+  GnssObservationEquation() : idEpoch(NULLINDEX), track(nullptr), receiver(nullptr), transmitter(nullptr), rankDeficit(0), STEC(0), dSTEC(0) {}
 
   GnssObservationEquation(const GnssObservation &observation, const GnssReceiver &receiver, const GnssTransmitter &transmitter,
                           const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, const std::function<void(GnssObservationEquation &eqn)> &reduceModels,

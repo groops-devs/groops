@@ -75,7 +75,7 @@ void GraceL1b2AccHousekeeping::run(Config &config, Parallel::CommunicatorPtr /*c
         Float             v15Picu;                           // ICU reference voltage +15 V
         Float             v15Micu;                           // ICU reference voltage -15 V
         Float             vr5Picu;                           // ICU reference voltage + 5 V
-        Float             tcicu;                             // temperature of ICU A/D converter board (°C)
+        Float             tcicu=NAN_EXPR;                    // temperature of ICU A/D converter board (°C)
         Float             v15Psu;                            // SU voltage +15 V
         Float             v15Msu;                            // SU voltage -15 V
         Float             v48Psu;                            // SU voltage +48 V

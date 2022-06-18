@@ -99,7 +99,7 @@ void GnssParametrizationTransmitterDynamicOrbits::init(Gnss *gnss, Parallel::Com
         file.parameterNameSatellite(para->parameterNames);
         file.parameterNameSatelliteArc(para->parameterNames);
         for(auto &name : para->parameterNames)
-          name.object = gnss->transmitters.at(idTrans)->name();
+          name.object = para->trans->name();
       }
   }
   catch(std::exception &e)

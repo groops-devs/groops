@@ -38,11 +38,6 @@ to get the epoch wise covariance information at the moment.
 * @see GnssProcessingStep */
 class GnssProcessingStepComputeCovarianceMatrix : public GnssProcessingStepBase
 {
-  Bool   computeResiduals, adjustSigma0, computeWeights;
-  Double huber, huberPower;
-  Double convergenceThreshold;
-  UInt   iterCount;
-
 public:
   GnssProcessingStepComputeCovarianceMatrix(Config &/*config*/) {}
   void process(GnssProcessingStep::State &state) override;

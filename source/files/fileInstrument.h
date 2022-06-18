@@ -184,8 +184,7 @@ protected:
     using reference         = ReferenceType;
 
     Iterator() : BaseIterator() {}                           /// Default constructor
-    Iterator(BaseIterator it) : BaseIterator(it) {}          /// Base constructor
-    Iterator(const Iterator &other) : BaseIterator(other) {} /// Copy constructor
+    Iterator(const BaseIterator &it) : BaseIterator(it) {}   /// Base constructor
 
     PointerType operator->() const { return dynamic_cast<PointerType>(BaseIterator::operator*().get()); }                           // double dereferencing
     ReferenceType operator*() const { return *this->operator->(); }                                                                 // double dereferencing
@@ -221,10 +220,10 @@ public:
   const_reverse_iterator crend()   const { return const_reverse_iterator(this->cbegin()); }
 
 public:
-  Arc() = default;       //!< Default Constructor
-  Arc(const Arc &arc);   //!< Copy constructor
-  Arc(Arc &&) = default; //!< Move constructor
- ~Arc() = default;       //!< Destructor
+  Arc() = default;          //!< Default Constructor
+  Arc(const Arc &arc);      //!< Copy constructor
+  Arc(Arc &&) = default;    //!< Move constructor
+  virtual ~Arc() = default; //!< Destructor
 
   /// Constructor from matrix (first column is MJD)
   explicit Arc(const_MatrixSliceRef A, Epoch::Type type=Epoch::EMPTY);
