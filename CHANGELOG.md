@@ -8,6 +8,7 @@
 - New option:       GroupPrograms: silently and additional outputfileLog.
 - Bugfix:           instrument files: empty files are now compatible to other instrument types.
 - Bugfix:           gnssProcessingStep: uninitialized normalEquationInfo.
+- Bugfix:           gnssProcessingStep: wrong counting of observations.
 - Bugfix:           gnssProcessingStepForEachReceiverSeparately: variableReceiver was not set.
 - Bugfix:           gnssProcessingStepResolveAmbiguities: for writing empty ambiguity file.
 - Bugfix:           gnssParametrizationClocksModel: Fixed zero mean constraint.

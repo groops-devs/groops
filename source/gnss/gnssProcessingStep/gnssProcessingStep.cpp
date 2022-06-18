@@ -322,7 +322,7 @@ void GnssProcessingStep::State::buildNormals(Bool constraintsOnly, Bool solveEpo
             if(normalEquationInfo.accumulateEpochObservations)
             {
               // copy all observations to a single vector
-              A.init(Vector(std::accumulate(eqns.begin(), eqns.end(), UInt(0), [](UInt count, auto &eqn) {return count+eqn.l.rows();})));
+              A.init(Vector(std::accumulate(eqns.begin(), eqns.begin()+countEqn, UInt(0), [](UInt count, auto &eqn) {return count+eqn.l.rows();})));
               UInt idx=0;
               for(UInt i=0; i<countEqn; i++)
               {
@@ -332,7 +332,7 @@ void GnssProcessingStep::State::buildNormals(Bool constraintsOnly, Bool solveEpo
               }
               A.selectRows(0, 0); // select all
               A.accumulateNormals(normals, n, lPl(0), obsCount);
-              obsCount -= std::accumulate(eqns.begin(), eqns.end(), UInt(0), [](UInt count, auto &eqn) {return count+eqn.rankDeficit;});
+              obsCount -= std::accumulate(eqns.begin(), eqns.begin()+countEqn, UInt(0), [](UInt count, auto &eqn) {return count+eqn.rankDeficit;});
             }
          } // for(idRecv)
 
