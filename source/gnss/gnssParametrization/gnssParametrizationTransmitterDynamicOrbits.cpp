@@ -71,9 +71,6 @@ void GnssParametrizationTransmitterDynamicOrbits::init(Gnss *gnss, Parallel::Com
     this->gnss = gnss;
     auto selectedTransmitters = selectTransmitters->select(gnss->transmitters);
 
-    // stochastic pulses in interval
-    pulses.erase(std::remove_if(pulses.begin(), pulses.end(), [&](auto &p) {return (p <= gnss->times.front()) || (p >= gnss->times.back());}), pulses.end());
-
     VariableList fileNameVariableList;
     addVariable("prn", "***", fileNameVariableList);
     parameters.resize(gnss->transmitters.size(), nullptr);
@@ -84,11 +81,30 @@ void GnssParametrizationTransmitterDynamicOrbits::init(Gnss *gnss, Parallel::Com
         parameters.at(idTrans) = para;
         para->trans = gnss->transmitters.at(idTrans);
 
-        fileNameVariableList["prn"]->setValue(gnss->transmitters.at(idTrans)->name());
-        VariationalEquationFromFile file;
-        file.open(fileNameVariational(fileNameVariableList), nullptr/*parametrizationGravity*/, parametrizationAcceleration, pulses, ephemerides, integrationDegree);
+        // find first and last valid epoch
+        Time timeStart, timeEnd;
+        for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
+          if(para->trans->useable(idEpoch))
+          {
+            timeStart = gnss->times.at(idEpoch);
+            break;
+          }
+        for(UInt idEpoch=gnss->times.size(); idEpoch-->0;)
+          if(para->trans->useable(idEpoch))
+          {
+            timeEnd = gnss->times.at(idEpoch);
+            break;
+          }
 
-        auto variationalEquation = file.integrateArc(gnss->times.front(), gnss->times.back(), TRUE/*computePosition*/, TRUE/*computeVelocity*/);
+        // stochastic pulses in interval
+        std::vector<Time> pulsesInterval;
+        std::copy_if(pulses.begin(), pulses.end(), std::back_inserter(pulsesInterval), [&](auto &p) {return (timeStart < p) && (p < timeEnd);});
+
+        fileNameVariableList["prn"]->setValue(para->trans->name());
+        VariationalEquationFromFile file;
+        file.open(fileNameVariational(fileNameVariableList), nullptr/*parametrizationGravity*/, parametrizationAcceleration, pulsesInterval, ephemerides, integrationDegree);
+
+        auto variationalEquation = file.integrateArc(timeStart, timeEnd, TRUE/*computePosition*/, TRUE/*computeVelocity*/);
         para->times     = variationalEquation.times;
         para->PosDesign = variationalEquation.PosDesign;
         para->VelDesign = variationalEquation.VelDesign;
