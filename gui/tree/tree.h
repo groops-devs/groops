@@ -287,7 +287,7 @@ public slots:
   void editUpdateName();
   void editComment();
   void editCollapseAll();
-  void openExternally();
+  void editOpenExternally();
 
 // Event-Handler
 // -------------

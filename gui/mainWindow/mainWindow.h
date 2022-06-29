@@ -78,7 +78,7 @@ public slots:
   void helpAbout();
   void fileChanged(const QString &fileName, bool changed);
   void addToRecentFiles(const QString &fileName);
-  void openDocumentationExternally();
+  void helpOpenDocumentationExternally();
 
 protected:
   void closeEvent(QCloseEvent *e);
@@ -118,7 +118,8 @@ public:
   QAction *editUpdateNameAction;
   QAction *editCommentAction;
   QAction *editCollapseAllAction;
-  QAction *openExternallyAction;
+  QAction *editOpenExternallyAction;
+  QAction *helpOpenDocumentationAction;
 };
 
 /***********************************************/

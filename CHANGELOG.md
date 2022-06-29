@@ -27,6 +27,7 @@
 - Other:            GnssRinexNavigation2OrbitClock/RinexObservation2GnssReceiver: Added basic support for RINEX v4.00.
 - Other:            gnssParametrization*DynamicOrbits: integration starts and ends with first/last valid epoch.
 - Other:            GnssLowEarthOrbiter: createTracks() before removing outlier epochs leads to less track splits.
+- Other:            GUI: Added 'Open Documentation' to the context menu.
 
 # Release 2021-09-06
 - Interface change: Complete redesign of GnssProcessing to make usage a little bit easier and more flexible.

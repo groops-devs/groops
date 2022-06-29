@@ -76,7 +76,7 @@
     <addaction name="editRenameAction"/>
     <addaction name="editUpdateNameAction"/>
     <addaction name="editCommentAction"/>
-    <addaction name="openExternallyAction"/>
+    <addaction name="editOpenExternallyAction"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
@@ -93,7 +93,7 @@
     <addaction name="helpShowDescriptionsAction"/>
     <addaction name="helpShowResultsAction"/>
     <addaction name="separator"/>
-    <addaction name="helpOpenDocumentation"/>
+    <addaction name="helpOpenDocumentationAction"/>
     <addaction name="separator"/>
     <addaction name="helpAboutAction"/>
    </widget>
@@ -567,7 +567,7 @@
     <string>Collapse All Elements</string>
    </property>
   </action>
-  <action name="helpOpenDocumentation">
+  <action name="helpOpenDocumentationAction">
    <property name="icon">
     <iconset resource="../resources/icons.qrc">
      <normaloff>:/icons/scalable/help-contents.svg</normaloff>:/icons/scalable/help-contents.svg</iconset>
@@ -630,7 +630,7 @@
     <string>Ctrl+Shift+W</string>
    </property>
   </action>
-  <action name="openExternallyAction">
+  <action name="editOpenExternallyAction">
    <property name="enabled">
     <bool>false</bool>
    </property>

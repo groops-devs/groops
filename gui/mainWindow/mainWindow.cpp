@@ -63,24 +63,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // signal slot connections
     // -----------------------
-    connect(ui->fileNewAction,         SIGNAL(triggered(bool)), this, SLOT(fileNew()));
-    connect(ui->fileOpenAction,        SIGNAL(triggered(bool)), this, SLOT(fileOpen()));
-    connect(ui->fileReOpenAction,      SIGNAL(triggered(bool)), this, SLOT(fileReOpen()));
-    connect(ui->fileShowInManagerAction, SIGNAL(triggered(bool)), this, SLOT(fileShowInManager()));
-    connect(ui->fileCloseAction,       SIGNAL(triggered(bool)), this, SLOT(fileClose()));
-    connect(ui->fileCloseOtherAction,  SIGNAL(triggered(bool)), this, SLOT(fileCloseOther()));
-    connect(ui->fileSaveAction,        SIGNAL(triggered(bool)), this, SLOT(fileSave()));
-    connect(ui->fileSaveAsAction,      SIGNAL(triggered(bool)), this, SLOT(fileSaveAs()));
-    connect(ui->fileExitAction,        SIGNAL(triggered(bool)), this, SLOT(fileExit()));
-    connect(ui->fileRunAction,         SIGNAL(triggered(bool)), this, SLOT(fileRun()));
-    connect(ui->editFindReplaceAction, SIGNAL(triggered(bool)), this, SLOT(editFindReplace()));
-    connect(ui->settingsCommandAction, SIGNAL(triggered(bool)), this, SLOT(settingsCommand()));
-    connect(ui->settingsPathAction,    SIGNAL(triggered(bool)), this, SLOT(settingsPath()));
-    connect(ui->settingsFontAction,    SIGNAL(triggered(bool)), this, SLOT(settingsFont()));
-    connect(ui->helpShowDescriptionsAction, SIGNAL(triggered(bool)), this, SLOT(showDescriptionsToggle(bool)));
-    connect(ui->helpShowResultsAction, SIGNAL(triggered(bool)), this, SLOT(showResultsToggle(bool)));
-    connect(ui->helpOpenDocumentation, SIGNAL(triggered(bool)), this, SLOT(openDocumentationExternally()));
-    connect(ui->helpAboutAction,       SIGNAL(triggered(bool)), this, SLOT(helpAbout()));
+    connect(ui->fileNewAction,               SIGNAL(triggered(bool)), this, SLOT(fileNew()));
+    connect(ui->fileOpenAction,              SIGNAL(triggered(bool)), this, SLOT(fileOpen()));
+    connect(ui->fileReOpenAction,            SIGNAL(triggered(bool)), this, SLOT(fileReOpen()));
+    connect(ui->fileShowInManagerAction,     SIGNAL(triggered(bool)), this, SLOT(fileShowInManager()));
+    connect(ui->fileCloseAction,             SIGNAL(triggered(bool)), this, SLOT(fileClose()));
+    connect(ui->fileCloseOtherAction,        SIGNAL(triggered(bool)), this, SLOT(fileCloseOther()));
+    connect(ui->fileSaveAction,              SIGNAL(triggered(bool)), this, SLOT(fileSave()));
+    connect(ui->fileSaveAsAction,            SIGNAL(triggered(bool)), this, SLOT(fileSaveAs()));
+    connect(ui->fileExitAction,              SIGNAL(triggered(bool)), this, SLOT(fileExit()));
+    connect(ui->fileRunAction,               SIGNAL(triggered(bool)), this, SLOT(fileRun()));
+    connect(ui->editFindReplaceAction,       SIGNAL(triggered(bool)), this, SLOT(editFindReplace()));
+    connect(ui->settingsCommandAction,       SIGNAL(triggered(bool)), this, SLOT(settingsCommand()));
+    connect(ui->settingsPathAction,          SIGNAL(triggered(bool)), this, SLOT(settingsPath()));
+    connect(ui->settingsFontAction,          SIGNAL(triggered(bool)), this, SLOT(settingsFont()));
+    connect(ui->helpShowDescriptionsAction,  SIGNAL(triggered(bool)), this, SLOT(showDescriptionsToggle(bool)));
+    connect(ui->helpShowResultsAction,       SIGNAL(triggered(bool)), this, SLOT(showResultsToggle(bool)));
+    connect(ui->helpOpenDocumentationAction, SIGNAL(triggered(bool)), this, SLOT(helpOpenDocumentationExternally()));
+    connect(ui->helpAboutAction,             SIGNAL(triggered(bool)), this, SLOT(helpAbout()));
 
     // additional keyboard shortcuts
     // -----------------------------
@@ -119,34 +119,35 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     // ActionList
     // ----------
     ActionList actionList;
-    actionList.fileNewAction             = ui->fileNewAction;
-    actionList.fileOpenAction            = ui->fileOpenAction;
-    actionList.fileReOpenAction          = ui->fileReOpenAction;
-    actionList.fileShowInManagerAction   = ui->fileShowInManagerAction;
-    actionList.fileCloseAction           = ui->fileCloseAction;
-    actionList.fileCloseOtherAction      = ui->fileCloseOtherAction;
-    actionList.fileSaveAction            = ui->fileSaveAction;
-    actionList.fileSaveAsAction          = ui->fileSaveAsAction;
-    actionList.fileRunAction             = ui->fileRunAction;
-    actionList.editCutAction             = ui->editCutAction;
-    actionList.editCopyAction            = ui->editCopyAction;
-    actionList.editPasteAction           = ui->editPasteAction;
-    actionList.editPasteOverwriteAction  = ui->editPasteOverwriteAction;
-    actionList.editAddAction             = ui->editAddAction;
-    actionList.editRemoveAction          = ui->editRemoveAction;
-    actionList.editSetGlobalAction       = ui->editSetGlobalAction;
-    actionList.editSetLoopAction         = ui->editSetLoopAction;
-    actionList.editRemoveLoopAction      = ui->editRemoveLoopAction;
-    actionList.editSetConditionAction    = ui->editSetConditionAction;
-    actionList.editRemoveConditionAction = ui->editRemoveConditionAction;
-    actionList.editEnabledAction         = ui->editEnabledAction;
-    actionList.editEnableAllAction       = ui->editEnableAllAction;
-    actionList.editDisableAllAction      = ui->editDisableAllAction;
-    actionList.editRenameAction          = ui->editRenameAction;
-    actionList.editUpdateNameAction      = ui->editUpdateNameAction;
-    actionList.editCommentAction         = ui->editCommentAction;
-    actionList.editCollapseAllAction     = ui->editCollapseAllAction;
-    actionList.openExternallyAction      = ui->openExternallyAction;
+    actionList.fileNewAction               = ui->fileNewAction;
+    actionList.fileOpenAction              = ui->fileOpenAction;
+    actionList.fileReOpenAction            = ui->fileReOpenAction;
+    actionList.fileShowInManagerAction     = ui->fileShowInManagerAction;
+    actionList.fileCloseAction             = ui->fileCloseAction;
+    actionList.fileCloseOtherAction        = ui->fileCloseOtherAction;
+    actionList.fileSaveAction              = ui->fileSaveAction;
+    actionList.fileSaveAsAction            = ui->fileSaveAsAction;
+    actionList.fileRunAction               = ui->fileRunAction;
+    actionList.editCutAction               = ui->editCutAction;
+    actionList.editCopyAction              = ui->editCopyAction;
+    actionList.editPasteAction             = ui->editPasteAction;
+    actionList.editPasteOverwriteAction    = ui->editPasteOverwriteAction;
+    actionList.editAddAction               = ui->editAddAction;
+    actionList.editRemoveAction            = ui->editRemoveAction;
+    actionList.editSetGlobalAction         = ui->editSetGlobalAction;
+    actionList.editSetLoopAction           = ui->editSetLoopAction;
+    actionList.editRemoveLoopAction        = ui->editRemoveLoopAction;
+    actionList.editSetConditionAction      = ui->editSetConditionAction;
+    actionList.editRemoveConditionAction   = ui->editRemoveConditionAction;
+    actionList.editEnabledAction           = ui->editEnabledAction;
+    actionList.editEnableAllAction         = ui->editEnableAllAction;
+    actionList.editDisableAllAction        = ui->editDisableAllAction;
+    actionList.editRenameAction            = ui->editRenameAction;
+    actionList.editUpdateNameAction        = ui->editUpdateNameAction;
+    actionList.editCommentAction           = ui->editCommentAction;
+    actionList.editCollapseAllAction       = ui->editCollapseAllAction;
+    actionList.editOpenExternallyAction    = ui->editOpenExternallyAction;
+    actionList.helpOpenDocumentationAction = ui->helpOpenDocumentationAction;
 
     // TabEnvironment
     // --------------
@@ -425,7 +426,7 @@ void MainWindow::addToRecentFiles(const QString &fileName)
 
 /***********************************************/
 
-void MainWindow::openDocumentationExternally()
+void MainWindow::helpOpenDocumentationExternally()
 {
   QUrl url = workspace->documentationUrl();
   if(url.isEmpty())

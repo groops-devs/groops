@@ -111,7 +111,7 @@ Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *workspace) :
     connect(this->actionList.editUpdateNameAction,      SIGNAL(triggered(bool)), this, SLOT(editUpdateName()));
     connect(this->actionList.editCommentAction,         SIGNAL(triggered(bool)), this, SLOT(editComment()));
     connect(this->actionList.editCollapseAllAction,     SIGNAL(triggered(bool)), this, SLOT(editCollapseAll()));
-    connect(this->actionList.openExternallyAction,      SIGNAL(triggered(bool)), this, SLOT(openExternally()));
+    connect(this->actionList.editOpenExternallyAction,  SIGNAL(triggered(bool)), this, SLOT(editOpenExternally()));
 
     // QTreeWidget events
     // ------------------
@@ -997,7 +997,8 @@ void Tree::updateActions()
     actionList.editCommentAction->setEnabled(true);
     actionList.editCollapseAllAction->setEnabled( true );
     TreeElementFileName *fileNameElement = dynamic_cast<TreeElementFileName*>(element);
-    actionList.openExternallyAction->setEnabled( fileNameElement && QFileInfo(addXmlDirectory(fileNameElement->selectedResult())).isFile() );
+    actionList.editOpenExternallyAction->setEnabled( fileNameElement && QFileInfo(addXmlDirectory(fileNameElement->selectedResult())).isFile() );
+    actionList.helpOpenDocumentationAction->setEnabled(true);
   }
   catch(std::exception &e)
   {
@@ -1424,7 +1425,7 @@ void Tree::editCollapseAll()
 
 /***********************************************/
 
-void Tree::openExternally()
+void Tree::editOpenExternally()
 {
   try
   {
@@ -1438,7 +1439,6 @@ void Tree::openExternally()
     GROOPS_RETHROW(e);
   }
 }
-
 
 /***********************************************/
 /**** Event-Handler ****************************/
@@ -1496,7 +1496,8 @@ void Tree::treeContextMenuRequested(const QPoint &pos)
     contextMenu->addAction(actionList.editRenameAction);
     contextMenu->addAction(actionList.editUpdateNameAction);
     contextMenu->addAction(actionList.editCommentAction);
-    contextMenu->addAction(actionList.openExternallyAction);
+    contextMenu->addAction(actionList.editOpenExternallyAction);
+    contextMenu->addAction(actionList.helpOpenDocumentationAction);
     contextMenu->exec(QWidget::mapToGlobal(pos));
     delete contextMenu;
   }
