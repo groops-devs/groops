@@ -207,7 +207,7 @@ Matrix DigitalFilterARMA::filter(const_MatrixSliceRef input) const
       {
         UInt columnCount = std::min(output.rows() - idxStart, blockSize);
         if(idxStart > 0)
-          matMult(-1.0, A.row(blockSize, an.size() - 1), output.row(idxStart - blockSize, blockSize), output.row(idxStart, an.size() - 1));
+          matMult(-1.0, A.row(blockSize, std::min(an.size() - 1, columnCount)), output.row(idxStart - blockSize, blockSize), output.row(idxStart, std::min(an.size() - 1, columnCount)));
 
         triangularSolve(1.0, A1.slice(0, 0, columnCount, columnCount), output.row(idxStart, columnCount));
       }
