@@ -257,19 +257,19 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
 
         testLabel(label, "END OF FREQUENCY");
         getLine(file, line, label);
-      }
 
-      if(testLabel(label, "START OF FREQ RMS", TRUE))
-      {
-        for(;;)
+        // skip optional frequency RMS block
+        if(testLabel(label, "START OF FREQ RMS", TRUE))
         {
+          for(;;)
+          {
+            getLine(file, line, label);
+            if(testLabel(label, "END OF FREQ RMS", TRUE))
+              break;
+          }
           getLine(file, line, label);
-          if(testLabel(label, "END OF FREQ RMS", TRUE))
-            break;
         }
-        getLine(file, line, label);
       }
-
       testLabel(label, "END OF ANTENNA");
 
       if(antennaInfo.timeEnd != date2time(2500,1,1,0,0,0) && antennaInfo.timeEnd <= timeStart)

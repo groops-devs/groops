@@ -19,6 +19,7 @@
 - Bugfix:           sp3Format2Orbit: no/invalid orbit positions/velocities are now excluded.
 - Bugfix:           Conversion of GRACE L1B/L1A data: revised source code.
 - Bugfix:           loopFileAscii: Fixed uninitialized variable that could lead to the loop ending prematurely.
+- Bugfix:           GnssAntex2AntennaDefinition: Fixed handling of frequency RMS blocks.
 - Other:            File GriddedDataTimeSeries: includes now the last epoch; interval [...] instead of [...).
 - Other:            File TimeSplinesGravityfield: includes now the last epoch; interval [...] instead of [...).
 - Other:            Removed inputfileGlobal option.
