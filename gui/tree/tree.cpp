@@ -1477,6 +1477,8 @@ void Tree::treeContextMenuRequested(const QPoint &pos)
     setSelectedItem(dynamic_cast<TreeItem*>(item));
 
     QMenu *contextMenu = new QMenu(this);
+    contextMenu->addAction(actionList.helpOpenDocumentationAction);
+    contextMenu->addSeparator();
     contextMenu->addAction(actionList.editCutAction);
     contextMenu->addAction(actionList.editCopyAction);
     contextMenu->addAction(actionList.editPasteAction);
@@ -1494,10 +1496,8 @@ void Tree::treeContextMenuRequested(const QPoint &pos)
     contextMenu->addSeparator();
     contextMenu->addAction(actionList.editEnabledAction);
     contextMenu->addAction(actionList.editRenameAction);
-    contextMenu->addAction(actionList.editUpdateNameAction);
     contextMenu->addAction(actionList.editCommentAction);
     contextMenu->addAction(actionList.editOpenExternallyAction);
-    contextMenu->addAction(actionList.helpOpenDocumentationAction);
     contextMenu->exec(QWidget::mapToGlobal(pos));
     delete contextMenu;
   }
