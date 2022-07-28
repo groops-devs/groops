@@ -215,10 +215,10 @@ ObservationMiscSstVariational::Arc ObservationMiscSstVariational::computeArc(UIn
       throw(Exception("no variational arc found for ["+timeStart.dateTimeStr()+", "+timeEnd.dateTimeStr()+"]"));
 
     // integration times (and interpolation intervals inbetween)
+    auto iterStart = std::upper_bound(arc1.times.begin(), arc1.times.end(), timeStart)-1;
+    auto iterEnd   = std::lower_bound(arc1.times.begin(), arc1.times.end(), timeEnd)+1;
     std::vector<Time> times;
-    const UInt epochStart = std::distance(arc1.times.begin(), std::upper_bound(arc1.times.begin(), arc1.times.end(), timeStart))-1;
-    for(UInt idEpoch=epochStart; (idEpoch < arc1.times.size()) && (arc1.times.at(idEpoch) <= timeEnd); idEpoch++)
-      times.push_back(arc1.times.at(idEpoch));
+    std::copy(iterStart, iterEnd, std::back_inserter(times));
 
     // count observations and calculate index
     // --------------------------------------
