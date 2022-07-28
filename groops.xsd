@@ -4421,6 +4421,7 @@
 									<xs:element name="normalMatrix"/>
 									<xs:element name="rightHandSide"/>
 									<xs:element name="lPl"/>
+									<xs:element name="observationCount"/>
 								</xs:choice>
 							</xs:complexType>
 						</xs:element>

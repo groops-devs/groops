@@ -6,6 +6,7 @@
 - New option:       gnssReceiverGeneratorStationNetwork: inputfileClock.
 - New option:       gnssReceiverGenerator: print preprocessing infos.
 - New option:       GroupPrograms: silently and additional outputfileLog.
+- New option:       MatrixGenerator->NormalsFile: observationCount.
 - Bugfix:           instrument files: empty files are now compatible to other instrument types.
 - Bugfix:           gnssProcessingStep: uninitialized normalEquationInfo.
 - Bugfix:           gnssProcessingStep: wrong counting of observations.

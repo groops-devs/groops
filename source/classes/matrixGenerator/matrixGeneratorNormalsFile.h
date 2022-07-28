@@ -18,7 +18,7 @@
 static const char *docstringMatrixGeneratorNormalsFile = R"(
 \subsection{Normals file}
 Matrix from a \file{normal equation file}{normalEquation}. The symmetric normal matrix,
-the right hand side vector or the lPl vector can be selected.
+the right hand side vector, the lPl vector, or the observation count $(1\times1)$ can be selected.
 )";
 #endif
 
@@ -35,7 +35,7 @@ the right hand side vector or the lPl vector can be selected.
 * @see MatrixGenerator */
 class MatrixGeneratorNormalsFile : public MatrixGeneratorBase
 {
-  enum Type {MATRIX, RHS, LPL};
+  enum Type {MATRIX, RHS, LPL, OBSCOUNT};
   Type type;
   FileName fileName;
   Double   factor;
@@ -61,9 +61,10 @@ inline MatrixGeneratorNormalsFile::MatrixGeneratorNormalsFile(Config &config) : 
     readConfig(config, "inputfileNormalEquation", fileName, Config::MUSTSET,  "",    "");
     if(readConfigChoice(config, "type", choice, Config::MUSTSET, "", ""))
     {
-      if(readConfigChoiceElement(config, "normalMatrix",  choice, "")) type = MATRIX;
-      if(readConfigChoiceElement(config, "rightHandSide", choice, "")) type = RHS;
-      if(readConfigChoiceElement(config, "lPl",           choice, "")) type = LPL;
+      if(readConfigChoiceElement(config, "normalMatrix",     choice, "")) type = MATRIX;
+      if(readConfigChoiceElement(config, "rightHandSide",    choice, "")) type = RHS;
+      if(readConfigChoiceElement(config, "lPl",              choice, "")) type = LPL;
+      if(readConfigChoiceElement(config, "observationCount", choice, "")) type = OBSCOUNT;
       endChoice(config);
     }
     readConfig(config, "factor", factor, Config::DEFAULT,  "1.0", "");
@@ -98,6 +99,11 @@ inline void MatrixGeneratorNormalsFile::compute(Matrix &A, UInt &/*startRow*/, U
     {
       readFileNormalEquation(fileName, info, n);
       A = info.lPl;
+    }
+    else if(type == OBSCOUNT)
+    {
+      readFileNormalEquation(fileName, info, n);
+      A = Matrix(1, 1, info.observationCount);
     }
 
     A *= factor;
