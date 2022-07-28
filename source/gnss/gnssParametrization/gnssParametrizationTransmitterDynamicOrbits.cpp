@@ -82,19 +82,8 @@ void GnssParametrizationTransmitterDynamicOrbits::init(Gnss *gnss, Parallel::Com
         para->trans = gnss->transmitters.at(idTrans);
 
         // find first and last valid epoch
-        Time timeStart, timeEnd;
-        for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
-          if(para->trans->useable(idEpoch))
-          {
-            timeStart = gnss->times.at(idEpoch);
-            break;
-          }
-        for(UInt idEpoch=gnss->times.size(); idEpoch-->0;)
-          if(para->trans->useable(idEpoch))
-          {
-            timeEnd = gnss->times.at(idEpoch);
-            break;
-          }
+        const Time timeStart = para->trans->timesPosVel.front();
+        const Time timeEnd   = para->trans->timesPosVel.back();
 
         // stochastic pulses in interval
         std::vector<Time> pulsesInterval;
