@@ -6,8 +6,8 @@
 \usepackage{ltablex}
 \usepackage{vmargin}
 \usepackage{fancyhdr}
-\usepackage[pdftex,pagebackref=true,unicode]{hyperref}
 \usepackage[pdftex]{graphicx}
+\usepackage[pdftex,pagebackref=true,unicode]{hyperref}
 \pdfcompresslevel=9
 \hypersetup{colorlinks=true,linkcolor=[rgb]{0.01176,0.38039,0.67058},urlcolor=[rgb]{0.01176,0.38039,0.67058}}
 
@@ -98,12 +98,29 @@
 \clearpage{\pagestyle{empty}\cleardoublepage\clearpage}
 
 \chapter{General information}
-GROOPS is a software toolkit for gravity field recovery, GNSS processing, and statistical analysis of time series and spatial data.
-Parts of GROOPS originate from developments in the Astronomical, Physical and Mathematical Geodesy Group
-at the University of Bonn, Germany.
-Since 2010 it is developed and maintained at Graz University of Technology, Austria.
+The Gravity Recovery Object Oriented Programming System (GROOPS) is a software toolkit written in C++
+that enables the user to perform core geodetic tasks.
+Key features of the software include gravity field recovery from satellite and terrestrial data,
+the determination of satellite orbits from global navigation satellite system (GNSS) measurements,
+and the processing of GNSS constellations and ground station networks. Most tasks and algorithms are
+(optionally) parallelized through the Message Passing Interface (MPI), thus the software enables
+a smooth transition from single-CPU desktop computers to large distributed
+computing environments for resource intensive tasks.
 
-This chapter details file formats and basic concepts for using GROOPS and its GUI.
+Parts of GROOPS originate from developments in the Astronomical, Physical and Mathematical Geodesy Group
+at the University of Bonn, Germany. Since 2010 it is developed and maintained at Graz University of Technology, Austria.
+It is licensed under GPLv3 and hosted at GitHub, \url{https://github.com/groops-devs/groops}.
+
+If you use data sets computed with GROOPS in a publication or publish the data itself, please cite our reference paper:\\
+Mayer-Guerr, T., Behzadpour, S., Eicker, A., Ellmer, M., Koch, B., Krauss, S., Pock, C., Rieser, D., Strasser, S., Suesser-Rechberger,
+B., Zehentner, N., Kvas, A. (2021). GROOPS: A software toolkit for gravity field recovery and GNSS processing.
+Computers and Geosciences, 104864. \url{https://doi.org/10.1016/j.cageo.2021.104864}.
+
+GROOPS depends on data files such as Earth rotation, Love numbers, and GNSS meta information.
+An initial data set that is regularly updated is available on our FTP server,
+\url{https://ftp.tugraz.at/outgoing/ITSG/groops}. You can choose between downloading the data directory
+or a single \href{https://ftp.tugraz.at/outgoing/ITSG/groops/data.zip}{data.zip} with the same content.
+
 \input{general.configFiles}
 \clearpage
 \input{general.parser}

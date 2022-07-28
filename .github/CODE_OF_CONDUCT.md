@@ -1,6 +1,6 @@
 ### Introduction
 
-This Code of Conduct applies to all spaces managed by the Gravity Recovery Object Oriented Programming System (GROOPS) project, including all public and private mailing lists, issue trackers, wikis, blogs, meetings, workshops and any other channel used by our community.
+This Code of Conduct applies to all spaces managed by the Gravity Recovery Object Oriented Programming System (GROOPS) project, including all public and private mailing lists, issue trackers, discussions, wikis, blogs, meetings, workshops and any other channel used by our community.
 
 This Code of Conduct should be honored by everyone who participates in the GROOPS community formally or informally, or claims any affiliation with the project, in any project-related activities and especially when representing the project, in any role.
 

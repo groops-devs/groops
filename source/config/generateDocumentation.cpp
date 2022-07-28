@@ -783,55 +783,67 @@ void Documentation::writeHtml(const FileName &directoryName)
     {
       std::stringstream content;
       content<<R"(<h1>GROOPS Documentation and Cookbook</h1>)"<<std::endl;
-      content<<R"(<p>GROOPS is a software toolkit for gravity field recovery, GNSS processing, and statistical analysis of time series and spatial data.</p>)"<<std::endl;
+      content<<R"(<p>GROOPS is a software toolkit for gravity field recovery, GNSS processing, and statistical analysis of time series and spatial data.)"<<std::endl;
+      content<<R"(It is licensed under GPLv3 and hosted at <a target="_blank" href="https://github.com/groops-devs/groops">GitHub</a>.</p>)"<<std::endl;
+
+      content<<R"(<p>GROOPS depends on data files such as Earth rotation, Love numbers, and GNSS meta information.)"<<std::endl;
+      content<<R"(An initial data set that is regularly updated is available on our FTP server,)"<<std::endl;
+      content<<R"(<a target="_blank" href="https://ftp.tugraz.at/outgoing/ITSG/groops">https://ftp.tugraz.at/outgoing/ITSG/groops</a>.)"<<std::endl;
+      content<<R"(You can choose between downloading the data directory or a single)"<<std::endl;
+      content<<R"(<a href="https://ftp.tugraz.at/outgoing/ITSG/groops/data.zip">data.zip</a> with the same content.</p>)"<<std::endl;
+
+      content<<R"(<p>Additional tutorial videos are available at our <a target="_blank" href="https://www.youtube.com/channel/UCzUirVN2JuEKZwdM9dIqllg/videos">YouTube channel</a>.)"<<std::endl;
+      content<<R"(Questions about the usage of GROOPS can be posted in the)"<<std::endl;
+      content<<R"(<a target="_blank" href="https://github.com/groops-devs/groops/discussions">Discussions</a>.</p>)"<<std::endl;
+
       content<<R"(<div class="container">)"<<std::endl;
-      content<<R"(<div class="row">
-                    <div class="col-sm top-buffer">
-                          <h5 class="card-title">General Information</h5>
-                            <p class="card-text">File formats and basic concepts for using GROOPS and its GUI.</p>
-                          <ul class="list-group list-group-flush">
-                            <li><a href="general.configFiles.html">Config files</a></li>
-                            <li><a href="general.parser.html">Parser</a></li>
-                            <li><a href="general.loopsAndConditions.html">Loops and conditions</a></li>
-                            <li><a href="general.constants.html">Constants and the setting file</a></li>
-                            <li><a href="general.parallelization.html">Parallelization</a></li>
-                            <li><a href="general.gui.html">Graphical User Interface (GUI)</a></li>
-                            <li><a href="general.fileFormat.html">File formats</a></li>
-                          </ul>
-                    </div>
-                    <div class="col-sm top-buffer">
-                          <h5 class="card-title">Mathematic Fundamentals</h5>
-                            <p class="card-text">Description of methods used throughout GROOPS.</p>
-                          <ul class="list-group list-group-flush">
-                            <li><a href="fundamentals.robustLeastSquares.html">Robust least squares adjustment</a></li>
-                            <li><a href="fundamentals.basisSplines.html">Basis splines</a></li>
-                            <li><a href="fundamentals.autoregressiveModel.html">Autoregressive models</a></li>
-                          </ul>
-                    </div>
-                  </div>)"<<std::endl;
-      content<<R"(<div class="row">
-                    <div class="col-sm top-buffer">
-                          <h5 class="card-title">Cookbook</h5>
-                            <p class="card-text">Recipes to explore the GROOPS feature set.</p>
-                          <ul class="list-group list-group-flush">
-                            <li><a href="cookbook.instrument.html">Instrument data handling</a></li>
-                            <li><a href="cookbook.gnssNetwork.html">GNSS satellite orbit determination and station network analysis</a></li>
-                            <li><a href="cookbook.gnssPpp.html">GNSS precise point positioning (PPP)</a></li>
-                            <li><a href="cookbook.kinematicOrbit.html">Kinematic orbit determination of LEO satellites</a></li>
-                            <li><a href="cookbook.gravityFieldPod.html">Gravity field determination from POD data</a></li>
-                            <li><a href="cookbook.gravityFieldGrace.html">GRACE gravity field recovery</a></li>
-                            <li><a href="cookbook.regionalGeoid.html">Regional geoid determination</a></li>
-                          </ul>
-                    </div>
-                    <div class="col-sm top-buffer">
-                          <h5 class="card-title">Program/Class Reference</h5>
-                          <p class="card-text">Reference and documentation for all programs and classes in GROOPS.</p>
-                          <ul class="list-group list-group-flush">
-                            <li><a href="programType.html">List of programs</a></li>
-                            <li><a href="classes.html">List of classes</a></li>
-                          </ul>
-                    </div>
-                  </div>)"<<std::endl;
+      content<<R"(<div class="row">)"<<std::endl;
+      content<<R"(  <div class="col-sm top-buffer">)"<<std::endl;
+      content<<R"(        <h5 class="card-title">General Information</h5>)"<<std::endl;
+      content<<R"(          <p class="card-text">File formats and basic concepts for using GROOPS and its GUI.</p>)"<<std::endl;
+      content<<R"(        <ul class="list-group list-group-flush">)"<<std::endl;
+      content<<R"(          <li><a href="general.configFiles.html">Config files</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="general.parser.html">Parser</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="general.loopsAndConditions.html">Loops and conditions</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="general.constants.html">Constants and the setting file</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="general.parallelization.html">Parallelization</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="general.gui.html">Graphical User Interface (GUI)</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="general.fileFormat.html">File formats</a></li>)"<<std::endl;
+      content<<R"(        </ul>)"<<std::endl;
+      content<<R"(  </div>)"<<std::endl;
+      content<<R"(  <div class="col-sm top-buffer">)"<<std::endl;
+      content<<R"(        <h5 class="card-title">Mathematic Fundamentals</h5>)"<<std::endl;
+      content<<R"(          <p class="card-text">Description of methods used throughout GROOPS.</p>)"<<std::endl;
+      content<<R"(        <ul class="list-group list-group-flush">)"<<std::endl;
+      content<<R"(          <li><a href="fundamentals.robustLeastSquares.html">Robust least squares adjustment</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="fundamentals.basisSplines.html">Basis splines</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="fundamentals.autoregressiveModel.html">Autoregressive models</a></li>)"<<std::endl;
+      content<<R"(        </ul>)"<<std::endl;
+      content<<R"(  </div>)"<<std::endl;
+      content<<R"(</div>)"<<std::endl;
+      content<<R"(<div class="row">)"<<std::endl;
+      content<<R"(  <div class="col-sm top-buffer">)"<<std::endl;
+      content<<R"(        <h5 class="card-title">Cookbook</h5>)"<<std::endl;
+      content<<R"(          <p class="card-text">Recipes to explore the GROOPS feature set.</p>)"<<std::endl;
+      content<<R"(        <ul class="list-group list-group-flush">)"<<std::endl;
+      content<<R"(          <li><a href="cookbook.instrument.html">Instrument data handling</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="cookbook.gnssNetwork.html">GNSS satellite orbit determination and station network analysis</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="cookbook.gnssPpp.html">GNSS precise point positioning (PPP)</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="cookbook.kinematicOrbit.html">Kinematic orbit determination of LEO satellites</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="cookbook.gravityFieldPod.html">Gravity field determination from POD data</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="cookbook.gravityFieldGrace.html">GRACE gravity field recovery</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="cookbook.regionalGeoid.html">Regional geoid determination</a></li>)"<<std::endl;
+      content<<R"(        </ul>)"<<std::endl;
+      content<<R"(  </div>)"<<std::endl;
+      content<<R"(  <div class="col-sm top-buffer">)"<<std::endl;
+      content<<R"(        <h5 class="card-title">Program/Class Reference</h5>)"<<std::endl;
+      content<<R"(        <p class="card-text">Reference and documentation for all programs and classes in GROOPS.</p>)"<<std::endl;
+      content<<R"(        <ul class="list-group list-group-flush">)"<<std::endl;
+      content<<R"(          <li><a href="programType.html">List of programs</a></li>)"<<std::endl;
+      content<<R"(          <li><a href="classes.html">List of classes</a></li>)"<<std::endl;
+      content<<R"(        </ul>)"<<std::endl;
+      content<<R"(  </div>)"<<std::endl;
+      content<<R"(</div>)"<<std::endl;
       content<<R"(</div>)"<<std::endl;
       writeHtmlFile("index.html", "Overview", content.str());
     }

@@ -1,6 +1,3 @@
-| :information_source: Release [2021-09-06](https://github.com/groops-devs/groops/releases/tag/2021-09-06) features a redesign of the GNSS processing interface to make usage a little bit easier and more flexible. In addition, we now provide GNSS [example scenarios](https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/) with config files and data. Since the structure of the [GNSS-related GROOPS data and metadata](https://ftp.tugraz.at/outgoing/ITSG/groops/data/gnss/) has changed, we recommend to download the latest version. More information can be found in the updated [cookbooks and documentation](https://groops-devs.github.io/groops/html/index.html). |
-|:-------------------------|
-
 ![GROOPS Logo](https://github.com/groops-devs/groops/blob/main/docs/html/static/groops_banner.png)
 
 The Gravity Recovery Object Oriented Programming System (GROOPS) is a software toolkit written in C++
@@ -19,20 +16,20 @@ user interface where configuration files can be created and edited.
 - [Citing GROOPS](#citing-groops)
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [Releases and Contributing](#releases-and-contributing)
+- [Contributing](#contributing)
 - [License](#license)
 - [Contributors](#contributors)
 
 ## Citing GROOPS
 
-If you use data sets computed with GROOPS in a publication or publish the data itself, please cite our [reference paper](https://doi.org/10.1016/j.cageo.2021.104864):
+If you use data sets computed with GROOPS in a publication or publish the data itself,
+please cite our [reference paper](https://doi.org/10.1016/j.cageo.2021.104864):
 
-*Mayer-Gürr, T., Behzadpour, S., Eicker, A., Ellmer, M., Koch, B., Krauss, S., Pock, C., Rieser, D., Strasser, S., Suesser-Rechberger, B., Zehentner, N.,  Kvas, A. (2021). GROOPS: A software toolkit for gravity field recovery and GNSS processing. Computers & Geosciences, 104864. https://doi.org/10.1016/j.cageo.2021.104864*
-
+*Mayer-Guerr, T., Behzadpour, S., Eicker, A., Ellmer, M., Koch, B., Krauss, S., Pock, C., Rieser, D., Strasser, S., Suesser-Rechberger, B., Zehentner, N.,  Kvas, A. (2021). GROOPS: A software toolkit for gravity field recovery and GNSS processing. Computers & Geosciences, 104864. https://doi.org/10.1016/j.cageo.2021.104864*
 
 ```
 @article{Mayer-Gurr2021,
-  author = {Mayer-G{\"{u}}rr, Torsten and Behzadpour, Saniya and Eicker, Annette and Ellmer, Matthias and Koch, Beate and Krauss, Sandro and Pock, Christian and Rieser, Daniel and Strasser, Sebastian and S{\"{u}}sser-Rechberger, Barbara and Zehentner, Norbert and Kvas, Andreas},
+  author = {Mayer-Guerr, Torsten and Behzadpour, Saniya and Eicker, Annette and Ellmer, Matthias and Koch, Beate and Krauss, Sandro and Pock, Christian and Rieser, Daniel and Strasser, Sebastian and Suesser-Rechberger, Barbara and Zehentner, Norbert and Kvas, Andreas},
   doi = {https://doi.org/10.1016/j.cageo.2021.104864},
   issn = {0098-3004},
   journal = {Computers & Geosciences},
@@ -61,22 +58,23 @@ is the perfect way to get familiar with the different features of GROOPS.
 
 GROOPS depends on data files such as Earth rotation, Love numbers, and wavelet coefficients.
 An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/outgoing/ITSG/groops/).
-You can choose between downloading the data directory or a single [zip file](https://ftp.tugraz.at/outgoing/ITSG/groops/data.zip) with the same content.
+You can choose between downloading the data directory or
+a single [zip file](https://ftp.tugraz.at/outgoing/ITSG/groops/data.zip) with the same content.
 
-## Releases and Contributing
+## Contributing
+
+We appreciate all contributions such as improving the documentation, reporting or fixing bugs,
+implementing new features. Answering user questions in the
+[Discussions](https://github.com/groops-devs/groops/discussions) section is another great way
+of contributing to the GROOPS community.
 
 If you encounter a bug, please let us know by [filing an issue](https://github.com/groops-devs/groops/issues).
+Please include as much information as possible on how to reproduce the bug
+and about your software environment (operating system, compiler version, GROOPS version).
 
-At the moment we do not plan to have a regular release cycle, rather we will
-release a new version when a new feature has become mature enough, or for critical bug fixes.
-GROOPS has functionality in place to handle interface changes, however we cannot guarantee backwards
-compatibility for all config files.
-
-We appreciate all contributions including documentation and examples for the cookbook.
-If you want to add new functionality to GROOPS, please open an issue and discuss the feature with us.
-
-Please see our [Contributing](https://github.com/groops-devs/groops/blob/main/CONTRIBUTING.md)
-page to learn about how to best contribute to GROOPS.
+If you want to provide a bug fix or implement a new features,
+please get in contact with us in the [Discussions](https://github.com/groops-devs/groops/discussions)
+before you start coding.
 
 ## License
 

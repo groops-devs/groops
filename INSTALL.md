@@ -12,6 +12,7 @@ This guide provides step-by-step instructions for compiling and running GROOPS f
 ## Overview
 
 While GROOPS is intended to be a standalone software package, some functionality depends on external libraries.
+The installation instructions provided further below include steps to install these dependencies.
 Hard dependencies are:
 
  - [the Expat XML parser](https://libexpat.github.io)
@@ -107,8 +108,11 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
 ### Graphical User Interface (GUI)
 
 The GROOPS GUI is based on [Qt](https://www.qt.io/) and is tested with Qt version 5.15.1.
-Precompiled Windows binaries of the GROOPS GUI are provided with each [release](https://github.com/groops-devs/groops/releases).
-To compile the GUI yourself, you need to:
+
+We recommend installing the GROOPS GUI via the precompiled Windows binaries provided with
+each [release](https://github.com/groops-devs/groops/releases).
+
+In case you want to compile the GUI yourself, you need to:
 
 1. [Download and install](https://www.qt.io/download-qt-installer) Qt (registration required).
 
@@ -152,6 +156,10 @@ working with GROOPS easier.
     ```
 
 2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` to the number of threads to use for matrix operations.
+
+GROOPS depends on data files such as Earth rotation, Love numbers, and wavelet coefficients.
+An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/outgoing/ITSG/groops/).
+You can choose between downloading the data directory or a single [zip file](https://ftp.tugraz.at/outgoing/ITSG/groops/data.zip) with the same content.
 
 ## Linux
 
@@ -350,7 +358,7 @@ make
 #### Generic Mapping Tools (GMT)
 
 The Generic Mapping Tools are available from the [Arch User Repository](https://wiki.archlinux.org/index.php/Arch_User_Repository).
-Install the [gmt6](https://aur.archlinux.org/packages/gmt6) and [gmt-coast](https://aur.archlinux.org/packages/gmt-coast) packages:
+Install the [gmt](https://archlinux.org/packages/community/x86_64/gmt/) and [gmt-coast](https://aur.archlinux.org/packages/gmt-coast) packages.
 
 ### Linux post-installation steps
 
@@ -366,6 +374,10 @@ working with GROOPS easier.
    ```
 
 2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` to the number of threads to use for matrix operations.
+
+GROOPS depends on data files such as Earth rotation, Love numbers, and wavelet coefficients.
+An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/outgoing/ITSG/groops/).
+You can choose between downloading the data directory or a single [zip file](https://ftp.tugraz.at/outgoing/ITSG/groops/data.zip) with the same content.
 
 ## Disabling external source files
 

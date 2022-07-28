@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Question
+    url: https://github.com/groops-devs/groops/discussions
+    about: Ask about GROOPS usage or other topics in the Discussions section.
   - name: GROOPS Documentation
     url: https://groops-devs.github.io/groops/html/
     about: Please check the GROOPS documentation before opening a new issue.
