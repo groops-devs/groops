@@ -1,4 +1,5 @@
 # main
+- Bugfix:           GriddedData: unwrap longitude before computing area elements.
 
 # Release 2022-07-28
 - New programs:     GriddedData2GriddedDataTimeSeries and GriddedDataTimeSeries2GriddedData.

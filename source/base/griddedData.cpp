@@ -102,10 +102,10 @@ Bool GriddedData::computeArea()
     Vector dx(lambda.size(), 2*PI);
     if(lambda.size() > 1)
     {
-      dx(0) = std::fabs(lambda.at(1)-lambda.at(0));
+      dx(0) = std::fabs(std::remainder(lambda.at(1)-lambda.at(0), 2*PI));
       for(UInt i=1; i<lambda.size()-1; i++)
-        dx(i) = 0.5*std::fabs(lambda.at(i+1)-lambda.at(i-1));
-      dx(dx.rows()-1) = std::fabs(lambda.at(lambda.size()-1)-lambda.at(lambda.size()-2));
+        dx(i) = 0.5*std::fabs(std::remainder(lambda.at(i+1)-lambda.at(i-1), 2*PI));
+      dx(dx.rows()-1) = std::fabs(std::remainder(lambda.at(lambda.size()-1)-lambda.at(lambda.size()-2), 2*PI));
     }
 
     Vector dy(phi.size(), 2.);
