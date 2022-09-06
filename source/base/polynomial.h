@@ -26,7 +26,7 @@ class Polynomial
   Bool              throwException;
   UInt              degree;
   std::vector<Time> times;
-  Double            sampling;
+  Double            sampling, margin;
   Bool              isLeastSquares;
   Double            range, extrapolation;
   std::vector<Bool> isPrecomputed;

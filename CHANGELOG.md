@@ -1,5 +1,6 @@
 # main
 - Bugfix:           GriddedData: unwrap longitude before computing area elements.
+- Bugfix:           InstrumentResample/polynomial: corrected interpolation vs. extrapolation.
 
 # Release 2022-07-28
 - New programs:     GriddedData2GriddedDataTimeSeries and GriddedDataTimeSeries2GriddedData.

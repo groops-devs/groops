@@ -27,6 +27,7 @@ void Polynomial::init(const std::vector<Time> &times, UInt degree, Bool throwExc
     this->sampling       = medianSampling(times).seconds();
     this->range          = range * ((range < 0) ? -sampling : 1.);
     this->extrapolation  = extrapolation * ((extrapolation < 0) ? -sampling : 1.);
+    this->margin         = margin;
 
     if(times.size() < degree+1)
       throw(Exception("Not enough data points ("+times.size()%"%i) to interpolate with polynomial degree "s+degree%"%i"s));
@@ -69,54 +70,63 @@ Matrix Polynomial::interpolate(const std::vector<Time> &timesNew, const_MatrixSl
       return A;
 
     Matrix B(rowsPerEpoch*(adjoint ? times.size() : timesNew.size()), A.columns());
-    UInt count = degree+1;
     auto searchStart = times.begin();
     for(UInt i=0; i<timesNew.size(); i++)
     {
       // find interval
       // -------------
-      UInt idx;
+      UInt idx   = NULLINDEX;
+      UInt count = degree+1;
       if(!isLeastSquares)
       {
-        searchStart = std::upper_bound(searchStart, times.end(), timesNew.at(i)); // first epoch greater than interpolation point
-        idx = std::min(std::max(static_cast<UInt>(std::distance(times.begin(), searchStart)), count)-count, times.size()-count);
+        searchStart = std::lower_bound(searchStart, times.end(), timesNew.at(i));            // first epoch greater or equal than interpolation point
+        const UInt idxFirstRight = static_cast<UInt>(std::distance(times.begin(), searchStart));
 
-        auto centricity = [&](UInt idx) {return std::max(std::fabs((timesNew.at(i)-times.at(idx)).seconds()),
-                                                         std::fabs((timesNew.at(i)-times.at(idx+degree)).seconds()));};
-        Double c1 = centricity(idx), c2;
-        for(; (idx+count<times.size()) && ((c2 = centricity(idx+1)) < c1); idx++)
-          c1 = c2;
-
-        if((times.at(idx+degree)-times.at(idx)).seconds() > range) // polynomial data points not within range
+        // same time? -> no interpolation needed
+        if((idxFirstRight < times.size()) && (std::fabs((*searchStart-timesNew.at(i)).seconds()) <= margin))
         {
-          if(throwException || adjoint)
-            throw(Exception("cannot interpolate at "+timesNew.at(i).dateTimeStr()));
-          B.row(i*rowsPerEpoch, rowsPerEpoch).fill(NAN_EXPR);
+          copy(A.row(rowsPerEpoch*idxFirstRight, rowsPerEpoch), B.row(rowsPerEpoch*i, rowsPerEpoch));
           continue;
         }
+
+        // interpolation possible?
+        UInt   optimalCentricity = MAX_UINT; // primary metric   (number of points left and right)
+        Double optimalDistance   = 1e99;    // secondary metric
+        for(UInt k=std::max(idxFirstRight, count)-count; k<=std::min(idxFirstRight, times.size()-count); k++)
+        {
+          const Double dt1 = (times.at(k)-timesNew.at(i)).seconds();
+          const Double dt2 = (times.at(k+degree)-timesNew.at(i)).seconds();
+          if((dt2-dt1 <= range)  && (dt2 >= -extrapolation) && (dt1 <= extrapolation))
+          {
+            const UInt centricity = std::max(idxFirstRight-k, k+count-idxFirstRight); // max(number of points left and right)
+            if(centricity > optimalCentricity)
+              break; // there won't be any better polynomial to the right of the current optimal anymore if centricity is increasing
+            if((centricity < optimalCentricity) || (std::max(std::fabs(dt1), std::fabs(dt2)) < optimalDistance))
+            {
+              idx               = k;
+              optimalCentricity = centricity;
+              optimalDistance   = std::max(std::fabs(dt1), std::fabs(dt2));
+            }
+          }
+        }
       }
-      else
+      else // least squares
       {
         auto searchEnd = std::upper_bound(searchStart, times.end(), timesNew.at(i)+seconds2time(range)); // first epoch outside search interval
         searchStart    = std::lower_bound(searchStart, searchEnd,   timesNew.at(i)-seconds2time(range)); // first epoch greater or equal than search interval
+        idx   = std::distance(times.begin(), searchStart);
         count = static_cast<UInt>(std::distance(searchStart, searchEnd));
-        if(count < degree+1) // not enough points
-        {
-          if(throwException || adjoint)
-            throw(Exception("not enough points to fit at "+timesNew.at(i).dateTimeStr()));
-          B.row(i*rowsPerEpoch, rowsPerEpoch).fill(NAN_EXPR);
-          continue;
-        }
-        idx = std::distance(times.begin(), searchStart);
+        if((count < degree+1) || ((times.at(idx) - timesNew.at(i)).seconds() > extrapolation) || // all points are after newTime and we are too far away
+                                 ((timesNew.at(i) - times.at(idx+count-1)).seconds() > extrapolation))   // all points are before newTime and we are too far away
+          idx = NULLINDEX;
       }
 
-      // check if we are allowed to extrapolate
-      // --------------------------------------
-      if(((times.at(idx) - timesNew.at(i)).seconds()         > extrapolation) || // all points are after newTime and we are too far away
-         ((timesNew.at(i) - times.at(idx+count-1)).seconds() > extrapolation))   // all points are before newTime and we are too far away
+      // check if we are allowed to predict
+      // ----------------------------------
+      if(idx == NULLINDEX)
       {
         if(throwException || adjoint)
-          throw(Exception("cannot extrapolate at "+timesNew.at(i).dateTimeStr()));
+          throw(Exception("cannot interpolate at "+timesNew.at(i).dateTimeStr()));
         B.row(i*rowsPerEpoch, rowsPerEpoch).fill(NAN_EXPR);
         continue;
       }
