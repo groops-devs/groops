@@ -652,7 +652,7 @@ std::string PlotMapLayerCoast::scriptEntry() const
 // Latex documentation
 static const char *docstringPlotMapLayerRivers = R"(
 \subsection{Rivers}
-Plots rivers and lakes. GMT provides different \config{class}es
+Plots rivers and lakes. GMT provides different classes
 (\url{https://docs.generic-mapping-tools.org/latest/coast.html}).
 )";
 
@@ -795,7 +795,7 @@ month throughout a year.
 
 class PlotMapLayerBlueMarble : public PlotMapLayer
 {
-  FileName fileNameChannels;
+  FileName fileNameImage;
   Double   brightness;
 
   Bool     illuminate;
@@ -816,11 +816,11 @@ PlotMapLayerBlueMarble::PlotMapLayerBlueMarble(Config &config)
 {
   try
   {
-    readConfig(config, "inputfileChannels", fileNameChannels, Config::MUSTSET, "{groopsDataDir}/plot/blue_marble/1800x900/bluemarble.05.grd", "GMT grid file containing layers for red, green and blue values.");
+    readConfig(config, "inputfileImage",    fileNameImage,    Config::MUSTSET, "{groopsDataDir}/plot/bluemarble/1800x900/bluemarble.05.jpg", "Blue Marble image file");
     readConfig(config, "brightness",        brightness,       Config::DEFAULT, "0.0", "brightness of bitmap [-1, 1]");
     if(readConfigSequence(config, "illuminate", Config::OPTIONAL, "", "add hillshade based on topography"))
     {
-      readConfig(config, "inputfileTopography", fileNameTopography, Config::MUSTSET, "{groopsDataDir}/plot/blue_marble/1800x900/bluemarble.topography.grd", "GMT grid file containing topography.");
+      readConfig(config, "inputfileTopography", fileNameTopography, Config::MUSTSET, "{groopsDataDir}/plot/bluemarble/1800x900/bluemarble.topography.grd", "GMT grid file containing topography.");
       readConfig(config, "azimuth",             azimuth,            Config::DEFAULT, "315", "direction of lighting source [deg]");
       readConfig(config, "elevation",           elevation,          Config::DEFAULT, "45",  "direction of lighting source [deg]");
       readConfig(config, "ambient",             ambient,            Config::DEFAULT, "0.1", "ambient lighting");
@@ -861,7 +861,7 @@ std::string PlotMapLayerBlueMarble::scriptEntry() const
       ss<<"gmt grdmath "<<dataFileName<<" "<<amplitude<<" MUL = "<<dataFileName<<std::endl;
     }
 
-    ss<<"gmt grdimage "<<fileNameChannels<<"\?red "<<fileNameChannels<<"\?green "<<fileNameChannels<<"\?blue";
+    ss<<"gmt grdimage "<<fileNameImage;
     if(!illuminate)
       ss<<" -I"<<brightness;
     else

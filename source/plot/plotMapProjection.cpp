@@ -184,11 +184,10 @@ public:
   std::string scriptEntry(Double width, Double /*height*/) const override
   {
     std::stringstream ss;
-
     if(PlotBasics::gmtVersion() >= 610)
       ss<<"-JP"<<width<<"c+a+fe";
     else
-      ss<<"-JPa"<<width<<"cr"; // --MAP_POLAR_CAP=none";
+      ss<<"-JPa"<<width<<"cr";
     return ss.str();
   }
 };

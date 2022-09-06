@@ -130,25 +130,15 @@ std::string PlotColorbar::scriptEntry(Double width, Double height, Double margin
     if(!label.empty()) ss<<"+l\""<<label<<"\"";
     if(!unit.empty())  ss<<"+u\""<<(unit=="%" ? "" : " ")<<unit<<"\"";
     if(illuminate)     ss<<" -I";
-    if(PlotBasics::gmtVersion() < 531)
-    {
-      if(triangleLeft)   ss<<" -Eb";
-      if(triangleRight)  ss<<" -Ef";
-      if(vertical)
-        ss<<" -D"<<width+marginX+margin<<"c/"<<height/2<<"c/"<<(height-0.4)*length/100.<<"c/0.4c";
-      else
-        ss<<" -D"<<width/2<<"c/"<<-margin-marginY<<"c/"<<(width-0.4)*length/100.<<"c/0.4ch";
-    }
+
+    if(vertical)
+      ss<<" -Dx"<<width+marginX+margin<<"c/"<<height/2<<"c+w"<<(height-0.4)*length/100.<<"c/0.4c+jLM";
     else
-    {
-      if(vertical)
-        ss<<" -Dx"<<width+marginX+margin<<"c/"<<height/2<<"c+w"<<(height-0.4)*length/100.<<"c/0.4c+jLM";
-      else
-        ss<<" -Dx"<<width/2<<"c/"<<-margin-marginY<<"c+w"<<(width-0.4)*length/100.<<"c/0.4c+jCT+h";
-      if(triangleLeft || triangleRight) ss<<"+e";
-      if(triangleLeft)   ss<<"b";
-      if(triangleRight)  ss<<"f";
-    }
+      ss<<" -Dx"<<width/2<<"c/"<<-margin-marginY<<"c+w"<<(width-0.4)*length/100.<<"c/0.4c+jCT+h";
+    if(triangleLeft || triangleRight) ss<<"+e";
+    if(triangleLeft)   ss<<"b";
+    if(triangleRight)  ss<<"f";
+
     ss<<" -O -K >> groopsPlot.ps"<<std::endl;
     return ss.str();
   }

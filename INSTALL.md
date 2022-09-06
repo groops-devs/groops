@@ -127,7 +127,7 @@ In case you want to compile the GUI yourself, you need to:
 The Generic Mapping Tools (GMT) are an optional dependency of GROOPS and enable the generation of high-quality
 figures.
 GMT provides [Windows binaries](https://github.com/GenericMappingTools/gmt/releases) which can be easily installed.
-The current GROOPS release is tested against GMT version 6.0.0.
+The current GROOPS release is tested against GMT version 6.4.0.
 
 ### Windows post-installation steps
 

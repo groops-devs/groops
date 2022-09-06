@@ -8163,9 +8163,9 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="inputfileChannels" type="filename" default="{groopsDataDir}/plot/blue_marble/1800x900/bluemarble.05.grd">
+						<xs:element name="inputfileImage" type="filename" default="{groopsDataDir}/plot/bluemarble/1800x900/bluemarble.05.jpg">
 							<xs:annotation>
-								<xs:documentation>GMT grid file containing layers for red, green and blue values.</xs:documentation>
+								<xs:documentation>Blue Marble image file</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="brightness" type="double" minOccurs="0" default="0.0">
@@ -8179,7 +8179,7 @@
 							</xs:annotation>
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="inputfileTopography" type="filename" default="{groopsDataDir}/plot/blue_marble/1800x900/bluemarble.topography.grd">
+									<xs:element name="inputfileTopography" type="filename" default="{groopsDataDir}/plot/bluemarble/1800x900/bluemarble.topography.grd">
 										<xs:annotation>
 											<xs:documentation>GMT grid file containing topography.</xs:documentation>
 										</xs:annotation>
