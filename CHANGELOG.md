@@ -1,6 +1,7 @@
 # main
 - New program:      InstrumentAccelerometerEstimateParameters (replaces InstrumentAccelerometerEstimateBiasScale).
 - New class:        In InstrumentResample/interpolatorTimeSeries: FillGapsLeastSquaresPolynomialFit.
+- Bugfix:           GnssRinexNavigation2OrbitClock: updated to be usable for rinex4 and fixes for rinex3.
 - Bugfix:           Plot: various fixes for GMT Versions >6.1.
 - Bugfix:           GriddedData: unwrap longitude before computing area elements.
 - Bugfix:           InstrumentResample/polynomial: corrected interpolation vs. extrapolation.
