@@ -72,20 +72,8 @@
             <h1>InstrumentResample</h1><p>
 
 This program resamples <a class="groops-file" href="fileFormat_instrument.html">instrument data</a> to a given
-<a class="groops-class" href="timeSeriesType.html">timeSeries</a> using a resampling <strong class="groops-config-element">method</strong> out of the following:</p><p><ul>
-
-<li><strong class="groops-config-element">polynomial</strong>: Polynomial prediction using a moving polynomial of <strong class="groops-config-element">polynomialDegree</strong>.
-  The optimal polynomial is chosen based on the centricity of the data points around the resampling
-  point and the distance to all polynomial data points. All polynomial data points must be within
-  <strong class="groops-config-element">maxDataPointRange</strong>. Resampling points within <strong class="groops-config-element">maxExtrapolationDistance</strong> of the
-  polynomial will be extrapolated.</p><p>  <figure><img class="figure" style="width:50%;" src="../figures/instrumentResample_polynomial.png" alt="instrumentResample_polynomial"><figcaption class="center">Figure: Example of polynomial prediction when resampling from 5 to 1 minute sampling</figcaption></figure></p><p></li><li>
-<strong class="groops-config-element">leastSquaresPolynomialFit</strong>. A polynomial of <strong class="groops-config-element">polynomialDegree</strong> is estimated using
-  all data points within <strong class="groops-config-element">maxDataPointDistance</strong> of the resampling point. This polynomial is then
-  used to predict the resampling point. A resampling point will be extrapolated if there are only data
-  points before/after as long as the closest one is within <strong class="groops-config-element">maxExtrapolationDistance</strong>.</p><p>  <figure><img class="figure" style="width:50%;" src="../figures/instrumentResample_leastSquares.png" alt="instrumentResample_leastSquares"><figcaption class="center">Figure: Example of least squares polynomial fit when resampling from 5 to 1 minute sampling</figcaption></figure>
-</li></ul>
-</p><p>The elements <strong class="groops-config-element">maxDataPointRange</strong>, <strong class="groops-config-element">maxDataPointDistance</strong>, and <strong class="groops-config-element">maxExtrapolationDistance</strong>
-are given in the unit of seconds. If negative values are used, the unit is relative to the median input sampling.</p><p>This program can also be used to reduce the sampling of an instrument file,
+<a class="groops-class" href="timeSeriesType.html">timeSeries</a> using a resampling
+<a class="groops-class" href="interpolatorTimeSeriesType.html">method</a>.</p><p>This program can also be used to reduce the sampling of an instrument file,
 but a better way to reduce the sampling of noisy data with regular sampling
 is to use a low pass filter first with <a class="groops-program" href="InstrumentFilter.html">InstrumentFilter</a> and then thin
 out the data with <a class="groops-program" href="InstrumentReduceSampling.html">InstrumentReduceSampling</a>.
@@ -94,15 +82,7 @@ out the data with <a class="groops-program" href="InstrumentReduceSampling.html"
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileInstrument</div></div></td><td>filename</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileInstrument</div></div></td><td>filename</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">method</div></div></td><td>choice</td><td>resampling method</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">polynomial</div></div></td><td>sequence</td><td>polynomial prediction</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">polynomialDegree</div></div></td><td>uint</td><td>degree of the moving polynomial</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">maxDataPointRange</div></div></td><td>double</td><td>[seconds] all degree+1 data points must be within this range for a valid polynomial</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">maxExtrapolationDistance</div></div></td><td>double</td><td>[seconds] resampling points within this range of the polynomial will be extrapolated</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">leastSquaresPolynomialFit</div></div></td><td>sequence</td><td>least squares polynomial fit</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">polynomialDegree</div></div></td><td>uint</td><td>degree of the estimated polynomial</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">maxDataPointDistance</div></div></td><td>double</td><td>[seconds] all data points within this distance around the resampling point will be used</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">maxExtrapolationDistance</div></div></td><td>double</td><td>[seconds] resampling points within this range of the polynomial will be extrapolated</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">method</div></div></td><td><a href="interpolatorTimeSeriesType.html">interpolatorTimeSeries</a></td><td>resampling method</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>resampled points in time</td></tr>
 </table>
 

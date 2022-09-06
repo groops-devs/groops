@@ -100,6 +100,7 @@ classes/gravityfield/gravityfieldTopography.cpp
 classes/gravityfield/gravityfieldTrend.cpp
 classes/grid/grid.cpp
 classes/instrumentType/instrumentType.cpp
+classes/interpolatorTimeSeries/interpolatorTimeSeries.cpp
 classes/kernel/kernel.cpp
 classes/kernel/kernelBlackmanLowPass.cpp
 classes/kernel/kernelBottomPressure.cpp

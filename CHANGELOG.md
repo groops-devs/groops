@@ -1,5 +1,6 @@
 # main
 - New program:      InstrumentAccelerometerEstimateParameters (replaces InstrumentAccelerometerEstimateBiasScale).
+- New class:        In InstrumentResample/interpolatorTimeSeries: FillGapsLeastSquaresPolynomialFit.
 - Bugfix:           Plot: various fixes for GMT Versions >6.1.
 - Bugfix:           GriddedData: unwrap longitude before computing area elements.
 - Bugfix:           InstrumentResample/polynomial: corrected interpolation vs. extrapolation.

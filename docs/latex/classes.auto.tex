@@ -3400,6 +3400,74 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 
+\section{InterpolatorTimeSeries}\label{interpolatorTimeSeriesType}
+This class resamples data of a times series to new poins in time.
+
+
+\subsection{Polynomial}
+Polynomial prediction using a moving polynomial of \config{polynomialDegree}.
+The optimal polynomial is chosen based on the centricity of the data points around the resampling
+point and the distance to all polynomial data points. All polynomial data points must be within
+\config{maxDataPointRange}. Resampling points within \config{maxExtrapolationDistance} of the
+polynomial will be extrapolated. The elements \config{maxDataPointRange} and \config{maxExtrapolationDistance}
+are given in the unit of seconds. If negative values are used, the unit is relative to the median input sampling.
+
+\fig{!hb}{0.5}{instrumentResample_polynomial}{fig:instrumentResample_polynomial}{Example of polynomial prediction when resampling from 5 to 1 minute sampling}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~polynomialDegree & \hfuzz=500pt uint & \hfuzz=500pt degree of the moving polynomial\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDataPointRange & \hfuzz=500pt double & \hfuzz=500pt [seconds] all degree+1 data points must be within this range for a valid polynomial\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxExtrapolationDistance & \hfuzz=500pt double & \hfuzz=500pt [seconds] resampling points within this range of the polynomial will be extrapolated\\
+\hline
+\end{tabularx}
+
+
+\subsection{Least squares polynomial fit}
+A polynomial of \config{polynomialDegree} is estimated using all data points within
+\config{maxDataPointDistance} of the resampling point. This polynomial is then used
+to predict the resampling point. A resampling point will be extrapolated if there are
+only data points before/after as long as the closest one is within \config{maxExtrapolationDistance}.
+The elements \config{maxDataPointDistance} and \config{maxExtrapolationDistance} are given
+in the unit of seconds. If negative values are used, the unit is relative to the median input sampling.
+
+\fig{!hb}{0.5}{instrumentResample_leastSquares}{fig:instrumentResample_leastSquares}{Example of least squares polynomial fit when resampling from 5 to 1 minute sampling}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~polynomialDegree & \hfuzz=500pt uint & \hfuzz=500pt degree of the estimated polynomial\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDataPointDistance & \hfuzz=500pt double & \hfuzz=500pt [seconds] all data points within this distance around the resampling point will be used\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxExtrapolationDistance & \hfuzz=500pt double & \hfuzz=500pt [seconds] resampling points within this range of the polynomial will be extrapolated\\
+\hline
+\end{tabularx}
+
+
+\subsection{Fill gaps with least squares polynomial fit}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~polynomialDegree & \hfuzz=500pt uint & \hfuzz=500pt degree of the estimated polynomial\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDataGap & \hfuzz=500pt double & \hfuzz=500pt [seconds] max data gap to interpolate\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDataSpan & \hfuzz=500pt double & \hfuzz=500pt [seconds] time span on each side used for least squares fit\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~margin & \hfuzz=500pt double & \hfuzz=500pt [seconds] margin for identical times\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+
 \section{Kernel}\label{kernelType}
 Kernel defines harmonic isotropic integral kernels $K$.
 \begin{equation}
@@ -6963,7 +7031,7 @@ Name & Type & Annotation\\
 
 
 \subsection{Rivers}
-Plots rivers and lakes. GMT provides different \config{class}es
+Plots rivers and lakes. GMT provides different classes
 (\url{https://docs.generic-mapping-tools.org/latest/coast.html}).
 
 
@@ -7020,7 +7088,7 @@ month throughout a year.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileChannels & \hfuzz=500pt filename & \hfuzz=500pt GMT grid file containing layers for red, green and blue values.\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileImage & \hfuzz=500pt filename & \hfuzz=500pt Blue Marble image file\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~brightness & \hfuzz=500pt double & \hfuzz=500pt brightness of bitmap [-1, 1]\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~illuminate & \hfuzz=500pt sequence & \hfuzz=500pt add hillshade based on topography\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileTopography & \hfuzz=500pt filename & \hfuzz=500pt GMT grid file containing topography.\\

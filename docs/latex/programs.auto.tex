@@ -3658,29 +3658,34 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{InstrumentRemoveEpochsThruster}\label{InstrumentRemoveEpochsThruster}
+This program remove epochs from an \file{instrument file}{instrument}.
+The epochs are defined by a \file{thruster file}{instrument}
+plus a defined margin before and after the thruster firings.
+The arcs of the instrument file are concatenated to one arc.
+The removed epochs can be saved in a separate instrument file.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt all epochs are concatenated in one arc\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileInstrumentRemovedEpochs & \hfuzz=500pt filename & \hfuzz=500pt all epochs are concatenated in one arc\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileThruster & \hfuzz=500pt filename & \hfuzz=500pt THRUSTER\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~marginBefore & \hfuzz=500pt double & \hfuzz=500pt margin before start of firing [seconds]\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~marginAfter & \hfuzz=500pt double & \hfuzz=500pt margin after end of firing [seconds]\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{InstrumentResample}\label{InstrumentResample}
 This program resamples \file{instrument data}{instrument} to a given
-\configClass{timeSeries}{timeSeriesType} using a resampling \config{method} out of the following:
-
-\begin{itemize}
-\item \config{polynomial}: Polynomial prediction using a moving polynomial of \config{polynomialDegree}.
-  The optimal polynomial is chosen based on the centricity of the data points around the resampling
-  point and the distance to all polynomial data points. All polynomial data points must be within
-  \config{maxDataPointRange}. Resampling points within \config{maxExtrapolationDistance} of the
-  polynomial will be extrapolated.
-
-  \fig{!hb}{0.5}{instrumentResample_polynomial}{fig:instrumentResample_polynomial}{Example of polynomial prediction when resampling from 5 to 1 minute sampling}
-
-\item \config{leastSquaresPolynomialFit}. A polynomial of \config{polynomialDegree} is estimated using
-  all data points within \config{maxDataPointDistance} of the resampling point. This polynomial is then
-  used to predict the resampling point. A resampling point will be extrapolated if there are only data
-  points before/after as long as the closest one is within \config{maxExtrapolationDistance}.
-
-  \fig{!hb}{0.5}{instrumentResample_leastSquares}{fig:instrumentResample_leastSquares}{Example of least squares polynomial fit when resampling from 5 to 1 minute sampling}
-\end{itemize}
-
-The elements \config{maxDataPointRange}, \config{maxDataPointDistance}, and \config{maxExtrapolationDistance}
-are given in the unit of seconds. If negative values are used, the unit is relative to the median input sampling.
+\configClass{timeSeries}{timeSeriesType} using a resampling
+\configClass{method}{interpolatorTimeSeriesType}.
 
 This program can also be used to reduce the sampling of an instrument file,
 but a better way to reduce the sampling of noisy data with regular sampling
@@ -3695,15 +3700,7 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~method & \hfuzz=500pt choice & \hfuzz=500pt resampling method\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~polynomial & \hfuzz=500pt sequence & \hfuzz=500pt polynomial prediction\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~polynomialDegree & \hfuzz=500pt uint & \hfuzz=500pt degree of the moving polynomial\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~maxDataPointRange & \hfuzz=500pt double & \hfuzz=500pt [seconds] all degree+1 data points must be within this range for a valid polynomial\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~maxExtrapolationDistance & \hfuzz=500pt double & \hfuzz=500pt [seconds] resampling points within this range of the polynomial will be extrapolated\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~leastSquaresPolynomialFit & \hfuzz=500pt sequence & \hfuzz=500pt least squares polynomial fit\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~polynomialDegree & \hfuzz=500pt uint & \hfuzz=500pt degree of the estimated polynomial\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~maxDataPointDistance & \hfuzz=500pt double & \hfuzz=500pt [seconds] all data points within this distance around the resampling point will be used\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~maxExtrapolationDistance & \hfuzz=500pt double & \hfuzz=500pt [seconds] resampling points within this range of the polynomial will be extrapolated\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~method & \hfuzz=500pt \hyperref[interpolatorTimeSeriesType]{interpolatorTimeSeries} & \hfuzz=500pt resampling method\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt resampled points in time\\
 \hline
 \end{tabularx}

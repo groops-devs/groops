@@ -3752,6 +3752,90 @@
 			<xs:element name="ACCHOUSEKEEPING"/>
 		</xs:choice>
 	</xs:complexType>
+	<xs:complexType name="interpolatorTimeSeriesType">
+		<xs:annotation>
+			<xs:documentation>resampling method</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="polynomial">
+				<xs:annotation>
+					<xs:documentation>polynomial prediction</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="polynomialDegree" type="uint" default="3">
+							<xs:annotation>
+								<xs:documentation>degree of the moving polynomial</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="maxDataPointRange" type="double" default="-(3+1.1)">
+							<xs:annotation>
+								<xs:documentation>[seconds] all degree+1 data points must be within this range for a valid polynomial</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="maxExtrapolationDistance" type="double" minOccurs="0" default="-1.1">
+							<xs:annotation>
+								<xs:documentation>[seconds] resampling points within this range of the polynomial will be extrapolated</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="leastSquaresPolynomialFit">
+				<xs:annotation>
+					<xs:documentation>least squares polynomial fit</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="polynomialDegree" type="uint">
+							<xs:annotation>
+								<xs:documentation>degree of the estimated polynomial</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="maxDataPointDistance" type="double">
+							<xs:annotation>
+								<xs:documentation>[seconds] all data points within this distance around the resampling point will be used</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="maxExtrapolationDistance" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>[seconds] resampling points within this range of the polynomial will be extrapolated</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="fillGapsLeastSquaresPolynomialFit">
+				<xs:annotation>
+					<xs:documentation>least squares polynomial fit</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="polynomialDegree" type="uint" minOccurs="0" default="3">
+							<xs:annotation>
+								<xs:documentation>degree of the estimated polynomial</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="maxDataGap" type="double" minOccurs="0" default="100">
+							<xs:annotation>
+								<xs:documentation>[seconds] max data gap to interpolate</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="maxDataSpan" type="double" minOccurs="0" default="20">
+							<xs:annotation>
+								<xs:documentation>[seconds] time span on each side used for least squares fit</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="margin" type="double" minOccurs="0" default="1e-5">
+							<xs:annotation>
+								<xs:documentation>[seconds] margin for identical times</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
 	<xs:complexType name="kernelType">
 		<xs:annotation>
 			<xs:documentation>harmonic and isotropic integral kernels</xs:documentation>
@@ -9323,6 +9407,7 @@
 			<xs:appinfo>rename: InstrumentComputeScaleogram = Instrument2Scaleogram</xs:appinfo>
 			<xs:appinfo>rename: InstrumentComputeSpectralCoherence = Instrument2SpectralCoherence</xs:appinfo>
 			<xs:appinfo>rename: InstrumentComputeSpectrogram = Instrument2Spectrogram</xs:appinfo>
+			<xs:appinfo>rename: InstrumentAccelerometerEstimatedParameter = InstrumentAccelerometerApplyEstimatedParameters</xs:appinfo>
 			<xs:appinfo>rename: ArcConcatenate = InstrumentConcatenate</xs:appinfo>
 			<xs:appinfo>rename: InstrumentMatrix2Instrument = InstrumentSetType</xs:appinfo>
 			<xs:appinfo>rename: ArcSynchronize = InstrumentSynchronize</xs:appinfo>
@@ -13282,6 +13367,62 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="InstrumentAccelerometerApplyEstimatedParameters">
+				<xs:annotation>
+					<xs:documentation>apply estimated acceleration parameters to an accelerometer file.</xs:documentation>
+					<xs:appinfo>rename: satelliteModel = inputfileSatelliteModel</xs:appinfo>
+					<xs:appinfo>rename: parameter = parametrizationAcceleration</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileAccelerometer" type="filename"/>
+						<xs:element name="inputfileSatelliteModel" type="filename" minOccurs="0" default="{groopsDataDir}/satelliteModel/">
+							<xs:annotation>
+								<xs:documentation>satellite macro model</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit" type="filename" minOccurs="0"/>
+						<xs:element name="inputfileStarCamera" type="filename" minOccurs="0"/>
+						<xs:element name="inputfileAccelerometer" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>add non-gravitational forces in satellite reference frame</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0"/>
+						<xs:element name="ephemerides" type="ephemeridesType" minOccurs="0" default="jpl">
+							<xs:annotation>
+								<xs:documentation>may be needed by parametrizationAcceleration</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="parametrizationAcceleration" type="parametrizationAccelerationType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>orbit force parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileParameter" type="filename">
+							<xs:annotation>
+								<xs:documentation>estimated orbit force parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="indexStart" type="int" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>position in the solution vector</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="rightSide" type="int" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>if solution contains several right hand sides, select one</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>the result is multiplied by this factor</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="InstrumentAccelerometerEstimateBiasScale">
 				<xs:annotation>
 					<xs:documentation>estimate accelerometer bias and scale.</xs:documentation>
@@ -13322,52 +13463,128 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="InstrumentAccelerometerEstimatedParameter">
+			<xs:element name="InstrumentAccelerometerEstimateParameters">
 				<xs:annotation>
-					<xs:documentation>Estimated satellite parameter as accelerometer data</xs:documentation>
-					<xs:appinfo>rename: satelliteModel = inputfileSatelliteModel</xs:appinfo>
-					<xs:appinfo>rename: parameter = parametrizationAcceleration</xs:appinfo>
+					<xs:documentation>estimate accelerometer parameters.</xs:documentation>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileAccelerometer" type="filename"/>
+						<xs:element name="outputfileSolution" type="filename">
+							<xs:annotation>
+								<xs:documentation>values for estimated parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileParameterNames" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>names of the estimated parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="estimateArcSigmas" minOccurs="0">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="outputfileArcSigmas" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>accuracies of each arc</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="estimateEpochSigmas" minOccurs="0">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="outputfileEpochSigmas" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>estimated epoch-wise sigmas</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="estimateCovarianceFunctions" minOccurs="0">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="outputfileCovarianceFunction" type="filename" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>covariance functions for x, y, z direction</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="inputfileAccelerometer" type="filename"/>
+						<xs:element name="inputfileAccelerometerReference" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>if not given, reference acceleration is assumed zero</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>may be needed by parametrizationAcceleration</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileStarCamera" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>may be needed by parametrizationAcceleration</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="inputfileSatelliteModel" type="filename" minOccurs="0" default="{groopsDataDir}/satelliteModel/">
 							<xs:annotation>
-								<xs:documentation>satellite macro model</xs:documentation>
+								<xs:documentation>satellite macro model (may be needed by parametrizationAcceleration)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfileOrbit" type="filename"/>
-						<xs:element name="inputfileStarCamera" type="filename"/>
-						<xs:element name="inputfileAccelerometer" type="filename" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>add non-gravitational forces in satellite reference frame</xs:documentation>
+								<xs:documentation>may be needed by parametrizationAcceleration</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType"/>
 						<xs:element name="ephemerides" type="ephemeridesType" minOccurs="0" default="jpl">
 							<xs:annotation>
 								<xs:documentation>may be needed by parametrizationAcceleration</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="parametrizationAcceleration" type="parametrizationAccelerationType" maxOccurs="unbounded">
+						<xs:element name="parametrizationAcceleration" type="parametrizationAccelerationType" maxOccurs="unbounded"/>
+						<xs:element name="sigmaX" type="double" minOccurs="0" default="1e-9">
 							<xs:annotation>
-								<xs:documentation>orbit force parameters</xs:documentation>
+								<xs:documentation>apriori accuracy in x-axis</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfileParameter" type="filename">
+						<xs:element name="sigmaY" type="double" minOccurs="0" default="10e-9">
 							<xs:annotation>
-								<xs:documentation>estimated orbit force parameters</xs:documentation>
+								<xs:documentation>apriori accuracy in y-axis</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="indexStart" type="int" minOccurs="0" default="0">
+						<xs:element name="sigmaZ" type="double" minOccurs="0" default="1e-9">
 							<xs:annotation>
-								<xs:documentation>position in the solution vector</xs:documentation>
+								<xs:documentation>apriori accuracy in z-axis</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="rightSide" type="int" minOccurs="0" default="0">
+						<xs:element name="iterationCount" type="uint" minOccurs="0" default="5">
 							<xs:annotation>
-								<xs:documentation>if solution contains several right hand sides, select one</xs:documentation>
+								<xs:documentation>iteration count for determining the covariance function</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="InstrumentApplyTimeOffset">
+				<xs:annotation>
+					<xs:documentation>Apply a time offset to an instrument file</xs:documentation>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileInstrument" type="filename"/>
+						<xs:element name="inputfileInstrument" type="filename"/>
+						<xs:element name="inputfileTimeOffset" type="filename">
+							<xs:annotation>
+								<xs:documentation>MISCVALUE with time offset in seconds</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>applied to time offset</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -13951,71 +14168,55 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="InstrumentRemoveEpochsThruster">
+				<xs:annotation>
+					<xs:documentation>Remove epochs from instrument data</xs:documentation>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileInstrument" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>all epochs are concatenated in one arc</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileInstrumentRemovedEpochs" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>all epochs are concatenated in one arc</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileInstrument" type="filename"/>
+						<xs:element name="inputfileThruster" type="filename">
+							<xs:annotation>
+								<xs:documentation>THRUSTER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="marginBefore" type="double" minOccurs="0" default="0.1">
+							<xs:annotation>
+								<xs:documentation>margin before start of firing [seconds]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="marginAfter" type="double" minOccurs="0" default="0.7">
+							<xs:annotation>
+								<xs:documentation>margin after end of firing [seconds]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="InstrumentResample">
 				<xs:annotation>
-					<xs:documentation>Resample data to given time series using polynomial prediction or least squares polynomial fit.</xs:documentation>
+					<xs:documentation>Resample data to given time series</xs:documentation>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileInstrument" type="filename"/>
 						<xs:element name="inputfileInstrument" type="filename"/>
-						<xs:element name="method" default="polynomial">
+						<xs:element name="method" type="interpolatorTimeSeriesType">
 							<xs:annotation>
 								<xs:documentation>resampling method</xs:documentation>
 							</xs:annotation>
-							<xs:complexType>
-								<xs:choice>
-									<xs:element name="polynomial">
-										<xs:annotation>
-											<xs:documentation>polynomial prediction</xs:documentation>
-										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="polynomialDegree" type="uint" default="3">
-													<xs:annotation>
-														<xs:documentation>degree of the moving polynomial</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="maxDataPointRange" type="double" default="-(3+1.1)">
-													<xs:annotation>
-														<xs:documentation>[seconds] all degree+1 data points must be within this range for a valid polynomial</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="maxExtrapolationDistance" type="double" minOccurs="0" default="-1.1">
-													<xs:annotation>
-														<xs:documentation>[seconds] resampling points within this range of the polynomial will be extrapolated</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-									<xs:element name="leastSquaresPolynomialFit">
-										<xs:annotation>
-											<xs:documentation>least squares polynomial fit</xs:documentation>
-										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="polynomialDegree" type="uint">
-													<xs:annotation>
-														<xs:documentation>degree of the estimated polynomial</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="maxDataPointDistance" type="double">
-													<xs:annotation>
-														<xs:documentation>[seconds] all data points within this distance around the resampling point will be used</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-												<xs:element name="maxExtrapolationDistance" type="double" minOccurs="0" default="0">
-													<xs:annotation>
-														<xs:documentation>[seconds] resampling points within this range of the polynomial will be extrapolated</xs:documentation>
-													</xs:annotation>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-								</xs:choice>
-							</xs:complexType>
 						</xs:element>
 						<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded">
 							<xs:annotation>
@@ -20526,7 +20727,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GraceL1A2Accelerometer">
+			<xs:element name="GraceL1a2Accelerometer">
 				<xs:annotation>
 					<xs:documentation>read GRACE L1A data (ACC1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
@@ -20537,12 +20738,12 @@
 					<xs:sequence>
 						<xs:element name="outputfileAccelerometer" type="filename" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>ACCELEROMETER1A</xs:documentation>
+								<xs:documentation>ACCELEROMETER in SRF</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="outputfileAngularAccelerometer" type="filename" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>ACCELEROMETER1A</xs:documentation>
+								<xs:documentation>ACCELEROMETER in SRF</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
@@ -20553,7 +20754,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GraceL1A2SatelliteTracking">
+			<xs:element name="GraceL1a2SatelliteTracking">
 				<xs:annotation>
 					<xs:documentation>read GRACE L1A data (KBR1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
@@ -20564,7 +20765,7 @@
 					<xs:sequence>
 						<xs:element name="outputfileSatelliteTracking" type="filename" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>MISCVALUES(seconds, microSeconds, ant_id, K_phase, Ka_phase, K_SNR, Ka_SNR)</xs:documentation>
+								<xs:documentation>MISCVALUES(ant_id, K_phase, Ka_phase, K_SNR, Ka_SNR)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
@@ -20575,7 +20776,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GraceL1A2StarCamera">
+			<xs:element name="GraceL1a2StarCamera">
 				<xs:annotation>
 					<xs:documentation>read GRACE L1A data (SCA1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
@@ -20602,7 +20803,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GraceL1A2Temperature">
+			<xs:element name="GraceL1a2Temperature">
 				<xs:annotation>
 					<xs:documentation>read GRACE L1A data (HRT1B or HRT1A)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
@@ -20678,7 +20879,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GraceL1b2Clock">
+			<xs:element name="GraceL1b2ClockOffset">
 				<xs:annotation>
 					<xs:documentation>read GRACE L1B data (CLK1B or LLK1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
@@ -20689,7 +20890,7 @@
 					<xs:sequence>
 						<xs:element name="outputfileClock" type="filename">
 							<xs:annotation>
-								<xs:documentation>CLOCK</xs:documentation>
+								<xs:documentation>MISCVALUE</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
@@ -20769,7 +20970,7 @@
 			</xs:element>
 			<xs:element name="GraceL1b2Orbit">
 				<xs:annotation>
-					<xs:documentation>read GRACE L1B data (GNV1B)</xs:documentation>
+					<xs:documentation>read GRACE/GRACE-FO L1B data (GNV1B, GNI1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grace</xs:appinfo>
 					<xs:appinfo>tag: Orbit</xs:appinfo>
@@ -20778,14 +20979,14 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileOrbit" type="filename"/>
-						<xs:element name="earthRotation" type="earthRotationType">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
-								<xs:documentation>to rotate into CRF</xs:documentation>
+								<xs:documentation>to rotate GNV1B into CRF</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>GNV1B</xs:documentation>
+								<xs:documentation>GNV1B/GNI1B</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -20917,7 +21118,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GraceL1b2Time">
+			<xs:element name="GraceL1b2TimeOffset">
 				<xs:annotation>
 					<xs:documentation>read GRACE L1B data (TIM1A or TIM1B)</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
@@ -20928,7 +21129,12 @@
 					<xs:sequence>
 						<xs:element name="outputfileTime" type="filename">
 							<xs:annotation>
-								<xs:documentation>MISCVALUES(obdh_time, TS_suppid, gpstime_intg, gpstime_frac, first_icu_blknr, final_icu_blknr, qualflg)</xs:documentation>
+								<xs:documentation>MISCVALUE</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="fractionalScale" type="double" default="1e-6">
+							<xs:annotation>
+								<xs:documentation>1e-6 for GRACE, 1e-9 for GRACE-FO</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
@@ -22509,6 +22715,7 @@
 							<xs:element name="gravityfieldType" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="gridType" type="gridType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="instrumentTypeType" type="instrumentTypeType" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="interpolatorTimeSeriesType" type="interpolatorTimeSeriesType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="kernelType" type="kernelType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="loopType" type="loopType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="magnetosphereType" type="magnetosphereType" minOccurs="0" maxOccurs="unbounded"/>
