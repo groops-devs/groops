@@ -14,8 +14,11 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program converts the reduced dynamical orbit
-from the GRACE SDS format (GNV1B) into \file{instrument file (ORBIT)}{instrument}.
-The orbit is transformed into a celestial reference system (CRF).
+from the GRACE/GRACE-FO SDS format (GNV1B, GNI1B) into \file{instrument file (ORBIT)}{instrument}.
+
+When GNV1B is used, the orbit can be rotated from the terrestrial reference frame (TRF) transformed into the celestial reference frame (CRF) by
+specifying \configClass{earthRotation}{earthRotationType}.
+
 For further information see \program{GraceL1b2Accelerometer}.
 )";
 
@@ -28,7 +31,7 @@ For further information see \program{GraceL1b2Accelerometer}.
 
 /***** CLASS ***********************************/
 
-/** @brief Read GRACE L1B data.
+/** @brief Read GRACE/GRACE-FO L1B data.
 * @ingroup programsConversionGroup */
 class GraceL1b2Orbit
 {
@@ -36,7 +39,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2Orbit, SINGLEPROCESS, "read GRACE L1B data (GNV1B)", Conversion, Grace, Orbit, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2Orbit, SINGLEPROCESS, "read GRACE/GRACE-FO L1B data (GNV1B, GNI1B)", Conversion, Grace, Orbit, Instrument)
 
 /***********************************************/
 
@@ -49,8 +52,8 @@ void GraceL1b2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     EarthRotationPtr      earthRotation;
 
     readConfig(config, "outputfileOrbit", fileNameOut,   Config::MUSTSET,  "", "");
-    readConfig(config, "earthRotation",   earthRotation, Config::MUSTSET,  "", "to rotate into CRF");
-    readConfig(config, "inputfile",       fileNameIn,    Config::MUSTSET,  "", "GNV1B");
+    readConfig(config, "earthRotation",   earthRotation, Config::OPTIONAL, "file", "to rotate GNV1B into CRF");
+    readConfig(config, "inputfile",       fileNameIn,    Config::MUSTSET,  "", "GNV1B/GNI1B");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -85,8 +88,8 @@ void GraceL1b2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         if(arc.size() && (time <= arc.back().time))
           continue;
 
-        if(coord_ref != 'E')
-          throw(Exception(time.dateTimeStr()+": orbit not in CRF"));
+        if(coord_ref == 'E' && !earthRotation)
+          throw(Exception(time.dateTimeStr()+": orbit not in CRF. Must specify earthRotation."));
 
         OrbitEpoch epoch;
         epoch.time     = time;
@@ -98,14 +101,17 @@ void GraceL1b2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     // =============================================
 
-    logStatus<<"rotation from TRF to CRF"<<Log::endl;
-    Single::forEach(arc.size(), [&](UInt i)
+    if(earthRotation)
     {
-      const Rotary3d rotation = inverse(earthRotation->rotaryMatrix(arc.at(i).time));
-      arc.at(i).position = rotation.rotate(arc.at(i).position);
-      if(arc.at(i).velocity.r() > 0)
-        arc.at(i).velocity = rotation.rotate(arc.at(i).velocity) + crossProduct(earthRotation->rotaryAxis(arc.at(i).time), arc.at(i).position);
-    });
+      logStatus<<"rotation from TRF to CRF"<<Log::endl;
+      Single::forEach(arc.size(), [&](UInt i)
+      {
+        const Rotary3d rotation = inverse(earthRotation->rotaryMatrix(arc.at(i).time));
+        arc.at(i).position = rotation.rotate(arc.at(i).position);
+        if(arc.at(i).velocity.r() > 0)
+          arc.at(i).velocity = rotation.rotate(arc.at(i).velocity) + crossProduct(earthRotation->rotaryAxis(arc.at(i).time), arc.at(i).position);
+      });
+    }
 
     logStatus<<"sort epochs"<<Log::endl;
     arc.sort();

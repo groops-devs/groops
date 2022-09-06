@@ -13,7 +13,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts time data (TIM1A or TIM1B) from the GRACE SDS format into \file{instrument file (MISCVALUES)}{instrument}.
+This program converts time data (TIM1A or TIM1B) from the GRACE SDS format into \file{instrument file (MISCVALUE)}{instrument}.
 For further information see \program{GraceL1b2Accelerometer}.
 )";
 
@@ -27,25 +27,27 @@ For further information see \program{GraceL1b2Accelerometer}.
 
 /** @brief Read GRACE L1B data.
 * @ingroup programsConversionGroup */
-class GraceL1b2Time
+class GraceL1b2TimeOffset
 {
 public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1b2Time, SINGLEPROCESS, "read GRACE L1B data (TIM1A or TIM1B)", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1b2TimeOffset, SINGLEPROCESS, "read GRACE L1B data (TIM1A or TIM1B)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
-void GraceL1b2Time::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
+void GraceL1b2TimeOffset::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
     FileName              fileNameOut;
     std::vector<FileName> fileNameIn;
+    Double                fractionalScale;
 
-    readConfig(config, "outputfileTime", fileNameOut, Config::MUSTSET,  "", "MISCVALUES(obdh_time, TS_suppid, gpstime_intg, gpstime_frac, first_icu_blknr, final_icu_blknr, qualflg)");
-    readConfig(config, "inputfile",      fileNameIn,  Config::MUSTSET,  "", "TIM1A or TIM1B");
+    readConfig(config, "outputfileTime",  fileNameOut,     Config::MUSTSET,  "",     "MISCVALUE");
+    readConfig(config, "fractionalScale", fractionalScale, Config::MUSTSET,  "1e-6", "1e-6 for GRACE, 1e-9 for GRACE-FO");
+    readConfig(config, "inputfile",       fileNameIn,      Config::MUSTSET,  "",     "TIM1A or TIM1B");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -76,9 +78,12 @@ void GraceL1b2Time::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
           break;
         }
 
-        MiscValuesEpoch epoch(7);
-        epoch.time   = mjd2time(51544.5) + seconds2time(gpstime_intg) + seconds2time(1e-6*gpstime_frac);
-        epoch.values = {Double(obdh_time), Double(TS_suppid), Double(gpstime_intg), Double(gpstime_frac), Double(first_icu_blknr), Double(final_icu_blknr), Double(qualflg)};
+        if((gpstime_intg == 0) || (obdh_time == 0))
+          continue;
+
+        MiscValueEpoch epoch;
+        epoch.time  = mjd2time(51544.5) + seconds2time(obdh_time);
+        epoch.value = (gpstime_intg-obdh_time) + fractionalScale * gpstime_frac;
         arc.push_back(epoch);
       } // for(idEpoch)
     } // for(idFile)

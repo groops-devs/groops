@@ -1,6 +1,6 @@
 /***********************************************/
 /**
-* @file graceL1A2Accelerometer.cpp
+* @file graceL1a2Accelerometer.cpp
 *
 * @brief Read GRACE L1A data.
 *
@@ -16,7 +16,6 @@ static const char *docstring = R"(
 This program converts Level-1A accelerometer data (ACC1A) to the GROOPS instrument file format.
 The GRACE Level-1A format is described in \verb|GRACEiolib.h| given at
 \url{http://podaac-tools.jpl.nasa.gov/drive/files/allData/grace/sw/GraceReadSW_L1_2010-03-31.tar.gz}.
-Multiple \config{inputfile}s must be given in the correct time order.
 The output is one arc of satellite data which can include data gaps.
 To split the arc in multiple gap free arcs use \program{InstrumentSynchronize}.
 )";
@@ -31,25 +30,25 @@ To split the arc in multiple gap free arcs use \program{InstrumentSynchronize}.
 
 /** @brief Read Level-1A GRACE data.
 * @ingroup programsConversionGroup */
-class GraceL1A2Accelerometer
+class GraceL1a2Accelerometer
 {
 public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1A2Accelerometer, SINGLEPROCESS, "read GRACE L1A data (ACC1A)", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1a2Accelerometer, SINGLEPROCESS, "read GRACE L1A data (ACC1A)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
-void GraceL1A2Accelerometer::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
+void GraceL1a2Accelerometer::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
     FileName fileNameOutAcc, fileNameOutAng;
     std::vector<FileName> fileNameIn;
 
-    readConfig(config, "outputfileAccelerometer",        fileNameOutAcc, Config::OPTIONAL, "", "ACCELEROMETER1A");
-    readConfig(config, "outputfileAngularAccelerometer", fileNameOutAng, Config::OPTIONAL, "", "ACCELEROMETER1A");
+    readConfig(config, "outputfileAccelerometer",        fileNameOutAcc, Config::OPTIONAL, "", "ACCELEROMETER in SRF");
+    readConfig(config, "outputfileAngularAccelerometer", fileNameOutAng, Config::OPTIONAL, "", "ACCELEROMETER in SRF");
     readConfig(config, "inputfile",                      fileNameIn,     Config::MUSTSET,  "", "ACC1A");
     if(isCreateSchema(config)) return;
 
@@ -94,12 +93,12 @@ void GraceL1A2Accelerometer::run(Config &config, Parallel::CommunicatorPtr /*com
         try
         {
           file>>seconds>>microSeconds>>time_ref>>GRACE_id>>FileInGrace::flag(qualflg)>>FileInGrace::flag(prodFlag);
-          if(prodFlag & (1 <<  0))  file>>acceleration.x();
-          if(prodFlag & (1 <<  1))  file>>acceleration.y();
-          if(prodFlag & (1 <<  2))  file>>acceleration.z();
-          if(prodFlag & (1 <<  3))  file>>angularAcceleration.x();
-          if(prodFlag & (1 <<  4))  file>>angularAcceleration.y();
-          if(prodFlag & (1 <<  5))  file>>angularAcceleration.z();
+          if(prodFlag & (1 <<  0))  file>>acceleration.y();
+          if(prodFlag & (1 <<  1))  file>>acceleration.z();
+          if(prodFlag & (1 <<  2))  file>>acceleration.x();
+          if(prodFlag & (1 <<  3))  file>>angularAcceleration.y();
+          if(prodFlag & (1 <<  4))  file>>angularAcceleration.z();
+          if(prodFlag & (1 <<  5))  file>>angularAcceleration.x();
           if(prodFlag & (1 <<  6))  file>>biasVol;
           if(prodFlag & (1 <<  7))  file>>vd;
           if(prodFlag & (1 <<  8))  file>>x1Out;
@@ -135,32 +134,22 @@ void GraceL1A2Accelerometer::run(Config &config, Parallel::CommunicatorPtr /*com
         if((qualflg & (1 << 1)) || (qualflg & (1 << 3))) // data with no pulse sync and invalid time tag (?) are removed
           continue;
 
-        while(microSeconds >= 1'000'000)
-        {
-          seconds += 1;
-          microSeconds -= 1'000'000;
-        }
-
         const Time time = mjd2time(51544.5) + seconds2time(seconds) + seconds2time(microSeconds*1e-6);
         if(arc.size() && (time <= arc.back().time))
           logWarning<<"epoch("<<time.dateTimeStr()<<") <= last epoch("<<arc.back().time.dateTimeStr()<<")"<<Log::endl;
 
         if((prodFlag & (1<<0)) && (prodFlag & (1<<1)) && (prodFlag & (1<<2)))
         {
-          Accelerometer1AEpoch epoch;
+          AccelerometerEpoch epoch;
           epoch.time         = time;
-          epoch.rcvTimeInt   = seconds;
-          epoch.rcvTimeFrac  = microSeconds;
           epoch.acceleration = acceleration;
           arc.push_back(epoch);
         }
 
         if((prodFlag & (1<<3)) && (prodFlag & (1<<4)) && (prodFlag & (1<<5)))
         {
-          Accelerometer1AEpoch epoch;
-          epoch.time = time;
-          epoch.rcvTimeInt   = seconds;
-          epoch.rcvTimeFrac  = microSeconds;
+          AccelerometerEpoch epoch;
+          epoch.time         = time;
           epoch.acceleration = angularAcceleration;
           arcAngAcc.push_back(epoch);
         }

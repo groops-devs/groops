@@ -80,9 +80,9 @@ void GraceAod2TimeSplines::run(Config &config, Parallel::CommunicatorPtr /*comm*
         UInt dataCount = 0;
         UInt version   = 9999;
         UInt degree    = 100;
-        for(;;)
+        while(!file.eof())
         {
-          getline(file, line);
+          std::getline(file, line);
           if(line.find("CONSTANT GM")==0)
             GM = String::toDouble(line.substr(31, 22));
           if(line.find("CONSTANT A")==0)
@@ -98,9 +98,9 @@ void GraceAod2TimeSplines::run(Config &config, Parallel::CommunicatorPtr /*comm*
         }
 
         if(version==9999)
-          logWarning<<"found not SOFTWARE VERSION"<<Log::endl;
+          logWarning<<"No SOFTWARE VERSION header record found"<<Log::endl;
         if(dataCount==0)
-          logWarning<<"found not NUMBER OF DATA SETS"<<Log::endl;
+          logWarning<<"No NUMBER OF DATA SETS header record found"<<Log::endl;
 
         for(UInt k=0; k<dataCount; k++)
         {
@@ -183,6 +183,9 @@ void GraceAod2TimeSplines::run(Config &config, Parallel::CommunicatorPtr /*comm*
         logError<<e.what()<<": continue..."<<Log::endl;
       }
     }
+
+    if(!isRegular(timeList) || !isRegular(timeAtmosList) || !isRegular(timeOceanList) || !isRegular(timeObaList) || !isRegular(timeList))
+      throw(Exception("Spline time series is not regular."));
 
     // write data
     // ----------

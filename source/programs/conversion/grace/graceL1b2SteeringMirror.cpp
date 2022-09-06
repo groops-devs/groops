@@ -92,6 +92,12 @@ void GraceL1b2SteeringMirror::run(Config &config, Parallel::CommunicatorPtr /*co
     logStatus<<"sort epochs"<<Log::endl;
     arc.sort();
 
+    logStatus<<"eliminate duplicates"<<Log::endl;
+    const UInt oldSize = arc.size();
+    arc.removeDuplicateEpochs(TRUE/*keepFirst*/);
+    if(arc.size() < oldSize)
+      logInfo<<" "<<oldSize-arc.size()<<" duplicates removed!"<<Log::endl;
+
     Arc::printStatistics(arc);
     if(arc.size() == 0)
       return;

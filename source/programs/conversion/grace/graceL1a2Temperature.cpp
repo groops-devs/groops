@@ -1,6 +1,6 @@
 /***********************************************/
 /**
-* @file graceL1A2Temperature.cpp
+* @file graceL1a2Temperature.cpp
 *
 * @brief Read GRACE L1A data.
 *
@@ -30,7 +30,7 @@ To split the arc in multiple gap free arcs use \program{InstrumentSynchronize}.
 
 /** @brief Read GRACE L1A data.
 * @ingroup programsConversionGroup */
-class GraceL1A2Temperature
+class GraceL1a2Temperature
 {
   void readFile(const FileName &fileName, MiscValuesArc &arcTemp);
 
@@ -38,11 +38,11 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1A2Temperature, SINGLEPROCESS, "read GRACE L1A data (HRT1B or HRT1A)", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1a2Temperature, SINGLEPROCESS, "read GRACE L1A data (HRT1B or HRT1A)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
-void GraceL1A2Temperature::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
+void GraceL1a2Temperature::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -134,15 +134,6 @@ void GraceL1A2Temperature::run(Config &config, Parallel::CommunicatorPtr /*comm*
     } // for(idFile)
 
     // =============================================
-
-    logStatus<<"sort epochs"<<Log::endl;
-    arc.sort();
-
-    logStatus<<"eliminate duplicates"<<Log::endl;
-    const UInt oldSize = arc.size();
-    arc.removeDuplicateEpochs(TRUE/*keepFirst*/);
-    if(arc.size() < oldSize)
-      logInfo<<" "<<oldSize-arc.size()<<" duplicates removed!"<<Log::endl;
 
     Arc::printStatistics(arc);
     if(arc.size() == 0)

@@ -1,6 +1,6 @@
 /***********************************************/
 /**
-* @file graceL1A2StarCamera.cpp
+* @file graceL1a2StarCamera.cpp
 *
 * @brief Read GRACE L1A data.
 *
@@ -15,7 +15,7 @@
 static const char *docstring = R"(
 This program converts orientation data measured by the star cameras
 from the GRACE Level-1A format (SCA1A) to the GROOPS instrument file format.
-For further information see \program{GraceL1A2Accelerometer}.
+For further information see \program{GraceL1a2Accelerometer}.
 )";
 
 /***********************************************/
@@ -28,17 +28,17 @@ For further information see \program{GraceL1A2Accelerometer}.
 
 /** @brief Read GRACE L1A data.
 * @ingroup programsConversionGroup */
-class GraceL1A2StarCamera
+class GraceL1a2StarCamera
 {
 public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GraceL1A2StarCamera, SINGLEPROCESS, "read GRACE L1A data (SCA1A)", Conversion, Grace, Instrument)
+GROOPS_REGISTER_PROGRAM(GraceL1a2StarCamera, SINGLEPROCESS, "read GRACE L1A data (SCA1A)", Conversion, Grace, Instrument)
 
 /***********************************************/
 
-void GraceL1A2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
+void GraceL1a2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
@@ -114,13 +114,6 @@ void GraceL1A2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/
     if(!fileNameSca1.empty())
     {
       logStatus<<"Star camera head 1:"<<Log::endl;
-      logStatus<<"sort epochs"<<Log::endl;
-      arc1.sort();
-      logStatus<<"eliminate duplicates"<<Log::endl;
-      const UInt oldSize = arc1.size();
-      arc1.removeDuplicateEpochs(TRUE/*keepFirst*/);
-      if(arc1.size() < oldSize)
-        logInfo<<" "<<oldSize-arc1.size()<<" duplicates removed!"<<Log::endl;
       Arc::printStatistics(arc1);
       if(arc1.size())
       {
@@ -132,13 +125,6 @@ void GraceL1A2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*/
     if(!fileNameSca2.empty())
     {
       logStatus<<"Star camera head 2:"<<Log::endl;
-      logStatus<<"sort epochs"<<Log::endl;
-      arc2.sort();
-      logStatus<<"eliminate duplicates"<<Log::endl;
-      const UInt oldSize = arc2.size();
-      arc2.removeDuplicateEpochs(TRUE/*keepFirst*/);
-      if(arc2.size() < oldSize)
-        logInfo<<" "<<oldSize-arc2.size()<<" duplicates removed!"<<Log::endl;
       Arc::printStatistics(arc2);
       if(arc2.size())
       {
