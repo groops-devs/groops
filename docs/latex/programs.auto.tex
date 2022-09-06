@@ -1321,6 +1321,43 @@ Name & Type & Annotation\\
 This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
+\subsection{GraceOrbit2TransplantTimeOffset}\label{GraceOrbit2TransplantTimeOffset}
+This program computes the time shift between two co-orbiting satellites based on dynamic orbit data.
+When applied to data of the first satellite, the computed time shift virtually shifts data of first satellite into the location of the second satellite.
+Note that \config{inputfileOrbit1} and \config{inputfileOrbit2} need velocity and acceleration data, which
+can be computed with \program{OrbitAddVelocityAndAcceleration}.
+The program tries to find a minimum of the objective function
+\begin{equation}
+  f(\Delta t) = \| r_1(t) - r_2(t + \Delta t) \|^2,
+\end{equation}
+by applying Newton's method to the first derivative, thus iteratively computing
+\begin{equation}
+  \Delta t_{k+1} = \Delta t_k + \frac{f'(\Delta t_k)}{f''(\Delta t_k)}.
+\end{equation}
+This iteration is stopped when the difference between to consecutive time shift values falls below \config{threshold} or
+\config{maximumIterations} is reached. An \config{initialGuess} of the time shift can speed up convergence.
+
+See also \program{OrbitAddVelocityAndAcceleration} and \program{InstrumentApplyTimeOffset}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileTimeOffset & \hfuzz=500pt filename & \hfuzz=500pt estimated time offset in seconds (MISCVALUE)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit1 & \hfuzz=500pt filename & \hfuzz=500pt orbit data of satellite 1\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit2 & \hfuzz=500pt filename & \hfuzz=500pt orbit data of satellite 2\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt polynomial degree for the interpolation of position, velocity and acceleration\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~initialGuess & \hfuzz=500pt double & \hfuzz=500pt initial guess for the time shift [seconds]\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maximumIterations & \hfuzz=500pt uint & \hfuzz=500pt maximum number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~threshold & \hfuzz=500pt double & \hfuzz=500pt when the maximum difference between two iterations is below this value, stop [seconds]\\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
 \subsection{GraceSstResidualAnalysis}\label{GraceSstResidualAnalysis}
 This program applies the Multi-Resolution Analysis (MRA) using
 Discrete Wavelet Transform (DWT) to the monthly GRACE SST post-fit residuals.
@@ -1412,6 +1449,36 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~eclipse & \hfuzz=500pt \hyperref[eclipseType]{eclipse} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~marginLeft & \hfuzz=500pt double & \hfuzz=500pt margin size (on both sides) [seconds]\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~marginRight & \hfuzz=500pt double & \hfuzz=500pt margin size (on both sides) [seconds]\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{GraceThrusterResponse2Accelerometer}\label{GraceThrusterResponse2Accelerometer}
+Add modeled thruster responses to accelerometer data.
+The epochs and durations are given in the \configFile{inputfileThruster}{instrument} (THRUSTER).
+
+The \configFile{inputfileThrusterResponse}{matrix} is a $(6\times 3)$ matrix with
+the linear accelerations in the SRF ($x, y, z$) in one line per pair:
+\begin{enumerate}
+\item Negative Yaw,
+\item Positive Pitch,
+\item Positive Yaw,
+\item Negative Pitch,
+\item Negative Roll,
+\item Positive Roll.
+\end{enumerate}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt ACCELEROMETER\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt ACCELEROMETER\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileThruster & \hfuzz=500pt filename & \hfuzz=500pt THRUSTER\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileThrusterResponse & \hfuzz=500pt filename & \hfuzz=500pt thruster model (matrix with one line per pair)\\
 \hline
 \end{tabularx}
 
@@ -3092,12 +3159,12 @@ Thus, influences from solar and Earth radiation pressure must be reduced beforeh
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileDensity & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileDensity & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUE (kg/m\textasciicircum{}3)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~satelliteModel & \hfuzz=500pt filename & \hfuzz=500pt satellite macro model\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt add non-gravitational forces in satellite reference frame\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~thermosphere & \hfuzz=500pt \hyperref[thermosphereType]{thermosphere} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~thermosphere & \hfuzz=500pt \hyperref[thermosphereType]{thermosphere} & \hfuzz=500pt used to compute temperature and wind\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~considerTemperature & \hfuzz=500pt boolean & \hfuzz=500pt compute drag and lift, otherwise simple drag coefficient is used\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~considerWind & \hfuzz=500pt boolean & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt \\
@@ -3195,21 +3262,51 @@ The estimated parameters are written to the file \configFile{outputfileSolution}
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSatelliteModel & \hfuzz=500pt filename & \hfuzz=500pt satellite macro model\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt add non-gravitational forces in satellite reference frame\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileSolution & \hfuzz=500pt filename & \hfuzz=500pt values for estimated parameters\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileParameterNames & \hfuzz=500pt filename & \hfuzz=500pt names of the estimated parameters\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~estimateArcSigmas & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileArcSigmas & \hfuzz=500pt filename & \hfuzz=500pt accuracies of each arc\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~estimateEpochSigmas & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileEpochSigmas & \hfuzz=500pt filename & \hfuzz=500pt estimated epoch-wise sigmas\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~estimateCovarianceFunctions & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileCovarianceFunction & \hfuzz=500pt filename & \hfuzz=500pt covariance functions for x, y, z direction\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAccelerometerReference & \hfuzz=500pt filename & \hfuzz=500pt if not given, reference acceleration is assumed zero\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt may be needed by parametrizationAcceleration\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt may be needed by parametrizationAcceleration\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSatelliteModel & \hfuzz=500pt filename & \hfuzz=500pt satellite macro model (may be needed by parametrizationAcceleration)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt may be needed by parametrizationAcceleration\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt may be needed by parametrizationAcceleration\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrizationAcceleration & \hfuzz=500pt \hyperref[parametrizationAccelerationType]{parametrizationAcceleration} & \hfuzz=500pt orbit force parameters\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileParameter & \hfuzz=500pt filename & \hfuzz=500pt estimated orbit force parameters\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~indexStart & \hfuzz=500pt int & \hfuzz=500pt position in the solution vector\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~rightSide & \hfuzz=500pt int & \hfuzz=500pt if solution contains several right hand sides, select one\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrizationAcceleration & \hfuzz=500pt \hyperref[parametrizationAccelerationType]{parametrizationAcceleration} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaX & \hfuzz=500pt double & \hfuzz=500pt apriori accuracy in x-axis\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaY & \hfuzz=500pt double & \hfuzz=500pt apriori accuracy in y-axis\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaZ & \hfuzz=500pt double & \hfuzz=500pt apriori accuracy in z-axis\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~iterationCount & \hfuzz=500pt uint & \hfuzz=500pt iteration count for determining the covariance function\\
 \hline
 \end{tabularx}
 
 This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
+\subsection{InstrumentApplyTimeOffset}\label{InstrumentApplyTimeOffset}
+This program applies a \configFile{inputfileTimeOffset}{instrument} (MISCVALUE)
+to an \configFile{inputfileInstrument}{instrument}.
+The time offsets in seconds are multiplicated with a \config{factor}.
+The instrument files must be synchronized (see \program{InstrumentSynchronize}).
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTimeOffset & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUE with time offset in seconds\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt applied to time offset\\
+\hline
+\end{tabularx}
+
 \clearpage
 %==================================
 \subsection{InstrumentArcCalculate}\label{InstrumentArcCalculate}

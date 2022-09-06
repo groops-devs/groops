@@ -55,12 +55,12 @@ void InstrumentAccelerometer2ThermosphericDensity::run(Config &config, Parallel:
     Bool             useTemperature, useWind;
     EphemeridesPtr   ephemerides;
 
-    readConfig(config, "outputfileDensity",      fileNameOutDensity,     Config::MUSTSET,  "",    "");
-    readConfig(config, "satelliteModel",         fileNameSatellite,      Config::OPTIONAL, "~/data/satellite/", "satellite macro model");
+    readConfig(config, "outputfileDensity",      fileNameOutDensity,     Config::MUSTSET,  "",    "MISCVALUE (kg/m^3)");
+    readConfig(config, "satelliteModel",         fileNameSatellite,      Config::OPTIONAL, "{groopsDataDir}/satelliteModel/", "satellite macro model");
     readConfig(config, "inputfileOrbit",         fileNameOrbit,          Config::MUSTSET,  "",    "");
     readConfig(config, "inputfileStarCamera",    fileNameStarCamera,     Config::MUSTSET,  "",    "");
     readConfig(config, "inputfileAccelerometer", fileNameAccelerometer,  Config::MUSTSET,  "",    "add non-gravitational forces in satellite reference frame");
-    readConfig(config, "thermosphere",           thermosphere,           Config::MUSTSET,  "",    "");
+    readConfig(config, "thermosphere",           thermosphere,           Config::MUSTSET,  "",    "used to compute temperature and wind");
     readConfig(config, "considerTemperature",    useTemperature,         Config::DEFAULT,  "1",   "compute drag and lift, otherwise simple drag coefficient is used");
     readConfig(config, "considerWind",           useWind,                Config::DEFAULT,  "1",   "");
     readConfig(config, "earthRotation",          earthRotation,          Config::MUSTSET,  "",    "");

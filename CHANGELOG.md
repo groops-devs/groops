@@ -5,6 +5,7 @@
 - New program:      GraceOrbit2TransplantTimeOffset
 - New program:      GraceThrusterResponse2Accelerometer
 - New class:        In InstrumentResample/interpolatorTimeSeries: FillGapsLeastSquaresPolynomialFit.
+- New class:        In MiscAccelerations: AtmosphericDragFromDensityFile.
 - Bugfix:           GnssRinexNavigation2OrbitClock: updated to be usable for rinex4 and fixes for rinex3.
 - Bugfix:           Plot: various fixes for GMT Versions >6.1.
 - Bugfix:           GriddedData: unwrap longitude before computing area elements.

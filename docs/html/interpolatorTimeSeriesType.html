@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - interpolatorTimeSeriesType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="interpolatorTimeSeriesType">InterpolatorTimeSeries</h1><p>
+This class resamples data of a times series to new poins in time.
+</p>
+
+<h2>Polynomial</h2><p>
+Polynomial prediction using a moving polynomial of <strong class="groops-config-element">polynomialDegree</strong>.
+The optimal polynomial is chosen based on the centricity of the data points around the resampling
+point and the distance to all polynomial data points. All polynomial data points must be within
+<strong class="groops-config-element">maxDataPointRange</strong>. Resampling points within <strong class="groops-config-element">maxExtrapolationDistance</strong> of the
+polynomial will be extrapolated. The elements <strong class="groops-config-element">maxDataPointRange</strong> and <strong class="groops-config-element">maxExtrapolationDistance</strong>
+are given in the unit of seconds. If negative values are used, the unit is relative to the median input sampling.</p><p><figure><img class="figure" style="width:50%;" src="../figures/instrumentResample_polynomial.png" alt="instrumentResample_polynomial"><figcaption class="center">Figure: Example of polynomial prediction when resampling from 5 to 1 minute sampling</figcaption></figure>
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">polynomialDegree</div></div></td><td>uint</td><td>degree of the moving polynomial</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">maxDataPointRange</div></div></td><td>double</td><td>[seconds] all degree+1 data points must be within this range for a valid polynomial</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxExtrapolationDistance</div></div></td><td>double</td><td>[seconds] resampling points within this range of the polynomial will be extrapolated</td></tr>
+</table>
+
+<h2>Least squares polynomial fit</h2><p>
+A polynomial of <strong class="groops-config-element">polynomialDegree</strong> is estimated using all data points within
+<strong class="groops-config-element">maxDataPointDistance</strong> of the resampling point. This polynomial is then used
+to predict the resampling point. A resampling point will be extrapolated if there are
+only data points before/after as long as the closest one is within <strong class="groops-config-element">maxExtrapolationDistance</strong>.
+The elements <strong class="groops-config-element">maxDataPointDistance</strong> and <strong class="groops-config-element">maxExtrapolationDistance</strong> are given
+in the unit of seconds. If negative values are used, the unit is relative to the median input sampling.</p><p><figure><img class="figure" style="width:50%;" src="../figures/instrumentResample_leastSquares.png" alt="instrumentResample_leastSquares"><figcaption class="center">Figure: Example of least squares polynomial fit when resampling from 5 to 1 minute sampling</figcaption></figure>
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">polynomialDegree</div></div></td><td>uint</td><td>degree of the estimated polynomial</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">maxDataPointDistance</div></div></td><td>double</td><td>[seconds] all data points within this distance around the resampling point will be used</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxExtrapolationDistance</div></div></td><td>double</td><td>[seconds] resampling points within this range of the polynomial will be extrapolated</td></tr>
+</table>
+
+<h2>Fill gaps with least squares polynomial fit</h2><p>
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">polynomialDegree</div></div></td><td>uint</td><td>degree of the estimated polynomial</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxDataGap</div></div></td><td>double</td><td>[seconds] max data gap to interpolate</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxDataSpan</div></div></td><td>double</td><td>[seconds] time span on each side used for least squares fit</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">margin</div></div></td><td>double</td><td>[seconds] margin for identical times</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

@@ -65,7 +65,6 @@ void InstrumentRemoveEpochsByTimes::run(Config &config, Parallel::CommunicatorPt
     // ----------------
     logStatus<<"read time series"<<Log::endl;
     std::vector<Time> times = timeSeries->times();
-    std::sort(times.begin(), times.end());
     logStatus<<"  epochs:  "<<times.size()<<Log::endl;
 
     // quick test
@@ -92,13 +91,10 @@ void InstrumentRemoveEpochsByTimes::run(Config &config, Parallel::CommunicatorPt
       UInt idxTime = 0;
       Single::forEach(arc.size(), [&](UInt i)
       {
-        while((idxTime<times.size()) && (times.at(idxTime)+seconds2time(margin) < arc.at(i).time))
+        while((idxTime < times.size()) && ((arc.at(i).time-times.at(idxTime)).seconds() > margin))
           idxTime++;
 
-        Bool withinMargin1 = (idxTime  <times.size()) && (arc.at(i).time <= times.at(idxTime  )+seconds2time(margin))
-                                                      && (arc.at(i).time >= times.at(idxTime  )-seconds2time(margin));
-        Bool withinMargin2 = (idxTime+1<times.size()) && (arc.at(i).time >= times.at(idxTime+1)-seconds2time(margin));
-        if(withinMargin1 || withinMargin2)
+        if((idxTime < times.size()) && ((times.at(idxTime)-arc.at(i).time).seconds() <= margin))
           arcRemoved.push_back(arc.at(i));
         else
           arcNew.push_back(arc.at(i));

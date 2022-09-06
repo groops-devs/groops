@@ -4932,6 +4932,41 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="atmosphericDragFromDensityFile">
+				<xs:annotation>
+					<xs:documentation>atmospheric drag (from density along orbit)</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfileDensity" type="filename">
+							<xs:annotation>
+								<xs:documentation>density along orbit, MISCVALUE (kg/m^3)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="thermosphere" type="thermosphereType">
+							<xs:annotation>
+								<xs:documentation>used to compute temperature and wind</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="earthRotation" type="double" minOccurs="0" default="7.29211585531e-5">
+							<xs:annotation>
+								<xs:documentation>[rad/s]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="considerTemperature" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>compute drag and lift, otherwise simple drag coefficient is used</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="considerWind" type="boolean" minOccurs="0" default="1"/>
+						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>the result is multiplied by this factor</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="antennaThrust">
 				<xs:annotation>
 					<xs:documentation>antenna thrust</xs:documentation>
@@ -13419,8 +13454,12 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileDensity" type="filename"/>
-						<xs:element name="satelliteModel" type="filename" minOccurs="0" default="~/data/satellite/">
+						<xs:element name="outputfileDensity" type="filename">
+							<xs:annotation>
+								<xs:documentation>MISCVALUE (kg/m^3)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="satelliteModel" type="filename" minOccurs="0" default="{groopsDataDir}/satelliteModel/">
 							<xs:annotation>
 								<xs:documentation>satellite macro model</xs:documentation>
 							</xs:annotation>
@@ -13432,7 +13471,11 @@
 								<xs:documentation>add non-gravitational forces in satellite reference frame</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="thermosphere" type="thermosphereType"/>
+						<xs:element name="thermosphere" type="thermosphereType">
+							<xs:annotation>
+								<xs:documentation>used to compute temperature and wind</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="considerTemperature" type="boolean" minOccurs="0" default="1">
 							<xs:annotation>
 								<xs:documentation>compute drag and lift, otherwise simple drag coefficient is used</xs:documentation>
