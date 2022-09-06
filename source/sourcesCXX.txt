@@ -271,6 +271,7 @@ programs/gnss/instrumentGnssReceiver2TimeSeries.cpp
 programs/gnss/parameterVector2GnssAntennaDefinition.cpp
 programs/grace/ensembleAveragingScaleModel.cpp
 programs/grace/graceAntennaCenterCorrectionArcCovariance.cpp
+programs/grace/graceOrbit2TransplantTimeOffset.cpp
 programs/grace/graceSstResidualAnalysis.cpp
 programs/grace/graceSstScaleModel.cpp
 programs/grace/graceSstSpecialEvents.cpp
@@ -326,6 +327,7 @@ programs/instruments/instrumentAccelerometer2ThermosphericDensity.cpp
 programs/instruments/instrumentAccelerometerApplyEstimatedParameters.cpp
 programs/instruments/instrumentAccelerometerEstimateBiasScale.cpp
 programs/instruments/instrumentAccelerometerEstimateParameters.cpp
+programs/instruments/instrumentApplyTimeOffset.cpp
 programs/instruments/instrumentArcCalculate.cpp
 programs/instruments/instrumentArcCrossStatistics.cpp
 programs/instruments/instrumentArcStatistics.cpp

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - GraceOrbit2TransplantTimeOffset</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            <h1>GraceOrbit2TransplantTimeOffset</h1><p>
+
+This program computes the time shift between two co-orbiting satellites based on dynamic orbit data.
+When applied to data of the first satellite, the computed time shift virtually shifts data of first satellite into the location of the second satellite.
+Note that <strong class="groops-config-element">inputfileOrbit1</strong> and <strong class="groops-config-element">inputfileOrbit2</strong> need velocity and acceleration data, which
+can be computed with <a class="groops-program" href="OrbitAddVelocityAndAcceleration.html">OrbitAddVelocityAndAcceleration</a>.
+The program tries to find a minimum of the objective function
+\[
+  f(\Delta t) = \| r_1(t) - r_2(t + \Delta t) \|^2,
+\]by applying Newton's method to the first derivative, thus iteratively computing
+\[
+  \Delta t_{k+1} = \Delta t_k + \frac{f'(\Delta t_k)}{f''(\Delta t_k)}.
+\]This iteration is stopped when the difference between to consecutive time shift values falls below <strong class="groops-config-element">threshold</strong> or
+<strong class="groops-config-element">maximumIterations</strong> is reached. An <strong class="groops-config-element">initialGuess</strong> of the time shift can speed up convergence.</p><p>See also <a class="groops-program" href="OrbitAddVelocityAndAcceleration.html">OrbitAddVelocityAndAcceleration</a> and <a class="groops-program" href="InstrumentApplyTimeOffset.html">InstrumentApplyTimeOffset</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileTimeOffset</div></div></td><td>filename</td><td>estimated time offset in seconds (MISCVALUE)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit1</div></div></td><td>filename</td><td>orbit data of satellite 1</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit2</div></div></td><td>filename</td><td>orbit data of satellite 2</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>polynomial degree for the interpolation of position, velocity and acceleration</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">initialGuess</div></div></td><td>double</td><td>initial guess for the time shift [seconds]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maximumIterations</div></div></td><td>uint</td><td>maximum number of iterations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">threshold</div></div></td><td>double</td><td>when the maximum difference between two iterations is below this value, stop [seconds]</td></tr>
+</table>
+This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.
+
+        </div>
+    </main>
+</body>
+</html>

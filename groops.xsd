@@ -11055,6 +11055,52 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="GraceOrbit2TransplantTimeOffset">
+				<xs:annotation>
+					<xs:documentation>compute the time shift between two co-orbiting satellites from their orbit data</xs:documentation>
+					<xs:appinfo>tag: Grace</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileTimeOffset" type="filename">
+							<xs:annotation>
+								<xs:documentation>estimated time offset in seconds (MISCVALUE)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit1" type="filename">
+							<xs:annotation>
+								<xs:documentation>orbit data of satellite 1</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit2" type="filename">
+							<xs:annotation>
+								<xs:documentation>orbit data of satellite 2</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="7">
+							<xs:annotation>
+								<xs:documentation>polynomial degree for the interpolation of position, velocity and acceleration</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="initialGuess" type="double" minOccurs="0" default="0.0">
+							<xs:annotation>
+								<xs:documentation>initial guess for the time shift [seconds]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="maximumIterations" type="uint" minOccurs="0" default="50">
+							<xs:annotation>
+								<xs:documentation>maximum number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="threshold" type="double" minOccurs="0" default="1e-5">
+							<xs:annotation>
+								<xs:documentation>when the maximum difference between two iterations is below this value, stop [seconds]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GraceSstResidualAnalysis">
 				<xs:annotation>
 					<xs:documentation>Multiresolution analysis of GRACE SST residuals.</xs:documentation>
