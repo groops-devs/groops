@@ -11226,6 +11226,37 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="GraceThrusterResponse2Accelerometer">
+				<xs:annotation>
+					<xs:documentation>Add modeled thruster responses to accelerometer</xs:documentation>
+					<xs:appinfo>tag: Grace</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileAccelerometer" type="filename">
+							<xs:annotation>
+								<xs:documentation>ACCELEROMETER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAccelerometer" type="filename">
+							<xs:annotation>
+								<xs:documentation>ACCELEROMETER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileThruster" type="filename">
+							<xs:annotation>
+								<xs:documentation>THRUSTER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileThrusterResponse" type="filename">
+							<xs:annotation>
+								<xs:documentation>thruster model (matrix with one line per pair)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="InstrumentSatelliteTrackingAntennaCenterCorrection">
 				<xs:annotation>
 					<xs:documentation>compute antenna center correction from orbit configuration</xs:documentation>

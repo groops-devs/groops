@@ -1,7 +1,9 @@
 # main
+- New program:      InstrumentRemoveEpochsThruster.
 - New program:      InstrumentApplyTimeOffset.
 - New program:      InstrumentAccelerometerEstimateParameters (replaces InstrumentAccelerometerEstimateBiasScale).
 - New program:      GraceOrbit2TransplantTimeOffset
+- New program:      GraceThrusterResponse2Accelerometer
 - New class:        In InstrumentResample/interpolatorTimeSeries: FillGapsLeastSquaresPolynomialFit.
 - Bugfix:           GnssRinexNavigation2OrbitClock: updated to be usable for rinex4 and fixes for rinex3.
 - Bugfix:           Plot: various fixes for GMT Versions >6.1.

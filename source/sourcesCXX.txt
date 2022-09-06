@@ -275,6 +275,7 @@ programs/grace/graceOrbit2TransplantTimeOffset.cpp
 programs/grace/graceSstResidualAnalysis.cpp
 programs/grace/graceSstScaleModel.cpp
 programs/grace/graceSstSpecialEvents.cpp
+programs/grace/graceThrusterResponse2Accelerometer.cpp
 programs/grace/instrumentSatelliteTrackingAntennaCenterCorrection.cpp
 programs/grace/instrumentStarCameraAngularAccelerometerFusion.cpp
 programs/gravityfield/gravityfield2AbsoluteGravity.cpp
@@ -343,6 +344,7 @@ programs/instruments/instrumentMultiplyAdd.cpp
 programs/instruments/instrumentReduceSampling.cpp
 programs/instruments/instrumentRemoveEpochsByCriteria.cpp
 programs/instruments/instrumentRemoveEpochsByTimes.cpp
+programs/instruments/instrumentRemoveEpochsThruster.cpp
 programs/instruments/instrumentResample.cpp
 programs/instruments/instrumentRotate.cpp
 programs/instruments/instrumentSetType.cpp
