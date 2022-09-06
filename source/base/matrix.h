@@ -517,23 +517,34 @@ Matrix eigenValueDecomposition(MatrixSliceRef A, Matrix &VL, Matrix &VR, Bool co
 * @return singular values in descending order */
 Vector singularValueDecomposition(MatrixSliceRef A, Matrix &U, Matrix &Vt, Bool computeSingularVectors=TRUE);
 
-/** @brief pseudo inverse of matrix A using SVD/EVD
+/** @brief pseudo inverse of matrix A using SVD/EVD.
 * @param[in] A input: Matrix content is copied to temporary matrix
 * @param[in] rcond singular values with an absolute value smaller than max(S)*rcond are assumed to be zero
 * @return Moore-Penrose inverse of A */
 Matrix pseudoInverse(const_MatrixSliceRef A, Double rcond = 1e-15);
 
-/** @brief matrix square root of a positive semi-definite matrix which fulfills B*B = A and B^T*B = A
+/** @brief matrix square root of a positive semi-definite matrix which fulfills B*B = A and B^T*B = A.
 * @param[in] A input: Matrix content is copied to temporary matrix
 * @param[in] rcond Eigenvalues with an absolute value smaller than max(S)*rcond are assumed to be zero
 * @return matrix square root of A */
 Matrix matrixSquareRoot(const_MatrixSliceRef A, Double rcond = 1e-15);
 
-/** @brief inverse of matrix square root of a positive semi-definite matrix which fulfills B*B = inv(A) and B^T*B = inv(A)
+/** @brief inverse of matrix square root of a positive semi-definite matrix which fulfills B*B = inv(A) and B^T*B = inv(A).
 * @param[in] A input: Matrix content is copied to temporary matrix
 * @param[in] rcond Eigenvalues with an absolute value smaller than max(S)*rcond are assumed to be zero
 * @return matrix square root of A */
 Matrix matrixSquareRootInverse(const_MatrixSliceRef A, Double rcond = 1e-15);
+
+/** @brief kron computes the kronecker product of A and B.
+* The @a type of matrix is @b not considered
+* (operation is always applied to both triangles).
+* @return C matrix containing the kronecker product for the matrices */
+Matrix kron(const_MatrixSliceRef A, const_MatrixSlice B);
+
+/** @brief toeplitz computes a toeplitz matrix out of a given vector.
+* @param a (n x 1) vector which is going to be toeplitz
+* @return (n x n) matrix toeplitzed */
+Matrix toeplitz(const Vector &a);
 
 /***********************************************/
 

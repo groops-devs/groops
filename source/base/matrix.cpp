@@ -1130,6 +1130,43 @@ Matrix matrixSquareRootInverse(const_MatrixSliceRef A, Double rcond)
 
 /***********************************************/
 
+Matrix kron(const_MatrixSliceRef A, const_MatrixSlice B)
+{
+  try
+  {
+    Matrix C(A.rows()*B.rows(), A.columns()*B.columns());
+    for(UInt i=0; i<A.rows(); i++)
+      for(UInt k=0; k<A.columns(); k++)
+        axpy(A(i, k), B, C.slice(i*B.rows(), k*B.columns(), B.rows(), B.columns()));
+    return C;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+Matrix toeplitz(const Vector &a)
+{
+  try
+  {
+    Matrix A(a.rows(), Matrix::SYMMETRIC);
+    for(UInt i=0; i<A.columns(); i++)
+      copy(a.row(0, a.rows()-i), A.slice(i, i, A.rows()-i, 1));
+    fillSymmetric(A);
+    return A;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
 void solveInPlace(MatrixSliceRef N, MatrixSliceRef B)
 {
   try
@@ -1492,5 +1529,3 @@ void generateQ(MatrixSliceRef A, const Vector &tau)
     GROOPS_RETHROW_EXTRA("A = ("s+A.rows()%"%i x "s+A.columns()%"%i)"s, e)
   }
 }
-
-/***********************************************/
