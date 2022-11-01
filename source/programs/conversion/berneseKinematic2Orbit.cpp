@@ -79,16 +79,15 @@ void BerneseKinematic2Orbit::run(Config &config, Parallel::CommunicatorPtr /*com
         {
           if(line.empty())
             break;
-          std::stringstream ss(line);
+          std::stringstream ss(line.substr(18)); // skip station name
           ss.exceptions(std::ios::badbit|std::ios::failbit);
 
-          std::string name, code;
           UInt   week;
           Double seconds;
           Char   flag;
 
           OrbitEpoch orbitEpoch;
-          ss>>name>>code>>week>>seconds>>orbitEpoch.position.x()>>orbitEpoch.position.y()>>orbitEpoch.position.z()>>flag;
+          ss>>week>>seconds>>orbitEpoch.position.x()>>orbitEpoch.position.y()>>orbitEpoch.position.z()>>flag;
           orbitEpoch.time = date2time(1980, 1, 6) + mjd2time(week*7.) + seconds2time(seconds);
 
           Covariance3dEpoch covEpoch;
