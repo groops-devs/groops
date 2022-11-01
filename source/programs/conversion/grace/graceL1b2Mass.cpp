@@ -9,7 +9,6 @@
 *
 */
 /***********************************************/
-
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
@@ -91,8 +90,17 @@ void GraceL1b2Mass::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
         MassEpoch epoch;
         epoch.time     = time;
-        epoch.massThr  = mass_thr;
-        epoch.massTank = mass_tnk;
+        if(GRACE_id=='C')
+        {
+          epoch.massThr = 601.21-(15.62718541166349-gas_mass_tnk1)-(15.63189368778949-gas_mass_tnk2);
+        }
+        else if(GRACE_id=='D')
+        {
+          epoch.massThr = 601.21-(15.60994853989272-gas_mass_tnk1)- (15.68091099702227-gas_mass_tnk2);
+        }
+        else
+            epoch.massThr  = mass_thr;
+        epoch.massTank = epoch.massThr;
         arc.push_back(epoch);
       } // for(idEpoch)
     } // for(idFile)
