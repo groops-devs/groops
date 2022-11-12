@@ -2066,7 +2066,7 @@
 						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
 						<xs:element name="outputfileTroposphere" type="filename" minOccurs="0" default="output/troposphere_{loopTime:%D}.{station}.txt">
 							<xs:annotation>
-								<xs:documentation>columns: MJD, ZHD, ZWD, dry north gradient, wet north gradient, dry east gradient, wet east gradient</xs:documentation>
+								<xs:documentation>columns: MJD, ZHD, ZWD, dry north gradient, wet north gradient, dry east gradient, wet east gradient, ...</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="troposphere" type="troposphereType">

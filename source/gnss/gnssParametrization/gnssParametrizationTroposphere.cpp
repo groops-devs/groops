@@ -14,7 +14,7 @@
 
 #include "base/import.h"
 #include "config/config.h"
-#include "files/fileMatrix.h"
+#include "files/fileInstrument.h"
 #include "classes/troposphere/troposphere.h"
 #include "classes/parametrizationTemporal/parametrizationTemporal.h"
 #include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
@@ -28,7 +28,7 @@ GnssParametrizationTroposphere::GnssParametrizationTroposphere(Config &config)
   {
     readConfig(config, "name",                          name,                    Config::OPTIONAL, "parameter.troposphere", "used for parameter selection");
     readConfig(config, "selectReceivers",               selectReceivers,         Config::MUSTSET,  "",  "");
-    readConfig(config, "outputfileTroposphere",         fileNameTropo,           Config::OPTIONAL, "output/troposphere_{loopTime:%D}.{station}.txt", "columns: MJD, ZHD, ZWD, dry north gradient, wet north gradient, dry east gradient, wet east gradient");
+    readConfig(config, "outputfileTroposphere",         fileNameTropo,           Config::OPTIONAL, "output/troposphere_{loopTime:%D}.{station}.txt", "columns: MJD, ZHD, ZWD, dry north gradient, wet north gradient, dry east gradient, wet east gradient, ...");
     readConfig(config, "troposphere",                   troposphere,             Config::MUSTSET,  "",  "a priori troposphere model");
     readConfig(config, "troposphereWetEstimation",      parametrizationWet,      Config::DEFAULT,  "",  "[m] parametrization of zenith wet delays");
     readConfig(config, "troposphereGradientEstimation", parametrizationGradient, Config::DEFAULT,  "",  "[degree] parametrization of north and east gradients");
@@ -313,12 +313,14 @@ void GnssParametrizationTroposphere::writeResults(const GnssNormalEquationInfo &
       if(para && normalEquationInfo.estimateReceiver.at(para->idRecv) && gnss->receivers.at(para->idRecv)->isMyRank())
       {
         Matrix A(normalEquationInfo.idEpochs.size(), 12);
+        std::vector<Time> times;
         for(UInt i=0; i<normalEquationInfo.idEpochs.size(); i++)
         {
           const UInt idEpoch = normalEquationInfo.idEpochs.at(i);
           Double zenithWetDelay, zenithDryDelay, gradientWetNorth, gradientDryNorth, gradientWetEast, gradientDryEast, aDry, aWet;
           troposphere->getAprioriValues(gnss->times.at(idEpoch), para->idTropo, zenithDryDelay, zenithWetDelay,
                                         gradientDryNorth, gradientWetNorth, gradientDryEast, gradientWetEast, aDry, aWet);
+          times.push_back(gnss->times.at(idEpoch));
           A(i,  0) = gnss->times.at(idEpoch).mjd();
           A(i,  1) = zenithDryDelay;                                     // tropospheric zenith dry delay [m] (only from model)
           A(i,  2) = zenithWetDelay   + para->zenitDelayWet.at(idEpoch); // tropospheric zenith wet delay [m] (model + delta estimate)
@@ -334,7 +336,7 @@ void GnssParametrizationTroposphere::writeResults(const GnssNormalEquationInfo &
         }
 
         fileNameVariableList["station"]->setValue(gnss->receivers.at(para->idRecv)->name());
-        writeFileMatrix(fileNameTropo(fileNameVariableList).appendBaseName(suffix), A);
+        InstrumentFile::write(fileNameTropo(fileNameVariableList).appendBaseName(suffix), Arc(times, A));
       }
   }
   catch(std::exception &e)
