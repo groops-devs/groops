@@ -29,6 +29,7 @@ OutArchiveBinary::OutArchiveBinary(std::ostream &_stream, const std::string &typ
   save(ss.str());
 
   // padding to 64 bit
+  // size computation is probably wrong, but we keep it for compatibility reasons.
   std::string empty((1+type.size()+ss.str().size())%8, ' ');
   if(empty.size())
     stream.write(&empty.at(0), empty.size()*sizeof(char));
@@ -55,6 +56,7 @@ InArchiveBinary::InArchiveBinary(std::istream &_stream) : stream(_stream), _vers
   _version = versionStr2version(_versionStr);
 
   // padding to 64 bit
+  // size computation is probably wrong, but we keep it for compatibility reasons.
   std::string empty((1+typeStr.size()+_versionStr.size())%8, ' ');
   if(empty.size())
     stream.read(&empty.at(0), empty.size()*sizeof(char));
