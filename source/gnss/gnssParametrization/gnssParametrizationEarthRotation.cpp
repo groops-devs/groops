@@ -243,7 +243,7 @@ Double GnssParametrizationEarthRotation::updateParameter(const GnssNormalEquatio
     if(indexParameterPole)
     {
       Gnss::InfoParameterChange info("mm");
-      const Vector dx = DEG2RAD/3600e3 * x.row(normalEquationInfo.index(indexParameterPole), 2*parametrizationPole->parameterCount());
+      const Vector dx = x.row(normalEquationInfo.index(indexParameterPole), 2*parametrizationPole->parameterCount());
       xPole += dx;
       std::vector<UInt>   index;
       std::vector<Double> factor;
@@ -252,7 +252,7 @@ Double GnssParametrizationEarthRotation::updateParameter(const GnssNormalEquatio
         parametrizationPole->factors(gnss->times.at(idEpoch), index, factor);
         Vector p(2);
         for(UInt k=0; k<factor.size(); k++)
-          axpy(factor.at(k), dx.row(2*index.at(k),2), p);
+          axpy(DEG2RAD/3600e3 * factor.at(k), dx.row(2*index.at(k),2), p);
 
         // update xp,yp
         gnss->eop(idEpoch, 0) += p(0);
@@ -268,7 +268,7 @@ Double GnssParametrizationEarthRotation::updateParameter(const GnssNormalEquatio
     if(indexParameterUT1)
     {
       Gnss::InfoParameterChange info("mm");
-      const Vector dx = 1e-3 * x.row(normalEquationInfo.index(indexParameterUT1), parametrizationUT1->parameterCount());
+      const Vector dx = x.row(normalEquationInfo.index(indexParameterUT1), parametrizationUT1->parameterCount());
       xUT1 += dx;
       std::vector<UInt>   index;
       std::vector<Double> factor;
@@ -277,7 +277,7 @@ Double GnssParametrizationEarthRotation::updateParameter(const GnssNormalEquatio
         parametrizationUT1->factors(gnss->times.at(idEpoch), index, factor);
         Double p = 0;
         for(UInt k=0; k<factor.size(); k++)
-          p += factor.at(k) * dx(index.at(k));
+          p += 1e-3 * factor.at(k) * dx(index.at(k));
 
         gnss->eop(idEpoch, 3) += p;
         if(info.update(1e3*DEFAULT_R*2*PI*1.00273781191135448/86400*p))
@@ -291,7 +291,7 @@ Double GnssParametrizationEarthRotation::updateParameter(const GnssNormalEquatio
     if(indexParameterNutation)
     {
       Gnss::InfoParameterChange info("mm");
-      const Vector dx = DEG2RAD/3600e3 * x.row(normalEquationInfo.index(indexParameterNutation), 2*parametrizationNutation->parameterCount());
+      const Vector dx = x.row(normalEquationInfo.index(indexParameterNutation), 2*parametrizationNutation->parameterCount());
       xNutation += dx;
       std::vector<UInt>   index;
       std::vector<Double> factor;
@@ -300,7 +300,7 @@ Double GnssParametrizationEarthRotation::updateParameter(const GnssNormalEquatio
         parametrizationNutation->factors(gnss->times.at(idEpoch), index, factor);
         Vector p(2);
         for(UInt k=0; k<factor.size(); k++)
-          axpy(factor.at(k), dx.row(2*index.at(k),2), p);
+          axpy(DEG2RAD/3600e3 * factor.at(k), dx.row(2*index.at(k),2), p);
 
         // update X,Y
         gnss->eop(idEpoch, 5) += p(0);
