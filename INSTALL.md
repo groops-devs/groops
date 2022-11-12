@@ -155,7 +155,9 @@ working with GROOPS easier.
     "C:\Qt\5.15.1\mingw81_64\bin"
     ```
 
-2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` to the number of threads to use for matrix operations.
+2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` or `OMP_NUM_THREADS` to the number of threads to use for matrix operations.
+
+    :warning: When running GROOPS in parallel, threaded BLAS/LAPACK libraries may conflict with MPI processes and cause a deterioration of performance. In that case, the number of threads for matrix operations should be set to 1.
 
 GROOPS depends on data files such as Earth rotation, Love numbers, and wavelet coefficients.
 An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/outgoing/ITSG/groops/).
@@ -248,19 +250,13 @@ sudo apt-get install gmt gmt-gshhg
 
 4. *(Optional)* Install liberfa development packages:
 
-    4.1 Add the OpenSUSE Science Repository (change OpenSUSE release version if necessary):
-    ```
-    sudo zypper addrepo http://download.opensuse.org/repositories/science/openSUSE_Leap_15.2/ science
-    ```
-
-    4.2 Install the required package:
     ```
     sudo zypper install erfa-devel
     ```
 
 5. *(Optional)* Install MPI development packages:
     ```
-    sudo zypper install mpich-devel
+    sudo zypper install openmpi4 openmpi4-devel
     ```
 
 6. Create the build directory and compile GROOPS:
@@ -292,7 +288,7 @@ make
 The OpenSUSE packages for the Generic Mapping Tools are available in the `GEO` repository
 (change OpenSUSE release version if necessary):
 ```
-sudo zypper addrepo http://download.opensuse.org/repositories/Application:/Geo/openSUSE_Leap_15.2/ GEO
+sudo zypper addrepo http://download.opensuse.org/repositories/Application:/Geo/15.4/ GEO
 ```
 Then install the packages:
 ```
@@ -373,7 +369,9 @@ working with GROOPS easier.
    source $HOME/.bashrc
    ```
 
-2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` to the number of threads to use for matrix operations.
+2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` or `OMP_NUM_THREADS`  to the number of threads to use for matrix operations.
+
+    :warning: When running GROOPS in parallel, threaded BLAS/LAPACK libraries may conflict with MPI processes and cause a deterioration of performance. In that case, the number of threads for matrix operations should be set to 1.
 
 GROOPS depends on data files such as Earth rotation, Love numbers, and wavelet coefficients.
 An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/outgoing/ITSG/groops/).
