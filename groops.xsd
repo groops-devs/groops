@@ -9450,6 +9450,7 @@
 			<xs:appinfo>rename: KernelComputeCoefficients = Kernel2Coefficients</xs:appinfo>
 			<xs:appinfo>rename: KernelDegreeVariances = RadialBasisSplines2KernelCoefficients</xs:appinfo>
 			<xs:appinfo>rename: InstrumentCreateTimeSeries = TimeSeriesCreate</xs:appinfo>
+			<xs:appinfo>rename: Variational2Orbit = Variational2OrbitAndStarCamera</xs:appinfo>
 			<xs:appinfo>rename: KalmanStaticTemporalNormals = NormalsBuildShortTimeStaticLongTime</xs:appinfo>
 			<xs:appinfo>rename: NormalsParameterSelection2IndexVector = ParameterSelection2IndexVector</xs:appinfo>
 			<xs:appinfo>rename: InstrumentOrbit2ArgumentOfLatitude = Orbit2ArgumentOfLatitude</xs:appinfo>
@@ -15658,9 +15659,9 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="Variational2Orbit">
+			<xs:element name="Variational2OrbitAndStarCamera">
 				<xs:annotation>
-					<xs:documentation>Extracts orbit from variational file.</xs:documentation>
+					<xs:documentation>Extracts orbit and star camera data from variational file.</xs:documentation>
 					<xs:appinfo>rename: outputFileOrbit = outputfileOrbit</xs:appinfo>
 					<xs:appinfo>rename: inputFileVariational = inputfileVariational</xs:appinfo>
 					<xs:appinfo>tag: Misc</xs:appinfo>
@@ -15669,9 +15670,19 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileOrbit" type="filename">
+						<xs:element name="outputfileOrbit" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>output orbit (instrument) file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileStarCamera" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>output satellite attidude as star camera (instrument) file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileEarthRotation" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>output Earth rotation as star camera (instrument) file</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileVariational" type="filename">

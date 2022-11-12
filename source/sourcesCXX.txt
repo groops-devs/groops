@@ -381,7 +381,7 @@ programs/misc/temporalRepresentation2TimeSeries.cpp
 programs/misc/thermosphericState2GriddedData.cpp
 programs/misc/timeSeries2PotentialCoefficients.cpp
 programs/misc/timeSeriesCreate.cpp
-programs/misc/variational2Orbit.cpp
+programs/misc/variational2OrbitAndStarCamera.cpp
 programs/normals/normalsAccumulate.cpp
 programs/normals/normalsBuild.cpp
 programs/normals/normalsBuildShortTimeStaticLongTime.cpp

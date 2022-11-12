@@ -4916,9 +4916,9 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
-\subsection{Variational2Orbit}\label{Variational2Orbit}
-Extracts the reference \configFile{outputfileOrbit}{instrument}
-from \configFile{inputfileVariational}{variationalEquation}.
+\subsection{Variational2OrbitAndStarCamera}\label{Variational2OrbitAndStarCamera}
+Extracts the reference \configFile{outputfileOrbit}{instrument}, \configFile{outputfileStarCamera}{instrument},
+and \configFile{outputfileEarthRotation}{instrument} from \configFile{inputfileVariational}{variationalEquation}.
 
 
 \keepXColumns
@@ -4926,7 +4926,9 @@ from \configFile{inputfileVariational}{variationalEquation}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt output orbit (instrument) file\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt output orbit (instrument) file\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt output satellite attidude as star camera (instrument) file\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileEarthRotation & \hfuzz=500pt filename & \hfuzz=500pt output Earth rotation as star camera (instrument) file\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileVariational & \hfuzz=500pt filename & \hfuzz=500pt input variational file\\
 \hline
 \end{tabularx}

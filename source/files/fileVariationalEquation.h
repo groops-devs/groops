@@ -23,7 +23,7 @@ the derivatives of the orbit with respect to the satellite state vector for each
 transformations (rotations) between the satellite, celestial, and terrestrial frame
 and a satellite macro model (see \file{SatelliteModel}{satelliteModel}).
 
-The reference orbit can be extracted with \program{Variational2Orbit}.
+The reference orbit can be extracted with \program{Variational2OrbitAndStarCamera}.
 
 See also: \program{PreprocessingVariationalEquation}.
 
