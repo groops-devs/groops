@@ -185,7 +185,7 @@ void TroposphereViennaMapping::findIndex(const Time &time, UInt &idx, Double &ta
     if(tau < 0)
     {
       if((time-times.front()).seconds()<-1.0) // possible clock error
-        throw(Exception("time out of range: "+time.dateTimeStr()));
+        throw(Exception("time out of range: "+time.dateTimeStr() + " - " + times.front().dateTimeStr() + " < -1.0 seconds"));
       tau = 0;
       idx = 0;
       return;
@@ -198,7 +198,7 @@ void TroposphereViennaMapping::findIndex(const Time &time, UInt &idx, Double &ta
       tau += 1.;
     }
     if(idx >= times.size()-1)
-      throw(Exception("time out of range: "+time.dateTimeStr()));
+      throw(Exception("time out of range: "+time.dateTimeStr() + " idx :" + idx%"%i"s +  " >= " + (times.size()-1)%"%i"s));
   }
   catch(std::exception &e)
   {

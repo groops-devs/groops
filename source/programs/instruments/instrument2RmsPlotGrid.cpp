@@ -141,7 +141,7 @@ void Instrument2RmsPlotGrid::run(Config &config, Parallel::CommunicatorPtr /*com
 
         if(!arc.size())
         {
-          //logWarning << "Instrument file <" << fileNameInInstrument.at(idInstrument)(fileNameVariableList) << "> not found or empty, skipping." << Log::endl;
+          logWarning << "Instrument file <" << fileNameInInstrument.at(idInstrument)(fileNameVariableList) << "> not found or empty, skipping." << Log::endl;
           continue;
         }
 
@@ -154,8 +154,8 @@ void Instrument2RmsPlotGrid::run(Config &config, Parallel::CommunicatorPtr /*com
 
         if(!arcRef.size())
         {
-          //logWarning << "Instrument reference file <" << fileNameInInstrumentRef.at(idInstrument)(fileNameVariableList) << "> not found or empty, skipping." << Log::endl;
-          return;
+          logWarning << "Instrument reference file <" << fileNameInInstrumentRef.at(idInstrument)(fileNameVariableList) << "> not found or empty, skipping." << Log::endl;
+          continue;
         }
 
         // check if data of reference file matches instrument file
