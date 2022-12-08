@@ -41,15 +41,7 @@ For considering the geoid height use \config{inputfileGeoidHeight}. The geoid he
 * @ingroup programsConversionGroup */
 class GnssTroposphere2TropoSinex
 {
-  static std::string resize(std::string str, UInt length) { str.resize(length, ' '); return str; }
-  static std::string time2str(Time time) { return Sinex::time2str(time, TRUE); }
-  std::string SiteId(const std::vector<GnssStationInfo> &stationInfos, const GriddedData &griddedData, const std::vector <Double> &geoidHeightVector);
-  std::string SiteReceiver(const std::vector<GnssStationInfo> &stationInfos, const Time &timeRef);
-  std::string TropSolution(const std::vector<GnssStationInfo> &stationInfos, const std::vector<Matrix> &tropDataMatrix, const std::vector<Matrix> &tropSigmasMatrix);
-  std::string SiteCoordinates(const std::vector<GnssStationInfo> &stationInfos, const GriddedData &griddedData, const Time &timeStart,
-                              const Time &timeEnd, std::string &systemCode, std::string &remark);
-  std::string SiteAntenna(const std::vector<GnssStationInfo> &stationInfos, const Time &timeRef, std::string &antennaModel);
-  std::string SiteEccentricity(const std::vector<GnssStationInfo> &stationInfos, const Time &timeRef);
+  static std::string resize(std::string str, UInt length) {str.resize(length, ' '); return str;}
 
 public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
@@ -135,18 +127,18 @@ void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /
     // --------------------
 
     // station informations
-    logStatus << "reading station list from <" << fileNameStationList << ">" << Log::endl;
+    logStatus<<"reading station list from <"<<fileNameStationList<<">"<<Log::endl;
     std::vector<std::string> stationList;
     readFileStringList(fileNameStationList, stationList);
 
-    logStatus << "reading station antenna definitions from <" << fileNameAntennaDef << ">" << Log::endl;
+    logStatus<<"reading station antenna definitions from <"<<fileNameAntennaDef<<">"<<Log::endl;
     std::vector<GnssAntennaDefinitionPtr> antennaDefinitionList;
     readFileGnssAntennaDefinition(fileNameAntennaDef, antennaDefinitionList);
 
     std::vector <Double> geoidHeightVector;
     if(!fileNameGeoidHeight.empty())
     {
-      logStatus << "reading geoid heights <" << fileNameGeoidHeight << ">" << Log::endl;
+      logStatus<<"reading geoid heights <"<<fileNameGeoidHeight<<">"<<Log::endl;
       GriddedData griddedData;
       readFileGriddedData(fileNameGeoidHeight, griddedData);
 
@@ -156,11 +148,11 @@ void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /
       }
     }
 
-    logStatus << "reading grid position <" << fileNameGridPos << ">" << Log::endl;
+    logStatus<<"reading grid position <"<<fileNameGridPos<<">"<<Log::endl;
     GriddedData gridPos;
     readFileGriddedData(fileNameGridPos, gridPos);
 
-    logStatus << "reading station infos from <" << fileNameStationInfo << ">" << Log::endl;
+    logStatus<<"reading station infos from <"<<fileNameStationInfo<<">"<<Log::endl;
     std::vector<GnssStationInfo> stationInfos;
     VariableList fileNameVariableList;
     addVariable(variableStationName, fileNameVariableList);
@@ -178,9 +170,8 @@ void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /
     std::vector<Matrix> tropDataStations(stationList.size()), tropSigmasStations(fileNameTropoSigmas.empty() ? 0 : stationList.size());
     if(!fileNameTropoData.empty())
     {
-      logStatus << "reading troposphere data from <" << fileNameTropoData << ">" << Log::endl;
-
-      for(UInt i = 0; i < stationList.size(); i++)
+      logStatus<<"reading troposphere data from <"<<fileNameTropoData<<">"<<Log::endl;
+      for(UInt i=0; i<stationList.size(); i++)
       {
         fileNameVariableList[variableStationName]->setValue(stationList.at(i));
         readFileMatrix(fileNameTropoData(fileNameVariableList),   tropDataStations.at(i));
@@ -193,305 +184,181 @@ void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /
 
     // write SINEX_TRO file
     // ----------------
-    logStatus << "write SINEX_TRO file <" << fileNameTropoSinex << ">" << Log::endl;
+    logStatus<<"write SINEX_TRO file <"<<fileNameTropoSinex<<">"<<Log::endl;
     OutFile file(fileNameTropoSinex);
 
     // SINEX_TRO header line
-    file << "%=TRO 2.00 " << std::setw(3) << agencyCode.substr(0, 3) << " " << time2str(timeCurrent) << " " << std::setw(3) << agencyCode.substr(0, 3);
-    file << " " << time2str(timeStart) << " " << time2str(timeEnd) << " " << std::setw(1) << observationCode.substr(0, 1);
-    file << " " << solutionContents.substr(0, 4) << std::endl;
+    file<<"%=TRO 2.00 "<<std::setw(3)<<agencyCode.substr(0, 3)<<" "<<Sinex::time2str(timeCurrent, TRUE)<<" "<<std::setw(3)<<agencyCode.substr(0, 3);
+    file<<" "<<Sinex::time2str(timeStart, TRUE)<<" "<<Sinex::time2str(timeEnd, TRUE)<<" "<<std::setw(1)<<observationCode.substr(0, 1);
+    file<<" "<<solutionContents.substr(0, 4)<<std::endl;
 
     // Block: FILE/REFERENCE
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "+FILE/REFERENCE" << std::endl;
-    file << "*INFO_TYPE_________ INFO________________________________________________________" << std::endl;
-    file << " DESCRIPTION        " << resize(description, 60) << std::endl;
-    file << " OUTPUT             " << resize(output, 60) << std::endl;
-    file << " CONTACT            " << resize(contact, 60) << std::endl;
-    file << " SOFTWARE           " << resize(software, 60) << std::endl;
-    file << " HARDWARE           " << resize(hardware, 60) << std::endl;
-    file << " INPUT              " << resize(input, 60) << std::endl;
-    file << " VERSION NUMBER     " << resize(versionNumber, 60) << std::endl;
-    file << "-FILE/REFERENCE" << std::endl;
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"+FILE/REFERENCE"<<std::endl;
+    file<<"*INFO_TYPE_________ INFO________________________________________________________"<<std::endl;
+    file<<" DESCRIPTION        "<<resize(description, 60)<<std::endl;
+    file<<" OUTPUT             "<<resize(output, 60)<<std::endl;
+    file<<" CONTACT            "<<resize(contact, 60)<<std::endl;
+    file<<" SOFTWARE           "<<resize(software, 60)<<std::endl;
+    file<<" HARDWARE           "<<resize(hardware, 60)<<std::endl;
+    file<<" INPUT              "<<resize(input, 60)<<std::endl;
+    file<<" VERSION NUMBER     "<<resize(versionNumber, 60)<<std::endl;
+    file<<"-FILE/REFERENCE"<<std::endl;
 
     // Block: TROP/DESCRIPTION
     std::vector<std::string> columns = {"TROTOT", "TGNTOT", "TGETOT"};
     if(!fileNameTropoSigmas.empty())
       columns = {"TROTOT", "STDDEV", "TGNTOT", "STDDEV", "TGETOT", "STDDEV"};
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "+TROP/DESCRIPTION" << std::endl;
-    file << "*_________KEYWORD____________ ___VALUES(S)______________________________________" << std::endl;
-    file << " TROPO PARAMETER NAMES       "; for(const auto &c : columns) {file << " " << c;}; file << std::endl;
-    file << " TROPO PARAMETER UNITS       "; for(UInt i = 0; i < columns.size(); i++) {file << "  1e+03";}; file << std::endl;
-    file << " TROPO PARAMETER WIDTH       "; for(UInt i = 0; i < columns.size(); i++) {file << "      6";}; file << std::endl;
-    file << " TROPO MODELING METHOD        " << tropoModelingMethod << std::endl;
-    file << " TROPO SAMPLING INTERVAL      " << troSampling%"%f"s << std::endl;
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"+TROP/DESCRIPTION"<<std::endl;
+    file<<"*_________KEYWORD____________ ___VALUES(S)______________________________________"<<std::endl;
+    file<<" TROPO PARAMETER NAMES       "; for(const auto &c : columns)         {file<<" "<<c;}    file<<std::endl;
+    file<<" TROPO PARAMETER UNITS       "; for(UInt i=0; i<columns.size(); i++) {file<<"  1e+03";} file<<std::endl;
+    file<<" TROPO PARAMETER WIDTH       "; for(UInt i=0; i<columns.size(); i++) {file<<"      6";} file<<std::endl;
+    file<<" TROPO MODELING METHOD        "<<tropoModelingMethod<<std::endl;
+    file<<" TROPO SAMPLING INTERVAL      "<<troSampling%"%f"s<<std::endl;
     if(!metDataSource.empty())
-      file << " SOURCE OF MET/DATA           " << metDataSource << std::endl;
-    file << " A PRIORI TROPOSPHERE         " << aPrioriTropoModel << std::endl;
-    file << " TROPO MAPPING FUNCTION       " << tropoMappingFunction << std::endl;
-    file << " GRADS MAPPING FUNCTION       " << gradientMappingFunction << std::endl;
-    file << " DATA SAMPLING INTERVAL       " << dataSampling%"%f"s << std::endl;
-    file << " ELEVATION CUTOFF ANGLE       " << elevationCutoff%"%f"s << std::endl;
-    file << " OBSERVATION WEIGHTING        " << observationWeighting << std::endl;
-    file << " GNSS SYSTEMS                 " << gnssSystems << std::endl;
-    file << " TIME SYSTEM                  " << timeSystem << std::endl;
+      file<<" SOURCE OF MET/DATA           "<<metDataSource<<std::endl;
+    file<<" A PRIORI TROPOSPHERE         "<<aPrioriTropoModel<<std::endl;
+    file<<" TROPO MAPPING FUNCTION       "<<tropoMappingFunction<<std::endl;
+    file<<" GRADS MAPPING FUNCTION       "<<gradientMappingFunction<<std::endl;
+    file<<" DATA SAMPLING INTERVAL       "<<dataSampling%"%f"s<<std::endl;
+    file<<" ELEVATION CUTOFF ANGLE       "<<elevationCutoff%"%f"s<<std::endl;
+    file<<" OBSERVATION WEIGHTING        "<<observationWeighting<<std::endl;
+    file<<" GNSS SYSTEMS                 "<<gnssSystems<<std::endl;
+    file<<" TIME SYSTEM                  "<<timeSystem<<std::endl;
     if(!oceanTideModel.empty())
-      file << " OCEAN TIDE LOADING MODEL     " << oceanTideModel << std::endl;
+      file<<" OCEAN TIDE LOADING MODEL     "<<oceanTideModel<<std::endl;
     if(!atmosphericTideModel.empty())
-      file << " ATMOSPH TIDE LOADING MODEL   " << atmosphericTideModel << std::endl;
+      file<<" ATMOSPH TIDE LOADING MODEL   "<<atmosphericTideModel<<std::endl;
     if(!geoidModel.empty())
-      file << " GEOID MODEL                  " << geoidModel << std::endl;
-    file << "-TROP/DESCRIPTION" << std::endl;
+      file<<" GEOID MODEL                  "<<geoidModel<<std::endl;
+    file<<"-TROP/DESCRIPTION"<<std::endl;
 
     // Block: FILE/COMMENT
-    // comment block
     if(comment.size() || !fileNameComment.empty())
     {
-      file << "*-------------------------------------------------------------------------------" << std::endl;
-      file << "+FILE/COMMENT" << std::endl;
+      file<<"*-------------------------------------------------------------------------------"<<std::endl;
+      file<<"+FILE/COMMENT"<<std::endl;
       if(!fileNameComment.empty())
       {
         InFile commentFile(fileNameComment);
         std::string line;
         while(std::getline(commentFile, line))
-          file << " " << line << std::endl;
+          file<<" "<<line<<std::endl;
       }
       for(const auto &line : comment)
-        file << " " << line << std::endl;
-      file << "-FILE/COMMENT" << std::endl;
+        file<<" "<<line<<std::endl;
+      file<<"-FILE/COMMENT"<<std::endl;
     }
 
     // Block: SITE/ID
-    blockText = SiteId(stationInfos, gridPos, geoidHeightVector);
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "+SITE/ID" << std::endl;
-    file << "*STATION__ PT __DOMES__ T _STATION_DESCRIPTION__ _LONGITUDE _LATITUDE_ _HGT_ELI_ _HGT_MSL_" << std::endl;
-    file << blockText;
-    file << "-SITE/ID" << std::endl;
-
-    // Block: SITE/COORDINATES
-    blockText = SiteCoordinates(stationInfos, gridPos, timeStart, timeEnd, systemCode, remark);
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "+SITE/COORDINATES" << std::endl;
-    file << "*STATION__ PT SOLN T __DATA_START__ __DATA_END____ __STA_X_____  __STA_Y_____  __STA_Z_____ SYSTEM REMRK" << std::endl;
-    file << blockText;
-    file << "-SITE/COORDINATES" << std::endl;
-
-    // BLOCK: SITE/RECEIVER
-    blockText = SiteReceiver(stationInfos, timeRef);
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "+SITE/RECEIVER" << std::endl;
-    file << "*STATION__ PT SOLN T __DATA_START__ __DATA_END____ DESCRIPTION_________ S/N_________________ FIRMW______" << std::endl;
-    file << blockText;
-    file << "-SITE/RECEIVER" << std::endl;
-
-    // BLOCK SITE/ANTENNA
-    blockText = SiteAntenna(stationInfos, timeRef, antennaModel);
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "+SITE/ANTENNA" << std::endl;
-    file << "*STATION__ PT SOLN T __DATA_START__ __DATA_END____ DESCRIPTION_________ S/N_________________ PCV_MODEL_" << std::endl;
-    file << blockText;
-    file << "-SITE/ANTENNA" << std::endl;
-
-    // BLOCK SITE/ECCENTRICITY
-    blockText = SiteEccentricity(stationInfos, timeRef);
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "+SITE/ECCENTRICITY" << std::endl;
-    file << "*" << std::setw(80) << "UP______ NORTH___ EAST____" << std::endl;
-    file << "*STATION__ PT SOLN T __DATA_START__ __DATA_END____ AXE ARP->BENCHMARK(M)_________" << std::endl;
-    file << blockText;
-    file << "-SITE/ECCENTRICITY" << std::endl;
-
-    // BLOCK: TROP/SOLUTION
-    blockText = TropSolution(stationInfos, tropDataStations, tropSigmasStations);
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "+TROP/SOLUTION" << std::endl;
-    file << "*STATION__ ____EPOCH_____"; for(const auto &c : columns) {file << " " << c;}; file << std::endl;
-    file << blockText;
-    file << "-TROP/SOLUTION" << std::endl;
-
-    file << "%=ENDTRO" << std::endl;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-std::string GnssTroposphere2TropoSinex::SiteId(const std::vector<GnssStationInfo> &stationInfos, const GriddedData &griddedData, const std::vector<Double> &geoidHeightVector)
-{
-  try
-  {
-    std::stringstream ss;
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"+SITE/ID"<<std::endl;
+    file<<"*STATION__ PT __DOMES__ T _STATION_DESCRIPTION__ _LONGITUDE _LATITUDE_ _HGT_ELI_ _HGT_MSL_"<<std::endl;
     Ellipsoid ellipsoid;
-
-    UInt i = 0;
-    for(const auto &stationInfo : stationInfos)
+    for(UInt i=0; i<stationInfos.size(); i++)
     {
       Angle lon, lat;
       Double ellipsoidHeight;
-      ellipsoid(griddedData.points.at(i), lon, lat, ellipsoidHeight);
-
-      ss << " " << String::upperCase(resize(stationInfo.markerName, 9)) << "  A " << resize(stationInfo.markerNumber, 9) << " P " << resize(stationInfo.comment, 22) << " "
-         << (std::fmod(lon+2*PI, 2*PI)*RAD2DEG)%"%10.6f "s << (lat*RAD2DEG)%"%10.6f "s << ellipsoidHeight%"%9.3f "s << (geoidHeightVector.empty() ? "" : geoidHeightVector.at(i) % "%9.3f"s) << std::endl;
-
-      i++;
-     }
-
-     return ss.str();
-  }
-  catch (std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-std::string GnssTroposphere2TropoSinex::SiteCoordinates(const std::vector<GnssStationInfo> &stationInfos, const GriddedData &griddedData, const Time &timeStart,
-                                                        const Time &timeEnd, std::string &systemCode, std::string &remark)
-{
-  try
-  {
-    std::stringstream ss;
-
-    UInt i = 0;
-    for(const auto &stationInfo : stationInfos)
-    {
-      ss << " " << String::upperCase(resize(stationInfo.markerName, 9)) << "  A    1 P " << time2str(timeStart) << " " << time2str(timeEnd) << " " << griddedData.points.at(i).x() % "%12.3f "s;
-      ss << " " << griddedData.points.at(i).y()%"%12.3f "s << " " << griddedData.points.at(i).z()%"%12.3f "s << resize(systemCode, 6) << " " << resize(remark, 5) << std::endl;
-
-      i++;
+      ellipsoid(gridPos.points.at(i), lon, lat, ellipsoidHeight);
+      file<<" "<<String::upperCase(resize(stationInfos.at(i).markerName, 9))<<"  A "<<resize(stationInfos.at(i).markerNumber, 9)<<" P "<<resize(stationInfos.at(i).comment, 22)<<" "
+          <<(std::fmod(lon+2*PI, 2*PI)*RAD2DEG)%"%10.6f "s<<(lat*RAD2DEG)%"%10.6f "s<<ellipsoidHeight%"%9.3f "s<<(geoidHeightVector.empty() ? "" : geoidHeightVector.at(i) % "%9.3f"s)<<std::endl;
     }
+    file<<"-SITE/ID"<<std::endl;
 
-    return ss.str();
-  }
-  catch (std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
+    // Block: SITE/COORDINATES
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"+SITE/COORDINATES"<<std::endl;
+    file<<"*STATION__ PT SOLN T __DATA_START__ __DATA_END____ __STA_X_____  __STA_Y_____  __STA_Z_____ SYSTEM REMRK"<<std::endl;
+    for(UInt i=0; i<stationInfos.size(); i++)
+    {
+      file<<" "<<String::upperCase(resize(stationInfos.at(i).markerName, 9))<<"  A    1 P "<<Sinex::time2str(timeStart, TRUE)<<" "<<Sinex::time2str(timeEnd, TRUE)<<" "<<gridPos.points.at(i).x() % "%12.3f "s;
+      file<<" "<<gridPos.points.at(i).y()%"%12.3f "s<<" "<<gridPos.points.at(i).z()%"%12.3f "s<<resize(systemCode, 6)<<" "<<resize(remark, 5)<<std::endl;
+    }
+    file<<"-SITE/COORDINATES"<<std::endl;
 
-/***********************************************/
-
-std::string GnssTroposphere2TropoSinex::SiteReceiver(const std::vector<GnssStationInfo> &stationInfos, const Time &timeRef)
-{
-  try
-  {
-    std::stringstream ss;
-
+    // BLOCK: SITE/RECEIVER
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"+SITE/RECEIVER"<<std::endl;
+    file<<"*STATION__ PT SOLN T __DATA_START__ __DATA_END____ DESCRIPTION_________ S/N_________________ FIRMW______"<<std::endl;
     for(const auto &stationInfo : stationInfos)
     {
       const UInt idRecv = stationInfo.findReceiver(timeRef);
       if(idRecv == NULLINDEX)
       {
-        logWarning << stationInfo.markerName << ": no receiver found at " << timeRef.dateTimeStr() << Log::endl;
+        logWarning<<stationInfo.markerName<<": no receiver found at "<<timeRef.dateTimeStr()<<Log::endl;
         continue;
       }
       const GnssReceiverInfo recv = stationInfo.receiver.at(idRecv);
-      ss << " " << String::upperCase(resize(stationInfo.markerName, 9)) << "  A    1 P " << time2str(recv.timeStart) << " " << time2str(recv.timeEnd) << " " << resize(recv.name, 20)
-         << " " << resize(recv.serial.empty() ? std::string(20, '-') : recv.serial, 20) << " " << resize(recv.version.empty() ? std::string(11, '-') : recv.version, 11) << std::endl;
+      file<<" "<<String::upperCase(resize(stationInfo.markerName, 9))<<"  A    1 P "<<Sinex::time2str(recv.timeStart, TRUE)<<" "<<Sinex::time2str(recv.timeEnd, TRUE)<<" "<<resize(recv.name, 20)
+          <<" "<<resize(recv.serial.empty() ? std::string(20, '-') : recv.serial, 20)<<" "<<resize(recv.version.empty() ? std::string(11, '-') : recv.version, 11)<<std::endl;
     }
+    file<<"-SITE/RECEIVER"<<std::endl;
 
-    return ss.str();
-  }
-  catch (std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-std::string GnssTroposphere2TropoSinex::SiteAntenna(const std::vector<GnssStationInfo> &stationInfos, const Time &timeRef, std::string &antennaModel)
-{
-  try
-  {
-    std::stringstream ss;
-
+    // BLOCK SITE/ANTENNA
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"+SITE/ANTENNA"<<std::endl;
+    file<<"*STATION__ PT SOLN T __DATA_START__ __DATA_END____ DESCRIPTION_________ S/N_________________ PCV_MODEL_"<<std::endl;
     for(const auto &stationInfo : stationInfos)
     {
       const UInt idAnt = stationInfo.findAntenna(timeRef);
       if(idAnt == NULLINDEX)
       {
-        logWarning << stationInfo.markerName << ": no antenna found at " << timeRef.dateTimeStr() << Log::endl;
+        logWarning<<stationInfo.markerName<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
         continue;
       }
       const GnssAntennaInfo ant = stationInfo.antenna.at(idAnt);
 
-      ss << " " << String::upperCase(resize(stationInfo.markerName, 9)) << "  A    1 P " << time2str(ant.timeStart) << " " << time2str(ant.timeEnd) << " "
-         << resize(ant.name, 15) << " " << (ant.radome.empty() ? "NONE" : resize(ant.radome, 4)) << " " << resize(ant.serial.empty() ? std::string(20, '-') : ant.serial, 20) << " "
-         << resize(antennaModel, 10) << std::endl;
+      file<<" "<<String::upperCase(resize(stationInfo.markerName, 9))<<"  A    1 P "<<Sinex::time2str(ant.timeStart, TRUE)<<" "<<Sinex::time2str(ant.timeEnd, TRUE)<<" "
+          <<resize(ant.name, 15)<<" "<<(ant.radome.empty() ? "NONE" : resize(ant.radome, 4))<<" "<<resize(ant.serial.empty() ? std::string(20, '-') : ant.serial, 20)<<" "
+          <<resize(antennaModel, 10)<<std::endl;
     }
+    file<<"-SITE/ANTENNA"<<std::endl;
 
-    return ss.str();
-  }
-  catch (std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-std::string GnssTroposphere2TropoSinex::SiteEccentricity(const std::vector<GnssStationInfo> &stationInfos, const Time &timeRef)
-{
-  try
-  {
-    std::stringstream ss;
-
+    // BLOCK SITE/ECCENTRICITY
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"+SITE/ECCENTRICITY"<<std::endl;
+    file<<"*"<<std::setw(80)<<"UP______ NORTH___ EAST____"<<std::endl;
+    file<<"*STATION__ PT SOLN T __DATA_START__ __DATA_END____ AXE ARP->BENCHMARK(M)_________"<<std::endl;
     for(const auto &stationInfo : stationInfos)
     {
       const UInt idAnt = stationInfo.findAntenna(timeRef);
       if(idAnt == NULLINDEX)
       {
-        logWarning << stationInfo.markerName << ": no antenna found at " << timeRef.dateTimeStr() << Log::endl;
+        logWarning<<stationInfo.markerName<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
         continue;
       }
       const GnssAntennaInfo ant = stationInfo.antenna.at(idAnt);
-
-      ss <<" " << String::upperCase(resize(stationInfo.markerName, 9)) << "  A    1 P " << time2str(ant.timeStart) << " "
-         << time2str(ant.timeEnd) << " UNE " << ant.position.z() % "%8.4f "s << ant.position.x() % "%8.4f "s << ant.position.y() % "%8.4f"s << std::endl;
+      file<<" "<<String::upperCase(resize(stationInfo.markerName, 9))<<"  A    1 P "<<Sinex::time2str(ant.timeStart, TRUE)<<" "
+          <<Sinex::time2str(ant.timeEnd, TRUE)<<" UNE "<<ant.position.z() % "%8.4f "s<<ant.position.x() % "%8.4f "s<<ant.position.y() % "%8.4f"s<<std::endl;
     }
+    file<<"-SITE/ECCENTRICITY"<<std::endl;
 
-    return ss.str();
-  }
-  catch (std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-std::string GnssTroposphere2TropoSinex::TropSolution(const std::vector<GnssStationInfo> &stationInfos, const std::vector<Matrix> &tropDataMatrix, const std::vector<Matrix> &tropSigmasMatrix)
-{
-  try
-  {
-    std::stringstream ss;
-
-    for(UInt idStation = 0; idStation < stationInfos.size(); idStation++)
-      for(UInt idEpoch = 0; idEpoch < tropDataMatrix.at(idStation).rows(); idEpoch++)
+    // BLOCK: TROP/SOLUTION
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"+TROP/SOLUTION"<<std::endl;
+    file<<"*STATION__ ____EPOCH_____"; for(const auto &c : columns) {file<<" "<<c;}; file<<std::endl;
+    for(UInt idStation=0; idStation<stationInfos.size(); idStation++)
+      for(UInt idEpoch=0; idEpoch<tropDataStations.at(idStation).rows(); idEpoch++)
       {
-        Vector epochData = 1e3 * tropDataMatrix.at(idStation).row(idEpoch).trans();
-        ss << " " << String::upperCase(resize(stationInfos.at(idStation).markerName, 9)) << " " << time2str(mjd2time(epochData(0)*1e-3));
-        if(tropSigmasMatrix.empty())
-          ss << (epochData(1)+epochData(2))%" %6.1f"s << (epochData(3)+epochData(4))%" %6.2f"s << (epochData(5)+epochData(6))%" %6.2f"s << std::endl;
+        Vector epochData = 1e3 * tropDataStations.at(idStation).row(idEpoch).trans();
+        file<<" "<<String::upperCase(resize(stationInfos.at(idStation).markerName, 9))<<" "<<Sinex::time2str(mjd2time(epochData(0)*1e-3), TRUE);
+        if(tropSigmasStations.empty())
+          file<<(epochData(1)+epochData(2))%" %6.1f"s<<(epochData(3)+epochData(4))%" %6.2f"s<<(epochData(5)+epochData(6))%" %6.2f"s<<std::endl;
         else
         {
-          Vector epochSigmas = 1e3 * tropSigmasMatrix.at(idStation).row(idEpoch).trans();
-          ss << (epochData(1)+epochData(2))%" %6.1f"s << epochSigmas(1)%" %6.1f"s
-             << (epochData(3)+epochData(4))%" %6.2f"s << epochSigmas(2)%" %6.2f"s
-             << (epochData(5)+epochData(6))%" %6.2f"s << epochSigmas(3)%" %6.2f"s << std::endl;
+          Vector epochSigmas = 1e3 * tropSigmasStations.at(idStation).row(idEpoch).trans();
+          file<<(epochData(1)+epochData(2))%" %6.1f"s<<epochSigmas(1)%" %6.1f"s
+              <<(epochData(3)+epochData(4))%" %6.2f"s<<epochSigmas(2)%" %6.2f"s
+              <<(epochData(5)+epochData(6))%" %6.2f"s<<epochSigmas(3)%" %6.2f"s<<std::endl;
         }
       }
+    file<<"-TROP/SOLUTION"<<std::endl;
 
-    return ss.str();
+    file<<"%=ENDTRO"<<std::endl;
   }
-  catch (std::exception &e)
+  catch(std::exception &e)
   {
     GROOPS_RETHROW(e)
   }

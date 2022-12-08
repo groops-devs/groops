@@ -55,9 +55,10 @@ void SinexMetadata2SatelliteModel::run(Config &config, Parallel::CommunicatorPtr
     readConfig(config, "svn",                      svn,                   Config::MUSTSET,  "", "e.g. G040, R736, E204, C211");
     if(isCreateSchema(config)) return;
 
-    Sinex sinex(inNameSinexMetadata);
-    std::vector<std::string> massLines  = sinex.getBlock<Sinex::SinexText>("SATELLITE/MASS")->lines();
-    std::vector<std::string> powerLines = sinex.getBlock<Sinex::SinexText>("SATELLITE/TX_POWER")->lines();
+    Sinex sinex;
+    readFileSinex(inNameSinexMetadata, sinex);
+    std::vector<std::string> massLines  = sinex.findBlock("SATELLITE/MASS")->lines;
+    std::vector<std::string> powerLines = sinex.findBlock("SATELLITE/TX_POWER")->lines;
 
     SatelliteModelPtr satellite(new SatelliteModel);
     if(!inNameSatelliteModel.empty())
@@ -80,7 +81,7 @@ void SinexMetadata2SatelliteModel::run(Config &config, Parallel::CommunicatorPtr
     if(masses.size())
       satellite->mass = masses.back();
     else
-      logWarning << "mass missing for " + svn << Log::endl;
+      logWarning<<"mass missing for " + svn<<Log::endl;
     if(masses.size() > 1)
     {
       auto iter = std::remove_if(satellite->modules.begin(), satellite->modules.end(), [&](SatelliteModelModulePtr module){ return module->type() == SatelliteModelModule::MASSCHANGE; });
@@ -102,7 +103,7 @@ void SinexMetadata2SatelliteModel::run(Config &config, Parallel::CommunicatorPtr
       satellite->modules.push_back(SatelliteModelModulePtr(module));
     }
     else
-      logWarning << "transmit power missing for " + svn << Log::endl;
+      logWarning<<"transmit power missing for " + svn<<Log::endl;
 
     // surfaces
     if(!satellite->surfaces.size())

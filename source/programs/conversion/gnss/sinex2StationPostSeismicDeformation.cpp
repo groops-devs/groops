@@ -60,42 +60,47 @@ void Sinex2StationPostSeismicDeformation::run(Config &config, Parallel::Communic
     std::vector<Time> times = timeSeries->times();
     Matrix A(times.size(), 4);
     const std::vector<Char> axes = {'N', 'E', 'H'};
-    std::transform(stationName.begin(), stationName.end(), stationName.begin(), ::toupper);
+    stationName = String::lowerCase(stationName);
 
-    logStatus << "read SINEX file <" << fileNameSinex << ">" << Log::endl;
-    Sinex sinex(fileNameSinex);
-    std::vector<Sinex::Parameter> parameters = sinex.getBlock<Sinex::SinexSolutionVector>("SOLUTION/ESTIMATE")->parameters();
-    for(UInt i = 0; i < parameters.size(); i+=2)
+    logStatus<<"read SINEX file <"<<fileNameSinex<<">"<<Log::endl;
+    Sinex sinex;
+    readFileSinex(fileNameSinex, sinex);
+
+    const std::vector<std::string> &lines = sinex.findBlock("SOLUTION/ESTIMATE")->lines;
+    for(UInt i=0; i<lines.size(); i+=2)
     {
-      if(parameters.at(i).siteCode != stationName)
+      const std::string siteCode = String::lowerCase(String::trim(lines.at(i).substr(14, 4)));
+      if(siteCode != stationName)
         continue;
 
-      if(parameters.at(i).parameterType.front() != 'A' || parameters.at(i+1).parameterType.front() != 'T')
-        throw(Exception(i%"incorrect parameter pair at index %i: "s + parameters.at(i).parameterType + " and " + parameters.at(i+1).parameterType));
+      const std::string parameterType1 = String::trim(lines.at(i).substr(7, 6));
+      const std::string parameterType2 = String::trim(lines.at(i+1).substr(7, 6));
+      if(parameterType1.front() != 'A' || parameterType2.front() != 'T')
+        throw(Exception(i%"incorrect parameter pair at index %i: "s+parameterType1+" and "+parameterType2));
 
-      const Double amplitude      = parameters.at(i).value;
-      const Double relaxationTime = parameters.at(i+1).value;
-      const Double referenceTime  = parameters.at(i).time.decimalYear();
+      const Double amplitude      = String::toDouble(lines.at(i).substr(47, 21));
+      const Double relaxationTime = String::toDouble(lines.at(i+1).substr(47, 21));
+      const Double referenceTime  = Sinex::str2time(lines.at(i), 27).decimalYear();
 
-      const UInt col = 1 + std::distance(axes.begin(), std::find(axes.begin(), axes.end(), parameters.at(i).parameterType.back()));
-      for(UInt idEpoch = 0; idEpoch < times.size(); idEpoch++)
+      const UInt col = 1 + std::distance(axes.begin(), std::find(axes.begin(), axes.end(), parameterType1.back()));
+      for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
       {
         if(times.at(idEpoch).decimalYear() < referenceTime)
           continue;
 
-        if(parameters.at(i).parameterType.substr(1,3) == "EXP")
-          A(idEpoch, col) += amplitude * (1. - std::exp(-(times.at(idEpoch).decimalYear() - referenceTime) / relaxationTime));
-        else if(parameters.at(i).parameterType.substr(1,3) == "LOG")
-          A(idEpoch, col) += amplitude * std::log(1. + (times.at(idEpoch).decimalYear() - referenceTime) / relaxationTime);
+        if(parameterType1.substr(1,3) == "EXP")
+          A(idEpoch, col) += amplitude * (1. - std::exp(-(times.at(idEpoch).decimalYear()-referenceTime)/relaxationTime));
+        else if(parameterType1.substr(1,3) == "LOG")
+          A(idEpoch, col) += amplitude * std::log(1. + (times.at(idEpoch).decimalYear()-referenceTime) /relaxationTime);
         else
-          throw(Exception(i%"unknown parameter type at index %i: "s + parameters.at(i).parameterType));
+          throw(Exception(i%"unknown parameter type at index %i: "s+parameterType1));
       }
     }
 
     if(!localLevelFrame)
     {
-      std::vector<std::string> stationInfos = sinex.getBlock<Sinex::SinexText>("SITE/ID")->lines();
-      auto iter = std::find_if(stationInfos.begin(), stationInfos.end(), [&](const std::string &s){ return s.substr(1,4) == stationName; });
+      const std::vector<std::string> &stationInfos = sinex.findBlock("SITE/ID")->lines;
+      auto iter = std::find_if(stationInfos.begin(), stationInfos.end(), [&](const std::string &s){return s.substr(1,4) == stationName;});
       if(iter != stationInfos.end())
       {
         const Double longitude = String::toDouble(iter->substr(44, 3)) + String::toDouble(iter->substr(48, 2))/60 + String::toDouble(iter->substr(51, 4))/3600;
@@ -108,7 +113,7 @@ void Sinex2StationPostSeismicDeformation::run(Config &config, Parallel::Communic
       }
     }
 
-    logStatus << "write Instrument file <" << fileNameInstrument << ">" << Log::endl;
+    logStatus<<"write Instrument file <"<<fileNameInstrument<<">"<<Log::endl;
     InstrumentFile::write(fileNameInstrument, Arc(times, A, Epoch::VECTOR3D));
   }
   catch(std::exception &e)

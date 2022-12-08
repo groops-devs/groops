@@ -112,6 +112,161 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssSignalBi
 
 /***********************************************/
 
+void GnssSignalBias2SinexBias::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
+{
+  try
+  {
+    FileName outNameSinexBias;
+    std::vector<FileName> inNameTransmitterInfo;
+    std::vector<Data> transmitterBiases, receiverBiases;
+    Time timeStart, timeEnd;
+    std::string agencyCode, fileAgencyCode, biasMode, method, receiverClockReferenceGnss, description, output, contact, software, hardware, input;
+    std::vector<std::string> satelliteClockReferenceObservables, comments;
+    UInt sampling = 0;
+    UInt intervalLength = 0;
+
+    readConfig(config, "outputfileSinexBias",      outNameSinexBias,      Config::MUSTSET,  "", "");
+    readConfig(config, "inputfileTransmitterInfo", inNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "one file per satellite");
+    readConfig(config, "transmitterBiases",        transmitterBiases,     Config::OPTIONAL, "", "one element per satellite");
+    readConfig(config, "receiverBiases",           receiverBiases,        Config::OPTIONAL, "", "one element per station");
+    readConfig(config, "agencyCode",               agencyCode,            Config::MUSTSET,  "TUG", "identify the agency providing the data");
+    readConfig(config, "fileAgencyCode",           fileAgencyCode,        Config::MUSTSET,  "TUG", "identify the agency creating the file");
+    readConfig(config, "timeStart",                timeStart,             Config::MUSTSET,  "", "start time of the data");
+    readConfig(config, "timeEnd",                  timeEnd,               Config::MUSTSET,  "", "end time of the data ");
+    if(readConfigChoice(config, "biasMode", biasMode, Config::MUSTSET, "absolute",  "absolute or relative bias estimates"))
+    {
+      readConfigChoiceElement(config, "absolute", biasMode, "");
+      readConfigChoiceElement(config, "relative", biasMode, "");
+      endChoice(config);
+    }
+    readConfig(config, "observationSampling", sampling,       Config::OPTIONAL, "30", "[seconds]");
+    readConfig(config, "intervalLength",      intervalLength, Config::OPTIONAL, "86400", "[seconds] interval for bias parameter representation");
+    readConfig(config, "determinationMethod", method,         Config::MUSTSET,   "CO-ESTIMATED_IN_LSA", "determination method used to generate the bias results (see SINEX Bias format description)");
+    readConfig(config, "receiverClockReferenceGnss",         receiverClockReferenceGnss,         Config::OPTIONAL, "G", "(G, R, E, C) reference GNSS used for receiver clock estimation");
+    readConfig(config, "satelliteClockReferenceObservables", satelliteClockReferenceObservables, Config::OPTIONAL, "G  C1W  C2W", "one per system, reference code observable on first and second frequency (RINEX3 format)");
+    readConfig(config, "description",         description,    Config::MUSTSET,   "Graz University of Technology, Austria (TUG/TU Graz)", "organizition gathering/altering the file contents");
+    readConfig(config, "contact",             contact,        Config::MUSTSET,   "", "contact name and/or email address");
+    readConfig(config, "input",               input,          Config::MUSTSET,   "GNSS observations from the IGS station network", "brief description of the input used to generate this solution");
+    readConfig(config, "output",              output,         Config::MUSTSET,   "Estimated signal biases from GNSS processing", "description of the file contents");
+    readConfig(config, "software",            software,       Config::MUSTSET,   "GROOPS", "software used to generate the file");
+    readConfig(config, "hardware",            hardware,       Config::MUSTSET,   "", "computer hardware on which above software was run");
+    readConfig(config, "comment",             comments,       Config::OPTIONAL,  "", "comments in the comment block");
+    if(isCreateSchema(config)) return;
+
+    logStatus<<"read transmitter info files"<<Log::endl;
+    for(const auto &fileName : inNameTransmitterInfo)
+    {
+      GnssStationInfo info;
+      readFileGnssStationInfo(fileName, info);
+      prn2info[info.markerNumber] = info;
+    }
+
+    logStatus<<"read bias files"<<Log::endl;
+    readData(transmitterBiases);
+    readData(receiverBiases);
+
+    // create map: GLONASS frequencyNumber -> list of PRNs
+    for(const auto &trans : transmitterBiases)
+      if(trans.identifier.at(0) == 'R') // GLONASS only
+      {
+        UInt idRecv = prn2info[trans.identifier].findReceiver(0.5*(timeStart+timeEnd));
+        if(idRecv == NULLINDEX)
+          throw(Exception("no receiver info found in transmitter info for "+trans.identifier));
+
+        freqNo2prns[std::stoi(prn2info[trans.identifier].receiver.at(idRecv).version)].push_back(trans.identifier);
+      }
+
+    logStatus<<"write SINEX bias file <"<<outNameSinexBias<<">"<<Log::endl;
+    OutFile file(outNameSinexBias);
+
+    // SINEX header line
+    const UInt estimateCount = countBiases(transmitterBiases) + countBiases(receiverBiases);
+    agencyCode.resize(3, ' ');
+    fileAgencyCode.resize(3, ' ');
+    std::transform(biasMode.begin(), biasMode.end(), biasMode.begin(), ::toupper);
+    file<<"%=BIA "<<1%"%4.2f"s<<' '<<fileAgencyCode<<' '<<Sinex::time2str(System::now(), TRUE)<<' '<<agencyCode<<' '
+        <<Sinex::time2str(timeStart, TRUE)<<' '<<Sinex::time2str(timeEnd, TRUE)<<' ' <<biasMode.at(0)<<' '<<estimateCount%"%08i"s<<std::endl;
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"* Bias Solution INdependent EXchange Format (Bias-SINEX)"<<std::endl;
+
+    // Block: FILE/REFERENCE
+    description.resize(std::min(description.size(), UInt(60)), ' ');
+    contact.resize(std::min(contact.size(), UInt(60)), ' ');
+    input.resize(std::min(input.size(), UInt(60)), ' ');
+    output.resize(std::min(output.size(), UInt(60)), ' ');
+    software.resize(std::min(software.size(), UInt(60)), ' ');
+    hardware.resize(std::min(hardware.size(), UInt(60)), ' ');
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"+FILE/REFERENCE"<<std::endl;
+    file<<"*INFO_TYPE_________ INFO________________________________________________________"<<std::endl;
+    file<<" DESCRIPTION        "<<description<<std::endl;
+    file<<" CONTACT            "<<contact    <<std::endl;
+    file<<" INPUT              "<<input      <<std::endl;
+    file<<" OUTPUT             "<<output     <<std::endl;
+    file<<" SOFTWARE           "<<software   <<std::endl;
+    file<<" HARDWARE           "<<hardware   <<std::endl;
+    file<<"-FILE/REFERENCE"<<std::endl;
+
+    // Block: FILE/COMMENT
+    if(comments.size())
+    {
+      file<<"*-------------------------------------------------------------------------------"<<std::endl;
+      file<<"+FILE/COMMENT"<<std::endl;
+      for(auto comment : comments)
+      {
+        comment.resize(std::min(comment.size(), UInt(79)));
+        file<<' '<<comment<<std::endl;
+      }
+      file<<"-FILE/COMMENT"<<std::endl;
+    }
+
+    // Block: INPUT/ACKNOWLEDGMENTS
+
+    // Block: BIAS/DESCRIPTION
+    method.resize(std::min(method.size(), UInt(39)), ' ');
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"+BIAS/DESCRIPTION"<<std::endl;
+    file<<"*KEYWORD________________________________ VALUE(S)_______________________________"<<std::endl;
+    if(sampling > 0)
+      file<<" OBSERVATION_SAMPLING                    "<<sampling%"% 12i"s<<std::endl;
+    if(intervalLength > 0)
+      file<<" PARAMETER_SPACING                       "<<intervalLength%"% 12i"s<<std::endl;
+    file<<" DETERMINATION METHOD                    "<<method<<std::endl;
+    file<<" BIAS_MODE                               "<<biasMode<<std::endl;
+    file<<" TIME_SYSTEM                             G"<<std::endl;
+    if(!receiverClockReferenceGnss.empty())
+    {
+      file<<" RECEIVER_CLOCK_REFERENCE_GNSS           "<<receiverClockReferenceGnss.at(0)<<std::endl;
+    }
+    for(auto sys : satelliteClockReferenceObservables)
+    {
+      sys.resize(11, ' ');
+      file<<" SATELLITE_CLOCK_REFERENCE_OBSERVABLES   "<<sys<<std::endl;
+    }
+    file<<"-BIAS/DESCRIPTION"<<std::endl;
+
+    // Block: BIAS/RECEIVER_INFORMATION
+
+    // Block: BIAS/SOLUTION
+    file<<"*-------------------------------------------------------------------------------"<<std::endl;
+    file<<"+BIAS/SOLUTION"<<std::endl;
+    file<<"*BIAS SVN_ PRN STATION__ OBS1 OBS2 BIAS_START____ BIAS_END______ UNIT __ESTIMATED_VALUE____ _STD_DEV___ __ESTIMATED_SLOPE____ _STD_DEV___"<<std::endl;
+    for(const auto &data : transmitterBiases)
+      writeData(file, timeStart, timeEnd, data, /*isStation*/FALSE);
+    for(const auto &data : receiverBiases)
+      writeData(file, timeStart, timeEnd, data, /*isStation*/TRUE);
+    file<<"-BIAS/SOLUTION"<<std::endl;
+
+    file<<"%=ENDBIA"<<std::endl;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
 void GnssSignalBias2SinexBias::readData(std::vector<Data> &data) const
 {
   try
@@ -140,14 +295,14 @@ void GnssSignalBias2SinexBias::readData(std::vector<Data> &data) const
           }
           catch(std::exception &e)
           {
-            logWarning << e.what() << " continue..." << Log::endl;
+            logWarning<<e.what()<<" continue..."<<Log::endl;
             continue;
           }
         }
       }
       catch(std::exception &e)
       {
-        logWarning << e.what() << " continue..." << Log::endl;
+        logWarning<<e.what()<<" continue..."<<Log::endl;
         iter = data.erase(iter);
         continue;
       }
@@ -180,11 +335,11 @@ void GnssSignalBias2SinexBias::writeLine(OutFile &file, const Time &timeStart, c
       svn.at(0) = type.str().at(3);
   }
 
-  file << " OSB  " << svn << ' ' << prn << ' ' << stationName << ' ' << type.str().substr(0,3) << std::string(7, ' ')
-       << Sinex::time2str(timeStart, TRUE) << ' ' << Sinex::time2str(timeEnd, TRUE) << ' ' << unit << bias%" % 21.14e"s << biasSigma%" % 11.5e"s;
+  file<<" OSB  "<<svn<<' '<<prn<<' '<<stationName<<' '<<type.str().substr(0,3)<<std::string(7, ' ')
+      <<Sinex::time2str(timeStart, TRUE)<<' '<<Sinex::time2str(timeEnd, TRUE)<<' '<<unit<<bias%" % 21.14e"s<<biasSigma%" % 11.5e"s;
   if(biasSlope != 0.)
-    file << biasSlope%" % 21.14e"s << biasSlopeSigma%" % 11.5e"s;
-  file << std::endl;
+    file<<biasSlope%" % 21.14e"s<<biasSlopeSigma%" % 11.5e"s;
+  file<<std::endl;
 }
 
 /***********************************************/
@@ -309,164 +464,6 @@ UInt GnssSignalBias2SinexBias::countBiases(const std::vector<Data> &data) const
     }
 
     return count;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-
-/***********************************************/
-
-void GnssSignalBias2SinexBias::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
-{
-  try
-  {
-    FileName outNameSinexBias;
-    std::vector<FileName> inNameTransmitterInfo;
-    std::vector<Data> transmitterBiases, receiverBiases;
-    Time timeStart, timeEnd;
-    std::string agencyCode, fileAgencyCode, biasMode, method, receiverClockReferenceGnss, description, output, contact, software, hardware, input;
-    std::vector<std::string> satelliteClockReferenceObservables, comments;
-    UInt sampling = 0;
-    UInt intervalLength = 0;
-
-    readConfig(config, "outputfileSinexBias",      outNameSinexBias,      Config::MUSTSET,  "", "");
-    readConfig(config, "inputfileTransmitterInfo", inNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "one file per satellite");
-    readConfig(config, "transmitterBiases",        transmitterBiases,     Config::OPTIONAL, "", "one element per satellite");
-    readConfig(config, "receiverBiases",           receiverBiases,        Config::OPTIONAL, "", "one element per station");
-    readConfig(config, "agencyCode",               agencyCode,            Config::MUSTSET,  "TUG", "identify the agency providing the data");
-    readConfig(config, "fileAgencyCode",           fileAgencyCode,        Config::MUSTSET,  "TUG", "identify the agency creating the file");
-    readConfig(config, "timeStart",                timeStart,             Config::MUSTSET,  "", "start time of the data");
-    readConfig(config, "timeEnd",                  timeEnd,               Config::MUSTSET,  "", "end time of the data ");
-    if(readConfigChoice(config, "biasMode", biasMode, Config::MUSTSET, "absolute",  "absolute or relative bias estimates"))
-    {
-      readConfigChoiceElement(config, "absolute", biasMode, "");
-      readConfigChoiceElement(config, "relative", biasMode, "");
-      endChoice(config);
-    }
-    readConfig(config, "observationSampling", sampling,       Config::OPTIONAL, "30", "[seconds]");
-    readConfig(config, "intervalLength",      intervalLength, Config::OPTIONAL, "86400", "[seconds] interval for bias parameter representation");
-    readConfig(config, "determinationMethod", method,         Config::MUSTSET,   "CO-ESTIMATED_IN_LSA", "determination method used to generate the bias results (see SINEX Bias format description)");
-    readConfig(config, "receiverClockReferenceGnss",         receiverClockReferenceGnss,         Config::OPTIONAL, "G", "(G, R, E, C) reference GNSS used for receiver clock estimation");
-    readConfig(config, "satelliteClockReferenceObservables", satelliteClockReferenceObservables, Config::OPTIONAL, "G  C1W  C2W", "one per system, reference code observable on first and second frequency (RINEX3 format)");
-    readConfig(config, "description",         description,    Config::MUSTSET,   "Graz University of Technology, Austria (TUG/TU Graz)", "organizition gathering/altering the file contents");
-    readConfig(config, "contact",             contact,        Config::MUSTSET,   "", "contact name and/or email address");
-    readConfig(config, "input",               input,          Config::MUSTSET,   "GNSS observations from the IGS station network", "brief description of the input used to generate this solution");
-    readConfig(config, "output",              output,         Config::MUSTSET,   "Estimated signal biases from GNSS processing", "description of the file contents");
-    readConfig(config, "software",            software,       Config::MUSTSET,   "GROOPS", "software used to generate the file");
-    readConfig(config, "hardware",            hardware,       Config::MUSTSET,   "", "computer hardware on which above software was run");
-    readConfig(config, "comment",             comments,       Config::OPTIONAL,  "", "comments in the comment block");
-    if(isCreateSchema(config)) return;
-
-    logStatus << "read transmitter info files" << Log::endl;
-    for(const auto &fileName : inNameTransmitterInfo)
-    {
-      GnssStationInfo info;
-      readFileGnssStationInfo(fileName, info);
-      prn2info[info.markerNumber] = info;
-    }
-
-    logStatus << "read bias files" << Log::endl;
-    readData(transmitterBiases);
-    readData(receiverBiases);
-
-    // create map: GLONASS frequencyNumber -> list of PRNs
-    for(const auto &trans : transmitterBiases)
-      if(trans.identifier.at(0) == 'R') // GLONASS only
-      {
-        UInt idRecv = prn2info[trans.identifier].findReceiver(0.5*(timeStart+timeEnd));
-        if(idRecv == NULLINDEX)
-          throw(Exception("no receiver info found in transmitter info for "+trans.identifier));
-
-        freqNo2prns[std::stoi(prn2info[trans.identifier].receiver.at(idRecv).version)].push_back(trans.identifier);
-      }
-
-    logStatus << "write SINEX bias file <" << outNameSinexBias << ">" << Log::endl;
-    OutFile file(outNameSinexBias);
-
-    // SINEX header line
-    const UInt estimateCount = countBiases(transmitterBiases) + countBiases(receiverBiases);
-    agencyCode.resize(3, ' ');
-    fileAgencyCode.resize(3, ' ');
-    std::transform(biasMode.begin(), biasMode.end(), biasMode.begin(), ::toupper);
-    file << "%=BIA " << 1%"%4.2f"s << ' ' << fileAgencyCode << ' ' << Sinex::time2str(System::now(), TRUE) << ' ' << agencyCode << ' '
-         << Sinex::time2str(timeStart, TRUE) << ' ' << Sinex::time2str(timeEnd, TRUE) << ' '  << biasMode.at(0) << ' ' << estimateCount%"%08i"s << std::endl;
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "* Bias Solution INdependent EXchange Format (Bias-SINEX)" << std::endl;
-
-    // Block: FILE/REFERENCE
-    description.resize(std::min(description.size(), UInt(60)), ' ');
-    contact.resize(std::min(contact.size(), UInt(60)), ' ');
-    input.resize(std::min(input.size(), UInt(60)), ' ');
-    output.resize(std::min(output.size(), UInt(60)), ' ');
-    software.resize(std::min(software.size(), UInt(60)), ' ');
-    hardware.resize(std::min(hardware.size(), UInt(60)), ' ');
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "+FILE/REFERENCE" << std::endl;
-    file << "*INFO_TYPE_________ INFO________________________________________________________" << std::endl;
-    file << " DESCRIPTION        " << description << std::endl;
-    file << " CONTACT            " << contact     << std::endl;
-    file << " INPUT              " << input       << std::endl;
-    file << " OUTPUT             " << output      << std::endl;
-    file << " SOFTWARE           " << software    << std::endl;
-    file << " HARDWARE           " << hardware    << std::endl;
-    file << "-FILE/REFERENCE" << std::endl;
-
-    // Block: FILE/COMMENT
-    if(comments.size())
-    {
-      file << "*-------------------------------------------------------------------------------" << std::endl;
-      file << "+FILE/COMMENT" << std::endl;
-      for(auto comment : comments)
-      {
-        comment.resize(std::min(comment.size(), UInt(79)));
-        file << ' ' << comment << std::endl;
-      }
-      file << "-FILE/COMMENT" << std::endl;
-    }
-
-    // Block: INPUT/ACKNOWLEDGMENTS
-
-    // Block: BIAS/DESCRIPTION
-    method.resize(std::min(method.size(), UInt(39)), ' ');
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "+BIAS/DESCRIPTION" << std::endl;
-    file << "*KEYWORD________________________________ VALUE(S)_______________________________" << std::endl;
-    if(sampling > 0)
-      file << " OBSERVATION_SAMPLING                    " << sampling%"% 12i"s << std::endl;
-    if(intervalLength > 0)
-      file << " PARAMETER_SPACING                       " << intervalLength%"% 12i"s << std::endl;
-    file << " DETERMINATION METHOD                    " << method << std::endl;
-    file << " BIAS_MODE                               " << biasMode << std::endl;
-    file << " TIME_SYSTEM                             G" << std::endl;
-    if(!receiverClockReferenceGnss.empty())
-    {
-      file << " RECEIVER_CLOCK_REFERENCE_GNSS           " << receiverClockReferenceGnss.at(0) << std::endl;
-    }
-    for(auto sys : satelliteClockReferenceObservables)
-    {
-      sys.resize(11, ' ');
-      file << " SATELLITE_CLOCK_REFERENCE_OBSERVABLES   " << sys << std::endl;
-    }
-    file << "-BIAS/DESCRIPTION" << std::endl;
-
-    // Block: BIAS/RECEIVER_INFORMATION
-
-    // Block: BIAS/SOLUTION
-    file << "*-------------------------------------------------------------------------------" << std::endl;
-    file << "+BIAS/SOLUTION" << std::endl;
-    file << "*BIAS SVN_ PRN STATION__ OBS1 OBS2 BIAS_START____ BIAS_END______ UNIT __ESTIMATED_VALUE____ _STD_DEV___ __ESTIMATED_SLOPE____ _STD_DEV___" << std::endl;
-    for(const auto &data : transmitterBiases)
-    {
-      writeData(file, timeStart, timeEnd, data, /*isStation*/FALSE);
-    }
-    for(const auto &data : receiverBiases)
-      writeData(file, timeStart, timeEnd, data, /*isStation*/TRUE);
-    file << "-BIAS/SOLUTION" << std::endl;
-
-    file << "%=ENDBIA" << std::endl;
   }
   catch(std::exception &e)
   {

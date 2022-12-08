@@ -65,8 +65,9 @@ void GnssSinexBias2SignalBias::run(Config &config, Parallel::CommunicatorPtr /*c
     if(isCreateSchema(config)) return;
 
     logStatus<<"read SINEX Bias file <"<<fileNameInSinexBias<<">"<<Log::endl;
-    Sinex sinexFile(fileNameInSinexBias);
-    std::vector<std::string> lines = sinexFile.getBlock<Sinex::SinexText>("BIAS/SOLUTION")->lines();
+    Sinex sinex;
+    readFileSinex(fileNameInSinexBias, sinex);
+    const std::vector<std::string> &lines = sinex.findBlock("BIAS/SOLUTION")->lines;
 
     std::vector<GnssReceiverDefinitionPtr> signalDefinitions;
     if(!fileNameInGlonassSignalDefinition.empty())

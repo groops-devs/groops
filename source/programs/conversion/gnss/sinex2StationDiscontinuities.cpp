@@ -48,19 +48,20 @@ void Sinex2StationDiscontinuities::run(Config &config, Parallel::CommunicatorPtr
 {
   try
   {
-    FileName outName, inName;
+    FileName outName, fileNameSinex;
     std::vector<std::string> stationNames;
     std::string variableLoopStation;
 
     readConfig(config, "outputfileInstrument",     outName,             Config::MUSTSET,  "",        "loop variable is replaced with station name (e.g. wtzz)");
-    readConfig(config, "inputfileDiscontinuities", inName,              Config::MUSTSET,  "",        "SINEX (e.g. ITRF14) station discontinuities");
+    readConfig(config, "inputfileDiscontinuities", fileNameSinex,       Config::MUSTSET,  "",        "SINEX (e.g. ITRF14) station discontinuities");
     readConfig(config, "variableLoopStation",      variableLoopStation, Config::DEFAULT,  "station", "variable name for station loop");
     readConfig(config, "stationName",              stationNames,        Config::OPTIONAL, "",        "only export these stations");
     if(isCreateSchema(config)) return;
 
-    logStatus << "read input file <" << inName << ">" << Log::endl;
-    Sinex sinex(inName);
-    std::vector<std::string> lines = sinex.getBlock<Sinex::SinexText>("SOLUTION/DISCONTINUITY")->lines();
+    logStatus<<"read input file <"<<fileNameSinex<<">"<<Log::endl;
+    Sinex sinex;
+    readFileSinex(fileNameSinex, sinex);
+    const std::vector<std::string> &lines = sinex.findBlock("SOLUTION/DISCONTINUITY")->lines;
     std::map<std::string, MiscValueArc> stations;
     for(const auto &line : lines)
     {
@@ -79,13 +80,13 @@ void Sinex2StationDiscontinuities::run(Config &config, Parallel::CommunicatorPtr
         epoch.value = 2;
       else
       {
-        logWarning << "Unknown discontinuity type for line: " << line << Log::endl;
+        logWarning<<"Unknown discontinuity type for line: "<<line<<Log::endl;
         continue;
       }
       stations[name].push_back(epoch);
     }
 
-    logStatus << "write output files <" << outName << ">" << Log::endl;
+    logStatus<<"write output files <"<<outName<<">"<<Log::endl;
     VariableList fileNameVariableList;
     addVariable(variableLoopStation, fileNameVariableList);
     for(auto &&station : stations)

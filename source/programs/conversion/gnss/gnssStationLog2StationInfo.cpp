@@ -120,12 +120,12 @@ void GnssStationLog2StationInfo::run(Config &config, Parallel::CommunicatorPtr /
 
       if(station.approxPosition.r()<6300e3 && sinexStation.approxPosition.r()>6300e3)
       {
-        logWarning << "using approx position from SINEX file" << Log::endl;
+        logWarning<<"using approx position from SINEX file"<<Log::endl;
         station.approxPosition = sinexStation.approxPosition;
       }
 
       if(station.receiver.size() != sinexStation.receiver.size())
-        logWarning << station.markerName << "." << station.markerNumber << ": receiver count sinex mismatch: " << station.receiver.size() << " != " << sinexStation.receiver.size() << Log::endl;
+        logWarning<<station.markerName<<"."<<station.markerNumber<<": receiver count sinex mismatch: "<<station.receiver.size()<<" != "<<sinexStation.receiver.size()<<Log::endl;
 
       // receiver check
       for(UInt idx = 0; idx < station.receiver.size(); idx++)
@@ -135,8 +135,8 @@ void GnssStationLog2StationInfo::run(Config &config, Parallel::CommunicatorPtr /
 
         if(idxSinex == NULLINDEX)
         {
-          logWarning << station.markerName << "." << station.markerNumber << ": receiver sinex check failed (no receiver found in sinex file at time: "
-                     << station.receiver.at(idx).timeStart.dateTimeStr() << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": receiver sinex check failed (no receiver found in sinex file at time: "
+                    <<station.receiver.at(idx).timeStart.dateTimeStr()<<")"<<Log::endl;
           continue;
         }
 
@@ -150,34 +150,34 @@ void GnssStationLog2StationInfo::run(Config &config, Parallel::CommunicatorPtr /
 
         // test receiver name
         if(station.receiver.at(idx).name != sinexStation.receiver.at(idxSinex).name)
-          logWarning << station.markerName << "." << station.markerNumber << ": receiver name sinex check failed (log: "
-                     << station.receiver.at(idx).name << ", sinex: " << sinexStation.receiver.at(idxSinex).name << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": receiver name sinex check failed (log: "
+                    <<station.receiver.at(idx).name<<", sinex: "<<sinexStation.receiver.at(idxSinex).name<<")"<<Log::endl;
 
         // test receiver serial
         if(station.receiver.at(idx).serial.substr(0,sinexStation.receiver.at(idxSinex).serial.length()) != sinexStation.receiver.at(idxSinex).serial)
-          logWarning << station.markerName << "." << station.markerNumber << ": receiver serial sinex check failed (log: "
-                     << station.receiver.at(idx).serial << ", sinex: " << sinexStation.receiver.at(idxSinex).serial << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": receiver serial sinex check failed (log: "
+                    <<station.receiver.at(idx).serial<<", sinex: "<<sinexStation.receiver.at(idxSinex).serial<<")"<<Log::endl;
 
         // test receiver version
         if(station.receiver.at(idx).version.substr(0,sinexStation.receiver.at(idxSinex).version.length()) != sinexStation.receiver.at(idxSinex).version)
-          logWarning << station.markerName << "." << station.markerNumber << ": receiver version sinex check failed (log: "
-                     << station.receiver.at(idx).version << ", sinex: " << sinexStation.receiver.at(idxSinex).version << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": receiver version sinex check failed (log: "
+                    <<station.receiver.at(idx).version<<", sinex: "<<sinexStation.receiver.at(idxSinex).version<<")"<<Log::endl;
 
         // test receiver timeStart
         if(station.receiver.at(idx).timeStart != sinexStation.receiver.at(idxSinex).timeStart &&
            fabs((station.receiver.at(idx).timeStart - sinexStation.receiver.at(idxSinex).timeStart).seconds()) > 1.1)
-          logWarning << station.markerName << "." << station.markerNumber << ": receiver timeStart sinex check failed (log: "
-                     << station.receiver.at(idx).timeStart.dateTimeStr() << ", sinex: " << sinexStation.receiver.at(idxSinex).timeStart.dateTimeStr()  << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": receiver timeStart sinex check failed (log: "
+                    <<station.receiver.at(idx).timeStart.dateTimeStr()<<", sinex: "<<sinexStation.receiver.at(idxSinex).timeStart.dateTimeStr() <<")"<<Log::endl;
 
         // test receiver timeEnd
         if(station.receiver.at(idx).timeEnd != sinexStation.receiver.at(idxSinex).timeEnd &&
            fabs((station.receiver.at(idx).timeEnd - sinexStation.receiver.at(idxSinex).timeEnd).seconds()) > 1.1)
-          logWarning << station.markerName << "." << station.markerNumber << ": receiver timeEnd sinex check failed (log: "
-                     << station.receiver.at(idx).timeEnd.dateTimeStr() << ", sinex: " << sinexStation.receiver.at(idxSinex).timeEnd.dateTimeStr()  << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": receiver timeEnd sinex check failed (log: "
+                    <<station.receiver.at(idx).timeEnd.dateTimeStr()<<", sinex: "<<sinexStation.receiver.at(idxSinex).timeEnd.dateTimeStr() <<")"<<Log::endl;
       }
 
       if(station.antenna.size() != sinexStation.antenna.size())
-        logWarning << station.markerName << "." << station.markerNumber << ": antenna count sinex mismatch: " << station.receiver.size() << " != " << sinexStation.receiver.size() << Log::endl;
+        logWarning<<station.markerName<<"."<<station.markerNumber<<": antenna count sinex mismatch: "<<station.receiver.size()<<" != "<<sinexStation.receiver.size()<<Log::endl;
 
       // antenna check
       for(UInt idx = 0; idx < station.antenna.size(); idx++)
@@ -187,8 +187,8 @@ void GnssStationLog2StationInfo::run(Config &config, Parallel::CommunicatorPtr /
 
         if(idxSinex == NULLINDEX)
         {
-          logWarning << station.markerName << "." << station.markerNumber << ": antenna sinex check failed (no antenna found in sinex file at time: "
-                     << station.antenna.at(idx).timeStart.dateTimeStr() << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": antenna sinex check failed (no antenna found in sinex file at time: "
+                    <<station.antenna.at(idx).timeStart.dateTimeStr()<<")"<<Log::endl;
           continue;
         }
 
@@ -202,39 +202,39 @@ void GnssStationLog2StationInfo::run(Config &config, Parallel::CommunicatorPtr /
 
         // test antenna name
         if(station.antenna.at(idx).name != sinexStation.antenna.at(idxSinex).name)
-          logWarning << station.markerName << "." << station.markerNumber << ": antenna name sinex check failed (log: "
-                     << station.antenna.at(idx).name << ", sinex: " << sinexStation.antenna.at(idxSinex).name << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": antenna name sinex check failed (log: "
+                    <<station.antenna.at(idx).name<<", sinex: "<<sinexStation.antenna.at(idxSinex).name<<")"<<Log::endl;
 
         // test antenna serial
         if(station.antenna.at(idx).serial.substr(0,sinexStation.antenna.at(idxSinex).serial.length()) != sinexStation.antenna.at(idxSinex).serial)
-          logWarning << station.markerName << "." << station.markerNumber << ": antenna serial sinex check failed (log: "
-                     << station.antenna.at(idx).serial << ", sinex: " << sinexStation.antenna.at(idxSinex).serial << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": antenna serial sinex check failed (log: "
+                    <<station.antenna.at(idx).serial<<", sinex: "<<sinexStation.antenna.at(idxSinex).serial<<")"<<Log::endl;
 
         // test antenna radome
         if(station.antenna.at(idx).radome.substr(0,sinexStation.antenna.at(idxSinex).radome.length()) != sinexStation.antenna.at(idxSinex).radome)
-          logWarning << station.markerName << "." << station.markerNumber << ": antenna radome sinex check failed (log: "
-                     << station.antenna.at(idx).radome << ", sinex: " << sinexStation.antenna.at(idxSinex).radome << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": antenna radome sinex check failed (log: "
+                    <<station.antenna.at(idx).radome<<", sinex: "<<sinexStation.antenna.at(idxSinex).radome<<")"<<Log::endl;
 
         // test antenna eccentricity
         if(round(station.antenna.at(idx).position.x()*1e4) != round(sinexStation.antenna.at(idxSinex).position.x()*1e4) ||
            round(station.antenna.at(idx).position.y()*1e4) != round(sinexStation.antenna.at(idxSinex).position.y()*1e4) ||
            round(station.antenna.at(idx).position.z()*1e4) != round(sinexStation.antenna.at(idxSinex).position.z()*1e4))
-          logWarning << station.markerName << "." << station.markerNumber << ": antenna eccentricity sinex check failed (log: [n,e,u]=["
-                     << station.antenna.at(idx).position.x() << "," << station.antenna.at(idx).position.y() << "," << station.antenna.at(idx).position.z()
-                     << "], sinex: [n,e,u]=[" << sinexStation.antenna.at(idxSinex).position.x() << "," << sinexStation.antenna.at(idxSinex).position.y() << ","
-                     << sinexStation.antenna.at(idxSinex).position.z() << "])" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": antenna eccentricity sinex check failed (log: [n,e,u]=["
+                    <<station.antenna.at(idx).position.x()<<","<<station.antenna.at(idx).position.y()<<","<<station.antenna.at(idx).position.z()
+                    <<"], sinex: [n,e,u]=["<<sinexStation.antenna.at(idxSinex).position.x()<<","<<sinexStation.antenna.at(idxSinex).position.y()<<","
+                    <<sinexStation.antenna.at(idxSinex).position.z()<<"])"<<Log::endl;
 
         // test antenna timeStart
         if(station.antenna.at(idx).timeStart != sinexStation.antenna.at(idxSinex).timeStart &&
            fabs((station.antenna.at(idx).timeStart - sinexStation.antenna.at(idxSinex).timeStart).seconds()) > 1.1)
-          logWarning << station.markerName << "." << station.markerNumber << ": antenna timeStart sinex check failed (log: "
-                     << station.antenna.at(idx).timeStart.dateTimeStr() << ", sinex: " << sinexStation.antenna.at(idxSinex).timeStart.dateTimeStr()  << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": antenna timeStart sinex check failed (log: "
+                    <<station.antenna.at(idx).timeStart.dateTimeStr()<<", sinex: "<<sinexStation.antenna.at(idxSinex).timeStart.dateTimeStr() <<")"<<Log::endl;
 
         // test antenna timeEnd
         if(station.antenna.at(idx).timeEnd != sinexStation.antenna.at(idxSinex).timeEnd &&
            fabs((station.antenna.at(idx).timeEnd - sinexStation.antenna.at(idxSinex).timeEnd).seconds()) > 1.1)
-          logWarning << station.markerName << "." << station.markerNumber << ": antenna timeEnd sinex check failed (log: "
-                     << station.antenna.at(idx).timeEnd.dateTimeStr() << ", sinex: " << sinexStation.antenna.at(idxSinex).timeEnd.dateTimeStr()  << ")" << Log::endl;
+          logWarning<<station.markerName<<"."<<station.markerNumber<<": antenna timeEnd sinex check failed (log: "
+                    <<station.antenna.at(idx).timeEnd.dateTimeStr()<<", sinex: "<<sinexStation.antenna.at(idxSinex).timeEnd.dateTimeStr() <<")"<<Log::endl;
       }
     }
 
@@ -356,7 +356,7 @@ GnssStationInfo GnssStationLog2StationInfo::readFile(const FileName &fileName)
             std::transform(station.markerName.begin(), station.markerName.end(), station.markerName.begin(), ::toupper);
             if(station.markerName.length() > 4)
             {
-              logWarning << station.markerName << ": marker name has more than 4 letters, shortened to: " << station.markerName.substr(0,4) << Log::endl;
+              logWarning<<station.markerName<<": marker name has more than 4 letters, shortened to: "<<station.markerName.substr(0,4)<<Log::endl;
               station.markerName = station.markerName.substr(0,4);
             }
           }
@@ -826,19 +826,20 @@ Bool GnssStationLog2StationInfo::readTime(const std::string &line, Time &x) cons
 
 GnssStationInfo GnssStationLog2StationInfo::readSinexFile(const FileName &fileName, const GnssStationInfo &station) const
 {
-  Sinex sinex(fileName);
+  Sinex sinex;
+  readFileSinex(fileName, sinex);
   GnssStationInfo sinexStationInfo;
 
-  for(auto&& line : sinex.getBlock<Sinex::SinexText>("SITE/ID")->lines())
+  for(std::string &line : sinex.findBlock("SITE/ID")->lines)
     readSinexStation(line, station, sinexStationInfo);
 
-  for(auto&& line : sinex.getBlock<Sinex::SinexText>("SITE/RECEIVER")->lines())
+  for(std::string &line : sinex.findBlock("SITE/RECEIVER")->lines)
     readSinexReceiver(line, sinexStationInfo);
 
-  for(auto&& line : sinex.getBlock<Sinex::SinexText>("SITE/ANTENNA")->lines())
+  for(std::string &line : sinex.findBlock("SITE/ANTENNA")->lines)
     readSinexAntenna(line, sinexStationInfo);
 
-  for(auto&& line : sinex.getBlock<Sinex::SinexText>("SITE/ECCENTRICITY")->lines())
+  for(std::string &line : sinex.findBlock("SITE/ECCENTRICITY")->lines)
     readSinexEccentricity(line, sinexStationInfo);
 
   return sinexStationInfo;
@@ -958,8 +959,8 @@ void GnssStationLog2StationInfo::readSinexEccentricity(std::string &line, GnssSt
 
       if(refSys  != "UNE")
       {
-        logWarning << station.markerName << "." << station.markerNumber << ": unknown eccentricity reference system '" << refSys << "' in sinex file for time period "
-                   << timeStart.dateTimeStr() << " to " << timeEnd.dateTimeStr()  << Log::endl;
+        logWarning<<station.markerName<<"."<<station.markerNumber<<": unknown eccentricity reference system '"<<refSys<<"' in sinex file for time period "
+                  <<timeStart.dateTimeStr()<<" to "<<timeEnd.dateTimeStr() <<Log::endl;
         return;
       }
 
@@ -968,8 +969,8 @@ void GnssStationLog2StationInfo::readSinexEccentricity(std::string &line, GnssSt
 
       if(iStart == NULLINDEX || iEnd == NULLINDEX)
       {
-        logWarning << station.markerName << "." << station.markerNumber << ": no antenna found in sinex file to match eccentricity for time period "
-                   << timeStart.dateTimeStr() << " to " << timeEnd.dateTimeStr()  << Log::endl;
+        logWarning<<station.markerName<<"."<<station.markerNumber<<": no antenna found in sinex file to match eccentricity for time period "
+                  <<timeStart.dateTimeStr()<<" to "<<timeEnd.dateTimeStr() <<Log::endl;
         return;
       }
 

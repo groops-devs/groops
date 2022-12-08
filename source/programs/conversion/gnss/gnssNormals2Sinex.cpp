@@ -40,10 +40,6 @@ See also \program{Sinex2Normals} and \program{NormalsSphericalHarmonics2Sinex}.
 * @ingroup programsConversionGroup */
 class GnssNormals2Sinex
 {
-  static void addVector(Sinex::SinexSolutionVectorPtr vector, const Time &time, const std::vector<ParameterName> &parameterName, const Vector x,
-                        const Vector sigma, const std::vector<Bool> &parameterIsContrained, const std::vector<std::string> &stationList);
-  static void addAprioriAntennaOffset(const std::map<std::string, GnssAntennaInfo> &antennas, Bool addEccentricity, Bool swapXY, const std::vector<ParameterName> &parameterNames, MatrixSliceRef x);
-
 public:
   class TransmitterConstellation
   {
@@ -80,10 +76,10 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     FileName    fileNameSinexNormals, fileNameSinexCoords, fileNameNormals, fileNameSolution, fileNameSigmax, fileNameApriori, fileNameAprioriSigma, fileNameAprMat;
     FileName    fileNameStationList, fileNameStationInfo, fileNameAntennaDef;
     Time        timeRef, timeStartObs, timeEndObs;
-    Sinex       sinex;
     std::string variableStationName, antennaModel;
     Double      sampling = 0;
     std::vector<TransmitterConstellation> constellations;
+    Sinex       sinex;
 
     readConfig(config, "outputfileSinexNormals",     fileNameSinexNormals, Config::OPTIONAL, "", "full SINEX file including normal equations");
     readConfig(config, "outputfileSinexCoordinates", fileNameSinexCoords,  Config::OPTIONAL, "", "SINEX file without normal equations (station coordinates file)");
@@ -107,7 +103,7 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "time",                       timeRef,             Config::MUSTSET,  "", "reference time for parameters");
     readConfig(config, "sampling",                   sampling,            Config::OPTIONAL, "", "[seconds] observation sampling");
     readConfig(config, "antennaCalibrationModel",    antennaModel,        Config::MUSTSET,  "", "e.g. IGS14_WWWW (WWWW = ANTEX release GPS week)");
-    sinex.readConfigHeader(config);
+    readConfig(config, "sinexHeader",                sinex,               Config::MUSTSET,  "", "");
     if(isCreateSchema(config)) return;
 
     // ==================================================
@@ -146,6 +142,7 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     NormalEquationInfo info;
     logStatus<<"reading normal equation matrix from <"<<fileNameNormals<<">"<<Log::endl;
     readFileNormalEquation(fileNameNormals, info, N, n);
+    fillSymmetric(N);
     const UInt countParameter = N.rows();
 
     Matrix dN;
@@ -156,9 +153,10 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       Vector n;
       NormalEquationInfo info;
       readFileNormalEquation(fileNameAprMat, info, dN, n);
+      fillSymmetric(dN);
       if(dN.rows() != parameterIsConstrained.size())
         throw(Exception("Parameter count in constraint matrix and normal equation matrix differs (" + dN.rows()%"%i"s + " vs. "+ N.rows()%"%i"s +" )."));
-      for(UInt i = 0; i < dN.rows(); i++)
+      for(UInt i=0; i<dN.rows(); i++)
         parameterIsConstrained.at(i) = (dN(i, i) != 0.0);
     }
 
@@ -210,83 +208,380 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     // add data to SINEX
     // -----------------
-    sinex.addSiteIdBlock(stationInfos);
-    sinex.addSiteReceiverBlock(stationInfos, timeRef);
-    sinex.addSiteAntennaBlock(stationInfos, timeRef);
-    sinex.addSiteGpsPhaseCenterBlock(stationInfos, timeRef, antennaModel);
-    sinex.addSiteGalileoPhaseCenterBlock(stationInfos, timeRef, antennaModel);
-    sinex.addSiteEccentricityBlock(stationInfos, timeRef);
-    sinex.addSatelliteIdBlock(transmitterInfos, timeRef);
-    sinex.addSatellitePhaseCenter(transmitterInfos, timeRef, antennaModel);
-
-    // SOLUTION/EPOCHS
-    Sinex::SinexSolutionEpochsPtr solutionEpochs = sinex.addBlock<Sinex::SinexSolutionEpochs>("SOLUTION/EPOCHS");
-    for(const auto &stationInfo : stationInfos)
-      solutionEpochs->addEpoch(Sinex::Epoch(String::upperCase(stationInfo.markerName), "A", "1", "P", timeStartObs, timeEndObs));
-
-    // SOLUTION/STATISTICS
-    Sinex::SinexSolutionStatisticsPtr solutionStatistics = sinex.addBlock<Sinex::SinexSolutionStatistics>("SOLUTION/STATISTICS");
-    solutionStatistics->addValue("NUMBER OF OBSERVATIONS", info.observationCount);
-    solutionStatistics->addValue("NUMBER OF UNKNOWNS", countParameter);
-    solutionStatistics->addValue("NUMBER OF DEGREES OF FREEDOM", info.observationCount-countParameter);
-    solutionStatistics->addValue("WEIGHTED SQUARE SUM OF O-C", info.lPl(0));
-    if(sampling > 0)
-      solutionStatistics->addValue("SAMPLING INTERVAL (SECONDS)", sampling);
-
-    auto getTransmitterName = [](const GnssStationInfo &info, UInt idAnt)     { return info.antenna.at(idAnt).name+"|"+info.antenna.at(idAnt).serial+"|"+info.antenna.at(idAnt).radome; };
-    auto getStationName     = [](const GnssStationInfo &info, UInt /*idAnt*/) { return String::lowerCase(info.markerName); };
-    auto getAntennas = [&](const std::vector<GnssStationInfo> &infos, std::function<std::string(const GnssStationInfo&, UInt)> getName)
     {
-      std::map<std::string, GnssAntennaInfo> antennas;
-      for(const auto &info : infos)
+      SinexBlockPtr block = sinex.addBlock("SITE/ID");
+      *block<<"*SITE PT __DOMES__ T _STATION DESCRIPTION__ _LONGITUDE_ _LATITUDE__ HEIGHT_"<<std::endl;
+
+      auto rad2DegMinSec = [] (Double rad, Double &deg, Double &min, Double& sec)
       {
-        const UInt idAnt = info.findAntenna(timeRef);
+        deg = std::floor(rad*RAD2DEG);
+        min = std::floor((rad*RAD2DEG-deg)*60);
+        sec = ((rad*RAD2DEG-deg)*60-min)*60;
+      };
+
+      Ellipsoid ellipsoid;
+      for(const auto &stationInfo : stationInfos)
+      {
+        Angle lon, lat;
+        Double height, lonDeg, lonMin, lonSec, latDeg, latMin, latSec;
+        ellipsoid(stationInfo.approxPosition, lon, lat, height);
+        rad2DegMinSec(lon < 0 ? lon+2*PI : lon, lonDeg, lonMin, lonSec);
+        rad2DegMinSec(lat, latDeg, latMin, latSec);
+
+        std::stringstream ss;
+        *block<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A "<<Sinex::resize(stationInfo.markerNumber, 9)<<" P "<<Sinex::resize(stationInfo.comment, 22)<<" "
+              <<lonDeg%"%3i "s<<lonMin%"%2i "s<<lonSec%"%4.1f "s<<latDeg%"%3i "s<<latMin%"%2i "s<<latSec%"%4.1f "s<<height%"%7.1f"s<<std::endl;
+      }
+    }
+    // -----------------
+    {
+      SinexBlockPtr block = sinex.addBlock("SITE/ECCENTRICITY");
+      *block<<"*SITE PT SOLN T _DATA START_ __DATA_END__ AXE _ECC_U__ _ECC_N__ _ECC_E__"<<std::endl;
+      for(const auto &stationInfo : stationInfos)
+      {
+        const UInt idAnt = stationInfo.findAntenna(timeRef);
         if(idAnt == NULLINDEX)
         {
-          logWarning << info.markerName << ": no antenna found at " << timeRef.dateTimeStr() << Log::endl;
+          logWarning<<stationInfo.markerName<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
           continue;
         }
-        antennas[getName(info, idAnt)] = info.antenna.at(idAnt);
+        const GnssAntennaInfo &ant = stationInfo.antenna.at(idAnt);
+        *block<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "<<Sinex::time2str(ant.timeStart)<<" "
+              <<Sinex::time2str(ant.timeEnd)<<" UNE "<<ant.position.z()%"%8.4f "s<<ant.position.x()%"%8.4f "s<<ant.position.y()%"%8.4f "s<<std::endl;
       }
-      return antennas;
-    };
+    }
+    // -----------------
+    {
+      SinexBlockPtr block = sinex.addBlock("SITE/RECEIVER");
+      *block<<"*SITE PT SOLN T _DATA START_ __DATA_END__ ___RECEIVER_TYPE____ _S/N_ _FIRMWARE__"<<std::endl;
+      for(const auto &stationInfo : stationInfos)
+      {
+        const UInt idRecv = stationInfo.findReceiver(timeRef);
+        if(idRecv == NULLINDEX)
+        {
+          logWarning<<stationInfo.markerName<<": no receiver found at "<<timeRef.dateTimeStr()<<Log::endl;
+          continue;
+        }
+        const GnssReceiverInfo &recv = stationInfo.receiver.at(idRecv);
+        *block<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "<<Sinex::time2str(recv.timeStart)<<" "<<Sinex::time2str(recv.timeEnd)<<" "
+              <<Sinex::resize(recv.name, 20)<<" "<<(recv.serial.empty() ? "-----" : Sinex::resize(recv.serial, 5))
+              <<" "<<(recv.version.empty() ? std::string(11, '-') : Sinex::resize(recv.version, 11))<<std::endl;
+      }
+    }
+    // -----------------
+    {
+      SinexBlockPtr block = sinex.addBlock("SITE/ANTENNA");
+      *block<<"*SITE PT SOLN T _DATA START_ __DATA_END__ ____ANTENNA_TYPE____ _S/N_"<<std::endl;
+      for(const auto &stationInfo : stationInfos)
+      {
+        const UInt idAnt = stationInfo.findAntenna(timeRef);
+        if(idAnt == NULLINDEX)
+        {
+          logWarning<<stationInfo.markerName<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
+          continue;
+        }
+        const GnssAntennaInfo &ant = stationInfo.antenna.at(idAnt);
+        Angle roll, pitch, yaw;
+        Rotary3d(ant.local2antennaFrame.matrix()).cardan(roll, pitch, yaw);
+        *block<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "<<Sinex::time2str(ant.timeStart)<<" "<<Sinex::time2str(ant.timeEnd)<<" "
+              <<Sinex::resize(ant.name, 15)<<" "<<(ant.radome.empty() ? "NONE" : Sinex::resize(ant.radome, 4))<<" "<<(ant.serial.empty() ? "-----" : Sinex::resize(ant.serial, 5))
+              <<" "<<(yaw*RAD2DEG)%"% 4i"s<<std::endl;
+      }
+    }
+    // -----------------
+    {
+      SinexBlockPtr block = sinex.addBlock("SITE/GPS_PHASE_CENTER");
+      *block<<"*____ANTENNA_TYPE____ _S/N_ _L1_U_ _L1_N_ _L1_E_ _L2_U_ _L2_N_ _L2_E_ _ANTMODEL_"<<std::endl;
+      for(const auto &stationInfo : stationInfos)
+      {
+        const UInt idAnt = stationInfo.findAntenna(timeRef);
+        if(idAnt == NULLINDEX)
+        {
+          logWarning<<stationInfo.markerName<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
+          continue;
+        }
+        const GnssAntennaInfo &ant = stationInfo.antenna.at(idAnt);
+        auto p1 = std::find_if(ant.antennaDef->pattern.begin(), ant.antennaDef->pattern.end(), [](const GnssAntennaPattern &pattern) {return pattern.type == GnssType::L1_G;});
+        auto p2 = std::find_if(ant.antennaDef->pattern.begin(), ant.antennaDef->pattern.end(), [](const GnssAntennaPattern &pattern) {return pattern.type == GnssType::L2_G;});
+        if(p1 == ant.antennaDef->pattern.end() || p2 == ant.antennaDef->pattern.end())
+        {
+          logWarning<<stationInfo.markerName <<": GPS phase center not found for antenna "<<ant.name<<" "<<ant.radome<<" "<<ant.serial<<Log::endl;
+          continue;
+        }
+        *block<<Sinex::resize(ant.name, 15)<<" "<<(ant.radome.empty() ? "NONE" : Sinex::resize(ant.radome, 4))<<" "<<(ant.serial.empty() ? "-----" : Sinex::resize(ant.serial, 5))<<" "
+              <<Sinex::format(p1->offset.z())<<" "<<Sinex::format(p1->offset.x())<<" "<<Sinex::format(p1->offset.y())<<" "
+              <<Sinex::format(p2->offset.z())<<" "<<Sinex::format(p2->offset.x())<<" "<<Sinex::format(p2->offset.y())<<" "
+              <<Sinex::resize(antennaModel, 10)<<std::endl;
+      }
+    }
+    // -----------------
+    {
+      SinexBlockPtr block = sinex.addBlock("SITE/GAL_PHASE_CENTER");
+      *block<<"*____ANTENNA_TYPE____ _S/N_ _L1_U_ _L1_N_ _L1_E_ _L5_U_ _L5_N_ _L5_E_ _ANTMODEL_"<<std::endl;
+      *block<<"*____ANTENNA_TYPE____ _S/N_ _L6_U_ _L6_N_ _L6_E_ _L7_U_ _L7_N_ _L7_E_ _ANTMODEL_"<<std::endl;
+      *block<<"*____ANTENNA_TYPE____ _S/N_ _L8_U_ _L8_N_ _L8_E_ ____________________ _ANTMODEL_"<<std::endl;
+      for(const auto &stationInfo : stationInfos)
+      {
+        const UInt idAnt = stationInfo.findAntenna(timeRef);
+        if(idAnt == NULLINDEX)
+        {
+          logWarning<<stationInfo.markerName<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
+          continue;
+        }
+        const GnssAntennaInfo &ant      = stationInfo.antenna.at(idAnt);
+        const auto            &patterns = ant.antennaDef->pattern;
+        auto p1 = std::find_if(patterns.begin(), patterns.end(), [](const GnssAntennaPattern &pattern){return pattern.type == GnssType::L1_E;});
+        auto p5 = std::find_if(patterns.begin(), patterns.end(), [](const GnssAntennaPattern &pattern){return pattern.type == GnssType::L5_E;});
+        auto p6 = std::find_if(patterns.begin(), patterns.end(), [](const GnssAntennaPattern &pattern){return pattern.type == GnssType::L6_E;});
+        auto p7 = std::find_if(patterns.begin(), patterns.end(), [](const GnssAntennaPattern &pattern){return pattern.type == GnssType::L7_E;});
+        auto p8 = std::find_if(patterns.begin(), patterns.end(), [](const GnssAntennaPattern &pattern){return pattern.type == GnssType::L8_E;});
+        if(p1 == patterns.end() || p5 == patterns.end() || p6 == patterns.end() || p7 == patterns.end() || p8 == patterns.end())
+          continue;
+        *block<<Sinex::resize(ant.name, 15)<<" "<<(ant.radome.empty() ? "NONE" : Sinex::resize(ant.radome, 4))<<" "<<(ant.serial.empty() ? "-----" : Sinex::resize(ant.serial, 5))<<" "
+              <<Sinex::format(p1->offset.z())<<" "<<Sinex::format(p1->offset.x())<<" "<<Sinex::format(p1->offset.y())<<" "
+              <<Sinex::format(p5->offset.z())<<" "<<Sinex::format(p5->offset.x())<<" "<<Sinex::format(p5->offset.y())<<" "<<Sinex::resize(antennaModel, 10)<<std::endl;
+        *block<<Sinex::resize(ant.name, 15)<<" "<<(ant.radome.empty() ? "NONE" : Sinex::resize(ant.radome, 4))<<" "<<(ant.serial.empty() ? "-----" : Sinex::resize(ant.serial, 5))<<" "
+              <<Sinex::format(p6->offset.z())<<" "<<Sinex::format(p6->offset.x())<<" "<<Sinex::format(p6->offset.y())<<" "
+              <<Sinex::format(p7->offset.z())<<" "<<Sinex::format(p7->offset.x())<<" "<<Sinex::format(p7->offset.y())<<" "<<Sinex::resize(antennaModel, 10)<<std::endl;
+        *block<<Sinex::resize(ant.name, 15)<<" "<<(ant.radome.empty() ? "NONE" : Sinex::resize(ant.radome, 4))<<" "<<(ant.serial.empty() ? "-----" : Sinex::resize(ant.serial, 5))<<" "
+              <<Sinex::format(p8->offset.z())<<" "<<Sinex::format(p8->offset.x())<<" "<<Sinex::format(p8->offset.y())<<" "
+              <<std::string(20, ' ')<<" "<<Sinex::resize(antennaModel, 10)<<std::endl;
+      }
+    }
+    // -----------------
+    {
+      SinexBlockPtr block = sinex.addBlock("SATELLITE/ID");
+      *block<<"*SVN_ PR COSPAR_ID T _DATA_START_ __DATA_END__ ______ANTENNA_______"<<std::endl;
 
-    // SOLUTION/ESTIMATE
+      std::map<std::string, Time> svn2TimeStart, svn2TimeEnd;
+      for(const auto &transmitterInfo : transmitterInfos)
+        for(const auto &ant : transmitterInfo.antenna)
+        {
+          svn2TimeStart[ant.serial] = (svn2TimeStart[ant.serial] == Time() ? ant.timeStart : std::min(svn2TimeStart[ant.serial], ant.timeStart));
+          svn2TimeEnd[ant.serial]   = std::max(svn2TimeStart[ant.serial], ant.timeEnd);
+        }
+
+      for(const auto &transmitterInfo : transmitterInfos)
+      {
+        const UInt idAnt = transmitterInfo.findAntenna(timeRef);
+        if(idAnt == NULLINDEX)
+        {
+          logWarning<<transmitterInfo.markerNumber<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
+          continue;
+        }
+        const GnssAntennaInfo &ant = transmitterInfo.antenna.at(idAnt);
+        *block<<ant.serial<<" "<<transmitterInfo.markerNumber.substr(1,2)<<" "<<ant.radome<<" P "<<Sinex::time2str(svn2TimeStart[ant.serial])
+              <<" "<<Sinex::time2str(svn2TimeEnd[ant.serial])<<" "<<ant.name<<std::endl;
+      }
+    }
+    // -----------------
+    {
+      SinexBlockPtr block = sinex.addBlock("SATELLITE/PHASE_CENTER");
+      *block<<"*SVN_ L SATA_Z SATA_X SATA_Y L SATA_Z SATA_X SATA_Y _ANTMODEL_ T M"<<std::endl;
+
+      auto antennaOffsetStr = [&](const GnssAntennaInfo &info, const GnssAntennaPattern &pattern)
+      {
+        Vector3d offset = info.position + info.local2antennaFrame.inverseTransform(pattern.offset);
+        return pattern.type.str().substr(1,1)+" "+Sinex::format(offset.z())+" "+Sinex::format(offset.x())+" "+Sinex::format(offset.y());
+      };
+
+      for(const auto &transmitterInfo : transmitterInfos)
+      {
+        const UInt idAnt = transmitterInfo.findAntenna(timeRef);
+        if(idAnt == NULLINDEX)
+        {
+          logWarning<<transmitterInfo.markerNumber<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
+          continue;
+        }
+        const GnssAntennaInfo &ant = transmitterInfo.antenna.at(idAnt);
+        std::vector<const GnssAntennaPattern*> patterns;
+        for(const auto &pattern : ant.antennaDef->pattern)
+          if(pattern.type == GnssType::PHASE)
+            patterns.push_back(&pattern);
+        std::sort(patterns.begin(), patterns.end(), [](const auto &p1, const auto &p2){return p1->type < p2->type;});
+        for(UInt i=0; i<patterns.size(); i+=2)
+        {
+          *block<<ant.serial<<" "<<antennaOffsetStr(ant, *patterns.at(i))<<" "<<(i+1 < patterns.size() ? antennaOffsetStr(ant, *patterns.at(i+1)) : std::string(22, ' '))
+                <<" "<<Sinex::resize(antennaModel, 10)<<" A "<<(patterns.at(i)->pattern.rows() > 1 ? "F" : "E")<<std::endl;
+        }
+      }
+    }
+    // -----------------
+    {
+      SinexBlockPtr block = sinex.addBlock("SATELLITE/PHASE_CENTER");
+      *block<<"*SITE PT SOLN T _DATA_START_ __DATA_END__ _MEAN_EPOCH_"<<std::endl;
+      for(const auto &stationInfo : stationInfos)
+        *block<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "
+              <<Sinex::time2str(timeStartObs)<<" "<<Sinex::time2str(timeEndObs)<<" "<<Sinex::time2str(0.5*(timeStartObs+timeEndObs))<<std::endl;
+    }
+    // -----------------
+    {
+      SinexBlockPtr block = sinex.addBlock("SOLUTION/STATISTICS");
+      *block<<"*____STATISTICAL_PARAMETER_____ _______VALUE(S)_______"<<std::endl;
+      *block<<" NUMBER OF OBSERVATIONS         "<<info.observationCount%"%22i"s<<std::endl;
+      *block<<" NUMBER OF UNKNOWNS             "<<countParameter%"%22i"s<<std::endl;
+      *block<<" NUMBER OF DEGREES OF FREEDOM   "<<(info.observationCount-countParameter)%"%22i"s<<std::endl;
+      *block<<" WEIGHTED SQUARE SUM OF O-C     "<<info.lPl(0)%"%22.15e"s<<std::endl;
+      if(sampling > 0)
+        *block<<" SAMPLING INTERVAL (SECONDS)    "<<sampling%"%22f"s<<std::endl;
+    }
+
+    // ==================================================
+    auto writeVector = [&](SinexBlockPtr block, const Vector x, const Vector sigma=Vector())
+    {
+      for(UInt i=0; i<x.size(); i++)
+      {
+        const std::string &object   = info.parameterName.at(i).object;
+        const std::string &type     = info.parameterName.at(i).type;
+        const std::string &temporal = info.parameterName.at(i).temporal;
+
+        std::string parameterType;
+        std::string siteCode       = "----";
+        std::string pointCode      = "--";
+        std::string unit           = "    ";
+        std::string constraintCode = parameterIsConstrained.at(i) ? "1" : "2";
+
+        // STAX, STAY, STAZ
+        const Bool isStation = std::find(stationList.begin(), stationList.end(), object) != stationList.end();
+        if(isStation && String::startsWith(type, "position."))
+        {
+          parameterType = "STA"+String::upperCase(type.substr(9, 1))+"  ";
+          unit          = "m   ";
+          siteCode      = String::upperCase(object);
+          pointCode     = " A";
+        }
+        // XPO, YPO
+        else if(object == "earth" && String::startsWith(type, "polarMotion.") && temporal.empty())
+        {
+          parameterType = String::upperCase(type.substr(12, 1)) + "PO   ";
+          unit          = "mas ";
+        }
+        // XPOR, YPOR
+        else if(object == "earth" && String::startsWith(type, "polarMotion.") && String::startsWith(temporal, "trend."))
+        {
+          parameterType = String::upperCase(type.substr(12, 1)) + "POR  ";
+          unit          = "ma/d";
+        }
+        // UT1
+        else if(object == "earth" && type == "UT1" && temporal.empty())
+        {
+          parameterType  = "UT    ";
+          unit           = "ms  ";
+          constraintCode = parameterIsConstrained.at(i) ? "0" : "2";
+        }
+        // LOD
+        else if(object == "earth" && type == "UT1" && String::startsWith(temporal, "trend."))
+        {
+          parameterType = "LOD   ";
+          unit          = "ms  ";
+        }
+        // SATA_X, SATA_Y, SATA_Z
+        else if(!isStation && type.size() == 22 && type.substr(0, 14) == "antennaCenter.")
+        {
+          const std::string frequency = type.substr(type.size()-6, 2);
+          if(frequency.at(0) != 'L')
+            throw(Exception("unsupported antenna center parameter: " + info.parameterName.at(i).str()));
+          if(type.at(14) == 'x')      parameterType  = "SATA_Y"; // swap X and Y names (definition different for GROOPS and IGS)
+          else if(type.at(14) == 'y') parameterType  = "SATA_X"; // swap X and Y names (definition different for GROOPS and IGS)
+          else if(type.at(14) == 'z') parameterType  = "SATA_Z";
+          else
+            throw(Exception("unsupported antenna center parameter: "+info.parameterName.at(i).str()));
+          unit           = "m   ";
+          siteCode       = object.substr(object.find('|')+1, 4); // SVN
+          pointCode      = (frequency == "L*" ? "LC" : frequency);
+          constraintCode = parameterIsConstrained.at(i) ? "0" : "2";
+        }
+        else
+          throw(Exception("unknown parameter type: " + info.parameterName.at(i).str()));
+
+        *block<<(i+1)%" %5i "s<<parameterType<<" "<<siteCode<<" "<<pointCode<<"    1 "<<Sinex::time2str(timeRef)
+              <<" "<<unit<<" "<<constraintCode<<constraintCode<<x(i)%" %21.14e"s;
+        if(sigma.size())
+          *block<<sigma(i)%" %11.4e"s;
+        *block<<std::endl;
+      }
+    };
+    // ==================================================
+
+    // add apriori antennaOffset of SATA_X, SATA_Y, SATA_Z
+    // ---------------------------------------------------
+    Vector xAprioriAntennaOffset(x.size());
+    for(UInt i=0; i<info.parameterName.size(); i++)
+    {
+      const ParameterName &param = info.parameterName.at(i);
+      if((param.type.size() == 22) && (param.type.substr(0, 14) == "antennaCenter."))
+      {
+        const GnssAntennaInfo *antInfo = nullptr;
+        for(const auto &info : transmitterInfos)
+        {
+          const UInt idAnt = info.findAntenna(timeRef);
+          if((idAnt != NULLINDEX) && (info.antenna.at(idAnt).str() == param.object))
+          {
+            antInfo = &info.antenna.at(idAnt);
+            break;
+          }
+        }
+        if(!antInfo)
+          throw(Exception("no antenna found for "+param.str()));
+        const UInt idPattern = antInfo->antennaDef->findAntennaPattern(GnssType(param.type.substr(16, 6)), GnssAntennaDefinition::NoPatternFoundAction::USE_NEAREST_FREQUENCY);
+        if(idPattern == NULLINDEX)
+          throw(Exception("no antenna pattern found for "+param.str()));
+        const Vector3d offset = antInfo->antennaDef->pattern.at(idPattern).offset + antInfo->local2antennaFrame.transform(antInfo->position);
+        if(param.type.at(14) == 'x') xAprioriAntennaOffset(i) += offset.x();
+        if(param.type.at(14) == 'y') xAprioriAntennaOffset(i) += offset.y();
+        if(param.type.at(14) == 'z') xAprioriAntennaOffset(i) += offset.z();
+      }
+    }
+
+    // -----------------
     if(x.size())
     {
-      addAprioriAntennaOffset(getAntennas(transmitterInfos, getTransmitterName), TRUE/*addEccentricity*/,  TRUE/*swapXY*/,  info.parameterName, x);
-      addAprioriAntennaOffset(getAntennas(stationInfos,     getStationName),     FALSE/*addEccentricity*/, FALSE/*swapXY*/, info.parameterName, x);
-
-      Sinex::SinexSolutionVectorPtr solutionEstimate = sinex.addBlock<Sinex::SinexSolutionVector>("SOLUTION/ESTIMATE");
-      addVector(solutionEstimate, timeRef, info.parameterName, x, sigmax.size() ? sigmax : Vector(), parameterIsConstrained, stationList);
+      SinexBlockPtr block = sinex.addBlock("SOLUTION/ESTIMATE");
+      *block<<"*INDEX _TYPE_ CODE PT SOLN _REF_EPOCH__ UNIT S ___ESTIMATED_VALUE___ __STD_DEV__"<<std::endl;
+      writeVector(block, x+xAprioriAntennaOffset, sigmax.size() ? sigmax : Vector(x.size()));
     }
-
-    // SOLUTION/APRIORI
+    // -----------------
     if(x0.size())
     {
-      addAprioriAntennaOffset(getAntennas(transmitterInfos, getTransmitterName), TRUE/*addEccentricity*/,  TRUE/*swapXY*/,  info.parameterName, x0);
-      addAprioriAntennaOffset(getAntennas(stationInfos,     getStationName),     FALSE/*addEccentricity*/, FALSE/*swapXY*/, info.parameterName, x0);
-
-      for(UInt i = 0; i < x0.size(); i++)
-        if(dN.size() && !parameterIsConstrained.at(i))
-          sigmax0(i) = 0;
-      Sinex::SinexSolutionVectorPtr solutionApriori = sinex.addBlock<Sinex::SinexSolutionVector>("SOLUTION/APRIORI");
-      addVector(solutionApriori, timeRef, info.parameterName, x0, sigmax0, parameterIsConstrained, stationList);
+      SinexBlockPtr block = sinex.addBlock("SOLUTION/APRIORI");
+      *block<<"*INDEX _TYPE_ CODE PT SOLN _REF_EPOCH__ UNIT S ____APRIORI_VALUE____ __STD_DEV__"<<std::endl;
+      writeVector(block, x0+xAprioriAntennaOffset, Vector(x0.size()));
+    }
+    // -----------------
+    if(n.size())
+    {
+      SinexBlockPtr block = sinex.addBlock("SOLUTION/NORMAL_EQUATION_VECTOR");
+      *block<<"*INDEX _TYPE_ CODE PT SOLN _REF_EPOCH__ UNIT S ___RIGHT_HAND_SIDE___"<<std::endl;
+      writeVector(block, n);
     }
 
-    // SOLUTION/NORMAL_EQUATION_VECTOR
-    Sinex::SinexSolutionVectorPtr solutionNormalEquationVector = sinex.addBlock<Sinex::SinexSolutionVector>("SOLUTION/NORMAL_EQUATION_VECTOR");
-    addVector(solutionNormalEquationVector, timeRef, info.parameterName, n, Vector(), parameterIsConstrained, stationList);
+    // ==================================================
+    auto writeMatrix = [&](SinexBlockPtr block, const Matrix &N)
+    {
+      for(UInt i=0; i<N.rows(); i++)
+        for(UInt k=i; k<N.rows(); k++)
+          if(N(i,k))
+          {
+            *block<<(i+1)%" %5i"s<<(k+1)%" %5i"s<<N(i, k)%" %21.14e"s;
+            for(UInt l=1; (l<3) && (k+1<N.rows()) && N(i,k+1); l++, k++)
+              *block<<N(i, k+1)%" %21.14e"s;
+            *block<<std::endl;
+          }
+    };
+    // ==================================================
 
-    // SOLUTION/NORMAL_EQUATION_MATRIX
-    Sinex::SinexSolutionMatrixPtr solutionNormalEquationMatrix = sinex.addBlock<Sinex::SinexSolutionMatrix>("SOLUTION/NORMAL_EQUATION_MATRIX "s + (N.isUpper() ? "U" : "L"));
-    solutionNormalEquationMatrix->setMatrix(N);
-
-    // SOLUTION/MATRIX_APRIORI
+    if(N.size())
+    {
+      SinexBlockPtr block = sinex.addBlock("SOLUTION/NORMAL_EQUATION_MATRIX U");
+      *block<<"*PARA1 PARA2 _______PARA2+0_______ _______PARA2+1_______ _______PARA2+2_______"<<std::endl;
+      writeMatrix(block, N);
+    }
+    // -----------------
     if(dN.size())
     {
-      Sinex::SinexSolutionMatrixPtr solutionNormalAprioriMatrix = sinex.addBlock<Sinex::SinexSolutionMatrix>("SOLUTION/MATRIX_APRIORI "s + (dN.isUpper() ? "U" : "L") + " INFO");
-      solutionNormalAprioriMatrix->setMatrix(dN);
+      SinexBlockPtr block = sinex.addBlock("SOLUTION/MATRIX_APRIORI U INFO");
+      *block<<"*PARA1 PARA2 _______PARA2+0_______ _______PARA2+1_______ _______PARA2+2_______"<<std::endl;
+      writeMatrix(block, dN);
     }
 
     // ==================================================
@@ -296,133 +591,17 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     if(!fileNameSinexNormals.empty())
     {
       logStatus<<"write full SINEX file <"<<fileNameSinexNormals<<">"<<Log::endl;
-      sinex.writeFile(fileNameSinexNormals);
+      sinex.header.replace(60, 5, countParameter%"%05i"s);
+      writeFileSinex(fileNameSinexNormals, sinex);
     }
     if(!fileNameSinexCoords.empty())
     {
       logStatus<<"write coordinates SINEX file <"<<fileNameSinexCoords<<">"<<Log::endl;
-      sinex.removeBlock("SOLUTION/NORMAL_EQUATION_VECTOR");
-      sinex.removeBlock("SOLUTION/NORMAL_EQUATION_MATRIX "s + (N.isUpper() ? "U" : "L"));
-      if(dN.size())
-        sinex.removeBlock("SOLUTION/MATRIX_APRIORI "s + (dN.isUpper() ? "U" : "L") + " INFO");
-      sinex.writeFile(fileNameSinexCoords);
-    }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-void GnssNormals2Sinex::addVector(Sinex::SinexSolutionVectorPtr vector, const Time &time0, const std::vector<ParameterName> &parameterName, const Vector x,
-                                  const Vector sigma, const std::vector<Bool> &parameterIsContrained, const std::vector<std::string> &stationList)
-{
-  try
-  {
-    for(UInt i = 0; i < x.size(); i++)
-    {
-      const std::string object   = parameterName.at(i).object;
-      const std::string type     = parameterName.at(i).type;
-      const std::string temporal = parameterName.at(i).temporal;
-
-      Sinex::Parameter parameter;
-      parameter.parameterIndex = i+1;
-      parameter.solutionId     = "1";
-      parameter.constraintCode = parameterIsContrained.at(i) ? "1" : "2";
-      parameter.time           = time0;
-      parameter.value          = x(i);
-      if(sigma.size())
-        parameter.sigma        = sigma(i);
-
-      // STAX, STAY, STAZ
-      const Bool isStation = std::find(stationList.begin(), stationList.end(), object) != stationList.end();
-      if(isStation && String::startsWith(type, "position."))
-      {
-        parameter.parameterType = "STA" + String::upperCase(type.substr(9, 1));
-        parameter.unit          = "m";
-        parameter.siteCode      = String::upperCase(object);
-        parameter.pointCode     = "A";
-      }
-      // XPO, YPO
-      else if(object == "earth" && String::startsWith(type, "polarMotion.") && temporal.empty())
-      {
-        parameter.parameterType = String::upperCase(type.substr(12, 1)) + "PO";
-        parameter.unit          = "mas";
-      }
-      // XPOR, YPOR
-      else if(object == "earth" && String::startsWith(type, "polarMotion.") && String::startsWith(temporal, "trend."))
-      {
-        parameter.parameterType = String::upperCase(type.substr(12, 1)) + "POR";
-        parameter.unit          = "ma/d";
-      }
-      // UT1
-      else if(object == "earth" && type == "UT1" && temporal.empty())
-      {
-        parameter.parameterType  = "UT";
-        parameter.unit           = "ms";
-        parameter.constraintCode = parameterIsContrained.at(i) ? "0" : "2";
-      }
-      // LOD
-      else if(object == "earth" && type == "UT1" && String::startsWith(temporal, "trend."))
-      {
-        parameter.parameterType = "LOD";
-        parameter.unit          = "ms";
-      }
-      // SATA_X, SATA_Y, SATA_Z
-      else if(!isStation && type.size() == 22 && type.substr(0, 14) == "antennaCenter.")
-      {
-        const std::string frequency = type.substr(type.size()-6, 2);
-        if(frequency.at(0) != 'L')
-          throw(Exception("unsupported antenna center parameter: " + parameterName.at(i).str()));
-
-        if(     type.at(14) == 'x') parameter.parameterType  = "SATA_Y"; // swap X and Y names (definition different for GROOPS and IGS)
-        else if(type.at(14) == 'y') parameter.parameterType  = "SATA_X"; // swap X and Y names (definition different for GROOPS and IGS)
-        else if(type.at(14) == 'z') parameter.parameterType  = "SATA_Z";
-        else throw(Exception("unsupported antenna center parameter: " + parameterName.at(i).str()));
-        parameter.unit           = "m";
-        parameter.siteCode       = object.substr(object.find('|')+1, 4); // SVN
-        parameter.pointCode      = (frequency == "L*" ? "LC" : frequency);
-        parameter.constraintCode = parameterIsContrained.at(i) ? "0" : "2";
-      }
-      else
-        throw(Exception("unknown parameter type: " + parameterName.at(i).str()));
-
-      vector->addParameter(parameter);
-    }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-void GnssNormals2Sinex::addAprioriAntennaOffset(const std::map<std::string, GnssAntennaInfo> &antennas, Bool addEccentricity, Bool swapXY, const std::vector<ParameterName> &parameterNames, MatrixSliceRef x)
-{
-  try
-  {
-    for(UInt i = 0; i < x.size(); i++)
-    {
-      const ParameterName* param = &parameterNames.at(i);
-
-      if(param->type.size() == 22 && param->type.substr(0, 14) == "antennaCenter." && antennas.find(param->object) != antennas.end())
-      {
-        const GnssType type(param->type.substr(16, 6));
-        const UInt idPattern = antennas.at(param->object).antennaDef->findAntennaPattern(type, GnssAntennaDefinition::NoPatternFoundAction::USE_NEAREST_FREQUENCY);
-        if(idPattern == NULLINDEX)
-          throw(Exception("no antenna pattern found for " + param->str()));
-
-        const Vector3d offset = antennas.at(param->object).local2antennaFrame.inverseTransform(antennas.at(param->object).antennaDef->pattern.at(idPattern).offset);
-        if(param->type.at(14) == (swapXY ? 'y' : 'x'))
-          x(i,0) += (addEccentricity ? offset.x() + antennas.at(param->object).position.x() : offset.x());
-        if(param->type.at(14) == (swapXY ? 'x' : 'y'))
-          x(i,0) += (addEccentricity ? offset.y() + antennas.at(param->object).position.y() : offset.y());
-        if(param->type.at(14) == 'z')
-          x(i,0) += (addEccentricity ? offset.z() + antennas.at(param->object).position.z() : offset.z());
-      }
+      sinex.blocks.remove_if([](const SinexBlockPtr &b){return b->label == "SOLUTION/NORMAL_EQUATION_VECTOR";});
+      sinex.blocks.remove_if([](const SinexBlockPtr &b){return b->label == "SOLUTION/NORMAL_EQUATION_MATRIX U";});
+      sinex.blocks.remove_if([](const SinexBlockPtr &b){return b->label == "SOLUTION/MATRIX_APRIORI U INFO";});
+      sinex.header.replace(60, 5, countParameter%"%05i"s);
+      writeFileSinex(fileNameSinexCoords, sinex);
     }
   }
   catch(std::exception &e)
