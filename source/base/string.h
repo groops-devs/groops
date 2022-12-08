@@ -35,6 +35,12 @@ namespace String
   /** @brief Remove all leading and trailing spaces from @p str. */
   std::string trim(const std::string &str);
 
+  /** @brief Remove all trailing spaces from @p str. */
+  std::string trimRight(const std::string &str);
+
+  /** @brief Remove all leading spaces from @p str. */
+  std::string trimLeft(const std::string &str);
+
   /** @brief Convert to Double. Returns 0 if substring is all white spaces. */
   Double toDouble(const std::string &str);
 

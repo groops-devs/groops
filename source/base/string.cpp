@@ -53,6 +53,40 @@ std::string String::trim(const std::string &str)
 
 /***********************************************/
 
+std::string String::trimLeft(const std::string &str)
+{
+  try
+  {
+    auto start = str.find_first_not_of(" \t");
+    if(start == std::string::npos)
+      return "";
+    return str.substr(start);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+std::string String::trimRight(const std::string &str)
+{
+  try
+  {
+    auto end = str.find_last_not_of(" \t");
+    if(end == std::string::npos)
+      return "";
+    return str.substr(0, end+1);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
 Double String::toDouble(const std::string &str)
 {
   try
