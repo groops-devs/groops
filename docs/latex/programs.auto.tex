@@ -4635,6 +4635,31 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{ObservationEquations2Files}\label{ObservationEquations2Files}
+This program computes the linearized and decorrelated equation system for each arc $i$:
+\begin{equation}
+\M l_i  = \M A_i \M x + \M B_i \M y_i + \M e_i
+\end{equation}
+using class \configClass{observation}{observationType} and writes $\M A_i$, $\M B_i$ and $\M l_i$ as \file{matrix}{matrix} files.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileObservationVector & \hfuzz=500pt filename & \hfuzz=500pt one file for each arc\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileDesignMatrix & \hfuzz=500pt filename & \hfuzz=500pt one file for each arc, without arc related parameters\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileDesignMatrixArc & \hfuzz=500pt filename & \hfuzz=500pt one file for each arc, arc related parameters\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableArc & \hfuzz=500pt string & \hfuzz=500pt variable with arc number\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileParameterNames & \hfuzz=500pt filename & \hfuzz=500pt without arc related parameters\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~observation & \hfuzz=500pt \hyperref[observationType]{observation} & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
 \subsection{PotentialCoefficients2BlockMeanTimeSplines}\label{PotentialCoefficients2BlockMeanTimeSplines}
 This program is a simplified version of \program{Gravityfield2TimeSplines}.
 It reads a series of potential coefficient files (\configFile{inputfilePotentialCoefficients}{potentialCoefficients})

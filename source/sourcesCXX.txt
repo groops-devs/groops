@@ -373,6 +373,7 @@ programs/misc/kernel2Coefficients.cpp
 programs/misc/kernelEvaluate.cpp
 programs/misc/magneticField2GriddedData.cpp
 programs/misc/matrixCalculate.cpp
+programs/misc/observationEquations2Files.cpp
 programs/misc/potentialCoefficients2BlockMeanTimeSplines.cpp
 programs/misc/potentialCoefficients2DegreeAmplitudes.cpp
 programs/misc/radialBasisSplines2KernelCoefficients.cpp

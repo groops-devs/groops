@@ -15241,6 +15241,42 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="ObservationEquations2Files">
+				<xs:annotation>
+					<xs:documentation>write the design matrix and observation vector</xs:documentation>
+					<xs:appinfo>tag: Misc</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileObservationVector" type="filename" minOccurs="0" default="l_{arc:%03i}.dat">
+							<xs:annotation>
+								<xs:documentation>one file for each arc</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileDesignMatrix" type="filename" minOccurs="0" default="A_{arc:%03i}.dat">
+							<xs:annotation>
+								<xs:documentation>one file for each arc, without arc related parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileDesignMatrixArc" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>one file for each arc, arc related parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableArc" type="string" minOccurs="0" default="arc">
+							<xs:annotation>
+								<xs:documentation>variable with arc number</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileParameterNames" type="filename" minOccurs="0" default="parameterNames.txt">
+							<xs:annotation>
+								<xs:documentation>without arc related parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="observation" type="observationType"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="PotentialCoefficients2BlockMeanTimeSplines">
 				<xs:annotation>
 					<xs:documentation>write monthly potential coeffcients into one time spline file</xs:documentation>
