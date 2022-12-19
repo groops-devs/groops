@@ -74,7 +74,9 @@
 Time series of data for arbitrarily distributed points defined by geographic coordinates and ellipsoidal
 height. The data can be temporal interpolated by <a class="groops-ref" href="fundamentals.basisSplines.html">basis splines</a>.
 The file format consists of a <a class="groops-file" href="fileFormat_griddedData.html">griddedData</a>, a time series, and
-for each spatial point and spline node pair multiple values called <code>data0</code>, <code>data1</code>, &hellip; .
+for each spatial point and spline node pair multiple values called <code>data0</code>, <code>data1</code>, &hellip; .</p><p>A GriddedDataTimeSeries can be generated from individual <a class="groops-file" href="fileFormat_griddedData.html">griddedData</a> with the program
+<a class="groops-program" href="GriddedData2GriddedDataTimeSeries.html">GriddedData2GriddedDataTimeSeries</a>. Vice-versa, a GriddedDataTimeSeries can be evaluated at a 
+specific time stamp to obtain a <a class="groops-file" href="fileFormat_griddedData.html">griddedData</a> with <a class="groops-program" href="GriddedDataTimeSeries2GriddedData.html">GriddedDataTimeSeries2GriddedData</a>.
 </p>
 
         </div>
