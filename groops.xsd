@@ -4864,43 +4864,41 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="solarRadiationPressure">
+			<xs:element name="radiationPressure">
 				<xs:annotation>
-					<xs:documentation>Solar radiation pressure model</xs:documentation>
+					<xs:documentation>Solar and Earh radiation pressure model</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="solarflux" type="double" minOccurs="0" default="1367">
 							<xs:annotation>
-								<xs:documentation>solar flux constant in 1 AU [W/m**2]</xs:documentation>
+								<xs:documentation>solar flux constant in 1 AU [W/m^2]</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="eclipse" type="eclipseType"/>
-						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+						<xs:element name="inputfileAlbedoTimeSeries" type="filename" minOccurs="0" default="{groopsDataDir}/earthRadiationPressure/CERES_SYN1deg_albedo_climatology.dat">
 							<xs:annotation>
-								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
+								<xs:documentation>GriddedDataTimeSeries of albedo values (unitless)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="albedo">
-				<xs:annotation>
-					<xs:documentation>Albedo radiation</xs:documentation>
-					<xs:appinfo>rename: inputfileEmissity = inputfileEmissivity</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="inputfileReflectivity" type="filename" minOccurs="0" default="{groopsDataDir}/albedo/earth_ceres_reflectivity_grid2.5.dat"/>
-						<xs:element name="inputfileEmissivity" type="filename" minOccurs="0" default="{groopsDataDir}/albedo/earth_ceres_emissivity_grid2.5.dat"/>
-						<xs:element name="solarflux" type="double" minOccurs="0" default="1367">
+						<xs:element name="inputfileLongwaveFluxTimeSeries" type="filename" minOccurs="0" default="{groopsDataDir}/earthRadiationPressure/CERES_SYN1deg_longwaveFlux_climatology.dat">
 							<xs:annotation>
-								<xs:documentation>solar flux constant in 1 AU [W/m**2]</xs:documentation>
+								<xs:documentation>GriddedDataTimeSeries of longwave flux values [W/m^2]</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+						<xs:element name="factorSolarRadation" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
-								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
+								<xs:documentation>Solar radiation pressure is multiplied by this factor</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="factorEarthRadation" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>Earth radiation preussure is multiplied by this factor</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="factorThermalRadiation" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>Thermal (re-)radiation is multiplied by this factor</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4924,6 +4922,20 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="considerWind" type="boolean" minOccurs="0" default="1"/>
+						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>the result is multiplied by this factor</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="antennaThrust">
+				<xs:annotation>
+					<xs:documentation>antenna thrust</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
 								<xs:documentation>the result is multiplied by this factor</xs:documentation>
@@ -4967,20 +4979,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="antennaThrust">
-				<xs:annotation>
-					<xs:documentation>antenna thrust</xs:documentation>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
-							<xs:annotation>
-								<xs:documentation>the result is multiplied by this factor</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="fromParametrization">
 				<xs:annotation>
 					<xs:documentation>from a solution vector with given parametrization</xs:documentation>
@@ -5001,6 +4999,48 @@
 						<xs:element name="rightSide" type="uint" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>if solution contains several right hand sides, select one</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="solarRadiationPressure">
+				<xs:annotation>
+					<xs:documentation>DEPRECATED</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="solarflux" type="double" minOccurs="0" default="1367">
+							<xs:annotation>
+								<xs:documentation>solar flux constant in 1 AU [W/m**2]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="eclipse" type="eclipseType"/>
+						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="albedo">
+				<xs:annotation>
+					<xs:documentation>DEPRECATED</xs:documentation>
+					<xs:appinfo>rename: inputfileEmissity = inputfileEmissivity</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfileReflectivity" type="filename" minOccurs="0" default="{groopsDataDir}/albedo/earth_ceres_reflectivity_grid2.5.dat"/>
+						<xs:element name="inputfileEmissivity" type="filename" minOccurs="0" default="{groopsDataDir}/albedo/earth_ceres_emissivity_grid2.5.dat"/>
+						<xs:element name="solarflux" type="double" minOccurs="0" default="1367">
+							<xs:annotation>
+								<xs:documentation>solar flux constant in 1 AU [W/m**2]</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
@@ -15464,7 +15504,7 @@
 												</xs:element>
 												<xs:element name="area" type="expression" default="data0">
 													<xs:annotation>
-														<xs:documentation>[m**2]</xs:documentation>
+														<xs:documentation>[m^2]</xs:documentation>
 													</xs:annotation>
 												</xs:element>
 												<xs:element name="normalX" type="expression" default="data1"/>
@@ -15476,9 +15516,9 @@
 												<xs:element name="reflexionInfrared" type="expression" default="data7"/>
 												<xs:element name="diffusionInfrared" type="expression" default="data8"/>
 												<xs:element name="absorptionInfrared" type="expression" default="data9"/>
-												<xs:element name="hasThermalReemission" type="expression" default="data10">
+												<xs:element name="specificHeatCapacity" type="expression" default="data10">
 													<xs:annotation>
-														<xs:documentation>(0 = no, 1 = yes) spontaneous reemission of absorbed radiation</xs:documentation>
+														<xs:documentation>0: no thermal radiation, -1: direct reemission [Ws/K/m^2]</xs:documentation>
 													</xs:annotation>
 												</xs:element>
 											</xs:sequence>

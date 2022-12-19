@@ -71,7 +71,7 @@ inline Vector3d MiscAccelerationsAntennaThrust::acceleration(SatelliteModelPtr s
     if(!satellite)
       throw(Exception("No satellite model given"));
 
-    return factor * rotEarth.rotate(rotSat.rotate(satellite->accelerationThrust()));
+    return (-factor/satellite->mass/LIGHT_VELOCITY) * rotEarth.rotate(rotSat.rotate(satellite->thrustPower));
   }
   catch(std::exception &e)
   {

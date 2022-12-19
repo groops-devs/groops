@@ -63,6 +63,8 @@ public:
 
   Vector3d acceleration(SatelliteModelPtr satellite, const Time &time, const Vector3d &position, const Vector3d &velocity,
                         const Rotary3d &rotSat, const Rotary3d &rotEarth, EphemeridesPtr ephemerides) override;
+
+  static Vector3d force(SatelliteModelPtr satellite, const Vector3d &direction, Double velocity, Double density, Double temperature);
 };
 
 /***********************************************/
@@ -107,9 +109,55 @@ inline Vector3d MiscAccelerationsAtmosphericDrag::acceleration(SatelliteModelPtr
     if(!useWind)
       wind = Vector3d();
 
-    const Vector3d velocityRelativeToThermosphere = velocity - crossProduct(omega, position) - rotEarth.inverseRotate(wind);
-    const Vector3d acc = satellite->accelerationDrag(rotSat.inverseRotate(velocityRelativeToThermosphere), density, temperature);
-    return factor * rotEarth.rotate(rotSat.rotate(acc));
+    // direction and speed of thermosphere relative to satellite in SRF
+    Vector3d direction = rotSat.inverseRotate(rotEarth.inverseRotate(wind) + crossProduct(omega, position) - velocity);
+    const Double v = direction.normalize();
+
+    return (factor/satellite->mass) * rotEarth.rotate(rotSat.rotate(force(satellite, direction, v, density, temperature)));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+inline Vector3d MiscAccelerationsAtmosphericDrag::force(SatelliteModelPtr satellite, const Vector3d &direction, Double velocity, Double density, Double temperature)
+{
+  try
+  {
+    constexpr Double R     = 8.3144;    // universal gas constant [J mol-1 K-1]
+    constexpr Double M     = 15.5/1000; // average modelcular mass [kg/mol]
+    constexpr Double alpha = 0.9;       // accomodation coefficientDrag [-]
+    constexpr Double Tw    = 273;       // temperature of the surface [K]
+
+    Vector3d F;
+    for(UInt i=0; i<satellite->surfaces.size(); i++)
+    {
+      auto &surface = satellite->surfaces.at(i);
+      if((surface.type == SatelliteModel::Surface::PLATE) || (surface.type == SatelliteModel::Surface::GRACESHADOW))
+      {
+        const Double cosPhi = -inner(direction, surface.normal);
+
+        if(temperature > 0)
+        {
+          const Vector3d ul   = crossProduct(direction, crossProduct(direction, surface.normal));
+          const Double   s    = velocity/std::sqrt(2*R*temperature/M); // molecular speed ratio
+          const Double   P    = std::exp(-std::pow(cosPhi*s, 2))/s;
+          const Double   G    = 1/(2*s*s);
+          const Double   Z    = 1 + std::erf(cosPhi*s);
+          const Double   x    = std::sqrt(1./6.*(1 + alpha * (3*R*Tw/(velocity*velocity)-1))) * (cosPhi*std::sqrt(PI)*Z+P);
+          F += 0.5 * density * surface.area *velocity*velocity * ((P/std::sqrt(PI) + cosPhi*((1+G)*Z+x)) * direction + (G*Z+x) * ul);
+        }
+        else if(cosPhi > 0) // simple drag coefficient
+          F += 0.5 * density * surface.area * cosPhi * velocity*velocity * satellite->coefficientDrag * direction;
+      }
+      else
+        throw(Exception("sphere or cylinder not implemented yet"));
+    } // for(i=surface)
+
+    return F;
   }
   catch(std::exception &e)
   {

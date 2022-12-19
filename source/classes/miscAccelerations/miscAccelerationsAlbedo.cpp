@@ -2,7 +2,7 @@
 /**
 * @file miscAccelerationsAlbedo.cpp
 *
-* @brief Albedo radiation.
+* @brief DEPRECATED. Use radiationPressure instead.
 * @see MiscAccelerations
 *
 * @author Torsten Mayer-Guerr
@@ -17,6 +17,7 @@
 #include "files/fileGriddedData.h"
 #include "files/fileSatelliteModel.h"
 #include "classes/miscAccelerations/miscAccelerations.h"
+#include "classes/miscAccelerations/miscAccelerationsRadiationPressure.h"
 #include "classes/miscAccelerations/miscAccelerationsAlbedo.h"
 
 /***********************************************/
@@ -31,8 +32,8 @@ MiscAccelerationsAlbedo::MiscAccelerationsAlbedo(Config &config)
 
     readConfig(config, "inputfileReflectivity", fileNameReflectivity, Config::OPTIONAL, "{groopsDataDir}/albedo/earth_ceres_reflectivity_grid2.5.dat", "");
     readConfig(config, "inputfileEmissivity",   fileNameEmissivity,   Config::OPTIONAL, "{groopsDataDir}/albedo/earth_ceres_emissivity_grid2.5.dat", "");
-    readConfig(config, "solarflux",             solarflux,            Config::DEFAULT,   "1367", "solar flux constant in 1 AU [W/m**2]");
-    readConfig(config, "factor",                factor,               Config::DEFAULT,   "1.0",  "the result is multiplied by this factor, set -1 to subtract the field");
+    readConfig(config, "solarflux",             solarflux,            Config::DEFAULT,  "1367", "solar flux constant in 1 AU [W/m**2]");
+    readConfig(config, "factor",                factor,               Config::DEFAULT,  "1.0",  "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
 
     // read reflectivity
@@ -99,7 +100,8 @@ Vector3d MiscAccelerationsAlbedo::acceleration(SatelliteModelPtr satellite, cons
       index2 = std::min(month-1, emissivity.size()-1);
     }
 
-    Vector3d acc;
+    Vector3d F; // force in SRF
+    Vector   absorbedPressure(satellite->surfaces.size()); // power for each satellite surface
     for(UInt i=0; i<points.size(); i++)
     {
       Vector3d posEarth     = rotSat.inverseRotate(rotEarth.inverseRotate(points.at(i)));
@@ -124,10 +126,18 @@ Vector3d MiscAccelerationsAlbedo::acceleration(SatelliteModelPtr satellite, cons
       if(emissivity.size())
         eEmittance = emissivity.at(index2).at(i)/(4*PI*distance*distance)*s0*cosReflexion*areas.at(i);
 
-      acc += satellite->accelerationPressure(direction, eReflectivity, eEmittance);
+      F += MiscAccelerationsRadiationPressure::force(satellite, direction, eReflectivity, eEmittance, absorbedPressure);
     }
 
-    return factor*rotEarth.rotate(rotSat.rotate(acc));
+    // compute thermal radition
+    for(UInt i=0; i<satellite->surfaces.size(); i++)
+    {
+      auto &surface = satellite->surfaces.at(i);
+      if(surface.specificHeatCapacity < 0)
+        F -= (2./3.) * surface.area * absorbedPressure(i) * surface.normal; // spontaneous reemission of absorbed radiation
+    }
+
+    return (factor/satellite->mass) * rotEarth.rotate(rotSat.rotate(F));
   }
   catch(std::exception &e)
   {

@@ -28,9 +28,10 @@ SatelliteModelModulePtr SatelliteModelModule::create(SatelliteModelModule::Type 
   {
     switch(type)
     {
-      case SatelliteModelModule::SOLARPANEL:    return SatelliteModelModulePtr(new SatelliteModelModuleSolarPanel());
-      case SatelliteModelModule::ANTENNATHRUST: return SatelliteModelModulePtr(new SatelliteModelModuleAntennaThrust());
-      case SatelliteModelModule::MASSCHANGE:    return SatelliteModelModulePtr(new SatelliteModelModuleMassChange());
+      case SatelliteModelModule::SOLARPANEL:           return SatelliteModelModulePtr(new SatelliteModelModuleSolarPanel());
+      case SatelliteModelModule::ANTENNATHRUST:        return SatelliteModelModulePtr(new SatelliteModelModuleAntennaThrust());
+      case SatelliteModelModule::MASSCHANGE:           return SatelliteModelModulePtr(new SatelliteModelModuleMassChange());
+      case SatelliteModelModule::SPECIFICHEATCAPACITY: return SatelliteModelModulePtr(new SatelliteModelModuleSetSpecificHeatCapacity());
     }
 
     std::stringstream ss;
@@ -102,9 +103,13 @@ void SatelliteModelModuleSolarPanel::load(InArchive  &ar)
 /***********************************************/
 /***********************************************/
 
-void SatelliteModelModuleAntennaThrust::accelerationThrust(const SatelliteModel &/*satellite*/, Vector3d &a) const
+void SatelliteModelModuleAntennaThrust::changeState(SatelliteModel &satellite, const Time &/*time*/,
+                                                    const Vector3d &/*position*/, const Vector3d &/*velocity*/,
+                                                    const Vector3d &/*positionSun*/, const Rotary3d &/*rotSat*/, const Rotary3d &/*rotEarth*/)
 {
-  a += thrust;
+  if(!applied)
+    satellite.thrustPower += thrust;
+  applied = TRUE;
 }
 
 /***********************************************/
@@ -119,6 +124,7 @@ void SatelliteModelModuleAntennaThrust::save(OutArchive &ar) const
 void SatelliteModelModuleAntennaThrust::load(InArchive  &ar)
 {
   ar>>nameValue("antennaThrust", thrust);
+  applied = FALSE;
 }
 
 /***********************************************/
@@ -175,7 +181,7 @@ void SatelliteModelModuleMassChange::save(OutArchive &ar) const
 
 /***********************************************/
 
-void SatelliteModelModuleMassChange::load(InArchive  &ar)
+void SatelliteModelModuleMassChange::load(InArchive &ar)
 {
   try
   {
@@ -200,63 +206,15 @@ void SatelliteModelModuleMassChange::load(InArchive  &ar)
 /***********************************************/
 /***********************************************/
 
-Double SatelliteModel::Surface::sectionalArea(const Vector3d &direction) const
+void SatelliteModelModuleSetSpecificHeatCapacity::changeState(SatelliteModel &satellite, const Time &/*time*/,
+                                                              const Vector3d &/*position*/, const Vector3d &/*velocity*/,
+                                                              const Vector3d &/*positionSun*/, const Rotary3d &/*rotSat*/, const Rotary3d &/*rotEarth*/)
 {
   try
   {
-    if(type == PLATE)
-    {
-      const Double cosPhi = inner(direction, normal);
-      return (cosPhi>0) ? (area*cosPhi) : 0;
-    }
-    else if(type == SPHERE)
-      return area;
-    else if(type == CYLINDER)
-      return area*crossProduct(direction, normal).norm();
-
-    throw(Exception("unknown type"));
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-
-/***********************************************/
-
-Vector3d SatelliteModel::Surface::accelerationDrag(const Vector3d &direction, Double velocity, Double density, Double temperature) const
-{
-  try
-  {
-    constexpr Double R     = 8.3144;    // universal gas constant [J mol-1 K-1]
-    constexpr Double M     = 15.5/1000; // average modelcular mass [kg/mol]
-    constexpr Double alpha = 0.9;       // accomodation coefficientDrag [-]
-    constexpr Double Tw    = 273;       // temperature of the surface [K]
-
-    if(type == PLATE)
-    {
-      const Double cosPhi = -inner(direction, normal);
-
-      const Vector3d ul   = crossProduct(direction, crossProduct(direction, normal));
-      const Double   s    = velocity/std::sqrt(2*R*temperature/M); // molecular speed ratio
-      const Double   P    = std::exp(-std::pow(cosPhi*s, 2))/s;
-      const Double   G    = 1/(2*s*s);
-      const Double   Q    = 1 + G;
-      const Double   Z    = 1 + std::erf(cosPhi*s);
-      const Double   x    = std::sqrt(1./6.*(1 + alpha * (3*R*Tw/(velocity*velocity)-1))) * (cosPhi*std::sqrt(PI)*Z+P);
-      return 0.5*density*area*velocity*velocity * ((P/std::sqrt(PI) + cosPhi*(Q*Z+x)) * direction + (G*Z+x) * ul);
-    }
-    else if(type == SPHERE)
-    {
-      throw(Exception("sphere not implemented yet"));
-    }
-    else if(type == CYLINDER)
-    {
-      throw(Exception("cylinder not implemented yet"));
-    }
-
-    throw(Exception("unknown type"));
+    for(UInt i=0; i<indexSurface.size(); i++)
+      satellite.surfaces.at(indexSurface.at(i)).specificHeatCapacity = specificHeatCapacity.at(i);
+    applied = TRUE;
   }
   catch(std::exception &e)
   {
@@ -266,48 +224,45 @@ Vector3d SatelliteModel::Surface::accelerationDrag(const Vector3d &direction, Do
 
 /***********************************************/
 
-void SatelliteModel::Surface::accelerationPressure(const Vector3d &direction, Double visible, Double infrared, Vector3d &acc) const
+void SatelliteModelModuleSetSpecificHeatCapacity::save(OutArchive &ar) const
 {
   try
   {
-    const Double cosPhi = -inner(direction, normal);
-    if(cosPhi<=0)
-      return;
-
-    // absorptionX + diffusionX + reflexionX = 1.
-    const Double reflexion  = reflexionVisible  * visible + reflexionInfrared  * infrared;
-    const Double diffusion  = diffusionVisible  * visible + diffusionInfrared  * infrared;
-    const Double absorption = absorptionVisible * visible + absorptionInfrared * infrared;
-
-    if(type == PLATE)
-    {
-      // Source: Montenbruck et al. (2015) Enhanced solar radiation pressure modeling for Galileo satellites. DOI 10.1007/s00190-014-0774-0
-      // ATTENTION: our direction vector is defined with opposite sign compared to source => minuses for normal vector parts
-      acc += area*cosPhi*(absorption+diffusion)*direction - area*cosPhi*(2./3.*diffusion+2.*cosPhi*reflexion)*normal;
-      if(hasThermalReemission)
-        acc -= area*cosPhi*(2./3.*absorption)*normal;
-      return;
-    }
-    else if(type == SPHERE)
-    {
-      throw(Exception("sphere not implemented yet"));
-    }
-    else if(type == CYLINDER)
-    {
-      // Source: Rodriguez Solano (2014) Impact of non-conservative force modeling on GNSS satellite orbits and global solutions. PhD thesis
-      // ATTENTION: our direction vector is defined with opposite sign compared to source => minuses for normal vector parts
-      acc += area*cosPhi*(absorption+diffusion)*direction - area*cosPhi*(PI/6.*diffusion+4./3.*cosPhi*reflexion)*normal;
-      if(hasThermalReemission)
-        acc -= area*cosPhi*(PI/6.*absorption)*normal;
-      return;
-    }
-
-    throw(Exception("unknown type"));
+    ar<<nameValue("specificHeatCapacity", specificHeatCapacity);
+    ar<<nameValue("surface",              indexSurface);
   }
   catch(std::exception &e)
   {
     GROOPS_RETHROW(e)
   }
+}
+
+/***********************************************/
+
+void SatelliteModelModuleSetSpecificHeatCapacity::load(InArchive  &ar)
+{
+  try
+  {
+    ar>>nameValue("specificHeatCapacity", specificHeatCapacity);
+    ar>>nameValue("surface",              indexSurface);
+    applied = FALSE;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+SatelliteModel::Surface::Surface() :
+  type(PLATE), area(0),
+  absorptionVisible(0), absorptionInfrared(0),
+  diffusionVisible(0),  diffusionInfrared(0),
+  reflexionVisible(0),  reflexionInfrared(0),
+  specificHeatCapacity(0)
+{
 }
 
 /***********************************************/
@@ -325,7 +280,7 @@ template<> void save(OutArchive &ar, const SatelliteModel::Surface &x)
     ar<<nameValue("reflexionInfrared",    x.reflexionInfrared);
     ar<<nameValue("diffusionInfrared",    x.diffusionInfrared);
     ar<<nameValue("absorptionInfrared",   x.absorptionInfrared);
-    ar<<nameValue("hasThermalReemission", x.hasThermalReemission);
+    ar<<nameValue("hasThermalReemission", (x.specificHeatCapacity != 0));
   }
   catch(std::exception &e)
   {
@@ -350,9 +305,14 @@ template<> void load(InArchive  &ar, SatelliteModel::Surface &x)
     ar>>nameValue("reflexionInfrared",  x.reflexionInfrared);
     ar>>nameValue("diffusionInfrared",  x.diffusionInfrared);
     ar>>nameValue("absorptionInfrared", x.absorptionInfrared);
-    x.hasThermalReemission = FALSE;
+
+    x.specificHeatCapacity = 0;
     if(ar.version() >= 20190429)
-      ar>>nameValue("hasThermalReemission", x.hasThermalReemission);
+    {
+      Bool hasThermalReemission;
+      ar>>nameValue("hasThermalReemission", hasThermalReemission);
+      x.specificHeatCapacity = (hasThermalReemission ? -1. : 0.);
+    }
   }
   catch(std::exception &e)
   {
@@ -382,86 +342,6 @@ void SatelliteModel::changeState(const Time &time, const Vector3d &position, con
     module ->changeState(*this, time, position, velocity, positionSun, rotSat, rotEarth);
 }
 
-/***********************************************/
-
-Vector3d SatelliteModel::accelerationDrag(const Vector3d &velocity, Double density, Double temperature) const
-{
-  try
-  {
-    if(mass == 0.)
-      throw(Exception("No SatelliteModel given: "+satelliteName));
-
-    Vector3d direction = -velocity;
-    const Double v = direction.normalize();
-    Vector3d a;
-    if(temperature > 0)
-    {
-      for(auto &surface : surfaces)
-        a += surface.accelerationDrag(direction, v, density, temperature);
-    }
-    else
-    {
-      Double area = 0;
-      for(auto &surface : surfaces)
-        area += surface.sectionalArea(direction);
-      a = 0.5*coefficientDrag*area*density*v*v*direction;
-    }
-
-    for(auto module : modules)
-      module->accelerationDrag(*this, velocity, density, temperature, a);
-
-    return (1./mass) * a;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-Vector3d SatelliteModel::accelerationPressure(const Vector3d &direction, Double visible, Double infrared) const
-{
-  try
-  {
-    if(mass == 0.)
-      throw(Exception("No SatelliteModel given: "+satelliteName));
-
-    Vector3d a;
-    for(UInt i=0; i<surfaces.size(); i++)
-      surfaces.at(i).accelerationPressure(direction, visible, infrared, a);
-
-    for(auto module : modules)
-      module->accelerationPressure(*this, direction, visible, infrared, a);
-
-    return (1./mass) * a;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-Vector3d SatelliteModel::accelerationThrust() const
-{
-  try
-  {
-    if(mass == 0.)
-      throw(Exception("No SatelliteModel given: "+satelliteName));
-
-    Vector3d a;
-    for(auto module : modules)
-      module->accelerationThrust(*this, a);
-
-    return (-1./mass/LIGHT_VELOCITY) * a;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
 
 /***********************************************/
 /***********************************************/

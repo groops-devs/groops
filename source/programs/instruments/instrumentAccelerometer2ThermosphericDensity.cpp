@@ -26,7 +26,7 @@ Thus, influences from solar and Earth radiation pressure must be reduced beforeh
 #include "classes/earthRotation/earthRotation.h"
 #include "classes/parametrizationAcceleration/parametrizationAcceleration.h"
 #include "classes/thermosphere/thermosphere.h"
-#include "classes/miscAccelerations/miscAccelerations.h"
+#include "classes/miscAccelerations/miscAccelerationsAtmosphericDrag.h"
 #include "classes/ephemerides/ephemerides.h"
 
 /***** CLASS ***********************************/
@@ -114,15 +114,14 @@ void InstrumentAccelerometer2ThermosphericDensity::run(Config &config, Parallel:
         if(!useWind)
          wind = Vector3d();
 
-        // Defined as velocity relative to thermospheric particles
-        const Vector3d velocityRelativeToThermosphere = orbit.at(k).velocity - crossProduct(omega, orbit.at(k).position) - rotEarth.inverseRotate(wind);
-
-        const Vector3d acc1  = satellite->accelerationDrag(rotSat.inverseRotate(velocityRelativeToThermosphere), 1, temperature);
-        const Double density = accelerometer.at(k).acceleration.x() / acc1.x();
+        // direction and speed of thermosphere relative to satellite in SRF
+        Vector3d direction = rotSat.inverseRotate(rotEarth.inverseRotate(wind) + crossProduct(omega, orbit.at(k).position) - orbit.at(k).velocity);
+        const Double v = direction.normalize();
+        const Vector3d acc = (1./satellite->mass) * MiscAccelerationsAtmosphericDrag::force(satellite, direction, v, 1., temperature);
 
         MiscValueEpoch epoch;
         epoch.time  = time;
-        epoch.value = density;
+        epoch.value = accelerometer.at(k).acceleration.x() / acc.x(); // density
         output.push_back(epoch);
       }
       return output;

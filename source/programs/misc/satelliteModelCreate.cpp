@@ -145,11 +145,11 @@ template<> Bool readConfig(Config &config, const std::string &name, std::vector<
     ExpressionVariablePtr normalXExpr, normalYExpr, normalZExpr;
     ExpressionVariablePtr absorptionVisibleExpr, diffusionVisibleExpr, reflexionVisibleExpr;
     ExpressionVariablePtr absorptionInfraredExpr, diffusionInfraredExpr, reflexionInfraredExpr;
-    ExpressionVariablePtr hasThermalReemissionExpr;
+    ExpressionVariablePtr specificHeatCapacityExpr;
 
     readConfig(config, "inputfile",            fileNameIn,               Config::MUSTSET, "",       "each line must contain one surface element");
     readConfig(config, "type",                 typeExpr,                 Config::MUSTSET, "0",      "0: plate, 1: sphere, 2: cylinder");
-    readConfig(config, "area",                 areaExpr,                 Config::MUSTSET, "data0",  "[m**2]");
+    readConfig(config, "area",                 areaExpr,                 Config::MUSTSET, "data0",  "[m^2]");
     readConfig(config, "normalX",              normalXExpr,              Config::MUSTSET, "data1",  "");
     readConfig(config, "normalY",              normalYExpr,              Config::MUSTSET, "data2",  "");
     readConfig(config, "normalZ",              normalZExpr,              Config::MUSTSET, "data3",  "");
@@ -159,7 +159,7 @@ template<> Bool readConfig(Config &config, const std::string &name, std::vector<
     readConfig(config, "reflexionInfrared",    reflexionInfraredExpr,    Config::MUSTSET, "data7",  "");
     readConfig(config, "diffusionInfrared",    diffusionInfraredExpr,    Config::MUSTSET, "data8",  "");
     readConfig(config, "absorptionInfrared",   absorptionInfraredExpr,   Config::MUSTSET, "data9",  "");
-    readConfig(config, "hasThermalReemission", hasThermalReemissionExpr, Config::MUSTSET, "data10", "(0 = no, 1 = yes) spontaneous reemission of absorbed radiation");
+    readConfig(config, "specificHeatCapacity", specificHeatCapacityExpr, Config::MUSTSET, "data10", "0: no thermal radiation, -1: direct reemission [Ws/K/m^2]");
     endSequence(config);
     if(isCreateSchema(config))
       return TRUE;
@@ -185,7 +185,7 @@ template<> Bool readConfig(Config &config, const std::string &name, std::vector<
     absorptionInfraredExpr  ->usedVariables(varList, usedVariables);
     diffusionInfraredExpr   ->usedVariables(varList, usedVariables);
     reflexionInfraredExpr   ->usedVariables(varList, usedVariables);
-    hasThermalReemissionExpr->usedVariables(varList, usedVariables);
+    specificHeatCapacityExpr->usedVariables(varList, usedVariables);
     addDataVariables(data, varList, usedVariables);
     surfaces.resize(data.rows());
     for(UInt i=0; i<data.rows(); i++)
@@ -194,17 +194,17 @@ template<> Bool readConfig(Config &config, const std::string &name, std::vector<
 
       // evaluate expression
       surfaces.at(i).type                 = static_cast<SatelliteModel::Surface::Type>(typeExpr->evaluate(varList));
-      surfaces.at(i).area                 = areaExpr              ->evaluate(varList);
-      surfaces.at(i).normal.x()           = normalXExpr           ->evaluate(varList);
-      surfaces.at(i).normal.y()           = normalYExpr           ->evaluate(varList);
-      surfaces.at(i).normal.z()           = normalZExpr           ->evaluate(varList);
-      surfaces.at(i).absorptionVisible    = absorptionVisibleExpr ->evaluate(varList);
-      surfaces.at(i).diffusionVisible     = diffusionVisibleExpr  ->evaluate(varList);
-      surfaces.at(i).reflexionVisible     = reflexionVisibleExpr  ->evaluate(varList);
-      surfaces.at(i).absorptionInfrared   = absorptionInfraredExpr->evaluate(varList);
-      surfaces.at(i).diffusionInfrared    = diffusionInfraredExpr ->evaluate(varList);
-      surfaces.at(i).reflexionInfrared    = reflexionInfraredExpr ->evaluate(varList);
-      surfaces.at(i).hasThermalReemission = static_cast<Bool>(hasThermalReemissionExpr->evaluate(varList));
+      surfaces.at(i).area                 = areaExpr                ->evaluate(varList);
+      surfaces.at(i).normal.x()           = normalXExpr             ->evaluate(varList);
+      surfaces.at(i).normal.y()           = normalYExpr             ->evaluate(varList);
+      surfaces.at(i).normal.z()           = normalZExpr             ->evaluate(varList);
+      surfaces.at(i).absorptionVisible    = absorptionVisibleExpr   ->evaluate(varList);
+      surfaces.at(i).diffusionVisible     = diffusionVisibleExpr    ->evaluate(varList);
+      surfaces.at(i).reflexionVisible     = reflexionVisibleExpr    ->evaluate(varList);
+      surfaces.at(i).absorptionInfrared   = absorptionInfraredExpr  ->evaluate(varList);
+      surfaces.at(i).diffusionInfrared    = diffusionInfraredExpr   ->evaluate(varList);
+      surfaces.at(i).reflexionInfrared    = reflexionInfraredExpr   ->evaluate(varList);
+      surfaces.at(i).specificHeatCapacity = specificHeatCapacityExpr->evaluate(varList);
 
       surfaces.at(i).normal.normalize();
     }
@@ -236,6 +236,20 @@ template<> Bool readConfig(Config &config, const std::string &name, SatelliteMod
     readConfig(config, "surfaces",        satellite->surfaces,        Config::MUSTSET,  "", "");
     readConfig(config, "module",          satellite->modules,         Config::OPTIONAL, "", "");
     endSequence(config);
+
+    // extra module to set specificHeatCapacity without changing the file format
+    if(std::any_of(satellite->surfaces.begin(), satellite->surfaces.end(), [](auto &x) {return x.specificHeatCapacity > 0;}))
+    {
+      auto module = std::make_shared<SatelliteModelModuleSetSpecificHeatCapacity>();
+      for(UInt i=0; i<satellite->surfaces.size(); i++)
+        if(satellite->surfaces.at(i).specificHeatCapacity > 0)
+        {
+          module->specificHeatCapacity.push_back(satellite->surfaces.at(i).specificHeatCapacity);
+          module->indexSurface.push_back(i);
+        }
+      satellite->modules.push_back(module);
+    }
+
     return TRUE;
   }
   catch(std::exception &e)
