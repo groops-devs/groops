@@ -87,30 +87,29 @@ according to IERS2010 conventions.
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor</td></tr>
 </table>
 
-<h2 id="solarRadiationPressure">SolarRadiationPressure</h2><p>
-Solar radiation pressure model.
-Algorithm for the solar radiation pressure is described in:</p><p>Lemoine, F. G., et al. ( 2013), High-degree gravity models from GRAIL primary mission data,
-J. Geophys. Res. Planets, 118, 1676 1698 doi:10.1002/jgre.20118.
+<h2 id="RadiationPressure">RadiationPressure</h2><p>
+This class computes acceleration acting on a satellite caused by Solar and Earth radiation pressure
+and thermal radiation.</p><p>Solar radiation pressure: The solar constant at 1 AU can be set via <strong class="groops-config-element">solarFlux</strong>.
+The <strong class="groops-config-element">factorSolarRadation</strong> can be used to scale the computed acceleration of the direct solar radiation.</p><p>Earth radiation pressure:
+Input are a time series of gridded albedo values (unitless) as <a class="groops-class" href="fileFormat_griddedDataTimeSeries.html">inputfileAlbedoTimeSeries</a>
+and a time series of gridded longwave flux (W/m$^2$) as <a class="groops-class" href="fileFormat_griddedDataTimeSeries.html">inputfileLongwaveFluxTimeSeries</a>.
+Both files are optional and if not specified, the respective effect on the acceleration is not computed.
+The <strong class="groops-config-element">factorEarthRadation</strong> can be used to scale the computed acceleration of the earth radiation.</p><p>The thermal radiation (TRP) of the satellite itself is either computed as direct re-emission or
+based on the actual temperature of the satellite surfaces, depending on the seetings of the
+<a class="groops-file" href="fileFormat_satelliteModel.html">satellite macro model</a>. The second one uses a transient temperature model
+with a temporal differential equation which disallows parallel computing.
+The <strong class="groops-config-element">factorThermalRadiation</strong> can be used to scale the computed acceleration of the TRP.</p><p>The algorithms are described in:</p><p>Woeske et. al. (2019), GRACE accelerometer calibration by high precision non-gravitational force modeling,
+Advances in Space Research, <a href="https://doi.org/10.1016/j.asr.2018.10.025" target="_blank">https://doi.org/10.1016/j.asr.2018.10.025</a>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">solarflux</div></div></td><td>double</td><td>solar flux constant in 1 AU [W/m**2]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">solarflux</div></div></td><td>double</td><td>solar flux constant in 1 AU [W/m^2]</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">eclipse</div></div></td><td><a href="eclipseType.html">eclipse</a></td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor, set -1 to subtract the field</td></tr>
-</table>
-
-<h2 id="albedo">Albedo</h2><p>
-Acceleration caused by Earth's albedo.</p><p>The acceleration on the satellite caused by reflection and reradiation is computed using the
-algorithm in:</p><p>Knocke, P. C., Ries, J. C., and Tapley, B. D. (1988). Earth radiation pressure effects on satellites.
-Proceedings of the AIAA/AAS Astrodynamics Conference, 88-4292-CP, 577-87. DOI: 10.2514/6.
-1988-4292.
-</p>
-<table class="table table-hover">
-<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileReflectivity</div></div></td><td>filename</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileEmissivity</div></div></td><td>filename</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">solarflux</div></div></td><td>double</td><td>solar flux constant in 1 AU [W/m**2]</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor, set -1 to subtract the field</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileAlbedoTimeSeries</div></div></td><td>filename</td><td>GriddedDataTimeSeries of albedo values (unitless)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileLongwaveFluxTimeSeries</div></div></td><td>filename</td><td>GriddedDataTimeSeries of longwave flux values [W/m^2]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factorSolarRadation</div></div></td><td>double</td><td>Solar radiation pressure is multiplied by this factor</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factorEarthRadation</div></div></td><td>double</td><td>Earth radiation preussure is multiplied by this factor</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factorThermalRadiation</div></div></td><td>double</td><td>Thermal (re-)radiation is multiplied by this factor</td></tr>
 </table>
 
 <h2 id="atmosphericDrag">AtmosphericDrag</h2><p>
@@ -135,7 +134,7 @@ winds in the calculation process.
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor</td></tr>
 </table>
 
-<h2 id="atmosphericDragFromDensityFile">AtmosphericDrag</h2><p>
+<h2 id="atmosphericDragFromDensityFile">AtmosphericDragFromDensityFile</h2><p>
 Atmospheric drag computed from thermospheric density along the orbit
 (<a class="groops-class" href="fileFormat_instrument.html">inputfileDensity</a>, MISCVALUE). The <a class="groops-class" href="thermosphereType.html">thermosphere</a>
 is used to to compute temperature and wind.
@@ -176,6 +175,27 @@ one with number <strong class="groops-config-element">rightSide</strong> (counti
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">indexStart</div></div></td><td>uint</td><td>position in the solution vector</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">rightSide</div></div></td><td>uint</td><td>if solution contains several right hand sides, select one</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor, set -1 to subtract the field</td></tr>
+</table>
+
+<h2 id="solarRadiationPressure">SolarRadiationPressure</h2><p>
+DEPRECATED. Use radiationPressure instead.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">solarflux</div></div></td><td>double</td><td>solar flux constant in 1 AU [W/m**2]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">eclipse</div></div></td><td><a href="eclipseType.html">eclipse</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor, set -1 to subtract the field</td></tr>
+</table>
+
+<h2 id="albedo">Albedo</h2><p>
+DEPRECATED. Use radiationPressure instead.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileReflectivity</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileEmissivity</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">solarflux</div></div></td><td>double</td><td>solar flux constant in 1 AU [W/m**2]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">factor</div></div></td><td>double</td><td>the result is multiplied by this factor, set -1 to subtract the field</td></tr>
 </table>
 
         </div>

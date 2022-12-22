@@ -17,7 +17,7 @@
 // Latex documentation
 #ifdef DOCSTRING_MiscAccelerations
 static const char *docstringMiscAccelerationsAtmosphericDragFromDensityFile = R"(
-\subsection{AtmosphericDrag}\label{miscAccelerationsType:atmosphericDragFromDensityFile}
+\subsection{AtmosphericDragFromDensityFile}\label{miscAccelerationsType:atmosphericDragFromDensityFile}
 Atmospheric drag computed from thermospheric density along the orbit
 (\configFile{inputfileDensity}{instrument}, MISCVALUE). The \configClass{thermosphere}{thermosphereType}
 is used to to compute temperature and wind.
@@ -30,6 +30,7 @@ For further details see \configClass{atmosphericDrag}{miscAccelerationsType:atmo
 #include "files/fileInstrument.h"
 #include "classes/thermosphere/thermosphere.h"
 #include "classes/miscAccelerations/miscAccelerations.h"
+#include "classes/miscAccelerations/miscAccelerationsAtmosphericDrag.h"
 
 /***** CLASS ***********************************/
 
@@ -109,9 +110,11 @@ inline Vector3d MiscAccelerationsAtmosphericDragFromDensityFile::acceleration(Sa
     if(!useWind)
       wind = Vector3d();
 
-    const Vector3d velocityRelativeToThermosphere = velocity - crossProduct(omega, position) - rotEarth.inverseRotate(wind);
-    const Vector3d acc = satellite->accelerationDrag(rotSat.inverseRotate(velocityRelativeToThermosphere), density.at(idx).value, temperature);
-    return factor * rotEarth.rotate(rotSat.rotate(acc));
+    // direction and speed of thermosphere relative to satellite in SRF
+    Vector3d direction = rotSat.inverseRotate(rotEarth.inverseRotate(wind) + crossProduct(omega, position) - velocity);
+    const Double v = direction.normalize();
+
+    return (factor/satellite->mass) * rotEarth.rotate(rotSat.rotate(MiscAccelerationsAtmosphericDrag::force(satellite, direction, v, density.at(idx).value, temperature)));
   }
   catch(std::exception &e)
   {

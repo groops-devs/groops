@@ -202,7 +202,7 @@ void InstrumentAccelerometerEstimateParameters::run(Config &config, Parallel::Co
     Parallel::reduceMax(covLength, 0, comm);
     Parallel::broadCast(covLength, 0, comm);
 
-    logInfo<<"  lnegth of covariance function: "<<covLength<<" epochs with a sampling of "<<sampling<<" seconds"<<Log::endl;
+    logInfo<<"  length of covariance function: "<<covLength<<" epochs with a sampling of "<<sampling<<" seconds"<<Log::endl;
 
     // init arc sigmas and covariance function
     // ---------------------------------------

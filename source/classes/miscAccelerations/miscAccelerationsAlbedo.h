@@ -2,7 +2,7 @@
 /**
 * @file miscAccelerationsAlbedo.h
 *
-* @brief Albedo radiation.
+* @brief DEPRECATED. Use radiationPressure instead.
 * @see MiscAccelerations
 *
 * @author Torsten Mayer-Guerr
@@ -18,14 +18,7 @@
 #ifdef DOCSTRING_MiscAccelerations
 static const char *docstringMiscAccelerationsAlbedo = R"(
 \subsection{Albedo}\label{miscAccelerationsType:albedo}
-Acceleration caused by Earth's albedo.
-
-The acceleration on the satellite caused by reflection and reradiation is computed using the
-algorithm in:
-
-Knocke, P. C., Ries, J. C., and Tapley, B. D. (1988). Earth radiation pressure effects on satellites.
-Proceedings of the AIAA/AAS Astrodynamics Conference, 88-4292-CP, 577-87. DOI: 10.2514/6.
-1988-4292.
+DEPRECATED. Use radiationPressure instead.
 )";
 #endif
 
@@ -36,7 +29,7 @@ Proceedings of the AIAA/AAS Astrodynamics Conference, 88-4292-CP, 577-87. DOI: 1
 
 /***** CLASS ***********************************/
 
-/** @brief Albedo radiation.
+/** @brief DEPRECATED. Use radiationPressure instead.
 * @ingroup miscAccelerationsGroup
 * @see MiscAccelerations */
 class MiscAccelerationsAlbedo : public MiscAccelerationsBase

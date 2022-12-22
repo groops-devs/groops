@@ -28,6 +28,7 @@ The temperature is used to estimate variable drag and lift coefficients, otherwi
 #include "base/import.h"
 #include "classes/thermosphere/thermosphere.h"
 #include "classes/parametrizationTemporal/parametrizationTemporal.h"
+#include "classes/miscAccelerations/miscAccelerationsAtmosphericDrag.h"
 #include "parametrizationAcceleration.h"
 
 /***** CLASS ***********************************/
@@ -114,8 +115,10 @@ inline void ParametrizationAccelerationThermosphericDensity::compute(SatelliteMo
       if(!useWind)        wind = Vector3d();
     }
 
-    const Vector3d velocityRelativeToThermosphere = velocity - crossProduct(omega, position) - rotEarth.inverseRotate(wind);
-    const Vector3d acc = satellite->accelerationDrag(rotSat.inverseRotate(velocityRelativeToThermosphere), 1/*density*/, temperature);
+    // direction and speed of thermosphere relative to satellite in SRF
+    Vector3d direction = rotSat.inverseRotate(rotEarth.inverseRotate(wind) + crossProduct(omega, position) - velocity);
+    const Double   v   = direction.normalize();
+    const Vector3d acc = (1./satellite->mass) * MiscAccelerationsAtmosphericDrag::force(satellite, direction, v, 1/*density*/, temperature);
     temporal->designMatrix(time, rotEarth.rotate(rotSat.rotate(acc)).vector(), A);
   }
   catch(std::exception &e)

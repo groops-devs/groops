@@ -18,6 +18,8 @@
 static const char *docstringOceanPoleTide = R"(
 Describes the reaction of the ocean mass to the change
 of the centrifugal potential (polar wobble) in terms spherical harmonics.
+
+See also \program{Iers2OceanPoleTide}.
 )";
 #endif
 

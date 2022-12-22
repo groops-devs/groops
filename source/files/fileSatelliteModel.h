@@ -112,36 +112,29 @@ public:
   class Surface
   {
   public:
-    enum Type {PLATE=0, SPHERE=1, CYLINDER=2};
+    enum Type {PLATE=0, SPHERE=1, CYLINDER=2, GRACESHADOW=3};
     Type     type;
     Vector3d normal;
     Double   area;
     Double   absorptionVisible, absorptionInfrared;
     Double   diffusionVisible,  diffusionInfrared;
     Double   reflexionVisible,  reflexionInfrared;
-    Bool     hasThermalReemission;
+    Double   specificHeatCapacity;   //!< 0: no thermal radiation, -1: spontaneous reemission of absorbed radiation [Ws/K/m^2]
 
-    Surface() : type(PLATE), area(0),
-                absorptionVisible(0), absorptionInfrared(0),
-                diffusionVisible(0),  diffusionInfrared(0),
-                reflexionVisible(0),  reflexionInfrared(0),
-                hasThermalReemission(FALSE) {}
-
-    Double   sectionalArea(const Vector3d &direction) const;
-    Vector3d accelerationDrag(const Vector3d &direction, Double velocity, Double density, Double temperature) const;
-    void     accelerationPressure(const Vector3d &direction, Double visible, Double infrared, Vector3d &acc) const;
+    Surface();
   };
 
-  SatelliteModel(); //!< Constructor.
- ~SatelliteModel(); //!< Destructor.
+  SatelliteModel();                                            //!< Constructor.
+ ~SatelliteModel();                                            //!< Destructor.
   SatelliteModel &operator=(const SatelliteModel &x) = delete; //!< Disallow copying.
   SatelliteModel(const SatelliteModel &x) = delete;            //!< Disallow copy constructor.
 
-  std::string satelliteName; //!< Name of satellite.
-  Double      mass;
-  Double      coefficientDrag;
-  std::vector<Surface> surfaces;
-  std::vector<SatelliteModelModulePtr> modules;
+  std::string                          satelliteName;      //!< Name of satellite.
+  Double                               mass;
+  Double                               coefficientDrag;
+  Vector3d                             thrustPower;        //!< e.g. of GNSS transmitting antenna in SRF [W].
+  std::vector<Surface>                 surfaces;
+  std::vector<SatelliteModelModulePtr> modules;            //!< Adjust the state of satellite.
 
   /** @brief Compute new state of satellite.
   * E.g. Move parts of satellite surfaces, update mass.
@@ -153,23 +146,6 @@ public:
   * @param rotEarth CRF -> TRF */
   void changeState(const Time &time, const Vector3d &position, const Vector3d &velocity,
                    const Vector3d &positionSun, const Rotary3d &rotSat, const Rotary3d &rotEarth);
-
-  /** @brief Acceleration of satellite due to drag.
-  * @param velocity of satellite relative to atmosphere (in satellite frame, SRF).
-  * @param density of atmosphere [kg/m^3].
-  * @param temperature of atmosphere [K], if zero drag is computed using simplifed coefficientDrag.
-  * @return acceleration [m/s^2] in satellite frame (SRF). */
-  Vector3d accelerationDrag(const Vector3d &velocity, Double density, Double temperature) const;
-
-  /** @brief Acceleration of satellite due to solar radiation pressure/albedo.
-  * @param direction unit vector of incoming radiation (in satellite frame, SRF)
-  * @param visible magnitude of incident visible radiation [N/m^2]
-  * @param infrared magnitude of incident infrared radiation [N/m^2]
-  * @return acceleration [m/s^2] in satellite frame (SRF) */
-  Vector3d accelerationPressure(const Vector3d &direction, Double visible, Double infrared) const;
-
-  /** @brief Acceleration of satellite due to thrust. */
-  Vector3d accelerationThrust() const;
 };
 
 /***** FUNCTIONS *******************************/
@@ -197,21 +173,17 @@ void readFileSatelliteModel(const FileName &fileName, std::vector<SatelliteModel
 class SatelliteModelModule
 {
 public:
-  enum Type {SOLARPANEL = 1, ANTENNATHRUST = 2, MASSCHANGE = 3};
+  enum Type {SOLARPANEL = 1, ANTENNATHRUST = 2, MASSCHANGE = 3, SPECIFICHEATCAPACITY = 4};
 
   virtual ~SatelliteModelModule() {}
   virtual Type type() const = 0;
   virtual void changeState(SatelliteModel &/*satellite*/, const Time &/*time*/, const Vector3d &/*position*/, const Vector3d &/*velocity*/,
                            const Vector3d &/*positionSun*/, const Rotary3d &/*rotSat*/, const Rotary3d &/*rotEarth*/) {}
-  virtual void accelerationDrag    (const SatelliteModel &/*satellite*/, const Vector3d &/*velocity*/,  Double /*density*/, Double /*temperature*/, Vector3d &/*a*/) const {}
-  virtual void accelerationPressure(const SatelliteModel &/*satellite*/, const Vector3d &/*direction*/, Double /*visible*/, Double /*infrared*/,    Vector3d &/*a*/) const {}
-  virtual void accelerationThrust  (const SatelliteModel &/*satellite*/, Vector3d &/*a*/) const {}
+  virtual void save(OutArchive &ar) const = 0;
+  virtual void load(InArchive  &ar) = 0;
 
   /** @brief Create an epoch of given type (with new). */
   static SatelliteModelModulePtr create(Type type);
-
-  virtual void save(OutArchive &ar) const = 0;
-  virtual void load(InArchive  &ar) = 0;
 };
 
 /***********************************************/
@@ -235,10 +207,12 @@ public:
 class SatelliteModelModuleAntennaThrust : public SatelliteModelModule
 {
 public:
+  Bool     applied;
   Vector3d thrust;
 
   Type type() const {return ANTENNATHRUST;}
-  void accelerationThrust(const SatelliteModel &satellite, Vector3d &a) const;
+  void changeState(SatelliteModel &satellite, const Time &time, const Vector3d &position, const Vector3d &velocity,
+                   const Vector3d &positionSun, const Rotary3d &rotSat, const Rotary3d &rotEarth);
   void save(OutArchive &oa) const;
   void load(InArchive  &ia);
 };
@@ -252,6 +226,22 @@ public:
   std::vector<Double> mass;
 
   Type type() const {return MASSCHANGE;}
+  void changeState(SatelliteModel &satellite, const Time &time, const Vector3d &position, const Vector3d &velocity,
+                   const Vector3d &positionSun, const Rotary3d &rotSat, const Rotary3d &rotEarth);
+  void save(OutArchive &oa) const;
+  void load(InArchive  &ia);
+};
+
+/***********************************************/
+
+class SatelliteModelModuleSetSpecificHeatCapacity : public SatelliteModelModule
+{
+public:
+  Bool                applied;
+  std::vector<Double> specificHeatCapacity;
+  std::vector<UInt>   indexSurface;
+
+  Type type() const {return SPECIFICHEATCAPACITY;}
   void changeState(SatelliteModel &satellite, const Time &time, const Vector3d &position, const Vector3d &velocity,
                    const Vector3d &positionSun, const Rotary3d &rotSat, const Rotary3d &rotEarth);
   void save(OutArchive &oa) const;

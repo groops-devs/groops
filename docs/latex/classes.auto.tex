@@ -4378,12 +4378,29 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{SolarRadiationPressure}\label{miscAccelerationsType:solarRadiationPressure}
-Solar radiation pressure model.
-Algorithm for the solar radiation pressure is described in:
+\subsection{RadiationPressure}\label{miscAccelerationsType:RadiationPressure}
+This class computes acceleration acting on a satellite caused by Solar and Earth radiation pressure
+and thermal radiation.
 
-Lemoine, F. G., et al. ( 2013), High-degree gravity models from GRAIL primary mission data,
-J. Geophys. Res. Planets, 118, 1676 1698 doi:10.1002/jgre.20118.
+Solar radiation pressure: The solar constant at 1~AU can be set via \config{solarFlux}.
+The \config{factorSolarRadation} can be used to scale the computed acceleration of the direct solar radiation.
+
+Earth radiation pressure:
+Input are a time series of gridded albedo values (unitless) as \configFile{inputfileAlbedoTimeSeries}{griddedDataTimeSeries}
+and a time series of gridded longwave flux (W/m$^2$) as \configFile{inputfileLongwaveFluxTimeSeries}{griddedDataTimeSeries}.
+Both files are optional and if not specified, the respective effect on the acceleration is not computed.
+The \config{factorEarthRadation} can be used to scale the computed acceleration of the earth radiation.
+
+The thermal radiation (TRP) of the satellite itself is either computed as direct re-emission or
+based on the actual temperature of the satellite surfaces, depending on the seetings of the
+\file{satellite macro model}{satelliteModel}. The second one uses a transient temperature model
+with a temporal differential equation which disallows parallel computing.
+The \config{factorThermalRadiation} can be used to scale the computed acceleration of the TRP.
+
+The algorithms are described in:
+
+Woeske et. al. (2019), GRACE accelerometer calibration by high precision non-gravitational force modeling,
+Advances in Space Research, \url{https://doi.org/10.1016/j.asr.2018.10.025}.
 
 
 \keepXColumns
@@ -4391,33 +4408,13 @@ J. Geophys. Res. Planets, 118, 1676 1698 doi:10.1002/jgre.20118.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~solarflux & \hfuzz=500pt double & \hfuzz=500pt solar flux constant in 1 AU [W/m**2]\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~solarflux & \hfuzz=500pt double & \hfuzz=500pt solar flux constant in 1 AU [W/m\textasciicircum{}2]\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~eclipse & \hfuzz=500pt \hyperref[eclipseType]{eclipse} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
-\hline
-\end{tabularx}
-
-
-\subsection{Albedo}\label{miscAccelerationsType:albedo}
-Acceleration caused by Earth's albedo.
-
-The acceleration on the satellite caused by reflection and reradiation is computed using the
-algorithm in:
-
-Knocke, P. C., Ries, J. C., and Tapley, B. D. (1988). Earth radiation pressure effects on satellites.
-Proceedings of the AIAA/AAS Astrodynamics Conference, 88-4292-CP, 577-87. DOI: 10.2514/6.
-1988-4292.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileReflectivity & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileEmissivity & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~solarflux & \hfuzz=500pt double & \hfuzz=500pt solar flux constant in 1 AU [W/m**2]\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAlbedoTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt GriddedDataTimeSeries of albedo values (unitless)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileLongwaveFluxTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt GriddedDataTimeSeries of longwave flux values [W/m\textasciicircum{}2]\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factorSolarRadation & \hfuzz=500pt double & \hfuzz=500pt Solar radiation pressure is multiplied by this factor\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factorEarthRadation & \hfuzz=500pt double & \hfuzz=500pt Earth radiation preussure is multiplied by this factor\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factorThermalRadiation & \hfuzz=500pt double & \hfuzz=500pt Thermal (re-)radiation is multiplied by this factor\\
 \hline
 \end{tabularx}
 
@@ -4458,7 +4455,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{AtmosphericDrag}\label{miscAccelerationsType:atmosphericDragFromDensityFile}
+\subsection{AtmosphericDragFromDensityFile}\label{miscAccelerationsType:atmosphericDragFromDensityFile}
 Atmospheric drag computed from thermospheric density along the orbit
 (\configFile{inputfileDensity}{instrument}, MISCVALUE). The \configClass{thermosphere}{thermosphereType}
 is used to to compute temperature and wind.
@@ -4516,6 +4513,39 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSolution & \hfuzz=500pt filename & \hfuzz=500pt solution vector\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~indexStart & \hfuzz=500pt uint & \hfuzz=500pt position in the solution vector\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~rightSide & \hfuzz=500pt uint & \hfuzz=500pt if solution contains several right hand sides, select one\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
+\hline
+\end{tabularx}
+
+
+\subsection{SolarRadiationPressure}\label{miscAccelerationsType:solarRadiationPressure}
+DEPRECATED. Use radiationPressure instead.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~solarflux & \hfuzz=500pt double & \hfuzz=500pt solar flux constant in 1 AU [W/m**2]\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~eclipse & \hfuzz=500pt \hyperref[eclipseType]{eclipse} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
+\hline
+\end{tabularx}
+
+
+\subsection{Albedo}\label{miscAccelerationsType:albedo}
+DEPRECATED. Use radiationPressure instead.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileReflectivity & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileEmissivity & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~solarflux & \hfuzz=500pt double & \hfuzz=500pt solar flux constant in 1 AU [W/m**2]\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
 \hline
 \end{tabularx}

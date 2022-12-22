@@ -20,6 +20,10 @@ Time series of data for arbitrarily distributed points defined by geographic coo
 height. The data can be temporal interpolated by \reference{basis splines}{fundamentals.basisSplines}.
 The file format consists of a \file{griddedData}{griddedData}, a time series, and
 for each spatial point and spline node pair multiple values called \verb|data0|, \verb|data1|, \ldots.
+
+A GriddedDataTimeSeries can be generated from individual \file{griddedData}{griddedData} with the program
+\program{GriddedData2GriddedDataTimeSeries}. Vice-versa, a GriddedDataTimeSeries can be evaluated at a 
+specific time stamp to obtain a \file{griddedData}{griddedData} with \program{GriddedDataTimeSeries2GriddedData}.
 )";
 #endif
 

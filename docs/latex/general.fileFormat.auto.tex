@@ -4,6 +4,8 @@ Interpolation matrix to create ocean minor tides from modeled major tides.
 The file can be created with \program{DoodsonHarmonicsCalculateAdmittance} and used e.g. in
 \configClass{doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}.
 
+See \program{DoodsonHarmonicsCalculateAdmittance}.
+
 
 %==================================
 \subsection{ArcList}\label{general.fileFormat:arcList}
@@ -395,6 +397,10 @@ height. The data can be temporal interpolated by \reference{basis splines}{funda
 The file format consists of a \file{griddedData}{griddedData}, a time series, and
 for each spatial point and spline node pair multiple values called \verb|data0|, \verb|data1|, \ldots.
 
+A GriddedDataTimeSeries can be generated from individual \file{griddedData}{griddedData} with the program
+\program{GriddedData2GriddedDataTimeSeries}. Vice-versa, a GriddedDataTimeSeries can be evaluated at a 
+specific time stamp to obtain a \file{griddedData}{griddedData} with \program{GriddedDataTimeSeries2GriddedData}.
+
 
 %==================================
 \subsection{Instrument}\label{general.fileFormat:instrument}
@@ -524,6 +530,8 @@ Matrix in blocks can be distributed on muliple nodes in parallel mode to efficie
 \subsection{OceanPoleTide}\label{general.fileFormat:oceanPoleTide}
 Describes the reaction of the ocean mass to the change
 of the centrifugal potential (polar wobble) in terms spherical harmonics.
+
+See also \program{Iers2OceanPoleTide}.
 
 
 %==================================

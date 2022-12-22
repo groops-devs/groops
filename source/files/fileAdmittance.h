@@ -19,6 +19,8 @@ static const char *docstringAdmittance = R"(
 Interpolation matrix to create ocean minor tides from modeled major tides.
 The file can be created with \program{DoodsonHarmonicsCalculateAdmittance} and used e.g. in
 \configClass{doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}.
+
+See \program{DoodsonHarmonicsCalculateAdmittance}.
 )";
 #endif
 

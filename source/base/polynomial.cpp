@@ -83,7 +83,7 @@ Matrix Polynomial::interpolate(const std::vector<Time> &timesNew, const_MatrixSl
         const UInt idxFirstRight = static_cast<UInt>(std::distance(times.begin(), searchStart));
 
         // same time? -> no interpolation needed
-        if((idxFirstRight < times.size()) && (std::fabs((*searchStart-timesNew.at(i)).seconds()) <= margin))
+        if(!derivative && (idxFirstRight < times.size()) && (std::fabs((*searchStart-timesNew.at(i)).seconds()) <= margin))
         {
           copy(A.row(rowsPerEpoch*idxFirstRight, rowsPerEpoch), B.row(rowsPerEpoch*i, rowsPerEpoch));
           continue;

@@ -2,7 +2,7 @@
 /**
 * @file miscAccelerationsSolarRadiationPressure.h
 *
-* @brief Solar radiation pressure model.
+* @brief DEPRECATED. Use radiationPressure instead.
 * @see MiscAccelerations
 *
 * @author Torsten Mayer-Guerr
@@ -18,22 +18,19 @@
 #ifdef DOCSTRING_MiscAccelerations
 static const char *docstringMiscAccelerationsSolarRadiationPressure = R"(
 \subsection{SolarRadiationPressure}\label{miscAccelerationsType:solarRadiationPressure}
-Solar radiation pressure model.
-Algorithm for the solar radiation pressure is described in:
-
-Lemoine, F. G., et al. ( 2013), High-degree gravity models from GRAIL primary mission data,
-J. Geophys. Res. Planets, 118, 1676 1698 doi:10.1002/jgre.20118.
+DEPRECATED. Use radiationPressure instead.
 )";
 #endif
 
 /***********************************************/
 
 #include "classes/eclipse/eclipse.h"
+#include "classes/miscAccelerations/miscAccelerationsRadiationPressure.h"
 #include "classes/miscAccelerations/miscAccelerations.h"
 
 /***** CLASS ***********************************/
 
-/** @brief Solar radiation pressure model.
+/** @brief DEPRECATED. Use radiationPressure instead.
  * @ingroup miscAccelerationsGroup
  * @see MiscAccelerations */
 class MiscAccelerationsSolarRadiationPressure : public MiscAccelerationsBase
@@ -55,8 +52,6 @@ inline MiscAccelerationsSolarRadiationPressure::MiscAccelerationsSolarRadiationP
 {
   try
   {
-    std::string choice;
-
     readConfig(config, "solarflux", solarflux, Config::DEFAULT, "1367", "solar flux constant in 1 AU [W/m**2]");
     readConfig(config, "eclipse",   eclipse,   Config::MUSTSET, "",     "");
     readConfig(config, "factor",    factor,    Config::DEFAULT, "1.0",  "the result is multiplied by this factor, set -1 to subtract the field");
@@ -87,7 +82,18 @@ inline Vector3d MiscAccelerationsSolarRadiationPressure::acceleration(SatelliteM
     const Double AU = 149597870700.0;
     const Double ny = eclipse ? eclipse->factor(time, position, ephemerides) : 1; // shadowing from Earth and Moon
 
-    return factor * rotEarth.rotate(rotSat.rotate(satellite->accelerationPressure(direction, ny*solarflux/LIGHT_VELOCITY*std::pow(AU/distanceSun,2), 0.)));
+    Vector absorbedPressure(satellite->surfaces.size()); // power for each satellite surface
+    Vector3d F = MiscAccelerationsRadiationPressure::force(satellite, direction, ny*solarflux/LIGHT_VELOCITY*std::pow(AU/distanceSun,2), 0., absorbedPressure);
+
+    // compute thermal radition
+    for(UInt i=0; i<satellite->surfaces.size(); i++)
+    {
+      auto &surface = satellite->surfaces.at(i);
+      if(surface.specificHeatCapacity < 0)
+        F -= (2./3.) * surface.area * absorbedPressure(i) * surface.normal; // spontaneous reemission of absorbed radiation
+    }
+
+    return (factor/satellite->mass) * rotEarth.rotate(rotSat.rotate(F));
   }
   catch(std::exception &e)
   {

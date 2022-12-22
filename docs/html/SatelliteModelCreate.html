@@ -94,7 +94,7 @@ massInstrument using the modules option.
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">surfaces</div></div></td><td>sequence</td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">inputfile</div></div></td><td>filename</td><td>each line must contain one surface element</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">type</div></div></td><td>expression</td><td>0: plate, 1: sphere, 2: cylinder</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">area</div></div></td><td>expression</td><td>[m**2]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">area</div></div></td><td>expression</td><td>[m^2]</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">normalX</div></div></td><td>expression</td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">normalY</div></div></td><td>expression</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">normalZ</div></div></td><td>expression</td><td></td></tr>
@@ -104,7 +104,7 @@ massInstrument using the modules option.
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">reflexionInfrared</div></div></td><td>expression</td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">diffusionInfrared</div></div></td><td>expression</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">absorptionInfrared</div></div></td><td>expression</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">hasThermalReemission</div></div></td><td>expression</td><td>(0 = no, 1 = yes) spontaneous reemission of absorbed radiation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">specificHeatCapacity</div></div></td><td>expression</td><td>0: no thermal radiation, -1: direct reemission [Ws/K/m^2]</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional-unbounded">module</div></div></td><td>choice</td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">antennaThrust</div></div></td><td>sequence</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config optional">thrustX</div></div></td><td>double</td><td></td></tr>

@@ -15,6 +15,7 @@
 #include "base/import.h"
 #include "config/configRegister.h"
 #include "classes/miscAccelerations/miscAccelerationsRelativisticEffect.h"
+#include "classes/miscAccelerations/miscAccelerationsRadiationPressure.h"
 #include "classes/miscAccelerations/miscAccelerationsSolarRadiationPressure.h"
 #include "classes/miscAccelerations/miscAccelerationsAtmosphericDrag.h"
 #include "classes/miscAccelerations/miscAccelerationsAtmosphericDragFromDensityFile.h"
@@ -27,12 +28,13 @@
 
 GROOPS_REGISTER_CLASS(MiscAccelerations, "miscAccelerationsType",
                       MiscAccelerationsRelativisticEffect,
-                      MiscAccelerationsSolarRadiationPressure,
-                      MiscAccelerationsAlbedo,
+                      MiscAccelerationsRadiationPressure,
                       MiscAccelerationsAtmosphericDrag,
                       MiscAccelerationsAtmosphericDragFromDensityFile,
                       MiscAccelerationsAntennaThrust,
-                      MiscAccelerationsFromParametrization)
+                      MiscAccelerationsFromParametrization,
+                      MiscAccelerationsSolarRadiationPressure,
+                      MiscAccelerationsAlbedo)
 
 GROOPS_READCONFIG_UNBOUNDED_CLASS(MiscAccelerations, "miscAccelerationsType")
 
@@ -47,18 +49,20 @@ MiscAccelerations::MiscAccelerations(Config &config, const std::string &name)
     {
       if(readConfigChoiceElement(config, "relativisticEffect",             type, "Relativistic effect (IERS2010)"))
        acc.push_back(new MiscAccelerationsRelativisticEffect(config));
-      if(readConfigChoiceElement(config, "solarRadiationPressure",         type, "Solar radiation pressure model"))
-       acc.push_back(new MiscAccelerationsSolarRadiationPressure(config));
-      if(readConfigChoiceElement(config, "albedo",                         type, "Albedo radiation"))
-       acc.push_back(new MiscAccelerationsAlbedo(config));
+      if(readConfigChoiceElement(config, "radiationPressure",              type, "Solar and Earh radiation pressure model"))
+       acc.push_back(new MiscAccelerationsRadiationPressure(config));
       if(readConfigChoiceElement(config, "atmosphericDrag",                type, "atmospheric drag"))
        acc.push_back(new MiscAccelerationsAtmosphericDrag(config));
-      if(readConfigChoiceElement(config, "atmosphericDragFromDensityFile", type, "atmospheric drag (from density along orbit)"))
-       acc.push_back(new MiscAccelerationsAtmosphericDragFromDensityFile(config));
       if(readConfigChoiceElement(config, "antennaThrust",                  type, "antenna thrust"))
        acc.push_back(new MiscAccelerationsAntennaThrust(config));
+      if(readConfigChoiceElement(config, "atmosphericDragFromDensityFile", type, "atmospheric drag (from density along orbit)"))
+       acc.push_back(new MiscAccelerationsAtmosphericDragFromDensityFile(config));
       if(readConfigChoiceElement(config, "fromParametrization",            type, "from a solution vector with given parametrization"))
        acc.push_back(new MiscAccelerationsFromParametrization(config));
+      if(readConfigChoiceElement(config, "solarRadiationPressure",         type, "DEPRECATED"))
+       acc.push_back(new MiscAccelerationsSolarRadiationPressure(config));
+      if(readConfigChoiceElement(config, "albedo",                         type, "DEPRECATED"))
+       acc.push_back(new MiscAccelerationsAlbedo(config));
       endChoice(config);
       if(isCreateSchema(config))
         return;
