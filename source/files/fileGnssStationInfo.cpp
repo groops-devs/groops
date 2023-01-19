@@ -127,11 +127,7 @@ void GnssStationInfo::fillAntennaPattern(const std::vector<GnssAntennaDefinition
   try
   {
     for(auto &antennaInfo : antenna)
-    {
-      const UInt idAnt = GnssAntennaDefinition::find(antennaList, antennaInfo.name, antennaInfo.serial, antennaInfo.radome);
-      if(idAnt != NULLINDEX)
-        antennaInfo.antennaDef = antennaList.at(idAnt);
-    }
+      antennaInfo.antennaDef = GnssAntennaDefinition::find(antennaList, antennaInfo.name, antennaInfo.serial, antennaInfo.radome);
   }
   catch(std::exception &e)
   {
@@ -146,11 +142,7 @@ void GnssStationInfo::fillAntennaAccuracy(const std::vector<GnssAntennaDefinitio
   try
   {
     for(auto &antennaInfo : antenna)
-    {
-      const UInt idAnt = GnssAntennaDefinition::find(antennaList, antennaInfo.name, antennaInfo.serial, antennaInfo.radome);
-      if(idAnt != NULLINDEX)
-        antennaInfo.accuracyDef = antennaList.at(idAnt);
-    }
+      antennaInfo.accuracyDef = GnssAntennaDefinition::find(antennaList, antennaInfo.name, antennaInfo.serial, antennaInfo.radome);
   }
   catch(std::exception &e)
   {
@@ -165,11 +157,7 @@ void GnssStationInfo::fillReceiverDefinition(const std::vector<GnssReceiverDefin
   try
   {
     for(auto &recv : receiver)
-    {
-      const UInt idRecvDef = GnssReceiverDefinition::find(receiverList, recv.name, recv.serial, recv.version);
-      if(idRecvDef != NULLINDEX)
-        recv.receiverDef = receiverList.at(idRecvDef);
-    }
+      recv.receiverDef = GnssReceiverDefinition::find(receiverList, recv.name, recv.serial, recv.version);
   }
   catch(std::exception &e)
   {

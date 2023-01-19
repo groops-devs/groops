@@ -36,10 +36,12 @@ class GnssTransmitterGenerator;
 class GnssReceiverGenerator;
 class GnssParametrization;
 class EarthRotation;
+class PlatformSelector;
 typedef std::shared_ptr<GnssTransmitterGenerator> GnssTransmitterGeneratorPtr;
 typedef std::shared_ptr<GnssReceiverGenerator>    GnssReceiverGeneratorPtr;
 typedef std::shared_ptr<GnssParametrization>      GnssParametrizationPtr;
 typedef std::shared_ptr<EarthRotation>            EarthRotationPtr;
+typedef std::shared_ptr<PlatformSelector>         PlatformSelectorPtr;
 
 /***** CLASS ***********************************/
 
@@ -76,6 +78,9 @@ public:
 
   /** @brief sorted list of used types. */
   std::vector<GnssType> types(const GnssType mask=GnssType::ALL) const;
+
+  std::vector<Byte> selectTransmitters(PlatformSelectorPtr selector);
+  std::vector<Byte> selectReceivers(PlatformSelectorPtr selector);
 
   class InfoParameterChange
   {

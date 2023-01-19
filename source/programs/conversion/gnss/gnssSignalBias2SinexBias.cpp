@@ -22,7 +22,7 @@ Time-variable biases (e.g. GPS L5 satellite phase bias) can be provided via \con
 Their time span will be based on the provided epochs ($t \pm \Delta t / 2$).
 The slope of the bias can be optionally provided in the second data column.
 
-If GLONASS receiver biases depend on frequency number, those must be defined in \configFile{inputfileTransmitterInfo}{gnssStationInfo}
+If GLONASS receiver biases depend on frequency number, those must be defined in \configFile{inputfileTransmitterInfo}{platform}
 to get the correct PRN/SVN assignment to the biases.
 
 See IGS SINEX Bias format description for further details on header information.
@@ -34,7 +34,7 @@ See also \program{GnssSinexBias2SignalBias} and \program{GnssBiasClockAlignment}
 
 #include "programs/program.h"
 #include "files/fileGnssSignalBias.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 #include "files/fileMatrix.h"
 #include "inputOutput/file.h"
 #include "inputOutput/fileSinex.h"
@@ -70,7 +70,7 @@ public:
   };
 
 private:
-  std::map<std::string, GnssStationInfo> prn2info;
+  std::map<std::string, Platform> prn2platform;
   std::map<Int, std::vector<std::string>> freqNo2prns;
 
   void readData(std::vector<Data> &data) const;
@@ -153,12 +153,12 @@ void GnssSignalBias2SinexBias::run(Config &config, Parallel::CommunicatorPtr /*c
     readConfig(config, "comment",             comments,       Config::OPTIONAL,  "", "comments in the comment block");
     if(isCreateSchema(config)) return;
 
-    logStatus<<"read transmitter info files"<<Log::endl;
+    logStatus<<"read transmitter platform files"<<Log::endl;
     for(const auto &fileName : inNameTransmitterInfo)
     {
-      GnssStationInfo info;
-      readFileGnssStationInfo(fileName, info);
-      prn2info[info.markerNumber] = info;
+      Platform platform;
+      readFilePlatform(fileName, platform);
+      prn2platform[platform.markerNumber] = platform;
     }
 
     logStatus<<"read bias files"<<Log::endl;
@@ -169,11 +169,10 @@ void GnssSignalBias2SinexBias::run(Config &config, Parallel::CommunicatorPtr /*c
     for(const auto &trans : transmitterBiases)
       if(trans.identifier.at(0) == 'R') // GLONASS only
       {
-        UInt idRecv = prn2info[trans.identifier].findReceiver(0.5*(timeStart+timeEnd));
-        if(idRecv == NULLINDEX)
+        auto recv = prn2platform[trans.identifier].findEquipment<PlatformGnssReceiver>(0.5*(timeStart+timeEnd));
+        if(!recv)
           throw(Exception("no receiver info found in transmitter info for "+trans.identifier));
-
-        freqNo2prns[std::stoi(prn2info[trans.identifier].receiver.at(idRecv).version)].push_back(trans.identifier);
+        freqNo2prns[std::stoi(recv->version)].push_back(trans.identifier);
       }
 
     logStatus<<"write SINEX bias file <"<<outNameSinexBias<<">"<<Log::endl;
@@ -350,11 +349,10 @@ void GnssSignalBias2SinexBias::writeData(OutFile &file, const Time &timeStart, c
   {
     auto getSvn = [&](const std::string &prn)
     {
-      UInt idAnt = prn2info.at(prn).findAntenna(timeStart);
-      if(idAnt == NULLINDEX)
-        throw(Exception("no SVN found for " + data.identifier));
-
-      return prn2info.at(prn).antenna.at(idAnt).serial;
+      auto antenna = prn2platform.at(prn).findEquipment<PlatformGnssAntenna>(timeStart);
+      if(!antenna)
+        throw(Exception("no SVN found for "+data.identifier));
+      return antenna->serial;
     };
 
     std::string prn = (isStation ? "" : data.identifier);

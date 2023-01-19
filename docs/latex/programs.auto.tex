@@ -777,7 +777,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileClock & \hfuzz=500pt filename & \hfuzz=500pt clock instrument file\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileReferenceClock & \hfuzz=500pt filename & \hfuzz=500pt reference clock instrument file\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileSignalBias & \hfuzz=500pt filename & \hfuzz=500pt (GLONASS only) signal bias file\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt transmitter info file\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt transmitter platform file\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~receiver & \hfuzz=500pt sequence & \hfuzz=500pt one element per station\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~outputfileSignalBias & \hfuzz=500pt filename & \hfuzz=500pt aligned signal bias file\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileSignalBias & \hfuzz=500pt filename & \hfuzz=500pt signal bias file\\
@@ -814,7 +814,7 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssGlonassFrequencyNumberUpdate}\label{GnssGlonassFrequencyNumberUpdate}
-Update/set GLONASS frequency number in \configFile{inputfileTransmitterInfo}{gnssStationInfo} files.
+Update/set GLONASS frequency number in \configFile{inputfileTransmitterInfo}{platform} files.
 
 PRN/SVN to frequency number source: \url{http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO}.
 
@@ -838,7 +838,7 @@ Name & Type & Annotation\\
 %==================================
 \subsection{GnssPrn2SvnBlockVariables}\label{GnssPrn2SvnBlockVariables}
 Create \reference{variables}{general.parser} containing SVN and block based on an
-\configFile{inputfileTransmitterInfo}{gnssStationInfo} of a GNSS satellite/PRN and
+\configFile{inputfileTransmitterInfo}{platform} of a GNSS satellite/PRN and
 a specified \config{time}.
 
 
@@ -937,7 +937,7 @@ Name & Type & Annotation\\
 %==================================
 \subsection{GnssResiduals2AccuracyDefinition}\label{GnssResiduals2AccuracyDefinition}
 Compute antenna accuracies from observation \configFile{inputfileResiduals}{instrument}.
-The \configFile{inputfileStationInfo}{gnssStationInfo} is needed to assign
+The \configFile{inputfileStationInfo}{platform} is needed to assign
 the residuals to the equipped antenna at observation times.
 
 The \configFile{outputfileAccuracyDefinition}{gnssAntennaDefinition} contains
@@ -1100,7 +1100,7 @@ Create a \file{GnssStationInfo file}{gnssStationInfo} from scratch by defining a
 \config{markerName}, \config{markerNumber}, \config{comment}, \config{approxPosition},
 \config{antenna} and \config{receiver}.
 
-See also \program{GnssAntex2AntennaDefinition} and \program{GnssStationLog2StationInfo}.
+See also \program{GnssAntex2AntennaDefinition} and \program{GnssStationLog2Platform}.
 
 
 \keepXColumns
@@ -4660,6 +4660,76 @@ Name & Type & Annotation\\
 This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
+\subsection{PlatformCreate}\label{PlatformCreate}
+Create a \file{Platform file}{platform} from scratch by defining attributes such as
+\config{markerName}, \config{markerNumber}, \config{comment}, \config{approxPosition},
+\config{equipment}.
+
+See also \program{GnssAntex2AntennaDefinition} and \program{GnssStationLog2Platform}.
+
+\fig{!hb}{0.8}{fileFormatPlatform}{fig:platformCreate}{Platform for stations, LEOs, and GNSS satellites.}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfilePlatform & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~markerName & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerNumber & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~approxPositionX & \hfuzz=500pt double & \hfuzz=500pt [m] in TRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~approxPositionY & \hfuzz=500pt double & \hfuzz=500pt [m] in TRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~approxPositionZ & \hfuzz=500pt double & \hfuzz=500pt [m] in TRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~equipment & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~gnssAntenna & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~radome & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionX & \hfuzz=500pt double & \hfuzz=500pt [m] ARP in north, east, up or vehicle system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionY & \hfuzz=500pt double & \hfuzz=500pt [m] ARP in north, east, up or vehicle system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionZ & \hfuzz=500pt double & \hfuzz=500pt [m] ARP in north, east, up or vehicle system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationX & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to left-handed antenna system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationY & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to left-handed antenna system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationZ & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to left-handed antenna system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipX & \hfuzz=500pt boolean & \hfuzz=500pt flip x-axis (after rotation)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipY & \hfuzz=500pt boolean & \hfuzz=500pt flip y-axis (after rotation)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipZ & \hfuzz=500pt boolean & \hfuzz=500pt flip z-axis (after rotation)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~gnssReceiver & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~version & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~other & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionX & \hfuzz=500pt double & \hfuzz=500pt [m] in north, east, up or vehicle system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionY & \hfuzz=500pt double & \hfuzz=500pt [m] in north, east, up or vehicle system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionZ & \hfuzz=500pt double & \hfuzz=500pt [m] in north, east, up or vehicle system\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~referencePoint & \hfuzz=500pt sequence & \hfuzz=500pt e.g. center of mass in satellite frame\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~xStart & \hfuzz=500pt double & \hfuzz=500pt [m] in north, east, up or vehicle system\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~yStart & \hfuzz=500pt double & \hfuzz=500pt linear motion between start and end\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~zStart & \hfuzz=500pt double & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~xEnd & \hfuzz=500pt double & \hfuzz=500pt [m] in north, east, up or vehicle system\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~yEnd & \hfuzz=500pt double & \hfuzz=500pt linear motion between start and end\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~zEnd & \hfuzz=500pt double & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{PotentialCoefficients2BlockMeanTimeSplines}\label{PotentialCoefficients2BlockMeanTimeSplines}
 This program is a simplified version of \program{Gravityfield2TimeSplines}.
 It reads a series of potential coefficient files (\configFile{inputfilePotentialCoefficients}{potentialCoefficients})
@@ -7245,7 +7315,7 @@ Name & Type & Annotation\\
 %==================================
 \subsection{GnssAntex2AntennaDefinition}\label{GnssAntex2AntennaDefinition}
 Converts metadata and antenna definitions from the \href{https://files.igs.org/pub/data/format/antex14.txt}{IGS ANTEX format}.
-to \configFile{transmitterInfo}{gnssStationInfo}, \configFile{antennaDefinition}{gnssAntennaDefinition}, \configFile{svnBlockTable}{stringTable},
+to \configFile{transmitterInfo}{platform}, \configFile{antennaDefinition}{gnssAntennaDefinition}, \configFile{svnBlockTable}{stringTable},
 and \configFile{transmitterList}{stringList} files for the respective GNSS and for the list of ground station antennas.
 
 
@@ -7451,7 +7521,7 @@ Write GNSS data/metadata and \file{normal equations}{normalEquation} to
 
 Normal equations usually come from \program{GnssProcessing}
 (e.g. from \reference{GNSS satellite orbit determination and station network analysis}{cookbook.gnssNetwork}).
-Metadata input files include \configFile{stationInfo/transmitterInfo}{gnssStationInfo}, \configFile{antennaDefinition}{gnssAntennaDefinition},
+Metadata input files include \configFile{stationInfo/transmitterInfo}{platform}, \configFile{antennaDefinition}{gnssAntennaDefinition},
 and \configFile{stationList/transmitterList}{stringList}, see \program{GnssAntex2AntennaDefinition}.
 
 See also \program{Sinex2Normals} and \program{NormalsSphericalHarmonics2Sinex}.
@@ -7570,7 +7640,7 @@ Time-variable biases (e.g. GPS L5 satellite phase bias) can be provided via \con
 Their time span will be based on the provided epochs ($t \pm \Delta t / 2$).
 The slope of the bias can be optionally provided in the second data column.
 
-If GLONASS receiver biases depend on frequency number, those must be defined in \configFile{inputfileTransmitterInfo}{gnssStationInfo}
+If GLONASS receiver biases depend on frequency number, those must be defined in \configFile{inputfileTransmitterInfo}{platform}
 to get the correct PRN/SVN assignment to the biases.
 
 See IGS SINEX Bias format description for further details on header information.
@@ -7646,6 +7716,28 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{GnssStationLog2Platform}\label{GnssStationLog2Platform}
+Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} to \configFile{outputfileStationPlatform}{platform}.
+
+If \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition} is provided, station log data is cross-checked with the given antenna definitions.
+Cross-checking station log data with a \href{https://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file} is also
+possible by providing \config{inputfileSinex}. Any failed checks result in warnings in the output log.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStationPlatform & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStationLog & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAntennaDefinition & \hfuzz=500pt filename & \hfuzz=500pt used to check antennas\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSinex & \hfuzz=500pt filename & \hfuzz=500pt used to cross-check station log with SINEX file\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{GnssStationLog2StationInfo}\label{GnssStationLog2StationInfo}
 Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} to \configFile{outputfileStationInfo}{gnssStationInfo}.
 
@@ -7673,7 +7765,7 @@ Convert GNSS troposphere data from GROOPS format to \href{https://files.igs.org/
 
 Specification of the station list is done via \config{inputfileStationList}.
 \config{inputfileTroposphereData} needs the troposphere data provided from \program{GnssProcessing}.
-Additional following station metadata are required: \config{inputfileStationInfo} using file type \file{Station info}{gnssStationInfo},
+Additional following station metadata are required: \config{inputfileStationInfo} using file type \file{Station info}{platform},
 \config{inputfileAntennaDefinition} using file type \file{Antenna definition}{gnssAntennaDefinition} and \config{inputfileGridPos} which
 uses the stations positions provided from \program{GnssProcessing}.
 For considering the geoid height use \config{inputfileGeoidHeight}. The geoid height is provided by \program{Gravityfield2GriddedData}.
@@ -8944,7 +9036,7 @@ RINEX v3+ observation files already contain this information.
 \configClass{useType}{gnssType} and \configClass{ignoreType}{gnssType} can be used to filter
 the observation types that will be exported.
 
-If \configFile{inputfileStationInfo}{gnssStationInfo} is set, RINEX antenna and receiver info
+If \configFile{inputfileStationInfo}{platform} is set, RINEX antenna and receiver info
 will be cross-checked with the provided file and warnings are raised in case of differences.
 
 A list of semi-codeless GPS receivers (observing C2D instead of C2W) can be provided via

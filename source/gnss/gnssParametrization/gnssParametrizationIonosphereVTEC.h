@@ -43,8 +43,8 @@ Local and short-term scintillations should be considered by adding loosely const
 
 #include "base/import.h"
 #include "config/config.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnss.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -56,7 +56,7 @@ class GnssParametrizationIonosphereVTEC : public GnssParametrizationBase
 {
   Gnss                                        *gnss;
   std::string                                  name;
-  GnssTransceiverSelectorPtr                   selectReceivers;
+  PlatformSelectorPtr                          selectReceivers;
   std::vector<Byte>                            selectedReceivers;
   FileName                                     fileNameVTEC;
   Double                                       mapR, mapH, mapAlpha;

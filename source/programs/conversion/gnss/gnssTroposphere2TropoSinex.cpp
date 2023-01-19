@@ -17,7 +17,7 @@ Convert GNSS troposphere data from GROOPS format to \href{https://files.igs.org/
 
 Specification of the station list is done via \config{inputfileStationList}.
 \config{inputfileTroposphereData} needs the troposphere data provided from \program{GnssProcessing}.
-Additional following station metadata are required: \config{inputfileStationInfo} using file type \file{Station info}{gnssStationInfo},
+Additional following station metadata are required: \config{inputfileStationInfo} using file type \file{Station info}{platform},
 \config{inputfileAntennaDefinition} using file type \file{Antenna definition}{gnssAntennaDefinition} and \config{inputfileGridPos} which
 uses the stations positions provided from \program{GnssProcessing}.
 For considering the geoid height use \config{inputfileGeoidHeight}. The geoid height is provided by \program{Gravityfield2GriddedData}.
@@ -33,7 +33,7 @@ For considering the geoid height use \config{inputfileGeoidHeight}. The geoid he
 #include "inputOutput/file.h"
 #include "inputOutput/fileSinex.h"
 #include "files/fileStringTable.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 
 /***** CLASS ***********************************/
 
@@ -153,16 +153,16 @@ void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /
     readFileGriddedData(fileNameGridPos, gridPos);
 
     logStatus<<"reading station infos from <"<<fileNameStationInfo<<">"<<Log::endl;
-    std::vector<GnssStationInfo> stationInfos;
+    std::vector<Platform> stationInfos;
     VariableList fileNameVariableList;
     addVariable(variableStationName, fileNameVariableList);
     for(const auto &station : stationList)
     {
       fileNameVariableList[variableStationName]->setValue(station);
-      GnssStationInfo stationInfo;
-      readFileGnssStationInfo(fileNameStationInfo(fileNameVariableList), stationInfo);
+      Platform stationInfo;
+      readFilePlatform(fileNameStationInfo(fileNameVariableList), stationInfo);
 
-      stationInfo.fillAntennaPattern(antennaDefinitionList);
+      stationInfo.fillGnssAntennaDefinition(antennaDefinitionList);
       stationInfos.push_back(stationInfo);
     }
 
@@ -284,15 +284,14 @@ void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /
     file<<"*STATION__ PT SOLN T __DATA_START__ __DATA_END____ DESCRIPTION_________ S/N_________________ FIRMW______"<<std::endl;
     for(const auto &stationInfo : stationInfos)
     {
-      const UInt idRecv = stationInfo.findReceiver(timeRef);
-      if(idRecv == NULLINDEX)
+      auto recv = stationInfo.findEquipment<PlatformGnssReceiver>(timeRef);
+      if(!recv)
       {
-        logWarning<<stationInfo.markerName<<": no receiver found at "<<timeRef.dateTimeStr()<<Log::endl;
+        logWarning << stationInfo.markerName << ": no receiver found at " << timeRef.dateTimeStr() << Log::endl;
         continue;
       }
-      const GnssReceiverInfo recv = stationInfo.receiver.at(idRecv);
-      file<<" "<<String::upperCase(resize(stationInfo.markerName, 9))<<"  A    1 P "<<Sinex::time2str(recv.timeStart, TRUE)<<" "<<Sinex::time2str(recv.timeEnd, TRUE)<<" "<<resize(recv.name, 20)
-          <<" "<<resize(recv.serial.empty() ? std::string(20, '-') : recv.serial, 20)<<" "<<resize(recv.version.empty() ? std::string(11, '-') : recv.version, 11)<<std::endl;
+      file<<" "<<String::upperCase(resize(stationInfo.markerName, 9))<<"  A    1 P "<<Sinex::time2str(recv->timeStart, TRUE)<<" "<<Sinex::time2str(recv->timeEnd, TRUE)<<" "<<resize(recv->name, 20)
+          <<" "<<resize(recv->serial.empty() ? std::string(20, '-') : recv->serial, 20)<<" "<<resize(recv->version.empty() ? std::string(11, '-') : recv->version, 11)<<std::endl;
     }
     file<<"-SITE/RECEIVER"<<std::endl;
 
@@ -302,16 +301,14 @@ void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /
     file<<"*STATION__ PT SOLN T __DATA_START__ __DATA_END____ DESCRIPTION_________ S/N_________________ PCV_MODEL_"<<std::endl;
     for(const auto &stationInfo : stationInfos)
     {
-      const UInt idAnt = stationInfo.findAntenna(timeRef);
-      if(idAnt == NULLINDEX)
+      auto ant = stationInfo.findEquipment<PlatformGnssAntenna>(timeRef);
+      if(!ant)
       {
-        logWarning<<stationInfo.markerName<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
+        logWarning << stationInfo.markerName << ": no antenna found at " << timeRef.dateTimeStr() << Log::endl;
         continue;
       }
-      const GnssAntennaInfo ant = stationInfo.antenna.at(idAnt);
-
-      file<<" "<<String::upperCase(resize(stationInfo.markerName, 9))<<"  A    1 P "<<Sinex::time2str(ant.timeStart, TRUE)<<" "<<Sinex::time2str(ant.timeEnd, TRUE)<<" "
-          <<resize(ant.name, 15)<<" "<<(ant.radome.empty() ? "NONE" : resize(ant.radome, 4))<<" "<<resize(ant.serial.empty() ? std::string(20, '-') : ant.serial, 20)<<" "
+      file<<" "<<String::upperCase(resize(stationInfo.markerName, 9))<<"  A    1 P "<<Sinex::time2str(ant->timeStart, TRUE)<<" "<<Sinex::time2str(ant->timeEnd, TRUE)<<" "
+          <<resize(ant->name, 15)<<" "<<(ant->radome.empty() ? "NONE" : resize(ant->radome, 4))<<" "<<resize(ant->serial.empty() ? std::string(20, '-') : ant->serial, 20)<<" "
           <<resize(antennaModel, 10)<<std::endl;
     }
     file<<"-SITE/ANTENNA"<<std::endl;
@@ -323,15 +320,14 @@ void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /
     file<<"*STATION__ PT SOLN T __DATA_START__ __DATA_END____ AXE ARP->BENCHMARK(M)_________"<<std::endl;
     for(const auto &stationInfo : stationInfos)
     {
-      const UInt idAnt = stationInfo.findAntenna(timeRef);
-      if(idAnt == NULLINDEX)
+      auto ant = stationInfo.findEquipment<PlatformGnssAntenna>(timeRef);
+      if(!ant)
       {
-        logWarning<<stationInfo.markerName<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
+        logWarning << stationInfo.markerName << ": no antenna found at " << timeRef.dateTimeStr() << Log::endl;
         continue;
       }
-      const GnssAntennaInfo ant = stationInfo.antenna.at(idAnt);
-      file<<" "<<String::upperCase(resize(stationInfo.markerName, 9))<<"  A    1 P "<<Sinex::time2str(ant.timeStart, TRUE)<<" "
-          <<Sinex::time2str(ant.timeEnd, TRUE)<<" UNE "<<ant.position.z() % "%8.4f "s<<ant.position.x() % "%8.4f "s<<ant.position.y() % "%8.4f"s<<std::endl;
+      file<<" "<<String::upperCase(resize(stationInfo.markerName, 9))<<"  A    1 P "<<Sinex::time2str(ant->timeStart, TRUE)<<" "
+          <<Sinex::time2str(ant->timeEnd, TRUE)<<" UNE "<<ant->position.z() % "%8.4f "s<<ant->position.x() % "%8.4f "s<<ant->position.y() % "%8.4f"s<<std::endl;
     }
     file<<"-SITE/ECCENTRICITY"<<std::endl;
 

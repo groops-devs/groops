@@ -24,7 +24,7 @@ See IGS clock RINEX format description for further details on header information
 
 #include "programs/program.h"
 #include "files/fileGnssSignalBias.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 #include "files/fileInstrument.h"
 #include <chrono>
 
@@ -159,12 +159,12 @@ void GnssClock2ClockRinex::readStationData(std::vector<StationData> &data) const
     auto iter = data.begin();
     while(iter != data.end())
     {
-      GnssStationInfo info;
+      Platform platform;
       try
       {
         iter->arc = InstrumentFile::read(iter->inNameClock);
         iter->position = Vector3d(InstrumentFile::read(iter->inNamePosition).at(0).data());
-        readFileGnssStationInfo(iter->inNameStationInfo, info);
+        readFilePlatform(iter->inNameStationInfo, platform);
       }
       catch(std::exception &e)
       {
@@ -176,7 +176,7 @@ void GnssClock2ClockRinex::readStationData(std::vector<StationData> &data) const
       iter->times = iter->arc.times();
       iter->identifier.resize(4, ' ');
       std::transform(iter->identifier.begin(), iter->identifier.end(), iter->identifier.begin(), ::toupper);
-      iter->markerNumber = info.markerNumber;
+      iter->markerNumber = platform.markerNumber;
       iter->markerNumber.resize(20, ' ');
 
       iter++;

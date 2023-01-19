@@ -29,7 +29,7 @@ and select all stations excluding the core stations in that step.
 /***********************************************/
 
 #include "config/config.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssProcessingStep/gnssProcessingStep.h"
 
 /***** CLASS ***********************************/
@@ -39,7 +39,7 @@ and select all stations excluding the core stations in that step.
 * @see GnssProcessingStep */
 class GnssProcessingStepSelectReceivers : public GnssProcessingStepBase
 {
-  GnssTransceiverSelectorPtr selectReceivers;
+  PlatformSelectorPtr selectReceivers;
 
 public:
   GnssProcessingStepSelectReceivers(Config &config);
@@ -73,7 +73,7 @@ inline void GnssProcessingStepSelectReceivers::process(GnssProcessingStep::State
       logWarning<<"SelectReceivers is not allowed in single receiver loop"<<Log::endl;
       return;
     }
-    state.normalEquationInfo.estimateReceiver = selectReceivers->select(state.gnss->receivers);
+    state.normalEquationInfo.estimateReceiver = state.gnss->selectReceivers(selectReceivers);
     for(auto recv : state.gnss->receivers)
       if(!recv->useable())
         state.normalEquationInfo.estimateReceiver.at(recv->idRecv()) = FALSE;

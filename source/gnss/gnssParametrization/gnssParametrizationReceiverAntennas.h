@@ -20,7 +20,7 @@ static const char *docstringGnssParametrizationReceiverAntennas = R"(
 \subsection{ReceiverAntennas}\label{gnssParametrizationType:receiverAntennas}
 This class is for parametrization the antenna for their antenna center offsets (ACO) and
 antenna center variations (ACV) by \configClass{antennaCenterVariations}{parametrizationGnssAntennaType}.
-The receivers to be estimated can be selected by \configClass{selectReceivers}{gnssTransceiverSelectorType}.
+The receivers to be estimated can be selected by \configClass{selectReceivers}{platformSelectorType}.
 
 The amount of patterns to be estimated is configurable with a list of \configClass{patternTypes}{gnssType}.
 For each added \configClass{patternTypes}{gnssType} a set of parameters will be evaluated. The observations
@@ -72,9 +72,9 @@ according to eq.~\eqref{gnssParametrizationType:update}.
 
 #include "base/import.h"
 #include "config/config.h"
-#include "gnss/gnss.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "classes/parametrizationGnssAntenna/parametrizationGnssAntenna.h"
+#include "gnss/gnss.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -86,7 +86,7 @@ class GnssParametrizationReceiverAntennas : public GnssParametrizationBase
 {
   Gnss                                        *gnss;
   std::string                                  name;
-  GnssTransceiverSelectorPtr                   selectReceivers;
+  PlatformSelectorPtr                          selectReceivers;
   ParametrizationGnssAntennaPtr                parametrization;
   std::vector<GnssType>                        typesPattern;
   Bool                                         addNonMatchingTypes;

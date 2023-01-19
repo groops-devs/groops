@@ -1337,7 +1337,7 @@ Local and short-term scintillations should be considered by adding loosely const
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileVTEC & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~mapR & \hfuzz=500pt double & \hfuzz=500pt constant of MSLM mapping function\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~mapH & \hfuzz=500pt double & \hfuzz=500pt constant of MSLM mapping function\\
@@ -1372,7 +1372,7 @@ To account for signal biases add
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt spherical harmonics\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~temporal & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt temporal evolution of TEC values\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~mapR & \hfuzz=500pt double & \hfuzz=500pt [m] constant of MSLM mapping function\\
@@ -1384,7 +1384,7 @@ Name & Type & Annotation\\
 
 
 \subsection{Clocks}\label{gnssParametrizationType:clocks}
-Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{gnssTransceiverSelectorType}.
+Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{platformSelectorType}.
 No clock errors are estimated if no valid observations are available (e.g. data gaps in the observations).
 
 These parameters are lineary dependent and would lead to a rank deficiency in the normal equation
@@ -1393,7 +1393,7 @@ This is realized with an additional observation equation
 \begin{equation}
  0 = \sum_i \delta t^{s_i} + \sum_k \delta t_{r_k}
 \end{equation}
-summed over all \configClass{selectTransmitters/ReceiversZeroMean}{gnssTransceiverSelectorType}
+summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
 with a standard deviation of \config{sigmaZeroMeanConstraint}.
 
 
@@ -1403,13 +1403,13 @@ with a standard deviation of \config{sigmaZeroMeanConstraint}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileClockTransmitter & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileClockReceiver & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~nameConstraint & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmittersZeroMean & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceiversZeroMean & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmittersZeroMean & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceiversZeroMean & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaZeroMeanConstraint & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for zero-mean constraint over all selected clocks\\
 \hline
 \end{tabularx}
@@ -1417,7 +1417,7 @@ Name & Type & Annotation\\
 
 \subsection{ClocksModel}\label{gnssParametrizationType:clocksModel}
 This parametrization is an alternative to \configClass{parametrization:clocks}{gnssParametrizationType:clocks}.
-Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{gnssTransceiverSelectorType}
+Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{platformSelectorType}
 and, opposed to \configClass{parametrization:clocks}{gnssParametrizationType:clocks}, are also estimated for epochs
 that have no valid observations available (e.g. data gaps).
 
@@ -1443,7 +1443,7 @@ The realization of the constraint is done as an additional observation equation 
 \begin{equation}
  0 = \sum_i \delta t^{s_i} + \sum_k \delta t_{r_k}
 \end{equation}
-summed over all \configClass{selectTransmitters/ReceiversZeroMean}{gnssTransceiverSelectorType}
+summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
 with a standard deviation of \config{sigmaZeroMeanConstraint}.
 
 
@@ -1453,15 +1453,15 @@ with a standard deviation of \config{sigmaZeroMeanConstraint}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileClockTransmitter & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileClockReceiver & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~huber & \hfuzz=500pt double & \hfuzz=500pt clock jumps \$>\$ huber*sigma0 are downweighted\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~huberPower & \hfuzz=500pt double & \hfuzz=500pt clock jumps \$>\$ huber: sigma=(e/huber)\textasciicircum{}huberPower*sigma0\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~nameConstraint & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmittersZeroMean & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt use these transmitters for zero-mean constraint\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceiversZeroMean & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt use these receivers for zero-mean constraint\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmittersZeroMean & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt use these transmitters for zero-mean constraint\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceiversZeroMean & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt use these receivers for zero-mean constraint\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaZeroMeanConstraint & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for zero-mean constraint over all selected clocks\\
 \hline
 \end{tabularx}
@@ -1499,8 +1499,8 @@ All biases for a receiver/transmitter are accumulated and written to the respect
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSignalBiasTransmitter & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSignalBiasReceiver & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSignalBiasTransmitter & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
@@ -1517,7 +1517,7 @@ Sets up an ambiguity parameter for each track and phase observation type.
 As the phase observations contain a float bias at transmitter/receiver level, not all ambiguities
 are resolvable to integer values. The number of resolvable ambiguities can be increased with
 known phase biases read from file via \configClass{parametrization:signalBiases}{gnssParametrizationType:signalBiases}.
-In this case, \configClass{estimateTransmitter/ReceiverPhaseBiasTransmitter}{gnssTransceiverSelectorType} should
+In this case, \configClass{estimateTransmitter/ReceiverPhaseBiasTransmitter}{platformSelectorType} should
 not be used for the corresponding transmitters and receivers.
 
 In case of GLONASS, the phase biases at receiver level differ between different frequency channels
@@ -1541,8 +1541,8 @@ The estimated phase biases can be written to files in
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~estimateTransmitterPhaseBias & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~estimateReceiverPhaseBias & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~estimateTransmitterPhaseBias & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~estimateReceiverPhaseBias & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~linearGlonassBias & \hfuzz=500pt boolean & \hfuzz=500pt bias depends linear on frequency channel number\\
 \hline
 \end{tabularx}
@@ -1593,8 +1593,8 @@ The estimated biases can be written to files in
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~linearGlonassBias & \hfuzz=500pt boolean & \hfuzz=500pt bias depends linear on frequency channel number\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~nameConstraint & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaZeroMeanConstraint & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for null space constraint\\
@@ -1631,8 +1631,8 @@ The accumulated estimated result can be written to files in
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~linearGlonassBias & \hfuzz=500pt boolean & \hfuzz=500pt phase or code biases depend linear on frequency channel number\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~nameConstraint & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaZeroMeanConstraint & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for null space constraint\\
@@ -1666,7 +1666,7 @@ a standard deviation of \config{sigmaZeroMeanConstraint}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileBiasTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileBiasTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~type & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt \\
@@ -1679,10 +1679,10 @@ Name & Type & Annotation\\
 
 \subsection{StaticPositions}\label{gnssParametrizationType:staticPositions}
 Estimates a static position for all
-\configClass{selectReceivers}{gnssTransceiverSelectorType} in the terrestrial frame.
+\configClass{selectReceivers}{platformSelectorType} in the terrestrial frame.
 
 No-net constraints can be applied for a subset of stations,
-\configClass{selectNoNetReceivers}{gnssTransceiverSelectorType}, with a
+\configClass{selectNoNetReceivers}{platformSelectorType}, with a
 standard deviation of \config{noNetTranslationSigma} and \config{noNetRotationSigma}.
 If the template \configFile{inputfileNoNetPositions}{stringList} is provided
 the constraints are applied relatively to these positions. Only stations with an existing position file
@@ -1706,11 +1706,11 @@ and \program{Sinex2StationPostSeismicDeformation}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileGriddedPosition & \hfuzz=500pt filename & \hfuzz=500pt delta north east up for all stations\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfilePosition & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available, full estimated coordinates (in TRF)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~nameConstraint & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectNoNetReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectNoNetReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileNoNetPositions & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available, precise coordinates used for no-net constraints (in TRF)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~noNetTranslationSigma & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for no-net translation constraint on station coordinates\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~noNetRotationSigma & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] at Earth's surface for no-net rotation constraint on station coordinates\\
@@ -1735,7 +1735,7 @@ are computed within
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfilePositions & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available, estimated kinematic positions/orbit\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileCovarianceEpoch & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available, 3x3 epoch covariances\\
 \hline
@@ -1758,7 +1758,7 @@ If not enough epochs with observations are available (\config{minEstimableEpochs
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileParameters & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileVariational & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
@@ -1784,7 +1784,7 @@ For more details see \reference{orbit integration}{cookbook.gnssNetwork:orbitInt
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileParameters & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileVariational & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
@@ -1814,7 +1814,7 @@ to avoid an unsolvable system of normal equations in case of data gaps.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTroposphere & \hfuzz=500pt filename & \hfuzz=500pt columns: MJD, ZHD, ZWD, dry north gradient, wet north gradient, dry east gradient, wet east gradient, ...\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~troposphere & \hfuzz=500pt \hyperref[troposphereType]{troposphere} & \hfuzz=500pt a priori troposphere model\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~troposphereWetEstimation & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt [m] parametrization of zenith wet delays\\
@@ -1854,7 +1854,7 @@ Name & Type & Annotation\\
 \subsection{ReceiverAntennas}\label{gnssParametrizationType:receiverAntennas}
 This class is for parametrization the antenna for their antenna center offsets (ACO) and
 antenna center variations (ACV) by \configClass{antennaCenterVariations}{parametrizationGnssAntennaType}.
-The receivers to be estimated can be selected by \configClass{selectReceivers}{gnssTransceiverSelectorType}.
+The receivers to be estimated can be selected by \configClass{selectReceivers}{platformSelectorType}.
 
 The amount of patterns to be estimated is configurable with a list of \configClass{patternTypes}{gnssType}.
 For each added \configClass{patternTypes}{gnssType} a set of parameters will be evaluated. The observations
@@ -1907,7 +1907,7 @@ according to eq.~\eqref{gnssParametrizationType:update}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~antennaCenterVariations & \hfuzz=500pt \hyperref[parametrizationGnssAntennaType]{parametrizationGnssAntenna} & \hfuzz=500pt estimate antenna center variations\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~patternTypes & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt gnssType for each pattern (first match is used)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~addNonMatchingTypes & \hfuzz=500pt boolean & \hfuzz=500pt add patterns for additional observed gnssTypes that don't match any of the above\\
@@ -1927,7 +1927,7 @@ for transmitting antennas (GNSS satellites).
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~antennaCenterVariations & \hfuzz=500pt \hyperref[parametrizationGnssAntennaType]{parametrizationGnssAntenna} & \hfuzz=500pt estimate antenna center variations\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~patternTypes & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt gnssType for each pattern (first match is used)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~addNonMatchingTypes & \hfuzz=500pt boolean & \hfuzz=500pt add patterns for additional observed gnssTypes that don't match any of the above\\
@@ -2190,7 +2190,7 @@ Name & Type & Annotation\\
 
 \subsection{WriteResiduals}\label{gnssProcessingStepType:writeResiduals}
 Writes the \file{observation residuals}{instrument} for all
-\configClass{selectReceivers}{gnssTransceiverSelectorType}.
+\configClass{selectReceivers}{platformSelectorType}.
 For for each station a file is written. The file name is interpreted as
 a template with the variable \verb|{station}| being replaced by the station name.
 
@@ -2200,7 +2200,7 @@ a template with the variable \verb|{station}| being replaced by the station name
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt subset of used stations\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt subset of used stations\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileResiduals & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
 \hline
 \end{tabularx}
@@ -2208,7 +2208,7 @@ Name & Type & Annotation\\
 
 \subsection{WriteUsedStationList}\label{gnssProcessingStepType:writeUsedStationList}
 Writes a \file{list}{stringList} of receivers (stations) which are used in the last step and
-selected by \configClass{selectReceivers}{gnssTransceiverSelectorType}.
+selected by \configClass{selectReceivers}{platformSelectorType}.
 
 
 \keepXColumns
@@ -2216,7 +2216,7 @@ selected by \configClass{selectReceivers}{gnssTransceiverSelectorType}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt subset of used stations\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt subset of used stations\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileUsedStationList & \hfuzz=500pt filename & \hfuzz=500pt ascii file with names of used stations\\
 \hline
 \end{tabularx}
@@ -2224,7 +2224,7 @@ Name & Type & Annotation\\
 
 \subsection{WriteUsedTransmitterList}\label{gnssProcessingStepType:writeUsedTransmitterList}
 Writes a \file{list}{stringList} of transmitters which are used in the last step and
-selected by \configClass{selectTransmitters}{gnssTransceiverSelectorType}.
+selected by \configClass{selectTransmitters}{platformSelectorType}.
 
 
 \keepXColumns
@@ -2232,7 +2232,7 @@ selected by \configClass{selectTransmitters}{gnssTransceiverSelectorType}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt subset of used transmitters\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt subset of used transmitters\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileUsedTransmitterList & \hfuzz=500pt filename & \hfuzz=500pt ascii file with PRNs\\
 \hline
 \end{tabularx}
@@ -2365,13 +2365,13 @@ and select all stations excluding the core stations in that step.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 
 
 \subsection{ForEachReceiverSeparately}\label{gnssProcessingStepType:forEachReceiverSeparately}
-Perform these processing steps for each \configClass{selectReceivers}{gnssTransceiverSelectorType} separately.
+Perform these processing steps for each \configClass{selectReceivers}{platformSelectorType} separately.
 All non-receiver related parameters parameters are disabled in these processing steps (see .
 
 This step can be used for individual precise point positioning (PPP) of all stations.
@@ -2386,7 +2386,7 @@ initial processing of the core network to process all other stations individuall
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableReceiver & \hfuzz=500pt string & \hfuzz=500pt variable is set for each receiver\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~processingStep & \hfuzz=500pt \hyperref[gnssProcessingStepType]{gnssProcessingStep} & \hfuzz=500pt steps are processed consecutively\\
 \hline
@@ -2419,7 +2419,7 @@ With proper attitude modeling (see \program{SimulateStarCameraGnss}) this is usu
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~disableShadowEpochs & \hfuzz=500pt boolean & \hfuzz=500pt disable epochs if satellite is in Earth's/Moon's shadow\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~disablePostShadowRecoveryEpochs & \hfuzz=500pt boolean & \hfuzz=500pt disable epochs if satellite is in post-shadow recovery maneuver for GPS block IIA\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
@@ -2437,9 +2437,9 @@ Most of the input files are provided in GROOPS file formats at
 \url{https://ftp.tugraz.at/outgoing/ITSG/groops} (marked with \textbf{*} below).
 These files are regularly updated.
 \begin{itemize}
-  \item \configFile{inputfileStationInfo}{gnssStationInfo}\textbf{*}:
+  \item \configFile{inputfileStationInfo}{platform}\textbf{*}:
         Antenna and receiver information, antenna reference point offsets, antenna orientations.
-        Created via \program{GnssStationLog2StationInfo} or \program{GnssStationInfoCreate}.
+        Created via \program{GnssStationLog2Platform} or \program{PlatformCreate}.
   \item \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}\textbf{*}:
         Antenna center offsets and variations.
         Created via \program{GnssAntex2AntennaDefinition} or \program{GnssAntennaDefinitionCreate}.
@@ -2585,67 +2585,6 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 
-\section{GnssTransceiverSelector}\label{gnssTransceiverSelectorType}
-Select a list of GNSS transmitters or receivers.
-
-See also \program{GnssProcessing}.
-
-
-\subsection{All}\label{gnssTransceiverSelectorType:all}
-Select all receivers/transmitters.
-
-
-\subsection{Wildcard}\label{gnssTransceiverSelectorType:wildcard}
-Select all receivers/transmitters which match the
-\config{name}, \config{markerName}, and \config{markerNumber}.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerName & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?, from stationInfo\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerNumber & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?, from stationInfo\\
-\hline
-\end{tabularx}
-
-
-\subsection{File}\label{gnssTransceiverSelectorType:file}
-Select receivers/transmitters from each row of
-\configFile{inputfileStringTable}{stringTable}.
-Additional columns in a row represent alternatives
-if previous names are not available (e.g. without observation file).
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStringTable & \hfuzz=500pt filename & \hfuzz=500pt list of names with alternatives\\
-\hline
-\end{tabularx}
-
-
-\subsection{Exclude}\label{gnssTransceiverSelectorType:exclude}
-Select all receivers/transmitters except
-\configClass{selector}{gnssTransceiverSelectorType}.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selector & \hfuzz=500pt \hyperref[gnssTransceiverSelectorType]{gnssTransceiverSelector} & \hfuzz=500pt \\
-\hline
-\end{tabularx}
-
-\clearpage
-%==================================
-
 \section{GnssTransmitterGenerator}\label{gnssTransmitterGeneratorType}
 Definition and basic information of GNSS transmitters.
 
@@ -2663,9 +2602,9 @@ The file name is interpreted as a template with the variable \verb|{prn}| being 
 Metadata input files (marked with \textbf{*} below) are provided in GROOPS file formats at
 \url{https://ftp.tugraz.at/outgoing/ITSG/groops}. These files are regularly updated.
 \begin{itemize}
-  \item \configFile{inputfileTransmitterInfo}{gnssStationInfo}\textbf{*}:
+  \item \configFile{inputfileTransmitterInfo}{platform}\textbf{*}:
         PRN-SVN mapping, antenna offsets and orientations.
-        Created via \program{GnssAntex2AntennaDefinition} or \program{GnssStationInfoCreate}.
+        Created via \program{GnssAntex2AntennaDefinition} or \program{PlatformCreate}.
   \item \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}\textbf{*}:
         Antenna center variations.
         Created via \program{GnssAntex2AntennaDefinition} or \program{GnssAntennaDefinitionCreate}.
@@ -3960,8 +3899,37 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
+\subsection{PlatformEquipment}
+Loop over specific equipment of a \file{platform file}{platform}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfilePlatform & \hfuzz=500pt filename & \hfuzz=500pt platform info file\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~equipmentType & \hfuzz=500pt choice & \hfuzz=500pt equipment type to loop over\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~all & \hfuzz=500pt  & \hfuzz=500pt loop over all types\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~gnssAntenna & \hfuzz=500pt  & \hfuzz=500pt loop over antennas\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~gnssReceiver & \hfuzz=500pt  & \hfuzz=500pt loop over receivers\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~other & \hfuzz=500pt  & \hfuzz=500pt loop over other types\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopName & \hfuzz=500pt string & \hfuzz=500pt variable with name\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopSerial & \hfuzz=500pt string & \hfuzz=500pt variable with serial\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopInfo & \hfuzz=500pt string & \hfuzz=500pt variable with radome (antenna) or version (receiver)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopTimeStart & \hfuzz=500pt string & \hfuzz=500pt variable with start time\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopTimeEnd & \hfuzz=500pt string & \hfuzz=500pt variable with end time\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopPositionX & \hfuzz=500pt string & \hfuzz=500pt variable with position x\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopPositionY & \hfuzz=500pt string & \hfuzz=500pt variable with position y\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopPositionY & \hfuzz=500pt string & \hfuzz=500pt variable with position z\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hline
+\end{tabularx}
+
+
 \subsection{FileGnssStationInfo}
-Loop over receivers or antennas in a GNSS station/transmitter info \file{file}{gnssStationInfo}.
+DEPRECATDED. Use LoopPlatformEquipment instead.
 
 
 \keepXColumns
@@ -6476,6 +6444,67 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~pluto & \hfuzz=500pt  & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~solarBaryCenter & \hfuzz=500pt  & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~earthMoonBaryCenter & \hfuzz=500pt  & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+
+\section{PlatformSelector}\label{platformSelectorType}
+Select a list of platforms (stations, satellites, ...).
+
+See also \program{GnssProcessing}.
+
+
+\subsection{All}\label{platformSelectorType:all}
+Select all platforms.
+
+
+\subsection{Wildcard}\label{platformSelectorType:wildcard}
+Select all receivers/transmitters which match the
+\config{name}, \config{markerName}, and \config{markerNumber}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerName & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?, from platform\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerNumber & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?, from platform\\
+\hline
+\end{tabularx}
+
+
+\subsection{File}\label{platformSelectorType:file}
+Select receivers/transmitters from each row of
+\configFile{inputfileStringTable}{stringTable}.
+Additional columns in a row represent alternatives
+if previous names are not available (e.g. without observation file).
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStringTable & \hfuzz=500pt filename & \hfuzz=500pt list of names with alternatives\\
+\hline
+\end{tabularx}
+
+
+\subsection{Exclude}\label{platformSelectorType:exclude}
+Select all receivers/transmitters except
+\configClass{selector}{platformSelectorType}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selector & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 

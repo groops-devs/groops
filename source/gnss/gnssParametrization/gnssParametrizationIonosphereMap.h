@@ -44,8 +44,8 @@ To account for signal biases add
 #include "config/config.h"
 #include "classes/magnetosphere/magnetosphere.h"
 #include "classes/parametrizationTemporal/parametrizationTemporal.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnss.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -57,7 +57,7 @@ class GnssParametrizationIonosphereMap : public GnssParametrizationBase
 {
   Gnss                           *gnss;
   std::string                     name;
-  GnssTransceiverSelectorPtr      selectReceivers;
+  PlatformSelectorPtr             selectReceivers;
   std::vector<Byte>               selectedReceivers;
   FileName                        fileNameIn, fileNameOut;
   UInt                            maxDegree;

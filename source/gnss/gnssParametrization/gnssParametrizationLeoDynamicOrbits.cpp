@@ -21,8 +21,8 @@
 #include "classes/parametrizationAcceleration/parametrizationAcceleration.h"
 #include "classes/timeSeries/timeSeries.h"
 #include "classes/timeSeries/timeSeries.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "misc/observation/variationalEquationFromFile.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
 #include "gnss/gnssParametrization/gnssParametrizationLeoDynamicOrbits.h"
 
 /***********************************************/
@@ -69,7 +69,7 @@ void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::Communicato
   try
   {
     this->gnss = gnss;
-    auto selectedReceivers = selectReceivers->select(gnss->receivers);
+    auto selectedReceivers = gnss->selectReceivers(selectReceivers);
 
     VariableList fileNameVariableList;
     addVariable("station", "****", fileNameVariableList);

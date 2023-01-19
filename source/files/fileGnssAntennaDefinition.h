@@ -119,7 +119,7 @@ class GnssAntennaDefinition
   std::string name, serial;
   std::string radome;
   std::string comment;
-  std::vector<GnssAntennaPattern> pattern;
+  std::vector<GnssAntennaPattern> patterns;
 
   /** @brief Returns the separator between parts of the full antenna name. */
   static constexpr Char sep = '|';
@@ -131,7 +131,7 @@ class GnssAntennaDefinition
   /** @brief Returns id of pattern matching @p type or of nearest frequency pattern depending on @p noPatternFoundAction. Returns NULLINDEX if there are no patterns. */
   UInt findAntennaPattern(const GnssType &type, NoPatternFoundAction noPatternFoundAction) const;
 
-  static UInt find(const std::vector<GnssAntennaDefinitionPtr> &antennaList, const std::string &name, const std::string &serial, const std::string radome);
+  static GnssAntennaDefinitionPtr find(const std::vector<GnssAntennaDefinitionPtr> &antennaList, const std::string &name, const std::string &serial, const std::string radome);
 };
 
 /***** CLASS ***********************************/

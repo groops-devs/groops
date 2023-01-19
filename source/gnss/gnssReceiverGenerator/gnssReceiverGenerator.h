@@ -24,9 +24,9 @@ Most of the input files are provided in GROOPS file formats at
 \url{https://ftp.tugraz.at/outgoing/ITSG/groops} (marked with \textbf{*} below).
 These files are regularly updated.
 \begin{itemize}
-  \item \configFile{inputfileStationInfo}{gnssStationInfo}\textbf{*}:
+  \item \configFile{inputfileStationInfo}{platform}\textbf{*}:
         Antenna and receiver information, antenna reference point offsets, antenna orientations.
-        Created via \program{GnssStationLog2StationInfo} or \program{GnssStationInfoCreate}.
+        Created via \program{GnssStationLog2Platform} or \program{PlatformCreate}.
   \item \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}\textbf{*}:
         Antenna center offsets and variations.
         Created via \program{GnssAntex2AntennaDefinition} or \program{GnssAntennaDefinitionCreate}.

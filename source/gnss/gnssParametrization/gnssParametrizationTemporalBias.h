@@ -45,7 +45,7 @@ a standard deviation of \config{sigmaZeroMeanConstraint}.
 #include "config/config.h"
 #include "gnss/gnss.h"
 #include "classes/parametrizationTemporal/parametrizationTemporal.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -66,7 +66,7 @@ class GnssParametrizationTemporalBias : public GnssParametrizationBase
 
   Gnss                      *gnss;
   std::string                name, nameConstraint;
-  GnssTransceiverSelectorPtr selectTransmitters;
+  PlatformSelectorPtr        selectTransmitters;
   FileName                   fileNameOut, fileNameIn;
   GnssType                   type;
   ParametrizationTemporalPtr temporal;

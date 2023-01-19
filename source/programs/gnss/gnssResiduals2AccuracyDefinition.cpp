@@ -13,7 +13,7 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 Compute antenna accuracies from observation \configFile{inputfileResiduals}{instrument}.
-The \configFile{inputfileStationInfo}{gnssStationInfo} is needed to assign
+The \configFile{inputfileStationInfo}{platform} is needed to assign
 the residuals to the equipped antenna at observation times.
 
 The \configFile{outputfileAccuracyDefinition}{gnssAntennaDefinition} contains
@@ -50,7 +50,7 @@ center variations in the processing.
 
 #include "programs/program.h"
 #include "files/fileInstrument.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 #include "inputOutput/system.h"
 
 /***** CLASS ***********************************/
@@ -93,9 +93,9 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
 
     // ============================
 
-    GnssStationInfo stationInfo;
+    Platform stationInfo;
     if(!fileNameStationInfo.empty())
-      readFileGnssStationInfo(fileNameStationInfo, stationInfo);
+      readFilePlatform(fileNameStationInfo, stationInfo);
 
     GnssType typePRN;
     if(isTransmitter)
@@ -105,7 +105,7 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
     if(!fileNameAntenna.empty())
     {
       readFileGnssAntennaDefinition(fileNameAntenna, antennaList);
-      stationInfo.fillAntennaPattern(antennaList);
+      stationInfo.fillGnssAntennaDefinition(antennaList);
     }
 
     // ============================
@@ -126,12 +126,12 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
         for(auto &epoch : arc)
         {
           // find antenna for epoch
-          const UInt idAnt = stationInfo.findAntenna(epoch.time);
-          if(idAnt == NULLINDEX)
+          auto ant= stationInfo.findEquipment<PlatformGnssAntenna>(epoch.time);
+          if(!ant)
             continue;
-          GnssAntennaDefinitionPtr antenna = stationInfo.antenna.at(idAnt).antennaDef;
+          GnssAntennaDefinitionPtr antenna = ant->antennaDef;
           if(!antenna)
-            throw(Exception(epoch.time.dateTimeStr()+": antenna not found: "+stationInfo.antenna.at(idAnt).str()));
+            throw(Exception(epoch.time.dateTimeStr()+": antenna not found: "+ant->str()));
 
           UInt idObs = 0;
           for(GnssType satType : epoch.satellite)
@@ -180,7 +180,7 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
                 idObs++, idType++;
 
               if(value)
-                for(GnssAntennaPattern &pattern : antenna->pattern)
+                for(GnssAntennaPattern &pattern : antenna->patterns)
                   if(type+satType == pattern.type+typePRN)
                   {
                     const UInt idxL = static_cast<UInt>(std::round((Double(azimuth)+2*PI)/(2*PI)*pattern.pattern.rows()))%pattern.pattern.rows();
@@ -227,7 +227,7 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
 
     // only one value at zenith
     for(auto &antenna : antennaList)
-      for(auto &pattern : antenna->pattern)
+      for(auto &pattern : antenna->patterns)
         if(pattern.count.size())
         {
           copy(Vector(pattern.pattern.rows(), sum(pattern.sum       .column(0))), pattern.sum       .column(0));
@@ -243,7 +243,7 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
     {
       logStatus<<"write accuracy definition <"<<fileNameAntennaAccuracy<<">"<<Log::endl;
       for(auto &antenna : antennaList)
-        for(auto &pattern : antenna->pattern)
+        for(auto &pattern : antenna->patterns)
           if(pattern.count.size())
           {
             pattern.offset = Vector3d();
@@ -256,7 +256,7 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
     }
 
     for(auto &antenna : antennaList)
-      for(auto &pattern : antenna->pattern)
+      for(auto &pattern : antenna->patterns)
       {
         pattern.offset   = Vector3d();
         pattern.pattern *= NAN_EXPR;
@@ -266,7 +266,7 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
     {
       logStatus<<"write antenna definition <"<<fileNameAntennaMean<<">"<<Log::endl;
       for(auto &antenna : antennaList)
-        for(auto &pattern : antenna->pattern)
+        for(auto &pattern : antenna->patterns)
           if(pattern.count.size())
             for(UInt i=0; i<pattern.pattern.rows(); i++)
               for(UInt k=0; k<pattern.pattern.columns(); k++)
@@ -278,7 +278,7 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
     {
       logStatus<<"write redundancy <"<<fileNameAntennaRedundancy<<">"<<Log::endl;
       for(auto &antenna : antennaList)
-        for(auto &pattern : antenna->pattern)
+        for(auto &pattern : antenna->patterns)
           if(pattern.count.size())
             for(UInt i=0; i<pattern.pattern.rows(); i++)
               for(UInt k=0; k<pattern.pattern.columns(); k++)

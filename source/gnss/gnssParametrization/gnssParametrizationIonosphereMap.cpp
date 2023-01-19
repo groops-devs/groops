@@ -51,7 +51,7 @@ void GnssParametrizationIonosphereMap::init(Gnss *gnss, Parallel::CommunicatorPt
   try
   {
     this->gnss = gnss;
-    selectedReceivers = selectReceivers->select(gnss->receivers);
+    selectedReceivers = gnss->selectReceivers(selectReceivers);
     x.resize(temporal->parameterCount(), Vector((maxDegree+1)*(maxDegree+1)));
 
     // apriori model

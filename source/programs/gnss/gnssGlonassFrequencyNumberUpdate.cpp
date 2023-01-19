@@ -12,7 +12,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Update/set GLONASS frequency number in \configFile{inputfileTransmitterInfo}{gnssStationInfo} files.
+Update/set GLONASS frequency number in \configFile{inputfileTransmitterInfo}{platform} files.
 
 PRN/SVN to frequency number source: \url{http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO}.
 

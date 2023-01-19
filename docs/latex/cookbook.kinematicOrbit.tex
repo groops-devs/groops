@@ -30,7 +30,7 @@ Metadata for several LEO missions is availabe at \url{https://ftp.tugraz.at/outg
 
 If you want to process another mission, you can create the necessary files with these steps:
 \begin{itemize}
-  \item For creating the \file{GnssSatelliteInfo file}{gnssStationInfo} use \program{GnssStationInfoCreate}. Note that the rotation from the
+  \item For creating the \file{GnssSatelliteInfo file}{platform} use \program{PlatformCreate}. Note that the rotation from the
   satellite reference frame into the antenna reference frame, as well as the change of the center of mass due to fuel consumption, has to be considered here.
   \item The \file{GnssReceiverDefinition file}{gnssReceiverDefinition} can be created by using \program{GnssReceiverDefinitionCreate}. Here you can specify which GNSS signal types the receiver observes.
   \item For creating the \file{GnssAntennaDefinition file}{gnssAntennaDefinition}\ use \program{GnssAntennaDefinitionCreate}. Here you can define phase center offsets for the antenna.
@@ -77,7 +77,7 @@ and provide the required files (from \reference{Prepare GNSS satellite data}{coo
 
 The following files (from \reference{Prepare LEO metadata}{cookbook.kinematicOrbit:leoMetadata} and \reference{Prepare LEO data}{cookbook.kinematicOrbit:leoData}) and settings are needed in \configClass{receiver:lowEarthOrbiter}{gnssReceiverGeneratorType:lowEarthOrbiter}:
 \begin{itemize}
-   \item \configFile{inputfileStationInfo}{gnssStationInfo}: The satellite info file.
+   \item \configFile{inputfileStationInfo}{platform}: The satellite info file.
    \item \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}
    \item \configFile{inputfileReceiverDefinition}{gnssReceiverDefinition}
    \item \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition}
@@ -95,11 +95,11 @@ and define the \config{outputfiles} within you are interested in:
   \item \configClass{ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}: add a constraint of \config{sigmaSTEC}=\verb|40|
   \item \configClass{ionosphereVTEC}{gnssParametrizationType:ionosphereVTEC}:
         set \config{mapR}=\verb|6371e3+450e3| to satellite height and ionosphere height \config{mapH}=\verb|50e3| above.
-  \item \configClass{clocks}{gnssParametrizationType:clocks}: delete \configClass{selectTransmitters}{gnssTransceiverSelectorType}
+  \item \configClass{clocks}{gnssParametrizationType:clocks}: delete \configClass{selectTransmitters}{platformSelectorType}
   \item \configClass{signalBiases}{gnssParametrizationType:signalBiases}: provide \configFile{inputfileSignalBiasTransmitter}{gnssSignalBias} created with \program{GnssSinexBias2SignalBias}
-  \item \configClass{ambiguities}{gnssParametrizationType:ambiguities}: if precise transmitter phase biases are available you can delete \configClass{estimateTransmitterPhaseBiases}{gnssTransceiverSelectorType}
-  \item \configClass{codeBiases}{gnssParametrizationType:codeBiases}: delete \configClass{selectTransmitters}{gnssTransceiverSelectorType}, set \config{sigmaZeroMeanConstraint}=\verb|0|
-  \item \configClass{tecBiases}{gnssParametrizationType:tecBiases}: delete \configClass{selectTransmitters}{gnssTransceiverSelectorType}, set \config{sigmaZeroMeanConstraint}=\verb|0|
+  \item \configClass{ambiguities}{gnssParametrizationType:ambiguities}: if precise transmitter phase biases are available you can delete \configClass{estimateTransmitterPhaseBiases}{platformSelectorType}
+  \item \configClass{codeBiases}{gnssParametrizationType:codeBiases}: delete \configClass{selectTransmitters}{platformSelectorType}, set \config{sigmaZeroMeanConstraint}=\verb|0|
+  \item \configClass{tecBiases}{gnssParametrizationType:tecBiases}: delete \configClass{selectTransmitters}{platformSelectorType}, set \config{sigmaZeroMeanConstraint}=\verb|0|
   \item \configClass{kinematicPositions}{gnssParametrizationType:kinematicPositions}
 \end{itemize}
 

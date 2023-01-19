@@ -224,7 +224,7 @@ and define the <strong class="groops-config-element">outputfiles</strong> you ar
 <a class="groops-class" href="gnssParametrizationType.html#ionosphereMap">ionosphereMap</a>: add <a class="groops-class" href="parametrizationTemporalType.html#splines">temporal:splines</a>
         with linear (<strong class="groops-config-element">degree</strong>=<code>1</code>) 2-hourly splines
   </li><li>
-<a class="groops-class" href="gnssParametrizationType.html#clocks">clocks</a>: optionally change <a class="groops-class" href="gnssTransceiverSelectorType.html">selectTransmitterZeroMeans</a> to <a class="groops-class" href="gnssTransceiverSelectorType.html#wildcard">wildcard</a> with <strong class="groops-config-element">name</strong>=<code>G*</code> to align clocks to mean over GPS (instead of all) satellites
+<a class="groops-class" href="gnssParametrizationType.html#clocks">clocks</a>: optionally change <a class="groops-class" href="platformSelectorType.html">selectTransmitterZeroMeans</a> to <a class="groops-class" href="platformSelectorType.html#wildcard">wildcard</a> with <strong class="groops-config-element">name</strong>=<code>G*</code> to align clocks to mean over GPS (instead of all) satellites
   </li><li>
 <a class="groops-class" href="gnssParametrizationType.html#signalBiases">signalBiases</a>
   </li><li>
@@ -327,7 +327,7 @@ other (non-core) stations can be processed individually (including IAR) while ke
 At last, all stations can be processed together with all satellite parameters and ionosphere parameters.</p><p>Let's start with the <a class="groops-class" href="gnssProcessingStepType.html">processingSteps</a> of the core network:
 <ul>
 
-      <li><a class="groops-class" href="gnssProcessingStepType.html#selectReceivers">selectReceivers</a> with <a class="groops-class" href="gnssTransceiverSelectorType.html#file">selectReceivers:file</a>
+      <li><a class="groops-class" href="gnssProcessingStepType.html#selectReceivers">selectReceivers</a> with <a class="groops-class" href="platformSelectorType.html#file">selectReceivers:file</a>
       using the core network station list file from <a class="groops-ref" href="cookbook.gnssPpp.html#metadata">data preparation</a> as <a class="groops-class" href="fileFormat_stringTable.html">inputfileStringTable</a>.
       </li><li>
 <a class="groops-class" href="gnssProcessingStepType.html#selectEpochs">selectEpochs</a>: with <strong class="groops-config-element">nthEpoch</strong>=<code>10</code> to reduce sampling to 5 minutes.
@@ -345,7 +345,7 @@ At last, all stations can be processed together with all satellite parameters an
 <ul>
 
       <li><a class="groops-class" href="gnssProcessingStepType.html#forEachReceiverSeparately">forEachReceiverSeparately</a>:
-            with <a class="groops-class" href="gnssTransceiverSelectorType.html#file">selectReceivers:file</a> inside <a class="groops-class" href="gnssTransceiverSelectorType.html#exclude">selectReceivers:exclude</a>
+            with <a class="groops-class" href="platformSelectorType.html#file">selectReceivers:file</a> inside <a class="groops-class" href="platformSelectorType.html#exclude">selectReceivers:exclude</a>
             using the station list from the core network above to process all non-core stations individually with fixed transmitter parameters
       <ul>
 
@@ -360,7 +360,7 @@ At last, all stations can be processed together with all satellite parameters an
 </ul></p><p>Next all stations are processed together with all parameters:
 <ul>
 
-      <li><a class="groops-class" href="gnssProcessingStepType.html#selectReceivers">selectReceivers</a>: with <a class="groops-class" href="gnssTransceiverSelectorType.html#all">selectReceivers:all</a>
+      <li><a class="groops-class" href="gnssProcessingStepType.html#selectReceivers">selectReceivers</a>: with <a class="groops-class" href="platformSelectorType.html#all">selectReceivers:all</a>
       </li><li>
 <a class="groops-class" href="gnssProcessingStepType.html#selectEpochs">selectEpochs</a>: with <strong class="groops-config-element">nthEpoch</strong>=<code>1</code> to set full 30-second sampling
       </li><li>

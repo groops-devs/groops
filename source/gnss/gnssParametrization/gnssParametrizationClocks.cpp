@@ -14,7 +14,7 @@
 #include "base/import.h"
 #include "config/config.h"
 #include "files/fileInstrument.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 #include "gnss/gnssParametrization/gnssParametrizationClocks.h"
 
@@ -48,10 +48,10 @@ void GnssParametrizationClocks::init(Gnss *gnss, Parallel::CommunicatorPtr comm)
   try
   {
     this->gnss                   = gnss;
-    selectedTransmitters         = selectTransmitters->select(gnss->transmitters);
-    selectedReceivers            = selectReceivers->select(gnss->receivers);
-    selectedTransmittersZeroMean = selectTransmittersZeroMean->select(gnss->transmitters);
-    selectedReceiversZeroMean    = selectReceiversZeroMean->select(gnss->receivers);
+    selectedTransmitters         = gnss->selectTransmitters(selectTransmitters);
+    selectedReceivers            = gnss->selectReceivers(selectReceivers);
+    selectedTransmittersZeroMean = gnss->selectTransmitters(selectTransmittersZeroMean);
+    selectedReceiversZeroMean    = gnss->selectReceivers(selectReceiversZeroMean);
 
     x0Trans.resize(gnss->transmitters.size());
     if(Parallel::isMaster(comm))

@@ -18,7 +18,7 @@
 #include "inputOutput/logging.h"
 #include "inputOutput/system.h"
 #include "files/fileGnssSignalBias.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 #include "files/fileInstrument.h"
 #include "files/fileMatrix.h"
 #include "files/fileStringTable.h"
@@ -125,11 +125,12 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
           if(!fileNameObs.empty() && !System::exists(fileNameObs(fileNameVariableList)))
             continue;
 
-          GnssStationInfo info;
-          readFileGnssStationInfo(fileNameStationInfo(fileNameVariableList), info);
-          info.fillAntennaPattern(antennaDefList);
-          info.fillReceiverDefinition(receiverDefList);
-          info.fillAntennaAccuracy(accuracyDefList);
+          Platform platform;
+          readFilePlatform(fileNameStationInfo(fileNameVariableList), platform);
+          platform.name = stationName.at(i).at(k);
+          platform.fillGnssAntennaDefinition(antennaDefList);
+          platform.fillGnssReceiverDefinition(receiverDefList);
+          platform.fillGnssAccuracyDefinition(accuracyDefList);
 
           // approximate station position
           if(!fileNameStationPosition.empty())
@@ -139,7 +140,7 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
               Vector3dArc arc = InstrumentFile::read(fileNameStationPosition(fileNameVariableList));
               auto iter = (arc.size() == 1) ? arc.begin() : std::find_if(arc.begin(), arc.end(), [&](const Epoch &e){return e.time.isInInterval(times.front(), times.back());});
               if(iter != arc.end())
-                info.approxPosition = iter->vector3d;
+                platform.approxPosition = iter->vector3d;
             }
             catch(std::exception &/*e*/)
             {
@@ -147,11 +148,14 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
           }
 
           // test completeness of antennas
-          for(const auto &antenna : info.antenna)
-            if(antenna.timeEnd > times.front() && antenna.timeStart <= times.back() && (!antenna.antennaDef || !antenna.accuracyDef))
-              logWarningOnce<<info.markerName<<"."<<info.markerNumber<<": No "<<(!antenna.antennaDef ? "antenna" : "accuracy")<<" definition found for "<<antenna.str()<<Log::endl;
+          for(const auto &instrument : platform.equipments)
+          {
+            auto antenna = std::dynamic_pointer_cast<PlatformGnssAntenna>(instrument);
+            if(antenna && antenna->timeEnd > times.front() && antenna->timeStart <= times.back() && (!antenna->antennaDef || !antenna->accuracyDef))
+              logWarningOnce<<platform.markerName<<"."<<platform.markerNumber<<": No "<<(!antenna->antennaDef ? "antenna" : "accuracy")<<" definition found for "<<antenna->str()<<Log::endl;
+          }
 
-          GnssReceiverPtr recv = std::make_shared<GnssReceiver>(FALSE, TRUE, stationName.at(i).at(k), info, noPatternFoundAction, Vector(times.size(), TRUE), TRUE, 1.);
+          GnssReceiverPtr recv = std::make_shared<GnssReceiver>(FALSE, TRUE, platform, noPatternFoundAction, Vector(times.size(), TRUE), TRUE, 1.);
           receiversWithAlternatives.at(i).push_back(recv);
         }
         catch(std::exception &e)
@@ -183,18 +187,18 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
 
             recv->times = times;
             recv->clk.resize(times.size(), 0);
-            recv->pos.resize(times.size(), recv->info.approxPosition);
+            recv->pos.resize(times.size(), recv->platform.approxPosition);
             recv->vel.resize(times.size());
             recv->offset.resize(times.size());
-            recv->global2local.resize(times.size(), inverse(localNorthEastUp(recv->info.approxPosition, Ellipsoid())));
+            recv->global2local.resize(times.size(), inverse(localNorthEastUp(recv->platform.approxPosition, Ellipsoid())));
             recv->local2antenna.resize(times.size());
             for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
             {
-              const UInt idAnt = recv->info.findAntenna(times.at(idEpoch));
-              if((idAnt != NULLINDEX) && recv->info.antenna.at(idAnt).antennaDef && recv->info.antenna.at(idAnt).accuracyDef)
+              auto antenna = recv->platform.findEquipment<PlatformGnssAntenna>(times.at(idEpoch));
+              if(antenna && antenna->antennaDef && antenna->accuracyDef)
               {
-                recv->offset.at(idEpoch)        = recv->info.antenna.at(idAnt).position - recv->info.referencePoint(times.at(idEpoch));
-                recv->local2antenna.at(idEpoch) = recv->info.antenna.at(idAnt).local2antennaFrame;
+                recv->offset.at(idEpoch)        = antenna->position - recv->platform.referencePoint(times.at(idEpoch));
+                recv->local2antenna.at(idEpoch) = antenna->local2antennaFrame;
               }
               else
                 recv->disable(idEpoch, "missing antenna/accuracy patterns");

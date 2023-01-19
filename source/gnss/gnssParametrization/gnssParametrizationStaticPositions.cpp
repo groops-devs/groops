@@ -16,8 +16,8 @@
 #include "config/config.h"
 #include "files/fileInstrument.h"
 #include "files/fileGriddedData.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "misc/varianceComponentEstimation.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 #include "gnss/gnssParametrization/gnssParametrizationStaticPositions.h"
 
@@ -57,7 +57,7 @@ void GnssParametrizationStaticPositions::init(Gnss *gnss, Parallel::Communicator
   {
     this->gnss  = gnss;
     index.resize(gnss->receivers.size());
-    selectedReceivers = selectReceivers->select(gnss->receivers);
+    selectedReceivers = gnss->selectReceivers(selectReceivers);
 
     // apriori positions
     pos.resize(gnss->receivers.size());
@@ -89,7 +89,7 @@ void GnssParametrizationStaticPositions::init(Gnss *gnss, Parallel::Communicator
     // ----------------
     if(sigmaNoNetRotation || sigmaNoNetTranslation)
     {
-      selectedNoNetReceivers = selectNoNetReceivers->select(gnss->receivers);
+      selectedNoNetReceivers = gnss->selectReceivers(selectNoNetReceivers);
       for(auto recv : gnss->receivers)
         if(selectedNoNetReceivers.at(recv->idRecv()) && !recv->useable())
           selectedNoNetReceivers.at(recv->idRecv()) = FALSE;

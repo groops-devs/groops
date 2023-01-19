@@ -45,8 +45,8 @@ The accumulated estimated result can be written to files in
 
 #include "base/import.h"
 #include "config/config.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnss.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -65,16 +65,16 @@ class GnssParametrizationTecBiases : public GnssParametrizationBase
     Matrix             Bias;
   };
 
-  Gnss                      *gnss;
-  std::string                name, nameConstraint;
-  GnssTransceiverSelectorPtr selectTransmitters, selectReceivers;
-  FileName                   fileNameTransmitter, fileNameReceiver;
-  Bool                       isLinearBias;
-  Bool                       applyConstraint;
-  Double                     sigmaZeroMean;
-  std::vector<Parameter*>    paraTrans, paraRecv;
-  std::vector<UInt>          idxBiasTrans, idxBiasRecv; // indices in zeroMean matrix
-  Matrix                     zeroMeanDesign;            // zero mean observation equations
+  Gnss                    *gnss;
+  std::string              name, nameConstraint;
+  PlatformSelectorPtr      selectTransmitters, selectReceivers;
+  FileName                 fileNameTransmitter, fileNameReceiver;
+  Bool                     isLinearBias;
+  Bool                     applyConstraint;
+  Double                   sigmaZeroMean;
+  std::vector<Parameter*>  paraTrans, paraRecv;
+  std::vector<UInt>        idxBiasTrans, idxBiasRecv; // indices in zeroMean matrix
+  Matrix                   zeroMeanDesign;            // zero mean observation equations
 
 public:
   GnssParametrizationTecBiases(Config &config);

@@ -24,7 +24,7 @@ Station-wise VMF data for GNSS is available at: \url{https://vmf.geo.tuwien.ac.a
 #include "base/griddedData.h"
 #include "base/string.h"
 #include "inputOutput/file.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 #include "files/fileGriddedDataTimeSeries.h"
 #include "files/fileGriddedData.h"
 
@@ -84,9 +84,9 @@ void ViennaMappingFunctionStation2File::run(Config &config, Parallel::Communicat
         try
         {
           // read position from stationInfo
-          GnssStationInfo stationInfo;
+          Platform stationInfo;
           fileNameVariableList["station"]->setValue(stationNames.at(idStation));
-          readFileGnssStationInfo(fileNameStationInfo(fileNameVariableList), stationInfo);
+          readFilePlatform(fileNameStationInfo(fileNameVariableList), stationInfo);
 
           if((stationInfo.approxPosition-grid.points.at(idStation)).r() > 1e3)
             logWarning<<stationNames.at(idStation)<<": r = "<<0.001*(stationInfo.approxPosition-grid.points.at(idStation)).r()<<" km"<<Log::endl;
@@ -125,11 +125,11 @@ void ViennaMappingFunctionStation2File::run(Config &config, Parallel::Communicat
       if(idStation >= stationNames.size())
       {
         logWarning<<name<<" not in list -> use station info"<<Log::endl;
-        GnssStationInfo stationInfo; // read position from stationInfo
+        Platform stationInfo; // read position from stationInfo
         try
         {
           fileNameVariableList["station"]->setValue(name);
-          readFileGnssStationInfo(fileNameStationInfo(fileNameVariableList), stationInfo);
+          readFilePlatform(fileNameStationInfo(fileNameVariableList), stationInfo);
         }
         catch(std::exception &)
         {

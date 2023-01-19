@@ -61,8 +61,8 @@ The estimated biases can be written to files in
 
 #include "base/import.h"
 #include "config/config.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnss.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -83,7 +83,7 @@ class GnssParametrizationCodeBiases : public GnssParametrizationBase
 
   Gnss                      *gnss;
   std::string                name, nameConstraint;
-  GnssTransceiverSelectorPtr selectTransmitters, selectReceivers;
+  PlatformSelectorPtr        selectTransmitters, selectReceivers;
   Bool                       isLinearBias;
   Bool                       applyConstraint;
   Double                     sigmaZeroMean;

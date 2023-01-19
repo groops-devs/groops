@@ -19,7 +19,6 @@
 #include "inputOutput/fileName.h"
 #include "inputOutput/logging.h"
 #include "config/config.h"
-#include "files/fileGnssStationInfo.h"
 
 /***** TYPES ***********************************/
 

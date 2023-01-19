@@ -42,12 +42,12 @@ public:
   std::vector<Time> timesPosVel;
   Matrix            pos, vel; // CoM in CRF (epoch times (x,y,z))
 
-  GnssTransmitter(GnssType prn, const std::string &name, const GnssStationInfo &info,
+  GnssTransmitter(GnssType prn, const Platform &platform,
                   GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction,
                   const Vector &useableEpochs, const std::vector<Double> &clock, const std::vector<Vector3d> &offset,
                   const std::vector<Transform3d> &crf2srf, const std::vector<Transform3d> &srf2arf,
                   const std::vector<Time> &timesPosVel, const_MatrixSliceRef position, const_MatrixSliceRef velocity, UInt interpolationDegree)
-  : GnssTransceiver(name, info, noPatternFoundAction, useableEpochs),
+  : GnssTransceiver(platform, noPatternFoundAction, useableEpochs),
     type(prn), polynomial(timesPosVel, interpolationDegree), clk(clock), offset(offset), crf2srf(crf2srf), srf2arf(srf2arf), timesPosVel(timesPosVel), pos(position), vel(velocity) {}
 
   /// Destructor.

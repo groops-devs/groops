@@ -29,7 +29,7 @@ contains the name of config element and name of the class.
 Description of file formats: The \configFile{outputfileEOP}{matrix} is a matrix \ldots
 or alternatively: The \config{outputfileEOP} is a \file{matrix}{matrix}  \ldots
 (file types: admittance, arcList, doodsonEarthOrientationParameter, doodsonHarmonic, earthOrientationParameter, earthTide,
-gnssAntennaDefinition, gnssIonosphereMaps, gnssReceiverDefinition, gnssSignalBias, gnssStationInfo, gradioAccelerometerCalibration,
+gnssAntennaDefinition, gnssIonosphereMaps, gnssReceiverDefinition, gnssSignalBias, platform, gradioAccelerometerCalibration,
 griddedData, instrument, matrix, meanPolarMotion, normalEquation, oceanPoleTide, parameterName, polygon, potentialCoefficients,
 satelliteModel, stringList, stringTable, tideGeneratingPotential, timeSplinesCovariance, timeSplinesGravityField, variationalEquation)
 

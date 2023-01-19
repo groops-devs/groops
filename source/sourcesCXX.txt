@@ -60,6 +60,7 @@ files/fileMeanPolarMotion.cpp
 files/fileNormalEquation.cpp
 files/fileOceanPoleTide.cpp
 files/fileParameterName.cpp
+files/filePlatform.cpp
 files/filePolygon.cpp
 files/fileSatelliteModel.cpp
 files/fileSphericalHarmonics.cpp
@@ -160,6 +161,7 @@ classes/parametrizationTemporal/parametrizationTemporalFourier.cpp
 classes/parametrizationTemporal/parametrizationTemporalOscillation.cpp
 classes/parametrizationTemporal/parametrizationTemporalPolynomial.cpp
 classes/parametrizationTemporal/parametrizationTemporalSplines.cpp
+classes/platformSelector/platformSelector.cpp
 classes/sphericalHarmonicsFilter/sphericalHarmonicsFilter.cpp
 classes/sphericalHarmonicsNumbering/sphericalHarmonicsNumbering.cpp
 classes/thermosphere/thermosphere.cpp
@@ -199,7 +201,6 @@ gnss/gnssProcessingStep/gnssProcessingStep.cpp
 gnss/gnssReceiverGenerator/gnssReceiverGenerator.cpp
 gnss/gnssReceiverGenerator/gnssReceiverGeneratorLowEarthOrbiter.cpp
 gnss/gnssReceiverGenerator/gnssReceiverGeneratorStationNetwork.cpp
-gnss/gnssTransceiverSelector/gnssTransceiverSelector.cpp
 gnss/gnssTransmitterGenerator/gnssTransmitterGenerator.cpp
 gnss/gnssTransmitterGenerator/gnssTransmitterGeneratorGnss.cpp
 gnss/gnss.cpp
@@ -374,6 +375,7 @@ programs/misc/kernelEvaluate.cpp
 programs/misc/magneticField2GriddedData.cpp
 programs/misc/matrixCalculate.cpp
 programs/misc/observationEquations2Files.cpp
+programs/misc/platformCreate.cpp
 programs/misc/potentialCoefficients2BlockMeanTimeSplines.cpp
 programs/misc/potentialCoefficients2DegreeAmplitudes.cpp
 programs/misc/radialBasisSplines2KernelCoefficients.cpp
@@ -465,6 +467,7 @@ programs/conversion/gnss/gnssOrbex2StarCamera.cpp
 programs/conversion/gnss/gnssRinexNavigation2OrbitClock.cpp
 programs/conversion/gnss/gnssSignalBias2SinexBias.cpp
 programs/conversion/gnss/gnssSinexBias2SignalBias.cpp
+programs/conversion/gnss/gnssStationLog2Platform.cpp
 programs/conversion/gnss/gnssStationLog2StationInfo.cpp
 programs/conversion/gnss/gnssTroposphere2TropoSinex.cpp
 programs/conversion/gnss/rinexObservation2GnssReceiver.cpp

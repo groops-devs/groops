@@ -89,7 +89,7 @@ void GnssAntennaDefinition2ParameterVector::run(Config &config, Parallel::Commun
 
         auto typesAnt = types;
         if(typesAnt.size() == 0)
-          for(auto &pattern : antenna->pattern)
+          for(auto &pattern : antenna->patterns)
             typesAnt.push_back(pattern.type);
 
         Vector x(typesAnt.size()*parametrization->parameterCount());
@@ -97,7 +97,7 @@ void GnssAntennaDefinition2ParameterVector::run(Config &config, Parallel::Commun
         {
           logInfo<<typesAnt.at(idType).str()<<Log::endl;
           const UInt idPattern = antenna->findAntennaPattern(typesAnt.at(idType), GnssAntennaDefinition::THROW_EXCEPTION);
-          GnssAntennaPattern &pattern = antenna->pattern.at(idPattern);
+          GnssAntennaPattern &pattern = antenna->patterns.at(idPattern);
 
           Matrix A(pattern.pattern.rows()*pattern.pattern.columns(), parametrization->parameterCount());
           Vector l(pattern.pattern.rows()*pattern.pattern.columns());

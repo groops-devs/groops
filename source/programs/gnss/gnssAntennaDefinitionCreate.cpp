@@ -30,7 +30,7 @@ are sorted by names and duplicates are removed (first one is kept).
 #include "base/string.h"
 #include "config/configRegister.h"
 #include "files/fileGnssAntennaDefinition.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 
 /***** CLASS ***********************************/
 
@@ -145,11 +145,11 @@ public:
     try
     {
       antennas.push_back(GnssAntennaDefinitionPtr(new GnssAntennaDefinition()));
-      readConfig(config, "name",    antennas.back()->name,    Config::OPTIONAL, "", "");
-      readConfig(config, "serial",  antennas.back()->serial,  Config::OPTIONAL, "", "");
-      readConfig(config, "radome",  antennas.back()->radome,  Config::OPTIONAL, "", "");
-      readConfig(config, "comment", antennas.back()->comment, Config::OPTIONAL, "", "");
-      readConfig(config, "pattern", antennas.back()->pattern, Config::MUSTSET,  "", "");
+      readConfig(config, "name",    antennas.back()->name,     Config::OPTIONAL, "", "");
+      readConfig(config, "serial",  antennas.back()->serial,   Config::OPTIONAL, "", "");
+      readConfig(config, "radome",  antennas.back()->radome,   Config::OPTIONAL, "", "");
+      readConfig(config, "comment", antennas.back()->comment,  Config::OPTIONAL, "", "");
+      readConfig(config, "pattern", antennas.back()->patterns, Config::MUSTSET,  "", "");
     }
     catch(std::exception &e)
     {
@@ -231,28 +231,31 @@ public:
       readConfig(config, "specializeAntenna",          specialize,          Config::DEFAULT,  "0", "e.g. separate different serial numbers from stationInfo");
       if(isCreateSchema(config)) return;
 
-      GnssStationInfo stationInfo;
+      Platform stationInfo;
       std::vector<GnssAntennaDefinitionPtr> antennasFile;
-      readFileGnssStationInfo(fileNameStationInfo, stationInfo);
+      readFilePlatform(fileNameStationInfo, stationInfo);
       readFileGnssAntennaDefinition(fileNameAntenna, antennasFile);
-      stationInfo.fillAntennaPattern(antennasFile);
+      stationInfo.fillGnssAntennaDefinition(antennasFile);
 
-      for(const auto &antennaInfo : stationInfo.antenna)
-        if(antennaInfo.timeEnd >= timeStart && antennaInfo.timeStart < timeEnd)
+      for(const auto &instrument : stationInfo.equipments)
+      {
+        auto antennaInfo = std::dynamic_pointer_cast<PlatformGnssAntenna>(instrument);
+        if(antennaInfo && antennaInfo->timeEnd >= timeStart && antennaInfo->timeStart < timeEnd)
         {
-          if(antennaInfo.antennaDef)
+          if(antennaInfo->antennaDef)
           {
-            antennas.push_back(std::make_shared<GnssAntennaDefinition>(*antennaInfo.antennaDef));
+            antennas.push_back(std::make_shared<GnssAntennaDefinition>(*antennaInfo->antennaDef));
             if(specialize)
             {
-              if(antennas.back()->name.empty())   antennas.back()->name   = antennaInfo.name;
-              if(antennas.back()->serial.empty()) antennas.back()->serial = antennaInfo.serial;
-              if(antennas.back()->radome.empty()) antennas.back()->radome = antennaInfo.radome;
+              if(antennas.back()->name.empty())   antennas.back()->name   = antennaInfo->name;
+              if(antennas.back()->serial.empty()) antennas.back()->serial = antennaInfo->serial;
+              if(antennas.back()->radome.empty()) antennas.back()->radome = antennaInfo->radome;
             }
           }
           else
-            logWarning<<stationInfo.markerName<<"."<<stationInfo.markerNumber<<": no antenna definition found for "<<antennaInfo.str()<<Log::endl;
+            logWarning<<stationInfo.markerName<<"."<<stationInfo.markerNumber<<": no antenna definition found for "<<antennaInfo->str()<<Log::endl;
         }
+      }
     }
     catch(std::exception &e)
     {
@@ -289,7 +292,7 @@ public:
 
       for(auto &antennaList : antennaLists)
         for(auto &antenna : antennaList->antennas)
-          for(auto &pattern : antenna->pattern)
+          for(auto &pattern : antenna->patterns)
           {
             Double dz   = (dZenith   > 0) ? dZenith   : pattern.dZenit;
             Double maxz = (maxZenith >=0) ? maxZenith : ((pattern.pattern.columns()-1) * Double(pattern.dZenit));
@@ -350,16 +353,16 @@ public:
       for(auto &antennaList : antennaLists)
         for(auto &antenna : antennaList->antennas)
         {
-          std::vector<GnssAntennaPattern> patternsOld = antenna->pattern;
-          antenna->pattern.clear();
+          std::vector<GnssAntennaPattern> patternsOld = antenna->patterns;
+          antenna->patterns.clear();
           for(GnssType type : types)
           {
             Bool found = FALSE;
             for(auto &patternOld : patternsOld)
               if(match(type, patternOld.type))
               {
-                antenna->pattern.push_back(patternOld);
-                antenna->pattern.back().type = type;
+                antenna->patterns.push_back(patternOld);
+                antenna->patterns.back().type = type;
                 found = TRUE;
                 break;
               }
@@ -370,31 +373,31 @@ public:
           for(auto &patternAdd : patternsAdd)
           {
             Bool found = FALSE;
-            for(auto &patternNew : antenna->pattern)
+            for(auto &patternNew : antenna->patterns)
               if(match(patternAdd.type, patternNew.type))
               {
                 found = TRUE;
                 break;
               }
             if(!found)
-              antenna->pattern.push_back(patternAdd);
+              antenna->patterns.push_back(patternAdd);
           }
 
           if(addExistingPatterns)
             for(auto &patternOld : patternsOld)
             {
               Bool found = FALSE;
-              for(auto &patternNew : antenna->pattern)
+              for(auto &patternNew : antenna->patterns)
                 if(match(patternOld.type, patternNew.type))
                 {
                   found = TRUE;
                   break;
                 }
               if(!found)
-                antenna->pattern.push_back(patternOld);
+                antenna->patterns.push_back(patternOld);
             }
 
-          std::sort(antenna->pattern.begin(), antenna->pattern.end(), [](GnssAntennaPattern &a, GnssAntennaPattern &b){return a.type < b.type;});
+          std::sort(antenna->patterns.begin(), antenna->patterns.end(), [](GnssAntennaPattern &a, GnssAntennaPattern &b){return a.type < b.type;});
         } // for(antennas)
 
       for(auto &antennaList : antennaLists)
@@ -521,7 +524,7 @@ void GnssAntennaDefinitionCreate::run(Config &config, Parallel::CommunicatorPtr 
     for(const auto &antenna : antennas)
     {
       std::string str;
-      for(const auto &pattern : antenna->pattern)
+      for(const auto &pattern : antenna->patterns)
         str += " "+pattern.type.str();
       logInfo<<" "<<antenna->str()<<str<<Log::endl;
     }

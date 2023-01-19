@@ -15,6 +15,7 @@
 #include "config/config.h"
 #include "inputOutput/logging.h"
 #include "classes/earthRotation/earthRotation.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss.h"
 #include "gnss/gnssObservation.h"
 #include "gnss/gnssDesignMatrix.h"
@@ -467,6 +468,43 @@ std::vector<GnssType> Gnss::types(const GnssType mask) const
              types.push_back(type & mask);
     std::sort(types.begin(), types.end());
     return types;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+std::vector<Byte> Gnss::selectTransmitters(PlatformSelectorPtr selector)
+{
+  try
+  {
+    std::vector<const Platform*> platforms(transmitters.size(), nullptr);
+    for(UInt idTrans=0; idTrans<transmitters.size(); idTrans++)
+      if(transmitters.at(idTrans)->useable())
+        platforms.at(idTrans) = &transmitters.at(idTrans)->platform;
+    return selector->select(times.front(), times.back(), platforms);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+std::vector<Byte> Gnss::selectReceivers(PlatformSelectorPtr selector)
+{
+  try
+  {
+    std::vector<const Platform*> platforms(receivers.size(), nullptr);
+    for(UInt idRecv=0; idRecv<receivers.size(); idRecv++)
+      if(receivers.at(idRecv)->useable())
+        platforms.at(idRecv) = &receivers.at(idRecv)->platform;
+    return selector->select(times.front(), times.back(), platforms);
   }
   catch(std::exception &e)
   {

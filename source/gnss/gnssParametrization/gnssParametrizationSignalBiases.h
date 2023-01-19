@@ -48,8 +48,8 @@ All biases for a receiver/transmitter are accumulated and written to the respect
 
 #include "base/import.h"
 #include "config/config.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnss.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -59,11 +59,11 @@ All biases for a receiver/transmitter are accumulated and written to the respect
 * @see GnssParametrization */
 class GnssParametrizationSignalBiases : public GnssParametrizationBase
 {
-  Gnss                      *gnss;
-  std::string                name;
-  GnssTransceiverSelectorPtr selectTransmitters, selectReceivers;
-  FileName                   fileNameOutTransmitter, fileNameOutReceiver;
-  FileName                   fileNameInTransmitter, fileNameInReceiver;
+  Gnss                *gnss;
+  std::string          name;
+  PlatformSelectorPtr  selectTransmitters, selectReceivers;
+  FileName             fileNameOutTransmitter, fileNameOutReceiver;
+  FileName             fileNameInTransmitter, fileNameInReceiver;
 
 public:
   GnssParametrizationSignalBiases(Config &config);

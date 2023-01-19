@@ -17,7 +17,7 @@
 #include "files/fileInstrument.h"
 #include "classes/troposphere/troposphere.h"
 #include "classes/parametrizationTemporal/parametrizationTemporal.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssParametrization/gnssParametrizationTroposphere.h"
 
 /***********************************************/
@@ -55,7 +55,7 @@ void GnssParametrizationTroposphere::init(Gnss *gnss, Parallel::CommunicatorPtr 
   try
   {
     this->gnss = gnss;
-    auto selectedReceivers = selectReceivers->select(gnss->receivers);
+    auto selectedReceivers = gnss->selectReceivers(selectReceivers);
     parameters.resize(gnss->receivers.size(), nullptr);
     UInt idTropo = 0;
     std::vector<Vector3d> positions;
