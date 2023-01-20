@@ -29,10 +29,10 @@ For more details see \reference{orbit integration}{cookbook.gnssNetwork:orbitInt
 
 #include "base/import.h"
 #include "config/config.h"
-#include "gnss/gnss.h"
 #include "classes/ephemerides/ephemerides.h"
 #include "classes/parametrizationAcceleration/parametrizationAcceleration.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
+#include "gnss/gnss.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -56,7 +56,7 @@ class GnssParametrizationTransmitterDynamicOrbits : public GnssParametrizationBa
 
   Gnss                          *gnss;
   std::string                    name;
-  GnssTransceiverSelectorPtr     selectTransmitters;
+  PlatformSelectorPtr            selectTransmitters;
   FileName                       fileNameOrbit, fileNameParameter, fileNameVariational;
   std::vector<Time>              pulses;
   ParametrizationAccelerationPtr parametrizationAcceleration;

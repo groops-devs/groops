@@ -22,7 +22,7 @@ GROOPS_REGISTER_FILEFORMAT(GnssReceiverDefinition, "gnssReceiverDefinition")
 
 /***********************************************/
 
-UInt GnssReceiverDefinition::find(const std::vector<GnssReceiverDefinitionPtr> &receivers, const std::string &name, const std::string &serial, const std::string version)
+GnssReceiverDefinitionPtr GnssReceiverDefinition::find(const std::vector<GnssReceiverDefinitionPtr> &receivers, const std::string &name, const std::string &serial, const std::string version)
 {
   try
   {
@@ -30,9 +30,9 @@ UInt GnssReceiverDefinition::find(const std::vector<GnssReceiverDefinitionPtr> &
       if((name == receivers.at(i)->name) || receivers.at(i)->name.empty())
         if((serial == receivers.at(i)->serial) || receivers.at(i)->serial.empty())
           if((version == receivers.at(i)->version) || receivers.at(i)->version.empty())
-            return i;
+            return receivers.at(i);
 
-    return NULLINDEX;
+    return GnssReceiverDefinitionPtr(nullptr);
   }
   catch(std::exception &e)
   {

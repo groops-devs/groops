@@ -16,7 +16,7 @@ Create a \file{GnssStationInfo file}{gnssStationInfo} from scratch by defining a
 \config{markerName}, \config{markerNumber}, \config{comment}, \config{approxPosition},
 \config{antenna} and \config{receiver}.
 
-See also \program{GnssAntex2AntennaDefinition} and \program{GnssStationLog2StationInfo}.
+See also \program{GnssAntex2AntennaDefinition} and \program{GnssStationLog2Platform}.
 )";
 
 /***********************************************/

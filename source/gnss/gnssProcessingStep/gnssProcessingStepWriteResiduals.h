@@ -18,7 +18,7 @@
 static const char *docstringGnssProcessingStepWriteResiduals = R"(
 \subsection{WriteResiduals}\label{gnssProcessingStepType:writeResiduals}
 Writes the \file{observation residuals}{instrument} for all
-\configClass{selectReceivers}{gnssTransceiverSelectorType}.
+\configClass{selectReceivers}{platformSelectorType}.
 For for each station a file is written. The file name is interpreted as
 a template with the variable \verb|{station}| being replaced by the station name.
 )";
@@ -27,7 +27,7 @@ a template with the variable \verb|{station}| being replaced by the station name
 /***********************************************/
 
 #include "config/config.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssProcessingStep/gnssProcessingStep.h"
 
 /***** CLASS ***********************************/
@@ -37,8 +37,8 @@ a template with the variable \verb|{station}| being replaced by the station name
 * @see GnssProcessingStep */
 class GnssProcessingStepWriteResiduals : public GnssProcessingStepBase
 {
-  GnssTransceiverSelectorPtr selectReceivers;
-  FileName                   fileNameResiduals;
+  PlatformSelectorPtr selectReceivers;
+  FileName            fileNameResiduals;
 
 public:
   GnssProcessingStepWriteResiduals(Config &config);
@@ -66,7 +66,7 @@ inline void GnssProcessingStepWriteResiduals::process(GnssProcessingStep::State 
 {
   try
   {
-    auto selectedReceivers = selectReceivers->select(state.gnss->receivers);
+    auto selectedReceivers = state.gnss->selectReceivers(selectReceivers);
     VariableList fileNameVariableList;
     addVariable("station", "****", fileNameVariableList);
     logStatus<<"write residuals to file <"<<fileNameResiduals(fileNameVariableList)<<">"<<Log::endl;

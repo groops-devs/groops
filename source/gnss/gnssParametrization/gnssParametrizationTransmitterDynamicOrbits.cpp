@@ -16,13 +16,13 @@
 #include "config/config.h"
 #include "files/fileInstrument.h"
 #include "files/fileMatrix.h"
-#include "gnss/gnss.h"
 #include "classes/ephemerides/ephemerides.h"
 #include "classes/parametrizationAcceleration/parametrizationAcceleration.h"
 #include "classes/timeSeries/timeSeries.h"
 #include "classes/timeSeries/timeSeries.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "misc/observation/variationalEquationFromFile.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "gnss/gnss.h"
 #include "gnss/gnssParametrization/gnssParametrizationTransmitterDynamicOrbits.h"
 
 /***********************************************/
@@ -69,7 +69,7 @@ void GnssParametrizationTransmitterDynamicOrbits::init(Gnss *gnss, Parallel::Com
   try
   {
     this->gnss = gnss;
-    auto selectedTransmitters = selectTransmitters->select(gnss->transmitters);
+    auto selectedTransmitters = gnss->selectTransmitters(selectTransmitters);
 
     VariableList fileNameVariableList;
     addVariable("prn", "***", fileNameVariableList);

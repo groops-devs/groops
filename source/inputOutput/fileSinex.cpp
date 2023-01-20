@@ -16,7 +16,6 @@
 #include "inputOutput/logging.h"
 #include "inputOutput/file.h"
 #include "inputOutput/system.h"
-#include "files/fileGnssStationInfo.h"
 #include "config/config.h"
 #include "fileSinex.h"
 

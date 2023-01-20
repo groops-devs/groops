@@ -13,14 +13,14 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 Create \reference{variables}{general.parser} containing SVN and block based on an
-\configFile{inputfileTransmitterInfo}{gnssStationInfo} of a GNSS satellite/PRN and
+\configFile{inputfileTransmitterInfo}{platform} of a GNSS satellite/PRN and
 a specified \config{time}.
 )";
 
 /***********************************************/
 
 #include "programs/program.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 
 /***** CLASS ***********************************/
 
@@ -51,17 +51,17 @@ void GnssPrn2SvnBlockVariables::run(Config &config, Parallel::CommunicatorPtr /*
     if(isCreateSchema(config)) return;
 
     logStatus<<"read transmitter info file <"<<fileNameTransmitterInfo<<">"<<Log::endl;
-    GnssStationInfo transmitterInfo;
-    readFileGnssStationInfo(fileNameTransmitterInfo, transmitterInfo);
-    const UInt idAntenna = transmitterInfo.findAntenna(time);
-    if(idAntenna == NULLINDEX)
+    Platform transmitterInfo;
+    readFilePlatform(fileNameTransmitterInfo, transmitterInfo);
+    auto antenna = transmitterInfo.findEquipment<PlatformGnssAntenna>(time);
+    if(!antenna)
       throw(Exception("satellite SVN not found in transmitter info"));
 
     if(!nameSVN.empty())
-      addVariable(nameSVN, transmitterInfo.antenna.at(idAntenna).serial, config.getVarList());
+      addVariable(nameSVN, antenna->serial, config.getVarList());
 
     if(!nameBlock.empty())
-      addVariable(nameBlock, transmitterInfo.antenna.at(idAntenna).name, config.getVarList());
+      addVariable(nameBlock, antenna->name, config.getVarList());
   }
   catch(std::exception &e)
   {

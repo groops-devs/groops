@@ -36,7 +36,7 @@ to avoid an unsolvable system of normal equations in case of data gaps.
 #include "gnss/gnss.h"
 #include "classes/troposphere/troposphere.h"
 #include "classes/parametrizationTemporal/parametrizationTemporal.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -57,7 +57,7 @@ class GnssParametrizationTroposphere : public GnssParametrizationBase
 
   Gnss                      *gnss;
   std::string                name;
-  GnssTransceiverSelectorPtr selectReceivers;
+  PlatformSelectorPtr        selectReceivers;
   FileName                   fileNameTropo;
   TropospherePtr             troposphere;
   ParametrizationTemporalPtr parametrizationWet;

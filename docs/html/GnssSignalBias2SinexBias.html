@@ -77,7 +77,7 @@ Phase biases without attribute (e.g. <code>L1*</code>) are automatically expande
 bias has a corresponding phase bias
 (Example: <code>C1C</code>, <code>C1W</code>, <code>L1*</code> are converted to <code>C1C</code>, <code>C1W</code>, <code>L1C</code>, <code>L1W</code>).</p><p>Time-variable biases (e.g. GPS L5 satellite phase bias) can be provided via <strong class="groops-config-element">timeVariableBias</strong>.
 Their time span will be based on the provided epochs ($t \pm \Delta t / 2$).
-The slope of the bias can be optionally provided in the second data column.</p><p>If GLONASS receiver biases depend on frequency number, those must be defined in <a class="groops-class" href="fileFormat_gnssStationInfo.html">inputfileTransmitterInfo</a>
+The slope of the bias can be optionally provided in the second data column.</p><p>If GLONASS receiver biases depend on frequency number, those must be defined in <a class="groops-class" href="fileFormat_platform.html">inputfileTransmitterInfo</a>
 to get the correct PRN/SVN assignment to the biases.</p><p>See IGS SINEX Bias format description for further details on header information.</p><p>See also <a class="groops-program" href="GnssSinexBias2SignalBias.html">GnssSinexBias2SignalBias</a> and <a class="groops-program" href="GnssBiasClockAlignment.html">GnssBiasClockAlignment</a>.
 </p>
 <table class="table table-hover">

@@ -18,7 +18,7 @@
 static const char *docstringGnssProcessingStepWriteUsedStationList = R"(
 \subsection{WriteUsedStationList}\label{gnssProcessingStepType:writeUsedStationList}
 Writes a \file{list}{stringList} of receivers (stations) which are used in the last step and
-selected by \configClass{selectReceivers}{gnssTransceiverSelectorType}.
+selected by \configClass{selectReceivers}{platformSelectorType}.
 )";
 #endif
 
@@ -26,7 +26,7 @@ selected by \configClass{selectReceivers}{gnssTransceiverSelectorType}.
 
 #include "config/config.h"
 #include "files/fileStringTable.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssProcessingStep/gnssProcessingStep.h"
 
 /***** CLASS ***********************************/
@@ -36,8 +36,8 @@ selected by \configClass{selectReceivers}{gnssTransceiverSelectorType}.
 * @see GnssProcessingStep */
 class GnssProcessingStepWriteUsedStationList : public GnssProcessingStepBase
 {
-  GnssTransceiverSelectorPtr selectReceivers;
-  FileName                   fileNameUsedStationList;
+  PlatformSelectorPtr selectReceivers;
+  FileName            fileNameUsedStationList;
 
 public:
   GnssProcessingStepWriteUsedStationList(Config &config);
@@ -67,7 +67,7 @@ inline void GnssProcessingStepWriteUsedStationList::process(GnssProcessingStep::
   {
     if(!Parallel::isMaster(state.normalEquationInfo.comm))
       return;
-    auto selectedReceivers = selectReceivers->select(state.gnss->receivers);
+    auto selectedReceivers = state.gnss->selectReceivers(selectReceivers);
     logStatus<<"write used station list to file <"<<fileNameUsedStationList<<">"<<Log::endl;
     std::vector<std::string> usedStationList;
     for(auto recv : state.gnss->receivers)

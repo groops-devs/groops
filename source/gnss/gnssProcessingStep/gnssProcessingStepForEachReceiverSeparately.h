@@ -17,7 +17,7 @@
 #ifdef DOCSTRING_GnssProcessingStep
 static const char *docstringGnssProcessingStepForEachReceiverSeparately = R"(
 \subsection{ForEachReceiverSeparately}\label{gnssProcessingStepType:forEachReceiverSeparately}
-Perform these processing steps for each \configClass{selectReceivers}{gnssTransceiverSelectorType} separately.
+Perform these processing steps for each \configClass{selectReceivers}{platformSelectorType} separately.
 All non-receiver related parameters parameters are disabled in these processing steps (see .
 
 This step can be used for individual precise point positioning (PPP) of all stations.
@@ -31,7 +31,7 @@ initial processing of the core network to process all other stations individuall
 /***********************************************/
 
 #include "config/config.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssProcessingStep/gnssProcessingStep.h"
 
 /***** CLASS ***********************************/
@@ -41,9 +41,9 @@ initial processing of the core network to process all other stations individuall
 * @see GnssProcessingStep */
 class GnssProcessingStepForEachReceiverSeparately : public GnssProcessingStepBase
 {
-  GnssTransceiverSelectorPtr selectReceivers;
-  std::string                variableReceiver;
-  Config                     configProcessingSteps;
+  PlatformSelectorPtr selectReceivers;
+  std::string         variableReceiver;
+  Config              configProcessingSteps;
 
 public:
   GnssProcessingStepForEachReceiverSeparately(Config &config);
@@ -77,7 +77,7 @@ inline void GnssProcessingStepForEachReceiverSeparately::process(GnssProcessingS
   {
     Parallel::barrier(state.normalEquationInfo.comm);
     logStatus<<"=== for each receiver separately ============================"<<Log::endl;
-    auto estimateSingleReceiver = selectReceivers->select(state.gnss->receivers);
+    auto estimateSingleReceiver = state.gnss->selectReceivers(selectReceivers);
     for(auto recv : state.gnss->receivers)
       if(!recv->useable())
         estimateSingleReceiver.at(recv->idRecv()) = FALSE;

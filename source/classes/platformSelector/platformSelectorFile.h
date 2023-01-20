@@ -1,9 +1,9 @@
 /***********************************************/
 /**
-* @file gnssTransceiverSelectorFile.h
+* @file platformSelectorFile.h
 *
-* @brief Select transceivers from file list.
-* @see GnssTransceiverSelector
+* @brief Select platforms from file list.
+* @see PlatformSelector
 *
 * @author Torsten Mayer-Guerr
 * @date 2021-01-23
@@ -11,13 +11,13 @@
 */
 /***********************************************/
 
-#ifndef __GROOPS_GNSSTRANSCEIVERSELECTORFILE__
-#define __GROOPS_GNSSTRANSCEIVERSELECTORFILE__
+#ifndef __GROOPS_PLATFORMSELECTORFILE__
+#define __GROOPS_PLATFORMSELECTORFILE__
 
 // Latex documentation
-#ifdef DOCSTRING_GnssTransceiverSelector
-static const char *docstringGnssTransceiverSelectorFile = R"(
-\subsection{File}\label{gnssTransceiverSelectorType:file}
+#ifdef DOCSTRING_PlatformSelector
+static const char *docstringPlatformSelectorFile = R"(
+\subsection{File}\label{platformSelectorType:file}
 Select receivers/transmitters from each row of
 \configFile{inputfileStringTable}{stringTable}.
 Additional columns in a row represent alternatives
@@ -30,25 +30,25 @@ if previous names are not available (e.g. without observation file).
 #include "base/import.h"
 #include "config/config.h"
 #include "files/fileStringTable.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 
 /***** CLASS ***********************************/
 
-/** @brief Select transceivers from file list.
-* @ingroup gnssTransceiverSelectorGroup
-* @see GnssTransceiverSelector */
-class GnssTransceiverSelectorFile : public GnssTransceiverSelectorBase
+/** @brief Select platforms from file list.
+* @ingroup platformSelectorGroup
+* @see PlatformSelector */
+class PlatformSelectorFile : public PlatformSelectorBase
 {
   std::vector<std::vector<std::string>> names;
 
 public:
-  GnssTransceiverSelectorFile(Config &config);
-  void select(const std::vector<GnssTransceiverPtr> &transceivers, std::vector<Byte> &selected) const override;
+  PlatformSelectorFile(Config &config);
+  void select(const Time &timeStart, const Time &timeEnd, const std::vector<const Platform*> &platforms, std::vector<Byte> &selected) const override;
 };
 
 /***********************************************/
 
-inline GnssTransceiverSelectorFile::GnssTransceiverSelectorFile(Config &config)
+inline PlatformSelectorFile::PlatformSelectorFile(Config &config)
 {
   try
   {
@@ -66,18 +66,18 @@ inline GnssTransceiverSelectorFile::GnssTransceiverSelectorFile(Config &config)
 
 /***********************************************/
 
-inline void GnssTransceiverSelectorFile::select(const std::vector<GnssTransceiverPtr> &transceivers, std::vector<Byte> &selected) const
+inline void PlatformSelectorFile::select(const Time &/*timeStart*/, const Time &/*timeEnd*/, const std::vector<const Platform*> &platforms, std::vector<Byte> &selected) const
 {
   try
   {
     for(UInt i=0; i<names.size(); i++)
       for(UInt k=0; k<names.at(i).size(); k++) // alternatives
       {
-        const UInt id = std::distance(transceivers.begin(), std::find_if(transceivers.begin(), transceivers.end(),
-                                                                         [&](auto &t){return t->name() == names.at(i).at(k);}));
-        if(id < transceivers.size())
+        const UInt id = std::distance(platforms.begin(), std::find_if(platforms.begin(), platforms.end(),
+                                                                      [&](auto &t){return t && (t->name == names.at(i).at(k));}));
+        if(id < platforms.size())
         {
-          selected.at(id) = transceivers.at(id)->useable();
+          selected.at(id) = TRUE;
           break; // skip alternative stations
         }
       }

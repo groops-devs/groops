@@ -33,7 +33,7 @@ Vector GnssAntennaDefinition::antennaVariations(Angle azimut, Angle elevation, c
       if((types.at(idType) == GnssType::PHASE) || (types.at(idType) == GnssType::RANGE))
       {
         const UInt idPattern = findAntennaPattern(types.at(idType), noPatternFoundAction);
-        acv(idType) = (idPattern == NULLINDEX) ? NAN_EXPR : pattern.at(idPattern).antennaVariations(azimut, elevation);
+        acv(idType) = (idPattern == NULLINDEX) ? NAN_EXPR : patterns.at(idPattern).antennaVariations(azimut, elevation);
       }
 
     return acv;
@@ -50,26 +50,26 @@ UInt GnssAntennaDefinition::findAntennaPattern(const GnssType &type, NoPatternFo
 {
   try
   {
-    auto iter = std::find_if(pattern.begin(), pattern.end(), [&](const GnssAntennaPattern &p) {return p.type == type;});
-    if(iter == pattern.end()) // no matching pattern found
+    auto iter = std::find_if(patterns.begin(), patterns.end(), [&](const GnssAntennaPattern &p) {return p.type == type;});
+    if(iter == patterns.end()) // no matching pattern found
     {
       if(noPatternFoundAction == IGNORE_OBSERVATION)
         return NULLINDEX;
       if(noPatternFoundAction == USE_NEAREST_FREQUENCY)
       {
         // TODO: there should be the following priorities: phase? nearest phase; code? nearest code or if no code then nearest phase
-        iter = std::min_element(pattern.begin(), pattern.end(), [&](const GnssAntennaPattern &p1, const GnssAntennaPattern &p2)
+        iter = std::min_element(patterns.begin(), patterns.end(), [&](const GnssAntennaPattern &p1, const GnssAntennaPattern &p2)
         {
           GnssType t1 = p1.type; if(t1 == GnssType::GLONASS) t1.setFrequencyNumber(0);
           GnssType t2 = p2.type; if(t2 == GnssType::GLONASS) t2.setFrequencyNumber(0);
           return std::fabs(t1.frequency() - type.frequency()) < std::fabs(t2.frequency() - type.frequency());
         });
       }
-      if(noPatternFoundAction == THROW_EXCEPTION || iter == pattern.end()) // still no matching pattern found
+      if(noPatternFoundAction == THROW_EXCEPTION || iter == patterns.end()) // still no matching pattern found
         throw(Exception("no pattern found for "+type.str()));
     }
 
-    return static_cast<UInt>(std::distance(pattern.begin(), iter));
+    return static_cast<UInt>(std::distance(patterns.begin(), iter));
   }
   catch(std::exception &e)
   {
@@ -79,7 +79,7 @@ UInt GnssAntennaDefinition::findAntennaPattern(const GnssType &type, NoPatternFo
 
 /***********************************************/
 
-UInt GnssAntennaDefinition::find(const std::vector<GnssAntennaDefinitionPtr> &antennaList, const std::string &name, const std::string &serial, const std::string radome)
+GnssAntennaDefinitionPtr GnssAntennaDefinition::find(const std::vector<GnssAntennaDefinitionPtr> &antennaList, const std::string &name, const std::string &serial, const std::string radome)
 {
   try
   {
@@ -87,9 +87,9 @@ UInt GnssAntennaDefinition::find(const std::vector<GnssAntennaDefinitionPtr> &an
       if((name == antennaList.at(i)->name) || antennaList.at(i)->name.empty())
         if((serial == antennaList.at(i)->serial) || antennaList.at(i)->serial.empty())
           if((radome == antennaList.at(i)->radome) || antennaList.at(i)->radome.empty())
-            return i;
+            return antennaList.at(i);
 
-    return NULLINDEX;
+    return GnssAntennaDefinitionPtr(nullptr);
   }
   catch(std::exception &e)
   {
@@ -142,7 +142,7 @@ template<> void save(OutArchive &ar, const GnssAntennaDefinition &x)
     ar<<nameValue("serial",    x.serial);
     ar<<nameValue("radome",    x.radome);
     ar<<nameValue("comment",   x.comment);
-    ar<<nameValue("pattern",   x.pattern);
+    ar<<nameValue("pattern",   x.patterns);
   }
   catch(std::exception &e)
   {
@@ -160,7 +160,7 @@ template<> void load(InArchive &ar, GnssAntennaDefinition  &x)
     ar>>nameValue("serial",    x.serial);
     ar>>nameValue("radome",    x.radome);
     ar>>nameValue("comment",   x.comment);
-    ar>>nameValue("pattern",   x.pattern);
+    ar>>nameValue("pattern",   x.patterns);
   }
   catch(std::exception &e)
   {

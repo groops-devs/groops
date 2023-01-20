@@ -58,7 +58,7 @@ public:
   std::vector<std::string>  preprocessingInfos;
   std::string               disableReason;
 
-  GnssReceiver(Bool isMyRank, Bool isEarthFixed, const std::string &name, const GnssStationInfo &info,
+  GnssReceiver(Bool isMyRank, Bool isEarthFixed, const Platform &platform,
                GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction, const Vector &useableEpochs,
                Bool integerAmbiguities, Double wavelengthFactor);
 

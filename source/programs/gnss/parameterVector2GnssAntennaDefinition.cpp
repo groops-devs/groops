@@ -103,8 +103,8 @@ void ParameterVector2GnssAntennaDefinition::run(Config &config, Parallel::Commun
         // check antenna name
         // ------------------
         std::vector<std::string> parts = String::split(parameterNames.at(i).object, GnssAntennaDefinition::sep);
-        const UInt idAnt = GnssAntennaDefinition::find(antennas, parts.at(0), parts.at(1), parts.at(2));
-        if(idAnt == NULLINDEX)
+        auto antenna = GnssAntennaDefinition::find(antennas, parts.at(0), parts.at(1), parts.at(2));
+        if(!antenna)
           throw(Exception("antenna not found in list: "+parameterNames.at(i).object));
 
         // extract GnssType
@@ -117,10 +117,10 @@ void ParameterVector2GnssAntennaDefinition::run(Config &config, Parallel::Commun
         // add parametrization to all machting patterns
         // -------------------------------------------
         Bool found = FALSE;
-        for(auto &pattern : antennas.at(idAnt)->pattern)
+        for(auto &pattern : antenna->patterns)
           if(type == pattern.type)
           {
-            logInfo<<antennas.at(idAnt)->str()<<": add parametrization of "<<type.str()<<" to "<<pattern.type.str()<<Log::endl;
+            logInfo<<antenna->str()<<": add parametrization of "<<type.str()<<" to "<<pattern.type.str()<<Log::endl;
             found = TRUE;
 
             Vector x = solution.row(i, parametrization->parameterCount());
@@ -145,7 +145,7 @@ void ParameterVector2GnssAntennaDefinition::run(Config &config, Parallel::Commun
           }
 
         if(!found)
-          logWarning<<antennas.at(idAnt)->str()<<" has no pattern for "<<type.str()<<Log::endl;
+          logWarning<<antenna->str()<<" has no pattern for "<<type.str()<<Log::endl;
       }
 
     // ============================

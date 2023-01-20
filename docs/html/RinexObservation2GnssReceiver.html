@@ -79,7 +79,7 @@ to frequency number must be provided via <strong class="groops-config-element">i
 in the form of a <a class="groops-file" href="fileFormat_matrix.html">matrix file</a> with columns: GLONASS PRN, mjdStart, mjdEnd, frequencyNumber.
 Source for mapping: <a href="http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO" target="_blank">http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO</a>.
 RINEX v3+ observation files already contain this information.</p><p><a class="groops-class" href="gnssType.html">useType</a> and <a class="groops-class" href="gnssType.html">ignoreType</a> can be used to filter
-the observation types that will be exported.</p><p>If <a class="groops-class" href="fileFormat_gnssStationInfo.html">inputfileStationInfo</a> is set, RINEX antenna and receiver info
+the observation types that will be exported.</p><p>If <a class="groops-class" href="fileFormat_platform.html">inputfileStationInfo</a> is set, RINEX antenna and receiver info
 will be cross-checked with the provided file and warnings are raised in case of differences.</p><p>A list of semi-codeless GPS receivers (observing C2D instead of C2W) can be provided via
 <a class="groops-class" href="fileFormat_stringList.html">inputfileSemiCodelessReceivers</a> in ASCII format with one receiver name per line.
 Observation types will be automatically corrected for these receivers.</p><p>Some LEO satellites use special RINEX observation types, either from the unofficial RINEX v2.20

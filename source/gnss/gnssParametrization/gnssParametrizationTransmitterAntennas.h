@@ -27,8 +27,8 @@ for transmitting antennas (GNSS satellites).
 
 #include "base/import.h"
 #include "config/config.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnss.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
 #include "classes/parametrizationGnssAntenna/parametrizationGnssAntenna.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
@@ -41,7 +41,7 @@ class GnssParametrizationTransmitterAntennas : public GnssParametrizationBase
 {
   Gnss                                        *gnss;
   std::string                                  name;
-  GnssTransceiverSelectorPtr                   selectTransmitters;
+  PlatformSelectorPtr                          selectTransmitters;
   ParametrizationGnssAntennaPtr                parametrization;
   std::vector<GnssType>                        typesPattern;
   Bool                                         addNonMatchingTypes;

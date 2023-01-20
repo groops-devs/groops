@@ -19,7 +19,7 @@
 static const char *docstringGnssParametrizationClocksModel = R"(
 \subsection{ClocksModel}\label{gnssParametrizationType:clocksModel}
 This parametrization is an alternative to \configClass{parametrization:clocks}{gnssParametrizationType:clocks}.
-Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{gnssTransceiverSelectorType}
+Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{platformSelectorType}
 and, opposed to \configClass{parametrization:clocks}{gnssParametrizationType:clocks}, are also estimated for epochs
 that have no valid observations available (e.g. data gaps).
 
@@ -45,7 +45,7 @@ The realization of the constraint is done as an additional observation equation 
 \begin{equation}
  0 = \sum_i \delta t^{s_i} + \sum_k \delta t_{r_k}
 \end{equation}
-summed over all \configClass{selectTransmitters/ReceiversZeroMean}{gnssTransceiverSelectorType}
+summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
 with a standard deviation of \config{sigmaZeroMeanConstraint}.
 )";
 #endif
@@ -54,8 +54,8 @@ with a standard deviation of \config{sigmaZeroMeanConstraint}.
 
 #include "base/import.h"
 #include "config/config.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnss.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -67,8 +67,8 @@ class GnssParametrizationClocksModel : public GnssParametrizationBase
 {
   Gnss                                        *gnss;
   std::string                                  name, nameConstraint;
-  GnssTransceiverSelectorPtr                   selectTransmitters, selectReceivers;
-  GnssTransceiverSelectorPtr                   selectTransmittersZeroMean, selectReceiversZeroMean;
+  PlatformSelectorPtr                          selectTransmitters, selectReceivers;
+  PlatformSelectorPtr                          selectTransmittersZeroMean, selectReceiversZeroMean;
   std::vector<Byte>                            selectedTransmitters, selectedReceivers;
   std::vector<Byte>                            selectedTransmittersZeroMean, selectedReceiversZeroMean;
   Double                                       huber, huberPower;

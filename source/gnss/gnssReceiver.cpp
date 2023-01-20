@@ -27,10 +27,10 @@
 
 /***********************************************/
 
-GnssReceiver::GnssReceiver(Bool isMyRank, Bool isEarthFixed, const std::string &name, const GnssStationInfo &info,
+GnssReceiver::GnssReceiver(Bool isMyRank, Bool isEarthFixed, const Platform &platform,
                            GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction, const Vector &useableEpochs,
                            Bool integerAmbiguities, Double wavelengthFactor)
-  : GnssTransceiver(name, info, noPatternFoundAction, useableEpochs), isMyRank_(isMyRank),
+  : GnssTransceiver(platform, noPatternFoundAction, useableEpochs), isMyRank_(isMyRank),
     isEarthFixed_(isEarthFixed), integerAmbiguities(integerAmbiguities), wavelengthFactor(wavelengthFactor)
 {
 }

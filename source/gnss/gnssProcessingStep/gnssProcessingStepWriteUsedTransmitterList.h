@@ -18,7 +18,7 @@
 static const char *docstringGnssProcessingStepWriteUsedTransmitterList = R"(
 \subsection{WriteUsedTransmitterList}\label{gnssProcessingStepType:writeUsedTransmitterList}
 Writes a \file{list}{stringList} of transmitters which are used in the last step and
-selected by \configClass{selectTransmitters}{gnssTransceiverSelectorType}.
+selected by \configClass{selectTransmitters}{platformSelectorType}.
 )";
 #endif
 
@@ -26,7 +26,7 @@ selected by \configClass{selectTransmitters}{gnssTransceiverSelectorType}.
 
 #include "config/config.h"
 #include "files/fileStringTable.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssProcessingStep/gnssProcessingStep.h"
 
 /***** CLASS ***********************************/
@@ -36,8 +36,8 @@ selected by \configClass{selectTransmitters}{gnssTransceiverSelectorType}.
 * @see GnssProcessingStep */
 class GnssProcessingStepWriteUsedTransmitterList : public GnssProcessingStepBase
 {
-  GnssTransceiverSelectorPtr selectTransmitters;
-  FileName                   fileNameOutTransmitterList;
+  PlatformSelectorPtr selectTransmitters;
+  FileName            fileNameOutTransmitterList;
 
 public:
   GnssProcessingStepWriteUsedTransmitterList(Config &config);
@@ -67,7 +67,7 @@ inline void GnssProcessingStepWriteUsedTransmitterList::process(GnssProcessingSt
   {
     if(!Parallel::isMaster(state.normalEquationInfo.comm))
       return;
-    auto selectedTransmitters = selectTransmitters->select(state.gnss->transmitters);
+    auto selectedTransmitters = state.gnss->selectTransmitters(selectTransmitters);
     logStatus<<"write used transmitter list to file <"<<fileNameOutTransmitterList<<">"<<Log::endl;
     std::vector<std::string> usedTransmitterList;
     for(auto trans : state.gnss->transmitters)

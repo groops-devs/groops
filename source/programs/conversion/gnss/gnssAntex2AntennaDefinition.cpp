@@ -15,7 +15,7 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 Converts metadata and antenna definitions from the \href{https://files.igs.org/pub/data/format/antex14.txt}{IGS ANTEX format}.
-to \configFile{transmitterInfo}{gnssStationInfo}, \configFile{antennaDefinition}{gnssAntennaDefinition}, \configFile{svnBlockTable}{stringTable},
+to \configFile{transmitterInfo}{platform}, \configFile{antennaDefinition}{gnssAntennaDefinition}, \configFile{svnBlockTable}{stringTable},
 and \configFile{transmitterList}{stringList} files for the respective GNSS and for the list of ground station antennas.
 )";
 
@@ -33,10 +33,10 @@ and \configFile{transmitterList}{stringList} files for the respective GNSS and f
 * @ingroup programsConversionGroup */
 class GnssAntex2AntennaDefinition
 {
-  Bool        getLine(InFile &file, std::string &line, std::string &label, Bool throwException=FALSE) const;
-  Bool        testLabel(const std::string &labelInLine, const std::string &label, Bool optional=TRUE) const;
-  void        addTransmitter(const GnssAntennaInfo &antennaInfo, const std::string &markerName, const std::string &markerNumber, std::vector<GnssStationInfo> &transmitterList);
-  void        addAntenna(const GnssAntennaDefinitionPtr &antenna, std::vector<GnssAntennaDefinitionPtr> &antennaList);
+  Bool getLine(InFile &file, std::string &line, std::string &label, Bool throwException=FALSE) const;
+  Bool testLabel(const std::string &labelInLine, const std::string &label, Bool optional=TRUE) const;
+  void addTransmitter(const GnssAntennaInfo &antennaInfo, const std::string &markerName, const std::string &markerNumber, std::vector<GnssStationInfo> &transmitterList);
+  void addAntenna(const GnssAntennaDefinitionPtr &antenna, std::vector<GnssAntennaDefinitionPtr> &antennaList);
 
   enum Type
   {
@@ -191,38 +191,38 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
 
       GnssAntennaDefinitionPtr antenna = GnssAntennaDefinitionPtr(new GnssAntennaDefinition);
       antennaInfo.antennaDef = antenna;
-      antenna->pattern.resize(freqCount);
+      antenna->patterns.resize(freqCount);
 
       for(UInt i=0; i<freqCount; i++)
       {
         testLabel(label, "START OF FREQUENCY");
 
-        antenna->pattern.at(i).type = GnssType();
+        antenna->patterns.at(i).type = GnssType();
         switch(line.at(3))
         {
           case ' ': break;
-          case 'G': antenna->pattern.at(i).type += GnssType::GPS;      break;
-          case 'R': antenna->pattern.at(i).type += GnssType::GLONASS;  break;
-          case 'E': antenna->pattern.at(i).type += GnssType::GALILEO;  break;
-          case 'C': antenna->pattern.at(i).type += GnssType::BDS;      break;
-          case 'S': antenna->pattern.at(i).type += GnssType::SBAS;     break;
-          case 'I': antenna->pattern.at(i).type += GnssType::IRNSS;    break;
-          case 'J': antenna->pattern.at(i).type += GnssType::QZSS;     break;
+          case 'G': antenna->patterns.at(i).type += GnssType::GPS;      break;
+          case 'R': antenna->patterns.at(i).type += GnssType::GLONASS;  break;
+          case 'E': antenna->patterns.at(i).type += GnssType::GALILEO;  break;
+          case 'C': antenna->patterns.at(i).type += GnssType::BDS;      break;
+          case 'S': antenna->patterns.at(i).type += GnssType::SBAS;     break;
+          case 'I': antenna->patterns.at(i).type += GnssType::IRNSS;    break;
+          case 'J': antenna->patterns.at(i).type += GnssType::QZSS;     break;
           default:
             logWarning<<"Unknown satellite system: '"<<line<<"'"<<Log::endl;
         }
         switch(String::toInt(line.substr(4, 2)))
         {
           case 0: break;
-          case 1: antenna->pattern.at(i).type += GnssType::L1;  break;
-          case 2: antenna->pattern.at(i).type += GnssType::L2;  break;
-          case 3: antenna->pattern.at(i).type += GnssType::G3;  break;
-          case 4: antenna->pattern.at(i).type += GnssType::G1a; break;
-          case 5: antenna->pattern.at(i).type += GnssType::L5;  break;
-          case 6: antenna->pattern.at(i).type += GnssType::E6;  break;
-          case 7: antenna->pattern.at(i).type += GnssType::E5b; break;
-          case 8: antenna->pattern.at(i).type += GnssType::E5;  break;
-          case 9: antenna->pattern.at(i).type += GnssType::S9;  break;
+          case 1: antenna->patterns.at(i).type += GnssType::L1;  break;
+          case 2: antenna->patterns.at(i).type += GnssType::L2;  break;
+          case 3: antenna->patterns.at(i).type += GnssType::G3;  break;
+          case 4: antenna->patterns.at(i).type += GnssType::G1a; break;
+          case 5: antenna->patterns.at(i).type += GnssType::L5;  break;
+          case 6: antenna->patterns.at(i).type += GnssType::E6;  break;
+          case 7: antenna->patterns.at(i).type += GnssType::E5b; break;
+          case 8: antenna->patterns.at(i).type += GnssType::E5;  break;
+          case 9: antenna->patterns.at(i).type += GnssType::S9;  break;
           default:
             logWarning<<"Unknown frequency: '"<<line<<"'"<<Log::endl;
         }
@@ -232,18 +232,18 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         Double x = String::toDouble(line.substr(0, 10));
         Double y = String::toDouble(line.substr(10, 10));
         Double z = String::toDouble(line.substr(20, 10));
-        if(!setZero) antenna->pattern.at(i).offset = 1e-3 * Vector3d(x,y,z);
+        if(!setZero) antenna->patterns.at(i).offset = 1e-3 * Vector3d(x,y,z);
 
-        antenna->pattern.at(i).dZenit  = Angle(dzen*DEG2RAD);
+        antenna->patterns.at(i).dZenit  = Angle(dzen*DEG2RAD);
         if(azimutCount)
-          antenna->pattern.at(i).pattern = Matrix(azimutCount, zenCount);
+          antenna->patterns.at(i).pattern = Matrix(azimutCount, zenCount);
         else
-          antenna->pattern.at(i).pattern = Matrix(1, zenCount);
+          antenna->patterns.at(i).pattern = Matrix(1, zenCount);
 
         // read NOAZI
         getLine(file, line, label);
         for(UInt s=0; s<zenCount; s++)
-          if(!setZero) antenna->pattern.at(i).pattern(0,s) = 1e-3 * String::toDouble(line.substr(8+8*s, 8));
+          if(!setZero) antenna->patterns.at(i).pattern(0,s) = 1e-3 * String::toDouble(line.substr(8+8*s, 8));
 
         // Azimut dependent values
         getLine(file, line, label);
@@ -251,7 +251,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
           for(UInt z=0; z<azimutCount+1; z++)
           {
             for(UInt s=0; s<zenCount; s++)
-              if(!setZero) antenna->pattern.at(i).pattern(z%azimutCount,s) = 1e-3 * String::toDouble(line.substr(8+8*s, 8));
+              if(!setZero) antenna->patterns.at(i).pattern(z%azimutCount,s) = 1e-3 * String::toDouble(line.substr(8+8*s, 8));
             getLine(file, line, label);
           }
 
@@ -294,10 +294,10 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         antennaInfo.local2antennaFrame = flipY() * rotaryZ(Angle(PI/2));
 
         // shift from GnssAntennaPattern::offset to GnssAntennaInfo::position
-        for(UInt i=0; i<antenna->pattern.size(); i++)
-          antennaInfo.position += (1./antenna->pattern.size()) * antenna->pattern.at(i).offset;
-        for(UInt i=0; i<antenna->pattern.size(); i++)
-          antenna->pattern.at(i).offset = antennaInfo.local2antennaFrame.transform(antenna->pattern.at(i).offset - antennaInfo.position);
+        for(UInt i=0; i<antenna->patterns.size(); i++)
+          antennaInfo.position += (1./antenna->patterns.size()) * antenna->patterns.at(i).offset;
+        for(UInt i=0; i<antenna->patterns.size(); i++)
+          antenna->patterns.at(i).offset = antennaInfo.local2antennaFrame.transform(antenna->patterns.at(i).offset - antennaInfo.position);
 
         if(type == GPS)     addTransmitter(antennaInfo, "GPS",     prn, transmitterListGps);
         if(type == GLONASS) addTransmitter(antennaInfo, "GLONASS", prn, transmitterListGlonass);
@@ -323,7 +323,6 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
 
     // save
     // ----
-
     auto writeAntenna = [] (const FileName &outFileNameAntenna, const std::vector<GnssAntennaDefinitionPtr> &antennaList)
     {
       if(!outFileNameAntenna.empty() && antennaList.size())
@@ -338,11 +337,11 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
 
     writeAntenna(outFileNameAntennaStation, antennaListStation);
     std::vector<GnssAntennaDefinitionPtr> antennaListTransmitter;
-    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListGps.begin(), antennaListGps.end());
+    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListGps.begin(),     antennaListGps.end());
     antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListGlonass.begin(), antennaListGlonass.end());
     antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListGalileo.begin(), antennaListGalileo.end());
-    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListBeiDou.begin(), antennaListBeiDou.end());
-    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListQzss.begin(), antennaListQzss.end());
+    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListBeiDou.begin(),  antennaListBeiDou.end());
+    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListQzss.begin(),    antennaListQzss.end());
     writeAntenna(outFileNameAntennaTransmitter, antennaListTransmitter);
 
     auto writeTransmitterInfo = [] (const FileName &outFileNameTransmitterInfo, const std::vector<GnssStationInfo> &transmitterList)
@@ -486,17 +485,17 @@ void GnssAntex2AntennaDefinition::addAntenna(const GnssAntennaDefinitionPtr &ant
     {
       // check if antennas are identical
       GnssAntennaDefinitionPtr antenna2 = *iter;
-      Bool equal = (antenna2->pattern.size() == antenna->pattern.size());
+      Bool equal = (antenna2->patterns.size() == antenna->patterns.size());
       if(equal)
-        for(UInt idPattern=0; idPattern<antenna->pattern.size(); idPattern++)
+        for(UInt idPattern=0; idPattern<antenna->patterns.size(); idPattern++)
         {
-          equal =  (antenna->pattern.at(idPattern).type              == antenna2->pattern.at(idPattern).type)
-                && (antenna->pattern.at(idPattern).pattern.rows()    == antenna2->pattern.at(idPattern).pattern.rows())
-                && (antenna->pattern.at(idPattern).pattern.columns() == antenna2->pattern.at(idPattern).pattern.columns());
+          equal =  (antenna->patterns.at(idPattern).type              == antenna2->patterns.at(idPattern).type)
+                && (antenna->patterns.at(idPattern).pattern.rows()    == antenna2->patterns.at(idPattern).pattern.rows())
+                && (antenna->patterns.at(idPattern).pattern.columns() == antenna2->patterns.at(idPattern).pattern.columns());
           if(!equal)
             break;
-          equal = ((antenna->pattern.at(idPattern).offset - antenna2->pattern.at(idPattern).offset).r() < 0.0001)
-                && (maxabs(antenna->pattern.at(idPattern).pattern - antenna2->pattern.at(idPattern).pattern) < 0.0001);
+          equal = ((antenna->patterns.at(idPattern).offset - antenna2->patterns.at(idPattern).offset).r() < 0.0001)
+                && (maxabs(antenna->patterns.at(idPattern).pattern - antenna2->patterns.at(idPattern).pattern) < 0.0001);
           if(!equal)
             break;
         }

@@ -33,7 +33,7 @@ as in \configClass{grid}{gridType} and \program{PlotMap}.
 #include "programs/program.h"
 #include "base/string.h"
 #include "files/fileGriddedData.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/fileGnssAntennaDefinition.h"
 #include "classes/grid/grid.h"
 #include "misc/miscGriddedData.h"
 
@@ -87,7 +87,7 @@ void GnssAntennaDefinition2Skyplot::run(Config &config, Parallel::CommunicatorPt
     GnssAntennaDefinitionPtr antenna = *iter;
 
     if(types.size() == 0)
-      for(auto &pattern : antenna->pattern)
+      for(auto &pattern : antenna->patterns)
         types.push_back(pattern.type);
 
     logStatus<<"create values on grid"<<Log::endl;
@@ -98,7 +98,7 @@ void GnssAntennaDefinition2Skyplot::run(Config &config, Parallel::CommunicatorPt
       for(UInt idType=0; idType<types.size(); idType++)
       {
         const UInt idPattern = antenna->findAntennaPattern(types.at(idType), GnssAntennaDefinition::THROW_EXCEPTION);
-        values.at(idType).at(i) = antenna->pattern.at(idPattern).antennaVariations(points.at(i).lambda(), points.at(i).phi(), FALSE);
+        values.at(idType).at(i) = antenna->patterns.at(idPattern).antennaVariations(points.at(i).lambda(), points.at(i).phi(), FALSE);
       }
 
     logStatus<<"save values to file <"<<fileNameGrid<<">"<<Log::endl;

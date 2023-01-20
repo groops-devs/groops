@@ -25,6 +25,7 @@
 #include "loopUniformSampling.h"
 #include "loopCommandOutput.h"
 #include "loopLoop.h"
+#include "loopPlatformEquipment.h"
 #include "loopFileGnssStationInfo.h"
 #include "loop.h"
 
@@ -41,6 +42,7 @@ GROOPS_REGISTER_CLASS(Loop, "loopType",
                       LoopUniformSampling,
                       LoopCommandOutput,
                       LoopLoop,
+                      LoopPlatformEquipment,
                       LoopFileGnssStationInfo)
 
 
@@ -78,7 +80,9 @@ LoopPtr Loop::create(Config &config, const std::string &name)
       loop = LoopPtr(new LoopCommandOutput(config));
     if(readConfigChoiceElement(config, "loop",                type, "Loop over loops"))
       loop = LoopPtr(new LoopLoop(config));
-    if(readConfigChoiceElement(config, "fileGnssStationInfo", type, "Loop over receivers or antennas in a GNSS station/transmitter info file"))
+    if(readConfigChoiceElement(config, "platformEquipment",   type, "Loop over equipment of a platform file"))
+      loop = LoopPtr(new LoopPlatformEquipment(config));
+    if(readConfigChoiceElement(config, "fileGnssStationInfo", type, "DEPRECATED. Use platformEquipment instead"))
       loop = LoopPtr(new LoopFileGnssStationInfo(config));
     endChoice(config);
 

@@ -14,7 +14,7 @@
 #include "base/import.h"
 #include "config/config.h"
 #include "files/fileInstrument.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 #include "gnss/gnssParametrization/gnssParametrizationKinematicPositions.h"
 
@@ -43,7 +43,7 @@ void GnssParametrizationKinematicPositions::init(Gnss *gnss, Parallel::Communica
   try
   {
     this->gnss = gnss;
-    selectedReceivers = selectReceivers->select(gnss->receivers);
+    selectedReceivers = gnss->selectReceivers(selectReceivers);
   }
   catch(std::exception &e)
   {

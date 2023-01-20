@@ -35,7 +35,7 @@ If not enough epochs with observations are available (\config{minEstimableEpochs
 #include "gnss/gnss.h"
 #include "classes/ephemerides/ephemerides.h"
 #include "classes/parametrizationAcceleration/parametrizationAcceleration.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -60,7 +60,7 @@ class GnssParametrizationLeoDynamicOrbits : public GnssParametrizationBase
 
   Gnss                          *gnss;
   std::string                    name;
-  GnssTransceiverSelectorPtr     selectReceivers;
+  PlatformSelectorPtr            selectReceivers;
   FileName                       fileNameOrbit, fileNameParameter, fileNameVariational;
   std::vector<Time>              pulses;
   ParametrizationAccelerationPtr parametrizationAcceleration;

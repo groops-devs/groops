@@ -101,7 +101,7 @@ class GnssReceiverDefinition
   static std::string str(const std::string &name, const std::string &serial, const std::string &version) {return name+sep+serial+sep+version;}
   std::string str() const {return str(name, serial, version);}
 
-  static UInt find(const std::vector<GnssReceiverDefinitionPtr> &receivers, const std::string &name, const std::string &serial, const std::string version);
+  static GnssReceiverDefinitionPtr find(const std::vector<GnssReceiverDefinitionPtr> &receivers, const std::string &name, const std::string &serial, const std::string version);
 };
 
 /***** FUNCTIONS *******************************/

@@ -1548,7 +1548,7 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="name" type="string" minOccurs="0" default="parameter.VTEC"/>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
 						<xs:element name="outputfileVTEC" type="filename" minOccurs="0" default="output/vtec_{loopTime:%D}.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {station} available</xs:documentation>
@@ -1579,7 +1579,7 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="name" type="string" minOccurs="0" default="parameter.mapVTEC"/>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
 						<xs:element name="maxDegree" type="uint" default="15">
 							<xs:annotation>
 								<xs:documentation>spherical harmonics</xs:documentation>
@@ -1620,8 +1620,8 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectTransmitters" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectTransmitters" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
 						<xs:element name="outputfileClockTransmitter" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable {prn} available</xs:documentation>
@@ -1637,8 +1637,8 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectTransmittersZeroMean" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
-						<xs:element name="selectReceiversZeroMean" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded"/>
+						<xs:element name="selectTransmittersZeroMean" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectReceiversZeroMean" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded"/>
 						<xs:element name="sigmaZeroMeanConstraint" type="double" minOccurs="0" default="0.0001">
 							<xs:annotation>
 								<xs:documentation>(0 = unconstrained) sigma [m] for zero-mean constraint over all selected clocks</xs:documentation>
@@ -1658,8 +1658,8 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectTransmitters" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectTransmitters" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
 						<xs:element name="outputfileClockTransmitter" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable {prn} available</xs:documentation>
@@ -1685,12 +1685,12 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectTransmittersZeroMean" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]">
+						<xs:element name="selectTransmittersZeroMean" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]">
 							<xs:annotation>
 								<xs:documentation>use these transmitters for zero-mean constraint</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectReceiversZeroMean" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="selectReceiversZeroMean" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>use these receivers for zero-mean constraint</xs:documentation>
 							</xs:annotation>
@@ -1714,8 +1714,8 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectTransmitters" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectTransmitters" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
 						<xs:element name="outputfileSignalBiasTransmitter" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable {prn} available</xs:documentation>
@@ -1750,8 +1750,8 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="estimateTransmitterPhaseBias" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
-						<xs:element name="estimateReceiverPhaseBias" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="estimateTransmitterPhaseBias" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="estimateReceiverPhaseBias" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
 						<xs:element name="linearGlonassBias" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>bias depends linear on frequency channel number</xs:documentation>
@@ -1771,8 +1771,8 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectTransmitters" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectTransmitters" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
 						<xs:element name="linearGlonassBias" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>bias depends linear on frequency channel number</xs:documentation>
@@ -1802,8 +1802,8 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectTransmitters" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectTransmitters" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
 						<xs:element name="linearGlonassBias" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>phase or code biases depend linear on frequency channel number</xs:documentation>
@@ -1833,7 +1833,7 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectTransmitters" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="selectTransmitters" type="platformSelectorType" maxOccurs="unbounded"/>
 						<xs:element name="outputfileBiasTimeSeries" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable {prn} available</xs:documentation>
@@ -1870,7 +1870,7 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded"/>
 						<xs:element name="outputfileGriddedPosition" type="filename" minOccurs="0" default="output/gridPosition_{loopTime:%D}.dat">
 							<xs:annotation>
 								<xs:documentation>delta north east up for all stations</xs:documentation>
@@ -1886,7 +1886,7 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectNoNetReceivers" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectNoNetReceivers" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
 						<xs:element name="inputfileNoNetPositions" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/position/igs/igb14/stationPosition.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {station} available, precise coordinates used for no-net constraints (in TRF)</xs:documentation>
@@ -1926,7 +1926,7 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded"/>
 						<xs:element name="outputfilePositions" type="filename" minOccurs="0" default="output/positions_{loopTime:%D}.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {station} available, estimated kinematic positions/orbit</xs:documentation>
@@ -1951,7 +1951,7 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded"/>
 						<xs:element name="outputfileOrbit" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable {station} available</xs:documentation>
@@ -2007,7 +2007,7 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectTransmitters" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="selectTransmitters" type="platformSelectorType" maxOccurs="unbounded"/>
 						<xs:element name="outputfileOrbit" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable {prn} available</xs:documentation>
@@ -2063,7 +2063,7 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded"/>
 						<xs:element name="outputfileTroposphere" type="filename" minOccurs="0" default="output/troposphere_{loopTime:%D}.{station}.txt">
 							<xs:annotation>
 								<xs:documentation>columns: MJD, ZHD, ZWD, dry north gradient, wet north gradient, dry east gradient, wet east gradient, ...</xs:documentation>
@@ -2132,7 +2132,7 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded"/>
 						<xs:element name="antennaCenterVariations" type="parametrizationGnssAntennaType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>estimate antenna center variations</xs:documentation>
@@ -2167,7 +2167,7 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="selectTransmitters" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="selectTransmitters" type="platformSelectorType" maxOccurs="unbounded"/>
 						<xs:element name="antennaCenterVariations" type="parametrizationGnssAntennaType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>estimate antenna center variations</xs:documentation>
@@ -2432,7 +2432,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded">
+						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>subset of used stations</xs:documentation>
 							</xs:annotation>
@@ -2451,7 +2451,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded">
+						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>subset of used stations</xs:documentation>
 							</xs:annotation>
@@ -2470,7 +2470,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="selectTransmitters" type="gnssTransceiverSelectorType" maxOccurs="unbounded">
+						<xs:element name="selectTransmitters" type="platformSelectorType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>subset of used transmitters</xs:documentation>
 							</xs:annotation>
@@ -2589,7 +2589,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -2599,7 +2599,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="selectReceivers" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded"/>
 						<xs:element name="variableReceiver" type="string" minOccurs="0" default="station">
 							<xs:annotation>
 								<xs:documentation>variable is set for each receiver</xs:documentation>
@@ -2633,7 +2633,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="selectTransmitters" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="selectTransmitters" type="platformSelectorType" maxOccurs="unbounded"/>
 						<xs:element name="disableShadowEpochs" type="boolean" minOccurs="0" default="1">
 							<xs:annotation>
 								<xs:documentation>disable epochs if satellite is in Earth&apos;s/Moon&apos;s shadow</xs:documentation>
@@ -2989,66 +2989,6 @@
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-		</xs:choice>
-	</xs:complexType>
-	<xs:complexType name="gnssTransceiverSelectorType">
-		<xs:annotation>
-			<xs:documentation>selected receivers or transmitters</xs:documentation>
-		</xs:annotation>
-		<xs:choice>
-			<xs:element name="all">
-				<xs:annotation>
-					<xs:documentation>all available receivers/transmitters</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="wildcard">
-				<xs:annotation>
-					<xs:documentation>select by name and number</xs:documentation>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="name" type="string" minOccurs="0" default="*">
-							<xs:annotation>
-								<xs:documentation>wildcards: * and ?</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="markerName" type="string" minOccurs="0" default="*">
-							<xs:annotation>
-								<xs:documentation>wildcards: * and ?, from stationInfo</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="markerNumber" type="string" minOccurs="0" default="*">
-							<xs:annotation>
-								<xs:documentation>wildcards: * and ?, from stationInfo</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="file">
-				<xs:annotation>
-					<xs:documentation>select from file (with alternatives)</xs:documentation>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="inputfileStringTable" type="filename">
-							<xs:annotation>
-								<xs:documentation>list of names with alternatives</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="exclude">
-				<xs:annotation>
-					<xs:documentation>exclude from selection</xs:documentation>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="selector" type="gnssTransceiverSelectorType" maxOccurs="unbounded"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4384,9 +4324,102 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="platformEquipment">
+				<xs:annotation>
+					<xs:documentation>Loop over equipment of a platform file</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfilePlatform" type="filename">
+							<xs:annotation>
+								<xs:documentation>platform info file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="equipmentType">
+							<xs:annotation>
+								<xs:documentation>equipment type to loop over</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="all">
+										<xs:annotation>
+											<xs:documentation>loop over all types</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="gnssAntenna">
+										<xs:annotation>
+											<xs:documentation>loop over antennas</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="gnssReceiver">
+										<xs:annotation>
+											<xs:documentation>loop over receivers</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="other">
+										<xs:annotation>
+											<xs:documentation>loop over other types</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="variableLoopName" type="string" minOccurs="0" default="loopName">
+							<xs:annotation>
+								<xs:documentation>variable with name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopSerial" type="string" minOccurs="0" default="loopSerial">
+							<xs:annotation>
+								<xs:documentation>variable with serial</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopInfo" type="string" minOccurs="0" default="loopInfo">
+							<xs:annotation>
+								<xs:documentation>variable with radome (antenna) or version (receiver)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopTimeStart" type="string" minOccurs="0" default="loopTimeStart">
+							<xs:annotation>
+								<xs:documentation>variable with start time</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopTimeEnd" type="string" minOccurs="0" default="loopTimeEnd">
+							<xs:annotation>
+								<xs:documentation>variable with end time</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopPositionX" type="string" minOccurs="0" default="loopPositionX">
+							<xs:annotation>
+								<xs:documentation>variable with position x</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopPositionY" type="string" minOccurs="0" default="loopPositionY">
+							<xs:annotation>
+								<xs:documentation>variable with position y</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopPositionY" type="string" minOccurs="0" default="loopPositionZ">
+							<xs:annotation>
+								<xs:documentation>variable with position z</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopCount" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="fileGnssStationInfo">
 				<xs:annotation>
-					<xs:documentation>Loop over receivers or antennas in a GNSS station/transmitter info file</xs:documentation>
+					<xs:documentation>DEPRECATED. Use platformEquipment instead</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
@@ -7209,6 +7242,66 @@
 			<xs:element name="pluto"/>
 			<xs:element name="solarBaryCenter"/>
 			<xs:element name="earthMoonBaryCenter"/>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="platformSelectorType">
+		<xs:annotation>
+			<xs:documentation>selected platforms (stations, satellites, ...)</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="all">
+				<xs:annotation>
+					<xs:documentation>all available platforms</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="wildcard">
+				<xs:annotation>
+					<xs:documentation>select by name and number</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="*">
+							<xs:annotation>
+								<xs:documentation>wildcards: * and ?</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="markerName" type="string" minOccurs="0" default="*">
+							<xs:annotation>
+								<xs:documentation>wildcards: * and ?, from platform</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="markerNumber" type="string" minOccurs="0" default="*">
+							<xs:annotation>
+								<xs:documentation>wildcards: * and ?, from platform</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="file">
+				<xs:annotation>
+					<xs:documentation>select from file (with alternatives)</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfileStringTable" type="filename">
+							<xs:annotation>
+								<xs:documentation>list of names with alternatives</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="exclude">
+				<xs:annotation>
+					<xs:documentation>exclude from selection</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="selector" type="platformSelectorType" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 		</xs:choice>
 	</xs:complexType>
 	<xs:complexType name="plotAxisType">
@@ -10406,7 +10499,7 @@
 									</xs:element>
 									<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
 										<xs:annotation>
-											<xs:documentation>transmitter info file</xs:documentation>
+											<xs:documentation>transmitter platform file</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 								</xs:sequence>
@@ -15314,6 +15407,170 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="observation" type="observationType"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="PlatformCreate">
+				<xs:annotation>
+					<xs:documentation>create a platform file equipped with instruments</xs:documentation>
+					<xs:appinfo>tag: Misc</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfilePlatform" type="filename"/>
+						<xs:element name="markerName" type="string"/>
+						<xs:element name="markerNumber" type="string" minOccurs="0"/>
+						<xs:element name="comment" type="string" minOccurs="0"/>
+						<xs:element name="approxPositionX" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>[m] in TRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="approxPositionY" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>[m] in TRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="approxPositionZ" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>[m] in TRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="equipment" minOccurs="0" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="gnssAntenna">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string"/>
+												<xs:element name="serial" type="string" minOccurs="0"/>
+												<xs:element name="radome" type="string" minOccurs="0"/>
+												<xs:element name="comment" type="string" minOccurs="0"/>
+												<xs:element name="timeStart" type="time" minOccurs="0"/>
+												<xs:element name="timeEnd" type="time" minOccurs="0"/>
+												<xs:element name="positionX" type="double" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="positionY" type="double" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="positionZ" type="double" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="rotationX" type="angle" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="rotationY" type="angle" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="rotationZ" type="angle" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="flipX" type="boolean" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>flip x-axis (after rotation)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="flipY" type="boolean" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>flip y-axis (after rotation)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="flipZ" type="boolean" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>flip z-axis (after rotation)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="gnssReceiver">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string"/>
+												<xs:element name="serial" type="string" minOccurs="0"/>
+												<xs:element name="version" type="string" minOccurs="0"/>
+												<xs:element name="comment" type="string" minOccurs="0"/>
+												<xs:element name="timeStart" type="time" minOccurs="0"/>
+												<xs:element name="timeEnd" type="time" minOccurs="0"/>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="other">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string"/>
+												<xs:element name="serial" type="string" minOccurs="0"/>
+												<xs:element name="comment" type="string" minOccurs="0"/>
+												<xs:element name="timeStart" type="time" minOccurs="0"/>
+												<xs:element name="timeEnd" type="time" minOccurs="0"/>
+												<xs:element name="positionX" type="double" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="positionY" type="double" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="positionZ" type="double" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="referencePoint" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>e.g. center of mass in satellite frame</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="comment" type="string" minOccurs="0"/>
+									<xs:element name="xStart" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="yStart" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>linear motion between start and end</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="zStart" type="double" default="0"/>
+									<xs:element name="xEnd" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="yEnd" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>linear motion between start and end</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="zEnd" type="double" default="0"/>
+									<xs:element name="timeStart" type="time" minOccurs="0"/>
+									<xs:element name="timeEnd" type="time" minOccurs="0"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -20509,6 +20766,30 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="GnssStationLog2Platform">
+				<xs:annotation>
+					<xs:documentation>GNSS analysis</xs:documentation>
+					<xs:appinfo>rename: outputfileStationInfo = outputfileStationPlatform</xs:appinfo>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Gnss</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileStationPlatform" type="filename"/>
+						<xs:element name="inputfileStationLog" type="filename"/>
+						<xs:element name="inputfileAntennaDefinition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
+							<xs:annotation>
+								<xs:documentation>used to check antennas</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSinex" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/igs_with_former.snx">
+							<xs:annotation>
+								<xs:documentation>used to cross-check station log with SINEX file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GnssStationLog2StationInfo">
 				<xs:annotation>
 					<xs:documentation>GNSS analysis</xs:documentation>
@@ -22917,7 +23198,6 @@
 							<xs:element name="gnssParametrizationType" type="gnssParametrizationType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="gnssProcessingStepType" type="gnssProcessingStepType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="gnssReceiverGeneratorType" type="gnssReceiverGeneratorType" minOccurs="0" maxOccurs="unbounded"/>
-							<xs:element name="gnssTransceiverSelectorType" type="gnssTransceiverSelectorType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="gnssTransmitterGeneratorType" type="gnssTransmitterGeneratorType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="gravityfieldType" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="gridType" type="gridType" minOccurs="0" maxOccurs="unbounded"/>
@@ -22940,6 +23220,7 @@
 							<xs:element name="parametrizationSatelliteTrackingType" type="parametrizationSatelliteTrackingType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="parametrizationTemporalType" type="parametrizationTemporalType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="planetType" type="planetType" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="platformSelectorType" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="plotAxisType" type="plotAxisType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="plotColorType" type="plotColorType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="plotColorbarType" type="plotColorbarType" minOccurs="0" maxOccurs="unbounded"/>

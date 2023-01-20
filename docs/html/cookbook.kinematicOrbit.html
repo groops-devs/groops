@@ -96,7 +96,7 @@ The script <code>010groopsConvert.xml</code> can be used to convert these extern
 Metadata for several LEO missions is availabe at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/data/gnss/receiverLowEarthOrbiter" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/data/gnss/receiverLowEarthOrbiter</a>.</p><p>If you want to process another mission, you can create the necessary files with these steps:
 <ul>
 
-  <li>For creating the <a class="groops-file" href="fileFormat_gnssStationInfo.html">GnssSatelliteInfo file</a> use <a class="groops-program" href="GnssStationInfoCreate.html">GnssStationInfoCreate</a>. Note that the rotation from the
+  <li>For creating the <a class="groops-file" href="fileFormat_platform.html">GnssSatelliteInfo file</a> use <a class="groops-program" href="PlatformCreate.html">PlatformCreate</a>. Note that the rotation from the
   satellite reference frame into the antenna reference frame, as well as the change of the center of mass due to fuel consumption, has to be considered here.
   </li><li>
 The <a class="groops-file" href="fileFormat_gnssReceiverDefinition.html">GnssReceiverDefinition file</a> can be created by using <a class="groops-program" href="GnssReceiverDefinitionCreate.html">GnssReceiverDefinitionCreate</a>. Here you can specify which GNSS signal types the receiver observes.
@@ -148,7 +148,7 @@ and provide the required files (from <a class="groops-ref" href="cookbook.kinema
 </p><p>The following files (from <a class="groops-ref" href="cookbook.kinematicOrbit.html#leoMetadata">Prepare LEO metadata</a> and <a class="groops-ref" href="cookbook.kinematicOrbit.html#leoData">Prepare LEO data</a>) and settings are needed in <a class="groops-class" href="gnssReceiverGeneratorType.html#lowEarthOrbiter">receiver:lowEarthOrbiter</a>:
 <ul>
 
-   <li><a class="groops-class" href="fileFormat_gnssStationInfo.html">inputfileStationInfo</a>: The satellite info file.
+   <li><a class="groops-class" href="fileFormat_platform.html">inputfileStationInfo</a>: The satellite info file.
    </li><li>
 <a class="groops-class" href="fileFormat_gnssAntennaDefinition.html">inputfileAntennaDefinition</a>
    </li><li>
@@ -175,15 +175,15 @@ and define the <strong class="groops-config-element">outputfiles</strong> within
 <a class="groops-class" href="gnssParametrizationType.html#ionosphereVTEC">ionosphereVTEC</a>:
         set <strong class="groops-config-element">mapR</strong>=<code>6371e3+450e3</code> to satellite height and ionosphere height <strong class="groops-config-element">mapH</strong>=<code>50e3</code> above.
   </li><li>
-<a class="groops-class" href="gnssParametrizationType.html#clocks">clocks</a>: delete <a class="groops-class" href="gnssTransceiverSelectorType.html">selectTransmitters</a>
+<a class="groops-class" href="gnssParametrizationType.html#clocks">clocks</a>: delete <a class="groops-class" href="platformSelectorType.html">selectTransmitters</a>
   </li><li>
 <a class="groops-class" href="gnssParametrizationType.html#signalBiases">signalBiases</a>: provide <a class="groops-class" href="fileFormat_gnssSignalBias.html">inputfileSignalBiasTransmitter</a> created with <a class="groops-program" href="GnssSinexBias2SignalBias.html">GnssSinexBias2SignalBias</a>
   </li><li>
-<a class="groops-class" href="gnssParametrizationType.html#ambiguities">ambiguities</a>: if precise transmitter phase biases are available you can delete <a class="groops-class" href="gnssTransceiverSelectorType.html">estimateTransmitterPhaseBiases</a>
+<a class="groops-class" href="gnssParametrizationType.html#ambiguities">ambiguities</a>: if precise transmitter phase biases are available you can delete <a class="groops-class" href="platformSelectorType.html">estimateTransmitterPhaseBiases</a>
   </li><li>
-<a class="groops-class" href="gnssParametrizationType.html#codeBiases">codeBiases</a>: delete <a class="groops-class" href="gnssTransceiverSelectorType.html">selectTransmitters</a>, set <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>=<code>0</code>
+<a class="groops-class" href="gnssParametrizationType.html#codeBiases">codeBiases</a>: delete <a class="groops-class" href="platformSelectorType.html">selectTransmitters</a>, set <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>=<code>0</code>
   </li><li>
-<a class="groops-class" href="gnssParametrizationType.html#tecBiases">tecBiases</a>: delete <a class="groops-class" href="gnssTransceiverSelectorType.html">selectTransmitters</a>, set <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>=<code>0</code>
+<a class="groops-class" href="gnssParametrizationType.html#tecBiases">tecBiases</a>: delete <a class="groops-class" href="platformSelectorType.html">selectTransmitters</a>, set <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>=<code>0</code>
   </li><li>
 <a class="groops-class" href="gnssParametrizationType.html#kinematicPositions">kinematicPositions</a>
 </li></ul>

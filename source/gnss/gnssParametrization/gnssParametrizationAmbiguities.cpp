@@ -59,7 +59,7 @@ void GnssParametrizationAmbiguities::init(Gnss *gnss, Parallel::CommunicatorPtr 
     this->gnss = gnss;
 
     // float bias at transmitter
-    auto selectedTransmitters = selectTransmitters->select(gnss->transmitters);
+    auto selectedTransmitters = gnss->selectTransmitters(selectTransmitters);
     paraTrans.resize(gnss->transmitters.size(), nullptr);
     for(UInt idTrans=0; idTrans<gnss->transmitters.size(); idTrans++)
       if(selectedTransmitters.at(idTrans) && gnss->transmitters.at(idTrans)->useable())
@@ -70,7 +70,7 @@ void GnssParametrizationAmbiguities::init(Gnss *gnss, Parallel::CommunicatorPtr 
       }
 
     // float bias at receiver
-    auto selectedReceivers = selectReceivers->select(gnss->receivers);
+    auto selectedReceivers = gnss->selectReceivers(selectReceivers);
     paraRecv.resize(gnss->receivers.size(), nullptr);
     for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
       if(selectedReceivers.at(idRecv) && gnss->receivers.at(idRecv)->useable())

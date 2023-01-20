@@ -15,7 +15,7 @@
 #include "config/config.h"
 #include "inputOutput/logging.h"
 #include "files/fileGnssSignalBias.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 #include "files/fileInstrument.h"
 #include "files/fileMatrix.h"
 #include "gnss/gnss.h"
@@ -101,18 +101,22 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
     if(!fileNameAccuracyDef.empty())
       readFileGnssAntennaDefinition(fileNameAccuracyDef, accuracyDefList);
 
-    GnssStationInfo info;
-    readFileGnssStationInfo(fileNameStationInfo, info);
-    info.fillAntennaPattern(antennaDefList);
-    info.fillReceiverDefinition(receiverDefList);
-    info.fillAntennaAccuracy(accuracyDefList);
+    Platform platform;
+    readFilePlatform(fileNameStationInfo, platform);
+    platform.name = platform.markerName;
+    platform.fillGnssAntennaDefinition(antennaDefList);
+    platform.fillGnssReceiverDefinition(receiverDefList);
+    platform.fillGnssAccuracyDefinition(accuracyDefList);
 
     // test completeness of antennas
-    for(const auto &antenna : info.antenna)
-      if(antenna.timeEnd > times.front() && antenna.timeStart <= times.back() && (!antenna.antennaDef || !antenna.accuracyDef))
-        logWarningOnce<<info.markerName<<"."<<info.markerNumber<<": No "<<(!antenna.antennaDef ? "antenna" : "accuracy")<<" definition found for "<<antenna.str()<<Log::endl;
+    for(const auto &instrument : platform.equipments)
+    {
+      auto antenna = std::dynamic_pointer_cast<PlatformGnssAntenna>(instrument);
+      if(antenna && antenna->timeEnd > times.front() && antenna->timeStart <= times.back() && (!antenna->antennaDef || !antenna->accuracyDef))
+        logWarningOnce<<platform.markerName<<"."<<platform.markerNumber<<": No "<<(!antenna->antennaDef ? "antenna" : "accuracy")<<" definition found for "<<antenna->str()<<Log::endl;
+    }
 
-    recv = std::make_shared<GnssReceiver>(Parallel::isMaster(comm), FALSE/*isEarthFixed*/, info.markerName, info,
+    recv = std::make_shared<GnssReceiver>(Parallel::isMaster(comm), FALSE/*isEarthFixed*/, platform,
                                           noPatternFoundAction, Vector(times.size(), TRUE)/*useableEpochs*/,
                                           integerAmbiguities, wavelengthFactor);
     receivers.push_back(recv);
@@ -146,8 +150,8 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
             continue;
           }
 
-          const UInt idAnt = info.findAntenna(times.at(idEpoch));
-          if(idAnt == NULLINDEX || !info.antenna.at(idAnt).antennaDef || !info.antenna.at(idAnt).accuracyDef)
+          auto antenna = platform.findEquipment<PlatformGnssAntenna>(times.at(idEpoch));
+          if(!antenna || !antenna->antennaDef || !antenna->accuracyDef)
           {
             recv->disable(idEpoch, "missing antenna/accuracy patterns");
             continue;
@@ -155,9 +159,9 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
 
           recv->pos.at(idEpoch)           = orbit.at(i).position;
           recv->vel.at(idEpoch)           = orbit.at(i).velocity;
-          recv->offset.at(idEpoch)        = info.antenna.at(idAnt).position - info.referencePoint(times.at(idEpoch));
+          recv->offset.at(idEpoch)        = antenna->position - platform.referencePoint(times.at(idEpoch));
           recv->global2local.at(idEpoch)  = inverse(starCamera.at(i).rotary);
-          recv->local2antenna.at(idEpoch) = info.antenna.at(idAnt).local2antennaFrame;
+          recv->local2antenna.at(idEpoch) = antenna->local2antennaFrame;
           idEpoch++;
         }
         recv->preprocessingInfo("init()");

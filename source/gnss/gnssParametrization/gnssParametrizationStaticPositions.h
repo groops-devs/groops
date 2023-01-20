@@ -20,10 +20,10 @@
 static const char *docstringGnssParametrizationStaticPositions = R"(
 \subsection{StaticPositions}\label{gnssParametrizationType:staticPositions}
 Estimates a static position for all
-\configClass{selectReceivers}{gnssTransceiverSelectorType} in the terrestrial frame.
+\configClass{selectReceivers}{platformSelectorType} in the terrestrial frame.
 
 No-net constraints can be applied for a subset of stations,
-\configClass{selectNoNetReceivers}{gnssTransceiverSelectorType}, with a
+\configClass{selectNoNetReceivers}{platformSelectorType}, with a
 standard deviation of \config{noNetTranslationSigma} and \config{noNetRotationSigma}.
 If the template \configFile{inputfileNoNetPositions}{stringList} is provided
 the constraints are applied relatively to these positions. Only stations with an existing position file
@@ -44,7 +44,7 @@ and \program{Sinex2StationPostSeismicDeformation}.
 
 /***********************************************/
 
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -56,7 +56,7 @@ class GnssParametrizationStaticPositions : public GnssParametrizationBase
 {
   Gnss                           *gnss;
   std::string                     name, nameConstraint;
-  GnssTransceiverSelectorPtr      selectReceivers, selectNoNetReceivers;
+  PlatformSelectorPtr             selectReceivers, selectNoNetReceivers;
   std::vector<Byte>               selectedReceivers, selectedNoNetReceivers;
   FileName                        fileNameGrid, fileNamePosition, fileNameNoNetPositions;
   Bool                            applyConstraint;

@@ -71,71 +71,7 @@
         <div id="content" class="container">
             <h1>GnssStationInfo (file format)</h1><p>
 
-Information file for a station or satellite equipped with a GNSS receiver
-or for a GNSS satellite.</p><p>For stations and receiving satellites it defines the time intervals and
-local coordinates of installed antennas and receivers.
-For GNSS satellites it defines the PRN-SVN mapping and antenna offsets
-and orientations.</p><p>GNSS station infos can be created from station log files with
-<a class="groops-program" href="GnssStationLog2StationInfo.html">GnssStationLog2StationInfo</a>. GNSS satellite transmitter infos
-can be created from an ANTEX file with <a class="groops-program" href="GnssAntex2AntennaDefinition.html">GnssAntex2AntennaDefinition</a>.</p><p>See <a class="groops-program" href="GnssStationInfoCreate.html">GnssStationInfoCreate</a>.</p><p><pre>
-&lt;?xml version="1.0" encoding="UTF-8"?>
-&lt;groops type="stationInfo" version="20190429">
-    &lt;stationCount>1&lt;/stationCount>
-    &lt;station>
-        &lt;markerName>GRAZ&lt;/markerName>
-        &lt;markerNumber>11001M002&lt;/markerNumber>
-        &lt;comment>Graz, AUSTRIA&lt;/comment>
-        &lt;approxPosition>
-            &lt;x>4.19442412400000e+06&lt;/x>
-            &lt;y>1.16270246000000e+06&lt;/y>
-            &lt;z>4.64724519300000e+06&lt;/z>
-        &lt;/approxPosition>
-        &lt;antenna>
-            &lt;count>8&lt;/count>
-            ...
-            &lt;cell>
-                &lt;name>LEIAR25.R4&lt;/name>
-                &lt;serial>726444&lt;/serial>
-                &lt;radome>LEIT&lt;/radome>
-                &lt;comment/>
-                &lt;timeStart>58080.4041666666666650&lt;/timeStart>
-                &lt;timeEnd>234166.0000000000000000&lt;/timeEnd>
-                &lt;position>
-                    &lt;x>0.00000000000000e+00&lt;/x>
-                    &lt;y>0.00000000000000e+00&lt;/y>
-                    &lt;z>1.96400000000000e+00&lt;/z>
-                &lt;/position>
-                &lt;local2antennaFrame>
-                    &lt;xx>1.00000000000000e+00&lt;/xx>
-                    &lt;xy>0.00000000000000e+00&lt;/xy>
-                    &lt;xz>0.00000000000000e+00&lt;/xz>
-                    &lt;yx>0.00000000000000e+00&lt;/yx>
-                    &lt;yy>1.00000000000000e+00&lt;/yy>
-                    &lt;yz>0.00000000000000e+00&lt;/yz>
-                    &lt;zx>0.00000000000000e+00&lt;/zx>
-                    &lt;zy>0.00000000000000e+00&lt;/zy>
-                    &lt;zz>1.00000000000000e+00&lt;/zz>
-                &lt;/local2antennaFrame>
-            &lt;/cell>
-        &lt;/antenna>
-        &lt;receiver>
-            &lt;count>25&lt;/count>
-            ...
-            &lt;cell>
-                &lt;name>SEPT POLARX5&lt;/name>
-                &lt;serial>4501501&lt;/serial>
-                &lt;version>5.2.0&lt;/version>
-                &lt;comment/>
-                &lt;timeStart>58903.2958333333333343&lt;/timeStart>
-                &lt;timeEnd>234166.0000000000000000&lt;/timeEnd>
-            &lt;/cell>
-        &lt;/receiver>
-        &lt;referencePoint>
-            &lt;count>0&lt;/count>
-        &lt;/referencePoint>
-    &lt;/station>
-&lt;/groops>
-</pre>
+DEPRECATED. Use <a class="groops-file" href="fileFormat_platform.html">Platform</a> instead.
 </p>
 
         </div>

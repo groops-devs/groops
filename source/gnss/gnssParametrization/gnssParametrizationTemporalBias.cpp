@@ -16,9 +16,9 @@
 #include "base/polynomial.h"
 #include "config/config.h"
 #include "files/fileInstrument.h"
-#include "gnss/gnss.h"
 #include "classes/parametrizationTemporal/parametrizationTemporal.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
+#include "gnss/gnss.h"
 #include "gnss/gnssParametrization/gnssParametrizationTemporalBias.h"
 
 /***********************************************/
@@ -58,7 +58,7 @@ void GnssParametrizationTemporalBias::init(Gnss *gnss, Parallel::CommunicatorPtr
   try
   {
     this->gnss = gnss;
-    auto selectedTransmitters = selectTransmitters->select(gnss->transmitters);
+    auto selectedTransmitters = gnss->selectTransmitters(selectTransmitters);
 
     VariableList fileNameVariableList;
     addVariable("prn", "***", fileNameVariableList);

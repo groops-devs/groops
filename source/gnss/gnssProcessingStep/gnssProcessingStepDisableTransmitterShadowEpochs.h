@@ -27,7 +27,7 @@ With proper attitude modeling (see \program{SimulateStarCameraGnss}) this is usu
 #include "config/config.h"
 #include "base/kepler.h"
 #include "classes/eclipse/eclipse.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssProcessingStep/gnssProcessingStep.h"
 
 /***** CLASS ***********************************/
@@ -37,10 +37,10 @@ With proper attitude modeling (see \program{SimulateStarCameraGnss}) this is usu
 * @see GnssProcessingStep */
 class GnssProcessingStepDisableTransmitterShadowEpochs : public GnssProcessingStepBase
 {
-  GnssTransceiverSelectorPtr selectTransmitters;
-  Bool                       disableShadowEpochs, disablePostShadowEpochs;
-  EphemeridesPtr             ephemerides;
-  EclipsePtr                 eclipse;
+  PlatformSelectorPtr selectTransmitters;
+  Bool                disableShadowEpochs, disablePostShadowEpochs;
+  EphemeridesPtr      ephemerides;
+  EclipsePtr          eclipse;
 
 public:
   GnssProcessingStepDisableTransmitterShadowEpochs(Config &config);
@@ -80,7 +80,7 @@ inline void GnssProcessingStepDisableTransmitterShadowEpochs::process(GnssProces
     }
 
     UInt countEpochs = 0;
-    auto selectedTransmitters = selectTransmitters->select(state.gnss->transmitters);
+    auto selectedTransmitters = state.gnss->selectTransmitters(selectTransmitters);
     for(UInt idTrans=0; idTrans<state.gnss->transmitters.size(); idTrans++)
       if(selectedTransmitters.at(idTrans) && state.gnss->transmitters.at(idTrans)->useable())
       {
@@ -88,7 +88,7 @@ inline void GnssProcessingStepDisableTransmitterShadowEpochs::process(GnssProces
 
         // 30 minute post-shadow recovery time for block IIA satellites
         Time recoveryTime;
-        if(trans->info.antenna.at(trans->info.findAntenna(state.gnss->times.at(0))).name.find(std::string("BLOCK IIA")) != std::string::npos)
+        if(trans->platform.findEquipment<PlatformGnssAntenna>(state.gnss->times.at(0))->name.find(std::string("BLOCK IIA")) != std::string::npos)
           recoveryTime = seconds2time(30*60);
 
         // Look for a potential shadow exit before the start of the interval that would result in the

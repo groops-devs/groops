@@ -140,7 +140,7 @@ and define the \config{outputfiles} you are interested in inside each of them:
   \item \configClass{ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}: add a constraint of \config{sigmaSTEC}=\verb|40|
   \item \configClass{ionosphereMap}{gnssParametrizationType:ionosphereMap}: add \configClass{temporal:splines}{parametrizationTemporalType:splines}
         with linear (\config{degree}=\verb|1|) 2-hourly splines
-  \item \configClass{clocks}{gnssParametrizationType:clocks}: optionally change \configClass{selectTransmitterZeroMeans}{gnssTransceiverSelectorType} to \configClass{wildcard}{gnssTransceiverSelectorType:wildcard} with \config{name}=\verb|G*| to align clocks to mean over GPS (instead of all) satellites
+  \item \configClass{clocks}{gnssParametrizationType:clocks}: optionally change \configClass{selectTransmitterZeroMeans}{platformSelectorType} to \configClass{wildcard}{platformSelectorType:wildcard} with \config{name}=\verb|G*| to align clocks to mean over GPS (instead of all) satellites
   \item \configClass{signalBiases}{gnssParametrizationType:signalBiases}
   \item \configClass{ambiguities}{gnssParametrizationType:ambiguities}
   \item \configClass{codeBiases}{gnssParametrizationType:codeBiases}
@@ -221,7 +221,7 @@ At last, all stations can be processed together with all satellite parameters an
 
 Let's start with the \configClass{processingSteps}{gnssProcessingStepType} of the core network:
 \begin{itemize}
-      \item \configClass{selectReceivers}{gnssProcessingStepType:selectReceivers} with \configClass{selectReceivers:file}{gnssTransceiverSelectorType:file}
+      \item \configClass{selectReceivers}{gnssProcessingStepType:selectReceivers} with \configClass{selectReceivers:file}{platformSelectorType:file}
       using the core network station list file from \reference{data preparation}{cookbook.gnssPpp:metadata} as \configFile{inputfileStringTable}{stringTable}.
       \item \configClass{selectEpochs}{gnssProcessingStepType:selectEpochs}: with \config{nthEpoch}=\verb|10| to reduce sampling to 5 minutes.
       \item \configClass{selectParametrizations}{gnssProcessingStepType:selectParametrizations}:
@@ -234,7 +234,7 @@ Let's start with the \configClass{processingSteps}{gnssProcessingStepType} of th
 Now all other (non-core) stations can be processed separately:
 \begin{itemize}
       \item \configClass{forEachReceiverSeparately}{gnssProcessingStepType:forEachReceiverSeparately}:
-            with \configClass{selectReceivers:file}{gnssTransceiverSelectorType:file} inside \configClass{selectReceivers:exclude}{gnssTransceiverSelectorType:exclude}
+            with \configClass{selectReceivers:file}{platformSelectorType:file} inside \configClass{selectReceivers:exclude}{platformSelectorType:exclude}
             using the station list from the core network above to process all non-core stations individually with fixed transmitter parameters
       \begin{itemize}
       \item \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}: with \config{maxIterationCount}=\verb|6|
@@ -245,7 +245,7 @@ Now all other (non-core) stations can be processed separately:
 
 Next all stations are processed together with all parameters:
 \begin{itemize}
-      \item \configClass{selectReceivers}{gnssProcessingStepType:selectReceivers}: with \configClass{selectReceivers:all}{gnssTransceiverSelectorType:all}
+      \item \configClass{selectReceivers}{gnssProcessingStepType:selectReceivers}: with \configClass{selectReceivers:all}{platformSelectorType:all}
       \item \configClass{selectEpochs}{gnssProcessingStepType:selectEpochs}: with \config{nthEpoch}=\verb|1| to set full 30-second sampling
       \item \configClass{group}{gnssProcessingStepType:group}: clock densification to 30-second sampling
       \begin{itemize}

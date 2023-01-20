@@ -31,7 +31,7 @@ If you only want to align GLONASS frequency numbers, provide the same clocks in
 
 #include "programs/program.h"
 #include "files/fileMatrix.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 #include "files/fileGnssSignalBias.h"
 #include "files/fileInstrument.h"
 
@@ -48,7 +48,7 @@ public:
     FileName outNameClock, outNameBias, inNameClock, inNameReferenceClock, inNameBias, inNameTransmitterInfo;
     MiscValueArc clockArc, referenceClockArc;
     GnssSignalBias biases;
-    GnssStationInfo info;
+    Platform platform;
   };
 
   class Receiver
@@ -74,7 +74,7 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssBiasCloc
   readConfig(config, "inputfileClock",           var.inNameClock,           Config::MUSTSET,  "", "clock instrument file");
   readConfig(config, "inputfileReferenceClock",  var.inNameReferenceClock,  Config::MUSTSET,  "", "reference clock instrument file");
   readConfig(config, "inputfileSignalBias",      var.inNameBias,            Config::OPTIONAL, "", "(GLONASS only) signal bias file");
-  readConfig(config, "inputfileTransmitterInfo", var.inNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "transmitter info file");
+  readConfig(config, "inputfileTransmitterInfo", var.inNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "transmitter platform file");
   endSequence(config);
   return TRUE;
 }
@@ -118,7 +118,7 @@ void GnssBiasClockAlignment::run(Config &config, Parallel::CommunicatorPtr /*com
         trans->referenceClockArc = InstrumentFile::read(trans->inNameReferenceClock);
         if(!trans->inNameBias.empty())
           readFileGnssSignalBias(trans->inNameBias, trans->biases);
-        readFileGnssStationInfo(trans->inNameTransmitterInfo, trans->info);
+        readFilePlatform(trans->inNameTransmitterInfo, trans->platform);
       }
       catch(std::exception &e)
       {
@@ -126,17 +126,16 @@ void GnssBiasClockAlignment::run(Config &config, Parallel::CommunicatorPtr /*com
         return;
       }
 
-      UInt idRecv = trans->info.findReceiver(trans->clockArc.at(trans->clockArc.size()/2).time);
-      if(idRecv == NULLINDEX)
+      auto recv = trans->platform.findEquipment<PlatformGnssReceiver>(trans->clockArc.at(trans->clockArc.size()/2).time);
+      if(!recv)
       {
         logWarning<<"no receiver info found in <"<<trans->inNameTransmitterInfo<<">, skipping satellite..."<<Log::endl;
         return;
       }
 
-      GnssReceiverInfo info = trans->info.receiver.at(idRecv);
-      GnssType group("***"s+info.serial.at(0));
-      if(alignClocksByFreqNo && group == GnssType::GLONASS && !info.version.empty())
-        group.setFrequencyNumber(std::stoi(info.version));
+      GnssType group("***"s+recv->serial.at(0));
+      if(alignClocksByFreqNo && group == GnssType::GLONASS && !recv->version.empty())
+        group.setFrequencyNumber(std::stoi(recv->version));
       group2DataIds[group].push_back(i);
     });
 

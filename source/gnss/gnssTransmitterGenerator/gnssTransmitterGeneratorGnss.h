@@ -28,9 +28,9 @@ The file name is interpreted as a template with the variable \verb|{prn}| being 
 Metadata input files (marked with \textbf{*} below) are provided in GROOPS file formats at
 \url{https://ftp.tugraz.at/outgoing/ITSG/groops}. These files are regularly updated.
 \begin{itemize}
-  \item \configFile{inputfileTransmitterInfo}{gnssStationInfo}\textbf{*}:
+  \item \configFile{inputfileTransmitterInfo}{platform}\textbf{*}:
         PRN-SVN mapping, antenna offsets and orientations.
-        Created via \program{GnssAntex2AntennaDefinition} or \program{GnssStationInfoCreate}.
+        Created via \program{GnssAntex2AntennaDefinition} or \program{PlatformCreate}.
   \item \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}\textbf{*}:
         Antenna center variations.
         Created via \program{GnssAntex2AntennaDefinition} or \program{GnssAntennaDefinitionCreate}.

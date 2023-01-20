@@ -15,7 +15,7 @@
 #include "base/polynomial.h"
 #include "inputOutput/logging.h"
 #include "files/fileGnssAntennaDefinition.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 #include "files/fileGnssSignalBias.h"
 #include "files/fileInstrument.h"
 #include "files/fileStringTable.h"
@@ -88,10 +88,11 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
       {
         fileNameVariableList["prn"]->setValue(prn);
 
-        GnssStationInfo info;
-        readFileGnssStationInfo(fileNameTransmitterInfo(fileNameVariableList), info);
-        info.fillAntennaPattern(antennaDefList);
-        info.fillReceiverDefinition(signalDefList);
+        Platform platform;
+        readFilePlatform(fileNameTransmitterInfo(fileNameVariableList), platform);
+        platform.name = prn;
+        platform.fillGnssAntennaDefinition(antennaDefList);
+        platform.fillGnssReceiverDefinition(signalDefList);
         Vector useableEpochs(times.size(), TRUE);
 
         // read orbit
@@ -160,20 +161,23 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
         }
 
         // test completeness of antennas
-        for(const auto &antenna : info.antenna)
-          if(antenna.timeEnd >= times.front() && antenna.timeStart < times.back() && !antenna.antennaDef)
-            logWarningOnce<<info.markerName<<"."<<info.markerNumber<<": No antenna definition found for "<<antenna.str()<<Log::endl;
+        for(const auto &instrument : platform.equipments)
+        {
+          auto antenna = std::dynamic_pointer_cast<PlatformGnssAntenna>(instrument);
+          if(antenna && antenna->timeEnd >= times.front() && antenna->timeStart < times.back() && !antenna->antennaDef)
+            logWarningOnce<<platform.markerName<<"."<<platform.markerNumber<<": No antenna definition found for "<<antenna->str()<<Log::endl;
+        }
 
         std::vector<Vector3d>    offset(times.size());
         std::vector<Transform3d> srf2arf(times.size());
         for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
           if(useableEpochs(idEpoch))
           {
-            const UInt idAnt = info.findAntenna(times.at(idEpoch));
-            if(idAnt != NULLINDEX && info.antenna.at(idAnt).antennaDef)
+            auto antenna = platform.findEquipment<PlatformGnssAntenna>(times.at(idEpoch));
+            if(antenna && antenna->antennaDef)
             {
-              offset.at(idEpoch)  = info.antenna.at(idAnt).position - info.referencePoint(times.at(idEpoch));
-              srf2arf.at(idEpoch) = info.antenna.at(idAnt).local2antennaFrame;
+              offset.at(idEpoch)  = antenna->position - platform.referencePoint(times.at(idEpoch));
+              srf2arf.at(idEpoch) = antenna->local2antennaFrame;
             }
             else
               useableEpochs(idEpoch) = FALSE;
@@ -184,13 +188,13 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
         const UInt countUseableEpochs = static_cast<UInt>(sum(useableEpochs));
         if(!countUseableEpochs)
         {
-          logWarningOnce<<info.markerName<<"."<<info.markerNumber<<": No usable epochs, disabling transmitter."<<Log::endl;
+          logWarningOnce<<platform.markerName<<"."<<platform.markerNumber<<": No usable epochs, disabling transmitter."<<Log::endl;
           continue;
         }
         if(countUseableEpochs < useableEpochs.rows())
-          logWarningOnce<<info.markerName<<"."<<info.markerNumber<<": "<<useableEpochs.rows()-countUseableEpochs<<" epochs disabled due to missing orbit/attitude/clock data"<<Log::endl;
+          logWarningOnce<<platform.markerName<<"."<<platform.markerNumber<<": "<<useableEpochs.rows()-countUseableEpochs<<" epochs disabled due to missing orbit/attitude/clock data"<<Log::endl;
 
-        transmitters.push_back(std::make_shared<GnssTransmitter>(GnssType("***"+info.markerNumber), prn, info, noPatternFoundAction,
+        transmitters.push_back(std::make_shared<GnssTransmitter>(GnssType("***"+platform.markerNumber), platform, noPatternFoundAction,
                                                                  useableEpochs, clock, offset, crf2srf, srf2arf, timesPosVel, pos, vel, interpolationDegree));
         countTrans++;
       }

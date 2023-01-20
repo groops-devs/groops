@@ -26,7 +26,7 @@ RINEX v3+ observation files already contain this information.
 \configClass{useType}{gnssType} and \configClass{ignoreType}{gnssType} can be used to filter
 the observation types that will be exported.
 
-If \configFile{inputfileStationInfo}{gnssStationInfo} is set, RINEX antenna and receiver info
+If \configFile{inputfileStationInfo}{platform} is set, RINEX antenna and receiver info
 will be cross-checked with the provided file and warnings are raised in case of differences.
 
 A list of semi-codeless GPS receivers (observing C2D instead of C2W) can be provided via
@@ -55,7 +55,7 @@ and the second being the equivalent RINEX v3 type.
 #include "programs/program.h"
 #include "base/string.h"
 #include "inputOutput/file.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 #include "files/fileMatrix.h"
 #include "files/fileInstrument.h"
 #include "files/fileStringTable.h"
@@ -74,10 +74,13 @@ class RinexObservation2GnssReceiver
     Int  frequencyNumber;
   };
 
-  Double rinexVersion, compactRinexVersion;
-  Time   timeOfFirstObs;
-  GnssStationInfo stationInfoRinex, stationInfo;
-  GnssReceiverArc receiverArc;
+  Double               rinexVersion, compactRinexVersion;
+  Time                 timeOfFirstObs;
+  Platform             stationInfo;
+  Platform             stationInfoRinex;
+  PlatformGnssAntenna  antennaRinex;
+  PlatformGnssReceiver receiverRinex;
+  GnssReceiverArc      receiverArc;
 
   Bool isSemiCodelessReceiver = FALSE;
   std::vector<std::string> semiCodelessReceivers;
@@ -126,7 +129,7 @@ void RinexObservation2GnssReceiver::run(Config &config, Parallel::CommunicatorPt
     if(isCreateSchema(config)) return;
 
     if(!fileNameStationInfo.empty())
-      readFileGnssStationInfo(fileNameStationInfo, stationInfo);
+      readFilePlatform(fileNameStationInfo, stationInfo);
 
     if(!fileNameSemiCodelessReceivers.empty())
       readFileStringList(fileNameSemiCodelessReceivers, semiCodelessReceivers);
@@ -182,9 +185,9 @@ void RinexObservation2GnssReceiver::run(Config &config, Parallel::CommunicatorPt
 
       // clean up data from previous file
       system2ObsTypes.clear();
-      stationInfoRinex = GnssStationInfo();
-      stationInfoRinex.antenna.resize(1);
-      stationInfoRinex.receiver.resize(1);
+      stationInfoRinex = Platform();
+      antennaRinex     = PlatformGnssAntenna();
+      receiverRinex    = PlatformGnssReceiver();
 
       readHeader(file);
       checkStationInfo();
@@ -273,20 +276,19 @@ void RinexObservation2GnssReceiver::readHeader(InFile &file, UInt lineCount)
       // ====================================
       else if(testLabel(label, "REC # / TYPE / VERS"))
       {
-        auto &recv = stationInfoRinex.receiver.at(0);
-        recv.serial  = String::trim(line.substr(0,20));
-        recv.name    = String::trim(line.substr(20,20));
-        recv.version = String::trim(line.substr(40,20));
-        std::transform(recv.name.begin(), recv.name.end(), recv.name.begin(), ::toupper); // convert to upper case
+        receiverRinex.serial  = String::trim(line.substr(0,20));
+        receiverRinex.name    = String::trim(line.substr(20,20));
+        receiverRinex.version = String::trim(line.substr(40,20));
+        std::transform(receiverRinex.name.begin(), receiverRinex.name.end(), receiverRinex.name.begin(), ::toupper); // convert to upper case
       }
       // ====================================
       else if(testLabel(label, "ANT # / TYPE"))
       {
-        stationInfoRinex.antenna.at(0).serial = String::trim(line.substr(0,20));
-        stationInfoRinex.antenna.at(0).name   = String::trim(line.substr(20,16));
-        stationInfoRinex.antenna.at(0).radome = String::trim(line.substr(36,4));
-        if(stationInfoRinex.antenna.at(0).radome == "NONE")
-          stationInfoRinex.antenna.at(0).radome.clear();
+        antennaRinex.serial = String::trim(line.substr(0,20));
+        antennaRinex.name   = String::trim(line.substr(20,16));
+        antennaRinex.radome = String::trim(line.substr(36,4));
+        if(antennaRinex.radome == "NONE")
+          antennaRinex.radome.clear();
       }
       // ====================================
       else if(testLabel(label, "APPROX POSITION XYZ"))
@@ -298,16 +300,16 @@ void RinexObservation2GnssReceiver::readHeader(InFile &file, UInt lineCount)
       // ====================================
       else if(testLabel(label, "ANTENNA: DELTA H/E/N"))
       {
-        stationInfoRinex.antenna.at(0).position.z() = -readOptionalDouble(line, 0,14); // up -> down
-        stationInfoRinex.antenna.at(0).position.x() =  readOptionalDouble(line,14,14);
-        stationInfoRinex.antenna.at(0).position.y() =  readOptionalDouble(line,28,14);
+        antennaRinex.position.z() = -readOptionalDouble(line, 0,14); // up -> down
+        antennaRinex.position.x() =  readOptionalDouble(line,14,14);
+        antennaRinex.position.y() =  readOptionalDouble(line,28,14);
       }
       // ====================================
       else if(testLabel(label, "ANTENNA: DELTA X/Y/Z"))
       {
-        stationInfoRinex.antenna.at(0).position.x() = readOptionalDouble(line, 0,14);
-        stationInfoRinex.antenna.at(0).position.y() = readOptionalDouble(line,14,14);
-        stationInfoRinex.antenna.at(0).position.z() = readOptionalDouble(line,28,14);
+        antennaRinex.position.x() = readOptionalDouble(line, 0,14);
+        antennaRinex.position.y() = readOptionalDouble(line,14,14);
+        antennaRinex.position.z() = readOptionalDouble(line,28,14);
       }
       // ====================================
       else if(testLabel(label, "ANTENNA: B.SIGHT XYZ"))
@@ -471,9 +473,8 @@ void RinexObservation2GnssReceiver::readHeader(InFile &file, UInt lineCount)
     }
 
     // check if receiver measures semi-codeless (GPS L2)
-    const UInt idRecv = stationInfo.findReceiver(timeOfFirstObs);
-    const std::string receiverName = (idRecv != NULLINDEX ? stationInfo.receiver.at(idRecv).name : stationInfoRinex.receiver.at(0).name);
-    if(std::find(semiCodelessReceivers.begin(), semiCodelessReceivers.end(), receiverName) != semiCodelessReceivers.end())
+    auto recv = stationInfo.findEquipment<PlatformGnssReceiver>(timeOfFirstObs);
+    if(recv && std::find(semiCodelessReceivers.begin(), semiCodelessReceivers.end(), recv->name) != semiCodelessReceivers.end())
       isSemiCodelessReceiver = TRUE;
   }
   catch(std::exception &e)
@@ -718,43 +719,43 @@ void RinexObservation2GnssReceiver::checkStationInfo()
       logWarning<<timeOfFirstObs.dateTimeStr()<<" Marker number differs '"<<stationInfo.markerNumber<<"' != '"<<stationInfoRinex.markerNumber<<"'"<<Log::endl;
 
     // test antenna
-    if(stationInfo.antenna.size())
+    if(stationInfo.equipments.size())
     {
-      UInt id = stationInfo.findAntenna(timeOfFirstObs);
-      if(id != NULLINDEX)
+      auto antenna = stationInfo.findEquipment<PlatformGnssAntenna>(timeOfFirstObs);
+      if(antenna)
       {
-        if((!stationInfoRinex.antenna.at(0).name.empty()) && (stationInfo.antenna.at(id).name != stationInfoRinex.antenna.at(0).name))
-          logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna name differs '"<<stationInfo.antenna.at(id).name<<"' != '"<<stationInfoRinex.antenna.at(0).name<<"'"<<Log::endl;
-        if((!stationInfoRinex.antenna.at(0).serial.empty()) && (stationInfo.antenna.at(id).serial != stationInfoRinex.antenna.at(0).serial))
-          logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna serial differs '"<<stationInfo.antenna.at(id).serial<<"' != '"<<stationInfoRinex.antenna.at(0).serial<<"'"<<Log::endl;
-        if((!stationInfoRinex.antenna.at(0).radome.empty()) && (stationInfo.antenna.at(id).radome != stationInfoRinex.antenna.at(0).radome))
-          logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna radome differs '"<<stationInfo.antenna.at(id).radome<<"' != '"<<stationInfoRinex.antenna.at(0).radome<<"'"<<Log::endl;
-        if((stationInfo.antenna.at(id).position-stationInfoRinex.antenna.at(0).position).r()>=0.001 || std::isnan(stationInfoRinex.antenna.at(0).position.r()))
+        if((!antennaRinex.name.empty()) && (antenna->name != antennaRinex.name))
+          logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna name differs '"<<antenna->name<<"' != '"<<antennaRinex.name<<"'"<<Log::endl;
+        if((!antennaRinex.serial.empty()) && (antenna->serial != antennaRinex.serial))
+          logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna serial differs '"<<antenna->serial<<"' != '"<<antennaRinex.serial<<"'"<<Log::endl;
+        if((!antennaRinex.radome.empty()) && (antenna->radome != antennaRinex.radome))
+          logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna radome differs '"<<antenna->radome<<"' != '"<<antennaRinex.radome<<"'"<<Log::endl;
+        if((antenna->position-antennaRinex.position).r()>=0.001 || std::isnan(antennaRinex.position.r()))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna delta position differs"<<Log::endl;
 
-        stationInfoRinex.antenna.at(0) = stationInfo.antenna.at(id);
+        antennaRinex = *antenna;
       }
       else
-        logWarning << timeOfFirstObs.dateTimeStr() << ": Antenna not found in stationInfo: '"<<stationInfoRinex.antenna.at(0).name<<"'"<<Log::endl;
+        logWarning << timeOfFirstObs.dateTimeStr() << ": Antenna not found in stationInfo: '"<<antennaRinex.name<<"'"<<Log::endl;
     }
 
     // test receiver
-    if(stationInfo.receiver.size())
+    if(stationInfo.equipments.size())
     {
-      UInt id = stationInfo.findReceiver(timeOfFirstObs);
-      if(id != NULLINDEX)
+      auto recv = stationInfo.findEquipment<PlatformGnssReceiver>(timeOfFirstObs);
+      if(recv)
       {
-        if((!stationInfoRinex.receiver.at(0).name.empty()) && (stationInfo.receiver.at(id).name != stationInfoRinex.receiver.at(0).name))
-          logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver name differs '"<<stationInfo.receiver.at(id).name<<"' != '"<<stationInfoRinex.receiver.at(0).name<<"'"<<Log::endl;
-        if((!stationInfoRinex.receiver.at(0).serial.empty()) && (stationInfo.receiver.at(id).serial != stationInfoRinex.receiver.at(0).serial))
-          logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver serial differs '"<<stationInfo.receiver.at(id).serial<<"' != '"<<stationInfoRinex.receiver.at(0).serial<<"'"<<Log::endl;
-        if((!stationInfoRinex.receiver.at(0).version.empty()) && (stationInfo.receiver.at(id).version != stationInfoRinex.receiver.at(0).version))
-          logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver version differs '"<<stationInfo.receiver.at(id).version<<"' != '"<<stationInfoRinex.receiver.at(0).version<<"'"<<Log::endl;
+        if((!receiverRinex.name.empty()) && (recv->name != receiverRinex.name))
+          logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver name differs '"<<recv->name<<"' != '"<<receiverRinex.name<<"'"<<Log::endl;
+        if((!receiverRinex.serial.empty()) && (recv->serial != receiverRinex.serial))
+          logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver serial differs '"<<recv->serial<<"' != '"<<receiverRinex.serial<<"'"<<Log::endl;
+        if((!receiverRinex.version.empty()) && (recv->version != receiverRinex.version))
+          logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver version differs '"<<recv->version<<"' != '"<<receiverRinex.version<<"'"<<Log::endl;
 
-        stationInfoRinex.receiver.at(0) = stationInfo.receiver.at(id);
+        receiverRinex = *recv;
       }
       else
-        logWarning << timeOfFirstObs.dateTimeStr() << ": Receiver not found in stationInfo: '"<<stationInfoRinex.receiver.at(0).name<<"'"<<Log::endl;
+        logWarning << timeOfFirstObs.dateTimeStr() << ": Receiver not found in stationInfo: '"<<receiverRinex.name<<"'"<<Log::endl;
     }
   }
   catch(std::exception &e)

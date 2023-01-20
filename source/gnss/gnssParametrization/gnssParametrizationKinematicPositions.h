@@ -29,7 +29,7 @@ are computed within
 
 /***********************************************/
 
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -41,7 +41,7 @@ class GnssParametrizationKinematicPositions : public GnssParametrizationBase
 {
   Gnss                                        *gnss;
   std::string                                  name;
-  GnssTransceiverSelectorPtr                   selectReceivers;
+  PlatformSelectorPtr                          selectReceivers;
   std::vector<Byte>                            selectedReceivers;
   FileName                                     fileNamePositions, fileNameCovariance;
   std::vector<std::vector<GnssParameterIndex>> index; // for each receiver, each epoch

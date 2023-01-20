@@ -15,7 +15,7 @@
 
 #include "base/gnssType.h"
 #include "files/fileGnssSignalBias.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 
 /** @addtogroup gnssGroup */
 /// @{
@@ -31,26 +31,24 @@ typedef std::shared_ptr<GnssTransceiver> GnssTransceiverPtr;
 * eg. GPS satellites. */
 class GnssTransceiver
 {
-   std::string name_;
    Vector      useableEpochs;
    UInt        countUseableEpochs;
    GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction;
 
 public:
-   UInt            id_; // set by Gnss::init()
-   GnssStationInfo info;
-   GnssSignalBias  signalBias;
+   UInt           id_; // set by Gnss::init()
+   Platform       platform;
+   GnssSignalBias signalBias;
 
 public:
   /// Constructor.
-  GnssTransceiver(const std::string &name, const GnssStationInfo &info,
-                  GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction, const Vector &useableEpochs);
+  GnssTransceiver(const Platform &platform, GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction, const Vector &useableEpochs);
 
   /// Destructor.
   virtual ~GnssTransceiver() {}
 
   /** @brief name. */
-  std::string name() const {return name_;}
+  std::string name() const {return platform.name;}
 
   /** @brief Is the platform usable at given epoch (or all epochs). */
   Bool useable(UInt idEpoch=NULLINDEX) const {return countUseableEpochs && ((idEpoch == NULLINDEX) || useableEpochs(idEpoch));}
@@ -78,10 +76,8 @@ public:
 
 /***********************************************/
 
-inline GnssTransceiver::GnssTransceiver(const std::string &name, const GnssStationInfo &info,
-                                        GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction, const Vector &useableEpochs)
-  : name_(name), useableEpochs(useableEpochs), countUseableEpochs(sum(useableEpochs)),
-    noPatternFoundAction(noPatternFoundAction), info(info) {}
+inline GnssTransceiver::GnssTransceiver(const Platform &platform, GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction, const Vector &useableEpochs)
+  : useableEpochs(useableEpochs), countUseableEpochs(sum(useableEpochs)), noPatternFoundAction(noPatternFoundAction), platform(platform) {}
 
 /***********************************************/
 
@@ -122,10 +118,10 @@ inline std::vector<GnssType> GnssTransceiver::definedTypes(const Time &time) con
 {
   try
   {
-    const UInt idRecv = info.findReceiver(time);
-    if((idRecv == NULLINDEX) || !info.receiver.at(idRecv).receiverDef)
+    auto receiver = platform.findEquipment<PlatformGnssReceiver>(time);
+    if(!receiver || !receiver->receiverDef)
       return std::vector<GnssType>();
-    return info.receiver.at(idRecv).receiverDef->types;
+    return receiver->receiverDef->types;
   }
   catch(std::exception &e)
   {
@@ -140,8 +136,15 @@ inline Vector GnssTransceiver::antennaVariations(const Time &time, Angle azimut,
   try
   {
     Vector corr(types.size());
-    corr += info.antennaVariations(time, azimut, elevation, types, noPatternFoundAction);
     corr += signalBias.compute(types);
+
+    auto antenna = platform.findEquipment<PlatformGnssAntenna>(time);
+    if(!antenna)
+      throw(Exception(platform.markerName+"."+platform.markerNumber+": no antenna definition found at "+time.dateTimeStr()));
+    if(!antenna->antennaDef)
+      throw(Exception("no antenna definition for "+antenna->str()));
+    corr += antenna->antennaDef->antennaVariations(azimut, elevation, types, noPatternFoundAction);
+
     return corr;
   }
   catch(std::exception &e)
@@ -156,7 +159,12 @@ inline Vector GnssTransceiver::accuracy(const Time &time, Angle azimut, Angle el
 {
   try
   {
-    return info.accuracy(time, azimut, elevation, types, noPatternFoundAction);
+    auto antenna = platform.findEquipment<PlatformGnssAntenna>(time);
+    if(!antenna)
+      throw(Exception(platform.markerName+"."+platform.markerNumber+": no antenna accuracy found at "+time.dateTimeStr()));
+    if(!antenna->accuracyDef)
+      throw(Exception("no accuracy definition for "+antenna->str()));
+    return antenna->accuracyDef->antennaVariations(azimut, elevation, types, noPatternFoundAction);
   }
   catch(std::exception &e)
   {

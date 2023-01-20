@@ -67,12 +67,12 @@ and define the \config{outputfiles} you are interested in inside each of them:
 \begin{itemize}
   \item \configClass{ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}: add a constraint of \config{sigmaSTEC}=\verb|40|
   \item \configClass{ionosphereVTEC}{gnssParametrizationType:ionosphereVTEC}
-  \item \configClass{clocks}{gnssParametrizationType:clocks}: delete \configClass{selectTransmitters}{gnssTransceiverSelectorType}
+  \item \configClass{clocks}{gnssParametrizationType:clocks}: delete \configClass{selectTransmitters}{platformSelectorType}
   \item \configClass{signalBiases}{gnssParametrizationType:signalBiases}: provide \configFile{inputfileSignalBiasTransmitter}{gnssSignalBias} from
         \reference{Data preparation}{cookbook.gnssPpp:metadata}.
-  \item \configClass{ambiguities}{gnssParametrizationType:ambiguities}: if precise transmitter phase biases are available you can delete \configClass{estimateTransmitterPhaseBiases}{gnssTransceiverSelectorType}
-  \item \configClass{codeBiases}{gnssParametrizationType:codeBiases}: delete \configClass{selectTransmitters}{gnssTransceiverSelectorType}, set \config{sigmaZeroMeanConstraint}=\verb|0|
-  \item \configClass{tecBiases}{gnssParametrizationType:tecBiases}: delete \configClass{selectTransmitters}{gnssTransceiverSelectorType}, set \config{sigmaZeroMeanConstraint}=\verb|0|
+  \item \configClass{ambiguities}{gnssParametrizationType:ambiguities}: if precise transmitter phase biases are available you can delete \configClass{estimateTransmitterPhaseBiases}{platformSelectorType}
+  \item \configClass{codeBiases}{gnssParametrizationType:codeBiases}: delete \configClass{selectTransmitters}{platformSelectorType}, set \config{sigmaZeroMeanConstraint}=\verb|0|
+  \item \configClass{tecBiases}{gnssParametrizationType:tecBiases}: delete \configClass{selectTransmitters}{platformSelectorType}, set \config{sigmaZeroMeanConstraint}=\verb|0|
   \item \configClass{kinematicPositions}{gnssParametrizationType:kinematicPositions}
   \item \configClass{troposphere}{gnssParametrizationType:troposphere}: select \configClass{troposphere:viennaMapping}{troposphereType:viennaMapping}
         with the appropriate vmf3grid file. Add \configClass{troposphereWetEstimation:splines}{parametrizationTemporalType:splines}

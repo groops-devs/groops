@@ -25,7 +25,7 @@ Sets up an ambiguity parameter for each track and phase observation type.
 As the phase observations contain a float bias at transmitter/receiver level, not all ambiguities
 are resolvable to integer values. The number of resolvable ambiguities can be increased with
 known phase biases read from file via \configClass{parametrization:signalBiases}{gnssParametrizationType:signalBiases}.
-In this case, \configClass{estimateTransmitter/ReceiverPhaseBiasTransmitter}{gnssTransceiverSelectorType} should
+In this case, \configClass{estimateTransmitter/ReceiverPhaseBiasTransmitter}{platformSelectorType} should
 not be used for the corresponding transmitters and receivers.
 
 In case of GLONASS, the phase biases at receiver level differ between different frequency channels
@@ -48,10 +48,10 @@ The estimated phase biases can be written to files in
 
 #include "base/import.h"
 #include "config/config.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnss.h"
 #include "gnss/gnssLambda.h"
 #include "gnss/gnssReceiver.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
 
 /***** CLASS ***********************************/
@@ -97,7 +97,7 @@ class GnssParametrizationAmbiguities : public GnssParametrizationBase
 
   Gnss                           *gnss;
   std::string                     name;
-  GnssTransceiverSelectorPtr      selectTransmitters, selectReceivers;
+  PlatformSelectorPtr             selectTransmitters, selectReceivers;
   std::vector<ParameterTrans*>    paraTrans;
   std::vector<ParameterRecv*>     paraRecv;
   Bool                            isLinearBias;

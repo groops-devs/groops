@@ -45,7 +45,7 @@ void GnssParametrizationIonosphereVTEC::init(Gnss *gnss, Parallel::CommunicatorP
   try
   {
     this->gnss = gnss;
-    selectedReceivers = selectReceivers->select(gnss->receivers);
+    selectedReceivers = gnss->selectReceivers(selectReceivers);
     index.resize(gnss->receivers.size());
     VTEC.resize(gnss->receivers.size());
   }

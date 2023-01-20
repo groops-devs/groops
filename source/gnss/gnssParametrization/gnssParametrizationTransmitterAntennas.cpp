@@ -13,9 +13,9 @@
 
 #include "base/import.h"
 #include "config/config.h"
-#include "gnss/gnss.h"
-#include "gnss/gnssTransceiverSelector/gnssTransceiverSelector.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "classes/parametrizationGnssAntenna/parametrizationGnssAntenna.h"
+#include "gnss/gnss.h"
 #include "gnss/gnssParametrization/gnssParametrizationTransmitterAntennas.h"
 
 /***********************************************/
@@ -67,13 +67,15 @@ void GnssParametrizationTransmitterAntennas::initParameter(GnssNormalEquationInf
       return;
 
     std::vector<std::string> antennaNames;
-    auto selectedTransmitters = selectTransmitters->select(gnss->transmitters);
+    auto selectedTransmitters = gnss->selectTransmitters(selectTransmitters);
     for(auto trans : gnss->transmitters)
       if(trans->useable() && selectedTransmitters.at(trans->idTrans()))
       {
         Bool found = FALSE;
-        for(const auto &antenna : trans->info.antenna)
-          if((antenna.timeEnd > gnss->times.front()) && (antenna.timeStart <= gnss->times.back()))
+        for(const auto &instrument : trans->platform.equipments)
+        {
+          auto antenna = std::dynamic_pointer_cast<PlatformGnssAntenna>(instrument);
+          if(antenna && (antenna->timeEnd > gnss->times.front()) && (antenna->timeStart <= gnss->times.back()))
           {
             if(found)
             {
@@ -83,7 +85,7 @@ void GnssParametrizationTransmitterAntennas::initParameter(GnssNormalEquationInf
             found = TRUE;
 
             // not already in list?
-            const std::string name = GnssAntennaDefinition::str(antenna.name, ignoreSerial ? ""s : antenna.serial, antenna.radome);
+            const std::string name = GnssAntennaDefinition::str(antenna->name, ignoreSerial ? ""s : antenna->serial, antenna->radome);
             const UInt idAnt = std::distance(antennaNames.begin(), std::find(antennaNames.begin(), antennaNames.end(), name));
             if(idAnt >= antennaNames.size())
             {
@@ -104,6 +106,7 @@ void GnssParametrizationTransmitterAntennas::initParameter(GnssNormalEquationInf
                     types.at(idAnt).push_back(typeObs);
                 }
           } // for(antenna)
+        }
       } // for(trans)
 
     // setup parameters
