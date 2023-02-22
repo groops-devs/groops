@@ -891,8 +891,8 @@ void GnssStationLog2StationInfo::readSinexReceiver(std::string &line, GnssStatio
     if(site == station.markerName)
     {
       GnssReceiverInfo receiver;
-      receiver.timeStart = Sinex::str2time(line, 16);
-      receiver.timeEnd   = Sinex::str2time(line, 29);
+      receiver.timeStart = Sinex::str2time(line, 16, FALSE);
+      receiver.timeEnd   = Sinex::str2time(line, 29, TRUE);
       receiver.name      = String::trim(line.substr(42, 20));
       receiver.serial    = String::trim(line.substr(63, 5));
       receiver.version   = String::trim(line.substr(69, 11));
@@ -920,8 +920,8 @@ void GnssStationLog2StationInfo::readSinexAntenna(std::string &line, GnssStation
     if(site == station.markerName)
     {
       GnssAntennaInfo antenna;
-      antenna.timeStart = Sinex::str2time(line, 16);
-      antenna.timeEnd   = Sinex::str2time(line, 29);
+      antenna.timeStart = Sinex::str2time(line, 16, FALSE);
+      antenna.timeEnd   = Sinex::str2time(line, 29, TRUE);
       antenna.name      = String::trim(line.substr(42, 15));
       antenna.radome    = String::trim(line.substr(58, 4));
       antenna.serial    = String::trim(line.substr(63, 5));
@@ -952,8 +952,8 @@ void GnssStationLog2StationInfo::readSinexEccentricity(std::string &line, GnssSt
 
     if(site == station.markerName)
     {
-      Time timeStart     = Sinex::str2time(line, 16);
-      Time timeEnd       = Sinex::str2time(line, 29);
+      Time timeStart     = Sinex::str2time(line, 16, FALSE);
+      Time timeEnd       = Sinex::str2time(line, 29, TRUE);
       std::string refSys = String::trim(line.substr(42, 3));
       Vector3d eccentricity(String::toDouble(line.substr(55, 8)), String::toDouble(line.substr(64, 8)), String::toDouble(line.substr(46, 8)));
 

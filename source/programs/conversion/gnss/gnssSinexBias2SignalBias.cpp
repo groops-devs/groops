@@ -118,8 +118,8 @@ void GnssSinexBias2SignalBias::run(Config &config, Parallel::CommunicatorPtr /*c
       Bias bias;
       bias.value = String::toDouble(line.substr(70,21));
       bias.slope = line.size() >= 125 ? String::toDouble(line.substr(104,21)) : 0.;
-      bias.timeStart = Sinex::str2time(line, 35, TRUE);
-      bias.timeEnd   = Sinex::str2time(line, 50, TRUE);
+      bias.timeStart = Sinex::str2time(line, 35, FALSE, TRUE);
+      bias.timeEnd   = Sinex::str2time(line, 50, TRUE,  TRUE);
       if(unit == "ns")
       {
         bias.value *= 1e-9*LIGHT_VELOCITY;

@@ -27,6 +27,7 @@ See also \program{Sinex2StationPosition} and \program{Sinex2StationPostSeismicDe
 /***********************************************/
 
 #include "programs/program.h"
+#include "base/string.h"
 #include "inputOutput/fileSinex.h"
 #include "files/fileInstrument.h"
 
@@ -65,12 +66,11 @@ void Sinex2StationDiscontinuities::run(Config &config, Parallel::CommunicatorPtr
     std::map<std::string, MiscValueArc> stations;
     for(const auto &line : lines)
     {
-      std::string name = line.substr(1,4);
-      std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+      std::string name = String::lowerCase(String::trim(line.substr(1, 4)));
       if(stationNames.size() && std::find(stationNames.begin(), stationNames.end(), name) == stationNames.end())
         continue;
 
-      Time time = Sinex::str2time(line, 16);
+      Time time = Sinex::str2time(line, 16, TRUE);
       MiscValueEpoch epoch;
       epoch.time = time;
       std::string type = line.substr(42,1);
