@@ -55,7 +55,7 @@ void GnssPrn2SvnBlockVariables::run(Config &config, Parallel::CommunicatorPtr /*
     readFilePlatform(fileNameTransmitterInfo, transmitterInfo);
     auto antenna = transmitterInfo.findEquipment<PlatformGnssAntenna>(time);
     if(!antenna)
-      throw(Exception("satellite SVN not found in transmitter info"));
+      throw(Exception(fileNameTransmitterInfo.str()+" contains no satellite at "+time.dateTimeStr()));
 
     if(!nameSVN.empty())
       addVariable(nameSVN, antenna->serial, config.getVarList());
