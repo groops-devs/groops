@@ -97,8 +97,9 @@ inline Bool LoopPlatformEquipment::iteration(VariableList &varList)
   if(index >= count())
     return FALSE;
 
+  UInt idx = 0;
   for(const auto &eq : platform.equipments)
-    if((type == PlatformEquipment::UNDEFINED) || (eq->getType() == type))
+    if(((type == PlatformEquipment::UNDEFINED) || (eq->getType() == type)) && (idx++ == index))
     {
       if(!nameIndex.empty())     addVariable(nameIndex,     index,               varList);
       if(!nameCount.empty())     addVariable(nameCount,     count(),             varList);
@@ -120,6 +121,7 @@ inline Bool LoopPlatformEquipment::iteration(VariableList &varList)
           default:                              break;
         }
       }
+      break;
     }
 
   index++;
