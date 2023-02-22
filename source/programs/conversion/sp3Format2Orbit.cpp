@@ -21,6 +21,8 @@ and \config{outputfileCovariance} is an \file{instrument file (COVARIANCE3D)}{in
 
 If \configClass{earthRotation}{earthRotationType} is provided the data are transformed
 from terrestrial (TRF) to celestial reference frame (CRF).
+Since SP3 orbits often use the center of Earth as a reference, a correction from center
+of Earth to center of mass can be applied to the orbits by providing \configClass{gravityfield}{gravityfieldType} (e.g. ocean tides).
 
 See also \program{Orbit2Sp3Format}.
 )";
@@ -32,6 +34,7 @@ See also \program{Orbit2Sp3Format}.
 #include "inputOutput/file.h"
 #include "files/fileInstrument.h"
 #include "classes/earthRotation/earthRotation.h"
+#include "classes/gravityfield/gravityfield.h"
 
 /***** CLASS ***********************************/
 
@@ -56,6 +59,7 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     FileName              fileNameOrbit, fileNameClock, fileNameCov;
     std::string           satId;
     EarthRotationPtr      earthRotation;
+    GravityfieldPtr       gravityfield;
     std::vector<FileName> fileNamesIn;
 
     readConfig(config, "outputfileOrbit",      fileNameOrbit, Config::MUSTSET,  "", "");
@@ -63,6 +67,7 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "outputfileCovariance", fileNameCov,   Config::OPTIONAL, "", "3x3 epoch covariance");
     readConfig(config, "satelliteIdentifier",  satId,         Config::OPTIONAL, "", "e.g. L09 for GRACE A, empty: take first satellite");
     readConfig(config, "earthRotation",        earthRotation, Config::OPTIONAL, "", "rotation from TRF to CRF");
+    readConfig(config, "gravityfield",         gravityfield,  Config::DEFAULT,  R"({"tides": {"tides": {"doodsonHarmonicTide": {"minDegree":1, "maxDegree":1}}}})", "degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)");
     readConfig(config, "inputfile",            fileNamesIn,   Config::MUSTSET,  "", "orbits in SP3 format");
     if(isCreateSchema(config)) return;
 
@@ -81,6 +86,7 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         enum TimeSystem {GPS, UTC, TAI};
         TimeSystem timeSystem = GPS;
         Time time;
+        Vector3d cm2ceCorrection;
         Bool positionRecord = FALSE;
         while(std::getline(file, line))
         {
@@ -125,6 +131,10 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
             else if(timeSystem == TAI)
               time -= seconds2time(DELTA_TAI_GPS);
             positionRecord = FALSE;
+
+            const SphericalHarmonics harmonics = gravityfield->sphericalHarmonics(time, 1, 1);
+            const Vector coeff = harmonics.x(); // [c00, c10, c11, s11]
+            cm2ceCorrection = std::sqrt(3.) * harmonics.R() * Vector3d(coeff(2), coeff(3), coeff(1));
           }
 
           // Position
@@ -145,7 +155,7 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
               {
                 OrbitEpoch epoch;
                 epoch.time     = time;
-                epoch.position = 1e3*Vector3d(x,y,z); // km -> m
+                epoch.position = 1e3*Vector3d(x,y,z) - cm2ceCorrection; // km -> m
                 orbit.push_back(epoch);
               }
               if(c < 999999)

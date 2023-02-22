@@ -22635,7 +22635,7 @@
 								<xs:documentation>rotate data into Earth-fixed frame</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}">
 							<xs:annotation>
 								<xs:documentation>degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)</xs:documentation>
 							</xs:annotation>
@@ -23046,6 +23046,11 @@
 						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>rotation from TRF to CRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}">
+							<xs:annotation>
+								<xs:documentation>degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">

@@ -9259,6 +9259,8 @@ and \config{outputfileCovariance} is an \file{instrument file (COVARIANCE3D)}{in
 
 If \configClass{earthRotation}{earthRotationType} is provided the data are transformed
 from terrestrial (TRF) to celestial reference frame (CRF).
+Since SP3 orbits often use the center of Earth as a reference, a correction from center
+of Earth to center of mass can be applied to the orbits by providing \configClass{gravityfield}{gravityfieldType} (e.g. ocean tides).
 
 See also \program{Orbit2Sp3Format}.
 
@@ -9273,6 +9275,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileCovariance & \hfuzz=500pt filename & \hfuzz=500pt 3x3 epoch covariance\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~satelliteIdentifier & \hfuzz=500pt string & \hfuzz=500pt e.g. L09 for GRACE A, empty: take first satellite\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt rotation from TRF to CRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt orbits in SP3 format\\
 \hline
 \end{tabularx}
