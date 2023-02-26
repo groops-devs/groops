@@ -81,9 +81,9 @@ void Sinex2StationPostSeismicDeformation::run(Config &config, Parallel::Communic
       const Double relaxationTime = String::toDouble(lines.at(i+1).substr(47, 21));
       const Double referenceTime  = Sinex::str2time(lines.at(i), 27, FALSE).decimalYear();
 
-      UInt col = 4; // default 'U' oder 'H'
-      if(parameterType1.back() == 'N') col = 2;
-      else if(parameterType1.back() == 'E') col = 3;
+      UInt col = 3; // default 'U' oder 'H'
+      if(parameterType1.back() == 'N') col = 1;
+      else if(parameterType1.back() == 'E') col = 2;
 
       for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
       {
@@ -107,10 +107,8 @@ void Sinex2StationPostSeismicDeformation::run(Config &config, Parallel::Communic
       {
         const Double longitude = String::toDouble(iter->substr(44, 3)) + String::toDouble(iter->substr(48, 2))/60 + String::toDouble(iter->substr(51, 4))/3600;
         const Double latitude  = String::toDouble(iter->substr(56, 3)) + String::toDouble(iter->substr(60, 2))/60 + String::toDouble(iter->substr(63, 4))/3600;
-        const Double height    = String::toDouble(iter->substr(68, 7));
 
-        Ellipsoid ellipsoid;
-        const Transform3d lnof2trf = localNorthEastUp(ellipsoid(Angle(longitude*DEG2RAD), Angle(latitude*DEG2RAD), height));
+        const Transform3d lnof2trf = localNorthEastUp(polar(Angle(longitude*DEG2RAD), Angle(latitude*DEG2RAD), 1.));
         copy(A.column(1,3) * lnof2trf.matrix().trans(), A.column(1,3));
       }
     }
