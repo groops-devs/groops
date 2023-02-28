@@ -9174,18 +9174,21 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
-\subsection{Sinex2StationPosition}\label{Sinex2StationPosition}
-Extracts station positions from \config{inputfileSinex}
+\subsection{Sinex2StationPositions}\label{Sinex2StationPositions}
+Extracts station positions from \config{inputfileSinexSolution}
 (\href{http://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX format description})
-and writes an Instrument file \configFile{outputfileInstrument}{instrument} of type VECTOR3D
-for each station. Stations can be limited via \config{stationName}, otherwise all stations in \config{inputfileSinex} will be used.
-If \config{timeSeries} is provided, positions will be computed at these epochs based on velocity, otherwise reference epoch is used.
+and writes an \configFile{outputfileInstrument}{instrument} of type VECTOR3D
+for each station.  Positions will be computed at \configClass{timeSeries}{timeSeriesType} based on position and velocity
+of each provided interval in the SINEX file.
+With \config{inputfileSinexDiscontinuities} the bounds of these time spans are adjusted to the exact epochs of discontinuities.
+The \config{inputfileSinexPostSeismicDeformations} adds the ITRF post-seismic deformation model to the affected stations.
+The \config{inputfileSinexFrequencies} adds annual and semi-annual frequencies.
+
 If \config{extrapolateBackward} or \config{extrapolateForward} are provided, positions will also be computed for epochs
 before the first interval/after the last interval, based on the position and velocity of the first/last interval.
-If \config{inputfileDiscontinuities} is provided (one file per station, create with \program{Sinex2StationDiscontinuities}),
-position extrapolation will stop at the first discontinuity before the first interval/after the last interval.
+Position extrapolation will stop at the first discontinuity before the first interval/after the last interval.
 
-See also \program{Sinex2StationPostSeismicDeformation}.
+Stations can be limited via \config{stationName}, otherwise all stations in \config{inputfileSinexSolution} will be used.
 
 
 \keepXColumns
@@ -9194,36 +9197,15 @@ See also \program{Sinex2StationPostSeismicDeformation}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt loop variable is replaced with station name (e.g. wtzz)\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinex & \hfuzz=500pt filename & \hfuzz=500pt SINEX file (.snx or .ssc)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileDiscontinuities & \hfuzz=500pt filename & \hfuzz=500pt discontinuities file per station; loop variable is replaced with station name (e.g. wtzz)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopStation & \hfuzz=500pt string & \hfuzz=500pt variable name for station loop\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~stationName & \hfuzz=500pt string & \hfuzz=500pt convert only these stations\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt compute positions for these epochs based on velocity\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinexSolution & \hfuzz=500pt filename & \hfuzz=500pt SINEX file\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSinexDiscontinuities & \hfuzz=500pt filename & \hfuzz=500pt SINEX file\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSinexPostSeismicDeformations & \hfuzz=500pt filename & \hfuzz=500pt SINEX file\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSinexFrequencies & \hfuzz=500pt filename & \hfuzz=500pt SINEX file (XYZ or ENU)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt compute positions for these epochs based on velocity\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~extrapolateForward & \hfuzz=500pt boolean & \hfuzz=500pt also compute positions for epochs after last interval defined in SINEX file\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~extrapolateBackward & \hfuzz=500pt boolean & \hfuzz=500pt also compute positions for epochs before first interval defined in SINEX file\\
-\hline
-\end{tabularx}
-
-\clearpage
-%==================================
-\subsection{Sinex2StationPostSeismicDeformation}\label{Sinex2StationPostSeismicDeformation}
-Convert ITRF post-seismic deformation
-\href{http://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file}
-to \configFile{outputfileInstrument}{instrument} (VECTOR3D).
-
-See also \program{Sinex2StationPosition} and \program{Sinex2StationDiscontinuities}.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt deformation time series\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinex & \hfuzz=500pt filename & \hfuzz=500pt ITRF post-seismic deformation SINEX file\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt compute deformation for these epochs\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~stationName & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~localLevelFrame & \hfuzz=500pt boolean & \hfuzz=500pt output in North, East, Up local-level frame\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~stationName & \hfuzz=500pt string & \hfuzz=500pt convert only these stations\\
 \hline
 \end{tabularx}
 
@@ -9259,6 +9241,8 @@ and \config{outputfileCovariance} is an \file{instrument file (COVARIANCE3D)}{in
 
 If \configClass{earthRotation}{earthRotationType} is provided the data are transformed
 from terrestrial (TRF) to celestial reference frame (CRF).
+Since SP3 orbits often use the center of Earth as a reference, a correction from center
+of Earth to center of mass can be applied to the orbits by providing \configClass{gravityfield}{gravityfieldType} (e.g. ocean tides).
 
 See also \program{Orbit2Sp3Format}.
 
@@ -9273,6 +9257,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileCovariance & \hfuzz=500pt filename & \hfuzz=500pt 3x3 epoch covariance\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~satelliteIdentifier & \hfuzz=500pt string & \hfuzz=500pt e.g. L09 for GRACE A, empty: take first satellite\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt rotation from TRF to CRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt orbits in SP3 format\\
 \hline
 \end{tabularx}
@@ -9371,6 +9356,48 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStationInfo & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStation & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileVmf & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\section{Programs: Deprecated}
+\subsection{Sinex2StationPosition}\label{Sinex2StationPosition}
+DEPRECATED. Please use \program{Sinex2StationPositions} instead.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt loop variable is replaced with station name (e.g. wtzz)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinex & \hfuzz=500pt filename & \hfuzz=500pt SINEX file (.snx or .ssc)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileDiscontinuities & \hfuzz=500pt filename & \hfuzz=500pt discontinuities file per station; loop variable is replaced with station name (e.g. wtzz)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopStation & \hfuzz=500pt string & \hfuzz=500pt variable name for station loop\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~stationName & \hfuzz=500pt string & \hfuzz=500pt convert only these stations\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt compute positions for these epochs based on velocity\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~extrapolateForward & \hfuzz=500pt boolean & \hfuzz=500pt also compute positions for epochs after last interval defined in SINEX file\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~extrapolateBackward & \hfuzz=500pt boolean & \hfuzz=500pt also compute positions for epochs before first interval defined in SINEX file\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{Sinex2StationPostSeismicDeformation}\label{Sinex2StationPostSeismicDeformation}
+DEPRECATED. Please use \program{Sinex2StationPositions} instead.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt deformation time series\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinex & \hfuzz=500pt filename & \hfuzz=500pt ITRF post-seismic deformation SINEX file\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt compute deformation for these epochs\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~stationName & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~localLevelFrame & \hfuzz=500pt boolean & \hfuzz=500pt output in North, East, Up local-level frame\\
 \hline
 \end{tabularx}
 

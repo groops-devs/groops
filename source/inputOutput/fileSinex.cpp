@@ -76,7 +76,7 @@ std::string Sinex::time2str(Time time, Bool fourDigitYear)
 {
   try
   {
-    if(time == Time() || time == date2time(2500,1,1,0,0,0.))
+    if(time == Time() || time >= date2time(2500, 1, 1))
       return (fourDigitYear ? "0000" : "00") + ":000:00000"s;
 
     // round to full second including rollover
@@ -103,7 +103,7 @@ std::string Sinex::time2str(Time time, Bool fourDigitYear)
 
 /***********************************************/
 
-Time Sinex::str2time(const std::string &line, std::size_t pos, Bool fourDigitYear)
+Time Sinex::str2time(const std::string &line, std::size_t pos, Bool zeroIsMaxTime, Bool fourDigitYear)
 {
   try
   {
@@ -111,8 +111,8 @@ Time Sinex::str2time(const std::string &line, std::size_t pos, Bool fourDigitYea
     UInt year = static_cast<UInt>(String::toInt(line.substr(pos+0, 2+posOffset)));
     UInt day  = static_cast<UInt>(String::toInt(line.substr(pos+3+posOffset, 3)));
     UInt sec  = static_cast<UInt>(String::toInt(line.substr(pos+7+posOffset, 5)));
-    if(year == 0 && day == 0 && sec == 0)
-      return date2time(2500,1,1);
+    if((year == 0) && (day == 0) && (sec == 0))
+      return zeroIsMaxTime ? date2time(2500, 1, 1) : Time();
     if(!fourDigitYear)
       year += (year <= 50) ? 2000 : 1900;
     return date2time(year,1,1) + mjd2time(day-1.) + seconds2time(static_cast<Double>(sec));

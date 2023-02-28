@@ -744,8 +744,8 @@ void GnssStationLog2Platform::checkSinexFile(const FileName &fileName, Platform 
       if(String::upperCase(String::trim(line.substr(1, 4))) != platformSinex.markerName)
         continue;
       PlatformGnssReceiver receiver;
-      receiver.timeStart = Sinex::str2time(line, 16);
-      receiver.timeEnd   = Sinex::str2time(line, 29);
+      receiver.timeStart = Sinex::str2time(line, 16, FALSE);
+      receiver.timeEnd   = Sinex::str2time(line, 29, TRUE);
       receiver.name      = String::trim(line.substr(42, 20));
       receiver.serial    = String::trim(line.substr(63, 5));
       receiver.version   = String::trim(line.substr(69, 11));
@@ -809,8 +809,8 @@ void GnssStationLog2Platform::checkSinexFile(const FileName &fileName, Platform 
       if(String::upperCase(String::trim(line.substr(1, 4))) != platformSinex.markerName)
         continue;
       PlatformGnssAntenna antenna;
-      antenna.timeStart = Sinex::str2time(line, 16);
-      antenna.timeEnd   = Sinex::str2time(line, 29);
+      antenna.timeStart = Sinex::str2time(line, 16, FALSE);
+      antenna.timeEnd   = Sinex::str2time(line, 29, TRUE);
       antenna.name      = String::trim(line.substr(42, 15));
       antenna.radome    = String::trim(line.substr(58, 4));
       antenna.serial    = String::trim(line.substr(63, 5));
@@ -826,8 +826,8 @@ void GnssStationLog2Platform::checkSinexFile(const FileName &fileName, Platform 
       line.resize(std::max(line.size(), UInt(72)), ' ');
       if(String::upperCase(String::trim(line.substr(1, 4))) != platformSinex.markerName)
         continue;
-      Time timeStart     = Sinex::str2time(line, 16);
-      Time timeEnd       = Sinex::str2time(line, 29);
+      Time timeStart     = Sinex::str2time(line, 16, FALSE);
+      Time timeEnd       = Sinex::str2time(line, 29, TRUE);
       std::string refSys = String::trim(line.substr(42, 3));
       Vector3d eccentricity(String::toDouble(line.substr(55, 8)), String::toDouble(line.substr(64, 8)), String::toDouble(line.substr(46, 8)));
 

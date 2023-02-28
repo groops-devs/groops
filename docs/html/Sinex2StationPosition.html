@@ -71,15 +71,7 @@
         <div id="content" class="container">
             <h1>Sinex2StationPosition</h1><p>
 
-Extracts station positions from <strong class="groops-config-element">inputfileSinex</strong>
-(<a href="http://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html">SINEX format description</a>)
-and writes an Instrument file <a class="groops-class" href="fileFormat_instrument.html">outputfileInstrument</a> of type VECTOR3D
-for each station. Stations can be limited via <strong class="groops-config-element">stationName</strong>, otherwise all stations in <strong class="groops-config-element">inputfileSinex</strong> will be used.
-If <strong class="groops-config-element">timeSeries</strong> is provided, positions will be computed at these epochs based on velocity, otherwise reference epoch is used.
-If <strong class="groops-config-element">extrapolateBackward</strong> or <strong class="groops-config-element">extrapolateForward</strong> are provided, positions will also be computed for epochs
-before the first interval/after the last interval, based on the position and velocity of the first/last interval.
-If <strong class="groops-config-element">inputfileDiscontinuities</strong> is provided (one file per station, create with <a class="groops-program" href="Sinex2StationDiscontinuities.html">Sinex2StationDiscontinuities</a>),
-position extrapolation will stop at the first discontinuity before the first interval/after the last interval.</p><p>See also <a class="groops-program" href="Sinex2StationPostSeismicDeformation.html">Sinex2StationPostSeismicDeformation</a>.
+DEPRECATED. Please use <a class="groops-program" href="Sinex2StationPositions.html">Sinex2StationPositions</a> instead.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

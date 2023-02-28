@@ -274,7 +274,7 @@ PlotSymbol::PlotSymbol(Config &config, const std::string &name)
 
     {
       std::stringstream ss;
-      ss<<symbol<<" "<<size<<"p "<<(color ? color->str() : "white");
+      ss<<symbol<<" "<<std::max(size, 3.)<<"p "<<(color ? color->str() : "white");
       if(contour || !color)
         ss<<" "<<size/6.<<"p,black";
       else

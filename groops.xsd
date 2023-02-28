@@ -9601,7 +9601,6 @@
 			<xs:appinfo>rename: IersRapidEop2Earthrotation = IersRapidIAU2000EarthOrientationParameter</xs:appinfo>
 			<xs:appinfo>rename: IGS2EarthRotation = Igs2EarthOrientationParameter</xs:appinfo>
 			<xs:appinfo>rename: Igs2InstrumentClock = GnssClockRinex2InstrumentClock</xs:appinfo>
-			<xs:appinfo>rename: GnssSinex2StationPosition = Sinex2StationPosition</xs:appinfo>
 			<xs:appinfo>rename: Tsxtdx2Orbit = Tsxtdx2Starcamera</xs:appinfo>
 			<xs:appinfo>rename: Tsxtdx2Starcamera = TerraSarTandem2StarCamera</xs:appinfo>
 			<xs:appinfo>rename: Kinematic2Orbit = BerneseKinematic2Orbit</xs:appinfo>
@@ -9612,6 +9611,7 @@
 			<xs:appinfo>rename: ReadOceanBottomPressurePSMSL = PsmslOceanBottomPressure2TimeSeries</xs:appinfo>
 			<xs:appinfo>rename: Sp3file2Orbit = Sp3Format2Orbit</xs:appinfo>
 			<xs:appinfo>rename: Igs2Orbit = Sp3Format2Orbit</xs:appinfo>
+			<xs:appinfo>rename: GnssSinex2StationPosition = Sinex2StationPosition</xs:appinfo>
 		</xs:annotation>
 		<xs:choice>
 			<xs:element name="AutoregressiveModel2CovarianceMatrix">
@@ -22635,7 +22635,7 @@
 								<xs:documentation>rotate data into Earth-fixed frame</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}">
 							<xs:annotation>
 								<xs:documentation>degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)</xs:documentation>
 							</xs:annotation>
@@ -22909,28 +22909,18 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="Sinex2StationPosition">
+			<xs:element name="Sinex2StationPositions">
 				<xs:annotation>
-					<xs:documentation>Convert GNSS station positions from SINEX to InstrumentVector3d.</xs:documentation>
+					<xs:documentation>Convert station positions from SINEX to InstrumentVector3d.</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Gnss</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileInstrument" type="filename">
+						<xs:element name="outputfileInstrument" type="filename" default="stationPosition.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>loop variable is replaced with station name (e.g. wtzz)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileSinex" type="filename">
-							<xs:annotation>
-								<xs:documentation>SINEX file (.snx or .ssc)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileDiscontinuities" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>discontinuities file per station; loop variable is replaced with station name (e.g. wtzz)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopStation" type="string" minOccurs="0" default="station">
@@ -22938,17 +22928,32 @@
 								<xs:documentation>variable name for station loop</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="stationName" type="string" minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="inputfileSinexSolution" type="filename" default="ITRF2020-IGS-TRF.SSC">
 							<xs:annotation>
-								<xs:documentation>convert only these stations</xs:documentation>
+								<xs:documentation>SINEX file</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="inputfileSinexDiscontinuities" type="filename" minOccurs="0" default="ITRF2020-soln-gnss.snx">
+							<xs:annotation>
+								<xs:documentation>SINEX file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSinexPostSeismicDeformations" type="filename" minOccurs="0" default="ITRF2020-psd-gnss.snx">
+							<xs:annotation>
+								<xs:documentation>SINEX file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSinexFrequencies" type="filename" minOccurs="0" default="ITRF2020-Frequencies-XYZ-CF.snx">
+							<xs:annotation>
+								<xs:documentation>SINEX file (XYZ or ENU)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>compute positions for these epochs based on velocity</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="extrapolateForward" type="boolean" minOccurs="0" default="0">
+						<xs:element name="extrapolateForward" type="boolean" minOccurs="0" default="1">
 							<xs:annotation>
 								<xs:documentation>also compute positions for epochs after last interval defined in SINEX file</xs:documentation>
 							</xs:annotation>
@@ -22958,37 +22963,9 @@
 								<xs:documentation>also compute positions for epochs before first interval defined in SINEX file</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="Sinex2StationPostSeismicDeformation">
-				<xs:annotation>
-					<xs:documentation>Convert ITRF post-seismic deformation SINEX file to Instrument VECTOR3d file.</xs:documentation>
-					<xs:appinfo>tag: Conversion</xs:appinfo>
-					<xs:appinfo>tag: Gnss</xs:appinfo>
-					<xs:appinfo>tag: Instrument</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileInstrument" type="filename">
+						<xs:element name="stationName" type="string" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>deformation time series</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileSinex" type="filename">
-							<xs:annotation>
-								<xs:documentation>ITRF post-seismic deformation SINEX file</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>compute deformation for these epochs</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="stationName" type="string"/>
-						<xs:element name="localLevelFrame" type="boolean" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>output in North, East, Up local-level frame</xs:documentation>
+								<xs:documentation>convert only these stations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -23046,6 +23023,11 @@
 						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>rotation from TRF to CRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}">
+							<xs:annotation>
+								<xs:documentation>degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
@@ -23149,6 +23131,87 @@
 						<xs:element name="inputfileStationInfo" type="filename" default="{groopsDataDir}/gnss/receiverStation/stationInfo/igs/stationInfo.{station}.xml"/>
 						<xs:element name="inputfileStation" type="filename"/>
 						<xs:element name="inputfileVmf" type="filename"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Sinex2StationPosition">
+				<xs:annotation>
+					<xs:documentation>DEPRECATED. Please use Sinex2StationPositions instead.</xs:documentation>
+					<xs:appinfo>tag: Deprecated</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileInstrument" type="filename">
+							<xs:annotation>
+								<xs:documentation>loop variable is replaced with station name (e.g. wtzz)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSinex" type="filename">
+							<xs:annotation>
+								<xs:documentation>SINEX file (.snx or .ssc)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileDiscontinuities" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>discontinuities file per station; loop variable is replaced with station name (e.g. wtzz)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopStation" type="string" minOccurs="0" default="station">
+							<xs:annotation>
+								<xs:documentation>variable name for station loop</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="stationName" type="string" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>convert only these stations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>compute positions for these epochs based on velocity</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="extrapolateForward" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>also compute positions for epochs after last interval defined in SINEX file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="extrapolateBackward" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>also compute positions for epochs before first interval defined in SINEX file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Sinex2StationPostSeismicDeformation">
+				<xs:annotation>
+					<xs:documentation>DEPRECATED. Please use Sinex2StationPositions instead.</xs:documentation>
+					<xs:appinfo>tag: Deprecated</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileInstrument" type="filename">
+							<xs:annotation>
+								<xs:documentation>deformation time series</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSinex" type="filename">
+							<xs:annotation>
+								<xs:documentation>ITRF post-seismic deformation SINEX file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>compute deformation for these epochs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="stationName" type="string"/>
+						<xs:element name="localLevelFrame" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>output in North, East, Up local-level frame</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
