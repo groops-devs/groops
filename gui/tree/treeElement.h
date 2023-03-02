@@ -87,7 +87,7 @@ static TreeElement *newTreeElement(Tree *tree, TreeElementComplex *parentElement
 
 public:
 /** @brief Generate XML-tree.
-* recursivly called for all children. */
+* recursively called for all children. */
 virtual XmlNodePtr getXML(Bool withEmptyNodes=false) const = 0;
 
 protected:
@@ -223,7 +223,7 @@ private:
   class UndoCommandSetComment;
   friend class UndoCommandSetComment;
 
-  // @rief Receive a new auto-comment.
+  // @brief Receive a new auto-comment.
   // auto-comment is send by setSelectedValue() to the parent.
   void setAutoComment(const QString &text);
 
@@ -238,7 +238,7 @@ void setComment(const QString &text);
 
 /** @brief Should this element send its value as auto-comment to the parent element?
 * Auto-comment is send by setSelectedValue() to the parent.
-* An Auto-comment never overwrites a real somment. */
+* An Auto-comment never overwrites a real comment. */
 void setPushAutoComments(Bool on=true);
 
 // ========================================================
@@ -354,11 +354,11 @@ void setElementAdd(TreeElementAdd *elementAdd);
 
 /** @brief If this is unbounded() returns the add element.
 * the add element contains the counter of elements in the unbounded list.
-* Overwitten by ElementAdd. */
+* Overwritten by ElementAdd. */
 virtual TreeElementAdd *elementAdd() const {return _elementAdd;}
 
 /** @brief Is this the add-element?.
-* Overwitten by ElementAdd. */
+* Overwritten by ElementAdd. */
 virtual Bool isElementAdd() const {return false;}
 
 // ========================================================
@@ -395,7 +395,7 @@ private:
 
 protected:
 /** @brief create a combo box.
-* The comobo box is filled with values and links.
+* The combo box is filled with values and links.
 * Connections are set. */
 QComboBox *createComboBox(Bool isEditable);
 
