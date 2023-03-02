@@ -18,13 +18,13 @@ This program runs a list of programs in a \configClass{loop}{loopType}.
 If \config{continueAfterError}=\verb|yes| and an error occurs, the remaining programs in the current iteration
 are skipped and the loop continues with the next iteration. Otherwise an exception is thrown.
 
-If this program is executed on multpile processing nodes, the iterations can be computed in parallel,
+If this program is executed on multiple processing nodes, the iterations can be computed in parallel,
 see \reference{parallelization}{general.parallelization}. The first process serves as load balancer
 and the other processes are assigned to iterations according to \config{processCountPerIteration}.
 For example, running a loop containing three iterations on 13 processes with \config{processCountPerIteration}=\verb|4|,
 runs the three iterations in parallel, with each iteration being assigned four processes.
 With \config{parallelLog}=\verb|yes| all processes write output to screen and the log file.
-As the ouput can be quite confusing in this case, running \program{GroupPrograms} with an extra \config{outputfileLog}
+As the output can be quite confusing in this case, running \program{GroupPrograms} with an extra \config{outputfileLog}
 for each iteration (use the loop variables for the name of the log files) might be helpful.
 )";
 
