@@ -20508,6 +20508,58 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="GnssReceiver2RinexObservation">
+				<xs:annotation>
+					<xs:documentation>Converts GnssReceiver Instrument file to RINEX.</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Gnss</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileRinexObservation" type="filename">
+							<xs:annotation>
+								<xs:documentation>RINEX observation file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileGnssReceiver" type="filename">
+							<xs:annotation>
+								<xs:documentation>GNSS instrument file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileStationInfo" type="filename">
+							<xs:annotation>
+								<xs:documentation>antenna and receiver info</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="comment" type="string" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>write comments at begin of header</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="observer" type="string" minOccurs="0" default="TUG">
+							<xs:annotation>
+								<xs:documentation>header information</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="angency" type="string" minOccurs="0" default="TUG">
+							<xs:annotation>
+								<xs:documentation>header information</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="useType" type="gnssType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>only use observations that match any of these patterns</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ignoreType" type="gnssType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>ignore observations that match any of these patterns</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GnssRinexNavigation2OrbitClock">
 				<xs:annotation>
 					<xs:documentation>Convert RINEX navigation file (e.g. broadcast ephemeris) to orbit and clock files.</xs:documentation>

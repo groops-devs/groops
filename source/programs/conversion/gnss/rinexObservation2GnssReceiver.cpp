@@ -300,9 +300,9 @@ void RinexObservation2GnssReceiver::readHeader(InFile &file, UInt lineCount)
       // ====================================
       else if(testLabel(label, "ANTENNA: DELTA H/E/N"))
       {
-        antennaRinex.position.z() = -readOptionalDouble(line, 0,14); // up -> down
-        antennaRinex.position.x() =  readOptionalDouble(line,14,14);
-        antennaRinex.position.y() =  readOptionalDouble(line,28,14);
+        antennaRinex.position.z() =  readOptionalDouble(line, 0,14);
+        antennaRinex.position.y() =  readOptionalDouble(line,14,14);
+        antennaRinex.position.x() =  readOptionalDouble(line,28,14);
       }
       // ====================================
       else if(testLabel(label, "ANTENNA: DELTA X/Y/Z"))
@@ -313,6 +313,14 @@ void RinexObservation2GnssReceiver::readHeader(InFile &file, UInt lineCount)
       }
       // ====================================
       else if(testLabel(label, "ANTENNA: B.SIGHT XYZ"))
+      {
+      }
+      // ====================================
+      else if(testLabel(label, "ANTENNA: ZERODIR AZI "))
+      {
+      }
+      // ====================================
+      else if(testLabel(label, "ANTENNA: ZERODIR XYZ"))
       {
       }
       // ====================================
