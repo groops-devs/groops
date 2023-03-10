@@ -464,6 +464,7 @@ programs/conversion/gnss/gnssGriddedDataTimeSeries2Ionex.cpp
 programs/conversion/gnss/gnssIonex2GriddedDataTimeSeries.cpp
 programs/conversion/gnss/gnssNormals2Sinex.cpp
 programs/conversion/gnss/gnssOrbex2StarCamera.cpp
+programs/conversion/gnss/gnssReceiver2RinexObservation.cpp
 programs/conversion/gnss/gnssRinexNavigation2OrbitClock.cpp
 programs/conversion/gnss/gnssSignalBias2SinexBias.cpp
 programs/conversion/gnss/gnssSinexBias2SignalBias.cpp

@@ -7598,6 +7598,33 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{GnssReceiver2RinexObservation}\label{GnssReceiver2RinexObservation}
+Converts a \configFile{inputfileGnssReceiver}{instrument} into a
+\href{https://files.igs.org/pub/data/format/rinex_4.00.pdf}{RINEX} observation file.
+The \configFile{inputfileStationInfo}{platform} contains the antenna
+and receiver information for the RINEX header.
+The \configClass{useType}{gnssType} and \configClass{ignoreType}{gnssType} can be used to filter
+the observation types that will be exported.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileRinexObservation & \hfuzz=500pt filename & \hfuzz=500pt RINEX observation file\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGnssReceiver & \hfuzz=500pt filename & \hfuzz=500pt GNSS instrument file\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStationInfo & \hfuzz=500pt filename & \hfuzz=500pt antenna and receiver info\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt write comments at begin of header\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~observer & \hfuzz=500pt string & \hfuzz=500pt header information\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~angency & \hfuzz=500pt string & \hfuzz=500pt header information\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~useType & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt only use observations that match any of these patterns\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~ignoreType & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt ignore observations that match any of these patterns\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{GnssRinexNavigation2OrbitClock}\label{GnssRinexNavigation2OrbitClock}
 Evaluates orbit and clock parameters from \href{https://files.igs.org/pub/data/format/rinex_4.00.pdf}{RINEX} (version 2, 3, and 4)
 navigation file \config{inputfileRinex} at epochs given by \configClass{timeSeries}{timeSeriesType} and writes them to
