@@ -39,10 +39,10 @@ std::string String::trim(const std::string &str)
 {
   try
   {
-    auto start = str.find_first_not_of(" \t");
+    auto start = str.find_first_not_of(" \t\r");
     if(start == std::string::npos)
       return "";
-    auto end = str.find_last_not_of(" \t");
+    auto end = str.find_last_not_of(" \t\r");
     return str.substr(start, end-start+1);
   }
   catch(std::exception &e)
@@ -57,7 +57,7 @@ std::string String::trimLeft(const std::string &str)
 {
   try
   {
-    auto start = str.find_first_not_of(" \t");
+    auto start = str.find_first_not_of(" \t\r");
     if(start == std::string::npos)
       return "";
     return str.substr(start);
@@ -74,7 +74,7 @@ std::string String::trimRight(const std::string &str)
 {
   try
   {
-    auto end = str.find_last_not_of(" \t");
+    auto end = str.find_last_not_of(" \t\r");
     if(end == std::string::npos)
       return "";
     return str.substr(0, end+1);
