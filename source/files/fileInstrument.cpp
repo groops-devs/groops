@@ -802,7 +802,7 @@ Arc InstrumentFile::readArc(UInt i)
     }
 
     Arc arc;
-    auto epoch = std::unique_ptr<Epoch>(Epoch::create(type));
+    std::unique_ptr<Epoch> epoch;
     while(index <= i)
     {
       arc = Arc();
@@ -811,6 +811,8 @@ Arc InstrumentFile::readArc(UInt i)
       file>>nameValue("pointCount", count);
       for(UInt i=0; i<count; i++)
       {
+        if(!epoch)
+          epoch = std::unique_ptr<Epoch>(Epoch::create(type));
         file>>nameValue("epoch", *epoch);
         arc.push_back(*epoch);
       }
