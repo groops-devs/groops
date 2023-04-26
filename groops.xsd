@@ -10834,6 +10834,31 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="GnssStationIdShort2Long">
+				<xs:annotation>
+					<xs:documentation>GNSS 4 character site ID to 9 character conversion</xs:documentation>
+					<xs:appinfo>tag: Gnss</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="variableSite9char" type="string" minOccurs="0" default="site9char">
+							<xs:annotation>
+								<xs:documentation>name of the 9 char site ID variable</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="site4char" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>4 char site ID</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSiteID" type="filename" default="{groopsDataDir}/SiteId4char9char.txt">
+							<xs:annotation>
+								<xs:documentation>used for site ID conversion</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GnssSimulateReceiver">
 				<xs:annotation>
 					<xs:documentation>GNSS receiver simulation</xs:documentation>
