@@ -9484,6 +9484,35 @@
 			<xs:documentation>signal delay in the atmosphere</xs:documentation>
 		</xs:annotation>
 		<xs:choice>
+			<xs:element name="saastamoinen">
+				<xs:annotation>
+					<xs:documentation>Saastamoinen troposphere model</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfileGpt" type="filename" default="{groopsDataDir}/troposphere/gpt3_grid1deg.dat">
+							<xs:annotation>
+								<xs:documentation>gridded GPT data</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="aHeight" type="double" minOccurs="0" default="2.53e-5">
+							<xs:annotation>
+								<xs:documentation>parameter a (height correction)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="bHeight" type="double" minOccurs="0" default="5.49e-3">
+							<xs:annotation>
+								<xs:documentation>parameter b (height correction)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="cHeight" type="double" minOccurs="0" default="1.14e-3">
+							<xs:annotation>
+								<xs:documentation>parameter c (height correction)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="viennaMapping">
 				<xs:annotation>
 					<xs:documentation>Vienna Mapping Function</xs:documentation>
