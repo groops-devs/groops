@@ -28,7 +28,7 @@ interpreted as a factor that is multiplied to the accuracy derived from the accu
 (see \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition} in \configClass{receiver}{gnssReceiverGeneratorType}).
 
 The \configClass{parametrization}{gnssParametrizationType} are used to simulate a priori models (e.g. troposphere, signal biases).
-Parameter settings and outputfiles are irgnored.
+Parameter settings and outputfiles are ignored.
 
 If the program is run on multiple processes the \configClass{receiver}{gnssReceiverGeneratorType}s
 (stations or LEO satellites) are distributed over the processes.

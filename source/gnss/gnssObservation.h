@@ -36,7 +36,7 @@ public:
   Double   residuals;   ///< estimated postfit residuals
   Double   redundancy;  ///< partial redundancies of the least squares adjustment
   Double   sigma0;      ///< expected (apriori) accuracies
-  Double   sigma;       ///< modfied accuracies (downweighted outliers)
+  Double   sigma;       ///< modified accuracies (downweighted outliers)
 
   GnssSingleObservation() {}
   GnssSingleObservation(GnssType _type, Double _observation=0., Double _residuals=0., Double _redundancy=0., Double _sigma0=0., Double _sigma=0.)

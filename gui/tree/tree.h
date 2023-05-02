@@ -173,7 +173,7 @@ Bool saveFile();
 Bool saveAsFile(const QString &fileName = QString());
 
 /**
-* @brief Exceute file.
+* @brief Execute file.
 *
 * opens the execute dialog.
 * @return success?

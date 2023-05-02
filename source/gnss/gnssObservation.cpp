@@ -143,6 +143,23 @@ Bool GnssObservation::init(const GnssReceiver &receiver, const GnssTransmitter &
       if(at(i).type == GnssType::PHASE)
         at(i).observation -= phaseWindup/(2*PI) * (at(i).type.wavelength());
 
+    // Simple C/N0 model
+    // Zenith-angle dependent quadratic model
+    // --------------------------------------
+
+    const Double zen_min = 80.0*DEG2RAD;  // [rad]
+    const Double cn0_min = 30.0;          // [dB-Hz]
+    const Double cn0_max = 45.0;          // [dB-Hz]
+
+    Double cn0 = cn0_max + pow((PI/2-elevationRecv)/zen_min,2)*(cn0_min-cn0_max);
+
+    for(UInt i=0; i<size(); i++) {
+      if(at(i).type == GnssType::SNR) {
+        // Reduce C/N0 for GPS P(Y) signal
+        at(i).observation = cn0 - (at(i).type == GnssType::W? 10.0 : 0);
+      };
+    };
+
     return TRUE;
   }
   catch(std::exception &e)
