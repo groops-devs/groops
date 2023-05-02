@@ -55,7 +55,7 @@ endif
 # Targets
 
 all: init \
-	 groops_ groopsgui_
+	 groops_ # groopsgui_
 
 # Create directory tree
 
