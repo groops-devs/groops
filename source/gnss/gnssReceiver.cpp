@@ -304,7 +304,7 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
         receiver->name.find("TPS "  )!=std::string::npos) {
 
       if      ( (type==GnssType::E1  ||
-                 type==GnssType::E1    ) && type==GnssType::X )
+                 type==GnssType::E6    ) && type==GnssType::X )
         return replaceAttribute(type, GnssType::C);
       else if ( (type==GnssType::E5a ||
                  type==GnssType::E5b ||
@@ -367,7 +367,7 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
 
     return type;
 
-  }
+  };
 
 };
 
