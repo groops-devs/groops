@@ -615,10 +615,6 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types, Bool
       if(useable(idEpoch))
         updateClockError(idEpoch, clock(idEpoch)/LIGHT_VELOCITY);
 
-    // Get receiver type
-    // -----------------
-    auto receiver = platform.findEquipment<PlatformGnssReceiver>(times.at(0));
-
     // Simulate zero observations
     // --------------------------
     Vector phaseWindup(transmitters.size());
