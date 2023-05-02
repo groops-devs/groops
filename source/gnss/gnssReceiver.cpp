@@ -240,7 +240,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
 
     if (receiver->name.find("SEPT ")!=std::string::npos) {
 
-      if (type==GnssType::L2 && (type==GnssType::S || type==GnssType::X))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::X ))
         return replaceAttribute(type, GnssType::L);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
         return replaceAttribute(type, GnssType::Q);
@@ -250,7 +251,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     }
     else if (receiver->name.find("LEICA ")!=std::string::npos) {
 
-      if (type==GnssType::L2 && (type==GnssType::L || type==GnssType::X))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::L  || type==GnssType::X))
         return replaceAttribute(type, GnssType::S);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
         return replaceAttribute(type, GnssType::Q);
@@ -260,7 +262,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     }
     else if (receiver->name.find("TPS ")!=std::string::npos) {
 
-      if (type==GnssType::L2 && (type==GnssType::S || type==GnssType::X))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::X))
         return replaceAttribute(type, GnssType::L);
       else
         return type;
@@ -268,7 +271,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     }
     else {
 
-      if (type==GnssType::L2 && (type==GnssType::S || type==GnssType::L))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::L))
         return replaceAttribute(type, GnssType::X);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::Q))
         return replaceAttribute(type, GnssType::X);
@@ -304,7 +308,7 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
         receiver->name.find("TPS "  )!=std::string::npos) {
 
       if      ( (type==GnssType::E1  ||
-                 type==GnssType::E1    ) && type==GnssType::X )
+                 type==GnssType::E6    ) && type==GnssType::X )
         return replaceAttribute(type, GnssType::C);
       else if ( (type==GnssType::E5a ||
                  type==GnssType::E5b ||
@@ -333,7 +337,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
 
     if (receiver->name.find("SEPT ")!=std::string::npos ) {
 
-      if (type==GnssType::L2 && (type==GnssType::S || type==GnssType::X))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::X))
         return replaceAttribute(type, GnssType::L);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
         return replaceAttribute(type, GnssType::Q);
@@ -343,7 +348,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     }
     else if (receiver->name.find("LEICA ")!=std::string::npos) {
 
-      if (type==GnssType::L2 && (type==GnssType::L || type==GnssType::X))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::L  || type==GnssType::X))
         return replaceAttribute(type, GnssType::S);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
         return replaceAttribute(type, GnssType::Q);
@@ -353,7 +359,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     }
     else {
 
-      if (type==GnssType::L2 && (type==GnssType::S || type==GnssType::L))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::L))
         return replaceAttribute(type, GnssType::X);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::Q))
         return replaceAttribute(type, GnssType::X);
@@ -367,7 +374,7 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
 
     return type;
 
-  }
+  };
 
 };
 
@@ -597,7 +604,7 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
 
 /***********************************************/
 
-void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
+void GnssReceiver::simulateObservations(const std::vector<GnssType> &types, Bool substituteTrackingMode,
                                         NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                                         const std::vector<GnssTransmitterPtr> &transmitters,
                                         const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
@@ -643,7 +650,11 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
         for(UInt idType=0; idType<types.size(); idType++)
           if(types.at(idType) == satType)
           {
-            GnssType type = substituteSignal(types.at(idType)) + satType;
+            GnssType type;
+            if (substituteTrackingMode)
+              type = substituteSignal(types.at(idType)) + satType;
+            else
+              type = types.at(idType) + satType;
 
             // remove GLONASS frequency number
             if((type == GnssType::GLONASS) && !((type == GnssType::G1) || (type == GnssType::G2)))
