@@ -222,12 +222,6 @@ void GnssReceiver::signalComposition(UInt /*idEpoch*/, const std::vector<GnssTyp
 
 /***********************************************/
 
-GnssType replaceAttribute(GnssType type, GnssType att) {
-  return (type & ~GnssType::ATTRIBUTE) + att;
-};
-
-/***********************************************/
-
 GnssType GnssReceiver::substituteSignal(GnssType type) const {
 
   auto receiver = platform.findEquipment<PlatformGnssReceiver>(times.at(0));
@@ -242,42 +236,42 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
 
       if ((type==GnssType::L1 || type==GnssType::L2) &&
           (type==GnssType::S  || type==GnssType::X ))
-        return replaceAttribute(type, GnssType::L);
+        type.replaceAttribute(GnssType::L);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
-        return replaceAttribute(type, GnssType::Q);
-      else
-        return type;
+        type.replaceAttribute(GnssType::Q);
+
+      return type;
 
     }
     else if (receiver->name.find("LEICA ")!=std::string::npos) {
 
       if ((type==GnssType::L1 || type==GnssType::L2) &&
-          (type==GnssType::L  || type==GnssType::X))
-        return replaceAttribute(type, GnssType::S);
+          (type==GnssType::L  || type==GnssType::X ))
+        type.replaceAttribute(GnssType::S);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
-        return replaceAttribute(type, GnssType::Q);
-      else
-        return type;
+        type.replaceAttribute(GnssType::Q);
+
+      return type;
 
     }
     else if (receiver->name.find("TPS ")!=std::string::npos) {
 
       if ((type==GnssType::L1 || type==GnssType::L2) &&
-          (type==GnssType::S  || type==GnssType::X))
-        return replaceAttribute(type, GnssType::L);
-      else
-        return type;
+          (type==GnssType::S  || type==GnssType::X ))
+        type.replaceAttribute(GnssType::L);
+
+      return type;
 
     }
     else {
 
       if ((type==GnssType::L1 || type==GnssType::L2) &&
-          (type==GnssType::S  || type==GnssType::L))
-        return replaceAttribute(type, GnssType::X);
+          (type==GnssType::S  || type==GnssType::L ))
+        type.replaceAttribute(GnssType::X);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::Q))
-        return replaceAttribute(type, GnssType::X);
-      else
-        return type;
+        type.replaceAttribute(GnssType::X);
+
+      return type;
 
     };
 
@@ -287,17 +281,17 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     if (receiver->name.find("SEPT ")!=std::string::npos) {
 
       if ( type==GnssType::G3 && (type==GnssType::I || type==GnssType::X) )
-        return replaceAttribute(type, GnssType::Q);
-      else
-        return type;
+        type.replaceAttribute(GnssType::Q);
+
+      return type;
 
     }
     else {
 
       if ( type==GnssType::G3 && (type==GnssType::I || type==GnssType::Q) )
-        return replaceAttribute(type, GnssType::X);
-      else
-        return type;
+        type.replaceAttribute(GnssType::X);
+
+      return type;
 
     };
   } // endl GLONASS
@@ -307,28 +301,28 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
         receiver->name.find("LEICA ")!=std::string::npos ||
         receiver->name.find("TPS "  )!=std::string::npos) {
 
-      if      ( (type==GnssType::E1  ||
-                 type==GnssType::E6    ) && type==GnssType::X )
-        return replaceAttribute(type, GnssType::C);
+      if ( (type==GnssType::E1  ||
+            type==GnssType::E6    ) && type==GnssType::X )
+        type.replaceAttribute(GnssType::C);
       else if ( (type==GnssType::E5a ||
                  type==GnssType::E5b ||
                  type==GnssType::E5    ) && type==GnssType::X )
-        return replaceAttribute(type, GnssType::Q);
-      else
-        return type;
+        type.replaceAttribute(GnssType::Q);
+
+      return type;
 
     }
     else {
 
-      if      ( (type==GnssType::E1 ||
-                 type==GnssType::E6   ) && type==GnssType::C )
-        return replaceAttribute(type, GnssType::X);
+      if ( (type==GnssType::E1 ||
+            type==GnssType::E6   ) && type==GnssType::C )
+        type.replaceAttribute(GnssType::X);
       else if ( (type==GnssType::E5a ||
                  type==GnssType::E5b ||
                  type==GnssType::E5    ) && type==GnssType::Q )
-        return replaceAttribute(type, GnssType::X);
-      else
-        return type;
+        type.replaceAttribute(GnssType::X);
+
+      return type;
 
     };
 
@@ -338,34 +332,34 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     if (receiver->name.find("SEPT ")!=std::string::npos ) {
 
       if ((type==GnssType::L1 || type==GnssType::L2) &&
-          (type==GnssType::S  || type==GnssType::X))
-        return replaceAttribute(type, GnssType::L);
+          (type==GnssType::S  || type==GnssType::X ))
+        type.replaceAttribute(GnssType::L);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
-        return replaceAttribute(type, GnssType::Q);
-      else
-        return type;
+        type.replaceAttribute(GnssType::Q);
+
+      return type;
 
     }
     else if (receiver->name.find("LEICA ")!=std::string::npos) {
 
       if ((type==GnssType::L1 || type==GnssType::L2) &&
-          (type==GnssType::L  || type==GnssType::X))
-        return replaceAttribute(type, GnssType::S);
+          (type==GnssType::L  || type==GnssType::X ))
+        type.replaceAttribute(GnssType::S);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
-        return replaceAttribute(type, GnssType::Q);
-      else
+        type.replaceAttribute(GnssType::Q);
+
         return type;
 
     }
     else {
 
       if ((type==GnssType::L1 || type==GnssType::L2) &&
-          (type==GnssType::S  || type==GnssType::L))
-        return replaceAttribute(type, GnssType::X);
+          (type==GnssType::S  || type==GnssType::L ))
+        type.replaceAttribute(GnssType::X);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::Q))
-        return replaceAttribute(type, GnssType::X);
-      else
-        return type;
+        type.replaceAttribute(GnssType::X);
+
+      return type;
 
     };
 
