@@ -240,7 +240,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
 
     if (receiver->name.find("SEPT ")!=std::string::npos) {
 
-      if (type==GnssType::L2 && (type==GnssType::S || type==GnssType::X))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::X ))
         return replaceAttribute(type, GnssType::L);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
         return replaceAttribute(type, GnssType::Q);
@@ -250,7 +251,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     }
     else if (receiver->name.find("LEICA ")!=std::string::npos) {
 
-      if (type==GnssType::L2 && (type==GnssType::L || type==GnssType::X))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::L  || type==GnssType::X))
         return replaceAttribute(type, GnssType::S);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
         return replaceAttribute(type, GnssType::Q);
@@ -260,7 +262,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     }
     else if (receiver->name.find("TPS ")!=std::string::npos) {
 
-      if (type==GnssType::L2 && (type==GnssType::S || type==GnssType::X))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::X))
         return replaceAttribute(type, GnssType::L);
       else
         return type;
@@ -268,7 +271,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     }
     else {
 
-      if (type==GnssType::L2 && (type==GnssType::S || type==GnssType::L))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::L))
         return replaceAttribute(type, GnssType::X);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::Q))
         return replaceAttribute(type, GnssType::X);
@@ -333,7 +337,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
 
     if (receiver->name.find("SEPT ")!=std::string::npos ) {
 
-      if (type==GnssType::L2 && (type==GnssType::S || type==GnssType::X))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::X))
         return replaceAttribute(type, GnssType::L);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
         return replaceAttribute(type, GnssType::Q);
@@ -343,7 +348,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     }
     else if (receiver->name.find("LEICA ")!=std::string::npos) {
 
-      if (type==GnssType::L2 && (type==GnssType::L || type==GnssType::X))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::L  || type==GnssType::X))
         return replaceAttribute(type, GnssType::S);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
         return replaceAttribute(type, GnssType::Q);
@@ -353,7 +359,8 @@ GnssType GnssReceiver::substituteSignal(GnssType type) const {
     }
     else {
 
-      if (type==GnssType::L2 && (type==GnssType::S || type==GnssType::L))
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::L))
         return replaceAttribute(type, GnssType::X);
       else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::Q))
         return replaceAttribute(type, GnssType::X);
