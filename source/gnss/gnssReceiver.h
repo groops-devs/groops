@@ -108,9 +108,6 @@ public:
   * Returns the @a typesTrans and the transformation matrix @a A (dimension: types.size() times typesTrans.size()). */
   virtual void signalComposition(UInt /*idEpoch*/, const std::vector<GnssType> &types, std::vector<GnssType> &typesTrans, Matrix &A) const;
 
-  /** @brief Substitute tracking attribute of signal type depending on receiver type */
-  GnssType substituteSignal(GnssType type) const;
-
   /** @brief All observations between receiver and transmitter at one epoch. */
   GnssObservation *observation(UInt idTrans, UInt idEpoch) const;
 
@@ -152,15 +149,21 @@ public:
   void readObservations(const FileName &fileName, const std::vector<GnssTransmitterPtr> &transmitters, const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
                         const Time &timeMargin, Angle elevationCutOff, const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group);
 
+  /** @brief Substitute tracking attribute of signal type depending on receiver type */
+  GnssType substituteSignal(GnssType type) const;
+
   /** @brief Simulate observations. Member variable @a times must be set.
   * Receiver and Transmitter positions, orientations, ... must be initialized beforehand.
   * Delete observations that don't match the types from receiver and transmitter definition. */
-  void simulateObservations(const std::vector<GnssType> &types, NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
+  void simulateObservations(const std::vector<GnssType> &types, Bool substituteTrackingMode,
+                            NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                             const std::vector<GnssTransmitterPtr> &transmitters,
                             const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
                             const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
                             UInt minObsCountPerTrack, Angle elevationCutOff, Angle elevationTrackMinimum,
-                            const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group);
+                            const std::vector<GnssType> &useType,
+                            const std::vector<GnssType> &ignoreType,
+                            GnssObservation::Group group);
 
   /** @brief Estimate coarse receiver clock errors from a Precise Point Positioning (PPP) code solution.
   * If @p estimateKinematicPosition is TRUE, the receiver position is estimated at each epoch, otherwise it is estimated once for all epochs.*/
