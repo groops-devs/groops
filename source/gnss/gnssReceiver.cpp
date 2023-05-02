@@ -604,7 +604,7 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
 
 /***********************************************/
 
-void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
+void GnssReceiver::simulateObservations(const std::vector<GnssType> &types, Bool substituteTrackingMode,
                                         NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                                         const std::vector<GnssTransmitterPtr> &transmitters,
                                         const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
@@ -650,7 +650,11 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
         for(UInt idType=0; idType<types.size(); idType++)
           if(types.at(idType) == satType)
           {
-            GnssType type = substituteSignal(types.at(idType)) + satType;
+            GnssType type;
+            if (substituteTrackingMode)
+              type = substituteSignal(types.at(idType)) + satType;
+            else
+              type = types.at(idType) + satType;
 
             // remove GLONASS frequency number
             if((type == GnssType::GLONASS) && !((type == GnssType::G1) || (type == GnssType::G2)))
