@@ -37,6 +37,13 @@ namespace Vce
   Matrix robustLeastSquares(const_MatrixSliceRef A, const_MatrixSliceRef l, UInt countGroup,
                             Double huber, Double huberPower, UInt maxIter, Vector &sigma);
 
+  /** @brief Robust least squares adjustment with multiple right hand sides.
+  * Each group starting at @p indexGroup and size `indexGroup.at(i+1)-indexGroup.at(i)`
+  * (e.g. 3 for x,y,z) of observations are down weighted
+  * if the estimated residuals are greater than @a huber times sigma0
+  * @f[ s = \sqrt(e'Pe/r) > h\sigma_0. @f] */
+  Matrix robustLeastSquares(const_MatrixSliceRef A, const_MatrixSliceRef l, const std::vector<UInt> &indexGroup,
+                            Double huber, Double huberPower, UInt maxIter, Vector &sigma);
 
   /** @brief Compute the cos transformation matrix.
   * The matrix is normalized.
