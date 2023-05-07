@@ -471,6 +471,11 @@ Double max(const_MatrixSliceRef A);
 * (operation is always applied to both triangles). */
 Double median(const_MatrixSliceRef A);
 
+/** @brief Median Absolute Deviation (MAD) of matrix elements. Returns NAN if @p A is empty.
+* The @a type of matrix is @b not considered
+* (operation is always applied to both triangles). */
+Double medianAbsoluteDeviation(const_MatrixSliceRef A);
+
 /** @brief axpy: B += c * A.
 * The @a type of matrix is @b not considered
 * (operation is always applied to both triangles). */
