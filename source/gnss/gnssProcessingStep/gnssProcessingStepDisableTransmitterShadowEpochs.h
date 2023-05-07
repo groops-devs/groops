@@ -120,6 +120,10 @@ inline void GnssProcessingStepDisableTransmitterShadowEpochs::process(GnssProces
             if((disableShadowEpochs && factor < 0.5) || (disablePostShadowEpochs && state.gnss->times.at(idEpoch) < timeShadowExit+recoveryTime))
             {
               trans->disable(idEpoch, "during shadow crossing and post-shadow recovery maneuver");
+              for(UInt idEpoch=0; idEpoch<state.gnss->times.size(); idEpoch++)
+                for(const auto &recv : state.gnss->receivers)
+                  if(recv->isMyRank() && recv->observation(trans->idTrans(), idEpoch))
+                    recv->deleteObservation(trans->idTrans(), idEpoch);
               countEpochs++;
             }
 
@@ -128,7 +132,10 @@ inline void GnssProcessingStepDisableTransmitterShadowEpochs::process(GnssProces
       }
 
     if(countEpochs)
+    {
+      state.gnss->synchronizeTransceivers(state.normalEquationInfo.comm);
       state.changedNormalEquationInfo = TRUE;
+    }
     logInfo<<"  "<<countEpochs<<" disabled transmitter epochs"<<Log::endl;
   }
   catch(std::exception &e)
