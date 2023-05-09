@@ -783,16 +783,28 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types, Bool
 
 /***********************************************/
 
-void GnssReceiver::estimateInitialClockErrorFromCodeObservations(const std::vector<GnssTransmitterPtr> &transmitters, const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
-                                                                 const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
-                                                                 Double huber, Double huberPower, Double maxPosDiff, Bool estimateKinematicPosition)
+std::vector<Vector3d> GnssReceiver::estimateInitialClockErrorFromCodeObservations(const std::vector<GnssTransmitterPtr> &transmitters,
+                                                                                  const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
+                                                                                  const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
+                                                                                  Double huber, Double huberPower, Bool estimateKinematicPosition)
 {
   try
   {
-    const UInt countStaticPosition = (estimateKinematicPosition ? 0 : 3);
-    Double posDiffStatic = 0;
-    Vector posDiff(idEpochSize());
-    Vector clockDiff(idEpochSize()); // in meters
+    // count systems
+    std::vector<GnssType> systems, types;
+    for(UInt idTrans=0; idTrans<transmitters.size(); idTrans++)
+      for(UInt idEpoch=0; idEpoch<idEpochSize(); idEpoch++)
+        if(useable(idEpoch) && observation(idTrans, idEpoch) && observation(idTrans, idEpoch)->observationList(GnssObservation::RANGE, types))
+        {
+          if(!types.at(0).isInList(systems))
+          systems.push_back(types.at(0) & GnssType::SYSTEM);
+          break;
+        }
+
+    std::vector<Vector3d> posOld = pos;
+
+    const UInt countStaticParameters = (estimateKinematicPosition ? 0 : 3) + systems.size()-1; // pos + inter clock biases
+    const UInt countEpochParameters  = (estimateKinematicPosition ? 3 : 0) + 1; // pos + clock error
 
     for(UInt iter=0; iter<10; iter++)
     {
@@ -800,7 +812,8 @@ void GnssReceiver::estimateInitialClockErrorFromCodeObservations(const std::vect
       // --------------------------------------------
       std::vector<Matrix> listl, listA;
       std::vector<Matrix> listlFull, listAFull, listBFull;
-      std::vector<UInt>   listEpoch, listObsCount;
+      std::vector<UInt>   listEpoch;
+      std::vector<std::vector<UInt>> listIndexFull;
       UInt maxSat = 0;
       for(UInt idEpoch=0; idEpoch<idEpochSize(); idEpoch++)
         if(useable(idEpoch))
@@ -808,105 +821,125 @@ void GnssReceiver::estimateInitialClockErrorFromCodeObservations(const std::vect
           // count observations and setup observation equations for each transmitter
           UInt                                 obsCount = 0;
           std::vector<GnssObservationEquation> eqnList;
-          std::vector<GnssType>                types, systems;
           for(UInt idTrans=0; idTrans<idTransmitterSize(idEpoch); idTrans++)
           {
-            GnssObservation *obs = observation(idTrans, idEpoch);
+            const GnssObservation *obs = observation(idTrans, idEpoch);
+            std::vector<GnssType> types;
             if(obs && obs->observationList(GnssObservation::RANGE, types))
             {
               eqnList.emplace_back(*obs, *this, *transmitters.at(idTrans), rotationCrf2Trf, reduceModels, idEpoch, TRUE, types);
-              eqnList.back().eliminateGroupParameters();
+              eqnList.back().eliminateGroupParameters(); // eliminate STEC
               obsCount += eqnList.back().l.rows();
-              if(!types.at(0).isInList(systems))
-                systems.push_back(types.at(0) & GnssType::SYSTEM);
             }
           }
 
-          // setup combined observation equations
-          Vector l(obsCount);
-          Matrix A(obsCount, countStaticPosition);                  // pos (if static)
-          Matrix B(obsCount, systems.size()+3-countStaticPosition); // clock (per system) + pos (if kinematic)
-
-          if(!obsCount || (eqnList.size() <= systems.size()+3-countStaticPosition)) // if not enough observations -> delete epoch
+          if(!obsCount || (eqnList.size() <= countEpochParameters)) // if not enough observations -> delete epoch
           {
             disable(idEpoch, "not enough observations to estimate clock errors");
             continue;
           }
 
+          // setup combined observation equations
+          Vector l(obsCount);
+          Matrix A(obsCount, countStaticParameters); // pos (if static) + intersystem clock bias (per system)
+          Matrix B(obsCount, countEpochParameters);  // epoch: clock + pos (if kinematic)
+
+          listIndexFull.push_back({0});
           UInt idx = 0;
           for(const auto &eqn : eqnList)
           {
             const UInt count = eqn.l.rows();
             copy(eqn.l, l.row(idx, count));
-            copy(eqn.A.column(GnssObservationEquation::idxClockRecv),  B.slice(idx, GnssType::index(systems, eqn.types.at(0)), count, 1)); // clock
-            copy(eqn.A.column(GnssObservationEquation::idxPosRecv, 3), (estimateKinematicPosition ? B.slice(idx, systems.size(), count, 3) : A.slice(idx, 0, count, 3))); // pos
+            copy(eqn.A.column(GnssObservationEquation::idxClockRecv),  B.slice(idx, 0, count, 1)); // clock
+            MatrixSlice Apos(estimateKinematicPosition ? B.slice(idx, 1, count, 3) : A.slice(idx, 0, count, 3));
+            if(isEarthFixed())
+              matMult(1., eqn.A.column(GnssObservationEquation::idxPosRecv, 3), rotationCrf2Trf(eqn.timeRecv).matrix().trans(), Apos);
+            else
+              copy(eqn.A.column(GnssObservationEquation::idxPosRecv, 3), Apos);
+            // intersystem clock shift
+            const UInt idxSys = GnssType::index(systems, eqn.types.front());
+            if(idxSys > 0)
+              copy(eqn.A.column(GnssObservationEquation::idxClockTrans),  A.slice(idx, estimateKinematicPosition ? (idxSys-1) : (3+idxSys-1), count, 1)); // clock bias
             idx += count;
+            listIndexFull.back().push_back(idx);
           }
 
           listEpoch.push_back(idEpoch);
           listlFull.push_back(l);
-          listAFull.push_back(A);
           listBFull.push_back(B);
           maxSat = std::max(maxSat, eqnList.size());
 
-          if(countStaticPosition)
+          if(A.size())
           {
+            listAFull.push_back(A);
             eliminationParameter(B, {A, l});
             listl.push_back(l);
             listA.push_back(A);
-            listObsCount.push_back(l.rows());
           }
         } // for(idEpoch)
 
-      if(!listEpoch.size() || (maxSat < 4))
+      if(!listEpoch.size() || (maxSat < countStaticParameters+countEpochParameters))
       {
-        disable("only "+maxSat%"%i satellites tracked"s);
-        return;
+       disable("only "+maxSat%"%i satellites tracked"s);
+       return posOld;
       }
 
       // estimate static parameters
       // --------------------------
-      Vector x;
-      if(countStaticPosition)
+      Double maxPosDiff = 0;
+      if(countStaticParameters)
       {
+        // copy equations in one system
+        const UInt count = std::accumulate(listl.begin(), listl.end(), UInt(0), [](UInt sum, const auto &x) {return sum+x.size();});
+        Vector l(count);
+        Matrix A(count, countStaticParameters);
+        std::vector<UInt> index({0});
         Vector sigma;
-        x = robustLeastSquares(listA, listl, listObsCount, huber, huberPower, 30, sigma);
-        posDiffStatic = norm(x.row(0,3));
+        for(UInt i=0; i<listl.size(); i++)
+        {
+          const UInt idx = index.back();
+          copy(listl.at(i), l.row(idx, listl.at(i).rows()));
+          copy(listA.at(i), A.row(idx, listA.at(i).rows()));
+          index.push_back(idx+listA.at(i).rows());
+        }
+        const Vector dx = Vce::robustLeastSquares(A, l, index, huber, huberPower, 30, sigma);
+        for(UInt i=0; i<listEpoch.size(); i++)               // update with static parameters
+          matMult(-1, listAFull.at(i), dx, listlFull.at(i));
+        if(!estimateKinematicPosition)                       // udpate static position
+        {
+          const Vector3d dpos(dx.row(0, 3));
+          maxPosDiff = dpos.r();
+          for(UInt i=0; i<listEpoch.size(); i++)
+            pos.at(listEpoch.at(i)) += dpos;
+        }
       }
 
-      // reconstruct kinematic parameters
-      // --------------------------------
+      // reconstruct epoch parameters
+      // ----------------------------
       for(UInt i=0; i<listEpoch.size(); i++)
       {
-        if(x.size()) // update with static parameters
-          matMult(-1, listAFull.at(i), x, listlFull.at(i));
-
         Vector sigma;
-        const Vector y = Vce::robustLeastSquares(listBFull.at(i), listlFull.at(i), 1, huber, huberPower, 10, sigma);
-
-        // set receiver clock error as mean of all system-specific clocks
-        const UInt clockCount = y.size()-(estimateKinematicPosition ? 3 : 0);
-        clockDiff(listEpoch.at(i)) = mean(y.row(0, clockCount));
-        updateClockError(listEpoch.at(i), clockDiff(listEpoch.at(i))/LIGHT_VELOCITY);
+        const Vector y = Vce::robustLeastSquares(listBFull.at(i), listlFull.at(i), listIndexFull.at(i), huber, huberPower, 10, sigma);
+        matMult(-1, listBFull.at(i), y, listlFull.at(i)); // compute residuals
+        updateClockError(listEpoch.at(i), y(0)/LIGHT_VELOCITY);
         if(estimateKinematicPosition)
-          posDiff(listEpoch.at(i)) = norm(y.row(clockCount, 3));
+        {
+          pos.at(listEpoch.at(i)) += Vector3d(y.row(1, 3));
+          maxPosDiff = std::max(maxPosDiff, norm(y.row(1, 3)));
+        }
       }
 
-      if(maxabs(clockDiff) <= maxPosDiff)
+      // check convergence
+      // -----------------
+      if(maxPosDiff < 5.0) // pos change smaller than 5 m
         break;
     } // for(iter)
 
-    if(posDiffStatic > maxPosDiff)
-    {
-      disable("due to position differences: "+posDiffStatic%"%f m"s);
-      return;
-    }
-
-    for(UInt idEpoch=0; idEpoch<idEpochSize(); idEpoch++)
-      if((std::fabs(clockDiff(idEpoch)) > maxPosDiff) || (posDiff(idEpoch) > maxPosDiff))
-        disable(idEpoch, "due to position or clock differences");
-
     preprocessingInfo("estimateInitialClockErrorFromCodeObservations()");
+
+    // restore apriori positions and return new positions
+    std::swap(pos, posOld);
+    return posOld;
   }
   catch(std::exception &e)
   {
@@ -940,7 +973,7 @@ void GnssReceiver::disableEpochsWithGrossCodeObservationOutliers(ObservationEqua
             count++;
           }
 
-        // disable receiver at epoch if outlierRatio or more of the observed satellites have gross code outliers
+        // disable epoch if outlierRatio or more of the observed satellites have gross code outliers
         if(outlierCount >= outlierRatio * count)
           disable(idEpoch, "too many gross code outliers");
       }
@@ -1206,21 +1239,51 @@ void GnssReceiver::rangeAndTec(ObservationEquationList &eqnList, UInt idTrans, c
 {
   try
   {
-    range = Vector(idEpochs.size());
-    tec   = Vector(idEpochs.size());
+    Matrix A(typesPhase.size(), 2, 1.);
+    for(UInt k=0; k<A.rows(); k++)
+      A(k, 1) = typesPhase.at(k).ionosphericFactor();
+
+    Matrix L(typesPhase.size(), idEpochs.size());
     for(UInt i=0; i<idEpochs.size(); i++)
+      for(UInt k=0; k<L.rows(); k++)
+        L(k, i) = eqnList(idTrans, idEpochs.at(i))->l(GnssType::index(eqnList(idTrans, idEpochs.at(i))->types, typesPhase.at(k)));
+
+    const Matrix x = leastSquares(A, L);
+    range = x.row(0).trans();
+    tec   = x.row(1).trans();
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+static Double computeBias(const Vector &data, Double maxRange)
+{
+  try
+  {
+    std::vector<Double> x = data;
+    std::sort(x.begin(), x.end());
+
+    // find max length interval with data within maxRange
+    auto iStartMax = x.begin();
+    auto iEndMax   = x.begin();
+    auto iEnd      = x.begin();
+    for(auto iStart=x.begin(); iStart!=x.end(); iStart++)
     {
-      const GnssObservationEquation &eqn = *eqnList(idTrans, idEpochs.at(i));
-      Vector l(typesPhase.size());
-      for(UInt k=0; k<l.rows(); k++)
-        l(k) = eqn.l(GnssType::index(eqn.types, typesPhase.at(k)));
-      Matrix A(typesPhase.size(), 2, 1.);
-      for(UInt k=0; k<l.rows(); k++)
-        A(k, 1) = typesPhase.at(k).ionosphericFactor();
-      const Vector x = leastSquares(A, l);
-      range(i) = x(0);
-      tec(i)   = x(1);
-    } // for(idEpoch)
+      while((iEnd!=x.end()) && ((*iEnd)-(*iStart) < maxRange))
+        iEnd++;
+      if(std::distance(iStart, iEnd) > std::distance(iStartMax, iEndMax))
+      {
+        iStartMax = iStart;
+        iEndMax   = iEnd;
+      }
+    }
+
+    //  mean of this interval
+    return std::accumulate(iStartMax, iEndMax, 0.)/std::distance(iStartMax, iEndMax);
   }
   catch(std::exception &e)
   {
@@ -1316,11 +1379,10 @@ void GnssReceiver::cycleSlipsDetection(ObservationEquationList &eqnList, GnssTra
     Vector slips(idEpochs.size());
     for(UInt k=0; k<combinations.columns(); k++)
     {
-      Vector smoothed = combinations.column(k);
-      if(k == 0)
-        smoothed = totalVariationDenoising(smoothed, lambda);
+      const Vector smoothed = totalVariationDenoising(combinations.column(k), lambda);
+      const Double bias     = computeBias(smoothed, 0.01);
       for(UInt i=1; i<idEpochs.size(); i++) // cycle slip if denoised difference exceeds 3/4 cycle
-        if(std::fabs(smoothed(i)-smoothed(i-1)) > 0.75)
+        if(std::fabs(std::round(smoothed(i)-bias) - std::round(smoothed(i-1)-bias)) > 0.75)
           slips(i) = TRUE;
     }
 
@@ -1335,26 +1397,25 @@ void GnssReceiver::cycleSlipsDetection(ObservationEquationList &eqnList, GnssTra
     // ----------------------------------------------------------------------------------
     Vector range, tec;
     rangeAndTec(eqnList, track->transmitter->idTrans(), idEpochs, typesPhase, range, tec);
-    if(windowSize)
-    {
-      const UInt order = 3; // AR model order
-      std::vector<UInt> slips;
-      if(tec.size() >= order+windowSize)
-      {
-        // high pass filter via AR model
-        Vector l = tec.row(order, tec.size()-order);
-        Matrix A = Matrix(l.rows(), order);
-        for(UInt k=0; k<order; k++)
-          copy(tec.row(order-k-1, tec.rows()-order), A.column(k));
-        leastSquares(A, l); // l contains AR model residuals after function call
 
-        // peak/outlier detection using moving standard deviation over AR model residuals.
-        // automatic threshold scaling via standard deviation is used to prevent excessive
-        // splitting during periods with high ionospheric variations/scintillations
-        for(UInt idxStart=0; idxStart<l.size()-windowSize; idxStart++)
-          if(l(idxStart+windowSize/2) > std::max(0.9*cycles2tecu, tecSigmaFactor*standardDeviation(l.row(idxStart, windowSize))))
-            slips.push_back(idxStart+windowSize/2+order);
-      }
+    const UInt order = 3; // AR model order
+    if(windowSize && (tec.size() >= order+windowSize))
+    {
+      // high pass filter via AR model
+      Vector l = tec.row(order, tec.size()-order);
+      Matrix A = Matrix(l.rows(), order);
+      for(UInt k=0; k<order; k++)
+        copy(tec.row(order-k-1, tec.rows()-order), A.column(k));
+      leastSquares(A, l); // l contains AR model residuals after function call
+
+      // peak/outlier detection using moving standard deviation over AR model residuals.
+      // automatic threshold scaling via standard deviation is used to prevent excessive
+      // splitting during periods with high ionospheric variations/scintillations
+      std::vector<UInt> slips;
+      for(UInt i=0; i<l.size(); i++)
+        if((std::fabs(l(i)) > 0.9*cycles2tecu) &&
+           (std::fabs(l(i)) > tecSigmaFactor*1.4826*medianAbsoluteDeviation(l.row(std::min(std::max(i, windowSize/2)-windowSize/2, l.rows()-windowSize), windowSize))))
+          slips.push_back(i+order);
 
       for(UInt i=slips.size(); i-->0;)
       {

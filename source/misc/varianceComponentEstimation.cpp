@@ -71,10 +71,29 @@ Matrix Vce::robustLeastSquares(const_MatrixSliceRef A, const_MatrixSliceRef l, U
 {
   try
   {
+    std::vector<UInt> indexGroup(l.rows()/countGroup+1);
+    indexGroup.at(0) = 0;
+    for(UInt i=1; i<indexGroup.size(); i++)
+      indexGroup.at(i) = indexGroup.at(i-1) + countGroup;
+    return robustLeastSquares(A, l, indexGroup, huber, huberPower, maxIter, sigma);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+Matrix Vce::robustLeastSquares(const_MatrixSliceRef A, const_MatrixSliceRef l, const std::vector<UInt> &indexGroup,
+                               Double huber, Double huberPower, UInt maxIter, Vector &sigma)
+{
+  try
+  {
     Matrix x;
     UInt   countOutlier = 0;
     Double sigma0 = 0;
-    sigma = Vector(l.rows()/countGroup, 1.);
+    sigma = Vector(indexGroup.size()-1, 1.);
     for(UInt iter=0; iter<maxIter; iter++)
     {
       // weighting
@@ -82,18 +101,18 @@ Matrix Vce::robustLeastSquares(const_MatrixSliceRef A, const_MatrixSliceRef l, U
       Matrix WA = A;
       for(UInt i=0; i<sigma.rows(); i++)
       {
-        Wl.row(i*countGroup, countGroup) *= 1./sigma(i);
-        WA.row(i*countGroup, countGroup) *= 1./sigma(i);
+        Wl.row(indexGroup.at(i), indexGroup.at(i+1)-indexGroup.at(i)) *= 1./sigma(i);
+        WA.row(indexGroup.at(i), indexGroup.at(i+1)-indexGroup.at(i)) *= 1./sigma(i);
       }
 
       // QR decomposition
-      Vector tau = QR_decomposition(WA);
-      QTransMult(WA, tau, Wl); // transform observations: l:= Q'l
+      const Vector tau = QR_decomposition(WA);
+      QTransMult(WA, tau, Wl);           // transform observations: l:= Q'l
       x = Wl.row(0, WA.columns());
       triangularSolve(1., WA.row(0, WA.columns()), x);
       Wl.row(0, WA.columns()).setNull(); // residuals: remove WB*x
-      QMult(WA, tau, Wl); // back transformation
-      generateQ(WA, tau); // for redundancies
+      QMult(WA, tau, Wl);                // back transformation
+      generateQ(WA, tau);                // for redundancies
 
       if(sigma0 == 0.)
         sigma0 = std::sqrt(quadsum(Wl)/(Wl.size()-x.size()));
@@ -104,8 +123,8 @@ Matrix Vce::robustLeastSquares(const_MatrixSliceRef A, const_MatrixSliceRef l, U
       Double rSum   = 0.;
       for(UInt i=0; i<sigma.rows(); i++)
       {
-        const Double ePe = quadsum(Wl.row(i*countGroup, countGroup))/Wl.columns();
-        const Double r   = countGroup - quadsum(WA.row(i*countGroup, countGroup));
+        const Double ePe = quadsum(Wl.row(indexGroup.at(i), indexGroup.at(i+1)-indexGroup.at(i)))/Wl.columns();
+        const Double r   = indexGroup.at(i+1)-indexGroup.at(i) - quadsum(WA.row(indexGroup.at(i), indexGroup.at(i+1)-indexGroup.at(i)));
         const Double s   = std::sqrt(ePe/r)*sigma(i)/sigma0;
         ePeSum += ePe;
         rSum   += r;

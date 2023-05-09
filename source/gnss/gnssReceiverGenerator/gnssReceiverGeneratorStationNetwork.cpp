@@ -368,9 +368,13 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
         {
           auto recv = receivers.at(idRecv);
           fileNameVariableList["station"]->setValue(recv->name());
+          std::vector<Vector3d> posApriori = recv->pos;
           if(fileNameClock.empty())
-            recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, codeMaxPosDiff, FALSE/*estimateKinematicPosition*/);
+            recv->pos = recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, FALSE/*estimateKinematicPosition*/);
+          // observation equations based on positions from code observations
           GnssReceiver::ObservationEquationList eqn(*recv, gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, GnssObservation::RANGE | GnssObservation::PHASE);
+          recv->pos = std::move(posApriori); // restore apriori positions
+
           recv->disableEpochsWithGrossCodeObservationOutliers(eqn, codeMaxPosDiff, 0.5);
           recv->createTracks(gnss->transmitters, minObsCountPerTrack, {GnssType::L5_G});
           recv->writeTracks(fileNameTrackBefore, eqn, {GnssType::L5_G});

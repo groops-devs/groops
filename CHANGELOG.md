@@ -2,15 +2,28 @@
 - New program:      InstrumentRemoveEpochsThruster.
 - New program:      InstrumentApplyTimeOffset.
 - New program:      InstrumentAccelerometerEstimateParameters (replaces InstrumentAccelerometerEstimateBiasScale).
-- New program:      GraceOrbit2TransplantTimeOffset
-- New program:      GraceThrusterResponse2Accelerometer
+- New program:      GraceOrbit2TransplantTimeOffset.
+- New program:      GraceThrusterResponse2Accelerometer.
+- New program:      GnssReceiver2RinexObservation.
+- New program:      Sinex2StationPositions: replaces Sinex2StationPosition and Sinex2StationPostSeismicDeformation.
+- New program:      ObservationEquations2Files.
+- New program:      Variational2OrbitAndStarCamera (renamed Variational2Orbit): added possibility to also extract Earth rotation.
+- New program:      PlatformCreate: replaces gnssStationInfoCreate.
 - New class:        In InstrumentResample/interpolatorTimeSeries: FillGapsLeastSquaresPolynomialFit.
 - New class:        In MiscAccelerations: AtmosphericDragFromDensityFile.
+- New class:        In MiscAccelerations: RadiationPressure, replaces SolarRadiatinPressure, Albedo
+- New class:        In Loop: PlatformEquipment (replaces FileGnssStationInfo).
 - Bugfix:           GnssRinexNavigation2OrbitClock: updated to be usable for rinex4 and fixes for rinex3.
 - Bugfix:           Plot: various fixes for GMT Versions >6.1.
 - Bugfix:           GriddedData: unwrap longitude before computing area elements.
 - Bugfix:           InstrumentResample/polynomial: corrected interpolation vs. extrapolation.
+- Bugfix:           GnssResiduals2Skyplot: consider also the PRN in type.
+- Bugfix:           GssProcessingStepDisableTransmitterShadowEpochs.
 - Other:            Reworked of GRACE-(FO) L1A conversion.
+- Other:            GnssReceiver: Improved preprocessing (initial clock and cycleslip detection).
+- Other:            GnssParametrizationStaticPositions: better selection of noNet stations.
+- Other:            PlotMisc: set minimum size of points in legend to 3p.
+- Other:            Preparation to replace GnssStationInfo file format by the more general Platform file format.
 
 # Release 2022-07-28
 - New programs:     GriddedData2GriddedDataTimeSeries and GriddedDataTimeSeries2GriddedData.

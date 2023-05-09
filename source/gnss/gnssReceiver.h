@@ -167,9 +167,10 @@ public:
 
   /** @brief Estimate coarse receiver clock errors from a Precise Point Positioning (PPP) code solution.
   * If @p estimateKinematicPosition is TRUE, the receiver position is estimated at each epoch, otherwise it is estimated once for all epochs.*/
-  void estimateInitialClockErrorFromCodeObservations(const std::vector<GnssTransmitterPtr> &transmitters, const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
-                                                     const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
-                                                     Double huber, Double huberPower, Double maxPosDiff, Bool estimateKinematicPosition);
+  std::vector<Vector3d> estimateInitialClockErrorFromCodeObservations(const std::vector<GnssTransmitterPtr> &transmitters,
+                                                                      const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
+                                                                      const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
+                                                                      Double huber, Double huberPower, Bool estimateKinematicPosition);
 
   /** @brief Disable epochs if reduced code observations @p eqn exceed @p threshold (e.g. 100+ km for code cycle slips).
   * Disable receiver at epoch if @p outlierRatio or more of the observed satellites have gross code outliers. */
