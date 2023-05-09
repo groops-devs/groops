@@ -745,7 +745,29 @@ Double median(const_MatrixSliceRef A)
   {
     GROOPS_RETHROW(e)
   }
+}
 
+/***********************************************/
+
+Double medianAbsoluteDeviation(const_MatrixSliceRef A)
+{
+  try
+  {
+    if(!A.size())
+      return NAN_EXPR;
+    // median
+    std::vector<Double> data = flatten(A);
+    std::partial_sort(data.begin(), data.begin()+data.size()/2+1, data.end());
+    const Double median = (data.size()%2) ? data.at(data.size()/2) : (0.5*(data.at(data.size()/2-1)+data.at(data.size()/2)));
+    // absolute deviation
+    std::for_each(data.begin(), data.end(), [&](auto &x) {x = std::abs(x-median);});
+    std::partial_sort(data.begin(), data.begin()+data.size()/2+1, data.end());
+    return (data.size()%2) ? data.at(data.size()/2) : (0.5*(data.at(data.size()/2-1)+data.at(data.size()/2)));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
 
 /***********************************************/
