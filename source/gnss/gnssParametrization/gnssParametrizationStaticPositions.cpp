@@ -89,19 +89,16 @@ void GnssParametrizationStaticPositions::init(Gnss *gnss, Parallel::Communicator
     // ----------------
     if(sigmaNoNetRotation || sigmaNoNetTranslation)
     {
-      selectedNoNetReceivers = gnss->selectReceivers(selectNoNetReceivers);
-      for(auto recv : gnss->receivers)
-        if(selectedNoNetReceivers.at(recv->idRecv()) && !recv->useable())
-          selectedNoNetReceivers.at(recv->idRecv()) = FALSE;
-      for(auto recv : gnss->receivers)
-        if(selectedNoNetReceivers.at(recv->idRecv()) && !selectedReceivers.at(recv->idRecv()))
-          throw(Exception(recv->name()+" for no-net constraints must be selected for position estimation too"));
+      std::vector<const Platform*> platforms(gnss->receivers.size(), nullptr);
+      for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
+        if(gnss->receivers.at(idRecv)->useable())
+          platforms.at(idRecv) = &gnss->receivers.at(idRecv)->platform;
 
       // no net positions
       noNetPos = pos;
       if(!fileNameNoNetPositions.empty())
         for(UInt idRecv=0; idRecv<selectedNoNetReceivers.size(); idRecv++)
-          if(selectedNoNetReceivers.at(idRecv))
+          if(platforms.at(idRecv))
           {
             try
             {
@@ -115,9 +112,14 @@ void GnssParametrizationStaticPositions::init(Gnss *gnss, Parallel::Communicator
             }
             catch(std::exception &/*e*/)
             {
-              selectedNoNetReceivers.at(idRecv) = FALSE;
+              platforms.at(idRecv) = nullptr;
             }
           }
+
+      selectedNoNetReceivers = selectNoNetReceivers->select(gnss->times.front(), gnss->times.back(), platforms);
+      for(auto recv : gnss->receivers)
+        if(selectedNoNetReceivers.at(recv->idRecv()) && !selectedReceivers.at(recv->idRecv()))
+          throw(Exception(recv->name()+" for no-net constraints must be selected for position estimation too"));
 
       const UInt countStation = std::count(selectedNoNetReceivers.begin(), selectedNoNetReceivers.end(), TRUE);
       logInfo<<"  "<<countStation<<" stations contribute to the computation of net translation/rotation"<<Log::endl;

@@ -37,7 +37,7 @@ virtual XmlNodePtr getXML(Bool withEmptyNodes=false) const override;
 /** @brief Values can be edited. */
 virtual Bool isEditable() const override {return true;}
 
-/** @brief creates an editable combo box with addtional file selector. */
+/** @brief creates an editable combo box with additional file selector. */
 virtual QWidget *createEditor() override;
 
 /** @brief Opens file selector dialog. */
