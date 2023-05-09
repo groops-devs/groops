@@ -201,8 +201,12 @@ void GnssReceiverGeneratorLowEarthOrbiter::preprocessing(Gnss *gnss, Parallel::C
       try
       {
         recv->createTracks(gnss->transmitters, minObsCountPerTrack, {GnssType::L5_G});
-        recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, codeMaxPosDiff, TRUE/*estimateKinematicPosition*/);
+        std::vector<Vector3d> posApriori = recv->pos;
+        recv->pos = recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, TRUE/*estimateKinematicPosition*/);
+        // observation equations based on positions from code observations
         GnssReceiver::ObservationEquationList eqn(*recv, gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, GnssObservation::RANGE | GnssObservation::PHASE);
+        recv->pos = std::move(posApriori); // restore apriori positions
+
         recv->disableEpochsWithGrossCodeObservationOutliers(eqn, codeMaxPosDiff, 0.5);
         recv->writeTracks(fileNameTrackBefore, eqn, {GnssType::L5_G});
         recv->cycleSlipsDetection(eqn, minObsCountPerTrack, denoisingLambda, tecWindowSize, tecSigmaFactor, {GnssType::L5_G});

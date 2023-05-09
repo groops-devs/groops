@@ -72,7 +72,7 @@ void GriddedDataInterpolate::run(Config &config, Parallel::CommunicatorPtr /*com
 
     // interpolate
     // -----------
-    for(UInt i=0; i<pointList.points.size(); i++)
+    Single::forEach(pointList.points.size(), [&](UInt i)
     {
       Angle  L, B;
       Double h;
@@ -86,7 +86,7 @@ void GriddedDataInterpolate::run(Config &config, Parallel::CommunicatorPtr /*com
 
       for(UInt k=0; k<grid.values.size(); k++)
         pointList.values.at(k).at(i) = grid.values.at(k)(row, col);
-    }
+    });
 
     // write
     // -----
