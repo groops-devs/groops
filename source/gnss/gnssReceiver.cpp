@@ -764,16 +764,38 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types, Bool
       {
         const Matrix eps = noiseObs->noise(times.size(), typesTrans.at(idTrans).size()); // obs noise
         UInt idx;
-        for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
+        for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++) {
           if(observation(idTrans, idEpoch))
           {
             const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
             GnssObservation *obs = observation(idTrans, idEpoch);
             for(UInt idType=0; idType<obs->size(); idType++)
-              if(obs->at(idType).type.isInList(eqn.types, idx))
-                obs->at(idType).observation = -eqn.l(idx) + eqn.sigma(idx) * eps(idEpoch, GnssType::index(typesTrans.at(idTrans), obs->at(idType).type));
-          }
-      }
+            {
+              if(!obs->at(idType).type.isInList(eqn.types, idx)) continue;
+
+              obs->at(idType).observation = -eqn.l(idx) + eqn.sigma(idx) * eps(idEpoch, GnssType::index(typesTrans.at(idTrans), obs->at(idType).type));
+
+              if (obs->at(idType).type == GnssType::SNR)
+              {
+
+                // Simple C/N0 model
+                // Zenith-angle dependent quadratic model
+                // --------------------------------------
+
+                const Double zen_min = 80.0*DEG2RAD;  // [rad]
+                const Double cn0_min = 30.0;          // [dB-Hz]
+                const Double cn0_max = 45.0;          // [dB-Hz]
+
+                Double cn0 = cn0_max + pow((PI/2-eqn.elevationRecvAnt)/zen_min,2)*(cn0_min-cn0_max);
+
+                // Reduce C/N0 for GPS P(Y) signal
+                obs->at(idType).observation = cn0 - (obs->at(idType).type == GnssType::W? 10.0 : 0);
+
+              } // end if (obs->at(idType).type == GnssType::SNR)
+            } // end for(UInt idType=0; idType<obs->size(); idType++)
+          } // end if(observation(idTrans, idEpoch))
+        } // end for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
+      } // end if(typesTrans.at(idTrans).size())
   }
   catch(std::exception &e)
   {
