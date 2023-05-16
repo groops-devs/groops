@@ -103,7 +103,7 @@ public:
   /** @brief Rotation from local/body frame to left-handed antenna system (usually north, east, up). */
   Transform3d local2antennaFrame(UInt idEpoch) const {return local2antenna.at(idEpoch);}
 
-  /** @brief Transformation matrix for observed (composed) types from orignal transmitted types.
+  /** @brief Transformation matrix for observed (composed) types from original transmitted types.
   * E.g. C2DG = C1CG - C1WG + C2WG.
   * Returns the @a typesTrans and the transformation matrix @a A (dimension: types.size() times typesTrans.size()). */
   virtual void signalComposition(UInt /*idEpoch*/, const std::vector<GnssType> &types, std::vector<GnssType> &typesTrans, Matrix &A) const;
@@ -120,7 +120,7 @@ public:
   /** @brief Delete observation. */
   void deleteObservation(UInt idTrans, UInt idEpoch);
 
-  /** @brief Delete alle empty tracks (and ambiguities). */
+  /** @brief Delete all empty tracks (and ambiguities). */
   void deleteEmptyTracks();
 
   // Preprocessing
@@ -141,21 +141,29 @@ public:
 
   void preprocessingInfo(const std::string &info, UInt countEpochs=NULLINDEX, UInt countObservations=NULLINDEX, UInt countTracks=NULLINDEX);
 
+
+
   /** @brief Reads observations from a file. Member variable @a times must be set.
   * Initializes observations. Receiver and Transmitter positions, orientations, ... must be initialized beforehand.
   * Delete observations that don't match the types from receiver and transmitter definition. */
   void readObservations(const FileName &fileName, const std::vector<GnssTransmitterPtr> &transmitters, const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
                         const Time &timeMargin, Angle elevationCutOff, const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group);
 
+  /** @brief Substitute tracking attribute of signal type depending on receiver type */
+  GnssType substituteSignal(GnssType type) const;
+
   /** @brief Simulate observations. Member variable @a times must be set.
   * Receiver and Transmitter positions, orientations, ... must be initialized beforehand.
   * Delete observations that don't match the types from receiver and transmitter definition. */
-  void simulateObservations(const std::vector<GnssType> &types, NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
+  void simulateObservations(const std::vector<GnssType> &types, Bool substituteTrackingMode,
+                            NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                             const std::vector<GnssTransmitterPtr> &transmitters,
                             const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
                             const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
                             UInt minObsCountPerTrack, Angle elevationCutOff, Angle elevationTrackMinimum,
-                            const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group);
+                            const std::vector<GnssType> &useType,
+                            const std::vector<GnssType> &ignoreType,
+                            GnssObservation::Group group);
 
   /** @brief Estimate coarse receiver clock errors from a Precise Point Positioning (PPP) code solution.
   * If @p estimateKinematicPosition is TRUE, the receiver position is estimated at each epoch, otherwise it is estimated once for all epochs.*/
@@ -168,7 +176,7 @@ public:
   * Disable receiver at epoch if @p outlierRatio or more of the observed satellites have gross code outliers. */
   void disableEpochsWithGrossCodeObservationOutliers(ObservationEquationList &eqn, Double threshold, Double outlierRatio=0.5);
 
-  /** @brief Create tracks with continously identical phase observations.
+  /** @brief Create tracks with continuously identical phase observations.
   * Tracks may contain gaps but must contain observations in at least @p minObsCountPerTrack epochs.
   * Extra types are included (e.g. L5*G), but tracks must have at least two others phases at different frequencies.*/
   void createTracks(const std::vector<GnssTransmitterPtr> &transmitters, UInt minObsCountPerTrack, const std::vector<GnssType> &extraTypes={});

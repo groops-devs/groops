@@ -221,6 +221,157 @@ void GnssReceiver::signalComposition(UInt /*idEpoch*/, const std::vector<GnssTyp
 }
 
 /***********************************************/
+
+GnssType GnssReceiver::substituteSignal(GnssType type) const {
+
+  auto receiver = platform.findEquipment<PlatformGnssReceiver>(times.at(0));
+
+  if (receiver->name.find("UNKNOWN ")!=std::string::npos ||
+      receiver->name.find_first_not_of(' ')==std::string::npos) {
+    return type;
+  }
+  else if (type==GnssType::GPS) {
+
+    if (receiver->name.find("SEPT ")!=std::string::npos) {
+
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::X ))
+        type.replaceAttribute(GnssType::L);
+      else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
+        type.replaceAttribute(GnssType::Q);
+
+      return type;
+
+    }
+    else if (receiver->name.find("LEICA ")!=std::string::npos) {
+
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::L  || type==GnssType::X ))
+        type.replaceAttribute(GnssType::S);
+      else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
+        type.replaceAttribute(GnssType::Q);
+
+      return type;
+
+    }
+    else if (receiver->name.find("TPS ")!=std::string::npos) {
+
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::X ))
+        type.replaceAttribute(GnssType::L);
+
+      return type;
+
+    }
+    else {
+
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::L ))
+        type.replaceAttribute(GnssType::X);
+      else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::Q))
+        type.replaceAttribute(GnssType::X);
+
+      return type;
+
+    };
+
+  } // end GPS
+  else if (type==GnssType::GLONASS) {
+
+    if (receiver->name.find("SEPT ")!=std::string::npos) {
+
+      if ( type==GnssType::G3 && (type==GnssType::I || type==GnssType::X) )
+        type.replaceAttribute(GnssType::Q);
+
+      return type;
+
+    }
+    else {
+
+      if ( type==GnssType::G3 && (type==GnssType::I || type==GnssType::Q) )
+        type.replaceAttribute(GnssType::X);
+
+      return type;
+
+    };
+  } // endl GLONASS
+  else if (type==GnssType::GALILEO) {
+
+    if (receiver->name.find("SEPT " )!=std::string::npos ||
+        receiver->name.find("LEICA ")!=std::string::npos ||
+        receiver->name.find("TPS "  )!=std::string::npos) {
+
+      if ( (type==GnssType::E1  ||
+            type==GnssType::E6    ) && type==GnssType::X )
+        type.replaceAttribute(GnssType::C);
+      else if ( (type==GnssType::E5a ||
+                 type==GnssType::E5b ||
+                 type==GnssType::E5    ) && type==GnssType::X )
+        type.replaceAttribute(GnssType::Q);
+
+      return type;
+
+    }
+    else {
+
+      if ( (type==GnssType::E1 ||
+            type==GnssType::E6   ) && type==GnssType::C )
+        type.replaceAttribute(GnssType::X);
+      else if ( (type==GnssType::E5a ||
+                 type==GnssType::E5b ||
+                 type==GnssType::E5    ) && type==GnssType::Q )
+        type.replaceAttribute(GnssType::X);
+
+      return type;
+
+    };
+
+  } // End GALILEO
+  else if (type==GnssType::QZSS) {
+
+    if (receiver->name.find("SEPT ")!=std::string::npos ) {
+
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::X ))
+        type.replaceAttribute(GnssType::L);
+      else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
+        type.replaceAttribute(GnssType::Q);
+
+      return type;
+
+    }
+    else if (receiver->name.find("LEICA ")!=std::string::npos) {
+
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::L  || type==GnssType::X ))
+        type.replaceAttribute(GnssType::S);
+      else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::X))
+        type.replaceAttribute(GnssType::Q);
+
+        return type;
+
+    }
+    else {
+
+      if ((type==GnssType::L1 || type==GnssType::L2) &&
+          (type==GnssType::S  || type==GnssType::L ))
+        type.replaceAttribute(GnssType::X);
+      else if (type==GnssType::L5 && (type==GnssType::I || type==GnssType::Q))
+        type.replaceAttribute(GnssType::X);
+
+      return type;
+
+    };
+
+  } // End QZSS
+  else {
+
+    return type;
+
+  };
+
+};
+
 /***********************************************/
 
 GnssReceiver::ObservationEquationList::ObservationEquationList(const GnssReceiver &receiver, const std::vector<GnssTransmitterPtr> &transmitters,
@@ -447,7 +598,7 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
 
 /***********************************************/
 
-void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
+void GnssReceiver::simulateObservations(const std::vector<GnssType> &types, Bool substituteTrackingMode,
                                         NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                                         const std::vector<GnssTransmitterPtr> &transmitters,
                                         const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
@@ -489,7 +640,12 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
         for(UInt idType=0; idType<types.size(); idType++)
           if(types.at(idType) == satType)
           {
-            GnssType type = types.at(idType) + satType;
+            GnssType type;
+            if (substituteTrackingMode)
+              type = substituteSignal(types.at(idType)) + satType;
+            else
+              type = types.at(idType) + satType;
+
             // remove GLONASS frequency number
             if((type == GnssType::GLONASS) && !((type == GnssType::G1) || (type == GnssType::G2)))
               type.setFrequencyNumber(9999);
@@ -591,8 +747,10 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
     for(auto &track : tracks)
     {
       Vector value(track->types.size());
-      for(UInt i=0; i<value.size(); i++)
-        value(i) = wavelengthFactor*track->types.at(i).wavelength() * ambiguityRandom(generator); // cycles to meter
+      for(UInt i=0; i<value.size(); i++) {
+      //value(i) = wavelengthFactor*track->types.at(i).wavelength() * ambiguityRandom(generator); // cycles to meter
+        value(i) = 0.0;
+      };
       new Ambiguity(track.get(), value); // track is owner of ambiguity
     }
 
