@@ -613,11 +613,8 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
             GnssObservation *obs = observation(idTrans, idEpoch);
             for(UInt idType=0; idType<obs->size(); idType++)
             {
-              if(!obs->at(idType).type.isInList(eqn.types, idx)) continue;
 
-              obs->at(idType).observation = -eqn.l(idx) + eqn.sigma(idx) * eps(idEpoch, GnssType::index(typesTrans.at(idTrans), obs->at(idType).type));
-
-              if (obs->at(idType).type == GnssType::SNR)
+              if(obs->at(idType).type == GnssType::SNR)
               {
 
                 // Simple C/N0 model
@@ -631,9 +628,16 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
                 Double cn0 = cn0_max + pow((PI/2-eqn.elevationRecvAnt)/zen_min,2)*(cn0_min-cn0_max);
 
                 // Reduce C/N0 for GPS P(Y) signal
+                // --------------------------------------
+
                 obs->at(idType).observation = cn0 - (obs->at(idType).type == GnssType::W? 10.0 : 0);
 
-              } // end if (obs->at(idType).type == GnssType::SNR)
+              }
+              else if(obs->at(idType).type.isInList(eqn.types, idx))
+              {
+                obs->at(idType).observation = -eqn.l(idx) + eqn.sigma(idx) * eps(idEpoch, GnssType::index(typesTrans.at(idTrans), obs->at(idType).type));
+              }
+
             } // end for(UInt idType=0; idType<obs->size(); idType++)
           } // end if(observation(idTrans, idEpoch))
         } // end for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
