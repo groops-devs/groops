@@ -7636,6 +7636,8 @@ but system-specific TRFs (WGS84, PZ-90, etc.) are not aligned to a common TRF.
 If \config{messageType} is set (e.g., to LNAV, CNAV, or other types defined in the RINEX 4 standard), only navigation records of this type are used.
 Otherwise, if multiple records are defined for the same epoch, the first one is used.
 
+Also take note that all orbits are written out even satellites whose health flag would suggest otherwise.
+
 See also \program{OrbitAddVelocityAndAcceleration}.
 
 
