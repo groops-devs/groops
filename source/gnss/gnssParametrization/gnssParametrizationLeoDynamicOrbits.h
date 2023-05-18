@@ -67,7 +67,7 @@ class GnssParametrizationLeoDynamicOrbits : public GnssParametrizationBase
   EphemeridesPtr                 ephemerides;
   Double                         minEstimableEpochsRatio;
   UInt                           integrationDegree, interpolationDegree;
-  std::vector<Parameter*>        parameters;
+  std::vector<Parameter*>        parameters; // for each receiver
 
 public:
   GnssParametrizationLeoDynamicOrbits(Config &config);
