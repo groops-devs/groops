@@ -23,6 +23,7 @@
 - Other:            Reworked of GRACE-(FO) L1A conversion.
 - Other:            GnssReceiver: Improved preprocessing (initial clock and cycleslip detection).
 - Other:            GnssParametrizationStaticPositions: better selection of noNet stations.
+- Other:            GnssParametrizationLeoDynamicOrbits: handling of mutliple arcs.
 - Other:            PlotMisc: set minimum size of points in legend to 3p.
 - Other:            Preparation to replace GnssStationInfo file format by the more general Platform file format.
 
