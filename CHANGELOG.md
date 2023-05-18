@@ -19,6 +19,7 @@
 - Bugfix:           InstrumentResample/polynomial: corrected interpolation vs. extrapolation.
 - Bugfix:           GnssResiduals2Skyplot: consider also the PRN in type.
 - Bugfix:           GssProcessingStepDisableTransmitterShadowEpochs.
+- Bugfix:           Sinex2StationPositions: Correct sign for approx. positions.
 - Other:            Reworked of GRACE-(FO) L1A conversion.
 - Other:            GnssReceiver: Improved preprocessing (initial clock and cycleslip detection).
 - Other:            GnssParametrizationStaticPositions: better selection of noNet stations.
