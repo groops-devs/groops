@@ -152,7 +152,7 @@ public:
 class PlatformGnssReceiver : public PlatformEquipment
 {
 public:
-  static constexpr Type TYPE = GNSSRECEIVER;
+  static constexpr Type     type = GNSSRECEIVER;
   std::string               version; // software version
   GnssReceiverDefinitionPtr receiverDef;
 

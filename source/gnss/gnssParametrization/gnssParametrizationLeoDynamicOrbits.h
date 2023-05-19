@@ -48,16 +48,14 @@ class GnssParametrizationLeoDynamicOrbits : public GnssParametrizationBase
   class Parameter
   {
   public:
-    GnssReceiverPtr                recv;
-    GnssParameterIndex             index;
-    std::vector<ParameterName>     parameterNames;
-    Vector                         x;
-    // for each arc:
-    std::vector<UInt>              startEpoch, endEpoch;
-    std::vector<std::vector<Time>> times;
-    std::vector<Matrix>            PosDesign, VelDesign;
-    std::vector<Vector>            pos, vel;
-    std::vector<Polynomial>        polynomial;
+    GnssReceiverPtr            recv;
+    GnssParameterIndex         index;
+    std::vector<ParameterName> parameterNames;
+    std::vector<Time>          times;
+    Matrix                     PosDesign, VelDesign;
+    Vector                     pos, vel;
+    Vector                     x;
+    Polynomial                 polynomial;
   };
 
   Gnss                          *gnss;
@@ -69,7 +67,7 @@ class GnssParametrizationLeoDynamicOrbits : public GnssParametrizationBase
   EphemeridesPtr                 ephemerides;
   Double                         minEstimableEpochsRatio;
   UInt                           integrationDegree, interpolationDegree;
-  std::vector<Parameter*>        parameters; // for each receiver
+  std::vector<Parameter*>        parameters;
 
 public:
   GnssParametrizationLeoDynamicOrbits(Config &config);
