@@ -23,6 +23,8 @@ but system-specific TRFs (WGS84, PZ-90, etc.) are not aligned to a common TRF.
 If \config{messageType} is set (e.g., to LNAV, CNAV, or other types defined in the RINEX 4 standard), only navigation records of this type are used.
 Otherwise, if multiple records are defined for the same epoch, the first one is used.
 
+Also take note that all orbits are written out even satellites whose health flag would suggest otherwise.
+
 See also \program{OrbitAddVelocityAndAcceleration}.
 )";
 
@@ -53,13 +55,13 @@ class GnssRinexNavigation2OrbitClock
             Vector clockPoly,
             Matrix orbitData,
             const Time &gnssT0,
-            std::string msg) :  msgType(msg), clockParam(clockPoly), toc_val(time_clock), data(orbitData), sat(prn)
+            std::string msg) :  msgType(msg), clockParam(clockPoly), tocValue(time_clock), data(orbitData), sat(prn)
     {
       parseData(rinexVersion, prn, gnssT0);
     }
 
     NavData(const GnssType prn, Vector clockPoly, const Time &time_clock, Matrix orbitData, std::string msg) : msgType(msg), clockParam(clockPoly),
-                                                                                                               toc_val(time_clock), data(orbitData), sat(prn)
+                                                                                                               tocValue(time_clock), data(orbitData), sat(prn)
     {
 
     }
@@ -67,10 +69,10 @@ class GnssRinexNavigation2OrbitClock
     const std::string msgType;
 
 
-    Time   toc()      const  {return toc_val;}
-    Double toe()      const  {return toe_val;}
-    Double toe_week() const  {return toe_week_val;}
-    Double toe_sec()  const  {return toe_sec_val;}
+    Time   toc()      const  {return tocValue;}
+    Double toe()      const  {return toeValue;}
+    Double toe_week() const  {return toeWeekValue;}
+    Double toe_sec()  const  {return toeSecValue;}
     Double crs()      const  {checkIfKeplerEphem(); return data(0, 1);}
     Double delta_n()  const  {checkIfKeplerEphem(); return data(0, 2);}
     Double m0()       const  {checkIfKeplerEphem(); return data(0, 3);}
@@ -108,10 +110,10 @@ class GnssRinexNavigation2OrbitClock
     void checkIfKeplerEphem() const {if(sat == GnssType::GLONASS || sat == GnssType::SBAS) throw std::runtime_error("Ephemeris not kepler parametrizised! Check usage of access methods!");}
     void checkIfStateEphem() const {if(sat != GnssType::GLONASS && sat != GnssType::SBAS) throw std::runtime_error("Ephemeris are not state vectors! Check usage of access methods!");}
 
-    Double toe_val = 0.;
-    Double toe_week_val = 0.;
-    Double toe_sec_val = 0.;
-    Time toc_val;
+    Double toeValue = 0.;
+    Double toeWeekValue = 0.;
+    Double toeSecValue = 0.;
+    Time tocValue;
     Matrix data;
     GnssType sat;
   };
@@ -142,7 +144,8 @@ class GnssRinexNavigation2OrbitClock
                                        {GnssType::GALILEO, 3.986004418e14},
                                        {GnssType::BDS,     3.986004418e14},
                                        {GnssType::QZSS,    3.986005e14},
-                                       {GnssType::IRNSS,   3.986005e14}};
+                                       {GnssType::IRNSS,   3.986005e14},
+                                       {GnssType::GLONASS, 3.9860044e14}};
 
   const std::map<GnssType, Double> omega_e {{GnssType::GPS,     7.2921151467e-5},
                                             {GnssType::GALILEO, 7.2921151467e-5},
@@ -150,8 +153,12 @@ class GnssRinexNavigation2OrbitClock
                                             {GnssType::QZSS,    7.2921151467e-5},
                                             {GnssType::IRNSS,   7.2921151467e-5}};
 
+  // Parameters for GNSS that use state vectors instead of kepler elements
+  const std::map<GnssType, Double> C20 {{GnssType::GLONASS, -1082.63e-6}};
+  const std::map<GnssType, Double> a_e {{GnssType::GLONASS, 6378136}};
 
-  const std::vector<GnssType> notImplementedSystems = {GnssType::SBAS, GnssType::GLONASS};
+
+  const std::vector<GnssType> notImplementedSystems = {GnssType::SBAS};
 
   Double rinexVersion;
   Char   system;
@@ -165,7 +172,7 @@ class GnssRinexNavigation2OrbitClock
   void readData(InFile &file, const std::vector<std::string> &usePrn, std::set<GnssType> &unsupported);
   Bool getLine(InFile &file, std::string &line, std::string &label) const;
   Bool testLabel(const std::string &labelInLine, const std::string &label, Bool optional=TRUE) const;
-  OrbitEpoch rungeKutta4(const Time &time, const OrbitEpoch &refEpoch, const Vector3d &sunMoonAcceleration, EarthRotationPtr earthRotation) const;
+  OrbitEpoch rungeKutta4(const Time &time, const OrbitEpoch &refEpoch, const Vector3d &sunMoonAcceleration, EarthRotationPtr earthRotation, const Double GM, const Double C20, const Double a_e) const;
 
 public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
@@ -230,7 +237,11 @@ void GnssRinexNavigation2OrbitClock::run(Config &config, Parallel::CommunicatorP
           for(UInt idx = 0; idx < satellite.second.size(); idx++)
           {
 
-            Double dt = (times.at(idEpoch) - refTime.at(satellite.first & GnssType::SYSTEM)).seconds() - satellite.second.at(idx).toe();
+            Double dt = 0.;
+            if(satellite.first == GnssType::GLONASS)
+              dt = (times.at(idEpoch) - satellite.second.at(idx).toc()).seconds();
+            else
+              dt = (times.at(idEpoch) - refTime.at(satellite.first & GnssType::SYSTEM)).seconds() - satellite.second.at(idx).toe();
 
             if(selection == NULLINDEX || fabs(dt) < currentDt)
             {
@@ -261,15 +272,12 @@ void GnssRinexNavigation2OrbitClock::run(Config &config, Parallel::CommunicatorP
             const Double integrationStep = 60;
             OrbitEpoch intermediateEpoch = refEpoch;
             for(UInt i = 1; i*integrationStep < std::fabs(dt); i++)
-              intermediateEpoch = rungeKutta4(refEpoch.time+seconds2time(i*integrationStep*dt/std::fabs(dt)), intermediateEpoch, refEpoch.acceleration, earthRotation);
-            epoch = rungeKutta4(epoch.time, intermediateEpoch, refEpoch.acceleration, earthRotation);
+              intermediateEpoch = rungeKutta4(refEpoch.time+seconds2time(i*integrationStep*dt/std::fabs(dt)), intermediateEpoch, refEpoch.acceleration, earthRotation, GM.at(GnssType::GLONASS), C20.at(GnssType::GLONASS), a_e.at(GnssType::GLONASS));
+            epoch = rungeKutta4(epoch.time, intermediateEpoch, refEpoch.acceleration, earthRotation, GM.at(GnssType::GLONASS), C20.at(GnssType::GLONASS), a_e.at(GnssType::GLONASS));
             // NOTE: integration can lead to errors up to ~10 m after 15 minutes, unclear if that's the accuracy limit or there's an issue somewhere in the code
           }
           else // all systems using GPS-like ephemerides
           {
-
-
-
             Double dt = (epoch.time - refTime.at(satellite.first & GnssType::SYSTEM)).seconds() - epochNavData.toe();
             while(dt > 302400)
               dt -= 604800;
@@ -278,7 +286,7 @@ void GnssRinexNavigation2OrbitClock::run(Config &config, Parallel::CommunicatorP
 
             const Double n = std::sqrt(GM.at(satellite.first & GnssType::SYSTEM) / std::pow(epochNavData.a(), 3)) + epochNavData.delta_n();
 
-            const Double M = fmod(epochNavData.m0() + n * dt, 2. * PI);
+            const Double M = std::fmod(epochNavData.m0() + n * dt, 2. * PI);
 
             Double E = M;
             for(UInt i = 0; i < 10; i++)
@@ -573,10 +581,13 @@ void GnssRinexNavigation2OrbitClock::readData(InFile &file, const std::vector<st
           orbitParam(i,j) = String::toDouble(line.substr((rinexVersion < 3 ? 3 : 4)+j*19, 19));
       }
 
+      if(satellites.count(prn) == 0)
+        satellites.insert({prn, std::vector<NavData>()});
+
       if(prn == GnssType::GLONASS)
-        satellites[prn].push_back(NavData(prn, clockParam, time, orbitParam,messageType));
+        satellites.at(prn).push_back(NavData(prn, clockParam, time, orbitParam,messageType));
       else
-        satellites[prn].push_back(NavData(rinexVersion, prn, time, clockParam, orbitParam, refTime.at(prn & GnssType::SYSTEM), messageType));
+        satellites.at(prn).push_back(NavData(rinexVersion, prn, time, clockParam, orbitParam, refTime.at(prn & GnssType::SYSTEM), messageType));
     }
   }
   catch(std::exception &e)
@@ -622,14 +633,13 @@ Bool GnssRinexNavigation2OrbitClock::testLabel(const std::string &labelInLine, c
 
 /***********************************************/
 
-OrbitEpoch GnssRinexNavigation2OrbitClock::rungeKutta4(const Time &time, const OrbitEpoch &refEpoch, const Vector3d &sunMoonAcceleration, EarthRotationPtr earthRotation) const
+OrbitEpoch GnssRinexNavigation2OrbitClock::rungeKutta4(const Time &time, const OrbitEpoch &refEpoch, const Vector3d &sunMoonAcceleration, EarthRotationPtr earthRotation,
+                                                       const Double GM, const Double C20, const Double a_e) const
 {
   try
   {
     const Double dt = (time - refEpoch.time).seconds();
-    const Double GM = 3.9860044e14;
-    const Double C20 = -1082.63e-6;
-    const Double a_e = 6378136;
+
 
     auto acceleration = [&](const OrbitEpoch &epoch)
     {
@@ -703,9 +713,9 @@ void GnssRinexNavigation2OrbitClock::NavData::parseData(Double rinexVersion, Gns
   {
     if(rinexVersion < 4 && (prn != GnssType::GLONASS && prn != GnssType::SBAS))
     {
-      toe_sec_val = data(2, 0);
-      toe_week_val = data(4, 2);
-      toe_val = data(4, 2) * 604800 + data(2, 0);
+      toeSecValue = data(2, 0);
+      toeWeekValue = data(4, 2);
+      toeValue = data(4, 2) * 604800 + data(2, 0);
       return;
     }
 
@@ -713,16 +723,16 @@ void GnssRinexNavigation2OrbitClock::NavData::parseData(Double rinexVersion, Gns
        && (msgType.compare("LNAV") == 0 || msgType.compare("D1") == 0 || msgType.compare("D2") == 0 || msgType.compare("FNAV") == 0 ||
        msgType.compare("INAV") == 0))
     {
-      toe_sec_val = data(2, 0);
-      toe_week_val = data(4, 2);
-      toe_val = data(4, 2) * 604800. + data(2, 0);
+      toeSecValue = data(2, 0);
+      toeWeekValue = data(4, 2);
+      toeValue = data(4, 2) * 604800. + data(2, 0);
       return;
     }
 
     if(rinexVersion >= 4. && (prn == GnssType::GPS || prn == GnssType::QZSS)
        && (msgType.compare("CNAV") == 0 || msgType.compare("CNV1") == 0 || msgType.compare("CNV2") == 0))
     {
-      time2GnssWeekSecond(gnssT0, toc_val, toe_week_val, toe_sec_val);
+      time2GnssWeekSecond(gnssT0, tocValue, toeWeekValue, toeSecValue);
       return;
     }
 
@@ -731,8 +741,8 @@ void GnssRinexNavigation2OrbitClock::NavData::parseData(Double rinexVersion, Gns
        && (msgType.compare("CNV1") == 0 || msgType.compare("CNV2") == 0 || msgType.compare("CNV3") == 0))
     {
       Double toe_sec_tmp;
-      time2GnssWeekSecond(gnssT0, toc_val, toe_week_val, toe_sec_tmp);
-      toe_sec_val = data(2, 0);
+      time2GnssWeekSecond(gnssT0, tocValue, toeWeekValue, toe_sec_tmp);
+      toeSecValue = data(2, 0);
       return;
     }
 

@@ -72,13 +72,13 @@
             <h1>LoopPrograms</h1><p>
 
 This program runs a list of programs in a <a class="groops-class" href="loopType.html">loop</a>.</p><p>If <strong class="groops-config-element">continueAfterError</strong>=<code>yes</code> and an error occurs, the remaining programs in the current iteration
-are skipped and the loop continues with the next iteration. Otherwise an exception is thrown.</p><p>If this program is executed on multpile processing nodes, the iterations can be computed in parallel,
+are skipped and the loop continues with the next iteration. Otherwise an exception is thrown.</p><p>If this program is executed on multiple processing nodes, the iterations can be computed in parallel,
 see <a class="groops-ref" href="general.parallelization.html">parallelization</a>. The first process serves as load balancer
 and the other processes are assigned to iterations according to <strong class="groops-config-element">processCountPerIteration</strong>.
 For example, running a loop containing three iterations on 13 processes with <strong class="groops-config-element">processCountPerIteration</strong>=<code>4</code>,
 runs the three iterations in parallel, with each iteration being assigned four processes.
 With <strong class="groops-config-element">parallelLog</strong>=<code>yes</code> all processes write output to screen and the log file.
-As the ouput can be quite confusing in this case, running <a class="groops-program" href="GroupPrograms.html">GroupPrograms</a> with an extra <strong class="groops-config-element">outputfileLog</strong>
+As the output can be quite confusing in this case, running <a class="groops-program" href="GroupPrograms.html">GroupPrograms</a> with an extra <strong class="groops-config-element">outputfileLog</strong>
 for each iteration (use the loop variables for the name of the log files) might be helpful.
 </p>
 <table class="table table-hover">
