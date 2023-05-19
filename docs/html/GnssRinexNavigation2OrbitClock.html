@@ -75,7 +75,7 @@ Evaluates orbit and clock parameters from <a href="https://files.igs.org/pub/dat
 navigation file <strong class="groops-config-element">inputfileRinex</strong> at epochs given by <a class="groops-class" href="timeSeriesType.html">timeSeries</a> and writes them to
 <a class="groops-class" href="fileFormat_instrument.html">outputfileOrbit</a> and <a class="groops-class" href="fileFormat_instrument.html">outputfileClock</a>, respectively.</p><p>Orbits are rotated from TRF (as broadcasted) to CRF via <a class="groops-class" href="earthRotationType.html">earthRotation</a>,
 but system-specific TRFs (WGS84, PZ-90, etc.) are not aligned to a common TRF.</p><p>If <strong class="groops-config-element">messageType</strong> is set (e.g., to LNAV, CNAV, or other types defined in the RINEX 4 standard), only navigation records of this type are used.
-Otherwise, if multiple records are defined for the same epoch, the first one is used.</p><p>See also <a class="groops-program" href="OrbitAddVelocityAndAcceleration.html">OrbitAddVelocityAndAcceleration</a>.
+Otherwise, if multiple records are defined for the same epoch, the first one is used.</p><p>Also take note that all orbits are written out even satellites whose health flag would suggest otherwise.</p><p>See also <a class="groops-program" href="OrbitAddVelocityAndAcceleration.html">OrbitAddVelocityAndAcceleration</a>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
