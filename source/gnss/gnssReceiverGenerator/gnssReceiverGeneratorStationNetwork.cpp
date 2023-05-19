@@ -423,7 +423,8 @@ void GnssReceiverGeneratorStationNetwork::simulation(const std::vector<GnssType>
       {
         try
         {
-          receivers.at(idRecv)->simulateObservations(types, noiseClock, noiseObs, gnss->transmitters,
+          receivers.at(idRecv)->simulateObservations(types, gnss->substituteTrackingMode,
+                                                     noiseClock, noiseObs, gnss->transmitters,
                                                      gnss->funcRotationCrf2Trf, gnss->funcReduceModels,
                                                      minObsCountPerTrack, elevationCutOff, elevationTrackMinimum, useType, ignoreType,
                                                      GnssObservation::RANGE | GnssObservation::PHASE);

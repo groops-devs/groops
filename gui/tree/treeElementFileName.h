@@ -45,9 +45,11 @@ virtual void interact() override;
 
 private:
   QPointer<QPushButton> openFileButton;
+  QPointer<QPushButton> openFolderButton;
 
 private slots:
   void openFileClicked();
+  void openFolderClicked();
 };
 
 /***********************************************/
