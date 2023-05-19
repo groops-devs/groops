@@ -352,7 +352,7 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
     // ----------------------------------------
     l -= receiver->antennaVariations(timeRecv, azimutRecvAnt,  elevationRecvAnt,  types);
     l -= T * transmitter->antennaVariations(timeTrans, azimutTrans, elevationTrans, typesTransmitted);
-    l -= T * transmitter->signalBiases(types);
+    l -= T * transmitter->signalBiases(typesTransmitted);
     if(track && track->ambiguity)
       l -= track->ambiguity->ambiguities(types);     // reduce ambiguities
     if(reduceModels)
