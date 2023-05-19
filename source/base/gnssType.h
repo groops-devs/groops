@@ -297,12 +297,12 @@ public:
   /** @brief Returns true if both vectors are of the same size and contain only the same types, independent of sorting. */
   static Bool allEqual(const std::vector<GnssType> &types1, const std::vector<GnssType> &types2, GnssType mask=GnssType::ALL);
 
-  /** @brief Replaces observed (composed) types by orignal transmitted types.
+  /** @brief Replaces observed (composed) types by original transmitted types.
   * Codes replaced e.g. C2DG = C1CG - C1WG + C2CW.
   * Phase types returned without tracking attribute and all other observations are removed. */
   static std::vector<GnssType> replaceCompositeSignals(const std::vector<GnssType> &types);
 
-  /** @brief Returns true if a wilcard (*) is used in the parts given by @a mask. */
+  /** @brief Returns true if a wildcard (*) is used in the parts given by @a mask. */
   Bool hasWildcard(GnssType mask=GnssType::ALL) const;
 
   GnssType &operator+=(const GnssType &t);

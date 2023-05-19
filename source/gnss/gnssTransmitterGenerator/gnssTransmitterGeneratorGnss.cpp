@@ -63,11 +63,11 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
   {
     logStatus<<"init transmitters"<<Log::endl;
 
-    // read antenna defintion
+    // read antenna definition
     std::vector<GnssAntennaDefinitionPtr> antennaDefList;
     readFileGnssAntennaDefinition(fileNameAntennaDef, antennaDefList);
 
-    // read receiver defintion
+    // read receiver definition
     std::vector<GnssReceiverDefinitionPtr> signalDefList;
     if(!fileNameSignalDef.empty())
       readFileGnssReceiverDefinition(fileNameSignalDef, signalDefList);

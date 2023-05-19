@@ -108,38 +108,51 @@ void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::Communicato
         fileNameVariableList["station"]->setValue(para->recv->name());
         VariationalEquationFromFile file;
         file.open(fileNameVariational(fileNameVariableList), nullptr/*parametrizationGravity*/, parametrizationAcceleration, pulsesInterval, ephemerides, integrationDegree);
-
-        auto variationalEquation = file.integrateArc(timeStart, timeEnd, TRUE/*computePosition*/, TRUE/*computeVelocity*/);
-        para->times     = variationalEquation.times;
-        para->PosDesign = variationalEquation.PosDesign;
-        para->VelDesign = variationalEquation.VelDesign;
-        para->pos       = variationalEquation.pos0;
-        para->vel       = variationalEquation.vel0;
-        para->x         = Vector(para->PosDesign.columns());
-        para->polynomial.init(para->times, interpolationDegree);
-
-        std::vector<Time> times;
-        for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
-          if(para->recv->useable(idEpoch))
-            times.push_back(para->recv->timeCorrected(idEpoch));
-
-        const Vector pos = para->polynomial.interpolate(times, para->pos, 3);
-        const Vector vel = para->polynomial.interpolate(times, para->vel, 3);
-        UInt i=0;
-        for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
-          if(para->recv->useable(idEpoch))
-          {
-            para->recv->pos.at(idEpoch) = Vector3d(pos.row(3*i, 3));
-            para->recv->vel.at(idEpoch) = Vector3d(vel.row(3*i, 3));
-            i++;
-          }
+        para->x = Vector(file.parameterCount());
 
         // parameter names
         file.parameterNameSatellite(para->parameterNames);
         file.parameterNameSatelliteArc(para->parameterNames);
         for(auto &name : para->parameterNames)
           name.object = para->recv->name();
-      }
+
+        for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
+          if(para->recv->useable(idEpoch))
+          {
+            const VariationalEquationArc &arc = file.getArc(gnss->times.at(idEpoch));
+
+            para->startEpoch.push_back(idEpoch);
+            while((idEpoch+1 < gnss->times.size()) && (gnss->times.at(idEpoch+1) <= arc.times.back()))
+              idEpoch++;
+            while(!para->recv->useable(idEpoch)) // go back to the last valid epoch
+              idEpoch--;
+            para->endEpoch.push_back(idEpoch);
+
+            auto variationalEquation = file.integrateArc(gnss->times.at(para->startEpoch.back()), gnss->times.at(para->endEpoch.back()), TRUE/*computePosition*/, TRUE/*computeVelocity*/);
+            para->times.emplace_back(variationalEquation.times);
+            para->PosDesign.emplace_back(variationalEquation.PosDesign);
+            para->VelDesign.emplace_back(variationalEquation.VelDesign);
+            para->pos.emplace_back(variationalEquation.pos0);
+            para->vel.emplace_back(variationalEquation.vel0);
+            para->polynomial.emplace_back(para->times.back(), interpolationDegree);
+
+            std::vector<Time> times;
+            for(UInt idEpoch=para->startEpoch.back(); idEpoch<=para->endEpoch.back(); idEpoch++)
+              if(para->recv->useable(idEpoch))
+                times.push_back(para->recv->timeCorrected(idEpoch));
+
+            const Vector pos = para->polynomial.back().interpolate(times, para->pos.back(), 3);
+            const Vector vel = para->polynomial.back().interpolate(times, para->vel.back(), 3);
+            UInt i=0;
+            for(UInt idEpoch=para->startEpoch.back(); idEpoch<=para->endEpoch.back(); idEpoch++)
+              if(para->recv->useable(idEpoch))
+              {
+                para->recv->pos.at(idEpoch) = Vector3d(pos.row(3*i, 3));
+                para->recv->vel.at(idEpoch) = Vector3d(vel.row(3*i, 3));
+                i++;
+              }
+          } // for(idEpoch)
+      } // for(idRecv)
 
     // distribute process id of receivers
     Parallel::reduceSum(recvProcess, 0, comm);
@@ -227,9 +240,12 @@ void GnssParametrizationLeoDynamicOrbits::designMatrix(const GnssNormalEquationI
   {
     auto para = parameters.at(eqn.receiver->idRecv());
     if(para && para->index)
+    {
+      const UInt arcNo = std::distance(para->endEpoch.begin(), std::upper_bound(para->endEpoch.begin(), para->endEpoch.end(), eqn.idEpoch,
+                                       [&](UInt idEpoch, UInt end) {return idEpoch <= end;}));
       matMult(1., eqn.A.column(GnssObservationEquation::idxPosRecv, 3),
-              para->polynomial.interpolate({eqn.timeRecv}, para->PosDesign, 3),
-              A.column(para->index));
+              para->polynomial.at(arcNo).interpolate({eqn.timeRecv}, para->PosDesign.at(arcNo), 3), A.column(para->index));
+    }
   }
   catch(std::exception &e)
   {
@@ -249,28 +265,32 @@ Double GnssParametrizationLeoDynamicOrbits::updateParameter(const GnssNormalEqua
       if(para && para->index && para->recv->isMyRank())
       {
         const Vector dx = x.row(normalEquationInfo.index(para->index), para->x.rows());
-        para->x   += dx;
-        para->pos += para->PosDesign * dx;
-        para->vel += para->VelDesign * dx;
+        para->x += dx;
 
-        std::vector<Time> times;
-        for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
-          if(para->recv->useable(idEpoch))
-            times.push_back(para->recv->timeCorrected(idEpoch));
+        for(UInt arcNo=0; arcNo<para->times.size(); arcNo++)
+        {
+          para->pos.at(arcNo) += para->PosDesign.at(arcNo) * dx;
+          para->vel.at(arcNo) += para->VelDesign.at(arcNo) * dx;
 
-        const Vector pos = para->polynomial.interpolate(times, para->pos, 3);
-        const Vector vel = para->polynomial.interpolate(times, para->vel, 3);
-        UInt i=0;
-        for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
-          if(para->recv->useable(idEpoch))
-          {
-            const Vector3d dpos = Vector3d(pos.row(3*i, 3)) - para->recv->pos.at(idEpoch);
-            para->recv->pos.at(idEpoch) = Vector3d(pos.row(3*i, 3));
-            para->recv->vel.at(idEpoch) = Vector3d(vel.row(3*i, 3));
-            if(info.update(1e3*dpos.r()))
-              info.info = "position receiver ("+para->recv->name()+", "+times.at(i).dateTimeStr()+")";
-            i++;
-          }
+          std::vector<Time> times;
+          for(UInt idEpoch=para->startEpoch.at(arcNo); idEpoch<=para->endEpoch.at(arcNo); idEpoch++)
+            if(para->recv->useable(idEpoch))
+              times.push_back(para->recv->timeCorrected(idEpoch));
+
+          const Vector pos = para->polynomial.at(arcNo).interpolate(times, para->pos.at(arcNo), 3);
+          const Vector vel = para->polynomial.at(arcNo).interpolate(times, para->vel.at(arcNo), 3);
+          UInt i=0;
+          for(UInt idEpoch=para->startEpoch.at(arcNo); idEpoch<=para->endEpoch.at(arcNo); idEpoch++)
+            if(para->recv->useable(idEpoch))
+            {
+              const Vector3d dpos = Vector3d(pos.row(3*i, 3)) - para->recv->pos.at(idEpoch);
+              para->recv->pos.at(idEpoch) = Vector3d(pos.row(3*i, 3));
+              para->recv->vel.at(idEpoch) = Vector3d(vel.row(3*i, 3));
+              if(info.update(1e3*dpos.r()))
+                info.info = "position receiver ("+para->recv->name()+", "+times.at(i).dateTimeStr()+")";
+              i++;
+            }
+        }
       }
     info.synchronizeAndPrint(normalEquationInfo.comm, 1e-3, maxChange);
     return maxChange;
@@ -298,18 +318,22 @@ void GnssParametrizationLeoDynamicOrbits::writeResults(const GnssNormalEquationI
       for(auto para : parameters)
         if(para && para->index && para->recv->isMyRank())
         {
-
-          OrbitArc arc;
-          for(UInt idEpoch=0; idEpoch<para->times.size(); idEpoch++)
+          std::vector<OrbitArc> arcList;
+          for(UInt arcNo=0; arcNo<para->times.size(); arcNo++)
           {
-            OrbitEpoch epoch;
-            epoch.time     = para->times.at(idEpoch);
-            epoch.position = Vector3d(para->pos.row(3*idEpoch, 3));
-            epoch.velocity = Vector3d(para->vel.row(3*idEpoch, 3));
-            arc.push_back(epoch);
+            OrbitArc arc;
+            for(UInt idEpoch=0; idEpoch<para->times.at(arcNo).size(); idEpoch++)
+            {
+              OrbitEpoch epoch;
+              epoch.time     = para->times.at(arcNo).at(idEpoch);
+              epoch.position = Vector3d(para->pos.at(arcNo).row(3*idEpoch, 3));
+              epoch.velocity = Vector3d(para->vel.at(arcNo).row(3*idEpoch, 3));
+              arc.push_back(epoch);
+            }
+            arcList.push_back(arc);
           }
           fileNameVariableList["station"]->setValue(para->recv->name());
-          InstrumentFile::write(fileNameOrbit(fileNameVariableList).appendBaseName(suffix), arc);
+          InstrumentFile::write(fileNameOrbit(fileNameVariableList).appendBaseName(suffix), arcList);
         }
     }
 
