@@ -59,7 +59,7 @@ public:
   /// Destructor.
  ~GnssTransmitterGenerator();
 
-  /** @brief Iniatialize and returns a vector of transmitters. */
+  /** @brief Initialize and returns a vector of transmitters. */
   std::vector<GnssTransmitterPtr> transmitters(const std::vector<Time> &times);
 
   /** @brief creates an derived instance of this class. */

@@ -162,14 +162,21 @@ void Gnss::synchronizeTransceivers(Parallel::CommunicatorPtr comm)
       for(auto &typesTrans : typesRecvTrans)
         for(GnssType type : typesTrans.at(trans->idTrans()))
           if((type == GnssType::PHASE) || (type == GnssType::RANGE))
-            if(!type.isInList(types))
+            if(!type.isInList(types)) {
               types.push_back(type + trans->PRN());
+            };
       types = GnssType::replaceCompositeSignals(types);
 
       if(types.size())
       {
         trans->signalBias.biases = trans->signalBias.compute(types); // apriori signal bias
         trans->signalBias.types  = types;
+      }
+      for(unsigned int i=0; i<types.size(); i++) {
+        logStatus << trans->signalBias.types.at(i).str() << " "
+                  << std::fixed << std::setw(7) << std::setprecision(3)
+                  << trans->signalBias.biases.at(i)
+                  << Log::endl;
       }
     }
 
@@ -179,8 +186,10 @@ void Gnss::synchronizeTransceivers(Parallel::CommunicatorPtr comm)
       for(auto &typesTrans : typesRecvTrans.at(recv->idRecv()))
         for(GnssType type : typesTrans)
           if((type == GnssType::PHASE) || (type == GnssType::RANGE))
-            if(!type.isInList(types))
+            if(!type.isInList(types)) {
               types.push_back(type & ~GnssType::PRN);
+              logStatus << types.back().str() << Log::endl;
+            }
       std::sort(types.begin(), types.end());
 
       if(types.size())
