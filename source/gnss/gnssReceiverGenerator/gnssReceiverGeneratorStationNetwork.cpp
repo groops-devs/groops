@@ -173,7 +173,7 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
     logStatus<<"read observations"<<Log::endl;
     Vector receiverAlternative(receiversWithAlternatives.size());
     Log::Timer timer(receiversWithAlternatives.size());
-    for(UInt i=0; i<receiversWithAlternatives.size(); i++) {
+    for(UInt i=0; i<receiversWithAlternatives.size(); i++)
       if(i%Parallel::size(comm) == Parallel::myRank(comm)) // distribute to nodes
       {
         timer.loopStep(i);
@@ -206,22 +206,10 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
 
             recv->preprocessingInfo("init()");
 
-            logWarning << "platform " << recv->platform.markerName << " a-xyz "
-                       << std::fixed << std::setprecision(3)
-                       << std::setw(15) << recv->platform.approxPosition.x()
-                       << std::setw(15) << recv->platform.approxPosition.y()
-                       << std::setw(15) << recv->platform.approxPosition.z()
-                       << " xyz "
-                       << std::setw(15) << recv->position(0).x()
-                       << std::setw(15) << recv->position(0).y()
-                       << std::setw(15) << recv->position(0).z()
-                       << " read"
-                       << Log::endl;
-
             // simulation case
             if(fileNameObs.empty())
             {
-              receiverAlternative(i) = k+1;
+              receiverAlternative(i) = 1;
               break;
             }
 
@@ -287,7 +275,6 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
           }
         }
       }
-    }
     Parallel::barrier(comm);
     timer.loopEnd();
     Parallel::reduceSum(receiverAlternative, 0, comm);
