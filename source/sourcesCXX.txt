@@ -21,6 +21,8 @@ base/time.cpp
 base/transform3d.cpp
 base/wavelets.cpp
 
+external/sgp4/SGP4.cpp
+
 parser/dataVariables.cpp
 parser/expressionParser.cpp
 parser/stringParser.cpp
@@ -535,6 +537,7 @@ programs/conversion/potentialCoefficients2Icgem.cpp
 programs/conversion/psmslOceanBottomPressure2TimeSeries.cpp
 programs/conversion/sinex2Normals.cpp
 programs/conversion/sp3Format2Orbit.cpp
+programs/conversion/tle2Orbit.cpp
 programs/conversion/viennaMappingFunctionGrid2File.cpp
 programs/conversion/viennaMappingFunctionStation2File.cpp
 

@@ -9347,6 +9347,31 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{Tle2Orbit}\label{Tle2Orbit}
+This program computes the \configFile{outputfileOrbit}{instrument}
+from two-line elements (TLE/3LE)
+as can be found at e.g. \url{http://celestrak.org/NORAD/elements/}.
+The first satellite in the input file that matches the wildcard of \config{satelliteName} is used.
+
+The program uses the Simplified General Perturbation (SGP) model. More information can
+be found in the Revisiting Spacetrack Report 3 by Vallado et al. 2006.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTLE & \hfuzz=500pt filename & \hfuzz=500pt two line elements (TLE/3LE)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~satelliteName & \hfuzz=500pt string & \hfuzz=500pt first name of wildcard match is used\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt output orbit at these times\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt rotation to CRF\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{ViennaMappingFunctionGrid2File}\label{ViennaMappingFunctionGrid2File}
 This program converts the gridded time series of the Vienna Mapping Functions (VMF) into
 the \file{GROOPS file format}{griddedDataTimeSeries}.
