@@ -28,6 +28,7 @@
 - Other:            GnssRinexNavigation2OrbitClock: works also for glonass.
 - Other:            PlotMisc: set minimum size of points in legend to 3p.
 - Other:            Preparation to replace GnssStationInfo file format by the more general Platform file format.
+- Other:            GnssRinexNavigation2OrbitClock: add SBAS support.
 
 # Release 2022-07-28
 - New programs:     GriddedData2GriddedDataTimeSeries and GriddedDataTimeSeries2GriddedData.
