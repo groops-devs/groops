@@ -80,7 +80,7 @@ void Gravityfield2Deflections::run(Config &config, Parallel::CommunicatorPtr com
 
     if(Parallel::isMaster(comm))
     {
-      std::vector<std::vector<Double>> field(2);
+      std::vector<std::vector<Double>> field(2, std::vector<Double>(points.size()));
       for(UInt i=0; i<points.size(); i++)
       {
         field.at(0).at(i) = g.at(i).x();
