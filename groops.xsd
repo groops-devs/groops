@@ -23136,6 +23136,38 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="Tle2Orbit">
+				<xs:annotation>
+					<xs:documentation>orbit from Two Line Elements (TLE/3LE)</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileOrbit" type="filename"/>
+						<xs:element name="inputfileTLE" type="filename">
+							<xs:annotation>
+								<xs:documentation>two line elements (TLE/3LE)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="satelliteName" type="string" minOccurs="0" default="*">
+							<xs:annotation>
+								<xs:documentation>first name of wildcard match is used</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>output orbit at these times</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="earthRotation" type="earthRotationType">
+							<xs:annotation>
+								<xs:documentation>rotation to CRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="ViennaMappingFunctionGrid2File">
 				<xs:annotation>
 					<xs:documentation>converts VMF grid time series to one file.</xs:documentation>
