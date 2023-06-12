@@ -9,10 +9,12 @@
 - New program:      ObservationEquations2Files.
 - New program:      Variational2OrbitAndStarCamera (renamed Variational2Orbit): added possibility to also extract Earth rotation.
 - New program:      PlatformCreate: replaces gnssStationInfoCreate.
+- New program:      Tle2Orbit: Orbit from Two Line Elements (TLE).
 - New class:        In InstrumentResample/interpolatorTimeSeries: FillGapsLeastSquaresPolynomialFit.
 - New class:        In MiscAccelerations: AtmosphericDragFromDensityFile.
 - New class:        In MiscAccelerations: RadiationPressure, replaces SolarRadiatinPressure, Albedo
 - New class:        In Loop: PlatformEquipment (replaces FileGnssStationInfo).
+- Bugfix:           Gravityfield2Deflections: fixed initialization bug.
 - Bugfix:           GnssRinexNavigation2OrbitClock: updated to be usable for rinex4 and fixes for rinex3.
 - Bugfix:           Plot: various fixes for GMT Versions >6.1.
 - Bugfix:           GriddedData: unwrap longitude before computing area elements.
