@@ -108,7 +108,7 @@ Bool GnssObservation::init(const GnssReceiver &receiver, const GnssTransmitter &
       at(i).sigma  = acvRecv(i); // temporarily misuse sigma for ACV pattern nan check
       for(UInt k=0; k<T.columns(); k++)
         if(T(i,k))
-          at(i).sigma  += T(i,k) * acvTrans(k) + biasTrans(k);
+          at(i).sigma  += T(i,k) * (acvTrans(k) + biasTrans(k));
     }
     obs.erase(std::remove_if(obs.begin(), obs.end(), [](const auto &x)
     {
