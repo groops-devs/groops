@@ -7076,6 +7076,23 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{FileMove}\label{FileMove}
+Move/rename file or directory. If the \config{outputfile} is an existing directory
+the \config{inputfile} is moved into it.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfile & \hfuzz=500pt filename & \hfuzz=500pt target name or directory for the move/rename\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{FileRemove}\label{FileRemove}
 Remove files or directories.
 Deletes also the content recursivley if one of \config{files} is a directory.
@@ -7087,6 +7104,25 @@ Deletes also the content recursivley if one of \config{files} is a directory.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~files & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{FileTextCreate}\label{FileTextCreate}
+Create text \config{outputfile} containing \config{line}s.
+This program can be a powerful tool,
+if the \config{line} is repeated with a \configClass{loop}{loopType}
+together with the \reference{text parser}{general.parser:text}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~line & \hfuzz=500pt string & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 

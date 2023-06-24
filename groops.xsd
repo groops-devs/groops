@@ -19658,6 +19658,22 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="FileMove">
+				<xs:annotation>
+					<xs:documentation>Move/rename file or directory.</xs:documentation>
+					<xs:appinfo>tag: System</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>target name or directory for the move/rename</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="FileRemove">
 				<xs:annotation>
 					<xs:documentation>Remove files or directories.</xs:documentation>
@@ -19666,6 +19682,18 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="files" type="filename" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="FileTextCreate">
+				<xs:annotation>
+					<xs:documentation>Create text file.</xs:documentation>
+					<xs:appinfo>tag: System</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename"/>
+						<xs:element name="line" type="string" minOccurs="0" maxOccurs="unbounded"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>

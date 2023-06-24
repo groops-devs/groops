@@ -1,4 +1,6 @@
 # main
+- New program:      FileMove.
+- New program:      FileTextCreate.
 - New program:      InstrumentRemoveEpochsThruster.
 - New program:      InstrumentApplyTimeOffset.
 - New program:      InstrumentAccelerometerEstimateParameters (replaces InstrumentAccelerometerEstimateBiasScale).

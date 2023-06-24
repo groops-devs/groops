@@ -442,7 +442,9 @@ programs/simulation/simulateStarCameraGrace.cpp
 programs/simulation/simulateStarCameraSentinel1.cpp
 programs/system/fileConvert.cpp
 programs/system/fileCreateDirectories.cpp
+programs/system/fileMove.cpp
 programs/system/fileRemove.cpp
+programs/system/fileTextCreate.cpp
 programs/system/groupPrograms.cpp
 programs/system/ifPrograms.cpp
 programs/system/loopPrograms.cpp
