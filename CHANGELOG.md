@@ -10,6 +10,8 @@
 - New program:      Variational2OrbitAndStarCamera (renamed Variational2Orbit): added possibility to also extract Earth rotation.
 - New program:      PlatformCreate: replaces gnssStationInfoCreate.
 - New program:      Tle2Orbit: Orbit from Two Line Elements (TLE).
+- New class:        In Loop: DirectoryListing.
+- New class:        In Loop: FileLines.
 - New class:        In InstrumentResample/interpolatorTimeSeries: FillGapsLeastSquaresPolynomialFit.
 - New class:        In MiscAccelerations: AtmosphericDragFromDensityFile.
 - New class:        In MiscAccelerations: RadiationPressure, replaces SolarRadiatinPressure, Albedo

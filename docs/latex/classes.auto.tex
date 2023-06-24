@@ -3825,6 +3825,27 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
+\subsection{FileLines}
+Loop over lines of a text file.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt simple ASCII file with lines\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sort & \hfuzz=500pt boolean & \hfuzz=500pt sort lines alphabetically (ascending)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~removeDuplicates & \hfuzz=500pt boolean & \hfuzz=500pt remove duplicate lines (order is preserved)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~startIndex & \hfuzz=500pt uint & \hfuzz=500pt start at element startIndex (counting from 0)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~count & \hfuzz=500pt uint & \hfuzz=500pt use number of lines only (default: use all)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopLine & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hline
+\end{tabularx}
+
+
 \subsection{Matrix}
 Loop over rows of a matrix. To define the loop variables the standard
 data variables of the matrix are available, see~\reference{dataVariables}{general.parser:dataVariables}.
@@ -3859,6 +3880,25 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~rangeEnd & \hfuzz=500pt double & \hfuzz=500pt end of range (inclusive)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~sampling & \hfuzz=500pt double & \hfuzz=500pt sampling\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopNumber & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hline
+\end{tabularx}
+
+
+\subsection{DirectoryListing}\label{loopType:directoryListing}
+Loop over files of a directory.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~directory & \hfuzz=500pt filename & \hfuzz=500pt directory\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~pattern & \hfuzz=500pt string & \hfuzz=500pt wildcard pattern\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~isRegularExpression & \hfuzz=500pt boolean & \hfuzz=500pt pattern is a regular expression\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopFile & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
 \hline
