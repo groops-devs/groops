@@ -95,17 +95,12 @@ void InstrumentArcCalculate::run(Config &config, Parallel::CommunicatorPtr comm)
 
     // create data variables
     // ---------------------
-    auto varListGlobal = config.getVarList();
+    VariableList varListGlobal;
     // get real variable names, otherwise all named after config element
-    std::for_each(constExpr.begin(), constExpr.end(), [&](auto expr) {expr->parseVariableName(varListGlobal);});
-    std::for_each(paramExpr.begin(), paramExpr.end(), [&](auto expr) {expr->parseVariableName(varListGlobal);});
-    std::for_each(constExpr.begin(), constExpr.end(), [&](auto expr) {addVariable(expr, varListGlobal);});
-    std::for_each(paramExpr.begin(), paramExpr.end(), [&](auto expr) {addVariable(expr, varListGlobal);});
-
-    std::set<std::string> usedVariables;
-    std::for_each(outExpr.begin(),    outExpr.end(),    [&](auto expr) {expr->usedVariables(varListGlobal, usedVariables);});
-    std::for_each(lsaExpr.begin(),    lsaExpr.end(),    [&](auto expr) {expr->usedVariables(varListGlobal, usedVariables);});
-    std::for_each(removeExpr.begin(), removeExpr.end(), [&](auto expr) {expr->usedVariables(varListGlobal, usedVariables);});
+    std::for_each(constExpr.begin(), constExpr.end(), [&](auto expr) {expr->parseVariableName();});
+    std::for_each(paramExpr.begin(), paramExpr.end(), [&](auto expr) {expr->parseVariableName();});
+    std::for_each(constExpr.begin(), constExpr.end(), [&](auto expr) {varListGlobal.addVariable(expr);});
+    std::for_each(paramExpr.begin(), paramExpr.end(), [&](auto expr) {varListGlobal.addVariable(expr);});
 
     // arc wise computation
     // --------------------
@@ -132,8 +127,8 @@ void InstrumentArcCalculate::run(Config &config, Parallel::CommunicatorPtr comm)
 
       auto varListArc       = varListGlobal;
       auto varListArcWoData = varListGlobal;
-      addDataVariables("epoch", times, varListArc, usedVariables);
-      addDataVariables(data, varListArc, usedVariables);
+      addDataVariables("epoch", times, varListArc);
+      addDataVariables(data, varListArc);
 
       // least squares adjustment
       if(lsaExpr.size())
@@ -152,21 +147,21 @@ void InstrumentArcCalculate::run(Config &config, Parallel::CommunicatorPtr comm)
           for(UInt i=0; i<data.rows(); i++)
           {
             evaluateDataVariables(data, i, varListArc);
-            varListArc["epoch"]->setValue(times.at(i).mjd());
+            varListArc.setVariable("epoch", times.at(i).mjd());
             l(i+k*data.rows()) = -lsaExpr.at(k)->evaluate(varListArc); // observations
             for(UInt s=0; s<designExpr.size(); s++)
               A(i+k*data.rows(),s) = designExpr.at(s)->evaluate(varListArc); // columns of design matrix
           }
           undefineDataVariables(data, varListArc);
-          varListArc["epoch"]->setUndefined();
+          varListArc.undefineVariable("epoch");
         }
 
         Vector x = leastSquares(A, l);
         for(UInt s=0; s<paramExpr.size(); s++)
         {
           x(s) += paramExpr.at(s)->evaluate(varListArc);
-          varListArc[paramExpr.at(s)->name()]->setValue( x(s) );
-          varListArcWoData[paramExpr.at(s)->name()]->setValue( x(s) );
+          varListArc.setVariable(paramExpr.at(s)->name(),  x(s) );
+          varListArcWoData.setVariable(paramExpr.at(s)->name(),  x(s) );
         }
       } // if(lsa)
 
@@ -177,7 +172,7 @@ void InstrumentArcCalculate::run(Config &config, Parallel::CommunicatorPtr comm)
       for(UInt i=0; i<outData.rows(); i++)
       {
         evaluateDataVariables(data, i, varListArc);
-        varListArc["epoch"]->setValue(times.at(i).mjd());
+        varListArc.setVariable("epoch", times.at(i).mjd());
         if(!std::any_of(removeExpr.begin(), removeExpr.end(), [&](auto expr) {return expr->evaluate(varListArc) != 0;}))
         {
           timesOut.at(row) = times.at(i);
@@ -194,10 +189,8 @@ void InstrumentArcCalculate::run(Config &config, Parallel::CommunicatorPtr comm)
       if(statisticsExpr.size())
       {
         auto varList = varListArcWoData;
-        std::set<std::string> usedVariables;
-        std::for_each(statisticsExpr.begin(), statisticsExpr.end(), [&](auto expr) {expr->usedVariables(varList, usedVariables);});
-        addDataVariables("epoch", timesOut, varList, usedVariables);
-        addDataVariables(outData.column(1, outData.columns()-1), varList, usedVariables);
+        addDataVariables("epoch", timesOut, varList);
+        addDataVariables(outData.column(1, outData.columns()-1), varList);
         statistics(arcNo, 0) = (0.5*(timesOut.front()+timesOut.back()+medianSampling(timesOut))).mjd();
         for(UInt k=0; k<statisticsExpr.size(); k++)
           statistics(arcNo, 1+k) = statisticsExpr.at(k)->evaluate(varList);

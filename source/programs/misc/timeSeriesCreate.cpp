@@ -57,16 +57,14 @@ void TimeSeriesCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     logStatus<<"create time series"<<Log::endl;
     std::vector<Time> times = timeSeries->times();
 
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    std::for_each(dataExpr.begin(), dataExpr.end(), [&](auto expr) {expr->usedVariables(varList, usedVariables);});
-    addDataVariables("epoch", times, varList, usedVariables);
+    VariableList varList;
+    addDataVariables("epoch", times, varList);
     std::for_each(dataExpr.begin(), dataExpr.end(), [&](auto expr) {expr->simplify(varList);});
 
     Matrix A(times.size(), 1+dataExpr.size());
     for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
     {
-      varList["epoch"]->setValue(times.at(idEpoch).mjd());
+      varList.setVariable("epoch", times.at(idEpoch).mjd());
       for(UInt k=0; k<dataExpr.size(); k++)
         A(idEpoch, 1+k) = dataExpr.at(k)->evaluate(varList);
     }

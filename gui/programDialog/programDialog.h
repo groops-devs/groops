@@ -92,7 +92,7 @@ class ProgramDialog : public QDialog
   Q_OBJECT
 
   Ui::ProgramDialog  *ui;
-  QSettings            *settings;
+  QSettings          *settings;
   TreeElementProgram *treeElement;
   ProgramListWidget  *programListWidget;
 

@@ -32,7 +32,7 @@ AddGlobalDialog::AddGlobalDialog(TreeElementGlobal *globalRoot, QWidget *parent)
     resize(minimumSizeHint());
 
     // only allow variable names with letters and numbers
-    QRegExpValidator *validator = new QRegExpValidator(QRegExp("[a-zA-Z]([a-zA-Z0-9])*"), this);
+    QRegularExpressionValidator *validator = new QRegularExpressionValidator(QRegularExpression("[a-zA-Z]([a-zA-Z0-9])*"), this);
     ui->lineEditName->setValidator(validator);
 
     // fill combo box with types

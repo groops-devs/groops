@@ -88,7 +88,6 @@ void Sinex2StationDiscontinuities::run(Config &config, Parallel::CommunicatorPtr
 
     logStatus<<"write output files <"<<outName<<">"<<Log::endl;
     VariableList fileNameVariableList;
-    addVariable(variableLoopStation, fileNameVariableList);
     for(auto &&station : stations)
     {
       station.second.sort();
@@ -99,7 +98,7 @@ void Sinex2StationDiscontinuities::run(Config &config, Parallel::CommunicatorPtr
       epoch.time = date2time(2500, 1, 1);
       station.second.push_back(epoch); // end epoch
 
-      fileNameVariableList[variableLoopStation]->setValue(station.first);
+      fileNameVariableList.setVariable(variableLoopStation, station.first);
       InstrumentFile::write(outName(fileNameVariableList), station.second);
     }
   }

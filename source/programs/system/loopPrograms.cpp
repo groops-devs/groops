@@ -69,7 +69,7 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     readConfig(config, "program",                  programs,           Config::OPTIONAL, "",  "");
     if(isCreateSchema(config)) return;
 
-    auto varList = config.getVarList();
+    VariableList varList;
 
     // Every process executes every iteration
     // --------------------------------------

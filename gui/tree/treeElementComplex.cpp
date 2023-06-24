@@ -508,7 +508,7 @@ void TreeElementComplex::UndoCommandOverwrite::redo()
 
     // update varList
     if(!treeElement->label().isEmpty() && treeElement->isLinked())
-      tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(treeElement->label().toStdString(), "{"+treeElement->selectedValue().toStdString()+"}")));
+      tree->varList[treeElement->label()] = "{"+treeElement->selectedValue()+"}";
 
     treeElement = oldElement;
   }
@@ -623,9 +623,9 @@ void TreeElementComplex::UndoCommandRemoveAddChild::addChild()
     if(tree->rootElement() && !newElement->label().isEmpty())
     {
       if(newElement->isLinked())
-        tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(newElement->label().toStdString(), "{"+newElement->selectedValue().toStdString()+"}")));
+        tree->varList[newElement->label()] = "{"+newElement->selectedValue()+"}";
       else
-        tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(newElement->label().toStdString(), newElement->selectedValue().toStdString())));
+        tree->varList[newElement->label()] = newElement->selectedValue();
       tree->rootElement()->newLink(treeElement);
     }
 
@@ -687,7 +687,7 @@ void TreeElementComplex::UndoCommandRemoveAddChild::removeChild()
       // only delete varList entry if element was actually removed and not e.g. moved via drag&drop (= add copy, then remove)
       auto iter = std::find_if(parent->children[indexChoice].begin(), parent->children[indexChoice].end(), [&](TreeElement* el) { return el->label() == newElement->label(); });
       if(iter == parent->children[indexChoice].end())
-        tree->setVarList().erase(newElement->label().toStdString());
+        tree->varList.remove(newElement->label());
     }
 
     if(parent->recieveAutoComments && parent->hasChildren(indexChoice))

@@ -23,10 +23,10 @@ void addTimeVariables(VariableList &varList)
 {
   try
   {
-    addVariable("loopTime",      varList);
-    addVariable("loopTimeStart", varList);
-    addVariable("loopTimeEnd",   varList);
-    addVariable("index",         varList);
+    varList.undefineVariable("loopTime");
+    varList.undefineVariable("loopTimeStart");
+    varList.undefineVariable("loopTimeEnd");
+    varList.undefineVariable("index");
   }
   catch(std::exception &e)
   {
@@ -40,10 +40,10 @@ void evaluateTimeVariables(UInt index, const Time &timeStart, const Time &timeEn
 {
   try
   {
-    varList["loopTime"]->setValue(timeStart.mjd());
-    varList["loopTimeStart"]->setValue(timeStart.mjd());
-    varList["loopTimeEnd"]->setValue(timeEnd.mjd());
-    varList["index"]->setValue(static_cast<Double>(index));
+    varList.setVariable("loopTime", timeStart.mjd());
+    varList.setVariable("loopTimeStart", timeStart.mjd());
+    varList.setVariable("loopTimeEnd", timeEnd.mjd());
+    varList.setVariable("index", static_cast<Double>(index));
   }
   catch(std::exception &e)
   {
@@ -54,47 +54,43 @@ void evaluateTimeVariables(UInt index, const Time &timeStart, const Time &timeEn
 /***********************************************/
 /***********************************************/
 
-void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, VariableList &varList, const std::set<std::string> &usedName)
+static Double step(const_MatrixSliceRef data)
+{
+  if(data.size() < 2)
+    return NAN_EXPR;
+  std::vector<Double> tmp = flatten(data);
+  std::adjacent_difference(tmp.begin(), tmp.end(), tmp.begin());
+  std::transform(tmp.begin(), tmp.end(), tmp.begin(), [](const Double &x) {return std::fabs(x);});
+  return *std::min_element(tmp.begin(), tmp.end());
+}
+
+/***********************************************/
+
+void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, VariableList &varList)
 {
   try
   {
-    auto used = [&](const std::string &name) {return (usedName.find(name) != usedName.end());};
-
-    Double median = NAN_EXPR;
-    Double mad    = NAN_EXPR; // Median Absolute Deviation
-    if(data.rows() && (used(prefix+"median") || used(prefix+"mad")))
+    class Func : public ExpressionVariable::Func
     {
-      median = ::median(data);
-      if(used(prefix+"mad"))
-      {
-        Matrix tmp = data;
-        for(UInt i=0; i<tmp.rows(); i++)
-          for(UInt k=0; k<tmp.columns(); k++)
-            tmp(i,k) = std::abs(tmp(i,k)-median);
-        mad = ::median(tmp);
-      }
-    }
+      MatrixSlice data;
+      Double (*f)(const_MatrixSliceRef);
+    public:
+      Func(const_MatrixSliceRef data, Double (*f)(const_MatrixSliceRef)) : data(data), f(f) {}
+      virtual ~Func() {}
+      Double operator()() const override {return f(data);}
+    };
 
-    Double step = NAN_EXPR;
-    if((data.size()>1) && used(prefix+"step"))
-    {
-      std::vector<Double> tmp = flatten(data);
-      std::adjacent_difference(tmp.begin(), tmp.end(), tmp.begin());
-      std::transform(tmp.begin(), tmp.end(), tmp.begin(), [](const Double &x) {return std::fabs(x);});
-      step = *std::min_element(tmp.begin(), tmp.end());
-    }
-
-    addVariable(prefix, varList);
-    if(used(prefix+"count"))  addVariable(prefix+"count",  static_cast<Double>(data.size()), varList);
-    if(used(prefix+"min"))    addVariable(prefix+"min",    min(data),                        varList);
-    if(used(prefix+"max"))    addVariable(prefix+"max",    max(data),                        varList);
-    if(used(prefix+"sum"))    addVariable(prefix+"sum",    sum(data),                        varList);
-    if(used(prefix+"mean"))   addVariable(prefix+"mean",   mean(data),                       varList);
-    if(used(prefix+"rms"))    addVariable(prefix+"rms",    rootMeanSquare(data),             varList);
-    if(used(prefix+"std"))    addVariable(prefix+"std",    standardDeviation(data),          varList);
-    if(used(prefix+"median")) addVariable(prefix+"median", median,                           varList);
-    if(used(prefix+"mad"))    addVariable(prefix+"mad",    mad,                              varList);
-    if(used(prefix+"step"))   addVariable(prefix+"step",   step,                             varList);
+    varList.undefineVariable(prefix);
+    varList.setVariable(prefix+"count", static_cast<Double>(data.size()));
+    varList.addVariable(std::make_shared<ExpressionVariable>(prefix+"min",    std::make_shared<Func>(data, min)));
+    varList.addVariable(std::make_shared<ExpressionVariable>(prefix+"max",    std::make_shared<Func>(data, max)));
+    varList.addVariable(std::make_shared<ExpressionVariable>(prefix+"sum",    std::make_shared<Func>(data, sum)));
+    varList.addVariable(std::make_shared<ExpressionVariable>(prefix+"mean",   std::make_shared<Func>(data, mean)));
+    varList.addVariable(std::make_shared<ExpressionVariable>(prefix+"rms",    std::make_shared<Func>(data, rootMeanSquare)));
+    varList.addVariable(std::make_shared<ExpressionVariable>(prefix+"std",    std::make_shared<Func>(data, standardDeviation)));
+    varList.addVariable(std::make_shared<ExpressionVariable>(prefix+"median", std::make_shared<Func>(data, median)));
+    varList.addVariable(std::make_shared<ExpressionVariable>(prefix+"mad",    std::make_shared<Func>(data, medianAbsoluteDeviation)));
+    varList.addVariable(std::make_shared<ExpressionVariable>(prefix+"step",   std::make_shared<Func>(data, step)));
   }
   catch(std::exception &e)
   {
@@ -104,14 +100,14 @@ void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, Vari
 
 /***********************************************/
 
-void addDataVariables(const std::string &prefix, const std::vector<Time> &times, VariableList &varList, const std::set<std::string> &usedName)
+void addDataVariables(const std::string &prefix, const std::vector<Time> &times, VariableList &varList)
 {
   try
   {
     Vector data(times.size());
     for(UInt i=0; i<times.size(); i++)
       data(i) = times.at(i).mjd();
-    addDataVariables(prefix, data, varList, usedName);
+    addDataVariables(prefix, data, varList);
   }
   catch(std::exception &e)
   {
@@ -121,15 +117,13 @@ void addDataVariables(const std::string &prefix, const std::vector<Time> &times,
 
 /***********************************************/
 
-void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, const_MatrixSliceRef weight, VariableList &varList, const std::set<std::string> &usedName)
+void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, const_MatrixSliceRef weight, VariableList &varList)
 {
   try
   {
-    addDataVariables(prefix, data, varList, usedName);
+    addDataVariables(prefix, data, varList);
     if(!weight.size())
       return;
-
-    auto used = [&](const std::string &name) {return (usedName.find(name) != usedName.end());};
 
     Double w     = sum(weight);
     Double wmean = inner(data, weight)/w;
@@ -138,9 +132,9 @@ void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, cons
       for(UInt k=0; k<data.columns(); k++)
         wrms += weight(i,k)/w * data(i,0) * data(i,k);
 
-    if(used(prefix+"wmean")) addVariable(prefix+"wmean", wmean, varList);
-    if(used(prefix+"wrms"))  addVariable(prefix+"wrms",  std::sqrt(wrms), varList);
-    if(used(prefix+"wstd"))  addVariable(prefix+"wstd",  std::sqrt(data.size()/(data.size()-1.)*(wrms-wmean*wmean)), varList);
+    varList.setVariable(prefix+"wmean", wmean);
+    varList.setVariable(prefix+"wrms",  std::sqrt(wrms));
+    varList.setVariable(prefix+"wstd",  std::sqrt(data.size()/(data.size()-1.)*(wrms-wmean*wmean)));
   }
   catch(std::exception &e)
   {
@@ -150,13 +144,13 @@ void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, cons
 
 /***********************************************/
 
-void addDataVariables(const_MatrixSliceRef data, VariableList &varList, const std::set<std::string> &usedName)
+void addDataVariables(const_MatrixSliceRef data, VariableList &varList)
 {
   try
   {
-    addVariable("index", varList);
+    varList.undefineVariable("index");
     for(UInt i=0; i<data.columns(); i++)
-      addDataVariables("data"+i%"%i"s, data.column(i), varList, usedName);
+      addDataVariables("data"+i%"%i"s, data.column(i), varList);
   }
   catch(std::exception &e)
   {
@@ -170,9 +164,9 @@ void evaluateDataVariables(const_MatrixSliceRef data, UInt row, VariableList &va
 {
   try
   {
-    varList["index"]->setValue(static_cast<Double>(row)); // index
+    varList.setVariable("index", static_cast<Double>(row)); // index
     for(UInt i=0; i<data.columns(); i++)
-      varList["data"+i%"%i"s]->setValue(data(row,i)); // "data(i)"
+      varList.setVariable("data"+i%"%i"s, data(row,i)); // "data(i)"
   }
   catch(std::exception &e)
   {
@@ -186,9 +180,9 @@ void undefineDataVariables(const_MatrixSliceRef data, VariableList &varList)
 {
   try
   {
-    varList["index"]->setUndefined(); // index
+    varList.undefineVariable("index"); // index
     for(UInt i=0; i<data.columns(); i++)
-      varList["data"+i%"%i"s]->setUndefined(); // "data(i)"
+      varList.undefineVariable("data"+i%"%i"s); // "data(i)"
   }
   catch(std::exception &e)
   {
@@ -199,20 +193,20 @@ void undefineDataVariables(const_MatrixSliceRef data, VariableList &varList)
 /***********************************************/
 /***********************************************/
 
-void addDataVariables(const GriddedData &grid, VariableList &varList, const std::set<std::string> &usedName)
+void addDataVariables(const GriddedData &grid, VariableList &varList)
 {
   try
   {
-    addVariable("longitude",  varList);
-    addVariable("latitude",   varList);
-    addVariable("height",     varList);
-    addVariable("cartesianX", varList);
-    addVariable("cartesianY", varList);
-    addVariable("cartesianZ", varList);
-    addVariable("area",       varList);
-    addVariable("index",      varList);
+    varList.undefineVariable("longitude");
+    varList.undefineVariable("latitude");
+    varList.undefineVariable("height");
+    varList.undefineVariable("cartesianX");
+    varList.undefineVariable("cartesianY");
+    varList.undefineVariable("cartesianZ");
+    varList.undefineVariable("area");
+    varList.undefineVariable("index");
     for(UInt i=0; i<grid.values.size(); i++)
-      addDataVariables("data"+i%"%i"s, Vector(grid.values.at(i)), Vector(grid.areas), varList, usedName);
+      addDataVariables("data"+i%"%i"s, Vector(grid.values.at(i)), Vector(grid.areas), varList);
   }
   catch(std::exception &e)
   {
@@ -229,16 +223,16 @@ void evaluateDataVariables(const GriddedData &grid, UInt row, VariableList &varL
     Angle  L, B;
     Double h;
     grid.ellipsoid(grid.points.at(row), L, B, h);
-    varList["longitude"]->setValue(Double(L)*RAD2DEG);
-    varList["latitude"]->setValue(Double(B)*RAD2DEG);
-    varList["height"]->setValue(h);
-    varList["cartesianX"]->setValue(grid.points.at(row).x());
-    varList["cartesianY"]->setValue(grid.points.at(row).y());
-    varList["cartesianZ"]->setValue(grid.points.at(row).z());
-    varList["area"]->setValue((grid.areas.size() ? grid.areas.at(row) : 0));
-    varList["index"]->setValue(static_cast<Double>(row));
+    varList.setVariable("longitude", Double(L)*RAD2DEG);
+    varList.setVariable("latitude", Double(B)*RAD2DEG);
+    varList.setVariable("height", h);
+    varList.setVariable("cartesianX", grid.points.at(row).x());
+    varList.setVariable("cartesianY", grid.points.at(row).y());
+    varList.setVariable("cartesianZ", grid.points.at(row).z());
+    varList.setVariable("area", (grid.areas.size() ? grid.areas.at(row) : 0));
+    varList.setVariable("index", static_cast<Double>(row));
     for(UInt i=0; i<grid.values.size(); i++)
-      varList["data"+i%"%i"s]->setValue(grid.values.at(i).at(row));
+      varList.setVariable("data"+i%"%i"s, grid.values.at(i).at(row));
   }
   catch(std::exception &e)
   {
@@ -252,16 +246,16 @@ void undefineDataVariables(const GriddedData &grid, VariableList &varList)
 {
   try
   {
-    varList["longitude"]->setUndefined();
-    varList["latitude"]->setUndefined();
-    varList["height"]->setUndefined();
-    varList["cartesianX"]->setUndefined();
-    varList["cartesianY"]->setUndefined();
-    varList["cartesianZ"]->setUndefined();
-    varList["area"]->setUndefined();
-    varList["index"]->setUndefined();
+    varList.undefineVariable("longitude");
+    varList.undefineVariable("latitude");
+    varList.undefineVariable("height");
+    varList.undefineVariable("cartesianX");
+    varList.undefineVariable("cartesianY");
+    varList.undefineVariable("cartesianZ");
+    varList.undefineVariable("area");
+    varList.undefineVariable("index");
     for(UInt i=0; i<grid.values.size(); i++)
-      varList["data"+i%"%i"s]->setUndefined();
+      varList.undefineVariable("data"+i%"%i"s);
   }
   catch(std::exception &e)
   {
@@ -272,12 +266,10 @@ void undefineDataVariables(const GriddedData &grid, VariableList &varList)
 /***********************************************/
 /***********************************************/
 
-void addDataVariables(const GriddedDataRectangular &grid, VariableList &varList, const std::set<std::string> &usedName)
+void addDataVariables(const GriddedDataRectangular &grid, VariableList &varList)
 {
   try
   {
-    auto used = [&](const std::string &name) {return (usedName.find(name) != usedName.end());};
-
     std::vector<Angle>  lambda, phi;
     std::vector<Double> radius;
     std::vector<Double> dLambda, dPhi;
@@ -290,17 +282,17 @@ void addDataVariables(const GriddedDataRectangular &grid, VariableList &varList,
       dPhi.at(z) *= std::cos(phi.at(z));
     const Double totalArea = std::accumulate(dLambda.begin(), dLambda.end(), Double(0.)) * std::accumulate(dPhi.begin(), dPhi.end(), Double(0.));
 
-    addVariable("longitude",  varList);
-    addVariable("latitude",   varList);
-    addVariable("height",     varList);
-    addVariable("cartesianX", varList);
-    addVariable("cartesianY", varList);
-    addVariable("cartesianZ", varList);
-    addVariable("index",      varList);
+    varList.undefineVariable("longitude");
+    varList.undefineVariable("latitude");
+    varList.undefineVariable("height");
+    varList.undefineVariable("cartesianX");
+    varList.undefineVariable("cartesianY");
+    varList.undefineVariable("cartesianZ");
+    varList.undefineVariable("index");
     for(UInt i=0; i<grid.values.size(); i++)
     {
       const std::string prefix = "data"+i%"%i"s;
-      addDataVariables(prefix, grid.values.at(i), varList, usedName);
+      addDataVariables(prefix, grid.values.at(i), varList);
 
       Double wmean = 0;
       Double wrms  = 0;
@@ -312,9 +304,9 @@ void addDataVariables(const GriddedDataRectangular &grid, VariableList &varList,
           wrms  += w * grid.values.at(i)(z,s) * grid.values.at(i)(z,s);
         }
 
-      if(used(prefix+"wmean")) addVariable(prefix+"wmean", wmean, varList);
-      if(used(prefix+"wrms"))  addVariable(prefix+"wrms",  std::sqrt(wrms), varList);
-      if(used(prefix+"wstd"))  addVariable(prefix+"wstd",  std::sqrt(rows*cols/(rows*cols-1.)*(wrms-wmean*wmean)), varList);
+      varList.setVariable(prefix+"wmean", wmean);
+      varList.setVariable(prefix+"wrms",  std::sqrt(wrms));
+      varList.setVariable(prefix+"wstd",  std::sqrt(rows*cols/(rows*cols-1.)*(wrms-wmean*wmean)));
     }
   }
   catch(std::exception &e)
@@ -331,15 +323,15 @@ void evaluateDataVariables(const GriddedDataRectangular &grid, UInt row, UInt co
   {
     // set values of data variables
     const Vector3d p = grid.ellipsoid(grid.longitudes.at(col), grid.latitudes.at(row), grid.heights.at(row));
-    varList["longitude"]->setValue(grid.longitudes.at(col)*RAD2DEG);
-    varList["latitude"]->setValue(grid.latitudes.at(row)*RAD2DEG);
-    varList["height"]->setValue(grid.heights.at(row));
-    varList["cartesianX"]->setValue(p.x());
-    varList["cartesianY"]->setValue(p.y());
-    varList["cartesianZ"]->setValue(p.z());
-    varList["index"]->setValue(static_cast<Double>(row*grid.longitudes.size()+col));
+    varList.setVariable("longitude", grid.longitudes.at(col)*RAD2DEG);
+    varList.setVariable("latitude", grid.latitudes.at(row)*RAD2DEG);
+    varList.setVariable("height", grid.heights.at(row));
+    varList.setVariable("cartesianX", p.x());
+    varList.setVariable("cartesianY", p.y());
+    varList.setVariable("cartesianZ", p.z());
+    varList.setVariable("index", static_cast<Double>(row*grid.longitudes.size()+col));
     for(UInt i=0; i<grid.values.size(); i++)
-      varList["data"+i%"%i"s]->setValue(grid.values.at(i)(row,col)); // "data(i)"
+      varList.setVariable("data"+i%"%i"s, grid.values.at(i)(row,col)); // "data(i)"
   }
   catch(std::exception &e)
   {
@@ -353,15 +345,15 @@ void undefineDataVariables(const GriddedDataRectangular &grid, VariableList &var
 {
   try
   {
-    varList["longitude"]->setUndefined();
-    varList["latitude"]->setUndefined();
-    varList["height"]->setUndefined();
-    varList["cartesianX"]->setUndefined();
-    varList["cartesianY"]->setUndefined();
-    varList["cartesianZ"]->setUndefined();
-    varList["index"]->setUndefined();
+    varList.undefineVariable("longitude");
+    varList.undefineVariable("latitude");
+    varList.undefineVariable("height");
+    varList.undefineVariable("cartesianX");
+    varList.undefineVariable("cartesianY");
+    varList.undefineVariable("cartesianZ");
+    varList.undefineVariable("index");
     for(UInt i=0; i<grid.values.size(); i++)
-      varList["data"+i%"%i"s]->setUndefined(); // "data(i)"
+      varList.undefineVariable("data"+i%"%i"s); // "data(i)"
   }
   catch(std::exception &e)
   {

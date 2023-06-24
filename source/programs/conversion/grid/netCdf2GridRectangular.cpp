@@ -66,7 +66,7 @@ void NetCdf2GridRectangular::run(Config &config, Parallel::CommunicatorPtr /*com
     // add variable for output files
     // -----------------------------
     VariableList fileNameVariableList;
-    addVariable(loopVar, fileNameVariableList);
+    fileNameVariableList.undefineVariable(loopVar);
 
     // open netCDF file
     // ----------------
@@ -100,7 +100,7 @@ void NetCdf2GridRectangular::run(Config &config, Parallel::CommunicatorPtr /*com
     // --------------
     Single::forEach(epochs.size(), [&](UInt idEpoch)
     {
-      fileNameVariableList[loopVar]->setValue(epochs.at(idEpoch).mjd());
+      fileNameVariableList.setVariable(loopVar, epochs.at(idEpoch).mjd());
 
       grid.values.clear();
       for(const std::string &name : dataName)

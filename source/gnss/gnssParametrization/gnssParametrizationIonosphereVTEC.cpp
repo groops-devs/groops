@@ -219,7 +219,7 @@ void GnssParametrizationIonosphereVTEC::writeResults(const GnssNormalEquationInf
     if(!fileNameVTEC.empty() && VTEC.size())
     {
       VariableList fileNameVariableList;
-      addVariable("station", "****", fileNameVariableList);
+      fileNameVariableList.setVariable("station", "****");
       logStatus<<"write VTEC to files <"<<fileNameVTEC(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
 
       for(auto &recv : gnss->receivers)
@@ -234,7 +234,7 @@ void GnssParametrizationIonosphereVTEC::writeResults(const GnssNormalEquationInf
               epoch.value = VTEC.at(recv->idRecv()).at(idEpoch);
               arc.push_back(epoch);
             }
-          fileNameVariableList["station"]->setValue(recv->name());
+          fileNameVariableList.setVariable("station", recv->name());
           if(arc.size())
             InstrumentFile::write(fileNameVTEC(fileNameVariableList).appendBaseName(suffix), arc);
         }

@@ -42,14 +42,14 @@ class MatrixGeneratorElementWiseOperation : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorElementWiseOperation(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorElementWiseOperation::MatrixGeneratorElementWiseOperation(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorElementWiseOperation::MatrixGeneratorElementWiseOperation(Config &config)
 {
   try
   {
@@ -66,7 +66,7 @@ inline MatrixGeneratorElementWiseOperation::MatrixGeneratorElementWiseOperation(
 
 /***********************************************/
 
-inline void MatrixGeneratorElementWiseOperation::compute(Matrix &A, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorElementWiseOperation::compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {
@@ -75,21 +75,25 @@ inline void MatrixGeneratorElementWiseOperation::compute(Matrix &A, UInt &/*star
     if( (X.rows() != Y.rows()) || (X.columns() != Y.columns()) )
       throw(Exception("Matrix dimensions do not agree. ("+X.rows()%"%i x "s+X.columns()%"%i) vs. ("s+Y.rows()%"%i x "s+Y.columns()%"%i)."s));
 
-    addVariable("rows",    static_cast<Double>(X.rows()),    varList);
-    addVariable("columns", static_cast<Double>(X.columns()), varList);
-    addVariable("row",     varList);
-    addVariable("column",  varList);
-    addVariable("data",    varList);
+    VariableList varList;
+    varList.setVariable("rowsBefore",    static_cast<Double>(rowsBefore));
+    varList.setVariable("columnsBefore", static_cast<Double>(columnsBefore));
+    varList.setVariable("rows",          static_cast<Double>(X.rows()));
+    varList.setVariable("columns",       static_cast<Double>(X.columns()));
+    varList.undefineVariable("row");
+    varList.undefineVariable("column");
+    varList.undefineVariable("data0");
+    varList.undefineVariable("data1");
     expression->simplify(varList);
 
     A = Matrix(X.rows(), X.columns());
     for(UInt z=0; z<A.rows(); z++)
       for(UInt s=0; s<A.columns(); s++)
       {
-        varList["row"]->setValue(static_cast<Double>(z));
-        varList["column"]->setValue(static_cast<Double>(s));
-        varList["data0"]->setValue(X(z,s));
-        varList["data1"]->setValue(Y(z,s));
+        varList.setVariable("row",    static_cast<Double>(z));
+        varList.setVariable("column", static_cast<Double>(s));
+        varList.setVariable("data0",  X(z,s));
+        varList.setVariable("data1",  Y(z,s));
         A(z,s) = expression->evaluate(varList);
       }
   }

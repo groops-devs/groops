@@ -25,7 +25,6 @@ Evaluate if \file{matrix}{matrix} (or \file{instrument}{instrument}) file is emp
 
 #include "base/import.h"
 #include "files/fileMatrix.h"
-#include "parser/stringParser.h"
 #include "classes/condition/condition.h"
 
 /***** CLASS ***********************************/
@@ -67,7 +66,7 @@ inline Bool ConditionMatrixEmpty::condition(const VariableList &varList) const
   try
   {
     Matrix A;
-    readFileMatrix(StringParser::parse(fileName, varList), A);
+    readFileMatrix(fileName(varList), A);
     return !A.size();
   }
   catch(std::exception &e)

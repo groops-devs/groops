@@ -80,13 +80,12 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
       transmitterList.insert(transmitterList.end(), list.begin(), list.end());
     }
     VariableList fileNameVariableList;
-    addVariable("prn", fileNameVariableList);
     UInt countTrans = 0;
     for(const std::string &prn : transmitterList)
     {
       try
       {
-        fileNameVariableList["prn"]->setValue(prn);
+        fileNameVariableList.setVariable("prn", prn);
 
         Platform platform;
         readFilePlatform(fileNameTransmitterInfo(fileNameVariableList), platform);
@@ -206,7 +205,7 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
 
     if(!countTrans)
     {
-      fileNameVariableList["prn"]->setValue("***");
+      fileNameVariableList.setVariable("prn", "***");
       logWarningOnce<<"Initialization of all satellites failed. Wrong file name <"<<fileNameOrbit(fileNameVariableList)<<">?"<<Log::endl;
     }
   }

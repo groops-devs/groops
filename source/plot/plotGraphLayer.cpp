@@ -112,13 +112,9 @@ PlotGraphLayerLinesAndPoints::PlotGraphLayerLinesAndPoints(Config &config)
 
     // create data variables
     // ---------------------
-    std::vector<ExpressionVariablePtr> expressions = {exprX, exprY, exprZ, exprError};
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    for(ExpressionVariablePtr expr : expressions)
-      if(expr) expr->usedVariables(varList, usedVariables);
-    addDataVariables(A, varList, usedVariables);
-    for(ExpressionVariablePtr expr : expressions)
+    VariableList varList;
+    addDataVariables(A, varList);
+    for(ExpressionVariablePtr expr : {exprX, exprY, exprZ, exprError})
       if(expr) expr->simplify(varList);
 
     // evaluate expressions
@@ -130,7 +126,7 @@ PlotGraphLayerLinesAndPoints::PlotGraphLayerLinesAndPoints(Config &config)
       evaluateDataVariables(A, i, varList);
       if(!exprX)
         data(i, idx++) = static_cast<Double>(i); // default: index
-      for(auto expression : expressions)
+      for(auto expression : {exprX, exprY, exprZ, exprError})
         if(expression)
           data(i, idx++) = expression->evaluate(varList);
     }
@@ -266,12 +262,10 @@ PlotGraphLayerErrorEnvelope::PlotGraphLayerErrorEnvelope(Config &config)
 
     // create data variables
     // ---------------------
+    VariableList varList;
+    addDataVariables(A, varList);
+
     std::vector<ExpressionVariablePtr> expressions = {exprX, exprY, exprErrors};
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    for(ExpressionVariablePtr expr : expressions)
-      if(expr) expr->usedVariables(varList, usedVariables);
-    addDataVariables(A, varList, usedVariables);
     for(ExpressionVariablePtr expr : expressions)
       if(expr) expr->simplify(varList);
 
@@ -422,13 +416,9 @@ PlotGraphLayerBars::PlotGraphLayerBars(Config &config)
 
     // create data variables
     // ---------------------
-    std::vector<ExpressionVariablePtr> expressions = {exprX, exprY, exprZ, exprBase, exprBase, exprWidth};
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    for(ExpressionVariablePtr expr : expressions)
-      if(expr) expr->usedVariables(varList, usedVariables);
-    addDataVariables(A, varList, usedVariables);
-    for(ExpressionVariablePtr expr : expressions)
+    VariableList varList;
+    addDataVariables(A, varList);
+    for(ExpressionVariablePtr expr : {exprX, exprY, exprZ, exprBase, exprBase, exprWidth})
       if(expr) expr->simplify(varList);
 
     // evaluate expressions
@@ -593,12 +583,10 @@ PlotGraphLayerGridded::PlotGraphLayerGridded(Config &config)
 
     // create data variables
     // ---------------------
+    VariableList varList;
+    addDataVariables(A, varList);
+
     std::vector<ExpressionVariablePtr> expressions = {exprX, exprY, exprZ};
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    for(ExpressionVariablePtr expr : expressions)
-      if(expr) expr->usedVariables(varList, usedVariables);
-    addDataVariables(A, varList, usedVariables);
     for(ExpressionVariablePtr expr : expressions)
       if(expr) expr->simplify(varList);
 
@@ -931,12 +919,10 @@ PlotGraphLayerDegreeAmplitudes::PlotGraphLayerDegreeAmplitudes(Config &config)
 
     // create data variables
     // ---------------------
+    VariableList varList;
+    addDataVariables(A, varList);
+
     std::vector<ExpressionVariablePtr> expressions = {exprDegree, exprSignal, exprErrors};
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    for(ExpressionVariablePtr expr : expressions)
-      if(expr) expr->usedVariables(varList, usedVariables);
-    addDataVariables(A, varList, usedVariables);
     for(ExpressionVariablePtr expr : expressions)
       if(expr) expr->simplify(varList);
 

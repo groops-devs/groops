@@ -114,11 +114,8 @@ void GriddedData2PotentialCoefficients::run(Config &config, Parallel::Communicat
 
     // evaluate expression
     // -------------------
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    exprValue->usedVariables(varList, usedVariables);
-    exprArea ->usedVariables(varList, usedVariables);
-    addDataVariables(grid, varList, usedVariables);
+    VariableList varList;
+    addDataVariables(grid, varList);
     exprValue->simplify(varList);
     exprArea ->simplify(varList);
 

@@ -180,12 +180,12 @@
 			<xs:element name="stringContainsPattern">
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="string" type="string" minOccurs="0">
+						<xs:element name="string" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>should contain a {variable}</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="pattern" type="string" minOccurs="0"/>
+						<xs:element name="pattern" type="filename" minOccurs="0"/>
 						<xs:element name="isRegularExpression" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>pattern is  a regular expression</xs:documentation>
@@ -202,12 +202,12 @@
 			<xs:element name="stringMatchPattern">
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="string" type="string" minOccurs="0">
+						<xs:element name="string" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>should contain a {variable}</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="pattern" type="string" minOccurs="0"/>
+						<xs:element name="pattern" type="filename" minOccurs="0"/>
 						<xs:element name="isRegularExpression" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>pattern is  a regular expression</xs:documentation>

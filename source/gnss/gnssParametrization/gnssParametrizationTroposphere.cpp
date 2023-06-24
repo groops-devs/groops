@@ -307,8 +307,8 @@ void GnssParametrizationTroposphere::writeResults(const GnssNormalEquationInfo &
       return;
 
     VariableList fileNameVariableList;
-    addVariable("station", "****", fileNameVariableList);
-    fileNameVariableList["station"]->setValue("****");
+    fileNameVariableList.setVariable("station", "****");
+    fileNameVariableList.setVariable("station", "****");
     for(auto para : parameters)
       if(para && normalEquationInfo.estimateReceiver.at(para->idRecv) && gnss->receivers.at(para->idRecv)->isMyRank())
       {
@@ -335,7 +335,7 @@ void GnssParametrizationTroposphere::writeResults(const GnssNormalEquationInfo &
           A(i, 11) = aWet;                                               // wet mapping function coefficient a []
         }
 
-        fileNameVariableList["station"]->setValue(gnss->receivers.at(para->idRecv)->name());
+        fileNameVariableList.setVariable("station", gnss->receivers.at(para->idRecv)->name());
         InstrumentFile::write(fileNameTropo(fileNameVariableList).appendBaseName(suffix), Arc(times, A));
       }
   }

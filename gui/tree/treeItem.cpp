@@ -324,7 +324,7 @@ void TreeItem::selection(int &start, int &length) const
     QLineEdit *lineEdit = valueEditor->findChild<QLineEdit*>();
     if(lineEdit)
     {
-      start = lineEdit->selectionStart() >= 0 ? lineEdit->selectionStart() : lineEdit->cursorPosition();;
+      start = lineEdit->selectionStart() >= 0 ? lineEdit->selectionStart() : lineEdit->cursorPosition();
       length = lineEdit->selectedText().size();
     }
   }

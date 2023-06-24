@@ -39,14 +39,14 @@ class MatrixGeneratorEigenValues : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorEigenValues(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorEigenValues::MatrixGeneratorEigenValues(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorEigenValues::MatrixGeneratorEigenValues(Config &config)
 {
   try
   {
@@ -62,7 +62,7 @@ inline MatrixGeneratorEigenValues::MatrixGeneratorEigenValues(Config &config) : 
 
 /***********************************************/
 
-inline void MatrixGeneratorEigenValues::compute(Matrix &A, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorEigenValues::compute(Matrix &A, UInt /*rowsBefore*/, UInt /*columnsBefore*/, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {

@@ -93,7 +93,7 @@ void SettingsPathDialog::clickedSchemaChange()
 
     item->setText(name);
     ui->listSchema->sortItems();
-    ui->listSchema->setItemSelected(item, true);
+    item->setSelected(true);
   }
 }
 
@@ -120,7 +120,7 @@ void SettingsPathDialog::clickedSchemaAdd()
 
     ui->listSchema->addItem(name);
     ui->listSchema->sortItems();
-    ui->listSchema->setItemSelected(ui->listSchema->findItems(name, Qt::MatchFixedString).at(0), true);
+    ui->listSchema->findItems(name, Qt::MatchFixedString).at(0)->setSelected(true);
   }
 }
 

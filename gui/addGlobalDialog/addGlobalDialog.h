@@ -15,7 +15,7 @@
 #include "base/importGroops.h"
 #include "tree/treeElementGlobal.h"
 #include <QDialog>
-#include <QRegExpValidator>
+#include <QRegularExpression>
 
 /***** TYPES ***********************************/
 

@@ -100,9 +100,9 @@ inline Bool LoopFileAsciiTable::iteration(VariableList &varList)
 
   for(UInt i=0; i<nameString.size(); i++)
     if(!nameString.at(i).empty())
-      addVariable(nameString.at(i), stringTable.at(index).at(i), varList);
-  if(!nameIndex.empty()) addVariable(nameIndex, index,   varList);
-  if(!nameCount.empty()) addVariable(nameCount, count(), varList);
+      varList.setVariable(nameString.at(i), stringTable.at(index).at(i));
+  if(!nameIndex.empty()) varList.setVariable(nameIndex, index);
+  if(!nameCount.empty()) varList.setVariable(nameCount, count());
 
   index++;
   return TRUE;

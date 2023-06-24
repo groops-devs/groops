@@ -178,9 +178,9 @@ void TreeElementGlobal::createChildrenElements(int index, XmlNodePtr xmlNode)
 
         // update varList
         if(treeElement->isLinked())
-          tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(treeElement->label().toStdString(), "{"+treeElement->selectedValue().toStdString()+"}")));
+          tree->varList[treeElement->label()] = "{"+treeElement->selectedValue()+"}";
         else
-          tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(treeElement->label().toStdString(), treeElement->selectedValue().toStdString())));
+          tree->varList[treeElement->label()] = treeElement->selectedValue();
 
         children[index].push_back(treeElement);
         xmlChild = xmlNode->getNextChild();
@@ -324,8 +324,8 @@ Bool TreeElementGlobal::addChild(TreeElement *beforeElement, const QString &type
 
       bool ok;
       label = QInputDialog::getText(tree, tr("Add global element - GROOPS"), tr("Name of global element:"), QLineEdit::Normal, label, &ok);
-      QRegExp regex("[a-zA-Z]([a-zA-Z0-9])*");
-      while(ok && (label.isEmpty() || existingNames.contains(label) || !regex.exactMatch(label)))
+      QRegularExpression regex("^[a-zA-Z]([a-zA-Z0-9])*$");
+      while(ok && (label.isEmpty() || existingNames.contains(label) || !regex.match(label).hasMatch()))
         label = QInputDialog::getText(tree, tr("Add global element - GROOPS"), tr("Name already exists or is invalid (only letters and digits allowed)!\nChoose another name:"), QLineEdit::Normal, label, &ok);
 
       if(!ok)
@@ -354,9 +354,9 @@ Bool TreeElementGlobal::addChild(TreeElement *beforeElement, const QString &type
 
     tree->pushUndoCommand(new UndoCommandRemoveAddChild(newElement, beforeElement, this, true/*isAdd*/));
     if(newElement->isLinked())
-      tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(newElement->label().toStdString(), "{"+newElement->selectedValue().toStdString()+"}")));
+      tree->varList[newElement->label()] = "{"+newElement->selectedValue()+"}";
     else
-      tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(newElement->label().toStdString(), newElement->selectedValue().toStdString())));
+      tree->varList[newElement->label()] = newElement->selectedValue();
 
     return true;
   }

@@ -169,7 +169,7 @@ void Tree::clearTree()
     }
     _rootElement   = nullptr;
     _elementGlobal = nullptr;
-    _varList.clear();
+    varList.clear();
     unknownElements.clear();
     renamedElements.clear();
     emit unknownElementsChanged(unknownElements.size());
@@ -233,6 +233,17 @@ void Tree::setShowResults(Bool state)
 
 /***********************************************/
 
+// generates a GROOPS VariableList from varList
+VariableList Tree::getVariableList()
+{
+  VariableList variableList;
+  for(auto iter=varList.constKeyValueBegin(); iter!=varList.constKeyValueEnd(); iter++)
+    variableList.setVariable(iter->first.toStdString(), iter->second.toStdString());
+  return variableList;
+}
+
+/***********************************************/
+
 void Tree::updateExpressions(const TreeElement *element)
 {
   try
@@ -241,11 +252,7 @@ void Tree::updateExpressions(const TreeElement *element)
       return;
 
     if(element->parentElement && element->parentElement == elementGlobal())
-    {
-      for(auto &&var : _varList)
-        var.second->setValue(var.second->getText()); // reset as TEXT
       dynamic_cast<TreeElementComplex*>(rootElement())->updateExpression();
-    }
   }
   catch(std::exception &e)
   {
@@ -453,8 +460,6 @@ Bool Tree::openFile(QString fileName)
     _rootElement = TreeElement::newTreeElement(this, nullptr, schema.rootElement, "", xmlNode, true);
     rootElement()->createItem(nullptr, nullptr)->setExpanded(true);
     createFileWatcher();
-    for(auto &&var : _varList)
-      var.second->setValue(var.second->getText()); // reset as TEXT
     dynamic_cast<TreeElementComplex*>(rootElement())->updateExpression();
 
     return true;
@@ -1355,8 +1360,8 @@ void Tree::editRename()
 
     bool ok;
     QString label = QInputDialog::getText(this, tr("Rename global element - GROOPS"), tr("New name of global element:"), QLineEdit::Normal, element->label(), &ok);
-    QRegExp regex("[a-zA-Z]([a-zA-Z0-9])*");
-    while(ok && (label.isEmpty() || existingNames.contains(label) || !regex.exactMatch(label)))
+    QRegularExpression regex("^[a-zA-Z]([a-zA-Z0-9])*$");
+    while(ok && (label.isEmpty() || existingNames.contains(label) || !regex.match(label).hasMatch()))
       label = QInputDialog::getText(this, tr("Rename global element - GROOPS"), tr("Name already exists or is invalid (only letters and digits allowed)!\nChoose another name:"), QLineEdit::Normal, label, &ok);
 
     if(ok)

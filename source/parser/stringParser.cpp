@@ -15,112 +15,140 @@
 #include "base/constants.h"
 #include "stringParser.h"
 #include "expressionParser.h"
+#include <regex>
+
+/***********************************************/
+
+static std::string parseUntil(const std::string &text, const char *search, const VariableList &varList, std::string::size_type &pos, Bool &resolved);
+static std::string parseVariable(const std::string &text, const VariableList &varList, std::string::size_type &pos, Bool &resolved);
+
+/***********************************************/
+
+std::string parseUntil(const std::string &text, const char *search, const VariableList &varList, std::string::size_type &pos, Bool &resolved)
+{
+  std::string textPart;
+  for(;;)
+  {
+    std::string::size_type posOld = pos;
+    pos = text.find_first_of(search, pos);
+    textPart += text.substr(posOld, pos-posOld);
+    if((pos != std::string::npos) && (pos > 1) && (text.at(pos-1) == '#')) // escape '#' before?
+      textPart.back() = text.at(pos++);                                    // replace '#' by excapted character
+    else if((pos != std::string::npos) && (text.at(pos) == '{'))
+      textPart += parseVariable(text, varList, ++pos, resolved);
+    else
+      break;
+  }
+  return textPart;
+}
 
 /***********************************************/
 
 // parse after '{'
-static std::string parseVar(const std::string &text, const VariableList &varList, std::string::size_type &pos, Bool &resolved)
+static std::string parseVariable(const std::string &text, const VariableList &varList, std::string::size_type &pos, Bool &resolved)
 {
-  std::string result;
   Bool resolvedVar = TRUE;
-  for(;;)
+  std::string textPart = parseUntil(text, "{:/}", varList, pos, resolvedVar);
+  if(pos == std::string::npos)
+    throw(Exception("missing closing '}'"));
+  auto c = text.at(pos++);
+
+  // textPart is variable
+  // --------------------
+  if(c == '}')
   {
-    auto posTmp = text.find_first_of("{:}", pos);
-    if(posTmp == std::string::npos)
-      throw(Exception("missing closing '}'"));
-    result += text.substr(pos, posTmp-pos);
-    pos = posTmp;
-    if(text.at(pos)!='{')
-      break;
-    // variable in variable
-    pos++; // after the '{'
-    result += parseVar(text, varList, pos, resolvedVar);
+    auto variable = varList.find(textPart);
+    if(variable && resolvedVar)
+      return variable->getParsedText(varList, resolved);
+    resolved = FALSE;
+    return '{'+textPart+'}';
   }
 
-  // result is variable?
-  if(text.at(pos)=='}')
+  // textPart is {expression:format}
+  // -------------------------------
+  if(c == ':')
   {
-    pos++;
-    // trim eat white space
-    auto start = result.find_first_not_of(" \t");
-    if(start == std::string::npos)
-      return ""; // empty string
-    auto end = result.find_last_not_of(" \t");
-    result = result.substr(start, end-start+1);
+    // format string
+    std::string format = parseUntil(text, "{}", varList, pos, resolvedVar);
+    if(pos++ == std::string::npos)
+      throw(Exception("missing closing '}' of {expression:format}"));
+    if(resolvedVar)
+    {
+      try {return ExpressionVariable::parse(textPart, varList) % format;} // parse expression -> caluclate new result string
+      catch(std::exception &/*e*/) {}
+    }
+    resolved = FALSE;
+    return "{"+textPart+":"+format+"}";
+  }
 
-    auto variable = varList.find(result);
-    if((!resolvedVar) || (!variable))
+  // regex expression {text/regex/replace}
+  // -------------------------------------
+  if(c == '/')
+  {
+    std::string regexText = parseUntil(text, "{/", varList, pos, resolvedVar);
+    if(pos++ == std::string::npos)
+      throw(Exception("missing second '/' of {text/regex/replace}"));
+    std::string replace = parseUntil(text, "{}", varList, pos, resolvedVar);
+    if(pos++ == std::string::npos)
+      throw(Exception("missing closing '}' of {text/regex/replace}"));
+    if(!resolvedVar)
     {
       resolved = FALSE;
-      return '{'+result+'}';
+      return '{'+textPart+'/'+regexText+'/'+replace+'}';
     }
-    return variable->getParsedText(varList, resolved);
+
+    // Escape sequences
+    // \l lowercase next char
+    // \u uppercase next char
+    // \L lowercase until \E
+    // \U uppercase until \E
+    // \Q quote (disable) pattern metacharacters until \E
+    // \E end either case modification or quoted section
+    std::regex regex(regexText);
+    std::string result;
+    std::string::size_type posReplace = 0;
+    Char c = 'E'; // end: normal mode
+    for(;;)
+    {
+      std::string::size_type posOld = posReplace;
+      posReplace = replace.find('\\', posOld);
+
+      if(c != 'Q')
+      {
+        std::string resultPart = std::regex_replace(textPart, regex, replace.substr(posOld, posReplace-posOld));
+        if(c == 'L') std::for_each(resultPart.begin(), resultPart.end(), [](auto &c){c=std::tolower(c);});
+        if(c == 'U') std::for_each(resultPart.begin(), resultPart.end(), [](auto &c){c=std::toupper(c);});
+        if(c == 'l' && !resultPart.empty()) resultPart.front() = std::tolower(resultPart.front());
+        if(c == 'u' && !resultPart.empty()) resultPart.front() = std::toupper(resultPart.front());
+        result += resultPart;
+      }
+      else
+        result += replace.substr(posOld, posReplace-posOld);
+
+      if(posReplace++ == std::string::npos) return result;      // end of string
+      auto cNew = (posReplace < replace.size()) ? replace.at(posReplace) : ' ';
+      if(((c != 'Q') && ((cNew == 'L') || (cNew == 'U') || (cNew == 'l') || (cNew == 'u') || (cNew == 'Q'))) || // not in quote mode  -> accept Q,L,U,l,u
+         ((c != 'E') && (cNew == 'E')))                                                                         // not in normal mode -> accept additionally E
+        c = replace.at(posReplace++);
+      else
+        result += "\\";
+    }
+
+   return result;
   }
 
-  // result is expression
-  pos++; // after the ':'
-
-  // format string
-  std::string format;
-  for(;;)
-  {
-    auto posTmp = text.find_first_of("{}", pos);
-    if(posTmp == std::string::npos)
-      throw(Exception("missing closing '}'"));
-    format += text.substr(pos, posTmp-pos);
-    pos = posTmp;
-    if(text.at(pos)!='{') // variable in format string
-      break;
-    pos++; // after the '{'
-    // variable in variable
-    format += parseVar(text, varList, pos, resolvedVar);
-  }
-  pos++; // after }
-
-  if(!resolvedVar)
-  {
-    resolved = FALSE;
-    return "{"+result+":"+format+"}";
-  }
-
-  // parse expression
-  ExpressionPtr expr = Expression::parse(result);
-  Double value = 0;
-  try
-  {
-    value = expr->evaluate(varList);
-  }
-  catch(std::exception &/*e*/)
-  {
-    return "{"+result+":"+format+"}";
-  }
-
-  // parse format string -> caluclate new result string
-  return value%format;
+  throw(Exception("unknown error"));
 }
 
 /***********************************************/
 
 std::string StringParser::parse(const std::string &name, const std::string &text, const VariableList &varList, Bool &resolved)
 {
+  std::string result;
   std::string::size_type pos = 0;
-
   try
   {
-    resolved = TRUE;
-    std::string result;
-    for(;;)
-    {
-      std::string::size_type posOld = pos;
-      pos = text.find('{', posOld);
-      result += text.substr(posOld, pos-posOld);
-      if(pos == std::string::npos)
-        break;
-      pos++;
-      result += parseVar(text, varList, pos, resolved);
-    }
-
-    return result;
+    return parseUntil(text, "{", varList, pos, resolved);
   }
   catch(std::exception &e)
   {
@@ -134,7 +162,7 @@ std::string StringParser::parse(const std::string &text, const VariableList &var
 {
   try
   {
-    Bool resolved;
+    Bool resolved = TRUE;
     std::string result = parse("(unknown)", text, varList, resolved);
     if(!resolved)
       throw(Exception("unresolved variables"));

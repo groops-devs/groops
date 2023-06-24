@@ -80,9 +80,9 @@ inline Bool LoopUniformSampling::iteration(VariableList &varList)
   if(index >= count())
     return FALSE;
 
-  if(!nameNumber.empty()) addVariable(nameNumber, numbers.at(index), varList);
-  if(!nameIndex.empty())  addVariable(nameIndex,  index,             varList);
-  if(!nameCount.empty())  addVariable(nameCount,  count(),           varList);
+  if(!nameNumber.empty()) varList.setVariable(nameNumber, numbers.at(index));
+  if(!nameIndex.empty())  varList.setVariable(nameIndex,  index);
+  if(!nameCount.empty())  varList.setVariable(nameCount,  count());
 
   index++;
   return TRUE;

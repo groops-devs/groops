@@ -65,12 +65,8 @@ inline DigitalFilterFile::DigitalFilterFile(Config &config)
 
     // create data variables
     // ---------------------
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    if(exprId) exprId->usedVariables(varList, usedVariables);
-    if(exprMA) exprMA->usedVariables(varList, usedVariables);
-    if(exprAR) exprAR->usedVariables(varList, usedVariables);
-    addDataVariables(A, varList, usedVariables);
+    VariableList varList;
+    addDataVariables(A, varList);
 
     std::vector< std::pair<Int, Double> > bk;
     std::vector< std::pair<Int, Double> > ak;

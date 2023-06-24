@@ -39,7 +39,6 @@ class NoiseGeneratorExpressionPSD : public NoiseGeneratorBase
 {
   NoiseGeneratorPtr     noisePtr;
   ExpressionVariablePtr expression;
-  VariableList          varList;
   Double                sampling;
 
 public:
@@ -60,8 +59,6 @@ inline NoiseGeneratorExpressionPSD::NoiseGeneratorExpressionPSD(Config &config)
     readConfig(config, "psd",      expression, Config::MUSTSET, "1", "one sided PSD (variable: freq [Hz]) [unit^2/Hz]");
     readConfig(config, "sampling", sampling,   Config::MUSTSET, "1", "to determine frequency [seconds]");
     if(isCreateSchema(config)) return;
-
-    varList = config.getVarList();
   }
   catch(std::exception &e)
   {
@@ -81,12 +78,11 @@ inline Matrix NoiseGeneratorExpressionPSD::noise(UInt samples, UInt series)
 
     Vector freq = Fourier::frequencies(wk.rows(), sampling);
     Vector PSD(freq.rows());
-    auto  varList2 = varList;
-    addVariable("freq", varList2);
+    VariableList varList;
     for(UInt i=0; i<freq.rows(); i++)
     {
-      varList2["freq"]->setValue(freq(i));
-      PSD(i) = expression->evaluate(varList2);
+      varList.setVariable("freq", freq(i));
+      PSD(i) = expression->evaluate(varList);
       if(!std::isfinite(PSD(i)))
         logWarning << "Warning: PSD at frequency "+freq(i) % "%f [Hz] is "s + PSD(i) % "%f"s << Log::endl;
     }
@@ -117,12 +113,11 @@ inline Vector NoiseGeneratorExpressionPSD::covarianceFunction(UInt length, Doubl
   Vector freq = Fourier::frequencies(2*length, sampling);
   Vector psd  = Fourier::covariance2psd(noisePtr->covarianceFunction(length, sampling).column(1), sampling);
 
-  auto varList2 = varList;
-  addVariable("freq", varList2);
+  VariableList varList;
   for(UInt i=0; i<length; i++)
   {
-    varList2["freq"]->setValue(freq(i));
-    psd(i) *= expression->evaluate(varList2);
+    varList.setVariable("freq", freq(i));
+    psd(i) *= expression->evaluate(varList);
   }
 
   return Fourier::psd2covariance(psd, sampling);

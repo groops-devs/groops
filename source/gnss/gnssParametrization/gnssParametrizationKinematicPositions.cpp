@@ -219,13 +219,12 @@ void GnssParametrizationKinematicPositions::writeResults(const GnssNormalEquatio
       return;
 
     VariableList fileNameVariableList;
-    addVariable("station", fileNameVariableList);
 
     // write kinematic orbits
     // ----------------------
     if(!fileNamePositions.empty())
     {
-      fileNameVariableList["station"]->setValue("****");
+      fileNameVariableList.setVariable("station", "****");
       logStatus<<"write kinematic position data <"<<fileNamePositions(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
       for(UInt idRecv=0; idRecv<index.size(); idRecv++)
         if(gnss->receivers.at(idRecv)->isMyRank())
@@ -249,7 +248,7 @@ void GnssParametrizationKinematicPositions::writeResults(const GnssNormalEquatio
                 arc.push_back(epoch);
               }
             }
-          fileNameVariableList["station"]->setValue(gnss->receivers.at(idRecv)->name());
+          fileNameVariableList.setVariable("station", gnss->receivers.at(idRecv)->name());
           InstrumentFile::write(fileNamePositions(fileNameVariableList).appendBaseName(suffix), arc);
         }
     }
@@ -258,7 +257,7 @@ void GnssParametrizationKinematicPositions::writeResults(const GnssNormalEquatio
     // ----------------------
     if(!fileNameCovariance.empty() && cov.size())
     {
-      fileNameVariableList["station"]->setValue("****");
+      fileNameVariableList.setVariable("station", "****");
       logStatus<<"write epoch covariance data <"<<fileNameCovariance(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
        for(UInt idRecv=0; idRecv<index.size(); idRecv++)
         if(gnss->receivers.at(idRecv)->isMyRank() && cov.at(idRecv).size())
@@ -272,7 +271,7 @@ void GnssParametrizationKinematicPositions::writeResults(const GnssNormalEquatio
               epoch.covariance = cov.at(idRecv).at(idEpoch);
               arc.push_back(epoch);
             }
-          fileNameVariableList["station"]->setValue(gnss->receivers.at(idRecv)->name());
+          fileNameVariableList.setVariable("station", gnss->receivers.at(idRecv)->name());
           InstrumentFile::write(fileNameCovariance(fileNameVariableList).appendBaseName(suffix), arc);
         }
     }

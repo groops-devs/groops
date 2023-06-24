@@ -85,10 +85,10 @@ int main(int argc, char *argv[])
     // Handle command line options
     parser.process(app);
     const Bool cleanStartup = parser.isSet("clean");
-    QFileInfoList fileNames;
+    QList<QFileInfo> fileNames;
     for(const auto &file : parser.values("file"))
-      fileNames.push_back(file);
-    QFileInfo schema = parser.isSet("schema") ? parser.value("schema") : QFileInfo();
+      fileNames.push_back(QFileInfo(file));
+    QFileInfo schema = parser.isSet("schema") ? QFileInfo(parser.value("schema")) : QFileInfo();
 
     // Set XML schema if passed as argument
     const bool isValidSchema = schema.isFile() ? Schema::validateSchema(schema.absoluteFilePath()) : false;

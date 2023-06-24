@@ -53,7 +53,7 @@ TreeElement *TreeElement::newTreeElement(Tree *tree, TreeElementComplex *parentE
     {
       if(xsdElement->name=="global")
         return new TreeElementGlobal(tree, parentElement, xsdElement, xmlNode);
-      else if(xsdElement->name=="programme" || xsdElement->name=="program")
+      else if(xsdElement->type=="programType")
         return new TreeElementProgram(tree, parentElement, xsdElement, defaultOverride, xmlNode, fromFile);
       else if(xsdElement->complex->type=="sequence")
         return new TreeElementSequence(tree, parentElement, xsdElement, defaultOverride, xmlNode, fromFile);
@@ -184,19 +184,17 @@ QString TreeElement::parseExpression(const QString &value) const
   QString result;
   try
   {
-    if(parentElement && parentElement == tree->elementGlobal())
-      for(auto &&var : tree->setVarList())
-        var.second->setValue(var.second->getText()); // reset as TEXT in case variables are still set CIRCULAR
+    VariableList varList = tree->getVariableList();
 
     Bool resolved;
     QString text = (findLinkIndex(value) >= 0 /*&& !isComplex()*/) ? "{"+value+"}" : value;
-    text = QString::fromStdString(StringParser::parse(name().toStdString(), text.toStdString(), tree->varList(), resolved));
+    text = QString::fromStdString(StringParser::parse(name().toStdString(), text.toStdString(), varList, resolved));
     result = text;
 
     if(QStringList({"bool", "int", "uint", "double", "angle", "time", "expression"}).contains(type())) // only numerical values
     {
-      Double d = Expression::parse(text.toStdString())->evaluate(tree->varList());
-      result.setNum(d, 'f', 7).remove(QRegExp("0+$")).remove(QRegExp("\\.$")); // %.7f with trailing zeros removed
+      Double d = ExpressionVariable::parse(text.toStdString(), varList);
+      result.setNum(d, 'f', 7).remove(QRegularExpression("0+$")).remove(QRegularExpression("\\.$")); // %.7f with trailing zeros removed
     }
 
     return result;
@@ -351,9 +349,9 @@ void TreeElement::setSelectedIndex(int index)
     if(!label().isEmpty())
     {
       if(isLinked())
-        tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(label().toStdString(), "{"+selectedValue().toStdString()+"}")));
+        tree->varList[label()] = "{"+selectedValue()+"}";
       else
-        tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(label().toStdString(), selectedValue().toStdString())));
+        tree->varList[label()] = selectedValue();
       if(tree->rootElement())
       {
         tree->rootElement()->newLink(this);
@@ -950,16 +948,16 @@ void TreeElement::UndoCommandRename::redo()
       label = oldLabel;
 
       // replace varList entry
-      tree->setVarList().erase(oldLabel.toStdString());
+      tree->varList.remove(oldLabel);
       if(treeElement->isLinked())
-        tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(treeElement->label().toStdString(), "{"+treeElement->selectedValue().toStdString()+"}")));
+        tree->varList[treeElement->label()] = "{"+treeElement->selectedValue()+"}";
       else
-        tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(treeElement->label().toStdString(), treeElement->selectedValue().toStdString())));
+        tree->varList[treeElement->label()] = treeElement->selectedValue();
 
       // replace link entries
-      for(auto &&entry : tree->setVarList())
-        if(entry.second->getText() == "{"+oldLabel.toStdString()+"}")
-          entry.second->setValue("{"+treeElement->label().toStdString()+"}");
+      for(auto &&entry : tree->varList)
+        if(entry == "{"+oldLabel+"}")
+          entry = "{"+treeElement->label()+"}";
 
       if(tree->rootElement())
         tree->rootElement()->updateExpression();

@@ -45,11 +45,8 @@ Bool System::exec(const std::string &command, std::vector<std::string> &output)
     char buffer[1024];
     while(std::fgets(buffer, sizeof(buffer), pipe) != nullptr)
     {
-      std::string line = buffer;
-      const auto pos = line.find_last_of('\n');
-      if(pos != std::string::npos)
-        line = line.substr(0, pos);
-      output.push_back(line);
+      std::string line(buffer);
+      output.push_back(line.substr(0, line.find_last_of('\n')));
     }
 
     return (pclose(pipe) == 0);
@@ -87,6 +84,26 @@ Bool System::remove(const FileName &fileName)
 
 /***********************************************/
 
+Bool System::move(const FileName &fileNameOld, const FileName &fileNameNew)
+{
+  try
+  {
+    if(!exists(fileNameOld))
+      return FALSE;
+    if(isDirectory(fileNameNew))
+      fs::rename(fileNameOld.str(), fileNameNew.append(fileNameOld.stripDirectory()).str());
+    else
+      fs::rename(fileNameOld.str(), fileNameNew.str());
+    return TRUE;
+  }
+  catch(std::exception &/*e*/)
+  {
+    return FALSE;
+  }
+}
+
+/***********************************************/
+
 Bool System::exists(const FileName &fileName)
 {
   return fs::exists(fileName.str());
@@ -104,6 +121,25 @@ Bool System::isDirectory(const FileName &fileName)
 FileName System::currentWorkingDirectory()
 {
   return FileName(fs::current_path().string());
+}
+
+/***********************************************/
+
+std::vector<FileName> System::directoryListing(const FileName &path, const std::regex &pattern)
+{
+  try
+  {
+    std::vector<FileName> files;
+    const fs::directory_iterator end;
+    for(fs::directory_iterator iter{path.str()}; iter!=end; iter++)
+      if(fs::is_regular_file(*iter) && std::regex_match(iter->path().string(), pattern))
+        files.push_back(FileName(iter->path().filename().string()));
+    return files;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
 
 /***********************************************/

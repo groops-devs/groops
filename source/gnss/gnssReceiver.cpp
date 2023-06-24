@@ -1168,11 +1168,11 @@ void GnssReceiver::writeTracks(const FileName &fileName, ObservationEquationList
           typeStr += type.str().substr(0, 3);
         typeStr = String::replaceAll(typeStr, "?", "");
         VariableList varList;
-        addVariable("station",        name(),                     varList);
-        addVariable("prn",            track->transmitter->name(), varList);
-        addVariable("trackTimeStart", timesTrack.front().mjd(),   varList);
-        addVariable("trackTimeEnd",   timesTrack.back().mjd(),    varList);
-        addVariable("types",          typeStr,                    varList);
+        varList.setVariable("station",        name());
+        varList.setVariable("prn",            track->transmitter->name());
+        varList.setVariable("trackTimeStart", timesTrack.front().mjd());
+        varList.setVariable("trackTimeEnd",   timesTrack.back().mjd());
+        varList.setVariable("types",          typeStr);
         InstrumentFile::write(fileName(varList), Arc(timesTrack, A));
       }
   }

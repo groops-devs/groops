@@ -66,11 +66,9 @@ ObservationStationLoading::ObservationStationLoading(Config &config)
 
     // evaluate expression
     // -------------------
-    auto varList = config.getVarList();
+    VariableList varList;
+    addDataVariables(grid, varList);
     std::vector<ExpressionVariablePtr> expr({exprNorth, exprEast, exprUp, exprSigmaNorth, exprSigmaEast, exprSigmaUp});
-    std::set<std::string> usedVariables;
-    std::for_each(expr.begin(), expr.end(), [&](auto expr) {if(expr) expr->usedVariables(varList, usedVariables);});
-    addDataVariables(grid, varList, usedVariables);
     std::for_each(expr.begin(), expr.end(), [&](auto expr) {if(expr) expr->simplify(varList);});
 
     valuesNorth.resize(grid.points.size(), 0.);

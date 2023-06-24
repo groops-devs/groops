@@ -103,11 +103,9 @@ void GriddedTopography2AtmospherePotentialCoefficients::run(Config &config, Para
       // evaluate expression for lower boundary
       // -------------------------------
       logStatus<<"evaluate expression for lower boundary"<<Log::endl;
-      auto varList = config.getVarList();
-      std::set<std::string> usedVariables;
-      expressionLower->usedVariables(varList, usedVariables);
-      addDataVariables(grid, varList, usedVariables);
-      addVariable("area", varList);
+      VariableList varList;
+      addDataVariables(grid, varList);
+      varList.undefineVariable("area");
       expressionLower->simplify(varList);
 
       topo = Matrix(rows,cols);
@@ -115,7 +113,7 @@ void GriddedTopography2AtmospherePotentialCoefficients::run(Config &config, Para
         for(UInt s=0; s<cols; s++)
         {
           evaluateDataVariables(grid, z, s, varList);
-          varList["area"]->setValue( dLambda.at(s)*dPhi.at(z)*cos(phi.at(z)) ); // area
+          varList.setVariable("area",  dLambda.at(s)*dPhi.at(z)*cos(phi.at(z)) ); // area
           topo(z,s) = expressionLower->evaluate(varList);   //  Topography
         }
     } // if(Parallel::isMaster(comm))

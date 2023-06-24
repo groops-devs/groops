@@ -110,10 +110,10 @@ XsdElementPtr Schema::readElement(XmlNodePtr xmlNode)
       while(info!=nullptr)
       {
         if(info->getText().startsWith("tag:"))
-          element->tags.append(info->getText().split(" ", QString::SkipEmptyParts)[1]);
+          element->tags.append(info->getText().split(" ", Qt::SkipEmptyParts)[1]);
         else if(info->getText().startsWith("rename:")) // format: "rename: oldName = newName"
         {
-          QStringList splits = info->getText().split(" ", QString::SkipEmptyParts);
+          QStringList splits = info->getText().split(" ", Qt::SkipEmptyParts);
           renames[splits[1]] = splits[3];
         }
         info = getChild(child, "xs:appinfo");
@@ -185,7 +185,7 @@ XsdComplexPtr Schema::readComplex(XmlNodePtr xmlNode)
       {
         if(info->getText().startsWith("rename:")) // format: "rename: oldName = newName"
         {
-          QStringList splits = info->getText().split(" ", QString::SkipEmptyParts);
+          QStringList splits = info->getText().split(" ", Qt::SkipEmptyParts);
           complex->renames[splits[1]] = splits[3];
         }
         info = getChild(xmlNode2, "xs:appinfo");

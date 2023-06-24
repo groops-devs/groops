@@ -133,13 +133,12 @@ void Sinex2StationPosition::run(Config &config, Parallel::CommunicatorPtr /*comm
     // discontinuities
     // ---------------
     VariableList fileNameVariableList;
-    addVariable(variableLoopStation, fileNameVariableList);
     if(!fileNameDiscontinuities.empty())
     {
       logStatus<<"read discontinuity files <"<<fileNameDiscontinuities<<">"<<Log::endl;
       for(const auto &name : stationNames)
       {
-        fileNameVariableList[variableLoopStation]->setValue(name);
+        fileNameVariableList.setVariable(variableLoopStation, name);
         try
         {
           if(stations.find(name) != stations.end())
@@ -163,7 +162,7 @@ void Sinex2StationPosition::run(Config &config, Parallel::CommunicatorPtr /*comm
           arc = station.second.arc({station.second.intervals.back().referenceTime}, extrapolateForward, extrapolateBackward);
         else
           arc = station.second.arc(times, extrapolateForward, extrapolateBackward);
-        fileNameVariableList[variableLoopStation]->setValue(station.first);
+        fileNameVariableList.setVariable(variableLoopStation, station.first);
         InstrumentFile::write(fileNameInstrument(fileNameVariableList), arc);
       }
     }

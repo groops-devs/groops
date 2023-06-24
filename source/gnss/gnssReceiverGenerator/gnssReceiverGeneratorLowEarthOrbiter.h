@@ -56,7 +56,6 @@ class GnssReceiverGeneratorLowEarthOrbiter : public GnssReceiverGeneratorBase
   UInt                  tecWindowSize;
   Double                tecSigmaFactor;
   FileName              fileNameTrackBefore, fileNameTrackAfter;
-  VariableList          varList;
   GnssReceiverPtr       recv;
 
 public:

@@ -97,7 +97,7 @@ inline Bool LoopLoop::iteration(VariableList &varList)
     if(index == 0)
     {
       if(!nameIndex.empty())
-        addVariable(nameIndex, index, varList);
+        varList.setVariable(nameIndex, index);
       index++;
       return initLoop(0);
     }
@@ -107,7 +107,7 @@ inline Bool LoopLoop::iteration(VariableList &varList)
         if((i+1 >= loops.size()) || initLoop(i+1))
         {
           if(!nameIndex.empty())
-            varList[nameIndex]->setValue(index);
+            varList.setVariable(nameIndex, index);
           index++;
           return TRUE;
         }
