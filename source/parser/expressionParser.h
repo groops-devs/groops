@@ -141,7 +141,7 @@ public:
   ExpressionVariable(const std::string &name, const std::string &text, const VariableList &varList);
 
   /** @brief Constructor: variable with expression. */
-  ExpressionVariable(const std::string &name, ExpressionPtr expr);
+  ExpressionVariable(const std::string &name, ExpressionPtr expr, const VariableList &varList);
 
   /** @brief Constructor: variable value computed with @a func.
   * The @a func is evaluated only if needed and only once. For computational expensive calculations. */

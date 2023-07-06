@@ -357,10 +357,23 @@ public:
   ExpressionAdd(const ExpressionPtr &l, const ExpressionPtr &r) : ExpressionFunction2(l, r) {}
   std::string   string() const override {return left->string(priority()) + " + " + right->string(priority());}
   ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionAdd>(l, r);}
+  ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   Double        evaluate(const VariableList &v) const override {return left->evaluate(v) + right->evaluate(v);}
   ExpressionPtr derivative(const std::string &var) const override {return left->derivative(var) + right->derivative(var);}
   UInt priority() const override {return Expression::Priority::ADDITIVE;}
 };
+
+ExpressionPtr ExpressionAdd::simplify(VariableList &varList, Bool &resolved) const
+{
+  Bool resolved1, resolved2;
+  ExpressionPtr l = left->simplify(varList, resolved1);
+  ExpressionPtr r = right->simplify(varList, resolved2);
+  resolved = resolved1 && resolved2;
+  if(resolved)                                  return exprValue(create(l, r)->evaluate(varList));
+  if(resolved1 && (l->evaluate(varList) == 0.)) return r;
+  if(resolved2 && (r->evaluate(varList) == 0.)) return l;
+  return create(l, r);
+}
 
 inline ExpressionPtr operator+(const ExpressionPtr &l, const ExpressionPtr &r) {return std::make_shared<ExpressionAdd>(l,r);}
 
@@ -372,10 +385,23 @@ public:
   ExpressionSub(const ExpressionPtr &l, const ExpressionPtr &r) : ExpressionFunction2(l, r) {}
   std::string   string() const override {return left->string(priority()) + " - " + right->string(priority()+1);}
   ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionSub>(l, r);}
+  ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   Double        evaluate(const VariableList &v) const override {return left->evaluate(v) - right->evaluate(v);}
   ExpressionPtr derivative(const std::string &var) const override {return left->derivative(var) - right->derivative(var);}
   UInt priority() const override {return Expression::Priority::ADDITIVE;}
 };
+
+ExpressionPtr ExpressionSub::simplify(VariableList &varList, Bool &resolved) const
+{
+  Bool resolved1, resolved2;
+  ExpressionPtr l = left->simplify(varList, resolved1);
+  ExpressionPtr r = right->simplify(varList, resolved2);
+  resolved = resolved1 && resolved2;
+  if(resolved)                                  return exprValue(create(l, r)->evaluate(varList));
+  if(resolved1 && (l->evaluate(varList) == 0.)) return -r;
+  if(resolved2 && (r->evaluate(varList) == 0.)) return l;
+  return create(l, r);
+}
 
 inline ExpressionPtr operator-(const ExpressionPtr &l, const ExpressionPtr &r) {return std::make_shared<ExpressionSub>(l,r);}
 
@@ -387,10 +413,25 @@ public:
   ExpressionMult(const ExpressionPtr &l, const ExpressionPtr &r) : ExpressionFunction2(l, r) {}
   std::string   string() const override {return left->string(priority()) + "*" + right->string(priority());}
   ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionMult>(l, r);}
+  ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   Double        evaluate(const VariableList &v) const override {return left->evaluate(v) * right->evaluate(v);}
   ExpressionPtr derivative(const std::string &var) const override {return left->derivative(var)*right->clone() + left->clone()*right->derivative(var);}
   UInt priority() const override {return Expression::Priority::MULTIPLICATIVE;}
 };
+
+ExpressionPtr ExpressionMult::simplify(VariableList &varList, Bool &resolved) const
+{
+  Bool resolved1, resolved2;
+  ExpressionPtr l = left->simplify(varList, resolved1);
+  ExpressionPtr r = right->simplify(varList, resolved2);
+  resolved = resolved1 && resolved2;
+  if(resolved)                                  return exprValue(create(l, r)->evaluate(varList));
+  if(resolved1 && (l->evaluate(varList) == 1.)) return r;
+  if(resolved1 && (l->evaluate(varList) == 0.)) {resolved = TRUE; return exprValue(0);}
+  if(resolved2 && (r->evaluate(varList) == 1.)) return l;
+  if(resolved2 && (r->evaluate(varList) == 0.)) {resolved = TRUE; return exprValue(0);}
+  return create(l, r);
+}
 
 inline ExpressionPtr operator*(const ExpressionPtr &l, const ExpressionPtr &r) {return std::make_shared<ExpressionMult>(l,r);}
 
@@ -400,12 +441,25 @@ class ExpressionDiv : public ExpressionFunction2
 {
 public:
   ExpressionDiv(const ExpressionPtr &l, const ExpressionPtr &r) : ExpressionFunction2(l, r) {}
-  std::string string() const override {return left->string(priority()) + "/" + right->string(priority()+1);}
-  inline ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionDiv>(l, r);}
-  inline Double        evaluate(const VariableList &v) const override {return left->evaluate(v) / right->evaluate(v);}
-  inline ExpressionPtr derivative(const std::string &var) const override {return (left->derivative(var)*right->clone() - left->clone()*right->derivative(var))/(right->clone()^exprValue(2));}
+  std::string   string() const override {return left->string(priority()) + "/" + right->string(priority()+1);}
+  ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionDiv>(l, r);}
+  ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
+  Double        evaluate(const VariableList &v) const override {return left->evaluate(v) / right->evaluate(v);}
+  ExpressionPtr derivative(const std::string &var) const override {return (left->derivative(var)*right->clone() - left->clone()*right->derivative(var))/(right->clone()^exprValue(2));}
   UInt priority() const override {return Expression::Priority::MULTIPLICATIVE;}
 };
+
+ExpressionPtr ExpressionDiv::simplify(VariableList &varList, Bool &resolved) const
+{
+  Bool resolved1, resolved2;
+  ExpressionPtr l = left->simplify(varList, resolved1);
+  ExpressionPtr r = right->simplify(varList, resolved2);
+  resolved = resolved1 && resolved2;
+  if(resolved)                                  return exprValue(create(l, r)->evaluate(varList));
+  if(resolved1 && (l->evaluate(varList) == 0.)) {resolved = TRUE; return exprValue(0);}
+  if(resolved2 && (r->evaluate(varList) == 1.)) return l;
+  return create(l, r);
+}
 
 inline ExpressionPtr operator/(const ExpressionPtr &l, const ExpressionPtr &r) {return std::make_shared<ExpressionDiv>(l,r);}
 
@@ -417,10 +471,23 @@ public:
   ExpressionPow(const ExpressionPtr &l, const ExpressionPtr &r) : ExpressionFunction2(l, r) {}
   std::string   string() const override {return left->string(priority()) + "^" + right->string(priority());}
   ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionPow>(l, r);}
+  ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   Double        evaluate(const VariableList &v) const override {return pow(left->evaluate(v),right->evaluate(v));}
   ExpressionPtr derivative(const std::string &var) const override {return left->derivative(var)*right->clone()/left->clone() * (left->clone()^(right->clone()-exprValue(1)));} // this derivative is not completly correct!!!!
   UInt priority() const override {return Expression::Priority::EXPONENTIAL;}
 };
+
+ExpressionPtr ExpressionPow::simplify(VariableList &varList, Bool &resolved) const
+{
+  Bool resolved1, resolved2;
+  ExpressionPtr l = left->simplify(varList, resolved1);
+  ExpressionPtr r = right->simplify(varList, resolved2);
+  resolved = resolved1 && resolved2;
+  if(resolved)                                  return exprValue(create(l, r)->evaluate(varList));
+  if(resolved1 && (l->evaluate(varList) == 0.)) {resolved = TRUE; return exprValue(0);}
+  if(resolved2 && (r->evaluate(varList) == 1.)) return l;
+  return create(l, r);
+}
 
 inline ExpressionPtr operator^(const ExpressionPtr &l, const ExpressionPtr &r) {return std::make_shared<ExpressionPow>(l,r);}
 
@@ -958,7 +1025,6 @@ ExpressionPtr ExpressionVar::simplify(VariableList &varList, Bool &resolved) con
     throw(Exception("unknown variable: "+name));
   }
 
-  variable->simplify(varList);
   try
   {
     resolved = TRUE;
@@ -1398,8 +1464,8 @@ ExpressionVariable::ExpressionVariable(const std::string &name, const std::strin
 ExpressionVariable::ExpressionVariable(const std::string &name, const std::string &_text, const VariableList &_varList)
   : _name(name), status(TEXT), text(_text), varList(_varList), isSimplified(FALSE) {}
 
-ExpressionVariable::ExpressionVariable(const std::string &name, ExpressionPtr _expr)
-  : _name(name), status(EXPRESSION), expr(_expr), isSimplified(FALSE)
+ExpressionVariable::ExpressionVariable(const std::string &name, ExpressionPtr _expr, const VariableList &_varList)
+  : _name(name), status(EXPRESSION), expr(_expr), varList(_varList), isSimplified(FALSE)
 {if(!expr) throw(Exception("ExpressionVariable: Null-Pointer."));}
 
 ExpressionVariable::ExpressionVariable(const std::string &name, const std::shared_ptr<Func> &func)
@@ -1547,7 +1613,7 @@ ExpressionVariablePtr ExpressionVariable::derivative(const std::string &varName,
     if((status == VALUE) || (status == FUNC))
       return std::make_shared<ExpressionVariable>(name(), 0.0);
     if(status == EXPRESSION)
-      return std::make_shared<ExpressionVariable>(name(), expr->derivative(varName));
+      return std::make_shared<ExpressionVariable>(name(), expr->derivative(varName), this->varList);
     // status == TEXT
     VariableList varList2 = this->varList;
     varList2 += varList;
@@ -1555,7 +1621,7 @@ ExpressionVariablePtr ExpressionVariable::derivative(const std::string &varName,
     std::string text_ = StringParser::parse(name(), this->text, varList2, resolved);
     if(!resolved)
       throw(Exception("unresolved variables"));
-    return std::make_shared<ExpressionVariable>(name(), Expression::parse(text_)->derivative(varName));
+    return std::make_shared<ExpressionVariable>(name(), Expression::parse(text_)->derivative(varName), this->varList);
   }
   catch(std::exception &e)
   {
