@@ -79,10 +79,10 @@ inline Bool LoopTimeIntervals::iteration(VariableList &varList)
   if(index >= count())
     return FALSE;
 
-  if(!nameTimeStart.empty()) addVariable(nameTimeStart, times.at(index).mjd(),   varList);
-  if(!nameTimeEnd.empty())   addVariable(nameTimeEnd,   times.at(index+1).mjd(), varList);
-  if(!nameIndex.empty())     addVariable(nameIndex,     index,                   varList);
-  if(!nameCount.empty())     addVariable(nameCount,     count(),                 varList);
+  if(!nameTimeStart.empty()) varList.setVariable(nameTimeStart, times.at(index).mjd());
+  if(!nameTimeEnd.empty())   varList.setVariable(nameTimeEnd,   times.at(index+1).mjd());
+  if(!nameIndex.empty())     varList.setVariable(nameIndex,     index);
+  if(!nameCount.empty())     varList.setVariable(nameCount,     count());
 
   index++;
   return TRUE;

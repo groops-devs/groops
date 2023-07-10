@@ -54,7 +54,6 @@ class Tree: public QTreeWidget
   Bool                   changed;
   TreeItem              *selectedItem;
   int                    heightSelectedItem;
-  VariableList          _varList;  // values of elements in the global list
   Bool                  _showResults;
   QUndoStack           *_undoStack;
   TabEnvironment        *workspace;
@@ -69,12 +68,12 @@ public:
   Tree(QWidget *parent, ActionList *actionList, TabEnvironment *workspace);
   virtual ~Tree();
 
-  TreeElement        *rootElement()   const {return _rootElement;}
-  TreeElementGlobal  *elementGlobal() const {return _elementGlobal;}
-  const VariableList &varList()       const {return _varList;}
-  VariableList       &setVarList()          {return _varList;}
-  QString            schemaFile()     const {return xsdFile;}
-  QString            programType()    const {return _programType;}
+  TreeElement           *rootElement()   const {return _rootElement;}
+  TreeElementGlobal     *elementGlobal() const {return _elementGlobal;}
+  QString                schemaFile()     const {return xsdFile;}
+  QString                programType()    const {return _programType;}
+  QMap<QString, QString> varList;           // values of elements in the global list
+  VariableList           getVariableList(); // generates a GROOPS VariableList from varList
 
   QUndoStack *undoStack() const                      {return _undoStack;}
   void        pushUndoCommand(QUndoCommand *command) {_undoStack->push(command);}

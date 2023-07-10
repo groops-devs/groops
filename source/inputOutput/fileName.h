@@ -14,8 +14,7 @@
 #define __GROOPS_FILENAME__
 
 #include "base/importStd.h"
-
-class VariableList;
+#include "parser/expressionParser.h"
 
 /***** CLASS ***********************************/
 
@@ -23,22 +22,28 @@ class VariableList;
 * @ingroup inputOutputGroup */
 class FileName
 {
-  std::string name_;
+  std::string         nameUnparsed;
+  mutable std::string nameParsed;
+  mutable Bool        resolved;
+  VariableList        varList;
+
+  void resolve() const;
 
 public:
-  FileName() {}                                      //!< Constructor.
-  FileName(const FileName &) = default;              //!< Copy constructor.
-  FileName(const std::string &name) : name_(name) {} //!< Constructor.
-  FileName(const char *name) : name_(name) {}        //!< Constructor.
-  FileName &operator=(const FileName &) = default;   //!< Assignement.
+  FileName();                                                     //!< Constructor.
+  FileName(const FileName &) = default;                           //!< Copy constructor.
+  FileName(const std::string &name);                              //!< Constructor.
+  FileName(const char *name) : FileName(std::string(name)) {}     //!< Constructor.
+  FileName(const std::string &name, const VariableList &varList); //!< Constructor with parsing.
+  FileName &operator=(const FileName &) = default;                //!< Assignment.
 
-  operator std::string()  const {return name_;}         //!< Cast to  string.
-  operator const char *() const {return name_.c_str();} //!< Cast to old C type string.
-  const char *c_str()     const {return name_.c_str();} //!< Old C type string.
-  std::string str()       const {return name_;}         //!< String.
+  operator const std::string&() const {resolve(); return nameParsed;}         //!< Cast to  string.
+  operator const char *()       const {resolve(); return nameParsed.c_str();} //!< Cast to old C type string.
+  const char *c_str()           const {resolve(); return nameParsed.c_str();} //!< Old C type string.
+  const std::string &str()      const {resolve(); return nameParsed;}         //!< String.
 
   /** @brief Is FileName empty? */
-  Bool empty() const {return name_.empty();}
+  Bool empty() const {return nameUnparsed.empty();}
 
   /** @brief Append a fileName to a directory.
   * Directory and file will be separated by the directory separator (e.g. '/') if needed. */
@@ -93,7 +98,7 @@ public:
   FileName operator()(const VariableList &varList) const;
 
   /** @brief 'Less than' operator, required for sorting. */
-  Bool operator< (const FileName &fileName) const {return name_ < fileName.name_;}
+  Bool operator< (const FileName &fileName) const {resolve(); return nameParsed < fileName.nameParsed;}
 };
 
 /*************************************************/

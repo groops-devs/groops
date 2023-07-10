@@ -180,12 +180,12 @@
 			<xs:element name="stringContainsPattern">
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="string" type="string" minOccurs="0">
+						<xs:element name="string" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>should contain a {variable}</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="pattern" type="string" minOccurs="0"/>
+						<xs:element name="pattern" type="filename" minOccurs="0"/>
 						<xs:element name="isRegularExpression" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>pattern is  a regular expression</xs:documentation>
@@ -202,12 +202,12 @@
 			<xs:element name="stringMatchPattern">
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="string" type="string" minOccurs="0">
+						<xs:element name="string" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>should contain a {variable}</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="pattern" type="string" minOccurs="0"/>
+						<xs:element name="pattern" type="filename" minOccurs="0"/>
 						<xs:element name="isRegularExpression" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>pattern is  a regular expression</xs:documentation>
@@ -4192,6 +4192,55 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="fileLines">
+				<xs:annotation>
+					<xs:documentation>Loop over of lines of a text file</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>simple ASCII file with lines</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="sort" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>sort lines alphabetically (ascending)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="removeDuplicates" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>remove duplicate lines (order is preserved)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="startIndex" type="uint" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>start at element startIndex (counting from 0)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="count" type="uint" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>use number of lines only (default: use all)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopLine" type="string" minOccurs="0" default="loopLine">
+							<xs:annotation>
+								<xs:documentation>name of the variable to be replaced</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopCount" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="matrix">
 				<xs:annotation>
 					<xs:documentation>Loop over rows of a matrix</xs:documentation>
@@ -4254,6 +4303,45 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopNumber" type="string" minOccurs="0" default="loopNumber">
+							<xs:annotation>
+								<xs:documentation>name of the variable to be replaced</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopCount" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="directoryListing">
+				<xs:annotation>
+					<xs:documentation>Loop over files of a directory</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="directory" type="filename">
+							<xs:annotation>
+								<xs:documentation>directory</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="pattern" type="string" minOccurs="0" default="*">
+							<xs:annotation>
+								<xs:documentation>wildcard pattern</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="isRegularExpression" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>pattern is a regular expression</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopFile" type="string" minOccurs="0" default="loopFile">
 							<xs:annotation>
 								<xs:documentation>name of the variable to be replaced</xs:documentation>
 							</xs:annotation>
@@ -19658,6 +19746,22 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="FileMove">
+				<xs:annotation>
+					<xs:documentation>Move/rename file or directory.</xs:documentation>
+					<xs:appinfo>tag: System</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>target name or directory for the move/rename</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="FileRemove">
 				<xs:annotation>
 					<xs:documentation>Remove files or directories.</xs:documentation>
@@ -19666,6 +19770,18 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="files" type="filename" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="FileTextCreate">
+				<xs:annotation>
+					<xs:documentation>Create text file.</xs:documentation>
+					<xs:appinfo>tag: System</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename"/>
+						<xs:element name="line" type="string" minOccurs="0" maxOccurs="unbounded"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>

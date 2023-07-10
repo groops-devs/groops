@@ -58,10 +58,10 @@ void GnssPrn2SvnBlockVariables::run(Config &config, Parallel::CommunicatorPtr /*
       throw(Exception(fileNameTransmitterInfo.str()+" contains no satellite at "+time.dateTimeStr()));
 
     if(!nameSVN.empty())
-      addVariable(nameSVN, antenna->serial, config.getVarList());
+      config.getVarList().setVariable(nameSVN, antenna->serial);
 
     if(!nameBlock.empty())
-      addVariable(nameBlock, antenna->name, config.getVarList());
+      config.getVarList().setVariable(nameBlock, antenna->name);
   }
   catch(std::exception &e)
   {

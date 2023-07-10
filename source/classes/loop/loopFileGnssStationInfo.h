@@ -97,18 +97,18 @@ inline Bool LoopFileGnssStationInfo::iteration(VariableList &varList)
   for(const auto &eq : platform.equipments)
     if((eq->getType() == type) && (idx++ == index))
     {
-      if(!nameIndex.empty())     addVariable(nameIndex,     index,               varList);
-      if(!nameCount.empty())     addVariable(nameCount,     count(),             varList);
-      if(!nameName.empty())      addVariable(nameName,      eq->name,            varList);
-      if(!nameSerial.empty())    addVariable(nameSerial,    eq->serial,          varList);
-      if(!nameTimeStart.empty()) addVariable(nameTimeStart, eq->timeStart.mjd(), varList);
-      if(!nameTimeEnd.empty())   addVariable(nameTimeEnd,   eq->timeEnd.mjd(),   varList);
+      if(!nameIndex.empty())     varList.setVariable(nameIndex,     index);
+      if(!nameCount.empty())     varList.setVariable(nameCount,     count());
+      if(!nameName.empty())      varList.setVariable(nameName,      eq->name);
+      if(!nameSerial.empty())    varList.setVariable(nameSerial,    eq->serial);
+      if(!nameTimeStart.empty()) varList.setVariable(nameTimeStart, eq->timeStart.mjd());
+      if(!nameTimeEnd.empty())   varList.setVariable(nameTimeEnd,   eq->timeEnd.mjd());
       if(!nameInfo.empty())
       {
         switch(eq->getType())
         {
-          case PlatformEquipment::GNSSANTENNA:  addVariable(nameInfo, std::dynamic_pointer_cast<PlatformGnssAntenna>(eq)->radome,   varList); break;
-          case PlatformEquipment::GNSSRECEIVER: addVariable(nameInfo, std::dynamic_pointer_cast<PlatformGnssReceiver>(eq)->version, varList); break;
+          case PlatformEquipment::GNSSANTENNA:  varList.setVariable(nameInfo, std::dynamic_pointer_cast<PlatformGnssAntenna>(eq)->radome); break;
+          case PlatformEquipment::GNSSRECEIVER: varList.setVariable(nameInfo, std::dynamic_pointer_cast<PlatformGnssReceiver>(eq)->version); break;
           case PlatformEquipment::OTHER:        break;
           case PlatformEquipment::UNDEFINED:    break;
           default:                              break;

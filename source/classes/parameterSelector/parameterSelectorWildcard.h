@@ -39,7 +39,7 @@ class ParameterSelectorWildcard : public ParameterSelectorBase
 
 public:
   ParameterSelectorWildcard(Config &config);
-  std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterWildcards, VariableList varList);
+  std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterWildcards);
 };
 
 /***********************************************/
@@ -64,7 +64,7 @@ inline ParameterSelectorWildcard::ParameterSelectorWildcard(Config &config)
 
 /***********************************************/
 
-inline std::vector<UInt> ParameterSelectorWildcard::indexVector(const std::vector<ParameterName> &parameterWildcards, VariableList /*varList*/)
+inline std::vector<UInt> ParameterSelectorWildcard::indexVector(const std::vector<ParameterName> &parameterWildcards)
 {
   try
   {

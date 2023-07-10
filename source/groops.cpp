@@ -250,7 +250,8 @@ int main(int argc, char *argv[])
         Config config(configFileName, commandlineGlobals);
         ProgramConfig programs;
         readConfig(config, "program", programs, Config::OPTIONAL, "", "");
-        programs.run(config.getVarList(), comm);
+        VariableList varList;
+        programs.run(varList, comm);
         workDone = TRUE;
       }
 

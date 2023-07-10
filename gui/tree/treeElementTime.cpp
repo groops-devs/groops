@@ -164,7 +164,7 @@ QDateTime TreeElementTime::mjd2date(const QString &text) const
     Double mjd = 0;
     try
     {
-      mjd = Expression::parse(text.toStdString())->evaluate(tree->varList());
+      mjd = ExpressionVariable::parse(text.toStdString(), tree->getVariableList());
     }
     catch(...)
     {

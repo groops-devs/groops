@@ -38,9 +38,8 @@ class FindReplaceDock : public QDockWidget
   QSettings           *settings;
 
   void    messageNotFound();
-  QRegExp getExpression();
-  Bool    replace(TreeElement *treeElement, const QRegExp &regExp, const QString &replaceStr);
-  int     find(TreeElement *treeElement, const QRegExp &regExp, bool backwards, int &startIndex);
+  QRegularExpression getExpression();
+  void    findNext(Bool forwards);
 
 public:
   FindReplaceDock(MainWindow *parent);

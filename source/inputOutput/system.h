@@ -15,6 +15,7 @@
 
 #include "base/importStd.h"
 #include "inputOutput/fileName.h"
+#include <regex>
 
 /** @brief System operations.
 * @ingroup inputOutputGroupGroup */
@@ -42,6 +43,12 @@ namespace System
   * @return TRUE if the file was deleted. */
   Bool remove(const FileName &fileName);
 
+  /** @brief moves a file or directory.
+  * @param fileNameOld file to be moved.
+  * @param fileNameNew target path for the move/rename operation.
+  * @return TRUE if the file was moved. */
+  Bool move(const FileName &fileNameOld, const FileName &fileNameNew);
+
   /** @brief Checks if the given file or path corresponds to an existing file or directory. */
   Bool exists(const FileName &fileName);
 
@@ -50,6 +57,9 @@ namespace System
 
   /** @brief Current working directory as FileName. */
   FileName currentWorkingDirectory();
+
+  /** @brief returns the file names of a directory that match the regex pattern. */
+  std::vector<FileName> directoryListing(const FileName &path, const std::regex &pattern);
 
   /** @brief Current time as used by the file system. */
   Time now();

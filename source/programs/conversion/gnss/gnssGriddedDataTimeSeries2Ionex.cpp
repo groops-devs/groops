@@ -68,11 +68,6 @@ void GnssGriddedDataTimeSeries2Ionex::run(Config &config, Parallel::Communicator
     readConfig(config, "exponent",                       exponent,        Config::DEFAULT,  "-1", "factor 10^exponent is applied to all values");
     if(isCreateSchema(config)) return;
 
-    auto varList = config.getVarList();
-    expression->simplify(varList);
-    std::set<std::string> usedVariables;
-    expression->usedVariables(varList, usedVariables);
-
     logStatus<<"read gridded data time series file <"<<fileNameIn<<">"<<Log::endl;
     InFileGriddedDataTimeSeries infile(fileNameIn);
     GriddedDataRectangular grid;
@@ -150,7 +145,8 @@ void GnssGriddedDataTimeSeries2Ionex::run(Config &config, Parallel::Communicator
                 << ((grid.longitudes.back()-grid.longitudes.front())/columns*RAD2DEG)%"%6.1f"s << (height/1000)%"%6.1f"s << std::string(28, ' ') << "LAT/LON1/LON2/DLON/H" << std::endl;
 
         Matrix data = infile.data(times.at(idEpoch));
-        addDataVariables(data, varList, usedVariables);
+        VariableList varList;
+        addDataVariables(data, varList);
 
         for(UInt j = 0; j < grid.longitudes.size(); j++)
         {

@@ -38,7 +38,7 @@ class ParameterSelectorNames : public ParameterSelectorBase
 
 public:
   ParameterSelectorNames(Config &config);
-  std::vector<UInt> indexVector(const std::vector<ParameterName> &ParameterNames, VariableList varList);
+  std::vector<UInt> indexVector(const std::vector<ParameterName> &ParameterNames);
 };
 
 /***********************************************/
@@ -63,7 +63,7 @@ inline ParameterSelectorNames::ParameterSelectorNames(Config &config)
 
 /***********************************************/
 
-inline std::vector<UInt> ParameterSelectorNames::indexVector(const std::vector<ParameterName> &parameterNames, VariableList /*varList*/)
+inline std::vector<UInt> ParameterSelectorNames::indexVector(const std::vector<ParameterName> &parameterNames)
 {
   try
   {

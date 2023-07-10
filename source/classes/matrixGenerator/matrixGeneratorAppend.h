@@ -38,14 +38,14 @@ class MatrixGeneratorAppend : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorAppend(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorAppend::MatrixGeneratorAppend(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorAppend::MatrixGeneratorAppend(Config &config)
 {
   try
   {
@@ -68,15 +68,15 @@ inline MatrixGeneratorAppend::MatrixGeneratorAppend(Config &config) : MatrixGene
 
 /***********************************************/
 
-inline void MatrixGeneratorAppend::compute(Matrix &A, UInt &startRow, UInt &startCol)
+inline void MatrixGeneratorAppend::compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol)
 {
   try
   {
     A = matrix->compute();
     if(right)
-      startCol = static_cast<UInt>(varList["columnsBefore"]->evaluate(varList));
+      startCol = columnsBefore;
     if(bottom)
-      startRow = static_cast<UInt>(varList["rowsBefore"]->evaluate(varList));
+      startRow = rowsBefore;
   }
   catch(std::exception &e)
   {

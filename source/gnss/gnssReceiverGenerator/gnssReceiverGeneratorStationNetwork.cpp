@@ -114,14 +114,13 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
     std::vector<std::vector<std::string>> stationName;
     readFileStringTable(fileNameStationList, stationName);
     VariableList fileNameVariableList;
-    addVariable("station", fileNameVariableList);
     std::vector<std::vector<GnssReceiverPtr>> receiversWithAlternatives(stationName.size());
     for(UInt i=0; i<stationName.size(); i++)
       for(UInt k=0; k<stationName.at(i).size(); k++) // alternatives
       {
         try
         {
-          fileNameVariableList["station"]->setValue(stationName.at(i).at(k));
+          fileNameVariableList.setVariable("station", stationName.at(i).at(k));
           if(!fileNameObs.empty() && !System::exists(fileNameObs(fileNameVariableList)))
             continue;
 
@@ -181,7 +180,7 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
         {
           try
           {
-            fileNameVariableList["station"]->setValue(receiversWithAlternatives.at(i).at(k)->name());
+            fileNameVariableList.setVariable("station", receiversWithAlternatives.at(i).at(k)->name());
             GnssReceiverPtr recv = receiversWithAlternatives.at(i).at(k);
             recv->isMyRank_ = TRUE;
 
@@ -358,7 +357,6 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
   {
     logStatus<<"init observations"<<Log::endl;
     VariableList fileNameVariableList;
-    addVariable("station", fileNameVariableList);
     Single::forEach(receivers.size(), [&](UInt idRecv)
     {
       Parallel::peek(comm);
@@ -367,7 +365,7 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
         try
         {
           auto recv = receivers.at(idRecv);
-          fileNameVariableList["station"]->setValue(recv->name());
+          fileNameVariableList.setVariable("station", recv->name());
           std::vector<Vector3d> posApriori = recv->pos;
           if(fileNameClock.empty())
             recv->pos = recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, FALSE/*estimateKinematicPosition*/);

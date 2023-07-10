@@ -153,7 +153,7 @@ void GnssSimulateReceiver::run(Config &config, Parallel::CommunicatorPtr comm)
     if(!fileNameReceiver.empty())
     {
       VariableList fileNameVariableList;
-      addVariable("station", "****", fileNameVariableList);
+      fileNameVariableList.setVariable("station", "****");
       logStatus<<"write receiver observations to files <"<<fileNameReceiver(fileNameVariableList)<<">"<<Log::endl;
       for(auto recv : gnss.receivers)
         if(recv->isMyRank())
@@ -200,7 +200,7 @@ void GnssSimulateReceiver::run(Config &config, Parallel::CommunicatorPtr comm)
                 arc.push_back(epoch);
             } // for(idEpoch)
 
-          fileNameVariableList["station"]->setValue(recv->name());
+          fileNameVariableList.setVariable("station", recv->name());
           InstrumentFile::write(fileNameReceiver(fileNameVariableList), arc);
         } // for(recv)
     } // if(fileNameReceiver)
@@ -212,7 +212,7 @@ void GnssSimulateReceiver::run(Config &config, Parallel::CommunicatorPtr comm)
     if(!fileNameClock.empty())
     {
       VariableList fileNameVariableList;
-      addVariable("station", "****", fileNameVariableList);
+      fileNameVariableList.setVariable("station", "****");
       logStatus<<"write receiver clocks to files <"<<fileNameClock(fileNameVariableList)<<">"<<Log::endl;
       for(auto recv : gnss.receivers)
         if(recv->isMyRank())
@@ -226,7 +226,7 @@ void GnssSimulateReceiver::run(Config &config, Parallel::CommunicatorPtr comm)
               epoch.value = recv->clockError(idEpoch);
               arc.push_back(epoch);
             }
-          fileNameVariableList["station"]->setValue(recv->name());
+          fileNameVariableList.setVariable("station", recv->name());
           InstrumentFile::write(fileNameClock(fileNameVariableList), arc);
         } // for(recv)
     } // if(fileNameClock)

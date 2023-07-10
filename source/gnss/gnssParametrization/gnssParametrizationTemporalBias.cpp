@@ -61,7 +61,7 @@ void GnssParametrizationTemporalBias::init(Gnss *gnss, Parallel::CommunicatorPtr
     auto selectedTransmitters = gnss->selectTransmitters(selectTransmitters);
 
     VariableList fileNameVariableList;
-    addVariable("prn", "***", fileNameVariableList);
+    fileNameVariableList.setVariable("prn", "***");
     Bool foundAnyFile = FALSE;
     parameters.resize(gnss->transmitters.size(), nullptr);
     for(UInt idTrans=0; idTrans<gnss->transmitters.size(); idTrans++)
@@ -74,7 +74,7 @@ void GnssParametrizationTemporalBias::init(Gnss *gnss, Parallel::CommunicatorPtr
         para->bias = Vector(gnss->times.size());
         if(!fileNameIn.empty())
         {
-          fileNameVariableList["prn"]->setValue(para->trans->name());
+          fileNameVariableList.setVariable("prn", para->trans->name());
           MiscValueArc arc;
           try
           {
@@ -276,7 +276,7 @@ void GnssParametrizationTemporalBias::writeResults(const GnssNormalEquationInfo 
     if(!fileNameOut.empty() && std::any_of(parameters.begin(), parameters.end(), [](const Parameter *p){return p && p->index;}))
     {
       VariableList fileNameVariableList;
-      addVariable("prn", "***", fileNameVariableList);
+      fileNameVariableList.setVariable("prn", "***");
       logStatus<<"write transmitter time variable bias to files <"<<fileNameOut(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
       for(auto para : parameters)
         if(para && para->index)
@@ -290,7 +290,7 @@ void GnssParametrizationTemporalBias::writeResults(const GnssNormalEquationInfo 
               epoch.value = para->bias(idEpoch);
               arc.push_back(epoch);
             }
-          fileNameVariableList["prn"]->setValue(para->trans->name());
+          fileNameVariableList.setVariable("prn", para->trans->name());
           InstrumentFile::write(fileNameOut(fileNameVariableList).appendBaseName(suffix), arc);
         }
     }

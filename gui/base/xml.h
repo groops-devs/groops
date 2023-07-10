@@ -14,6 +14,7 @@
 #define __GROOPSGUI__XML__
 
 #include <QString>
+#include <QStringList>
 #include <QTextStream>
 #include <sstream>
 #include "base/importGroops.h"

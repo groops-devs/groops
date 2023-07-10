@@ -43,14 +43,14 @@ class MatrixGeneratorElementManipulation : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorElementManipulation(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorElementManipulation::MatrixGeneratorElementManipulation(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorElementManipulation::MatrixGeneratorElementManipulation(Config &config)
 {
   try
   {
@@ -66,20 +66,22 @@ inline MatrixGeneratorElementManipulation::MatrixGeneratorElementManipulation(Co
 
 /***********************************************/
 
-inline void MatrixGeneratorElementManipulation::compute(Matrix &A, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorElementManipulation::compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {
     A = matrix->compute();
 
-    std::set<std::string> usedVariables;
-    expression->usedVariables(varList, usedVariables);
-    addDataVariables(A, varList, usedVariables);
-    addVariable("rows",    static_cast<Double>(A.rows()),    varList);
-    addVariable("columns", static_cast<Double>(A.columns()), varList);
-    addVariable("row",    varList);
-    addVariable("column", varList);
-    addVariable("data",   varList);
+    VariableList varList;
+    varList.setVariable("rowsBefore",    static_cast<Double>(rowsBefore));
+    varList.setVariable("columnsBefore", static_cast<Double>(columnsBefore));
+    varList.setVariable("rows",          static_cast<Double>(A.rows()));
+    varList.setVariable("columns",       static_cast<Double>(A.columns()));
+
+    addDataVariables(A, varList);
+    varList.undefineVariable("row");
+    varList.undefineVariable("column");
+    varList.undefineVariable("data");
     expression->simplify(varList);
 
     for(UInt z=0; z<A.rows(); z++)
@@ -87,9 +89,9 @@ inline void MatrixGeneratorElementManipulation::compute(Matrix &A, UInt &/*start
       evaluateDataVariables(A, z, varList);
       for(UInt s=0; s<A.columns(); s++)
       {
-        varList["row"]->setValue(static_cast<Double>(z));
-        varList["column"]->setValue(static_cast<Double>(s));
-        varList["data"]->setValue(A(z,s));
+        varList.setVariable("row",    static_cast<Double>(z));
+        varList.setVariable("column", static_cast<Double>(s));
+        varList.setVariable("data",   A(z,s));
         A(z,s) = expression->evaluate(varList);
       }
     }

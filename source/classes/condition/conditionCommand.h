@@ -25,7 +25,6 @@ Execute command and check success.
 
 #include "base/import.h"
 #include "parallel/parallel.h"
-#include "parser/stringParser.h"
 #include "inputOutput/system.h"
 #include "classes/condition/condition.h"
 
@@ -70,7 +69,7 @@ inline Bool ConditionCommand::condition(const VariableList &varList) const
   try
   {
     std::vector<std::string> outputs;
-    Bool result = System::exec(StringParser::parse(command, varList), outputs);
+    Bool result = System::exec(command(varList), outputs);
     if(!silently)
       for(const auto &output : outputs)
         logInfo<<output<<Log::endl;

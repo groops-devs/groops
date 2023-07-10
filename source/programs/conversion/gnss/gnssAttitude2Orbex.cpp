@@ -91,11 +91,10 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     }
 
     VariableList fileNameVariableList;
-    addVariable(variablePrn, fileNameVariableList);
     std::map<Time, std::vector<Record>> times2Records;
     for(const auto &prn : transmitterList)
     {
-      fileNameVariableList[variablePrn]->setValue(prn);
+      fileNameVariableList.setVariable(variablePrn, prn);
       StarCameraArc arc = InstrumentFile::read(fileNameAttitude(fileNameVariableList));
 
       for(UInt idEpoch=0; idEpoch<arc.size(); idEpoch++)

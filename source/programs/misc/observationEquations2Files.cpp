@@ -69,15 +69,13 @@ void ObservationEquations2Files::run(Config &config, Parallel::CommunicatorPtr c
       return;
 
     logStatus<<"setup observation equations"<<Log::endl;
-    VariableList fileNameVariableList;
-    addVariable(nameArc, fileNameVariableList);
-
     Parallel::forEach(observation->arcCount(), [&] (UInt arcNo)
     {
       Matrix l, A, B;
       observation->observation(arcNo, l, A, B);
 
-      fileNameVariableList[nameArc]->setValue(arcNo);
+      VariableList fileNameVariableList;
+      fileNameVariableList.setVariable(nameArc, arcNo);
       if(!fileNameL.empty()) writeFileMatrix(fileNameL(fileNameVariableList), l);
       if(!fileNameA.empty()) writeFileMatrix(fileNameA(fileNameVariableList), A);
       if(!fileNameB.empty()) writeFileMatrix(fileNameB(fileNameVariableList), B);

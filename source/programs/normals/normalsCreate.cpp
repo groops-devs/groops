@@ -93,15 +93,15 @@ void NormalsCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     // compute observation count
     // -------------------------
-    auto varList = config.getVarList();
-    addVariable("rows",    n.rows(),    varList);
-    addVariable("columns", n.columns(), varList);
+    VariableList varList;
+    varList.setVariable("rows",    n.rows());
+    varList.setVariable("columns", n.columns());
     if(!fileNameNormalsObsCount.empty())
     {
       Matrix n;
       NormalEquationInfo info;
       readFileNormalEquation(fileNameNormalsObsCount, info, n);
-      addVariable("observationCount", info.observationCount, varList);
+      varList.setVariable("observationCount", info.observationCount);
     }
     info.observationCount = static_cast<UInt>(exprObsCount->evaluate(varList));
 

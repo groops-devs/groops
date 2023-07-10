@@ -1,4 +1,6 @@
 # main
+- New program:      FileMove.
+- New program:      FileTextCreate.
 - New program:      InstrumentRemoveEpochsThruster.
 - New program:      InstrumentApplyTimeOffset.
 - New program:      InstrumentAccelerometerEstimateParameters (replaces InstrumentAccelerometerEstimateBiasScale).
@@ -10,6 +12,8 @@
 - New program:      Variational2OrbitAndStarCamera (renamed Variational2Orbit): added possibility to also extract Earth rotation.
 - New program:      PlatformCreate: replaces gnssStationInfoCreate.
 - New program:      Tle2Orbit: Orbit from Two Line Elements (TLE).
+- New class:        In Loop: DirectoryListing.
+- New class:        In Loop: FileLines.
 - New class:        In InstrumentResample/interpolatorTimeSeries: FillGapsLeastSquaresPolynomialFit.
 - New class:        In MiscAccelerations: AtmosphericDragFromDensityFile.
 - New class:        In MiscAccelerations: RadiationPressure, replaces SolarRadiatinPressure, Albedo
@@ -29,6 +33,7 @@
 - Other:            GnssRinexNavigation2OrbitClock: works also for glonass.
 - Other:            PlotMisc: set minimum size of points in legend to 3p.
 - Other:            Preparation to replace GnssStationInfo file format by the more general Platform file format.
+- Other:            Text parser: new {text/regex/replace}.
 
 # Release 2022-07-28
 - New programs:     GriddedData2GriddedDataTimeSeries and GriddedDataTimeSeries2GriddedData.

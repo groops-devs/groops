@@ -58,7 +58,6 @@ void ViennaMappingFunctionStation2File::run(Config &config, Parallel::Communicat
     // ======================================================
 
     VariableList fileNameVariableList;
-    addVariable("station", fileNameVariableList);
 
     logStatus<<"read station list"<<Log::endl;
     GriddedData grid;
@@ -77,15 +76,13 @@ void ViennaMappingFunctionStation2File::run(Config &config, Parallel::Communicat
         grid.points.push_back(ellipsoid(Angle(lon*DEG2RAD), Angle(lat*DEG2RAD), h));
       }
 
-      VariableList fileNameVariableList;
-      addVariable("station", fileNameVariableList);
       for(UInt idStation=0; idStation<stationNames.size(); idStation++)
       {
         try
         {
           // read position from stationInfo
           Platform stationInfo;
-          fileNameVariableList["station"]->setValue(stationNames.at(idStation));
+          fileNameVariableList.setVariable("station", stationNames.at(idStation));
           readFilePlatform(fileNameStationInfo(fileNameVariableList), stationInfo);
 
           if((stationInfo.approxPosition-grid.points.at(idStation)).r() > 1e3)
@@ -128,7 +125,7 @@ void ViennaMappingFunctionStation2File::run(Config &config, Parallel::Communicat
         Platform stationInfo; // read position from stationInfo
         try
         {
-          fileNameVariableList["station"]->setValue(name);
+          fileNameVariableList.setVariable("station", name);
           readFilePlatform(fileNameStationInfo(fileNameVariableList), stationInfo);
         }
         catch(std::exception &)

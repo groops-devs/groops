@@ -133,7 +133,7 @@ void TreeElementFileName::openFileClicked()
       for(int i = valueCount(); i < valueList().size(); i++)
       {
         QString parsed = parseExpression(valueList().at(i));
-        if(path.startsWith(parsed) && parsed.count() > parsedVariable.count())
+        if(path.startsWith(parsed) && parsed.size() > parsedVariable.size())
         {
           variable = "{"+valueList().at(i)+"}";
           parsedVariable = parsed;
@@ -158,10 +158,10 @@ void TreeElementFileName::openFileClicked()
         XmlNodePtr xmlNode = getXML(true);
         if(!(xmlNode && parentElement))
           continue;
-        xmlNode->setText(variable+tree->stripXmlDirectory(files[i]).mid(parsedVariable.count()));
+        xmlNode->setText(variable+tree->stripXmlDirectory(files[i]).mid(parsedVariable.size()));
         parentElement->addChild(this, type(), xmlNode);
       }
-      changeSelectedValue(variable+lastFile.mid(parsedVariable.count()));
+      changeSelectedValue(variable+lastFile.mid(parsedVariable.size()));
     }
     else
     {
@@ -173,7 +173,7 @@ void TreeElementFileName::openFileClicked()
         QString variable;
         QString parsedVariable;
         replaceByVariable(selectedPath, variable, parsedVariable);
-        changeSelectedValue(variable+selectedPath.mid(parsedVariable.count()));
+        changeSelectedValue(variable+selectedPath.mid(parsedVariable.size()));
       }
     }
   }

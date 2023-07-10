@@ -24,7 +24,7 @@ Determines if there is a match between a pattern or a regular expression and som
 /***********************************************/
 
 #include "base/import.h"
-#include "parser/stringParser.h"
+#include "base/string.h"
 #include "classes/condition/condition.h"
 #include <regex>
 
@@ -35,8 +35,8 @@ Determines if there is a match between a pattern or a regular expression and som
 * @see Condition */
 class ConditionStringContainsPattern : public Condition
 {
-  std::string text, pattern;
-  Bool        isRegularExpression, caseSensitive;
+  FileName text, pattern;
+  Bool     isRegularExpression, caseSensitive;
 
 public:
   ConditionStringContainsPattern(Config &config);
@@ -70,12 +70,12 @@ inline Bool ConditionStringContainsPattern::condition(const VariableList &varLis
 {
   try
   {
-    std::string t = StringParser::parse(text,    varList);
-    std::string p = StringParser::parse(pattern, varList);
+    std::string t = text(varList).str();
+    std::string p = pattern(varList).str();
     if(!caseSensitive)
     {
-      std::transform(t.begin(), t.end(), t.begin(), ::tolower);
-      std::transform(p.begin(), p.end(), p.begin(), ::tolower);
+      t = String::lowerCase(t);
+      p = String::lowerCase(t);
     }
 
     if(isRegularExpression)

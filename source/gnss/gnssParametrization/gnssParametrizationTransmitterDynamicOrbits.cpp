@@ -72,7 +72,7 @@ void GnssParametrizationTransmitterDynamicOrbits::init(Gnss *gnss, Parallel::Com
     auto selectedTransmitters = gnss->selectTransmitters(selectTransmitters);
 
     VariableList fileNameVariableList;
-    addVariable("prn", "***", fileNameVariableList);
+    fileNameVariableList.setVariable("prn", "***");
     parameters.resize(gnss->transmitters.size(), nullptr);
     for(UInt idTrans=0; idTrans<gnss->transmitters.size(); idTrans++)
       if(selectedTransmitters.at(idTrans) && gnss->transmitters.at(idTrans)->useable())
@@ -89,7 +89,7 @@ void GnssParametrizationTransmitterDynamicOrbits::init(Gnss *gnss, Parallel::Com
         std::vector<Time> pulsesInterval;
         std::copy_if(pulses.begin(), pulses.end(), std::back_inserter(pulsesInterval), [&](auto &p) {return (timeStart < p) && (p < timeEnd);});
 
-        fileNameVariableList["prn"]->setValue(para->trans->name());
+        fileNameVariableList.setVariable("prn", para->trans->name());
         VariationalEquationFromFile file;
         file.open(fileNameVariational(fileNameVariableList), nullptr/*parametrizationGravity*/, parametrizationAcceleration, pulsesInterval, ephemerides, integrationDegree);
 
@@ -238,7 +238,7 @@ void GnssParametrizationTransmitterDynamicOrbits::writeResults(const GnssNormalE
     if(!fileNameOrbit.empty())
     {
       VariableList fileNameVariableList;
-      addVariable("prn", "***", fileNameVariableList);
+      fileNameVariableList.setVariable("prn", "***");
       logStatus<<"write transmitter orbits to files <"<<fileNameOrbit(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
       for(auto para : parameters)
         if(para && para->index)
@@ -252,7 +252,7 @@ void GnssParametrizationTransmitterDynamicOrbits::writeResults(const GnssNormalE
             epoch.velocity = para->trans->velocity(para->times.at(idEpoch));
             arc.push_back(epoch);
           }
-          fileNameVariableList["prn"]->setValue(para->trans->name());
+          fileNameVariableList.setVariable("prn", para->trans->name());
           InstrumentFile::write(fileNameOrbit(fileNameVariableList).appendBaseName(suffix), arc);
         }
     }
@@ -260,12 +260,12 @@ void GnssParametrizationTransmitterDynamicOrbits::writeResults(const GnssNormalE
     if(!fileNameParameter.empty())
     {
       VariableList fileNameVariableList;
-      addVariable("prn", "***", fileNameVariableList);
+      fileNameVariableList.setVariable("prn", "***");
       logStatus<<"write estimated transmitter parameters to files <"<<fileNameParameter(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
       for(auto para : parameters)
         if(para && para->index)
         {
-          fileNameVariableList["prn"]->setValue(para->trans->name());
+          fileNameVariableList.setVariable("prn", para->trans->name());
           writeFileMatrix(fileNameParameter(fileNameVariableList).appendBaseName(suffix), para->x);
         }
     }

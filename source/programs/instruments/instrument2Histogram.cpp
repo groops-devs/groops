@@ -88,9 +88,9 @@ void Instrument2Histogram::run(Config &config, Parallel::CommunicatorPtr comm)
         globalData.insert(globalData.end(), arcWiseData[arcNo].begin(), arcWiseData[arcNo].end());
       std::sort(globalData.begin(), globalData.end());
 
-      auto varList = config.getVarList();
-      addVariable("dataMin", globalData.front(), varList);
-      addVariable("dataMax", globalData.back(),  varList);
+      VariableList varList;
+      varList.setVariable("dataMin", globalData.front());
+      varList.setVariable("dataMax", globalData.back());
       const Double lowerBound = exprMin->evaluate(varList);
       const Double upperBound = exprMax->evaluate(varList);
 

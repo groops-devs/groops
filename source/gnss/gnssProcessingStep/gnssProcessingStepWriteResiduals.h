@@ -68,7 +68,7 @@ inline void GnssProcessingStepWriteResiduals::process(GnssProcessingStep::State 
   {
     auto selectedReceivers = state.gnss->selectReceivers(selectReceivers);
     VariableList fileNameVariableList;
-    addVariable("station", "****", fileNameVariableList);
+    fileNameVariableList.setVariable("station", "****");
     logStatus<<"write residuals to file <"<<fileNameResiduals(fileNameVariableList)<<">"<<Log::endl;
     for(auto recv : state.gnss->receivers)
       if(selectedReceivers.at(recv->idRecv()) && state.normalEquationInfo.estimateReceiver.at(recv->idRecv()) && recv->isMyRank())
@@ -140,7 +140,7 @@ inline void GnssProcessingStepWriteResiduals::process(GnssProcessingStep::State 
           } // for(idEpoch)
 
         VariableList fileNameVariableList;
-        addVariable("station", recv->name(), fileNameVariableList);
+        fileNameVariableList.setVariable("station", recv->name());
         InstrumentFile::write(fileNameResiduals(fileNameVariableList), arc);
       } // for(recv)
   }

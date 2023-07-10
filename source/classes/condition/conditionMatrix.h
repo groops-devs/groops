@@ -74,12 +74,10 @@ inline Bool ConditionMatrix::condition(const VariableList &varList) const
     Matrix A = matrixGenerator->compute();
 
     VariableList varListMatrix = varList;
-    addVariable("data", varListMatrix);
-
     for(UInt i=0; i<A.rows(); i++)
       for(UInt j=0; j<A.columns(); j++)
       {
-        varListMatrix["data"]->setValue(A(i,j));
+        varListMatrix.setVariable("data", A(i,j));
         Bool result = (expr->evaluate(varListMatrix) != 0.);
         if(!all && result)
           return TRUE;
