@@ -63,7 +63,7 @@ void GnssStationIdShort2Long::run(Config &config, Parallel::CommunicatorPtr /*co
     if(iter == siteIDs.end())
       throw(Exception(fileNameSiteID.str()+" contains no site ID <"+site4char+">"));
 
-    addVariable(site9char, iter->at(1), config.getVarList());
+    config.getVarList().setVariable(site9char, iter->at(1));
 
   }
   catch(std::exception &e)
