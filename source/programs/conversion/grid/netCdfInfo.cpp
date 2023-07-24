@@ -15,7 +15,8 @@ static const char *docstring = R"(
 Print content information of a NetCDF file like
 dimensions, variables and attributes.
 
-See also \program{NetCdf2GridRectangular}, \program{GridRectangular2NetCdf}.
+See also \program{NetCdf2GriddedData}, \program{NetCdf2GriddedDataTimeSeries},
+\program{GriddedData2NetCdf}, \program{GriddedDataTimeSeries2NetCdf}.
 )";
 
 /***********************************************/

@@ -22096,9 +22096,9 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GridRectangular2NetCdf">
+			<xs:element name="GriddedData2NetCdf">
 				<xs:annotation>
-					<xs:documentation>Convert sequence of GridRectangular files to a netCDF file</xs:documentation>
+					<xs:documentation>Convert gridded data to a netCDF file</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grid</xs:appinfo>
 				</xs:annotation>
@@ -22109,14 +22109,9 @@
 								<xs:documentation>file name of NetCDF output</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfileGridRectangular" type="filename" maxOccurs="unbounded">
+						<xs:element name="inputfileGriddedData" type="filename">
 							<xs:annotation>
 								<xs:documentation>input grid sequence</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="times" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>values for time axis (COARDS specification)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="dataVariable" maxOccurs="unbounded">
@@ -22125,14 +22120,132 @@
 							</xs:annotation>
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="selectDataField" type="uint" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>input data column</xs:documentation>
-										</xs:annotation>
-									</xs:element>
 									<xs:element name="name" type="string" default="data0">
 										<xs:annotation>
 											<xs:documentation>netCDF variable name</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="value" type="expression" minOccurs="0" default="data0">
+										<xs:annotation>
+											<xs:documentation>expression (variables &apos;height&apos;, &apos;data&apos;, &apos;longitude&apos;, &apos;latitude&apos; and, &apos;area&apos; are taken from the gridded data</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="dataType">
+										<xs:complexType>
+											<xs:choice>
+												<xs:element name="double"/>
+												<xs:element name="float"/>
+												<xs:element name="int"/>
+											</xs:choice>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="attribute" minOccurs="0" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>netCDF attributes</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:choice>
+												<xs:element name="text">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="name" type="string"/>
+															<xs:element name="value" type="string"/>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="value">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="name" type="string"/>
+															<xs:element name="value" type="double" maxOccurs="unbounded"/>
+															<xs:element name="dataType">
+																<xs:complexType>
+																	<xs:choice>
+																		<xs:element name="double"/>
+																		<xs:element name="float"/>
+																		<xs:element name="int"/>
+																	</xs:choice>
+																</xs:complexType>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:choice>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="globalAttribute" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>additional meta data</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="text">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string"/>
+												<xs:element name="value" type="string"/>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="value">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string"/>
+												<xs:element name="value" type="double" maxOccurs="unbounded"/>
+												<xs:element name="dataType">
+													<xs:complexType>
+														<xs:choice>
+															<xs:element name="double"/>
+															<xs:element name="float"/>
+															<xs:element name="int"/>
+														</xs:choice>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GriddedDataTimeSeries2NetCdf">
+				<xs:annotation>
+					<xs:documentation>Converts a griddedDataTimeSeries file to a netCDF file</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Grid</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileNetCdf" type="filename">
+							<xs:annotation>
+								<xs:documentation>file name of NetCDF output</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileGriddedDataTimeSeries" type="filename"/>
+						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>otherwise times from inputfile are used</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="dataVariable" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>metadata for data variables</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="name" type="string" default="data0">
+										<xs:annotation>
+											<xs:documentation>netCDF variable name</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="inputColumn" type="uint" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>input data column</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="dataType">
@@ -22520,20 +22633,15 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="NetCdf2GridRectangular">
+			<xs:element name="NetCdf2GriddedData">
 				<xs:annotation>
-					<xs:documentation>Convert COARDS compliant grids to GROOPS rectangular grid</xs:documentation>
+					<xs:documentation>Convert COARDS compliant grids to gridded data</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Grid</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileGridRectangular" type="filename">
-							<xs:annotation>
-								<xs:documentation>One grid for each epoch in the NetCDF file is written. Use loopTimeVariable as template.</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="loopTimeVariable" type="string" default="loopTime"/>
+						<xs:element name="outputfileGriddedData" type="filename"/>
 						<xs:element name="inputfileNetCdf" type="filename"/>
 						<xs:element name="variableNameLongitude" type="string" default="lon">
 							<xs:annotation>
@@ -22547,12 +22655,60 @@
 						</xs:element>
 						<xs:element name="variableNameTime" type="string" minOccurs="0" default="time">
 							<xs:annotation>
-								<xs:documentation>name of NetCDF variable (leave blank for static grids)</xs:documentation>
+								<xs:documentation>if with time axis: name of NetCDF variable</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableNameData" type="string" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
+								<xs:documentation>data variables, otherwise all suitable data are used</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="time" type="time" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>if with time axis: nearest epoch is used</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="R" type="double" minOccurs="0" default="6378137.0">
+							<xs:annotation>
+								<xs:documentation>reference radius for ellipsoidal coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inverseFlattening" type="double" minOccurs="0" default="298.2572221010">
+							<xs:annotation>
+								<xs:documentation>reference flattening for ellipsoidal coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="NetCdf2GriddedDataTimeSeries">
+				<xs:annotation>
+					<xs:documentation>Convert a NetCDF file to a GriddedDataTimeSeries file</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Grid</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileGriddedDataTimeSeries" type="filename"/>
+						<xs:element name="inputfileNetCdf" type="filename"/>
+						<xs:element name="variableNameLongitude" type="string" default="lon">
+							<xs:annotation>
 								<xs:documentation>name of NetCDF variable</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableNameLatitude" type="string" default="lat">
+							<xs:annotation>
+								<xs:documentation>name of NetCDF variable</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableNameTime" type="string" default="time">
+							<xs:annotation>
+								<xs:documentation>name of NetCDF variable)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableNameData" type="string" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>data variables, otherwise all suitable data are used</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="R" type="double" minOccurs="0" default="6378137.0">
@@ -22880,14 +23036,14 @@
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
-						<xs:element name="inputfileComment" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>file containing comments for header</xs:documentation>
-							</xs:annotation>
-						</xs:element>
 						<xs:element name="comment" type="string" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>comment in header</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileComment" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>file containing comments for header</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="modelname" type="string">
@@ -23356,6 +23512,174 @@
 						<xs:element name="inputfileStationInfo" type="filename" default="{groopsDataDir}/gnss/receiverStation/stationInfo/igs/stationInfo.{station}.xml"/>
 						<xs:element name="inputfileStation" type="filename"/>
 						<xs:element name="inputfileVmf" type="filename"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GridRectangular2NetCdf">
+				<xs:annotation>
+					<xs:documentation>DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.</xs:documentation>
+					<xs:appinfo>tag: Deprecated</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileNetCdf" type="filename">
+							<xs:annotation>
+								<xs:documentation>file name of NetCDF output</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileGridRectangular" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>input grid sequence</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="times" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>values for time axis (COARDS specification)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="dataVariable" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>metadata for data variables</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="selectDataField" type="uint" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>input data column</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="name" type="string" default="data0">
+										<xs:annotation>
+											<xs:documentation>netCDF variable name</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="dataType">
+										<xs:complexType>
+											<xs:choice>
+												<xs:element name="double"/>
+												<xs:element name="float"/>
+												<xs:element name="int"/>
+											</xs:choice>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="attribute" minOccurs="0" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>netCDF attributes</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:choice>
+												<xs:element name="text">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="name" type="string"/>
+															<xs:element name="value" type="string"/>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+												<xs:element name="value">
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="name" type="string"/>
+															<xs:element name="value" type="double" maxOccurs="unbounded"/>
+															<xs:element name="dataType">
+																<xs:complexType>
+																	<xs:choice>
+																		<xs:element name="double"/>
+																		<xs:element name="float"/>
+																		<xs:element name="int"/>
+																	</xs:choice>
+																</xs:complexType>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:choice>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="globalAttribute" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>additional meta data</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="text">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string"/>
+												<xs:element name="value" type="string"/>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="value">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string"/>
+												<xs:element name="value" type="double" maxOccurs="unbounded"/>
+												<xs:element name="dataType">
+													<xs:complexType>
+														<xs:choice>
+															<xs:element name="double"/>
+															<xs:element name="float"/>
+															<xs:element name="int"/>
+														</xs:choice>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="NetCdf2GridRectangular">
+				<xs:annotation>
+					<xs:documentation>DEPRECATED. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.</xs:documentation>
+					<xs:appinfo>tag: Deprecated</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileGridRectangular" type="filename">
+							<xs:annotation>
+								<xs:documentation>One grid for each epoch in the NetCDF file is written. Use loopTimeVariable as template.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="loopTimeVariable" type="string" default="loopTime"/>
+						<xs:element name="inputfileNetCdf" type="filename"/>
+						<xs:element name="variableNameLongitude" type="string" default="lon">
+							<xs:annotation>
+								<xs:documentation>name of NetCDF variable</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableNameLatitude" type="string" default="lat">
+							<xs:annotation>
+								<xs:documentation>name of NetCDF variable</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableNameTime" type="string" minOccurs="0" default="time">
+							<xs:annotation>
+								<xs:documentation>name of NetCDF variable (leave blank for static grids)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableNameData" type="string" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>name of NetCDF variable</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="R" type="double" minOccurs="0" default="6378137.0">
+							<xs:annotation>
+								<xs:documentation>reference radius for ellipsoidal coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inverseFlattening" type="double" minOccurs="0" default="298.2572221010">
+							<xs:annotation>
+								<xs:documentation>reference flattening for ellipsoidal coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>

@@ -108,6 +108,14 @@ std::vector<NetCdf::Variable> NetCdf::Group::variables() const
 
 /***********************************************/
 
+Bool NetCdf::Group::hasVariable(const std::string &name) const
+{
+  Int varId;
+  return (nc_inq_varid(groupId, name.c_str(), &varId) != NC_NOERR);
+}
+
+/***********************************************/
+
 NetCdf::Variable NetCdf::Group::variable(const std::string &name) const
 {
   try
@@ -364,7 +372,21 @@ std::string NetCdf::Attribute::value() const
       case NC_INT:    {std::vector<int>    tmp(len); nc_get_att_int   (groupId, varId, name_.c_str(), tmp.data()); data = convert(tmp); break;}
       case NC_FLOAT:  {std::vector<float>  tmp(len); nc_get_att_float (groupId, varId, name_.c_str(), tmp.data()); data = convert(tmp); break;}
       case NC_DOUBLE: {std::vector<double> tmp(len); nc_get_att_double(groupId, varId, name_.c_str(), tmp.data()); data = convert(tmp); break;}
-      default: throw(Exception("Unsupported data type."));
+      case NC_STRING:
+      {
+        std::size_t attlen = 0;
+        nc_inq_attlen(groupId, varId, name_.c_str(), &attlen);
+        std::vector<char*> strings(attlen, nullptr);
+        nc_get_att_string(groupId, varId, name_.c_str(), strings.data());
+        std::stringstream ss;
+        ss<<strings.at(0);
+        for(UInt i=1; i<data.rows(); i++)
+          ss<<", "<<strings.at(i);
+        nc_free_string(attlen, strings.data());
+        return ss.str();
+      }
+      default:
+        return "Unsupported data type.";
     }
 
     std::stringstream ss;
