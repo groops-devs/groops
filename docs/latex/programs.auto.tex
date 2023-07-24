@@ -7305,6 +7305,35 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{DoodsonAdmittance2SupplementaryFiles}\label{DoodsonAdmittance2SupplementaryFiles}
+The publication of an ocean tide model includes not only the atlas
+in the form of spherical harmonics coefficients,
+but also the matrix of Doodson multipliers (\config{outputfileDoodsonMatrix})
+and the \config{outputfileAdmittanceMatrix}.
+
+The \config{outputfileMajorTideList} contains the \config{fileNames}
+for each contituent.
+The required information is taken from the
+\configFile{inputfileAdmittance}{admittance}.
+
+See also \program{DoodsonHarmonics2PotentialCoefficients}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileMajorTideList & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~fileNames & \hfuzz=500pt filename & \hfuzz=500pt template for fileList, variables: doodson, name, cossin\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileDoodsonMatrix & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAdmittanceMatrix & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAdmittance & \hfuzz=500pt filename & \hfuzz=500pt interpolation of minor constituents\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{DoodsonHarmonics2IersPotential}\label{DoodsonHarmonics2IersPotential}
 Convert doodson harmonics to IERS conventions according to FES2004.
 cf. \url{ftp://tai.bipm.org/iers/conv2010/chapter6/tidemodels/fes2004.dat}.

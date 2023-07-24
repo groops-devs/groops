@@ -12,6 +12,7 @@
 - New program:      Variational2OrbitAndStarCamera (renamed Variational2Orbit): added possibility to also extract Earth rotation.
 - New program:      PlatformCreate: replaces gnssStationInfoCreate.
 - New program:      Tle2Orbit: Orbit from Two Line Elements (TLE).
+- New program:      DoodsonAdmittance2SupplementaryFiles: for publication of ocean tide models.
 - New class:        In Loop: DirectoryListing.
 - New class:        In Loop: FileLines.
 - New class:        In InstrumentResample/interpolatorTimeSeries: FillGapsLeastSquaresPolynomialFit.

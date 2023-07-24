@@ -99,13 +99,13 @@ void DoodsonHarmonics2PotentialCoefficients::run(Config &config, Parallel::Commu
 
     // write tides
     // -----------
-    logStatus<<"writing potential coefficients to files <"<<fileNameOut<<">"<<Log::endl;
     VariableList varList;
     if(!nameName.empty())    varList.undefineVariable(nameName);
     if(!nameDoodson.empty()) varList.undefineVariable(nameDoodson);
     if(!nameCosSin.empty())  varList.undefineVariable(nameCosSin);
     if(!nameIndex.empty())   varList.undefineVariable(nameIndex);
     if(!nameCount.empty())   varList.setVariable(nameCount, static_cast<Double>(d.doodson.size()));
+    logStatus<<"writing potential coefficients to files <"<<fileNameOut(varList)<<">"<<Log::endl;
 
     for(UInt i=0; i<d.doodson.size(); i++)
     {

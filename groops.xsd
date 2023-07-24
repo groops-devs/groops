@@ -9684,6 +9684,7 @@
 			<xs:appinfo>rename: GroupProgramme = GroupPrograms</xs:appinfo>
 			<xs:appinfo>rename: IfProgramme = IfPrograms</xs:appinfo>
 			<xs:appinfo>rename: LoopProgramme = LoopPrograms</xs:appinfo>
+			<xs:appinfo>rename: Admittance2Iers = DoodsonAdmittance2SupplementaryFiles</xs:appinfo>
 			<xs:appinfo>rename: GraceCsrAod2DoodsonHarmonics = GraceAod2DoodsonHarmonics</xs:appinfo>
 			<xs:appinfo>rename: Eop2003file = IersC04IAU2000EarthOrientationParameter</xs:appinfo>
 			<xs:appinfo>rename: IersRapidEop2Earthrotation = IersRapidIAU2000EarthOrientationParameter</xs:appinfo>
@@ -19886,6 +19887,30 @@
 						<xs:element name="outputfileOrbit" type="filename"/>
 						<xs:element name="outputfileStarCamera" type="filename"/>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="DoodsonAdmittance2SupplementaryFiles">
+				<xs:annotation>
+					<xs:documentation>write ascii doodson and admittance matrix</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: DoodsonHarmonics</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileMajorTideList" type="filename" minOccurs="0" default="fileList.txt"/>
+						<xs:element name="fileNames" type="filename" minOccurs="0" default="model_{doodson}_{name}_{cossin}.gfc">
+							<xs:annotation>
+								<xs:documentation>template for fileList, variables: doodson, name, cossin</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileDoodsonMatrix" type="filename" minOccurs="0" default="doodson.txt"/>
+						<xs:element name="outputfileAdmittanceMatrix" type="filename" minOccurs="0" default="admittance.txt"/>
+						<xs:element name="inputfileAdmittance" type="filename">
+							<xs:annotation>
+								<xs:documentation>interpolation of minor constituents</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>

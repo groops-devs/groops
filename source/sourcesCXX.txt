@@ -450,6 +450,7 @@ programs/system/ifPrograms.cpp
 programs/system/loopPrograms.cpp
 programs/system/runCommand.cpp
 
+programs/conversion/doodsonHarmonics/doodsonAdmittance2SupplementaryFiles.cpp
 programs/conversion/doodsonHarmonics/doodsonHarmonics2IersPotential.cpp
 programs/conversion/doodsonHarmonics/doodsonHarmonics2IersWaterHeight.cpp
 programs/conversion/doodsonHarmonics/graceAod2DoodsonHarmonics.cpp

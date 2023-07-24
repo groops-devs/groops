@@ -56,6 +56,7 @@ static const DoodsonName doodsonName[] = {
       {"162.556", "pi1"},     //  PI/2
       {"163.555", "p1"},      //  PI/2
       {"164.555", "s1"},      //  PI   // !!! sometimes defined as 164.556
+      {"164.556", "s1"},      //  PI   // !!! sometimes defined as 164.556
       {"165.555", "k1"},      // -PI/2
       {"166.554", "psi1"},    // -PI/2
       {"167.555", "fi1"},     // -PI/2
@@ -101,8 +102,11 @@ static const DoodsonName doodsonName[] = {
       {"455.555", "m4"},      // 0
       {"473.555", "ms4"},     // 0
       {"491.555", "s4"},      // 0
+      {"5a0.555", "s5"},      // 0
       {"655.555", "m6"},      // 0
+      {"6bz.555", "s6"},      // 0
       {"855.555", "m8"},      // 0
+
       {nullptr,   nullptr}};
 
 /***** CLASS ***********************************/
@@ -137,19 +141,25 @@ Doodson::Doodson(const std::string &str)
         break;
       }
 
-    std::stringstream ss1(str2), ss2;
-    ss1.exceptions(std::ios::badbit|std::ios::failbit);
-    ss2.exceptions(std::ios::badbit|std::ios::failbit);
+    auto doodNumber = [](char c)
+    {
+      if(std::isdigit(c))          return static_cast<Int>(c-'0');
+      if(('a' <= c) && (c <= 'm')) return static_cast<Int>(c-'a')+10;
+      if(('n' <= c) && (c <= 'z')) return static_cast<Int>(c-'n')-13;
+      throw(Exception("unknown character: "+c));
+    };
 
-    char c;
-    {ss1>>c; ss2<<c<<' '; ss2>>std::setbase(16)>>d[0];}
-    {ss1>>c; ss2<<c<<' '; ss2>>std::setbase(16)>>d[1]; d[1] -= 5;}
-    {ss1>>c; ss2<<c<<' '; ss2>>std::setbase(16)>>d[2]; d[2] -= 5;}
-    {ss1>>c; if(c!='.') throw(Exception("dot expected"));} // read dot
-    {ss1>>c; ss2<<c<<' '; ss2>>std::setbase(16)>>d[3]; d[3] -= 5;}
-    {ss1>>c; ss2<<c<<' '; ss2>>std::setbase(16)>>d[4]; d[4] -= 5;}
-    {ss1>>c; ss2<<c<<' '; ss2>>std::setbase(16)>>d[5]; d[5] -= 5;}
-    if(str2!=code())
+    d[0] = doodNumber(str2.at(0));
+    d[1] = doodNumber(str2.at(1));
+    d[2] = doodNumber(str2.at(2));
+    if(str2.at(3) != '.') throw(Exception("dot expected"));
+    d[3] = doodNumber(str2.at(4));
+    d[4] = doodNumber(str2.at(5));
+    d[5] = doodNumber(str2.at(6));
+    for(UInt i=1; i<6; i++)
+      d[i] -= 5;
+
+    if(str2 != code())
       throw(Exception("something strange: '"+str2+"' != "+code()));
   }
   catch(std::exception &e)
@@ -163,13 +173,21 @@ Doodson::Doodson(const std::string &str)
 std::string Doodson::code() const
 {
   std::stringstream ss;
-  ss<<d[0];
-  ss<<std::setbase(16)<<d[1]+5;
-  ss<<std::setbase(16)<<d[2]+5;
+
+  auto doodNumber = [](Int d)
+  {
+    if(d < 0) return static_cast<char>('n'+(d+13));
+    if(d > 9) return static_cast<char>('a'+(d-10));
+    return static_cast<char>('0'+d);
+  };
+
+  ss<<doodNumber(d[0]);
+  ss<<doodNumber(d[1]+5);
+  ss<<doodNumber(d[2]+5);
   ss<<".";
-  ss<<std::setbase(16)<<d[3]+5;
-  ss<<std::setbase(16)<<d[4]+5;
-  ss<<std::setbase(16)<<d[5]+5;
+  ss<<doodNumber(d[3]+5);
+  ss<<doodNumber(d[4]+5);
+  ss<<doodNumber(d[5]+5);
   return ss.str();
 }
 
