@@ -7305,6 +7305,35 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{DoodsonAdmittance2SupplementaryFiles}\label{DoodsonAdmittance2SupplementaryFiles}
+The publication of an ocean tide model includes not only the atlas
+in the form of spherical harmonics coefficients,
+but also the matrix of Doodson multipliers (\config{outputfileDoodsonMatrix})
+and the \config{outputfileAdmittanceMatrix}.
+
+The \config{outputfileMajorTideList} contains the \config{fileNames}
+for each contituent.
+The required information is taken from the
+\configFile{inputfileAdmittance}{admittance}.
+
+See also \program{DoodsonHarmonics2PotentialCoefficients}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileMajorTideList & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~fileNames & \hfuzz=500pt filename & \hfuzz=500pt template for fileList, variables: doodson, name, cossin\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileDoodsonMatrix & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAdmittanceMatrix & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAdmittance & \hfuzz=500pt filename & \hfuzz=500pt interpolation of minor constituents\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{DoodsonHarmonics2IersPotential}\label{DoodsonHarmonics2IersPotential}
 Convert doodson harmonics to IERS conventions according to FES2004.
 cf. \url{ftp://tai.bipm.org/iers/conv2010/chapter6/tidemodels/fes2004.dat}.
@@ -8546,11 +8575,14 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
-\subsection{GridRectangular2NetCdf}\label{GridRectangular2NetCdf}
-This program converts a sequence of \configFile{inputfileGridRectangular}{griddedData}
-to a COARDS compliant NetCDF file.
+\subsection{GriddedData2NetCdf}\label{GriddedData2NetCdf}
+This program converts a \configFile{inputfileGriddedData}{griddedData}
+to a COARDS compliant NetCDF file. The output data can be defined with \config{dataVariable}.
+You should add at least the attributes \verb|units|, \verb|long_name|, and maybe \verb|_FillValue|
+to the variables. For the \config{dataVariable:value} the standard \reference{dataVariables}{general.parser:dataVariables}
+are available to select the data columns of \configFile{inputfileGriddedData}{griddedData}.
 
-See also \program{NetCdfInfo}, \program{NetCdf2GridRectangular}.
+See also \program{NetCdfInfo}, \program{GriddedDataTimeSeries2NetCdf}, \program{NetCdf2GriddedData}.
 
 
 \keepXColumns
@@ -8559,11 +8591,66 @@ See also \program{NetCdfInfo}, \program{NetCdf2GridRectangular}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileNetCdf & \hfuzz=500pt filename & \hfuzz=500pt file name of NetCDF output\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileGridRectangular & \hfuzz=500pt filename & \hfuzz=500pt input grid sequence\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~times & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt values for time axis (COARDS specification)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt input grid sequence\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~dataVariable & \hfuzz=500pt sequence & \hfuzz=500pt metadata for data variables\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~selectDataField & \hfuzz=500pt uint & \hfuzz=500pt input data column\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt netCDF variable name\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~value & \hfuzz=500pt expression & \hfuzz=500pt expression (variables 'height', 'data', 'longitude', 'latitude' and, 'area' are taken from the gridded data\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~dataType & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~double & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~float & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~int & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-unbounded.pdf}~attribute & \hfuzz=500pt choice & \hfuzz=500pt netCDF attributes\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~text & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~value & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~value & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~value & \hfuzz=500pt double & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~dataType & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~double & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~float & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~int & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~globalAttribute & \hfuzz=500pt choice & \hfuzz=500pt additional meta data\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~text & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~value & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~value & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~value & \hfuzz=500pt double & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~dataType & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~double & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~float & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~int & \hfuzz=500pt  & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{GriddedDataTimeSeries2NetCdf}\label{GriddedDataTimeSeries2NetCdf}
+Read a \configFile{inputfileGriddedDataTimeSeries}{griddedDataTimeSeries}
+and converts it to a COARDS compliant NetCDF file.
+
+The output data can be defined with \config{dataVariable}.
+You should add at least the attributes \verb|units|, \verb|long_name|, and maybe \verb|_FillValue|
+to the variables. The \config{dataVariable:inputColumn} selects the data from the input file.
+
+If \configClass{timeSeries}{timeSeriesType} is not set
+the temporal nodal points from the inputfile are used.
+
+See also \program{NetCdfInfo}, \program{GriddedData2NetCdf}, \program{NetCdf2GriddedDataTimeSeries}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileNetCdf & \hfuzz=500pt filename & \hfuzz=500pt file name of NetCDF output\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGriddedDataTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt otherwise times from inputfile are used\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~dataVariable & \hfuzz=500pt sequence & \hfuzz=500pt metadata for data variables\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt netCDF variable name\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputColumn & \hfuzz=500pt uint & \hfuzz=500pt input data column\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~dataType & \hfuzz=500pt choice & \hfuzz=500pt \\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~double & \hfuzz=500pt  & \hfuzz=500pt \\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~float & \hfuzz=500pt  & \hfuzz=500pt \\
@@ -8853,11 +8940,15 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
-\subsection{NetCdf2GridRectangular}\label{NetCdf2GridRectangular}
-This program converts a COARDS compliant NetCDF file into a sequence of
-\configFile{outputfileGridRectangular}{griddedData}.
+\subsection{NetCdf2GriddedData}\label{NetCdf2GriddedData}
+This program converts a COARDS compliant NetCDF file into an
+\configFile{outputfileGriddedData}{griddedData}.
+If no specific input \config{variableNameData} are selected all suitable data are used.
 
-See also \program{NetCdfInfo}, \program{GridRectangular2NetCdf}.
+If the NETCDF file contains a time axis (\config{variableNameData}) an specific epoch
+can be selected with \config{time}. The nearest epoch in file is used.
+
+See also \program{NetCdfInfo}, \program{GriddedData2NetCdf}, \program{NetCdf2GriddedDataTimeSeries}.
 
 
 \keepXColumns
@@ -8865,13 +8956,39 @@ See also \program{NetCdfInfo}, \program{GridRectangular2NetCdf}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGridRectangular & \hfuzz=500pt filename & \hfuzz=500pt One grid for each epoch in the NetCDF file is written. Use loopTimeVariable as template.\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~loopTimeVariable & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileNetCdf & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~variableNameLongitude & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~variableNameLatitude & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableNameTime & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable (leave blank for static grids)\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~variableNameData & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableNameTime & \hfuzz=500pt string & \hfuzz=500pt if with time axis: name of NetCDF variable\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~variableNameData & \hfuzz=500pt string & \hfuzz=500pt data variables, otherwise all suitable data are used\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~time & \hfuzz=500pt time & \hfuzz=500pt if with time axis: nearest epoch is used\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{NetCdf2GriddedDataTimeSeries}\label{NetCdf2GriddedDataTimeSeries}
+This program converts a COARDS compliant NetCDF file into
+\configFile{outputfileGriddedDataTimeSeries}{griddedDataTimeSeries}.
+If no specific input \config{variableNameData} are selected all suitable data are used.
+
+See also \program{NetCdfInfo}, \program{NetCdf2GriddedData}, \program{GriddedDataTimeSeries2NetCdf}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGriddedDataTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileNetCdf & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~variableNameLongitude & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~variableNameLatitude & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~variableNameTime & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~variableNameData & \hfuzz=500pt string & \hfuzz=500pt data variables, otherwise all suitable data are used\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates\\
 \hline
@@ -8916,7 +9033,8 @@ This program is \reference{parallelized}{general.parallelization}.
 Print content information of a NetCDF file like
 dimensions, variables and attributes.
 
-See also \program{NetCdf2GridRectangular}, \program{GridRectangular2NetCdf}.
+See also \program{NetCdf2GriddedData}, \program{NetCdf2GriddedDataTimeSeries},
+\program{GriddedData2NetCdf}, \program{GriddedDataTimeSeries2NetCdf}.
 
 
 \keepXColumns
@@ -9046,8 +9164,8 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileCosPotentialCoefficients & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinPotentialCoefficients & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~period & \hfuzz=500pt string & \hfuzz=500pt period of oscillation [year]\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileComment & \hfuzz=500pt filename & \hfuzz=500pt file containing comments for header\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt comment in header\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileComment & \hfuzz=500pt filename & \hfuzz=500pt file containing comments for header\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~modelname & \hfuzz=500pt string & \hfuzz=500pt name of the model\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~tideSystem & \hfuzz=500pt choice & \hfuzz=500pt tide system of model\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~zero\_tide & \hfuzz=500pt  & \hfuzz=500pt \\
@@ -9452,6 +9570,75 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \section{Programs: Deprecated}
+\subsection{GridRectangular2NetCdf}\label{GridRectangular2NetCdf}
+DEPRECATED. Please use \program{GriddedData2NetCdf} or \program{GriddedDataTimeSeries2NetCdf} instead.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileNetCdf & \hfuzz=500pt filename & \hfuzz=500pt file name of NetCDF output\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileGridRectangular & \hfuzz=500pt filename & \hfuzz=500pt input grid sequence\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~times & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt values for time axis (COARDS specification)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~dataVariable & \hfuzz=500pt sequence & \hfuzz=500pt metadata for data variables\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~selectDataField & \hfuzz=500pt uint & \hfuzz=500pt input data column\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt netCDF variable name\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~dataType & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~double & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~float & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~int & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-unbounded.pdf}~attribute & \hfuzz=500pt choice & \hfuzz=500pt netCDF attributes\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~text & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~value & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~value & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~value & \hfuzz=500pt double & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~dataType & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~double & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~float & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~int & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~globalAttribute & \hfuzz=500pt choice & \hfuzz=500pt additional meta data\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~text & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~value & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~value & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~value & \hfuzz=500pt double & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~dataType & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~double & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~float & \hfuzz=500pt  & \hfuzz=500pt \\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~int & \hfuzz=500pt  & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{NetCdf2GridRectangular}\label{NetCdf2GridRectangular}
+DEPRECATED. Please use \program{NetCdf2GriddedData} or \program{NetCdf2GriddedDataTimeSeries} instead.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGridRectangular & \hfuzz=500pt filename & \hfuzz=500pt One grid for each epoch in the NetCDF file is written. Use loopTimeVariable as template.\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~loopTimeVariable & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileNetCdf & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~variableNameLongitude & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~variableNameLatitude & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableNameTime & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable (leave blank for static grids)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~variableNameData & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{Sinex2StationPosition}\label{Sinex2StationPosition}
 DEPRECATED. Please use \program{Sinex2StationPositions} instead.
 

@@ -252,32 +252,31 @@ template<> void load(InArchive &ar, GriddedDataRectangular &x)
   {
     Bool isRectangle;
     ar>>nameValue("isRectangle", isRectangle);
-    if(isRectangle)
+    if(!isRectangle)
+      throw(Exception("GriddedData must be a rectangle grid"));
+    std::vector<Double> dLambda, dPhi;
+    ar>>nameValue("ellipsoid", x.ellipsoid);
+    ar>>nameValue("lambda",    x.longitudes);
+    ar>>nameValue("phi",       x.latitudes);
+    ar>>nameValue("radius",    x.heights);
+    ar>>nameValue("dLambda",   dLambda);
+    ar>>nameValue("dPhi",      dPhi);
+    // points
+    Angle lon;
+    for(UInt i=0; i<x.latitudes.size(); i++)
+      x.ellipsoid(polar(Angle(0), x.latitudes.at(i), x.heights.at(i)), lon, x.latitudes.at(i), x.heights.at(i));
+    // values
+    UInt valueCount;
+    ar>>nameValue("valueCount", valueCount);
+    x.values.resize(valueCount);
+    for(UInt id=0; id<x.values.size(); id++)
     {
-      std::vector<Double> dLambda, dPhi;
-      ar>>nameValue("ellipsoid", x.ellipsoid);
-      ar>>nameValue("lambda",    x.longitudes);
-      ar>>nameValue("phi",       x.latitudes);
-      ar>>nameValue("radius",    x.heights);
-      ar>>nameValue("dLambda",   dLambda);
-      ar>>nameValue("dPhi",      dPhi);
-      // points
-      Angle lon;
-      for(UInt i=0; i<x.latitudes.size(); i++)
-        x.ellipsoid(polar(Angle(0), x.latitudes.at(i), x.heights.at(i)), lon, x.latitudes.at(i), x.heights.at(i));
-      // values
-      UInt valueCount;
-      ar>>nameValue("valueCount", valueCount);
-      x.values.resize(valueCount);
-      for(UInt id=0; id<x.values.size(); id++)
-      {
-        x.values.at(id) = Matrix(x.latitudes.size(), x.longitudes.size());
-        for(UInt i=0; i<x.values.at(id).rows(); i++)
-          for(UInt k=0; k<x.values.at(id).columns(); k++)
-            ar>>nameValue("value", x.values.at(id)(i, k));
-      }
-      return;
+      x.values.at(id) = Matrix(x.latitudes.size(), x.longitudes.size());
+      for(UInt i=0; i<x.values.at(id).rows(); i++)
+        for(UInt k=0; k<x.values.at(id).columns(); k++)
+          ar>>nameValue("value", x.values.at(id)(i, k));
     }
+    return;
   }
 
   GriddedData griddedData;
