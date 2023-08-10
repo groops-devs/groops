@@ -132,7 +132,7 @@ std::vector<FileName> System::directoryListing(const FileName &path, const std::
     std::vector<FileName> files;
     const fs::directory_iterator end;
     for(fs::directory_iterator iter{path.str()}; iter!=end; iter++)
-      if(fs::is_regular_file(*iter) && std::regex_match(iter->path().string(), pattern))
+      if(fs::is_regular_file(*iter) && std::regex_match(iter->path().filename().string(), pattern))
         files.push_back(FileName(iter->path().filename().string()));
     return files;
   }
