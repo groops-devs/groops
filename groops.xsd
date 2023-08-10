@@ -12317,6 +12317,51 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="Gravityfield2TrendPotentialCoefficients">
+				<xs:annotation>
+					<xs:documentation>estimate temporal parametrization (e.g. trend, annual)</xs:documentation>
+					<xs:appinfo>tag: Gravityfield</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfilePotentialCoefficients" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>for each temporal parameter</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="gravityfield" type="gravityfieldType" maxOccurs="unbounded"/>
+						<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded"/>
+						<xs:element name="parametrizationTemporal" type="parametrizationTemporalType" maxOccurs="unbounded"/>
+						<xs:element name="minDegree" type="uint" default="0"/>
+						<xs:element name="maxDegree" type="uint" minOccurs="0"/>
+						<xs:element name="GM" type="double" minOccurs="0" default="3.986004415e+14">
+							<xs:annotation>
+								<xs:documentation>Geocentric gravitational constant</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="R" type="double" minOccurs="0" default="6378136.3">
+							<xs:annotation>
+								<xs:documentation>reference radius</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="huber" type="double" minOccurs="0" default="2.5">
+							<xs:annotation>
+								<xs:documentation>for robust least squares</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="huberPower" type="double" minOccurs="0" default="1.5">
+							<xs:annotation>
+								<xs:documentation>for robust least squares</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="huberMaxIteration" type="uint" minOccurs="0" default="15">
+							<xs:annotation>
+								<xs:documentation>(maximum) number of iterations for robust estimation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GravityfieldCovariancesPropagation2GriddedData">
 				<xs:annotation>
 					<xs:documentation>covariances of values of a gravity field on a grid</xs:documentation>

@@ -15,6 +15,7 @@
 - New program:      GriddedData2NetCdf, GriddedDataTimeSeries2NetCdf (replaces GridRectangular2NectCdf).
 - New program:      NetCdf2GriddedData, NetCdf2GriddedDataTimeSeries (replaces NectCdf2DridRectangular).
 - New program:      DoodsonAdmittance2SupplementaryFiles: for publication of ocean tide models.
+- New program:      Gravityfield2TrendPotentialCoefficients: Estimate trend, annual, ...
 - New class:        In Loop: DirectoryListing.
 - New class:        In Loop: FileLines.
 - New class:        In InstrumentResample/interpolatorTimeSeries: FillGapsLeastSquaresPolynomialFit.

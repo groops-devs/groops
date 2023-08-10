@@ -2137,6 +2137,47 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{Gravityfield2TrendPotentialCoefficients}\label{Gravityfield2TrendPotentialCoefficients}
+This program estimates \configClass{parametrizationTemporal}{parametrizationTemporalType}
+(e.g. mean, trend, annual) from a time variable gravity field.
+
+In a first step a time variable \configClass{gravityfield}{gravityfieldType}
+is sampled at \configClass{timeSeries}{timeSeriesType}
+and converted to coefficients of a spherical harmonics expansion.
+The expansion is limited in the range between \config{minDegree}
+and \config{maxDegree} inclusively.
+The coefficients are related to the reference radius~\config{R}
+and the Earth gravitational constant \config{GM}.
+
+These coefficients serves as observations of
+a \reference{robust least squares adjustment}{fundamentals.robustLeastSquares} to estimate
+\configClass{parametrizationTemporal}{parametrizationTemporalType} parameters.
+For each temporal parameter an
+\configFile{outputfilePotentialCoefficients}{potentialCoefficients}
+is generated.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~outputfilePotentialCoefficients & \hfuzz=500pt filename & \hfuzz=500pt for each temporal parameter\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrizationTemporal & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~huber & \hfuzz=500pt double & \hfuzz=500pt for robust least squares\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~huberPower & \hfuzz=500pt double & \hfuzz=500pt for robust least squares\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~huberMaxIteration & \hfuzz=500pt uint & \hfuzz=500pt (maximum) number of iterations for robust estimation\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{GravityfieldCovariancesPropagation2GriddedData}\label{GravityfieldCovariancesPropagation2GriddedData}
 This program computes the covariance between a source point given
 by longitude/latitude (\config{L}, \config{B}) and the points of a \configClass{grid}{gridType}
