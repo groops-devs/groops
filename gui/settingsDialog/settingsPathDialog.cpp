@@ -28,24 +28,23 @@ SettingsPathDialog::SettingsPathDialog(QWidget *parent) : QDialog(parent), ui(ne
   try
   {
     ui->setupUi(this);
-    this->settings = new QSettings(this);
 
     // restore size of window
     // ----------------------
     setMinimumSize(QGuiApplication::primaryScreen()->size()/4);
     QRect parentRect(parentWidget()->mapToGlobal(QPoint(0, 0)), parentWidget()->size());
-    resize(settings->value("settingsPathDialog/size", minimumSizeHint()).toSize());
-    move(settings->value("settingsPathDialog/position", QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), parentRect).topLeft()).toPoint());
+    resize(settings.value("settingsPathDialog/size", minimumSizeHint()).toSize());
+    move(settings.value("settingsPathDialog/position", QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), parentRect).topLeft()).toPoint());
 
     connect(ui->listSchema->model(), SIGNAL(rowsInserted(QModelIndex,int,int)), this, SLOT(schemaListChanged()));
     connect(ui->listSchema->model(), SIGNAL(rowsRemoved (QModelIndex,int,int)), this, SLOT(schemaListChanged()));
 
     const QString baseDir(QSysInfo::productType() == "windows" ? "C:" : QDir::homePath());
-    const QString schemaFile = settings->value("files/schemaFile", QFileInfo(baseDir+"/groops/groops.xsd").absoluteFilePath()).toString();
-    ui->listSchema->addItems(settings->value("files/schemaFiles", QStringList(schemaFile)).toStringList());
-    ui->editTemplateFile->setText(settings->value("files/templateFile").toString());
-    ui->editWorkingDir->setText(settings->value("files/workingDirectory", QDir(baseDir+"/groops/scenario").absolutePath()).toString());
-    ui->editDocumentationDir->setText(settings->value("files/documentationDirectory", QDir(baseDir+"/groops/docs/html").absolutePath()).toString());
+    const QString schemaFile = settings.value("files/schemaFile", QFileInfo(baseDir+"/groops/groops.xsd").absoluteFilePath()).toString();
+    ui->listSchema->addItems(settings.value("files/schemaFiles", QStringList(schemaFile)).toStringList());
+    ui->editTemplateFile->setText(settings.value("files/templateFile").toString());
+    ui->editWorkingDir->setText(settings.value("files/workingDirectory", QDir(baseDir+"/groops/scenario").absolutePath()).toString());
+    ui->editDocumentationDir->setText(settings.value("files/documentationDirectory", QDir(baseDir+"/groops/docs/html").absolutePath()).toString());
   }
   catch(std::exception &e)
   {
@@ -58,8 +57,9 @@ SettingsPathDialog::SettingsPathDialog(QWidget *parent) : QDialog(parent), ui(ne
 SettingsPathDialog::~SettingsPathDialog()
 {
   delete ui;
-  delete settings;
 }
+
+/***********************************************/
 
 void SettingsPathDialog::schemaListChanged()
 {
@@ -80,7 +80,8 @@ void SettingsPathDialog::clickedSchemaChange()
   if(!name.isEmpty() && !ui->listSchema->findItems(name, Qt::MatchFixedString).size())
   {
     // validate XSD schema file
-    if(!Schema::validateSchema(name))
+    Schema schema;
+    if(!schema.readFile(name))
     {
       QMessageBox::StandardButton button =
         QMessageBox::critical(this , tr("Change Schema File - GROOPS"),
@@ -107,7 +108,8 @@ void SettingsPathDialog::clickedSchemaAdd()
   if(!name.isEmpty() && !ui->listSchema->findItems(name, Qt::MatchFixedString).size())
   {
     // validate XSD schema file
-    if(!Schema::validateSchema(name))
+    Schema schema;
+    if(!schema.readFile(name))
     {
       QMessageBox::StandardButton button =
         QMessageBox::critical(this , tr("Add Schema File - GROOPS"),
@@ -166,7 +168,7 @@ void SettingsPathDialog::clickedOk()
   try
   {
     QStringList schemaFiles;
-    for(int i = 0; i < ui->listSchema->count(); i++)
+    for(int i=0; i<ui->listSchema->count(); i++)
       schemaFiles.append(ui->listSchema->item(i)->text());
     if(!schemaFiles.size())
     {
@@ -174,13 +176,13 @@ void SettingsPathDialog::clickedOk()
       return;
     }
 
-    settings->setValue("files/schemaFile",       schemaFiles.at(0));
-    settings->setValue("files/schemaFiles",      schemaFiles);
-    settings->setValue("files/templateFile",     ui->editTemplateFile->text());
-    settings->setValue("files/workingDirectory", ui->editWorkingDir->text());
-    settings->setValue("files/documentationDirectory", ui->editDocumentationDir->text());
-    settings->setValue("settingsPathDialog/position",  pos());
-    settings->setValue("settingsPathDialog/size",      size());
+    settings.setValue("files/schemaFile",             schemaFiles.at(0));
+    settings.setValue("files/schemaFiles",            schemaFiles);
+    settings.setValue("files/templateFile",           ui->editTemplateFile->text());
+    settings.setValue("files/workingDirectory",       ui->editWorkingDir->text());
+    settings.setValue("files/documentationDirectory", ui->editDocumentationDir->text());
+    settings.setValue("settingsPathDialog/position",  pos());
+    settings.setValue("settingsPathDialog/size",      size());
     accept();
   }
   catch(std::exception &e)

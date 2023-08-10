@@ -18,18 +18,21 @@
 #include "tree/tree.h"
 #include "tree/treeElement.h"
 #include "tree/treeElementSimple.h"
+#include "tree/treeElementGlobal.h"
 #include "tree/treeElementTime.h"
 
 /***********************************************/
 
-void TreeElementTime::newSelectedIndex(int /*index*/)
+void TreeElementTime::setSelectedIndex(int index)
 {
   try
   {
+    TreeElementSimple::setSelectedIndex(index); // updates also mjd
+
     if(dateTimeEdit && !changeNotDateTime) // avoid infinite recursion
     {
       changeNotComboBox = true;
-      dateTimeEdit->setDateTime(mjd2date(selectedValue()));
+      dateTimeEdit->setDateTime(mjd2date(mjd));
       changeNotComboBox = false;
     }
   }
@@ -50,7 +53,7 @@ QWidget *TreeElementTime::createEditor()
     // create layout
     QWidget *layoutWidget = new QWidget(tree);
     QHBoxLayout *layout   = new QHBoxLayout(layoutWidget);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
 
     // create ComboBox
     comboBox = createComboBox(true);
@@ -61,8 +64,8 @@ QWidget *TreeElementTime::createEditor()
     // create DateTime-Editor
     dateTimeEdit = new QDateTimeEdit();
     dateTimeEdit-> setDisplayFormat("yyyy-MM-dd hh:mm:ss");
-    dateTimeEdit->setMinimumDateTime(mjd2date("0"));
-    dateTimeEdit->setDateTime(mjd2date(selectedValue()));
+    dateTimeEdit->setMinimumDateTime(QDate(1858, 11, 17).startOfDay()); // (mjd = 0)
+    dateTimeEdit->setDateTime(mjd2date(mjd));
     layout->addWidget(dateTimeEdit);
     connect(dateTimeEdit, SIGNAL(dateTimeChanged(const QDateTime &)), this, SLOT(dateTimeChanged(const QDateTime &)));
 
@@ -92,8 +95,22 @@ void TreeElementTime::comboBoxEditTextChanged(const QString &text)
   {
     if(dateTimeEdit && !changeNotDateTime) // avoid infinite recursion
     {
+      mjd = 0;
+      if(tree->elementGlobal)
+      {
+        try
+        {
+          bool resolved = true;
+          auto result = StringParser::parse(name().toStdString(), text.toStdString(), tree->elementGlobal->variableList(), resolved);
+          if(resolved)
+            mjd = ExpressionVariable::parse(result, tree->elementGlobal->variableList());
+        }
+        catch(std::exception &/*e*/)
+        {} // if not a number use mjd = 0
+      }
+
       changeNotComboBox = true;
-      dateTimeEdit->setDateTime(mjd2date(text));
+      dateTimeEdit->setDateTime(mjd2date(mjd));
       changeNotComboBox = false;
     }
   }
@@ -142,11 +159,11 @@ QString TreeElementTime::date2mjd(const QDateTime &dateTime) const
 
     QString     string;
     QTextStream stream(&string);
-    Bool        set=false;
+    bool        set=false;
     if(mjd!=0)  {stream<<mjd; set=true;}
     if(hour!=0) {stream<<((set)?"+":"")<<hour<<"/24";   set=true;}
     if(min!=0)  {stream<<((set)?"+":"")<<min<<"/1440";  set=true;}
-    if(sec!=0.)  {stream<<((set)?"+":"")<<sec<<"/86400"; set=true;}
+    if(sec!=0.) {stream<<((set)?"+":"")<<sec<<"/86400"; set=true;}
     return string;
   }
   catch(std::exception &e)
@@ -157,20 +174,10 @@ QString TreeElementTime::date2mjd(const QDateTime &dateTime) const
 
 /***********************************************/
 
-QDateTime TreeElementTime::mjd2date(const QString &text) const
+QDateTime TreeElementTime::mjd2date(Double mjd) const
 {
   try
   {
-    Double mjd = 0;
-    try
-    {
-      mjd = ExpressionVariable::parse(text.toStdString(), tree->getVariableList());
-    }
-    catch(...)
-    {
-      // if not a number use mjd = 0
-    }
-
     Time time = mjd2time(mjd);
     UInt year, month, day, hour, minute;
     Double second;
@@ -189,51 +196,49 @@ QDateTime TreeElementTime::mjd2date(const QString &text) const
 
 /***********************************************/
 
-QString TreeElementTime::parseExpression(const QString &value) const
+QString TreeElementTime::parseExpression(const QString &text, const VariableList &varList) const
 {
+  mjd = 0;
+  QString result = text;
   try
   {
-    if(value.isEmpty())
-      return value;
+    bool resolved = true;
+    result = QString::fromStdString(StringParser::parse(name().toStdString(), text.toStdString(), varList, resolved));
+    if(result.isEmpty() || !resolved)
+      return result;
+    mjd = ExpressionVariable::parse(result.toStdString(), varList);
+    result.setNum(mjd, 'f', 7).remove(QRegularExpression("0+$")).remove(QRegularExpression("\\.$")); // %.7f with trailing zeros removed
+    if(mjd == 0)
+      return result;
 
-    QString result = TreeElement::parseExpression(value);
-    try
+    // is a date?
+    if(mjd > 1000)
     {
-      QDateTime dateTime = mjd2date(result);
-      QString dateString;
-      if(dateTime.date() >= QDate(1900,1,1))
-      {
-        dateString += dateTime.toString("yyyy-MM-dd hh:mm:ss");
-        if(dateString.endsWith(" 00:00:00"))
-          dateString.truncate(dateString.lastIndexOf(" 00:00:00"));
-      }
-      else
-      {
-        if(result.startsWith('-'))
-        {
-          dateString += "-";
-          dateTime = mjd2date(result.mid(1));
-        }
-        bool showDays = dateTime.date() > QDate(1858,11,17);
-        if(showDays)
-          dateString += QString::number(dateTime.date().toJulianDay() - QDate(1858,11,17).toJulianDay())+"d ";
-        if(!showDays || dateTime.time() > QTime(0,0,0))
-          dateString += dateTime.toString("hh:mm:ss");
-      }
-      if(!dateString.isEmpty() && !result.isEmpty() && result != value)
-        dateString += " ("+result+")";
-
+      QString dateString = mjd2date(mjd).toString("yyyy-MM-dd hh:mm:ss");
+      if(dateString.endsWith(" 00:00:00"))
+        dateString.truncate(dateString.lastIndexOf(" 00:00:00"));
       return dateString.trimmed();
     }
-    catch(...)
-    {
+
+    // time span
+    QDateTime dateTime = mjd2date(std::fabs(mjd));
+    if(dateTime.time() == QTime(0,0,0))
       return result;
-    }
+    QString dateString;
+    if(mjd < 0)
+      dateString += "-";
+    if(std::floor(std::abs(mjd)))
+      dateString += QString::number(static_cast<int>(std::floor(std::abs(mjd))))+"d "; // days
+    dateString += dateTime.toString("hh:mm:ss");
+    if(result != text)
+      dateString += " ("+result+")";
+    return dateString;
   }
-  catch(std::exception &e)
+  catch(std::exception &/*e*/)
   {
-    GROOPS_RETHROW(e);
   }
+
+  return result;
 }
 
 /***********************************************/

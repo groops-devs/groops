@@ -23,13 +23,12 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QMenu>
-#include <QLabel>
 #include <QComboBox>
 #include <QContextMenuEvent>
 #include <QTextStream>
-#include <QDomDocument>
 #include <QUrl>
 #include <QDesktopServices>
+#include <QVBoxLayout>
 #include "base/importGroops.h"
 #include "base/xml.h"
 #include "base/schema.h"
@@ -40,7 +39,8 @@
 #include "tree/treeElementFileName.h"
 #include "tree/treeElementGlobal.h"
 #include "tree/treeElementProgram.h"
-#include "addGlobalDialog/addGlobalDialog.h"
+#include "tree/treeElementComment.h"
+#include "tree/treeElementUnknown.h"
 #include "executeDialog/executeDialog.h"
 #include "setLoopConditionDialog/setLoopConditionDialog.h"
 #include "settingsDialog/settingsPathDialog.h"
@@ -54,80 +54,160 @@
 /***********************************************/
 /***********************************************/
 
-Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *workspace) : QTreeWidget(parent)
+Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *tabEnvironment) : QWidget(parent)
 {
   try
   {
-    this->settings          = new QSettings(this);
-    this->changed           = false;
-    this->_showResults      = true;
-    this->selectedItem      = nullptr;
-    this->_rootElement      = nullptr;
-    this->_elementGlobal    = nullptr;
-    this->fileWatcher       = nullptr;
-    this->_undoStack        = new QUndoStack(this);
-    this->workspace         = workspace;
+    this->_isClean      = true;
+    this->_selectedItem = nullptr;
+    this->rootElement   = nullptr;
+    this->elementGlobal = nullptr;
+    this->fileWatcher   = nullptr;
+    this->undoStack     = new QUndoStack(this);
+    this->_isCurrent    = true;
 
-    setlocale(LC_NUMERIC, "en_US.UTF-8"); // force . as decimal separator (QLocale behavior is strange)
+    // Layout
+    // ======
+    // Bar handling external file changes
+    // ----------------------------------
+    {
+      QPushButton *buttonReopen = new QPushButton(QIcon(":/icons/scalable/view-refresh.svg"), "Reopen", this);
+      QPushButton *buttonIgnore = new QPushButton(QIcon(":/icons/scalable/ignore.svg"), "Ignore", this);
+      QLabel *iconLabel = new QLabel(this);
+      iconLabel->setPixmap(QIcon(":/icons/scalable/warning.svg").pixmap(24,24));
+      QHBoxLayout *layoutBar = new QHBoxLayout(this);
+      layoutBar->addWidget(iconLabel);
+      layoutBar->addWidget(new QLabel("File was modified externally. Reopen?", this), 1);
+      layoutBar->addWidget(buttonReopen);
+      layoutBar->addWidget(buttonIgnore);
+      layoutBar->setContentsMargins(3, 3, 3, 3);
+      barFileExternallyChanged = new QFrame(this);
+      barFileExternallyChanged->setFrameStyle(QFrame::Box);
+      barFileExternallyChanged->setLayout(layoutBar);
+      barFileExternallyChanged->setVisible(false);
+      const QString highlightColor = barFileExternallyChanged->palette().highlight().color().name().right(6);
+      barFileExternallyChanged->setStyleSheet(".QFrame { color: #"+highlightColor+"; background-color: #4d"+highlightColor+" }");
 
-    // init QTreeWidget
-    // ----------------
-    QStringList headerLabel;
-    setHeaderLabels(headerLabel << tr("Type") << tr("Value") << tr("Description") << tr("Comment"));
-    setAlternatingRowColors(true);
-    setRootIsDecorated(false);
-    setItemsExpandable(true);
-    setSortingEnabled(false);
-    setContextMenuPolicy(Qt::CustomContextMenu);
-    setSelectionMode(QAbstractItemView::SingleSelection);
-    header()->setSectionsMovable(false);
-    viewport()->setAcceptDrops(true); // internal & external drag
+      connect(buttonReopen, SIGNAL(clicked()), this, SLOT(barFileExternallyChangedReopen()));
+      connect(buttonIgnore, SIGNAL(clicked()), this, SLOT(barClickedIgnore()));
+    }
 
-    // set rectangular icon size
-    // -------------------------
-    QLabel *label = new QLabel(this);
-    int height = label->sizeHint().height();
-    setIconSize(QSize(2*height, height));
-    delete label;
+    // Bar handling unknown elements
+    // -----------------------------
+    {
+      QPushButton *buttonShowAll   = new QPushButton(QIcon(":/icons/scalable/edit-find-replace.svg"), "Show all", this);
+      QPushButton *buttonRemoveAll = new QPushButton(QIcon(":/icons/scalable/edit-delete.svg"), "Remove all", this);
+      QPushButton *buttonIgnore    = new QPushButton(QIcon(":/icons/scalable/ignore.svg"), "Ignore", this);
+      buttonRemoveAll->setMinimumWidth(95);
+      QLabel *iconLabel = new QLabel(this);
+      iconLabel->setPixmap(QIcon(":/icons/scalable/help-about.svg").pixmap(24,24));
+      QHBoxLayout *layoutBar = new QHBoxLayout(this);
+      labelUnknownElements = new QLabel(this);
+      layoutBar->addWidget(iconLabel);
+      layoutBar->addWidget(labelUnknownElements, 1);
+      layoutBar->addWidget(buttonShowAll);
+      layoutBar->addWidget(buttonRemoveAll);
+      layoutBar->addWidget(buttonIgnore);
+      layoutBar->setContentsMargins(3, 3, 3, 3);
+      barUnknownElements = new QFrame(this);
+      barUnknownElements->setFrameStyle(QFrame::Box);
+      barUnknownElements->setLayout(layoutBar);
+      barUnknownElements->setVisible(false);
+      const QString highlightColor = barUnknownElements->palette().highlight().color().name().right(6);
+      barUnknownElements->setStyleSheet(".QFrame { color: #"+highlightColor+"; background-color: #4d"+highlightColor+" }");
+
+      connect(buttonShowAll,   SIGNAL(clicked()), this, SLOT(barUnknownElementsExpand()));
+      connect(buttonRemoveAll, SIGNAL(clicked()), this, SLOT(barUnknownElementsRemoveAll()));
+      connect(buttonIgnore,    SIGNAL(clicked()), this, SLOT(barClickedIgnore()));
+    }
+
+    // Bar handling schema renamed elements
+    // ------------------------------------
+    {
+      QPushButton *buttonShowAll   = new QPushButton(QIcon(":/icons/scalable/edit-find-replace.svg"), "Show all", this);
+      QPushButton *buttonUpdateAll = new QPushButton(QIcon(":/icons/scalable/edit-rename.svg"), "Update all", this);
+      QPushButton *buttonIgnore    = new QPushButton(QIcon(":/icons/scalable/ignore.svg"), "Ignore", this);
+      buttonUpdateAll->setMinimumWidth(95);
+      QLabel *iconLabel = new QLabel(this);
+      iconLabel->setPixmap(QIcon(":/icons/scalable/help-about.svg").pixmap(24,24));
+      QHBoxLayout *layoutBar = new QHBoxLayout(this);
+      labelSchemaRenamedElements = new QLabel(this);
+      layoutBar->addWidget(iconLabel);
+      layoutBar->addWidget(labelSchemaRenamedElements, 1);
+      layoutBar->addWidget(buttonShowAll);
+      layoutBar->addWidget(buttonUpdateAll);
+      layoutBar->addWidget(buttonIgnore);
+      layoutBar->setContentsMargins(3, 3, 3, 3);
+      barSchemaRenamedElements = new QFrame(this);
+      barSchemaRenamedElements->setFrameStyle(QFrame::Box);
+      barSchemaRenamedElements->setLayout(layoutBar);
+      barSchemaRenamedElements->setVisible(false);
+      const QString highlightColor = barSchemaRenamedElements->palette().highlight().color().name().right(6);
+      barSchemaRenamedElements->setStyleSheet(".QFrame { color: #"+highlightColor+"; background-color: #4d"+highlightColor+" }");
+
+      connect(buttonShowAll,   SIGNAL(clicked()), this, SLOT(barSchemaRenamedElementsExpand()));
+      connect(buttonUpdateAll, SIGNAL(clicked()), this, SLOT(barSchemaRenamedElementsUpdateAll()));
+      connect(buttonIgnore,    SIGNAL(clicked()), this, SLOT(barClickedIgnore()));
+    }
+
+    this->treeWidget = new TreeWidget(this, tabEnvironment);
+
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->setSpacing(3);
+    layout->setContentsMargins(0, 3, 0, 0);
+    layout->addWidget(barFileExternallyChanged);
+    layout->addWidget(barUnknownElements);
+    layout->addWidget(barSchemaRenamedElements);
+    layout->addWidget(treeWidget, 1);
+    setLayout(layout);
+
+    // QTreeWidget events
+    // ------------------
+    connect(QApplication::clipboard(),              SIGNAL(dataChanged()),                                          this, SLOT(treeClipboardDataChanged()));
+    connect(qobject_cast<QTreeWidget*>(treeWidget), SIGNAL(customContextMenuRequested(const QPoint &)),             this, SLOT(treeContextMenuRequested (const QPoint&)));
+    connect(qobject_cast<QTreeWidget*>(treeWidget), SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(treeCurrentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
+    connect(qobject_cast<QTreeWidget*>(treeWidget), SIGNAL(itemSelectionChanged()),                                 this, SLOT(treeItemSelectionChanged()));
+    connect(qobject_cast<QTreeWidget*>(treeWidget), SIGNAL(itemClicked       (QTreeWidgetItem*, int)),              this, SLOT(treeItemClicked       (QTreeWidgetItem*, int)));
+    connect(qobject_cast<QTreeWidget*>(treeWidget), SIGNAL(itemDoubleClicked (QTreeWidgetItem*, int)),              this, SLOT(treeItemDoubleClicked (QTreeWidgetItem*, int)));
+    connect(treeWidget->header(), SIGNAL(sectionResized(int, int, int)), this, SIGNAL(sectionResized(int, int, int)));
 
     // connection to actions
     // ---------------------
     this->actionList = *actionList;
-    connect(this->actionList.editCutAction,             SIGNAL(triggered(bool)), this, SLOT(editCut()));
-    connect(this->actionList.editCopyAction,            SIGNAL(triggered(bool)), this, SLOT(editCopy()));
-    connect(this->actionList.editPasteAction,           SIGNAL(triggered(bool)), this, SLOT(editPaste()));
-    connect(this->actionList.editPasteOverwriteAction,  SIGNAL(triggered(bool)), this, SLOT(editPasteOverwrite()));
-    connect(this->actionList.editAddAction,             SIGNAL(triggered(bool)), this, SLOT(editAdd()));
-    connect(this->actionList.editRemoveAction,          SIGNAL(triggered(bool)), this, SLOT(editRemove()));
-    connect(this->actionList.editSetGlobalAction,       SIGNAL(triggered(bool)), this, SLOT(editSetGlobal()));
-    connect(this->actionList.editSetLoopAction,         SIGNAL(triggered(bool)), this, SLOT(editSetLoop()));
-    connect(this->actionList.editRemoveLoopAction,      SIGNAL(triggered(bool)), this, SLOT(editRemoveLoop()));
-    connect(this->actionList.editSetConditionAction,    SIGNAL(triggered(bool)), this, SLOT(editSetCondition()));
-    connect(this->actionList.editRemoveConditionAction, SIGNAL(triggered(bool)), this, SLOT(editRemoveCondition()));
-    connect(this->actionList.editEnabledAction,         SIGNAL(triggered(bool)), this, SLOT(editEnabled(bool)));
-    connect(this->actionList.editEnableAllAction,       SIGNAL(triggered(bool)), this, SLOT(editEnableAll()));
-    connect(this->actionList.editDisableAllAction,      SIGNAL(triggered(bool)), this, SLOT(editDisableAll()));
-    connect(this->actionList.editRenameAction,          SIGNAL(triggered(bool)), this, SLOT(editRename()));
-    connect(this->actionList.editUpdateNameAction,      SIGNAL(triggered(bool)), this, SLOT(editUpdateName()));
-    connect(this->actionList.editCommentAction,         SIGNAL(triggered(bool)), this, SLOT(editComment()));
-    connect(this->actionList.editCollapseAllAction,     SIGNAL(triggered(bool)), this, SLOT(editCollapseAll()));
-    connect(this->actionList.editOpenExternallyAction,  SIGNAL(triggered(bool)), this, SLOT(editOpenExternally()));
+    connect(this->actionList.fileSaveAction,              SIGNAL(triggered(bool)), this, SLOT(fileSave()));
+    connect(this->actionList.fileSaveAsAction,            SIGNAL(triggered(bool)), this, SLOT(fileSaveAs()));
+    connect(this->actionList.fileRunAction,               SIGNAL(triggered(bool)), this, SLOT(fileRun()));
+    connect(this->actionList.fileShowInManagerAction,     SIGNAL(triggered(bool)), this, SLOT(fileShowInManager()));
+    connect(this->actionList.editCutAction,               SIGNAL(triggered(bool)), this, SLOT(editCut()));
+    connect(this->actionList.editCopyAction,              SIGNAL(triggered(bool)), this, SLOT(editCopy()));
+    connect(this->actionList.editPasteAction,             SIGNAL(triggered(bool)), this, SLOT(editPaste()));
+    connect(this->actionList.editPasteOverwriteAction,    SIGNAL(triggered(bool)), this, SLOT(editPasteOverwrite()));
+    connect(this->actionList.editAddAction,               SIGNAL(triggered(bool)), this, SLOT(editAdd()));
+    connect(this->actionList.editRemoveAction,            SIGNAL(triggered(bool)), this, SLOT(editRemove()));
+    connect(this->actionList.editSetGlobalAction,         SIGNAL(triggered(bool)), this, SLOT(editSetGlobal()));
+    connect(this->actionList.editSetLoopAction,           SIGNAL(triggered(bool)), this, SLOT(editSetLoop()));
+    connect(this->actionList.editRemoveLoopAction,        SIGNAL(triggered(bool)), this, SLOT(editRemoveLoop()));
+    connect(this->actionList.editSetConditionAction,      SIGNAL(triggered(bool)), this, SLOT(editSetCondition()));
+    connect(this->actionList.editRemoveConditionAction,   SIGNAL(triggered(bool)), this, SLOT(editRemoveCondition()));
+    connect(this->actionList.editEnabledAction,           SIGNAL(triggered(bool)), this, SLOT(editEnabled(bool)));
+    connect(this->actionList.editEnableAllAction,         SIGNAL(triggered(bool)), this, SLOT(editEnableAll()));
+    connect(this->actionList.editDisableAllAction,        SIGNAL(triggered(bool)), this, SLOT(editDisableAll()));
+    connect(this->actionList.editRenameAction,            SIGNAL(triggered(bool)), this, SLOT(editRename()));
+    connect(this->actionList.editUpdateNameAction,        SIGNAL(triggered(bool)), this, SLOT(editUpdateName()));
+    connect(this->actionList.editAddCommentAction,        SIGNAL(triggered(bool)), this, SLOT(editAddComment()));
+    connect(this->actionList.editCollapseAllAction,       SIGNAL(triggered(bool)), this, SLOT(editCollapseAll()));
+    connect(this->actionList.editOpenExternallyAction,    SIGNAL(triggered(bool)), this, SLOT(editOpenExternally()));
+    connect(this->actionList.helpShowDescriptionsAction,  SIGNAL(triggered(bool)), this, SLOT(helpShowDescriptions(bool)));
+    connect(this->actionList.helpShowResultsAction,       SIGNAL(triggered(bool)), this, SLOT(helpShowResults(bool)));
+    connect(this->actionList.helpOpenDocumentationAction, SIGNAL(triggered(bool)), this, SLOT(helpOpenDocumentation()));
 
-    // QTreeWidget events
-    // ------------------
-    connect(QApplication::clipboard(), SIGNAL(dataChanged()),                                   this, SLOT(treeClipboardDataChanged()));
-    connect(qobject_cast<QTreeWidget*>(this), SIGNAL(customContextMenuRequested(const QPoint &)),             this, SLOT(treeContextMenuRequested (const QPoint&)));
-    connect(qobject_cast<QTreeWidget*>(this), SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(treeCurrentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
-    connect(qobject_cast<QTreeWidget*>(this), SIGNAL(itemClicked       (QTreeWidgetItem*, int)),              this, SLOT(treeItemClicked       (QTreeWidgetItem*, int)));
-    connect(qobject_cast<QTreeWidget*>(this), SIGNAL(itemDoubleClicked (QTreeWidgetItem*, int)),              this, SLOT(treeItemDoubleClicked (QTreeWidgetItem*, int)));
+    actionList->helpShowDescriptionsAction->setChecked(settings.value("misc/showDescriptions", true).toBool());
+    actionList->helpShowResultsAction->setChecked(settings.value("misc/showResults", true).toBool());
+    helpShowDescriptions(actionList->helpShowDescriptionsAction->isChecked());
+    helpShowResults(actionList->helpShowResultsAction->isChecked());
 
-    // track state of file
-    connect(_undoStack,  SIGNAL(cleanChanged(bool)), this, SLOT(treeCleanChanged(bool)));
-
-    connect(this, SIGNAL(treeSelectionChanged(const QString &)), this->workspace, SIGNAL(treeSelectionChanged(const QString &)));
-    connect(header(), &QHeaderView::sectionResized, this, &Tree::resizeColumn);
-
-    newFile();
+    // track state of file via undoStack
+    connect(undoStack,  SIGNAL(cleanChanged(bool)), this, SLOT(undoStackCleanChanged(bool)));
   }
   catch(std::exception &e)
   {
@@ -139,17 +219,8 @@ Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *workspace) :
 
 Tree::~Tree()
 {
-  try
-  {
-    {
-      const QSignalBlocker blocker(this);
-      clearTree();
-    }
-  }
-  catch(std::exception &e)
-  {
-    qDebug() << QString::fromStdString("Exception in destructor at "+_GROOPS_ERRORLINE+"\n"+e.what());
-  }
+  const QSignalBlocker blocker(this);
+  clearTree();
 }
 
 /***********************************************/
@@ -158,28 +229,58 @@ void Tree::clearTree()
 {
   try
   {
+    fileWatcherClear();
     setSelectedItem(nullptr);
-    changed = false;
-    _undoStack->clear();
+    _isClean = true;
+    undoStack->clear();
+    unknownCount = renamedCount = 0;
+    barFileExternallyChanged->setHidden(true);
+    barUnknownElements->setHidden(true);
+    barSchemaRenamedElements->setHidden(true);
 
-    if(rootElement())
-    {
-      rootElement()->removeItem();
-      delete _rootElement;
-    }
-    _rootElement   = nullptr;
-    _elementGlobal = nullptr;
-    varList.clear();
-    unknownElements.clear();
-    renamedElements.clear();
-    emit unknownElementsChanged(unknownElements.size());
-    emit renamedElementsChanged(renamedElements.size());
-    clearFileWatcher();
+    if(rootElement)
+      rootElement->removeItem();
+    delete rootElement;
+    rootElement   = nullptr;
+    elementGlobal = nullptr;
   }
   catch(std::exception &e)
   {
     GROOPS_RETHROW(e);
   }
+}
+
+/***********************************************/
+
+bool Tree::readSchema()
+{
+  try
+  {
+    QString fileNameSchema = settings.value("files/schemaFile").toString();
+    Schema  schema;
+    if(!schema.readFile(fileNameSchema))
+    {
+      QMessageBox::critical(this , tr("GROOPS"), tr("File '%1' seems not to be a valid XSD schema").arg(fileNameSchema));
+      return false;
+    }
+    _fileNameSchema = fileNameSchema;
+    _schema         = schema;
+    return true;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+void Tree::setCurrent(bool isCurrent)
+{
+  if(!isCurrent)
+    setSelectedItem(nullptr);
+  _isCurrent = isCurrent;
 }
 
 /***********************************************/
@@ -188,24 +289,23 @@ void Tree::setSelectedItem(TreeItem *item)
 {
   try
   {
-    if(item == selectedItem)
+    if(item == _selectedItem)
       return;
 
     // old item lost selection
-    if(selectedItem)
-      selectedItem->lostCurrent();
+    if(_selectedItem)
+      _selectedItem->lostCurrent();
 
     // new item gets selection
-    selectedItem = item;
-    if(selectedItem)
+    _selectedItem = item;
+    if(_selectedItem)
     {
-      selectedItem->becomeCurrent();
+      _selectedItem->becomeCurrent();
       updateActions();
-      emit treeSelectionChanged(selectedItem->treeElement()->selectedValue());
     }
 
-    if(selectedItem != QTreeWidget::currentItem())
-      QTreeWidget::setCurrentItem(item);
+    if(_selectedItem != treeWidget->currentItem())
+      treeWidget->setCurrentItem(item);
   }
   catch(std::exception &e)
   {
@@ -215,662 +315,22 @@ void Tree::setSelectedItem(TreeItem *item)
 
 /***********************************************/
 
-void Tree::setShowDescriptions(Bool state)
+TreeElement *Tree::selectedElement() const
 {
-  setColumnHidden(2, !state);
-  if(!isColumnHidden(2))
-    setColumnWidth(2, std::max(columnWidth(2), 100));
-}
-
-/***********************************************/
-
-void Tree::setShowResults(Bool state)
-{
-  _showResults = state;
-  if(rootElement())
-    rootElement()->createItem(nullptr, nullptr);
-}
-
-/***********************************************/
-
-// generates a GROOPS VariableList from varList
-VariableList Tree::getVariableList()
-{
-  VariableList variableList;
-  for(auto iter=varList.constKeyValueBegin(); iter!=varList.constKeyValueEnd(); iter++)
-    variableList.setVariable(iter->first.toStdString(), iter->second.toStdString());
-  return variableList;
-}
-
-/***********************************************/
-
-void Tree::updateExpressions(const TreeElement *element)
-{
-  try
-  {
-    if(!element)
-      return;
-
-    if(element->parentElement && element->parentElement == elementGlobal())
-      dynamic_cast<TreeElementComplex*>(rootElement())->updateExpression();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-std::vector<XsdElementPtr> Tree::programListFromSchema() const
-{
-  try
-  {
-    return schema.programList();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-void Tree::addProgram(int index)
-{
-  if(programType().isEmpty())
-    return;
-
-  TreeElementComplex *root = dynamic_cast<TreeElementComplex*>(rootElement());
-  root->addChild(root->childAt(root->childrenCount()-1), programType(), XmlNodePtr(nullptr));
-  root->childAt(root->childrenCount()-2)->changeSelectedIndex(index);
-}
-
-void Tree::resizeColumn(int /*logicalIndex*/, int /*oldSize*/, int /*newSize*/)
-{
-  if(this != workspace->currentTree())
-    return;
-
-  std::vector<int> columnWidths;
-  for(int i = 0; i < 3; i++)
-    columnWidths.push_back(columnWidth(i));
-  workspace->resizeTreeColumns(columnWidths);
-}
-
-/***********************************************/
-
-// Wird die Datei zum Abbruch freigegeben?
-Bool Tree::okToAbandon()
-{
-  try
-  {
-    if(!isChanged())
-      return true;
-
-    QString name = xmlFile;
-    if(name.isEmpty())
-      name = workspace->currentTabText().toUtf8();
-
-    QMessageBox::StandardButton button =
-      QMessageBox::question(this , tr("Close File - GROOPS"),
-                            tr("File '%1' was changed.\nDo you want to save the file?").arg(name),
-                            QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Save);
-    if(button == QMessageBox::Save)
-      return saveFile();
-    else if(button == QMessageBox::Discard)
-      return true;
-    return false;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-Bool Tree::readSchema()
-{
-  try
-  {
-    QString schemaFile = settings->value("files/schemaFile").toString();
-    while(Schema::validateSchema(schemaFile) == false)
-    {
-        if(schemaFile.isEmpty())
-          QMessageBox::information(this , tr("GROOPS"), tr("GROOPS seems not to be configured yet. You should set at least the XSD schema file."));
-        else
-          QMessageBox::critical(this , tr("GROOPS"), tr("File '%1' seems not to be a valid XSD schema").arg(schemaFile));
-        SettingsPathDialog dialog(this);
-        if(dialog.exec())
-          emit workspace->schemaChanged();
-        else
-          return false;
-        schemaFile = settings->value("files/schemaFile").toString();
-    }
-    schema = Schema(schemaFile);
-    _programType = schema.programType();
-    return true;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-Bool Tree::newFile()
-{
-  try
-  {
-    if(!okToAbandon())
-      return false;
-
-    if(!readSchema())
-      return false;
-
-    if(xmlFile.isEmpty())
-      xmlDir.setPath(settings->value("files/workingDirectory").toString());
-    xmlFile = QString();
-    xsdFile = settings->value("files/schemaFile").toString();
-    clearTree();
-    emit fileChanged(fileName(), changed);
-
-    QString templateFile = settings->value("files/templateFile").toString();
-    if(QFileInfo(templateFile).isFile() && openFile(templateFile))
-    {
-      xmlFile = QString();
-      xmlDir.setPath(settings->value("files/workingDirectory").toString());
-      return true;
-    }
-
-    _rootElement = TreeElement::newTreeElement(this, nullptr, schema.rootElement, "", XmlNodePtr(nullptr), false);
-    TreeItem *item = rootElement()->createItem(nullptr, nullptr);
-    if(item)
-      item->setExpanded(true);
-    return true;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-Bool Tree::reopenFile()
-{
-  try
-  {
-    if(!xmlFile.isEmpty())
-      return openFile(QFileInfo(xmlDir, xmlFile).absoluteFilePath());
-    return openFile();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-Bool Tree::openFile(QString fileName)
-{
-  try
-  {
-    if(!okToAbandon())
-      return false;
-
-    if(fileName.isEmpty() && !xmlFile.isEmpty())
-      fileName = QFileInfo(xmlDir, xmlFile).absoluteFilePath();
-
-    // read xml file
-    // -------------
-    XmlNodePtr xmlNode;
-    if(!fileName.isEmpty())
-    {
-      QFile file(fileName);
-      if(!file.open(QFile::ReadOnly | QFile::Text))
-      {
-        QMessageBox::critical(this , tr("Open file - GROOPS"), tr("Cannot open file '%1'.").arg(fileName));
-        return false;
-      }
-      int          errRow, errCol;
-      QString      errStr;
-      QDomDocument doc;
-      if(!doc.setContent(&file, false, &errStr, &errRow, &errCol))
-      {
-        QMessageBox::critical(this , tr("Open file - GROOPS"),
-                              tr("Error Reading File '%1' (row=%2, col=%3):\n%4").arg(fileName).arg(errRow).arg(errCol).arg(errStr));
-        return false;
-      }
-      xmlNode = XmlNode::create(doc.documentElement());
-    }
-
-    if(!readSchema())
-      return false;
-
-    // seems to be all ok
-    // ------------------
-    xmlFile = QFileInfo(fileName).fileName();
-    xmlDir  = QFileInfo(fileName).dir();
-    xsdFile = settings->value("files/schemaFile").toString();;
-    clearTree();
-    emit fileChanged(this->fileName(), changed);
-    _rootElement = TreeElement::newTreeElement(this, nullptr, schema.rootElement, "", xmlNode, true);
-    rootElement()->createItem(nullptr, nullptr)->setExpanded(true);
-    createFileWatcher();
-    dynamic_cast<TreeElementComplex*>(rootElement())->updateExpression();
-
-    return true;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-Bool Tree::saveFile()
-{
-  try
-  {
-    if(xmlFile.isEmpty())
-      return saveAsFile();
-
-    clearFileWatcher();
-    XmlNodePtr xmlNode = rootElement()->getXML();
-    XmlNode::writeFile(fileName(), xmlNode);
-    _undoStack->setClean();
-    treeCleanChanged(true);
-    emit treeFileChanged(fileName(), false);
-    createFileWatcher();
-    return true;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-Bool Tree::saveAsFile(const QString &fileName)
-{
-  try
-  {
-    // get file name: open file selector?
-    // ----------------------------------
-    QString name = fileName;
-    if(name.isEmpty())
-    {
-      // Open file selector
-      if(xmlFile.isEmpty())
-        xmlDir.setPath(settings->value("files/workingDirectory").toString());
-      name = QFileInfo(xmlDir, xmlFile).absoluteFilePath();
-      name = QFileDialog::getSaveFileName(this, tr("Save file - GROOPS"), name, tr("XML files (*.xml)"));
-      if(name.isEmpty())
-        return false;
-      if(!name.endsWith(".xml"))
-        name += ".xml";
-    }
-
-    xmlFile = QFileInfo(name).fileName();
-    xmlDir  = QFileInfo(name).dir();
-
-    return saveFile();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-Bool Tree::execFile()
-{
-  try
-  {
-    // file must be saved first
-    // ------------------------
-    if(isChanged() || xmlFile.isEmpty())
-    {
-      QString name = xmlFile;
-      if(name.isEmpty())
-        name = workspace->currentTabText().toUtf8();
-
-      QMessageBox::StandardButton button =
-        QMessageBox::warning(this , tr("Run file - GROOPS"),
-                             tr("File '%1' was changed.\nYou have to save it first.").arg(name),
-                             QMessageBox::Save | QMessageBox::Cancel, QMessageBox::Save);
-      if(button != QMessageBox::Save)
-        return false;
-      if(!saveFile())
-        return false;
-    }
-
-    // execute dialog
-    // --------------
-    if(!rootElement())
-      return false;
-    ExecuteDialog dialog(this, this);
-    if(!dialog.exec())
-      return false;
-
-    // create execute command
-    // ----------------------
-    QStringList commandList  = settings->value("execute/commands").toStringList();
-    int         commandIndex = settings->value("execute/commandIndex", int(0)).toInt();
-    if((commandIndex<0)||(commandIndex>=commandList.size()))
-      return false;
-    QString command = commandList[commandIndex];
-    if(command.isEmpty())
-      return false;
-
-    QString optionString;
-    // append log file option?
-    if(settings->value("execute/useLogFile", bool(false)).toBool())
-      optionString += " -l "+settings->value("execute/logFile", QString("groops.log")).toString()+" ";
-    optionString += xmlFile;
-
-    command.replace("%f", optionString);
-    command.replace("%w", xmlDir.absolutePath());
-
-    qWarning()<<"run command:"<<command;
-
-    // execute command
-    // ---------------
-#ifdef _WIN32
-    // https://stackoverflow.com/questions/42051405/qprocess-with-cmd-command-does-not-result-in-command-line-window
-    class DetachableProcess : public QProcess
-    {
-    public:
-        DetachableProcess(QObject *parent=0) : QProcess(parent) {}
-        void detach()
-        {
-           waitForStarted();
-           setProcessState(QProcess::NotRunning);
-        }
-    };
-
-    DetachableProcess process;
-    process.setCreateProcessArgumentsModifier([](QProcess::CreateProcessArguments *args)
-                                              {args->flags |= CREATE_NEW_CONSOLE;
-                                               args->startupInfo->dwFlags &=~ STARTF_USESTDHANDLES;});
-    process.start(QString("cmd.exe"), QStringList({"/k", command}));
-    process.detach();
-#else
-    QProcess::startDetached(command);
-#endif
-
-    return true;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-Bool Tree::isChanged() const
-{
-  return changed;
+  return _selectedItem ? _selectedItem->treeElement() : nullptr;
 }
 
 /***********************************************/
 /***********************************************/
 
-void Tree::createFileWatcher()
-{
-  try
-  {
-    clearFileWatcher();
-    if(fileName().isEmpty())
-      return;
-    fileWatcher = new QFileSystemWatcher(this);
-    fileWatcher->addPath(QFileInfo(xmlDir, xmlFile).absoluteFilePath());
-    connect(fileWatcher, &QFileSystemWatcher::fileChanged, this, &Tree::fileChangedExternally);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-void Tree::clearFileWatcher()
-{
-  if(fileWatcher)
-  {
-    disconnect(fileWatcher, &QFileSystemWatcher::fileChanged, this, &Tree::fileChangedExternally);
-    delete fileWatcher;
-    fileWatcher = nullptr;
-  }
-}
-
-/***********************************************/
-
-void Tree::fileChangedExternally()
-{
-  try
-  {
-    emit treeFileChanged(fileName(), true);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-/***********************************************/
-
-void Tree::trackUnknownElement(TreeElement *element)
-{
-  try
-  {
-    if(!element || element->isElementAdd() || unknownElements.contains(element))
-      return;
-
-    unknownElements.insert(element);
-    emit unknownElementsChanged(unknownElements.size());
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-bool Tree::untrackUnknownElement(TreeElement *element)
-{
-  try
-  {
-    if(!element || !unknownElements.remove(element))
-      return false;
-
-    emit unknownElementsChanged(unknownElements.size());
-    return true;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-void Tree::expandUnknownElements()
-{
-  try
-  {
-    for(auto &&element : unknownElements)
-      if(element && element->item())
-      {
-        TreeElementComplex* parentElement = element->parentElement;
-        while(parentElement && parentElement->item())
-        {
-          if(!parentElement->isUnknown() && !parentElement->isSelectionUnknown(parentElement->selectedIndex()))
-            parentElement->item()->setExpanded(true);
-          parentElement = parentElement->parentElement;
-        }
-      }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-void Tree::removeAllUnknownElements()
-{
-  try
-  {
-    QMessageBox::StandardButton button =
-        QMessageBox::question(this , tr("Remove all unknown elements - GROOPS"),
-                            tr("Do you really want to remove all unknown elements?\n\nNotice: This will not affect unknown choices or programs."),
-                            QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok);
-    if(button != QMessageBox::Ok)
-      return;
-
-    QTreeWidgetItemIterator it(this);
-    while(*it)
-    {
-      TreeItem *item = dynamic_cast<TreeItem*>(*it);
-      if(item && item->treeElement())
-      {
-        if(item->treeElement()->isUnknown())
-        {
-          bool hasParentWithUnknownSelection = false;
-          TreeElementComplex* parentElement = item->treeElement()->parentElement;
-          while(parentElement && parentElement->item())
-          {
-            if(!parentElement->isUnknown() && parentElement->isSelectionUnknown(parentElement->selectedIndex()))
-            {
-              hasParentWithUnknownSelection = true;
-              break;
-            }
-            parentElement = parentElement->parentElement;
-          }
-
-          if(!hasParentWithUnknownSelection && item->treeElement()->parentElement->removeChild(item->treeElement()))
-            it = QTreeWidgetItemIterator(this); // restart at beginning to revalidate iterators
-        }
-      }
-
-      ++it;
-    }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-/***********************************************/
-
-void Tree::trackRenamedElement(TreeElement *element)
-{
-  try
-  {
-    if(!element || renamedElements.contains(element) || (!element->isRenamed() && !element->isSelectionRenamed(element->selectedIndex())))
-      return;
-
-    renamedElements.insert(element);
-    emit renamedElementsChanged(renamedElements.size());
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-bool Tree::untrackRenamedElement(TreeElement *element)
-{
-  try
-  {
-    if(!element || !renamedElements.remove(element))
-      return false;
-
-    emit renamedElementsChanged(renamedElements.size());
-    return true;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-void Tree::expandRenamedElements()
-{
-  try
-  {
-    for(auto &&element : renamedElements)
-      if(element && element->item())
-      {
-        TreeElementComplex* parentElement = element->parentElement;
-        while(parentElement && parentElement->item())
-        {
-          parentElement->item()->setExpanded(true);
-          parentElement = parentElement->parentElement;
-        }
-      }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-void Tree::updateAllRenamedElements()
-{
-  try
-  {
-    for(auto &&element : renamedElements.values())
-      if(element && element->parentElement)
-        element->updateName();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-/***********************************************/
-
-QString Tree::fileName() const
-{
-  if(xmlFile.isEmpty())
-    return QString();
-  return QFileInfo(xmlDir, xmlFile).absoluteFilePath();
-}
-
-/***********************************************/
-
-
-QString Tree::addXmlDirectory(const QString &filename) const
+QString Tree::addWorkingDirectory(const QString &filename) const
 {
   try
   {
     QFileInfo file(filename);
     QString s = file.filePath();
     if(file.isRelative())
-      file.setFile(xmlDir, s);
+      file.setFile(workingDirectory, s);
     return file.absoluteFilePath();
   }
   catch(std::exception &e)
@@ -881,18 +341,18 @@ QString Tree::addXmlDirectory(const QString &filename) const
 
 /***********************************************/
 
-QString Tree::stripXmlDirectory(const QString &filename) const
+QString Tree::stripWorkingDirectory(const QString &filename) const
 {
   try
   {
-    QString path = xmlDir.absolutePath();
+    QString path = workingDirectory.absolutePath();
     if(path.isEmpty())
       return filename;
     QFileInfo file(filename);
     if(file.isRelative())
       return filename;
     QString s = file.absoluteFilePath();
-     path += QString("/");
+    path += QString("/");
     if(s.startsWith(path))
       s.remove(0, path.length());
 
@@ -905,27 +365,207 @@ QString Tree::stripXmlDirectory(const QString &filename) const
 }
 
 /***********************************************/
+
+bool Tree::okToAbandon()
+{
+  try
+  {
+    if(isClean())
+      return true;
+
+    auto button = QMessageBox::question(this , tr("Close File - GROOPS"), tr("File '%1' was changed.\nDo you want to save the file?").arg(caption()),
+                                        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Save);
+    if(button == QMessageBox::Save)
+      return fileSave();
+    return (button == QMessageBox::Discard);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
 /***********************************************/
 
+bool Tree::fileNew(const QString &caption)
+{
+  try
+  {
+    if(!okToAbandon())
+      return false;
+    if(!readSchema())
+      return false;
+
+    // try to open template file, clear tree if not
+    blockSignals(true); // do not emit fileChanged
+    QString templateFile = settings.value("files/templateFile").toString();
+    if(!QFileInfo(templateFile).isFile() || !fileOpen(templateFile))
+    {
+      clearTree();
+      rootElement = dynamic_cast<TreeElementComplex*>(TreeElement::newTreeElement(this, nullptr, _schema.rootElement, "", XmlNodePtr(nullptr), true/*fillWithDefaults*/));
+      TreeItem *item = rootElement->createItem(nullptr, nullptr);
+      if(item)
+        item->setExpanded(true);
+    }
+    blockSignals(false);
+
+    _caption  = caption;
+    _fileName = QString();
+    workingDirectory.setPath(settings.value("files/workingDirectory").toString());
+    emit fileChanged(caption, fileName(), isClean());
+
+    return true;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+bool Tree::fileOpen(QString fileName)
+{
+  try
+  {
+    if(!okToAbandon())
+      return false;
+
+    if(fileName.isEmpty())
+      fileName = _fileName; // try to reopen
+    if(fileName.isEmpty())
+      fileNew(caption());
+
+    if(!readSchema())
+      return false;
+
+    // read xml file
+    // -------------
+    QFile file(fileName);
+    if(!file.open(QFile::ReadOnly | QFile::Text))
+    {
+      QMessageBox::critical(this , tr("Open file - GROOPS"), tr("Cannot open file '%1'.").arg(fileName));
+      return false;
+    }
+    QString errorMessage;
+    XmlNodePtr xmlNode = XmlNode::read(&file, errorMessage);
+    if(!xmlNode)
+    {
+      QMessageBox::critical(this , tr("Open file - GROOPS"), errorMessage);
+      return false;
+    }
+
+    // seems to be all ok
+    // ------------------
+    _caption          = QFileInfo(fileName).fileName();
+    _fileName         = fileName;
+    workingDirectory  = QFileInfo(fileName).dir();
+    emit fileChanged(caption(), fileName, isClean());
+    fileWatcherCreate();
+
+    clearTree();
+    TreeElement *element = TreeElement::newTreeElement(this, nullptr, _schema.rootElement, "", xmlNode, false/*fillWithDefaults*/);
+    rootElement = dynamic_cast<TreeElementComplex*>(element); // set rootElement after complete initialization
+    if(elementGlobal)
+    {
+      elementGlobal->informAboutGlobalElements(rootElement, true/*recursively*/);
+      elementGlobal->updateVariableList();
+    }
+    rootElement->createItem(nullptr, nullptr)->setExpanded(true);
+    treeChanged();
+    return true;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+QList<XsdElementPtr> Tree::programList() const
+{
+  return _schema.programList();
+}
+
+/***********************************************/
+
+void Tree::addProgram(const QString &name)
+{
+  try
+  {
+    undoStack->beginMacro("add program "+name);
+    TreeElement *elementProgram = rootElement->addChild(rootElement->children().back(), "programType", XmlNodePtr(nullptr));
+    elementProgram->changeSelectedIndex(elementProgram->findValueIndex(name));
+    undoStack->endMacro();
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+void Tree::fileWatcherCreate()
+{
+  try
+  {
+    fileWatcherClear();
+    if(fileName().isEmpty())
+      return;
+    fileWatcher = new QFileSystemWatcher(this);
+    fileWatcher->addPath(fileName());
+    connect(fileWatcher, &QFileSystemWatcher::fileChanged, this, &Tree::fileWatcherChangedExternally);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+void Tree::fileWatcherClear()
+{
+  if(fileWatcher)
+  {
+    disconnect(fileWatcher, &QFileSystemWatcher::fileChanged, this, &Tree::fileWatcherChangedExternally);
+    delete fileWatcher;
+    fileWatcher = nullptr;
+  }
+}
+
+/***********************************************/
+
+void Tree::fileWatcherChangedExternally()
+{
+  barFileExternallyChanged->setVisible(true);
+}
+
+/***********************************************/
+/***********************************************/
+
+// mime data <-> XML of the element
+// --------------------------------
 static const char *mimeFormatString = "application/x-groops"; //"text/plain";
 
-/***********************************************/
-
-QMimeData *Tree::createMimeData(const TreeElement *element)
+static QMimeData *createMimeData(const TreeElement *element)
 {
   try
   {
     if(element->type().isEmpty())
       return nullptr;
-    XmlNodePtr xmlNode = element->getXML(true);
-    if(xmlNode==nullptr)
+    XmlNodePtr xmlNode = element->createXmlTree(true/*createRootEvenIfEmpty*/);
+    if(!xmlNode)
       return nullptr;
     writeAttribute(xmlNode, "xsdType", element->type());
 
     // create xml text
     QString xmlData;
     QTextStream stream(&xmlData, QIODevice::WriteOnly);
-    XmlNode::write(stream, xmlNode);
+    XmlNode::write(stream, xmlNode, true/*writeCommentsAsElements*/);
 
     // create mime data
     QMimeData *mimeData = new QMimeData;
@@ -940,21 +580,95 @@ QMimeData *Tree::createMimeData(const TreeElement *element)
 
 /***********************************************/
 
-Bool Tree::fromMimeData(const QMimeData *mimeData, XmlNodePtr &xmlNode, QString &type)
+static bool fromMimeData(const QMimeData *mimeData, XmlNodePtr &xmlNode, QString &type)
 {
   try
   {
     if(!mimeData->hasFormat(mimeFormatString))
       return false;
     // create xmlData from MIME data
-    QByteArray xmlData = mimeData->data(mimeFormatString);
-    QDomDocument doc;
-    if(!doc.setContent(xmlData))
-      return false;
-    xmlNode = XmlNode::create(doc.documentElement());
+    QString errorMessage;
+    xmlNode = XmlNode::read(mimeData->data(mimeFormatString), errorMessage);
     if(!xmlNode)
       return false;
-    readAttribute(xmlNode, "xsdType", type, false);
+    readAttribute(xmlNode, "xsdType", type);
+    return true;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+void Tree::updateActions()
+{
+  try
+  {
+    if(!selectedElement())
+      return;
+    TreeElement        *element       = selectedElement();
+    TreeElementComplex *parentElement = element->parentElement;
+
+    // test content of clipboard
+    QString    type;
+    XmlNodePtr xmlNode;
+    bool isClipboard = fromMimeData(QApplication::clipboard()->mimeData(), xmlNode, type);
+    bool canCopy = !element->type().isEmpty() && element->createXmlTree(true);
+
+    actionList.fileShowInManagerAction    ->setEnabled(!fileName().isEmpty() );
+    actionList.editCutAction              ->setEnabled(canCopy && parentElement && parentElement->canRemoveChild(element));
+    actionList.editCopyAction             ->setEnabled(canCopy);
+    actionList.editPasteAction            ->setEnabled(isClipboard && ((parentElement && parentElement->canAddChild(element, type)) ||
+                                                       (dynamic_cast<TreeElementGlobal*>(element) && dynamic_cast<TreeElementGlobal*>(element)->canAddChild(element, type))));
+    actionList.editPasteOverwriteAction   ->setEnabled(isClipboard && element->canOverwrite(type));
+    actionList.editAddAction              ->setEnabled((parentElement && parentElement->canAddChild(element, element->type())) || dynamic_cast<TreeElementGlobal*>(element));
+    actionList.editRemoveAction           ->setEnabled(parentElement && parentElement->canRemoveChild(element));
+    actionList.editSetGlobalAction        ->setEnabled(elementGlobal && elementGlobal->canSetGlobal(element));
+    actionList.editSetLoopAction          ->setEnabled(element->canSetLoop());
+    actionList.editRemoveLoopAction       ->setEnabled(!element->loop().isEmpty());
+    actionList.editSetConditionAction     ->setEnabled(element->canSetCondition());
+    actionList.editRemoveConditionAction  ->setEnabled(!element->condition().isEmpty());
+    actionList.editEnabledAction          ->setEnabled(element->canDisabled());
+    actionList.editEnabledAction          ->setChecked(!element->disabled());
+    actionList.editEnableAllAction        ->setEnabled(true);
+    actionList.editDisableAllAction       ->setEnabled(true);
+    actionList.editRenameAction           ->setEnabled(dynamic_cast<TreeElementGlobal*>(parentElement) && dynamic_cast<TreeElementGlobal*>(parentElement)->canRenameChild(element));
+    actionList.editUpdateNameAction       ->setEnabled(element->canUpdateName());
+    actionList.editAddCommentAction       ->setEnabled(parentElement && parentElement->canAddChild(element, "COMMENT"));
+    actionList.editCollapseAllAction      ->setEnabled(true);
+    TreeElementFileName *fileNameElement = dynamic_cast<TreeElementFileName*>(element);
+    actionList.editOpenExternallyAction   ->setEnabled(fileNameElement && QFileInfo(addWorkingDirectory(fileNameElement->selectedResult())).isFile());
+    actionList.helpOpenDocumentationAction->setEnabled(true);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+/**** slots ************************************/
+/***********************************************/
+
+bool Tree::fileSave()
+{
+  try
+  {
+    if(!isCurrent())
+      return false;
+
+    if(_fileName.isEmpty())
+      return fileSaveAs();
+
+    fileWatcherClear();
+    XmlNodePtr xmlNode = rootElement->createXmlTree();
+    XmlNode::writeFile(fileName(), xmlNode);
+    undoStack->setClean();
+    fileWatcherCreate();
+    emit fileChanged(caption(), fileName(), isClean());
     return true;
   }
   catch(std::exception &e)
@@ -965,45 +679,28 @@ Bool Tree::fromMimeData(const QMimeData *mimeData, XmlNodePtr &xmlNode, QString 
 
 /***********************************************/
 
-void Tree::updateActions()
+bool Tree::fileSaveAs()
 {
   try
   {
-    if(!selectedItem)
-      return;
-    TreeElement        *element       = selectedItem->treeElement();
-    TreeElementComplex *parentElement = element->parentElement;
+    if(!isCurrent())
+      return false;
 
+    // Open file selector
+    QString name = _fileName;
+    if(name.isEmpty())
+      name = settings.value("files/workingDirectory").toString(); // selecttor starts in default working directory
+    name = QFileDialog::getSaveFileName(this, tr("Save file - GROOPS"), name, tr("XML files (*.xml)"));
+    if(name.isEmpty())
+      return false;
+    if(!name.endsWith(".xml"))
+      name += ".xml";
 
-    // test content of clipboard
-    QString    type;
-    XmlNodePtr xmlNode;
-    Bool isClipboard = fromMimeData(QApplication::clipboard()->mimeData(), xmlNode, type);
-    Bool canAdd      = element == elementGlobal() || (parentElement && parentElement->canAddChild(element, element->type()));
-    Bool canRemove   = parentElement && parentElement->canRemoveChild(element);
+    _fileName         = name;
+    _caption          = QFileInfo(name).fileName();
+    workingDirectory  = QFileInfo(name).dir();
 
-    actionList.editCutAction->setEnabled( canRemove && (!element->type().isEmpty()) && (element->getXML(true)!=nullptr) );
-    actionList.editCopyAction->setEnabled( (!element->type().isEmpty()) && (element->getXML(true)!=nullptr) );
-    actionList.editPasteAction->setEnabled( isClipboard && canAdd );
-    actionList.editPasteOverwriteAction->setEnabled( isClipboard && (type==element->type()) && (!element->isElementAdd()) );
-    actionList.editAddAction->setEnabled( canAdd );
-    actionList.editRemoveAction->setEnabled( canRemove );
-    actionList.editSetGlobalAction->setEnabled( elementGlobal() && element != elementGlobal() && elementGlobal()->canSetGlobal(element) );
-    actionList.editSetLoopAction->setEnabled( element->canSetLoop() );
-    actionList.editRemoveLoopAction->setEnabled( !element->loop().isEmpty() );
-    actionList.editSetConditionAction->setEnabled( element->canSetCondition() );
-    actionList.editRemoveConditionAction->setEnabled( !element->condition().isEmpty() );
-    actionList.editEnabledAction->setEnabled( element->canDisabled() );
-    actionList.editEnabledAction->setChecked( !element->disabled() );
-    actionList.editEnableAllAction->setEnabled( true );
-    actionList.editDisableAllAction->setEnabled( true );
-    actionList.editRenameAction->setEnabled( element->canRename());
-    actionList.editUpdateNameAction->setEnabled( element->canUpdateName());
-    actionList.editCommentAction->setEnabled(true);
-    actionList.editCollapseAllAction->setEnabled( true );
-    TreeElementFileName *fileNameElement = dynamic_cast<TreeElementFileName*>(element);
-    actionList.editOpenExternallyAction->setEnabled( fileNameElement && QFileInfo(addXmlDirectory(fileNameElement->selectedResult())).isFile() );
-    actionList.helpOpenDocumentationAction->setEnabled(true);
+    return fileSave();
   }
   catch(std::exception &e)
   {
@@ -1013,26 +710,108 @@ void Tree::updateActions()
 
 /***********************************************/
 
-// slots
-// -----
+void Tree::fileRun()
+{
+  try
+  {
+    if(!isCurrent())
+      return;
+
+    // file must be saved first
+    // ------------------------
+    if(!isClean() || fileName().isEmpty())
+    {
+      QMessageBox::StandardButton button =
+      QMessageBox::warning(this , tr("Run file - GROOPS"),
+                           tr("File '%1' was changed.\nYou have to save it first.").arg(caption()),
+                           QMessageBox::Save | QMessageBox::Cancel, QMessageBox::Save);
+      if(button != QMessageBox::Save)
+        return;
+      if(!fileSave())
+        return;
+    }
+
+    // execute dialog
+    // --------------
+    ExecuteDialog dialog(this, this);
+    if(!dialog.exec())
+      return;
+
+    // create execute command
+    // ----------------------
+    QStringList commandList  = settings.value("execute/commands").toStringList();
+    int         commandIndex = settings.value("execute/commandIndex", int(0)).toInt();
+    if((commandIndex<0)||(commandIndex>=commandList.size()))
+      return;
+    QString command = commandList[commandIndex];
+    if(command.isEmpty())
+      return;
+
+    QString optionString;
+    // append log file option?
+    if(settings.value("execute/useLogFile", bool(false)).toBool())
+      optionString += " -l "+settings.value("execute/logFile", QString("groops.log")).toString()+" ";
+    optionString += fileName();
+
+    command.replace("%f", optionString);
+    command.replace("%w", workingDirectory.absolutePath());
+
+    qWarning()<<"run command:"<<command;
+
+    // execute command
+    // ---------------
+    #ifdef _WIN32
+    // https://stackoverflow.com/questions/42051405/qprocess-with-cmd-command-does-not-result-in-command-line-window
+    class DetachableProcess : public QProcess
+    {
+    public:
+      DetachableProcess(QObject *parent=0) : QProcess(parent) {}
+      void detach()
+      {
+        waitForStarted();
+        setProcessState(QProcess::NotRunning);
+      }
+    };
+
+    DetachableProcess process;
+    process.setCreateProcessArgumentsModifier([](QProcess::CreateProcessArguments *args)
+    {args->flags |= CREATE_NEW_CONSOLE;
+      args->startupInfo->dwFlags &=~ STARTF_USESTDHANDLES;});
+    process.start(QString("cmd.exe"), QStringList({"/k", command}));
+    process.detach();
+    #else
+    QProcess::startDetached(command);
+    #endif
+
+    return;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+void Tree::fileShowInManager()
+{
+  if(isCurrent() && !fileName().isEmpty())
+    QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(fileName()).absoluteDir().path()));
+}
+
+/***********************************************/
 
 void Tree::editCut()
 {
   try
   {
-    if(!selectedItem)
+    if(!selectedElement() || !selectedElement()->parentElement || !selectedElement()->parentElement->canRemoveChild(selectedElement()))
       return;
-    TreeElement        *element       = selectedItem->treeElement();
-    TreeElementComplex *parentElement = element->parentElement;
-    if(parentElement && parentElement->canRemoveChild(element))
+    QMimeData *mimeData = createMimeData(selectedElement());
+    if(mimeData)
     {
-      // copy to clipboard
-      QMimeData *mimeData = createMimeData(element);
-      if(mimeData)
-      {
-        QApplication::clipboard()->setMimeData(mimeData);
-        parentElement->removeChild(element);
-      }
+      QApplication::clipboard()->setMimeData(mimeData);
+      selectedElement()->parentElement->removeChild(selectedElement());
     }
   }
   catch(std::exception &e)
@@ -1047,10 +826,10 @@ void Tree::editCopy()
 {
   try
   {
-    if(!selectedItem)
+    if(!selectedElement())
       return;
     // copy to clipboard
-    QMimeData *mimeData = createMimeData(selectedItem->treeElement());
+    QMimeData *mimeData = createMimeData(selectedElement());
     if(mimeData)
       QApplication::clipboard()->setMimeData(mimeData);
   }
@@ -1066,16 +845,17 @@ void Tree::editPaste()
 {
   try
   {
-    if(!selectedItem)
+    if(!selectedElement())
       return;
-    TreeElement *element = selectedItem->treeElement();
     // paste from clipboard
     QString    type;
     XmlNodePtr xmlNode;
     if(!fromMimeData(QApplication::clipboard()->mimeData(), xmlNode, type))
       return;
-    if(element->parentElement)
-      element->parentElement->addChild(element, type, xmlNode);
+    if(dynamic_cast<TreeElementGlobal*>(selectedElement()))
+      dynamic_cast<TreeElementGlobal*>(selectedElement())->addChild(nullptr, type, xmlNode);
+    else if(selectedElement()->parentElement)
+      selectedElement()->parentElement->addChild(selectedElement(), type, xmlNode);
   }
   catch(std::exception &e)
   {
@@ -1089,16 +869,14 @@ void Tree::editPasteOverwrite()
 {
   try
   {
-    if(!selectedItem)
+    if(!selectedElement())
       return;
-    TreeElement *element = selectedItem->treeElement();
     // paste from clipboard
     QString    type;
     XmlNodePtr xmlNode;
     if(!fromMimeData(QApplication::clipboard()->mimeData(), xmlNode, type))
       return;
-    if(element->parentElement)
-      element->parentElement->overwrite(element, type, xmlNode);
+    selectedElement()->overwrite(type, xmlNode);
   }
   catch(std::exception &e)
   {
@@ -1112,21 +890,13 @@ void Tree::editAdd()
 {
   try
   {
-    if(!selectedItem)
+    TreeElement *element = selectedElement();
+    if(!element || !element->parentElement)
       return;
-    TreeElement *element = selectedItem->treeElement();
-
-    if(element == elementGlobal() || (element && element->parentElement == elementGlobal() && element->isElementAdd()))
-    {
-      AddGlobalDialog dialog(elementGlobal(), this);
-      if(dialog.exec())
-      {
-        QString label = dialog.elementName();
-        elementGlobal()->addChild(elementGlobal()->elementAdd(), dialog.elementType()->type, XmlNodePtr(nullptr), label);
-      }
-    }
-    else if(element->parentElement)
-      element->parentElement->addChild(element, element->type(), element->getXML());
+    if(dynamic_cast<TreeElementGlobal*>(element))
+      dynamic_cast<TreeElementGlobal*>(element)->addNewChild();
+    else
+      element->parentElement->addChild(element, element->type(), element->createXmlTree(true/*createRootEvenIfEmpty*/));
   }
   catch(std::exception &e)
   {
@@ -1140,22 +910,12 @@ void Tree::editRemove()
 {
   try
   {
-    if(!selectedItem)
+    if(!selectedElement() || !selectedElement()->parentElement || !selectedElement()->parentElement->canRemoveChild(selectedElement()))
       return;
-    TreeElement        *element       = selectedItem->treeElement();
-    TreeElementComplex *parentElement = element->parentElement;
-    if(parentElement && parentElement->canRemoveChild(element))
-    {
-      QMessageBox::StandardButton button =
-          QMessageBox::question(this , tr("Remove element - GROOPS"),
-                              tr("Do you really want to remove this element?"),
-                              QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok);
-      if(button != QMessageBox::Ok)
-        return;
 
-       // remove element
-      parentElement->removeChild(element);
-    }
+    if(QMessageBox::question(this , tr("Remove element - GROOPS"), tr("Do you really want to remove this element?"),
+                             QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) == QMessageBox::Ok)
+      selectedElement()->parentElement->removeChild(selectedElement());
   }
   catch(std::exception &e)
   {
@@ -1169,13 +929,8 @@ void Tree::editSetGlobal()
 {
   try
   {
-    if(!selectedItem)
-      return;
-    TreeElement *element = selectedItem->treeElement();
-    if(!(elementGlobal() && elementGlobal()->canSetGlobal(element)))
-      return;
-
-    elementGlobal()->setGlobal(element);
+    if(selectedElement() && elementGlobal && elementGlobal->canSetGlobal(selectedElement()))
+      elementGlobal->setGlobal(selectedElement());
   }
   catch(std::exception &e)
   {
@@ -1189,19 +944,15 @@ void Tree::editSetLoop()
 {
   try
   {
-    if(!selectedItem)
+    TreeElement *element = selectedElement();
+    if(!element || !elementGlobal || !element->canSetLoop())
       return;
-    TreeElement *element = selectedItem->treeElement();
-    if(!element->canSetLoop())
-      return;
-
-    SetLoopConditionDialog dialog(elementGlobal(), "loop", this);
+    SetLoopConditionDialog dialog(elementGlobal, "loop", this);
     if(dialog.exec())
     {
-      QStringList globalElements = elementGlobal()->getChildrenNames();
       QString loopName = dialog.name();
-      if(!globalElements.contains(loopName, Qt::CaseInsensitive))
-        elementGlobal()->addChild(nullptr, "loopType", XmlNodePtr(nullptr), loopName, true);
+      if(!elementGlobal->names().contains(loopName, Qt::CaseInsensitive))
+        elementGlobal->addNewChild("loopType", loopName);
       element->setLoop(loopName);
       updateActions();
     }
@@ -1218,13 +969,9 @@ void Tree::editRemoveLoop()
 {
   try
   {
-    if(!selectedItem)
+    if(!selectedElement() || selectedElement()->loop().isEmpty())
       return;
-    TreeElement *element = selectedItem->treeElement();
-    if(element->loop().isEmpty())
-      return;
-
-    element->setLoop("");
+    selectedElement()->setLoop("");
     updateActions();
   }
   catch(std::exception &e)
@@ -1239,19 +986,15 @@ void Tree::editSetCondition()
 {
   try
   {
-    if(!selectedItem)
+    TreeElement *element = selectedElement();
+    if(!element || !elementGlobal || !element->canSetCondition())
       return;
-    TreeElement *element = selectedItem->treeElement();
-    if(!element->canSetCondition())
-      return;
-
-    SetLoopConditionDialog dialog(elementGlobal(), "condition", this);
+    SetLoopConditionDialog dialog(elementGlobal, "condition", this);
     if(dialog.exec())
     {
-      QStringList globalElements = elementGlobal()->getChildrenNames();
       QString conditionName = dialog.name();
-      if(!globalElements.contains(conditionName, Qt::CaseInsensitive))
-        elementGlobal()->addChild(nullptr, "conditionType", XmlNodePtr(nullptr), conditionName, true);
+      if(!elementGlobal->names().contains(conditionName, Qt::CaseInsensitive))
+        elementGlobal->addNewChild("conditionType", conditionName);
       element->setCondition(conditionName);
       updateActions();
     }
@@ -1268,13 +1011,9 @@ void Tree::editRemoveCondition()
 {
   try
   {
-    if(!selectedItem)
+    if(!selectedElement() || selectedElement()->condition().isEmpty())
       return;
-    TreeElement *element = selectedItem->treeElement();
-    if(element->condition().isEmpty())
-      return;
-
-    element->setCondition("");
+    selectedElement()->setCondition("");
     updateActions();
   }
   catch(std::exception &e)
@@ -1289,9 +1028,8 @@ void Tree::editEnabled(bool checked)
 {
   try
   {
-    if(!selectedItem)
-      return;
-    selectedItem->treeElement()->setDisabled(!checked);
+    if(selectedElement())
+      selectedElement()->setDisabled(!checked);
   }
   catch(std::exception &e)
   {
@@ -1305,15 +1043,14 @@ void Tree::editEnableAll()
 {
   try
   {
-    TreeElementComplex* rootElement = dynamic_cast<TreeElementComplex*>(this->rootElement());
-    if(workspace->currentTree() != this || !rootElement)
+    if(!isCurrent())
       return;
 
-    undoStack()->beginMacro("enable all programs");
-    for(int i = 0; i < rootElement->childrenCount(); i++)
-      if(rootElement->childAt(i)->disabled() && rootElement->childAt(i)->isProgram())
-        rootElement->childAt(i)->setDisabled(false);
-    undoStack()->endMacro();
+    undoStack->beginMacro("enable all programs");
+    for(auto &element : rootElement->children())
+      if(element->disabled() && dynamic_cast<TreeElementProgram*>(element))
+        element->setDisabled(false);
+    undoStack->endMacro();
   }
   catch(std::exception &e)
   {
@@ -1327,15 +1064,14 @@ void Tree::editDisableAll()
 {
   try
   {
-    TreeElementComplex* rootElement = dynamic_cast<TreeElementComplex*>(this->rootElement());
-    if(workspace->currentTree() != this || !rootElement)
+    if(!isCurrent())
       return;
 
-    undoStack()->beginMacro("disable all programs");
-    for(int i = 0; i < rootElement->childrenCount(); i++)
-      if(!rootElement->childAt(i)->disabled() && rootElement->childAt(i)->isProgram())
-        rootElement->childAt(i)->setDisabled(true);
-    undoStack()->endMacro();
+    undoStack->beginMacro("disable all programs");
+    for(auto &element : rootElement->children())
+      if(!element->disabled() && dynamic_cast<TreeElementProgram*>(element))
+        element->setDisabled(true);
+    undoStack->endMacro();
   }
   catch(std::exception &e)
   {
@@ -1349,23 +1085,10 @@ void Tree::editRename()
 {
   try
   {
-    if(!selectedItem)
+    if(!selectedElement() || !dynamic_cast<TreeElementGlobal*>(selectedElement()->parentElement) ||
+       !dynamic_cast<TreeElementGlobal*>(selectedElement()->parentElement)->canRenameChild(selectedElement()))
       return;
-    TreeElement *element = selectedItem->treeElement();
-    if(!element || !element->canRename())
-      return;
-
-    QStringList existingNames = elementGlobal()->getChildrenNames();
-    existingNames.removeAt(existingNames.indexOf(element->label()));
-
-    bool ok;
-    QString label = QInputDialog::getText(this, tr("Rename global element - GROOPS"), tr("New name of global element:"), QLineEdit::Normal, element->label(), &ok);
-    QRegularExpression regex("^[a-zA-Z]([a-zA-Z0-9])*$");
-    while(ok && (label.isEmpty() || existingNames.contains(label) || !regex.match(label).hasMatch()))
-      label = QInputDialog::getText(this, tr("Rename global element - GROOPS"), tr("Name already exists or is invalid (only letters and digits allowed)!\nChoose another name:"), QLineEdit::Normal, label, &ok);
-
-    if(ok)
-      element->rename(label);
+    dynamic_cast<TreeElementGlobal*>(selectedElement()->parentElement)->renameChild(selectedElement(), QString());
     updateActions();
   }
   catch(std::exception &e)
@@ -1380,13 +1103,9 @@ void Tree::editUpdateName()
 {
   try
   {
-    if(!selectedItem)
+    if(!selectedElement() || !selectedElement()->canUpdateName())
       return;
-    TreeElement *element = selectedItem->treeElement();
-    if(!element || !element->canUpdateName())
-      return;
-
-    element->updateName();
+    selectedElement()->updateName();
     updateActions();
   }
   catch(std::exception &e)
@@ -1397,12 +1116,14 @@ void Tree::editUpdateName()
 
 /***********************************************/
 
-void Tree::editComment()
+void Tree::editAddComment()
 {
   try
   {
-    if(selectedItem)
-      selectedItem->editComment();
+    TreeElement *element = selectedElement();
+    if(!element || !element->parentElement)
+      return;
+    element->parentElement->addChild(element, "COMMENT", nullptr);
   }
   catch(std::exception &e)
   {
@@ -1416,11 +1137,10 @@ void Tree::editCollapseAll()
 {
   try
   {
-    if(workspace->currentTree() != this)
+    if(!isCurrent())
       return;
-
-    collapseAll();
-    expand(model()->index(0,0));
+    treeWidget->collapseAll();
+    treeWidget->expand(treeWidget->model()->index(0,0));
   }
   catch(std::exception &e)
   {
@@ -1434,28 +1154,93 @@ void Tree::editOpenExternally()
 {
   try
   {
-    if(workspace->currentTree() != this && !selectedItem)
-      return;
-
-    QDesktopServices::openUrl(QUrl::fromLocalFile(addXmlDirectory(selectedItem->treeElement()->selectedResult())));
+    if(selectedElement())
+      QDesktopServices::openUrl(QUrl::fromLocalFile(addWorkingDirectory(selectedElement()->selectedResult())));
   }
   catch(std::exception &e)
   {
     GROOPS_RETHROW(e);
   }
+}
+
+/***********************************************/
+
+void Tree::helpShowDescriptions(bool state)
+{
+  settings.setValue("misc/showDescriptions", state);
+  treeWidget->setColumnHidden(2, !state);
+  if(!treeWidget->isColumnHidden(2))
+    treeWidget->setColumnWidth(2, std::max(treeWidget->columnWidth(2), 100));
+}
+
+/***********************************************/
+
+void Tree::helpShowResults(bool state)
+{
+  settings.setValue("misc/showResults", state);
+  _showResults = state;
+  if(rootElement)
+    rootElement->createItem(nullptr, nullptr);
+}
+
+/***********************************************/
+
+void Tree::helpOpenDocumentation()
+{
+  try
+  {
+    if(!isCurrent())
+      return;
+
+    QString path     = settings.value("files/documentationDirectory").toString()+"/";
+    QString fileName = "index.html";
+    TreeElement *element = selectedElement();
+    if(element)
+    {
+      fileName = (dynamic_cast<TreeElementProgram*>(element) ? element->selectedValue() : element->type())+".html";
+      if(!QFileInfo::exists(path+fileName))
+        fileName = "index.html";
+    }
+    if(QFileInfo::exists(path+fileName))
+      QDesktopServices::openUrl(QUrl::fromLocalFile(path+fileName));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+int Tree::columnWidth(int column) const
+{
+  return treeWidget->columnWidth(column);
+}
+
+/***********************************************/
+
+void Tree::setColumnWidth(int column, int width)
+{
+  treeWidget->setColumnWidth(column, width);
 }
 
 /***********************************************/
 /**** Event-Handler ****************************/
 /***********************************************/
 
-void Tree::treeCleanChanged(bool clean)
+static void countRenamesAndUnknowns(const TreeElement *element, int &unknownCount, int &renamedCount)
 {
   try
   {
-    changed = !clean;
-    updateActions();
-    emit fileChanged(fileName(), changed);
+    if(!element)
+      return;
+    if(dynamic_cast<const TreeElementComplex*>(element))
+      for(const auto &child : dynamic_cast<const TreeElementComplex*>(element)->children())
+        countRenamesAndUnknowns(child, unknownCount, renamedCount);
+    if(dynamic_cast<const TreeElementUnknown*>(element) || element->isSelectionUnknown(element->selectedIndex()))
+      unknownCount++;
+    if(element->isRenamedInSchema() || element->isSelectionRenamedInSchema(element->selectedIndex()))
+      renamedCount++;
   }
   catch(std::exception &e)
   {
@@ -1463,6 +1248,48 @@ void Tree::treeCleanChanged(bool clean)
   }
 }
 
+/***********************************************/
+
+void Tree::treeChanged()
+{
+  try
+  {
+    if(!rootElement)
+      return;
+    int unknownCountOld = unknownCount;
+    int renamedCountOld = renamedCount;
+    unknownCount = renamedCount = 0;
+    countRenamesAndUnknowns(rootElement, unknownCount, renamedCount);
+    if(!unknownCount || (unknownCount > unknownCountOld))
+      barUnknownElements->setVisible(unknownCount);
+    if(!renamedCount || (renamedCount > renamedCountOld))
+      barSchemaRenamedElements->setVisible(renamedCount);
+    labelUnknownElements->setText(QString("File contains %1 unknown elements.").arg(unknownCount));
+    labelSchemaRenamedElements->setText(QString("File contains %1 elements that were renamed in the schema.").arg(renamedCount));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+void Tree::undoStackCleanChanged(bool clean)
+{
+  try
+  {
+    _isClean = clean;
+    updateActions();
+    emit fileChanged(caption(), fileName(), isClean());
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
 /***********************************************/
 
 void Tree::treeClipboardDataChanged()
@@ -1476,10 +1303,10 @@ void Tree::treeContextMenuRequested(const QPoint &pos)
 {
   try
   {
-    QTreeWidgetItem *item = QTreeWidget::itemAt(pos);
-    if(item==nullptr)
+    TreeItem *item = dynamic_cast<TreeItem*>(treeWidget->itemAt(pos));
+    if(!item)
       return;
-    setSelectedItem(dynamic_cast<TreeItem*>(item));
+    setSelectedItem(item);
 
     QMenu *contextMenu = new QMenu(this);
     contextMenu->addAction(actionList.helpOpenDocumentationAction);
@@ -1501,7 +1328,7 @@ void Tree::treeContextMenuRequested(const QPoint &pos)
     contextMenu->addSeparator();
     contextMenu->addAction(actionList.editEnabledAction);
     contextMenu->addAction(actionList.editRenameAction);
-    contextMenu->addAction(actionList.editCommentAction);
+    contextMenu->addAction(actionList.editAddCommentAction);
     contextMenu->addAction(actionList.editOpenExternallyAction);
     contextMenu->exec(QWidget::mapToGlobal(pos));
     delete contextMenu;
@@ -1526,19 +1353,30 @@ void Tree::treeCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem */*p
   }
 }
 
+
+/***********************************************/
+
+void Tree::treeItemSelectionChanged()
+{
+  // catch edge case where clicked item changes because editor is removed from item above and therefore vertical position changes
+  const QSignalBlocker blocker(treeWidget);
+  for(QTreeWidgetItem *item : treeWidget->selectedItems())
+    item->setSelected(item == selectedItem());
+  if(selectedItem())
+    selectedItem()->setSelected(true);
+}
+
 /***********************************************/
 
 void Tree::treeItemClicked(QTreeWidgetItem *item, int column)
 {
   try
   {
-    // value column?
-    if(column == 1)
-    {
-      if(item != selectedItem)
-        setSelectedItem(dynamic_cast<TreeItem*>(item));
-      selectedItem->setFocus();
-    }
+    if(column != 1) // value column?
+      return;
+    if(item != _selectedItem)
+      setSelectedItem(dynamic_cast<TreeItem*>(item));
+    _selectedItem->setFocus();
   }
   catch(std::exception &e)
   {
@@ -1552,13 +1390,12 @@ void Tree::treeItemDoubleClicked(QTreeWidgetItem *item, int column)
 {
   try
   {
-    // comment column?
-    if(column == 3)
-    {
-      if(item != selectedItem)
-        setSelectedItem(dynamic_cast<TreeItem*>(item));
-      selectedItem->editComment();
-    }
+    if(column != 3) // comment column?
+      return;
+    if(item != _selectedItem)
+      setSelectedItem(dynamic_cast<TreeItem*>(item));
+    if(_selectedItem->treeElement()->canComment())
+      _selectedItem->editComment();
   }
   catch(std::exception &e)
   {
@@ -1567,12 +1404,189 @@ void Tree::treeItemDoubleClicked(QTreeWidgetItem *item, int column)
 }
 
 /***********************************************/
+
+void Tree::barFileExternallyChangedReopen()
+{
+  if(fileOpen(fileName()))
+    barFileExternallyChanged->setHidden(true);
+}
+
+/***********************************************/
+
+void Tree::barUnknownElementsExpand()
+{
+  // recursive call
+  std::function<bool(TreeElement*)> expand = [&expand](TreeElement *element)
+  {
+    if(dynamic_cast<TreeElementComplex*>(element))
+      for(auto &child : dynamic_cast<TreeElementComplex*>(element)->children())
+        if(expand(child))
+          return true;
+    if(!element->item() || (!dynamic_cast<TreeElementUnknown*>(element) && !element->isSelectionUnknown(element->selectedIndex())))
+      return false;
+    TreeElementComplex *parentElement = element->parentElement;
+    while(parentElement && parentElement->item())
+    {
+      parentElement->item()->setExpanded(true);
+      parentElement = parentElement->parentElement;
+    }
+    return true;
+  };
+
+  expand(rootElement);
+}
+
+/***********************************************/
+
+void Tree::barUnknownElementsRemoveAll()
+{
+  try
+  {
+    if(QMessageBox::question(this , tr("Remove all unknown elements - GROOPS"),
+                             tr("Do you really want to remove all unknown elements?\n\nNotice: This will not affect unknown choices or programs."),
+                             QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) != QMessageBox::Ok)
+      return;
+
+    // recursive call
+    std::function<void(TreeElement*)> removeUnknown = [&removeUnknown](TreeElement *element)
+    {
+      if(dynamic_cast<TreeElementUnknown*>(element) && element->parentElement)
+        element->parentElement->removeChild(element);
+      else if(dynamic_cast<TreeElementComplex*>(element))
+        for(UInt i=dynamic_cast<TreeElementComplex*>(element)->children().size(); i-->0;)
+          removeUnknown(dynamic_cast<TreeElementComplex*>(element)->children().at(i));
+    };
+
+    removeUnknown(rootElement);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+void Tree::barSchemaRenamedElementsExpand()
+{
+  // recursive call
+  std::function<bool(TreeElement*)> expand = [&expand](TreeElement *element)
+  {
+    if(dynamic_cast<TreeElementComplex*>(element))
+      for(auto &child : dynamic_cast<TreeElementComplex*>(element)->children())
+        if(expand(child))
+          return true;
+    if(!element->item() || (!element->isRenamedInSchema() && !element->isSelectionRenamedInSchema(element->selectedIndex())))
+      return false;
+    TreeElementComplex *parentElement = element->parentElement;
+    while(parentElement && parentElement->item())
+    {
+      parentElement->item()->setExpanded(true);
+      parentElement = parentElement->parentElement;
+    }
+    return true;
+  };
+
+  expand(rootElement);
+}
+
+/***********************************************/
+
+void Tree::barSchemaRenamedElementsUpdateAll()
+{
+  // recursive call
+  std::function<void(TreeElement*)> updateName = [&updateName](TreeElement *element)
+  {
+    if(dynamic_cast<TreeElementComplex*>(element))
+      for(auto &child : dynamic_cast<TreeElementComplex*>(element)->children())
+        updateName(child);
+    if(element->canUpdateName())
+      element->updateName();
+  };
+
+  updateName(rootElement);
+}
+
+/***********************************************/
+
+void Tree::barClickedIgnore()
+{
+  QFrame *bar = dynamic_cast<QFrame*>(sender()->parent());
+  if(bar)
+    bar->setHidden(true);
+}
+
+/***********************************************/
+/**** TreeWidget *******************************/
+/***********************************************/
+
+TreeWidget::TreeWidget(Tree *tree, TabEnvironment *tabEnvironment)
+  : QTreeWidget(tree), tree(tree), tabEnvironment(tabEnvironment), dragElement(nullptr)
+{
+  try
+  {
+    setlocale(LC_NUMERIC, "en_US.UTF-8"); // force . as decimal separator (QLocale behavior is strange)
+
+    // init QTreeWidget
+    // ----------------
+    QStringList headerLabel;
+    setHeaderLabels(headerLabel<<tr("Type")<<tr("Value")<<tr("Description")<<tr("Comment"));
+    setAlternatingRowColors(true);
+    setRootIsDecorated(false);
+    setItemsExpandable(true);
+    setSortingEnabled(false);
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    setSelectionMode(QAbstractItemView::SingleSelection);
+    header()->setStretchLastSection(true);
+    header()->setSectionsMovable(false);
+    viewport()->setAcceptDrops(true); // internal & external drag
+
+    // set rectangular icon size
+    // -------------------------
+    QLabel *label = new QLabel(this);
+    int height = label->sizeHint().height();
+    setIconSize(QSize(2*height, height));
+    delete label;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+bool TreeWidget::eventFilter(QObject *obj, QEvent *event)
+{
+  Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
+
+  if(event->type() == QEvent::KeyPress)
+  {
+    QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+    if(keyEvent->key() == Qt::Key_Tab || keyEvent->key() == Qt::Key_Backtab  ||
+      (modifiers == Qt::ControlModifier && keyEvent->key() == Qt::Key_Space))
+    {
+      keyPressEvent(keyEvent);
+      return true;
+    }
+  }
+
+  if(event->type() == QEvent::Wheel && modifiers != Qt::ControlModifier)
+  {
+    QComboBox *combo = qobject_cast<QComboBox*>(obj);
+    if(combo && !combo->hasFocus())
+      return true;
+  }
+
+  // standard event processing
+  return QObject::eventFilter(obj, event);
+}
+
 /***********************************************/
 
 // Key events
-// ------------
-
-void Tree::keyPressEvent(QKeyEvent *event)
+// ----------
+void TreeWidget::keyPressEvent(QKeyEvent *event)
 {
   try
   {
@@ -1588,9 +1602,7 @@ void Tree::keyPressEvent(QKeyEvent *event)
         setCurrentIndex(newIndex);
         TreeItem *item = dynamic_cast<TreeItem*>(currentItem());
         if(item)
-        {
           item->setFocus();
-        }
       }
     };
 
@@ -1615,14 +1627,13 @@ void Tree::keyPressEvent(QKeyEvent *event)
 
     // Ctrl+Tab: Next tab
     else if(event->matches(QKeySequence::NextChild))
-      workspace->setCurrentIndex((workspace->currentIndex()+1) % workspace->count());
-
+      tabEnvironment->setCurrentIndex((tabEnvironment->currentIndex()+1) % tabEnvironment->count());
     // Ctrl+Shift+Tab: Previous tab
     else if(event->matches(QKeySequence::PreviousChild))
-      workspace->setCurrentIndex((workspace->currentIndex()-1+workspace->count()) % workspace->count());
+      tabEnvironment->setCurrentIndex((tabEnvironment->currentIndex()-1+tabEnvironment->count()) % tabEnvironment->count());
 
     // Tab: Next sibling element (or next sibling of parent if there is no next sibling, or next child otherwise)
-    else if(event->key() == Qt::Key_Tab)
+    else if(event->key() == Qt::Key_Tab && !event->matches(QKeySequence::NextChild))
     {
       if(index.column() != columnEditor)
         newIndex = index.sibling(index.row(), columnEditor);
@@ -1640,7 +1651,7 @@ void Tree::keyPressEvent(QKeyEvent *event)
     }
 
     // Shift+Tab: Previous sibling element (or parent if there is no previous sibling)
-    else if(event->key() == Qt::Key_Backtab)
+    else if(event->key() == Qt::Key_Backtab && !event->matches(QKeySequence::PreviousChild))
     {
       if(index.row() == 0)
         newIndex = index.parent().sibling(index.parent().row(), 1);
@@ -1652,20 +1663,16 @@ void Tree::keyPressEvent(QKeyEvent *event)
     // Ctrl+Shift+Up/Down: Move element
     else if(modifiers.testFlag(Qt::ControlModifier) && modifiers.testFlag(Qt::ShiftModifier) && (event->key() == Qt::Key_Up || event->key() == Qt::Key_Down))
     {
-      int idxShift = (event->key() == Qt::Key_Up) ? -1 : 1;
-
       TreeItem *item = dynamic_cast<TreeItem*>(currentItem());
-      if(item && item->treeElement() && item->treeElement()->parentElement)
+      if(item && item->treeElement()->parentElement)
       {
         TreeElement *element = item->treeElement();
-        const int childrenCount = element->parentElement->childrenCount();
-        int idx = 0;
-        for(; idx < childrenCount; idx++)
-          if(element->parentElement->childAt(idx) == element)
-            break;
-
-        if(idx < childrenCount && idx+idxShift >= 0 && idx+idxShift < childrenCount-1 && !element->parentElement->childAt(idx+idxShift)->isElementAdd())
-          element->parentElement->moveChild(element, element->parentElement->childAt(idx+idxShift));
+        auto children = element->parentElement->children();
+        auto iter = std::find(children.begin(), children.end(), element);
+        if((event->key() == Qt::Key_Up) && (iter != children.begin()))
+          element->parentElement->moveChild(*(--iter), element);
+        else if((event->key() == Qt::Key_Down) && (++iter != children.end()) && (++iter != children.end()))
+          element->parentElement->moveChild(*iter, element);
       }
     }
 
@@ -1684,22 +1691,13 @@ void Tree::keyPressEvent(QKeyEvent *event)
 
 // Drag & Drop events
 // ------------------
-
-void Tree::mousePressEvent(QMouseEvent *event)
+void TreeWidget::mousePressEvent(QMouseEvent *event)
 {
   try
   {
     if(event->button() == Qt::LeftButton)
       dragStartPosition = event->pos();
     QTreeWidget::mousePressEvent(event); // the orginal event handler
-
-    // catch edge case where clicked item changes because editor is removed from item above and therefore vertical position changes
-    if(selectedItem && QTreeWidget::selectedItems().size() > 1)
-    {
-      for(const auto &item : QTreeWidget::selectedItems())
-          item->setSelected(false);
-      selectedItem->setSelected(true);
-    }
   }
   catch(std::exception &e)
   {
@@ -1709,13 +1707,13 @@ void Tree::mousePressEvent(QMouseEvent *event)
 
 /***********************************************/
 
-void Tree::mouseMoveEvent(QMouseEvent *event)
+void TreeWidget::mouseMoveEvent(QMouseEvent *event)
 {
   try
   {
     // is there a movement with pressed left button?
     if((!(event->buttons() & Qt::LeftButton)) ||
-      ((event->pos()-dragStartPosition).manhattanLength() < QApplication::startDragDistance()))
+       ((event->pos()-dragStartPosition).manhattanLength() < QApplication::startDragDistance()))
     {
       QTreeWidget::mouseMoveEvent(event);  // the orginal event handler
       return;
@@ -1723,52 +1721,35 @@ void Tree::mouseMoveEvent(QMouseEvent *event)
 
     // is position not over an item?
     TreeItem *item = dynamic_cast<TreeItem*>(itemAt(dragStartPosition));
-    if(!item)
+    if(!item || !item->treeElement()->parentElement)
     {
       QTreeWidget::mouseMoveEvent(event);  // the orginal event handler
       return;
     }
-    TreeElement        *element       = item->treeElement();
-    TreeElementComplex *parentElement = element->parentElement;
 
     // start drag
     // ----------
-    QMimeData *mimeData = createMimeData(element);
-    if(mimeData==nullptr)
+    QMimeData *mimeData = createMimeData(item->treeElement());
+    if(!mimeData)
     {
       QTreeWidget::mouseMoveEvent(event);  // the orginal event handler
       return;
     }
+
     // perform drag
-    QDrag *drag = new QDrag(viewport());
+    dragElement = item->treeElement();
+    QDrag *drag = new QDrag(this);
     drag->setMimeData(mimeData);
     Qt::DropAction result;
-    if(parentElement->canRemoveChild(element))
+    if(dragElement->parentElement->canRemoveChild(dragElement))
       result = drag->exec(Qt::MoveAction|Qt::CopyAction, Qt::MoveAction);
     else
       result = drag->exec(Qt::CopyAction);
 
     // delete element from source if its moved
-    if(result == Qt::MoveAction && parentElement)
-    {
-      // check if element was moved into itself or its children
-      TreeItem *targetItem = dynamic_cast<TreeItem*>(itemAt(this->mapFromGlobal(QCursor::pos())));
-      TreeElement *parent = targetItem ? targetItem->treeElement()->parentElement : nullptr;
-      while(parent && parent != element)
-        parent = parent->parentElement;
-
-      if(parent == element)
-      {
-        // abort and reverse drag and drop
-        undoStack()->undo();
-        undoStack()->push(new QUndoCommand);
-        undoStack()->undo();
-        event->ignore();
-        return;
-      }
-      else
-        parentElement->removeChild(element);
-    }
+    if(dragElement && (result == Qt::MoveAction))
+      dragElement->parentElement->removeChild(dragElement);
+    dragElement = nullptr;
 
     event->accept();
   }
@@ -1780,7 +1761,7 @@ void Tree::mouseMoveEvent(QMouseEvent *event)
 
 /***********************************************/
 
-void Tree::dragEnterEvent(QDragEnterEvent *event)
+void TreeWidget::dragEnterEvent(QDragEnterEvent *event)
 {
   try
   {
@@ -1804,7 +1785,7 @@ void Tree::dragEnterEvent(QDragEnterEvent *event)
 
 /***********************************************/
 
-void Tree::dragMoveEvent(QDragMoveEvent *event)
+void TreeWidget::dragMoveEvent(QDragMoveEvent *event)
 {
   try
   {
@@ -1817,22 +1798,29 @@ void Tree::dragMoveEvent(QDragMoveEvent *event)
 
     // is position over an item?
     TreeItem *item = dynamic_cast<TreeItem*>(itemAt(event->pos()));
-    if(item)
+    XmlNodePtr xmlNode;
+    QString    type;
+    if(item && fromMimeData(event->mimeData(), xmlNode, type) &&
+       item->treeElement()->parentElement && item->treeElement()->parentElement->canAddChild(item->treeElement(), type) &&
+       !((event->proposedAction() == Qt::CopyAction) && !(event->keyboardModifiers() & Qt::ControlModifier)))
     {
-      XmlNodePtr xmlNode;
-      QString    type;
-      if(fromMimeData(event->mimeData(), xmlNode, type))
+      // check if element tried to move into itself or its children
+      if(dragElement && (event->source() == this) && (event->possibleActions() & Qt::MoveAction))
       {
-        TreeElement        *element       = item->treeElement();
-        TreeElementComplex *parentElement = element->parentElement;
-        if(parentElement && parentElement->canAddChild(element, type) &&
-           !(event->proposedAction() == Qt::CopyAction && !(event->keyboardModifiers() & Qt::ControlModifier)))
+        TreeElement *parent = item->treeElement();
+        while(parent && (parent != dragElement))
+          parent = parent->parentElement;
+        if(parent == dragElement)
         {
-          event->acceptProposedAction();
+          event->ignore();
           return;
         }
       }
+
+      event->acceptProposedAction();
+      return;
     }
+
     event->ignore();
   }
   catch(std::exception &e)
@@ -1843,7 +1831,7 @@ void Tree::dragMoveEvent(QDragMoveEvent *event)
 
 /***********************************************/
 
-void Tree::dropEvent(QDropEvent *event)
+void TreeWidget::dropEvent(QDropEvent *event)
 {
   try
   {
@@ -1851,39 +1839,48 @@ void Tree::dropEvent(QDropEvent *event)
     if(event->mimeData()->hasUrls())
     {
       QList<QUrl> urls = event->mimeData()->urls();
-      if(urls.size() == 1 && event->keyboardModifiers() == Qt::ShiftModifier)
-        openFile(urls.at(0).toLocalFile()); // replace current tab
+      if((urls.size() == 1) && (event->keyboardModifiers() == Qt::ShiftModifier))
+        tree->fileOpen(urls.at(0).toLocalFile()); // replace current tab
       else
-      {
-        int i = 0;
-        // if only a single, unchanged new tab exists, replace it with the first file to open and open the other files as additional tabs
-        if(workspace->count() == 1 && workspace->currentTree() && !workspace->currentTree()->fileName().startsWith("/") && !workspace->currentTree()->isChanged())
-          openFile(urls.at(i++).toLocalFile());
-
-        for(; i < urls.size(); i++)
-          workspace->openFile(urls.at(i).toLocalFile());
-      }
+        for(int i=0; i<urls.size(); i++)
+          tabEnvironment->fileOpen(urls.at(i).toLocalFile());
       event->acceptProposedAction();
       return;
     }
 
     // is position over an item?
     TreeItem *item = dynamic_cast<TreeItem*>(itemAt(event->pos()));
-    if(item)
+    XmlNodePtr xmlNode;
+    QString    type;
+    if(item && item->treeElement()->parentElement && fromMimeData(event->mimeData(), xmlNode, type))
     {
-      XmlNodePtr xmlNode;
-      QString    type;
-      if(fromMimeData(event->mimeData(), xmlNode, type))
+      TreeElement *targetElement = item->treeElement();
+      // can directly moved?
+      if(dragElement && (event->source() == this) && (event->dropAction() & Qt::MoveAction))
       {
-        TreeElement        *element        = item->treeElement();
-        TreeElementComplex *parentElement  = element->parentElement;
-
-        bool moved = event->dropAction() == Qt::MoveAction;
-        if(parentElement && parentElement->addChild(element, type, xmlNode, moved))
+        // move within same unbounded list
+        if(targetElement->parentElement->canMoveChild(targetElement, dragElement))
         {
+          targetElement->parentElement->moveChild(targetElement, dragElement);
+          dragElement = nullptr;
           event->acceptProposedAction();
           return;
         }
+
+        tree->undoStack->beginMacro("move "+dragElement->name());
+        dragElement->parentElement->removeChild(dragElement);
+        targetElement->parentElement->addChild(targetElement, type, xmlNode);
+        tree->undoStack->endMacro();
+        dragElement = nullptr;
+        event->acceptProposedAction();
+        return;
+      }
+
+      // external source
+      if(targetElement->parentElement->addChild(targetElement, type, xmlNode))
+      {
+        event->acceptProposedAction();
+        return;
       }
     }
     event->ignore();
@@ -1894,58 +1891,4 @@ void Tree::dropEvent(QDropEvent *event)
   }
 }
 
-/***********************************************/
-
-void Tree::resizeEvent(QResizeEvent *event)
-{
-  Double oldWidth = event->oldSize().width();
-  if(oldWidth > 0)
-  {
-    int newWidth = event->size().width();
-    Double totalWidth = columnWidth(0) + columnWidth(1) + columnWidth(2) + columnWidth(3);
-    if(totalWidth < oldWidth)
-      totalWidth = oldWidth;
-
-    std::vector<int> columnWidths;
-    for(int i = 0; i < 3; i++)
-      columnWidths.push_back(static_cast<int>(std::round(columnWidth(i)*newWidth/totalWidth)));
-
-    header()->blockSignals(true);
-    workspace->resizeTreeColumns(columnWidths);
-    header()->blockSignals(false);
-  }
-
-  QTreeWidget::resizeEvent(event);
-}
-
-/***********************************************/
-
-bool Tree::eventFilter(QObject *obj, QEvent *event)
-{
-  Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
-
-  if (event->type() == QEvent::KeyPress)
-  {
-    QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-
-    if(keyEvent->key() == Qt::Key_Tab || keyEvent->key() == Qt::Key_Backtab  ||
-       (modifiers == Qt::ControlModifier && keyEvent->key() == Qt::Key_Space))
-    {
-      keyPressEvent(keyEvent);
-      return true;
-    }
-  }
-
-  if(event->type() == QEvent::Wheel && modifiers != Qt::ControlModifier)
-  {
-      QComboBox* combo = qobject_cast<QComboBox*>(obj);
-      if(combo && !combo->hasFocus())
-          return true;
-  }
-
-  // standard event processing
-  return QObject::eventFilter(obj, event);
-}
-
-/***********************************************/
 /***********************************************/

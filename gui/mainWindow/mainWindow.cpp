@@ -37,9 +37,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
   {
     ui->setupUi(this);
     ui->statusBar->setHidden(true);
-    workspace = nullptr;
+    tabEnvironment = nullptr;
     undoView  = nullptr;
-    settings  = new QSettings(this);
     undoGroup = new QUndoGroup(this);
 
     // Undo/Redo actions
@@ -63,24 +62,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // signal slot connections
     // -----------------------
-    connect(ui->fileNewAction,               SIGNAL(triggered(bool)), this, SLOT(fileNew()));
-    connect(ui->fileOpenAction,              SIGNAL(triggered(bool)), this, SLOT(fileOpen()));
-    connect(ui->fileReOpenAction,            SIGNAL(triggered(bool)), this, SLOT(fileReOpen()));
-    connect(ui->fileShowInManagerAction,     SIGNAL(triggered(bool)), this, SLOT(fileShowInManager()));
-    connect(ui->fileCloseAction,             SIGNAL(triggered(bool)), this, SLOT(fileClose()));
-    connect(ui->fileCloseOtherAction,        SIGNAL(triggered(bool)), this, SLOT(fileCloseOther()));
-    connect(ui->fileSaveAction,              SIGNAL(triggered(bool)), this, SLOT(fileSave()));
-    connect(ui->fileSaveAsAction,            SIGNAL(triggered(bool)), this, SLOT(fileSaveAs()));
-    connect(ui->fileExitAction,              SIGNAL(triggered(bool)), this, SLOT(fileExit()));
-    connect(ui->fileRunAction,               SIGNAL(triggered(bool)), this, SLOT(fileRun()));
-    connect(ui->editFindReplaceAction,       SIGNAL(triggered(bool)), this, SLOT(editFindReplace()));
-    connect(ui->settingsCommandAction,       SIGNAL(triggered(bool)), this, SLOT(settingsCommand()));
-    connect(ui->settingsPathAction,          SIGNAL(triggered(bool)), this, SLOT(settingsPath()));
-    connect(ui->settingsFontAction,          SIGNAL(triggered(bool)), this, SLOT(settingsFont()));
-    connect(ui->helpShowDescriptionsAction,  SIGNAL(triggered(bool)), this, SLOT(showDescriptionsToggle(bool)));
-    connect(ui->helpShowResultsAction,       SIGNAL(triggered(bool)), this, SLOT(showResultsToggle(bool)));
-    connect(ui->helpOpenDocumentationAction, SIGNAL(triggered(bool)), this, SLOT(helpOpenDocumentationExternally()));
-    connect(ui->helpAboutAction,             SIGNAL(triggered(bool)), this, SLOT(helpAbout()));
+    connect(ui->fileNewAction,         SIGNAL(triggered(bool)), this, SLOT(fileNew()));
+    connect(ui->fileOpenAction,        SIGNAL(triggered(bool)), this, SLOT(fileOpen()));
+    connect(ui->fileReOpenAction,      SIGNAL(triggered(bool)), this, SLOT(fileReOpen()));
+    connect(ui->fileCloseAction,       SIGNAL(triggered(bool)), this, SLOT(fileClose()));
+    connect(ui->fileCloseOtherAction,  SIGNAL(triggered(bool)), this, SLOT(fileCloseOther()));
+    connect(ui->fileExitAction,        SIGNAL(triggered(bool)), this, SLOT(fileExit()));
+    connect(ui->editFindReplaceAction, SIGNAL(triggered(bool)), this, SLOT(editFindReplace()));
+    connect(ui->settingsCommandAction, SIGNAL(triggered(bool)), this, SLOT(settingsCommand()));
+    connect(ui->settingsPathAction,    SIGNAL(triggered(bool)), this, SLOT(settingsPath()));
+    connect(ui->settingsFontAction,    SIGNAL(triggered(bool)), this, SLOT(settingsFont()));
+    connect(ui->helpAboutAction,       SIGNAL(triggered(bool)), this, SLOT(helpAbout()));
 
     // additional keyboard shortcuts
     // -----------------------------
@@ -89,19 +81,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     // restore window
     // --------------
     setMinimumSize(QGuiApplication::primaryScreen()->size()/3);
-    if(settings->contains("mainWindow/geometry"))
-      restoreGeometry(settings->value("mainWindow/geometry").toByteArray());
-    else {
+    if(settings.contains("mainWindow/geometry"))
+      restoreGeometry(settings.value("mainWindow/geometry").toByteArray());
+    else
+    {
       resize(minimumSizeHint());
       move(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), QGuiApplication::primaryScreen()->geometry()).topLeft());
     }
-    restoreState(settings->value("mainWindow/state").toByteArray());
-/*    QApplication::setFont(settings->value("misc/font", QApplication::font()).toString());*/
-// qWarning()<<settings->value("misc/font", QApplication::font()).toString();
+    restoreState(settings.value("mainWindow/state").toByteArray());
+/*    QApplication::setFont(settings.value("misc/font", QApplication::font()).toString());*/
+// qWarning()<<settings.value("misc/font", QApplication::font()).toString();
 
     // fill 'Open Recent' menu
     // ------------------------------------
-    QStringList recentFileList = settings->value("recentFiles").toStringList();
+    QStringList recentFileList = settings.value("recentFiles").toStringList();
     menuFileLastOpened = new QMenu(this);
     ui->fileOpenRecentAction->setEnabled(recentFileList.size()>0);
     connect(menuFileLastOpened,   SIGNAL(triggered(QAction*)), this, SLOT(fileLastOpened(QAction *)));
@@ -112,9 +105,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     // ShowDescriptions status
     // -----------------------
     ui->helpShowDescriptionsAction->setCheckable(true);
-    ui->helpShowDescriptionsAction->setChecked( settings->value("misc/showDescriptions", true).toBool() );
     ui->helpShowResultsAction->setCheckable(true);
-    ui->helpShowResultsAction->setChecked( settings->value("misc/showResults", true).toBool() );
 
     // ActionList
     // ----------
@@ -144,27 +135,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     actionList.editDisableAllAction        = ui->editDisableAllAction;
     actionList.editRenameAction            = ui->editRenameAction;
     actionList.editUpdateNameAction        = ui->editUpdateNameAction;
-    actionList.editCommentAction           = ui->editCommentAction;
+    actionList.editAddCommentAction        = ui->editAddCommentAction;
     actionList.editCollapseAllAction       = ui->editCollapseAllAction;
     actionList.editOpenExternallyAction    = ui->editOpenExternallyAction;
+    actionList.settingsPathAction          = ui->settingsPathAction;
+    actionList.helpShowDescriptionsAction  = ui->helpShowDescriptionsAction;
+    actionList.helpShowResultsAction       = ui->helpShowResultsAction;
     actionList.helpOpenDocumentationAction = ui->helpOpenDocumentationAction;
 
     // TabEnvironment
     // --------------
     show();
-    workspace = new TabEnvironment(this, &actionList, undoGroup);
-    workspace->setShowDescriptions(ui->helpShowDescriptionsAction->isChecked());
-    workspace->setShowResults(ui->helpShowResultsAction->isChecked());
-    connect(workspace, SIGNAL(fileChanged(const QString &, bool)), this,           SLOT(fileChanged(const QString &, bool)));
-    connect(workspace, SIGNAL(fileOpened(const QString &)),        this,           SLOT(addToRecentFiles(const QString &)));
-    connect(workspace, SIGNAL(schemaChanged()),                    schemaSelector, SLOT(updateList()));
+    tabEnvironment = new TabEnvironment(this, &actionList, undoGroup);
+    connect(tabEnvironment, SIGNAL(fileChanged(const QString&, const QString&, bool)), this, SLOT(fileChanged(const QString&, const QString&, bool)));
 
     // Side bar and side bar widgets
     // -----------------------------
-
     // Open Files widget
-    OpenFilesTreeWidget *openFilesTreeWidget = new OpenFilesTreeWidget();
-    openFilesTreeWidget->init(workspace, &actionList);
+    OpenFilesTreeWidget *openFilesTreeWidget = new OpenFilesTreeWidget(tabEnvironment, actionList);
 
     // Undo Stack widget
     undoView = new QUndoView(undoGroup);
@@ -173,35 +161,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     // Program List widget
     programListWidget = new ProgramListWidget();
 
-    // File System Browser widget
-//    QTreeWidget *fileBrowserWidget = new QTreeWidget;
-//    QTreeWidgetItem *treeWidgetItem = new QTreeWidgetItem;
-//    treeWidgetItem->setText(0, "Test");
-//    fileBrowserWidget->addTopLevelItem(treeWidgetItem);
-
     // Add widgets to side bar
     sideBar = new SideBar(this);
-    sideBar->setSideBarWidgetsHidden(settings->value("sideBar/isHidden", false).toBool());
-    sideBar->addSideBarWidget("Open Files", openFilesTreeWidget);
-//    sideBar->addSideBarWidget("File System Browser", fileBrowserWidget);
+    sideBar->addSideBarWidget("Open Files",   openFilesTreeWidget);
     sideBar->addSideBarWidget("Program List", programListWidget);
-    sideBar->addSideBarWidget("Undo Stack", undoView);
+    sideBar->addSideBarWidget("Undo Stack",   undoView);
 
     // Basic layout
     // ------------
-
     // Horizontal splitter (side bar widgets | tab environment)
     QSplitter *splitter = new QSplitter;
     splitter->setOrientation(Qt::Horizontal);
     splitter->addWidget(sideBar->stackedWidget());
-    splitter->addWidget(workspace);
+    splitter->addWidget(tabEnvironment);
     splitter->setChildrenCollapsible(false);
     splitter->setStretchFactor(0, 0);
     splitter->setStretchFactor(1, 1);
-    QList<int> widths;
-    widths.push_back(sideBar->stackedWidget()->lastWidth());
-    splitter->setSizes(widths);
-    connect(splitter, SIGNAL(splitterMoved(int, int)), sideBar->stackedWidget(), SLOT(widthChanged(int, int)));
+    splitter->setSizes({sideBar->lastWidth()});
+    connect(splitter, SIGNAL(splitterMoved(int, int)), sideBar, SLOT(widthChanged(int, int)));
 
     // Set layout (side bar | splitter)
     QHBoxLayout *layout = new QHBoxLayout;
@@ -215,7 +192,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     QWidget *window = new QWidget;
     window->setLayout(layout);
     setCentralWidget(window);
-    workspace->setFocus();
+    tabEnvironment->setFocus();
 
     // Find/Replace Dock
     // -----------------
@@ -242,44 +219,31 @@ MainWindow::~MainWindow()
 
 Tree *MainWindow::getCurrentTree() const
 {
-  return workspace->currentTree();
+  return tabEnvironment->currentTree();
 }
 
 /***********************************************/
 
-void MainWindow::fileNew()                           {workspace->newFile();}
-void MainWindow::fileOpen(const QString &fileName)   {workspace->openFile(fileName);}
-void MainWindow::fileOpenInitial()                   {workspace->openInitialFiles();}
-void MainWindow::fileReOpen()                        {workspace->reopenFile();}
-void MainWindow::fileShowInManager()                 {workspace->showFileInManager();}
-void MainWindow::fileSave()                          {workspace->saveFile();}
-void MainWindow::fileSaveAs()                        {workspace->saveAsFile();}
-void MainWindow::fileRun()                           {workspace->execFile();}
-void MainWindow::fileClose()                         {workspace->closeFile();}
-void MainWindow::fileCloseOther()                    {workspace->closeOtherFiles();}
-void MainWindow::fileExit()                          {close();}
-
-/***********************************************/
-
-void MainWindow::fileLastOpened(QAction *whichAction)
-{
-  workspace->openFile(whichAction->data().toString());
-}
+bool MainWindow::fileNew()                            {return tabEnvironment->fileNew();}
+bool MainWindow::fileOpen(const QString &fileName)    {return tabEnvironment->fileOpen(fileName);}
+bool MainWindow::fileReOpen()                         {return tabEnvironment->fileReOpen();}
+void MainWindow::fileLastOpened(QAction *whichAction) {tabEnvironment->fileOpen(whichAction->data().toString());}
+bool MainWindow::fileClose()                          {return tabEnvironment->fileClose();}
+void MainWindow::fileCloseOther()                     {tabEnvironment->fileCloseOther();}
+void MainWindow::fileExit()                           {close();}
 
 /***********************************************/
 
 void MainWindow::editFindReplace()
 {
   QString oldFindText = findReplaceDock->getFindText();
-  QComboBox* comboBox = dynamic_cast<QComboBox*>(QApplication::focusWidget());
-  if(comboBox && comboBox->lineEdit() && !comboBox->lineEdit()->selectedText().isEmpty())
-    findReplaceDock->setFindText(comboBox->lineEdit()->selectedText());
-  else
-  {
-    QLineEdit* lineEdit = dynamic_cast<QLineEdit*>(QApplication::focusWidget());
-    if(lineEdit && !lineEdit->selectedText().isEmpty())
-      findReplaceDock->setFindText(lineEdit->selectedText());
-  }
+
+  auto widget = QApplication::focusWidget();
+  QLineEdit *lineEdit = dynamic_cast<QLineEdit*>(widget);
+  if(!lineEdit && dynamic_cast<QComboBox*>(widget))
+    lineEdit = dynamic_cast<QComboBox*>(widget)->lineEdit();
+  if(lineEdit && !lineEdit->selectedText().isEmpty())
+    findReplaceDock->setFindText(lineEdit->selectedText());
 
   if(!findReplaceDock->isVisible())
     findReplaceDock->setVisible(true);
@@ -315,25 +279,8 @@ void MainWindow::settingsFont()
   QFont font = QFontDialog::getFont(&ok, QApplication::font());
   if(!ok)
     return;
-  settings->setValue("misc/font", font);
+  settings.setValue("misc/font", font);
   QApplication::setFont(font);
-}
-
-/***********************************************/
-
-void MainWindow::showDescriptionsToggle(bool state)
-{
-  settings->setValue("misc/showDescriptions", state);
-  workspace->setShowDescriptions(state);
-}
-
-
-/***********************************************/
-
-void MainWindow::showResultsToggle(bool state)
-{
-  settings->setValue("misc/showResults", state);
-  workspace->setShowResults(state);
 }
 
 /***********************************************/
@@ -353,93 +300,53 @@ void MainWindow::helpAbout()
 /***********************************************/
 /***********************************************/
 
-void MainWindow::fileChanged(const QString &fileName, bool changed)
+void MainWindow::fileChanged(const QString &caption, const QString &fileName, bool isClean)
 {
   try
   {
+    Tree *tree = tabEnvironment->currentTree();
+    if(tree == nullptr)
+      return;
+
     // adapt window title
     // ------------------
-    QString capt = QFileInfo(fileName).fileName();
-    if(fileName.isEmpty())
-      capt = workspace->currentTabText();
-    if(changed)
+    QString capt = caption;
+    if(!isClean)
       capt += tr(" [changed]");
     capt += tr(" - GROOPS");
     this->setWindowTitle(capt);
 
     // update Program List widget with programs from current schema
     // ----------------------------------------------------------------
-    Tree *tree = workspace->currentTree();
-    if(tree == nullptr)
-      return;
-    if(programListWidget)
-    {
-      disconnect(programListWidget, SIGNAL(programSelected(int)), nullptr, nullptr);
-      programListWidget->init(tree);
-      connect(programListWidget, SIGNAL(programSelected(int)), tree, SLOT(addProgram(int)));
-    }
+    disconnect(programListWidget, SIGNAL(addProgram(const QString &)), nullptr, nullptr);
+    programListWidget->init(tree);
+    connect(programListWidget, SIGNAL(addProgram(const QString &)), tree, SLOT(addProgram(const QString &)));
 
-    schemaSelector->setCurrentTreeSchema(tree->schemaFile());
-
-    ui->fileShowInManagerAction->setEnabled(!tree->fileName().isEmpty());
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-void MainWindow::addToRecentFiles(const QString &fileName)
-{
-  try
-  {
-    if(!fileName.startsWith("/")) // exclude "new*" tabs
-      return;
+    schemaSelector->setCurrentTreeSchema(tree->fileNameSchema());
 
     // update recentFiles list
     // -----------------------
-    QStringList recentFileList = settings->value("recentFiles").toStringList();
-    recentFileList.prepend( QFileInfo(fileName).absoluteFilePath() );
-    // is the name in the list? -> remove
-    for(int i=1; i<recentFileList.size(); i++)
-      if(QFileInfo(fileName).absoluteFilePath() == recentFileList[i])
-        recentFileList.removeAt(i--);
-    // Maximum of 10 entriesD
-    while(recentFileList.size()>10)
-      recentFileList.removeLast();
-    settings->setValue("recentFiles", recentFileList);
+    if(!fileName.isEmpty() && isClean) // !isClean cannot be a new file
+    {
+      QStringList fileNames = settings.value("recentFiles").toStringList();
+      fileNames.removeOne(fileName); // is the name in the list? -> remove
+      fileNames.prepend(fileName);
+      while(fileNames.size() > 10)   // Maximum of 10 entries
+        fileNames.removeLast();
+      settings.setValue("recentFiles", fileNames);
 
-    // update 'recently openend files' menu
-    // ------------------------------------
-    menuFileLastOpened->clear();
-    for(int i=0; i<recentFileList.size(); i++)
-      menuFileLastOpened->addAction(recentFileList[i])->setData(recentFileList[i]);
-    menuFileLastOpened->setEnabled(recentFileList.size()>0);
+      // update 'recently openend files' menu
+      // ------------------------------------
+      menuFileLastOpened->clear();
+      for(auto &fileName : fileNames)
+        menuFileLastOpened->addAction(fileName)->setData(fileName);
+      menuFileLastOpened->setEnabled(fileNames.size());
+    }
   }
   catch(std::exception &e)
   {
     GROOPS_RETHROW(e);
   }
-}
-
-/***********************************************/
-
-void MainWindow::helpOpenDocumentationExternally()
-{
-  QUrl url = workspace->documentationUrl();
-  if(url.isEmpty())
-    return;
-
-  if(!QFileInfo(url.toLocalFile()).exists())
-  {
-    url = QUrl::fromLocalFile(url.path().replace(url.fileName(), "index.html"));
-    if(!QFileInfo(url.toLocalFile()).exists())
-      return;
-  }
-
-  QDesktopServices::openUrl(url);
 }
 
 /***********************************************/
@@ -448,12 +355,10 @@ void MainWindow::closeEvent(QCloseEvent *e)
 {
   try
   {
-    if((!workspace) || workspace->okToAbandon())
+    if(!tabEnvironment || tabEnvironment->okToAbandon())
     {
-      settings->setValue("mainWindow/geometry", saveGeometry());
-      settings->setValue("mainWindow/state",    saveState());
-      settings->setValue("sideBar/width",       sideBar->stackedWidget()->lastWidth());
-      settings->setValue("sideBar/isHidden",    sideBar->stackedWidget()->isHidden());
+      settings.setValue("mainWindow/geometry", saveGeometry());
+      settings.setValue("mainWindow/state",    saveState());
       e->accept();
     }
     else

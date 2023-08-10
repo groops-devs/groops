@@ -38,6 +38,7 @@
 - Other:            PlotMisc: set minimum size of points in legend to 3p.
 - Other:            Preparation to replace GnssStationInfo file format by the more general Platform file format.
 - Other:            Text parser: new {text/regex/replace}.
+- Other:            GUI: added new multi-line comment elements, revised code.
 
 # Release 2022-07-28
 - New programs:     GriddedData2GriddedDataTimeSeries and GriddedDataTimeSeries2GriddedData.

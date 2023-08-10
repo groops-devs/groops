@@ -52,6 +52,7 @@ SOURCES += main.cpp \
            tree/treeElementAdd.cpp \
            tree/treeElementGlobal.cpp \
            tree/treeElementProgram.cpp \
+           tree/treeElementComment.cpp \
            tree/treeElementUnknown.cpp \
            executeDialog/executeDialog.cpp \
            findReplaceDock/findReplaceDock.cpp \
@@ -86,6 +87,7 @@ HEADERS  += \
             tree/treeElementAdd.h \
             tree/treeElementGlobal.h \
             tree/treeElementProgram.h \
+            tree/treeElementComment.h \
             tree/treeElementUnknown.h \
             executeDialog/executeDialog.h \
             findReplaceDock/findReplaceDock.h \

@@ -75,7 +75,7 @@
     <addaction name="separator"/>
     <addaction name="editRenameAction"/>
     <addaction name="editUpdateNameAction"/>
-    <addaction name="editCommentAction"/>
+    <addaction name="editAddCommentAction"/>
     <addaction name="editOpenExternallyAction"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
@@ -372,16 +372,16 @@
     <string>Ctrl+E</string>
    </property>
   </action>
-  <action name="editCommentAction">
+  <action name="editAddCommentAction">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="icon">
     <iconset resource="../resources/icons.qrc">
-     <normaloff>:/icons/scalable/edit-comment.svg</normaloff>:/icons/scalable/edit-comment.svg</iconset>
+     <normaloff>:/icons/scalable/element-comment.svg</normaloff>:/icons/scalable/element-comment.svg</iconset>
    </property>
    <property name="text">
-    <string>Edit Comment</string>
+    <string>Add Comment</string>
    </property>
    <property name="shortcut">
     <string>F4</string>

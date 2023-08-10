@@ -36,9 +36,9 @@ SetLoopConditionDialog::SetLoopConditionDialog(TreeElementGlobal *globalRoot, co
     ui->lineEditName->setValidator(validator);
 
     // fill combo box with existing loops/conditions
-    for(int i = 0; i < globalRoot->childrenCount(); i++)
-      if(globalRoot->childAt(i)->type() == type+"Type" && !globalRoot->childAt(i)->label().isEmpty())
-        ui->comboBox->addItem(globalRoot->childAt(i)->name());
+    for(auto &element : globalRoot->children())
+      if(element->type() == type+"Type" && !element->label().isEmpty())
+        ui->comboBox->addItem(element->name());
     if(ui->comboBox->count() > 0)
     {
       ui->radioButtonExisting->setChecked(true);
@@ -54,7 +54,7 @@ SetLoopConditionDialog::SetLoopConditionDialog(TreeElementGlobal *globalRoot, co
     }
 
     // list of existing global variable names
-    globalElementNames = globalRoot->getChildrenNames();
+    globalElementNames = globalRoot->names();
 
     // signal-slot connections
     connect(ui->radioButtonExisting, SIGNAL(toggled(bool)),               this, SLOT(radioButtonToggled(bool)));

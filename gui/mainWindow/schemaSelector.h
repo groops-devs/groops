@@ -28,7 +28,7 @@ class SchemaSelector : public QWidget
 
 public:
   explicit SchemaSelector(QWidget *parent);
-  ~SchemaSelector();
+ ~SchemaSelector();
   void setAction(QAction *action);
   void setCurrentTreeSchema(QString schemaFile);
 
@@ -38,9 +38,9 @@ public slots:
 
 private:
   Ui::SchemaSelector *ui;
-  QSettings          *settings;
+  QSettings           settings;
   QAction            *action;
-  QString            currentTreeSchema;
+  QString             currentTreeSchema;
 };
 
 /***********************************************/

@@ -11,6 +11,7 @@
 /***********************************************/
 
 #include <QTextStream>
+#include <QFile>
 #include "base/importGroops.h"
 #include "base/xml.h"
 #include "schema.h"
@@ -21,23 +22,10 @@ XsdElementPtr XsdComplex::getXsdElement(QString name) const
 {
   try
   {
-    XsdElementPtr xsdElement(nullptr);
-    while(!xsdElement)
-    {
-      auto iter = std::find_if(element.begin(), element.end(), [&](XsdElementPtr elem){ return elem->name == name; });
-      if(iter != element.end())
-      {
-        xsdElement = *iter;
-        break;
-      }
-
-      auto iterRenames = std::find_if(renames.begin(), renames.end(), [&](auto pair){ return pair.first == name; });
-      if(iterRenames == renames.end())
-        break;
-      name = iterRenames->second;
-    }
-
-    return xsdElement;
+    auto iter = std::find_if(elements.begin(), elements.end(), [&](XsdElementPtr element) {return element->names.contains(name);});
+    if(iter == elements.end())
+      return nullptr;
+    return *iter;
   }
   catch(std::exception &e)
   {
@@ -47,45 +35,48 @@ XsdElementPtr XsdComplex::getXsdElement(QString name) const
 
 /***********************************************/
 
-Schema::Schema(const QString &fileName)
+bool Schema::readFile(QString fileName)
 {
   try
   {
-    XmlNodePtr xmlNode = XmlNode::readFile(fileName);
+    complexType.clear();
+    rootElement = nullptr;
+    if(fileName.isEmpty())
+      return false;
+
+    QFile file(fileName);
+    if(!file.open(QFile::ReadOnly | QFile::Text))
+      return false;
+    QString errorMessage;
+    XmlNodePtr xmlNode = XmlNode::read(&file, errorMessage);
+    if(!xmlNode)
+      return false;
 
     // read ComplexTypes
-    UInt count = childCount(xmlNode, QString("xs:complexType"));
+    UInt count = xmlNode->getChildCount(QString("xs:complexType"));
     for(UInt i=0; i<count; i++)
-    {
-      XmlNodePtr xmlNode2 = getChild(xmlNode, QString("xs:complexType"));
-      XsdElementPtr element(new XsdElement());
-      complexType.push_back(element);
-
-      // read name
-      XmlAttrPtr attr = xmlNode2->getAttribute("name");
-      if(attr==nullptr)
-        throw(Exception("xs:complexType without name"));
-      element->name = attr->getText();
-      element->complex = readComplex(xmlNode2);
-    }
-
+      complexType.push_back(readElement(xmlNode->getChild(QString("xs:complexType")), {}, true));
     // read elements
-    rootElement = readElement(getChild(xmlNode,QString("xs:element")));
+    rootElement = readElement(xmlNode->getChild(QString("xs:element")), {}, false);
+
     setComplexPointer(rootElement); // set recursively pointer to the complex types
+    return true;
   }
   catch(std::exception &e)
   {
-    GROOPS_RETHROW(e);
+    complexType.clear();
+    rootElement = nullptr;
+    return false;
   }
 }
 
 /***********************************************/
 
-XsdElementPtr Schema::readElement(XmlNodePtr xmlNode)
+XsdElementPtr Schema::readElement(XmlNodePtr xmlNode, const std::map<QString, QString> &renames, bool isComplexType)
 {
   try
   {
-    if(xmlNode==nullptr)
+    if(!xmlNode)
       throw(Exception("xs:element is null"));
 
     XsdElementPtr element(new XsdElement());
@@ -93,70 +84,64 @@ XsdElementPtr Schema::readElement(XmlNodePtr xmlNode)
 
     // read name
     XmlAttrPtr attr = xmlNode->getAttribute("name");
-    if(attr==nullptr)
+    if(!attr)
       throw(Exception("xs:element without name"));
-    element->name = attr->getText();
+    element->names = QStringList(attr->text);
+    // renames
+    auto findRename = [&](const QString name){return std::find_if(renames.begin(), renames.end(), [&](auto pair){return pair.second == name;});};
+    auto iterRenames = findRename(element->names.back());
+    while(iterRenames != renames.end())
+    {
+      element->names.push_back(iterRenames->first);
+      iterRenames = findRename(element->names.back());
+    }
 
     // annotation, tags, and renames
-    std::map<QString, QString> renames;
-    XmlNodePtr child = getChild(xmlNode, "xs:annotation");
-    if(child!=nullptr)
+    std::map<QString, QString> childRenames;
+    XmlNodePtr child = xmlNode->getChild("xs:annotation");
+    if(child)
     {
-      XmlNodePtr doc = getChild(child, "xs:documentation");
-      if(doc!=nullptr)
+      XmlNodePtr doc = child->getChild("xs:documentation");
+      if(doc)
         element->annotation = doc->getText();
 
-      XmlNodePtr info = getChild(child, "xs:appinfo");
-      while(info!=nullptr)
+      for(XmlNodePtr info = child->getChild("xs:appinfo"); info; info = child->getChild("xs:appinfo"))
       {
-        if(info->getText().startsWith("tag:"))
-          element->tags.append(info->getText().split(" ", Qt::SkipEmptyParts)[1]);
-        else if(info->getText().startsWith("rename:")) // format: "rename: oldName = newName"
+        if(info->getText().startsWith("rename:")) // format: "rename: oldName = newName"
         {
           QStringList splits = info->getText().split(" ", Qt::SkipEmptyParts);
-          renames[splits[1]] = splits[3];
+          childRenames[splits[1]] = splits[3];
         }
-        info = getChild(child, "xs:appinfo");
+        else if(info->getText().startsWith("tag:"))
+          element->tags.append(info->getText().split(" ", Qt::SkipEmptyParts)[1]);
       }
     }
 
-    // must set?
-    element->optional = false;
-    attr = xmlNode->getAttribute("minOccurs");
-    if(attr!=nullptr)
+    // attributes
+    QString minOccurs, maxOccurs;
+    readAttribute (xmlNode, "type",      element->type);
+    readAttribute (xmlNode, "default",   element->defaultValue);
+    readAttribute (xmlNode, "minOccurs", minOccurs);
+    readAttribute (xmlNode, "maxOccurs", maxOccurs);
+    element->optional  = (minOccurs == "0");
+    element->unbounded = (maxOccurs == "unbounded");
+
+    XmlNodePtr xmlNode2;
+    if(isComplexType)
+      xmlNode2 = xmlNode;
+    else
+      xmlNode2 = xmlNode->getChild("xs:complexType");
+    if(xmlNode2)
     {
-      UInt minOccur; attr->getValue(minOccur);
-      if(minOccur==0)
-        element->optional = true;
-    }
-
-    // unbounded
-    element->unbounded = false;
-    attr = xmlNode->getAttribute("maxOccurs");
-    if((attr!=nullptr)&&(attr->getText()=="unbounded"))
-      element->unbounded = true;
-
-    // default value
-    attr = xmlNode->getAttribute("default");
-    if(attr!=nullptr)
-      element->defaultValue = attr->getText();
-
-    // type
-    attr = xmlNode->getAttribute("type");
-    if(attr!=nullptr)
-      element->type = attr->getText();
-
-    XmlNodePtr xmlNode2 = getChild(xmlNode, "xs:complexType");
-    if(xmlNode2 != nullptr)
-    {
-      element->complex = readComplex(xmlNode2);
-      // create unique identifier
-      QTextStream ss(&element->type);
-      ss<<element->complex->type<<"Start-";
-      for(UInt i=0; i<element->complex->element.size(); i++)
-        ss<<element->complex->element.at(i)->type<<"-";
-      ss<<element->complex->type<<"End";
-      element->complex->renames.insert(renames.begin(), renames.end());
+      element->complex = readComplex(xmlNode2, childRenames);
+      if(element->type.isEmpty()) // create unique identifier
+      {
+        QTextStream ss(&element->type);
+        ss<<element->complex->type<<"Start-";
+        for(auto child : element->complex->elements)
+          ss<<child->type<<"-";
+        ss<<element->complex->type<<"End";
+      }
     }
 
     return element;
@@ -169,46 +154,31 @@ XsdElementPtr Schema::readElement(XmlNodePtr xmlNode)
 
 /***********************************************/
 
-XsdComplexPtr Schema::readComplex(XmlNodePtr xmlNode)
+XsdComplexPtr Schema::readComplex(XmlNodePtr xmlNode, const std::map<QString, QString> &renames)
 {
   try
   {
     XsdComplexPtr complex(new XsdComplex());
     complex->isReady = false;
 
-    // read renames
-    XmlNodePtr xmlNode2 = getChild(xmlNode, "xs:annotation");
-    if(xmlNode2!=nullptr)
-    {
-      XmlNodePtr info = getChild(xmlNode2, "xs:appinfo");
-      while(info!=nullptr)
-      {
-        if(info->getText().startsWith("rename:")) // format: "rename: oldName = newName"
-        {
-          QStringList splits = info->getText().split(" ", Qt::SkipEmptyParts);
-          complex->renames[splits[1]] = splits[3];
-        }
-        info = getChild(xmlNode2, "xs:appinfo");
-      }
-    }
-
     complex->type = "sequence";
-    xmlNode2 = getChild(xmlNode, "xs:sequence");
-    if(xmlNode2 == nullptr)
+    XmlNodePtr xmlNode2 = xmlNode->getChild("xs:sequence");
+    if(!xmlNode2)
     {
-      xmlNode2 = getChild(xmlNode, "xs:choice");
+      xmlNode2 = xmlNode->getChild("xs:choice");
       complex->type = "choice";
     }
-    if (xmlNode2 == nullptr)
+    if(!xmlNode2)
       throw(Exception("xs:complex must contain xs:sequence or xs:choice"));
 
      // read children
-    UInt count = childCount(xmlNode2, "xs:element", true);
-    complex->element.resize(count);
+    UInt count = xmlNode2->getChildCount("xs:element");
+    if(!count)
+      throw(Exception("xs:sequence/xs::choice must contain xs:element"));
+    complex->elements.resize(count);
     for(UInt i=0; i<count; i++)
-      complex->element.at(i) = readElement(getChild(xmlNode2, "xs:element"));
+      complex->elements.at(i) = readElement(xmlNode2->getChild("xs:element"), renames, false);
 
-    complexList.push_back(complex);
     return complex;
   }
   catch(std::exception &e)
@@ -224,18 +194,17 @@ void Schema::setComplexPointer(XsdElementPtr element)
   try
   {
     if(!element->complex)
-      for(UInt i=0; i<complexType.size(); i++)
-        if(element->type == complexType.at(i)->name)
-        {
-          element->complex = complexType.at(i)->complex;
-          break;
-        }
+    {
+      auto iter = std::find_if(complexType.begin(), complexType.end(), [&](const auto &child) {return child->names.front() == element->type;});
+      if(iter != complexType.end())
+        element->complex = (*iter)->complex;
+    }
 
     if((element->complex) && (!element->complex->isReady))
     {
       element->complex->isReady = true;
-      for(UInt i=0; i<element->complex->element.size(); i++)
-        setComplexPointer(element->complex->element.at(i));
+      for(auto &child : element->complex->elements)
+        setComplexPointer(child);
     }
   }
   catch(std::exception &e)
@@ -246,47 +215,15 @@ void Schema::setComplexPointer(XsdElementPtr element)
 
 /***********************************************/
 
-std::vector<XsdElementPtr> Schema::programList() const
+QList<XsdElementPtr> Schema::programList() const
 {
-  std::vector<XsdElementPtr> programList;
-
+  QList<XsdElementPtr> programList;
   for(auto element : complexType)
-    if(element->name == "programmeType" || element->name == "programType")
-      for(auto program : element->complex->element)
+    if(element->names.front() == "programmeType" || element->names.front() == "programType")
+      for(auto program : element->complex->elements)
         programList.push_back(program);
-
   return programList;
 }
 
-/***********************************************/
-
-QString Schema::programType() const
-{
-
-  for(auto element : complexType)
-    if(element->name == "programmeType" || element->name == "programType")
-      return element->name;
-
-  return QString();
-}
-
-/***********************************************/
-
-bool Schema::validateSchema(QString fileName)
-{
-  try
-  {
-    if(fileName.isEmpty())
-      return false;
-    Schema schema(fileName);
-  }
-  catch(...)
-  {
-    return false;
-  }
-  return true;
-}
-
-/***********************************************/
 /***********************************************/
 

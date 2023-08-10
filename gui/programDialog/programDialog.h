@@ -28,7 +28,6 @@ namespace Ui
   class ProgramDialog;
 }
 
-class QSettings;
 class TreeElementProgram;
 
 /***** CLASS ***********************************/
@@ -37,28 +36,28 @@ class ProgramListWidget : public QWidget
 {
   Q_OBJECT
 
+  // ----------------------------------
   class TreeWidget : public QTreeWidget
   {
+    ProgramListWidget *programListWidget;
+    QPoint             dragStartPosition;
+
+    void mousePressEvent(QMouseEvent *event);
+    void mouseMoveEvent (QMouseEvent *event);
+
   public:
-    TreeWidget(ProgramListWidget *parent);
+    TreeWidget(ProgramListWidget *parent) : QTreeWidget(parent), programListWidget(parent) {}
 
     int getItemIndex(QTreeWidgetItem *item);
-
-  private:
-    ProgramListWidget *programListWidget;
-    QPoint               dragStartPosition;
-
-    void mousePressEvent(QMouseEvent     *event);
-    void mouseMoveEvent (QMouseEvent     *event);
   };
-
   friend class TreeWidget;
+  // ----------------------------------
 
-  QSettings                 *settings;
-  TreeWidget                *treeWidget;
-  QLineEdit                 *lineEdit;
-  std::vector<XsdElementPtr> programList;
-  Tree                      *tree;
+  QSettings            settings;
+  TreeWidget          *treeWidget;
+  QLineEdit           *lineEdit;
+  QList<XsdElementPtr> programList;
+  Tree                *tree;
 
 public:
   ProgramListWidget(QWidget *parent=nullptr);
@@ -66,16 +65,16 @@ public:
  ~ProgramListWidget();
 
   void init(Tree *tree, int indexSelected=0);
-  int  columnWidth() const { return treeWidget ? treeWidget->columnWidth(0) : 350; }
+  int  columnWidth() const {return treeWidget ? treeWidget->columnWidth(0) : 350;}
   void setColumnWidth(int width);
   int  selectedIndex();
-  void setUnknownProgram(const QString &name);
-  int  programCount() { return programList.size(); }
+  int  programCount() {return programList.size();}
 
 protected:
   bool eventFilter(QObject *obj, QEvent *event);
 
 signals:
+  void addProgram(const QString &name);
   void programSelected(int index);
   void selectionChanged(bool isProgramSelected);
 
@@ -92,7 +91,7 @@ class ProgramDialog : public QDialog
   Q_OBJECT
 
   Ui::ProgramDialog  *ui;
-  QSettings          *settings;
+  QSettings           settings;
   TreeElementProgram *treeElement;
   ProgramListWidget  *programListWidget;
 

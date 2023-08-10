@@ -17,7 +17,6 @@
 #include <QTreeWidget>
 #include <QAction>
 #include <QDir>
-#include <QPointer>
 #include <QUndoStack>
 #include <QFileSystemWatcher>
 #include "base/importGroops.h"
@@ -30,244 +29,128 @@
 class TreeItem;
 class TreeElement;
 class TreeElementGlobal;
-class TreeElementProgram;
-class QMimeData;
-class QSettings;
-class VariableList;
+class TreeElementComplex;
+class TreeWidget;
 
 /***** CLASS ***********************************/
 
-class Tree: public QTreeWidget
+class Tree: public QWidget
 {
-   Q_OBJECT
+  Q_OBJECT
 
-  friend class TreeElementGlobal;
-
-  QSettings             *settings;
-  ActionList             actionList;
-  Schema                 schema;
-  TreeElement          *_rootElement;
-  TreeElementGlobal    *_elementGlobal; // set by TreeElementGlobal
-  QDir                   xmlDir;
-  QString                xmlFile;
-  QString                xsdFile;
-  Bool                   changed;
-  TreeItem              *selectedItem;
-  int                    heightSelectedItem;
-  Bool                  _showResults;
-  QUndoStack           *_undoStack;
-  TabEnvironment        *workspace;
-  QSet<TreeElement*>     unknownElements;
-  QSet<TreeElement*>     renamedElements;
-  QString               _programType; // programType or programmeType (for backwards compatibility)
+  QSettings   settings;
+  ActionList  actionList;
+  bool        _showResults;
+  bool        _isCurrent;
+  TreeItem   *_selectedItem;
+  Schema      _schema;
+  QString     _fileNameSchema;
+  bool        _isClean;         // file is unchanged
+  QString     _caption;         // fileName without path or something like 'newX'.
+  QString     _fileName;        // absolute path
+  QDir        workingDirectory;
 
   void clearTree();
-  Bool readSchema();
+  bool readSchema();
+
+  friend class TreeItem;
 
 public:
-  Tree(QWidget *parent, ActionList *actionList, TabEnvironment *workspace);
+  Tree(QWidget *parent, ActionList *actionList, TabEnvironment *tabEnvironment);
   virtual ~Tree();
 
-  TreeElement           *rootElement()   const {return _rootElement;}
-  TreeElementGlobal     *elementGlobal() const {return _elementGlobal;}
-  QString                schemaFile()     const {return xsdFile;}
-  QString                programType()    const {return _programType;}
-  QMap<QString, QString> varList;           // values of elements in the global list
-  VariableList           getVariableList(); // generates a GROOPS VariableList from varList
+  // public variables
+  QUndoStack         *undoStack;
+  TreeElementComplex *rootElement;
+  TreeElementGlobal  *elementGlobal; // set by TreeElementGlobal
 
-  QUndoStack *undoStack() const                      {return _undoStack;}
-  void        pushUndoCommand(QUndoCommand *command) {_undoStack->push(command);}
+  /** @brief Is the tree selected?
+  * Tree reacts in actions (like saveAs).  */
+  bool isCurrent() {return _isCurrent;}
 
-/**
-* @brief the current fileName with absolute path.
-*/
-QString fileName() const;
+  /** @brief Sets the tree selected. */
+  void setCurrent(bool isCurrent);
 
-/**
-* @brief Sets the current TreeElement/TreeItem.
-*
-* Creates the editor elements.
-* Updates the action list.
-*/
-void setSelectedItem(TreeItem *item);
+  /** @brief Sets the current TreeElement/TreeItem.
+  * Creates the editor elements.
+  * Updates the action list. */
+  void setSelectedItem(TreeItem *item);
 
-/**
-* @brief Gets the current TreeItem.
-*/
-TreeItem *getSelectedItem() const {return selectedItem;}
+  /** @brief Gets the current TreeItem. */
+  TreeItem *selectedItem() const {return _selectedItem;}
 
-/**
-* @brief show/hide column with the annotations depending on state.
-*/
-void setShowDescriptions(Bool state);
+  /** @brief Gets the current TreeElement. */
+  TreeElement *selectedElement() const;
 
-/**
-* @brief show/hide results of links and expressions depending on state.
-*/
-void setShowResults(Bool state);
+  /** @brief Are results of links and expressions are shown?. */
+  bool showResults() const {return _showResults;}
 
-/**
-* @brief Are results of links and expressions are shown?.
-*/
-Bool showResults() const {return _showResults;}
+  /** @brief fileName without path or something like 'newX'. */
+  QString caption() const {return _caption;}
 
-/**
-* @brief Update expressions of all elements in the tree based on the @p element.
-*/
-void updateExpressions(const TreeElement *element);
+  /** @brief the current fileName with absolute path. */
+  QString fileName() const {return _fileName;}
 
+  QString fileNameSchema() const {return _fileNameSchema;}
 
-/**
-* @brief Get list of available programs from the schema.
-*/
-std::vector<XsdElementPtr> programListFromSchema() const;
+  /** @brief makes the fileName absolute. */
+  QString addWorkingDirectory(const QString &fileName) const;
 
-/**
-* @brief Is it allowed to close the file?
-*
-* The user is asked to save the file before if necessary.
-* @return allowed
-*/
-Bool okToAbandon();
+  /** @brief makes the fileName relative to the working directory if possible. */
+  QString stripWorkingDirectory(const QString &fileName) const;
 
-/**
-* @brief Creates a new empty tree.
-*
-* The user is asked to save the old file before if necessary.
-* @return success?
-*/
-Bool newFile();
+  /** @brief Does the current file have no unsaved changes? */
+  bool isClean() const {return _isClean;}
 
-/**
-* @brief Reload the file.
-*
-* The user is asked to save the file before if necessary.
-* @return success?
-*/
-Bool reopenFile();
+  /** @brief Is it allowed to close the file?
+  * The user is asked to save the file before if necessary.
+  * @return allowed */
+  bool okToAbandon();
 
-/**
-* @brief Open the file with @a fileName.
-*
-* If @a fileName is empty a file selector is opened.
-* The user is asked to save the old file before if necessary.
-* @return success?
-*/
-Bool openFile(QString fileName = QString());
+  /** @brief Creates a new empty tree.
+  * The user is asked to save the old file before if necessary.
+  * @return success? */
+  bool fileNew(const QString &caption);
 
-/**
-* @brief Save the file.
-*
-* A file selector is opened for trees without file name.
-* @return success?
-*/
-Bool saveFile();
-
-/**
-* @brief Save the file with a new @a fileName.
-*
-* If @a fileName is empty a file selector is opened.
-* @return success?
-*/
-Bool saveAsFile(const QString &fileName = QString());
-
-/**
-* @brief Execute file.
-*
-* opens the execute dialog.
-* @return success?
-*/
-Bool execFile();
-
-/**
-* @brief Has the current file unsaved changes?
-*/
-Bool isChanged() const;
+  /** @brief Open the file with @a fileName.
+  * If @a fileName is empty try to reload the current file.
+  * The user is asked to save the old file before if necessary.
+  * @return success? */
+  bool fileOpen(QString fileName);
 
 signals:
-/**
-* @brief This signal is emitted when the file or status is changed.
-*
-* @param fileName the current file (empty if file is new)
-* @param changed current file has unsaved changes
-*/
-void fileChanged(const QString &fileName, bool changed);
+  /** @brief This signal is emitted when the file or status is changed.
+  * @param caption fileName without path or something like 'newX'.
+  * @param fileName the current file (empty if file is new)
+  * @param isClean no unsaved changes */
+  void fileChanged(const QString &caption, const QString &fileName, bool isClean);
 
-/**
-* @brief This signal is emitted when a selection in a tree is changed.
-*
-* @param selection Name of the selected item or empty if no selection.
-*/
-void treeSelectionChanged(const QString &selection);
+public:
+  QList<XsdElementPtr> programList() const;
 
-/**
-* @brief This signal is emitted when a file is changed.
-*
-* @param fileName of the changed file
-* @param changed file has unsaved changes
-*/
-void treeFileChanged(const QString &fileName, bool changed);
+public slots:
+  void addProgram(const QString &name);
 
-// check state of file on disk
+  // check state of file on disk
+  // ---------------------------
 private:
   QFileSystemWatcher *fileWatcher;
 
-  void createFileWatcher();
-  void clearFileWatcher();
+  void fileWatcherCreate();
+  void fileWatcherClear();
 
 private slots:
-  void fileChangedExternally();
-
-// tracking of unknown elements
-// ----------------------------
-public:
-void trackUnknownElement(TreeElement *element);
-bool untrackUnknownElement(TreeElement *element);
-
-signals:
-void unknownElementsChanged(int count);
-
-public slots:
-void expandUnknownElements();
-void removeAllUnknownElements();
-
-// tracking of renamed elements
-// ----------------------------
-public:
-void trackRenamedElement(TreeElement *element);
-bool untrackRenamedElement(TreeElement *element);
-
-signals:
-void renamedElementsChanged(int count);
-
-public slots:
-void expandRenamedElements();
-void updateAllRenamedElements();
-
-// management of file names
-// ------------------------
-public:
-/**
-* @brief makes the fileName absolute.
-*/
-QString addXmlDirectory(const QString &fileName) const;
-
-/**
-* @brief makes the fileName relative to the working directory if possible.
-*/
-QString stripXmlDirectory(const QString &fileName) const;
+  void fileWatcherChangedExternally();
 
 private:
-// create mime data (XML) of the element
-QMimeData *createMimeData(const TreeElement *element);
-
-// creates xmlNode and type from mimeData if possible
-Bool fromMimeData(const QMimeData *mimeData, XmlNodePtr &xmlNode, QString &type);
-
-// enabling/disabling actions depending on the selected item
-void updateActions();
+  // enabling/disabling actions depending on the selected item
+  void updateActions();
 
 public slots:
+  bool fileSave();
+  bool fileSaveAs();
+  void fileRun();
+  void fileShowInManager();
   void editCut();
   void editCopy();
   void editPaste();
@@ -284,42 +167,75 @@ public slots:
   void editDisableAll();
   void editRename();
   void editUpdateName();
-  void editComment();
+  void editAddComment();
   void editCollapseAll();
   void editOpenExternally();
+  void helpShowDescriptions(bool);
+  void helpShowResults(bool);
+  void helpOpenDocumentation();
 
-// Event-Handler
-// -------------
+  // ========================================================
+
+  // Layout
+  // ------
+  int  columnWidth(int column) const;
+  void setColumnWidth(int column, int width);
+
+signals:
+  void sectionResized(int logicalIndex, int oldSize, int newSize);
+
+private:
+  QFrame     *barFileExternallyChanged;
+  QFrame     *barUnknownElements;
+  QFrame     *barSchemaRenamedElements;
+  QLabel     *labelUnknownElements;
+  QLabel     *labelSchemaRenamedElements;
+  int         unknownCount, renamedCount;
+  TreeWidget *treeWidget;
+
+public:
+  void treeChanged();   // slot: called by TreeElements whenever unknowns or renamed could be changed
+
 private slots:
-  void treeCleanChanged(bool clean);
+  void undoStackCleanChanged(bool clean);
   void treeClipboardDataChanged();
   void treeContextMenuRequested(const QPoint &pos);
   void treeCurrentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+  void treeItemSelectionChanged();
   void treeItemClicked       (QTreeWidgetItem *item, int column);
   void treeItemDoubleClicked (QTreeWidgetItem *item, int column);
-  void addProgram(int index);
-  void resizeColumn(int logicalIndex, int oldSize, int newSize);
+  void barFileExternallyChangedReopen();
+  void barUnknownElementsExpand();
+  void barUnknownElementsRemoveAll();
+  void barSchemaRenamedElementsExpand();
+  void barSchemaRenamedElementsUpdateAll();
+  void barClickedIgnore();
+};
+
+/***********************************************/
+
+class TreeWidget: public QTreeWidget
+{
+  Q_OBJECT
+
+  Tree           *tree;
+  TabEnvironment *tabEnvironment;
+  QPoint          dragStartPosition;
+  TreeElement    *dragElement;
+
+public:
+  TreeWidget(Tree *tree, TabEnvironment *tabEnvironment);
+  virtual ~TreeWidget() {}
 
 protected:
-  void resizeEvent(QResizeEvent *event);
-  bool eventFilter(QObject *obj, QEvent *event);
-
-// Key events
-// -----------
-private:
-  bool focusNextPrevChild(bool /*next*/) {return false;}
-  void keyPressEvent(QKeyEvent *event);
-
-// Drag & drop
-// -----------
-private:
-  QPoint dragStartPosition;
-
-  void mousePressEvent(QMouseEvent     *event);
-  void mouseMoveEvent (QMouseEvent     *event);
-  void dragEnterEvent (QDragEnterEvent *event);
-  void dragMoveEvent  (QDragMoveEvent  *event);
-  void dropEvent      (QDropEvent      *event);
+  bool eventFilter(QObject *obj, QEvent *event) override;
+  bool focusNextPrevChild(bool /*next*/) override {return false;}
+  void keyPressEvent  (QKeyEvent       *event) override;
+  void mousePressEvent(QMouseEvent     *event) override;
+  void mouseMoveEvent (QMouseEvent     *event) override;
+  void dragEnterEvent (QDragEnterEvent *event) override;
+  void dragMoveEvent  (QDragMoveEvent  *event) override;
+  void dropEvent      (QDropEvent      *event) override;
 };
 
 /***********************************************/

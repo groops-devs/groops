@@ -10,7 +10,6 @@
 */
 /***********************************************/
 
-#include "ui_findReplaceDock.h"
 #include <QtWidgets>
 #include "base/importGroops.h"
 #include "tree/tree.h"
@@ -18,6 +17,7 @@
 #include "tree/treeItem.h"
 #include "mainWindow/mainWindow.h"
 #include "findReplaceDock.h"
+#include "ui_findReplaceDock.h"
 
 /***********************************************/
 
@@ -29,8 +29,7 @@ FindReplaceDock::FindReplaceDock(MainWindow *parent) : QDockWidget(parent), ui(n
     ui->setupUi(this);
     ui->labelMessage->setText("");
 
-    this->settings = new QSettings(this);
-    resize(settings->value("findReplaceDock/size", size()).toSize());
+    resize(settings.value("findReplaceDock/size", size()).toSize());
 
     connect(ui->editFind, SIGNAL(textEdited(const QString &)), this, SLOT(editFindTextChanged(const QString &)));
     connect(ui->checkBoxSearchType, &QCheckBox::stateChanged, this, &FindReplaceDock::searchTypeChanged);
@@ -45,8 +44,7 @@ FindReplaceDock::FindReplaceDock(MainWindow *parent) : QDockWidget(parent), ui(n
 
 FindReplaceDock::~FindReplaceDock()
 {
-  settings->setValue("findReplaceDock/size", size());
-
+  settings.setValue("findReplaceDock/size", size());
   delete ui;
 }
 
@@ -159,14 +157,13 @@ void FindReplaceDock::clickedReplace()
     Tree *tree = mainWindow->getCurrentTree();
     if(!tree)
       return;
-    TreeItem *treeItem = tree->getSelectedItem();
+    TreeItem *treeItem = tree->selectedItem();
     int start, length;
     treeItem->selection(start, length);
     QString text = treeItem->treeElement()->selectedValue();
     if((start >= 0) && (length > 0) && (getExpression().match(text.mid(start, length)).capturedLength() == length))
     {
-      text.replace(getExpression(), ui->editReplace->text());
-      //text.replace(start, length, ui->editReplace->text());
+      text.replace(start, length, ui->editReplace->text());
       if(text == treeItem->treeElement()->selectedValue()) // no change?
         return;
       treeItem->treeElement()->changeSelectedValue(text);
@@ -194,7 +191,7 @@ void FindReplaceDock::clickedReplaceAll()
       return;
 
     int count = 0;
-    for(QTreeWidgetItemIterator itemIter(tree->rootElement()->item(), QTreeWidgetItemIterator::All); *itemIter; itemIter++)
+    for(QTreeWidgetItemIterator itemIter(tree->rootElement->item(), QTreeWidgetItemIterator::All); *itemIter; itemIter++)
     {
       TreeElement *treeElement = dynamic_cast<TreeItem*>(*itemIter)->treeElement();
       if(treeElement->isEditable())
@@ -222,7 +219,7 @@ void FindReplaceDock::clickedReplaceAll()
 
 /***********************************************/
 
-void FindReplaceDock::findNext(Bool forwards)
+void FindReplaceDock::findNext(bool forwards)
 {
   try
   {
@@ -232,20 +229,24 @@ void FindReplaceDock::findNext(Bool forwards)
     Tree *tree = mainWindow->getCurrentTree();
     if(!tree)
       return;
-    TreeItem *treeItemStart = tree->getSelectedItem();
+    TreeItem *treeItemStart = tree->selectedItem();
     if(!treeItemStart)
-      treeItemStart = tree->rootElement()->item();
+      treeItemStart = tree->rootElement->item();
 
     QTreeWidgetItemIterator itemIter(treeItemStart, QTreeWidgetItemIterator::All);
     if(searchType)
       (forwards) ? itemIter++ : itemIter--; // start with next item to prevent lock
 
+    bool wrap = false;
     for(;;)
     {
-      if(!*itemIter) // last element? -> warp search
+      if(!*itemIter) // last element? -> wrap search
       {
+        if(wrap) // only once
+          break;
+        wrap = true;
         if(forwards)
-          itemIter = QTreeWidgetItemIterator(tree->rootElement()->item(), QTreeWidgetItemIterator::All);
+          itemIter = QTreeWidgetItemIterator(tree->rootElement->item(), QTreeWidgetItemIterator::All);
         else // find last item
           for(QTreeWidgetItemIterator i(treeItemStart, QTreeWidgetItemIterator::All); *i; i++)
             itemIter = i;
@@ -271,7 +272,7 @@ void FindReplaceDock::findNext(Bool forwards)
           if(forwards)
             startMatch = treeElement->selectedValue().indexOf(regExp, std::max(start, 0)+length, &match);
           else if(start != 0)
-            startMatch = treeElement->selectedValue().lastIndexOf(regExp, ((start>1) ? start : treeElement->selectedValue().size())-1, &match);
+            startMatch = treeElement->selectedValue().lastIndexOf(regExp, ((start>0) ? start : treeElement->selectedValue().size())-1, &match);
           if(startMatch >= 0)
           {
             tree->setSelectedItem(treeItem);
@@ -284,8 +285,6 @@ void FindReplaceDock::findNext(Bool forwards)
 
       // next item
       (forwards) ? itemIter++ : itemIter--;
-      if(*itemIter == treeItemStart)
-        break;
     } // for(;;)
 
     messageNotFound();

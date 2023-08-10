@@ -24,49 +24,9 @@
 /***********************************************/
 
 TreeElementFileName::TreeElementFileName(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
-                                         const QString &defaultOverride, XmlNodePtr xmlNode, Bool fromFile)
-  : TreeElement(tree, parentElement, xsdElement, defaultOverride, xmlNode)
+                                         const QString &defaultOverride, XmlNodePtr xmlNode, bool fillWithDefaults)
+  : TreeElementSimple(tree, parentElement, xsdElement, defaultOverride, xmlNode, fillWithDefaults)
 {
-  try
-  {
-    if(!isLinked())
-    {
-      if(xmlNode && xmlNode->hasChildren())
-        throw(Exception("xml node doesn't match with schema"));
-      else if(xmlNode && !xmlNode->getText().isEmpty())
-        insertNewValue(xmlNode->getText(), false);
-      else if(fromFile || defaultValue().isEmpty())
-        insertNewValue("", false);
-    }
-    if(!defaultValue().isEmpty())
-      insertNewValue(defaultValue(), false);
-
-    setSelectedIndex((isLinked() && selectedIndex() > 0) ? selectedIndex() : 0);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-XmlNodePtr TreeElementFileName::getXML(Bool withEmptyNodes) const
-{
-  try
-  {
-    if(selectedValue().isEmpty() && !withEmptyNodes)
-       return XmlNodePtr(nullptr);
-    XmlNodePtr xmlNode = TreeElement::getBaseXML();
-    if((xmlNode==nullptr) || isLinked())
-      return xmlNode;
-    xmlNode->setText(selectedValue());
-    return xmlNode;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
 }
 
 /***********************************************/
@@ -78,7 +38,7 @@ QWidget *TreeElementFileName::createEditor()
     // create layout
     QWidget *layoutWidget = new QWidget(tree);
     QHBoxLayout *layout   = new QHBoxLayout(layoutWidget);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
 
     // create ComboBox
     QComboBox *comboBox = createComboBox(true);
@@ -88,7 +48,7 @@ QWidget *TreeElementFileName::createEditor()
     // create FileSelector Button
     openFileButton = new QPushButton(layoutWidget);
     openFileButton->setIcon(QIcon(":/icons/scalable/document-open.svg"));
-    layout->addWidget( openFileButton );
+    layout->addWidget(openFileButton);
     // signals and slots connections
     connect(openFileButton, SIGNAL(clicked()), this, SLOT(openFileClicked()));
 
@@ -104,7 +64,7 @@ QWidget *TreeElementFileName::createEditor()
 
 void TreeElementFileName::interact()
 {
-    openFileClicked();
+  openFileClicked();
 }
 
 /***********************************************/
@@ -113,9 +73,8 @@ void TreeElementFileName::openFileClicked()
 {
   try
   {
-    QFileInfo startFile(tree->addXmlDirectory(selectedResult()));
-
     // if directory doesn't exist, repeatedly go up one directory until it exists
+    QFileInfo startFile(tree->addWorkingDirectory(selectedResult()));
     while(!startFile.isFile() && !startFile.absoluteDir().exists() && !startFile.absoluteDir().isRoot())
     {
       QString dir = startFile.absolutePath();
@@ -126,12 +85,13 @@ void TreeElementFileName::openFileClicked()
     // lambda to replace beginning part of path with global variable
     auto replaceByVariable = [&](QString path, QString &variable, QString &parsedVariable)
     {
-      for(int i = valueCount(); i < valueList().size(); i++)
+      const VariableList &varList = tree->elementGlobal->variableList();
+      for(int i=_valueCount; i<_valueList.size(); i++) // all possible links
       {
-        QString parsed = parseExpression(valueList().at(i));
-        if(path.startsWith(parsed) && parsed.size() > parsedVariable.size())
+        QString parsed = parseExpression("{"+_valueList.at(i)+"}", varList);
+        if(path.startsWith(parsed) && (parsed.size() > parsedVariable.size()))
         {
-          variable = "{"+valueList().at(i)+"}";
+          variable = "{"+_valueList.at(i)+"}";
           parsedVariable = parsed;
         }
       }
@@ -144,17 +104,17 @@ void TreeElementFileName::openFileClicked()
       if(files.size()==0)
         return;
 
-      QString lastFile = tree->stripXmlDirectory(files.last());
+      QString lastFile = tree->stripWorkingDirectory(files.last());
       QString variable;
       QString parsedVariable;
       replaceByVariable(lastFile, variable, parsedVariable);
 
       for(int i=0; i<files.size()-1; i++)
       {
-        XmlNodePtr xmlNode = getXML(true);
+        XmlNodePtr xmlNode = createXmlTree(true);
         if(!(xmlNode && parentElement))
           continue;
-        xmlNode->setText(variable+tree->stripXmlDirectory(files[i]).mid(parsedVariable.size()));
+        xmlNode->setText(variable+tree->stripWorkingDirectory(files[i]).mid(parsedVariable.size()));
         parentElement->addChild(this, type(), xmlNode);
       }
       changeSelectedValue(variable+lastFile.mid(parsedVariable.size()));
@@ -165,7 +125,7 @@ void TreeElementFileName::openFileClicked()
       QString selectedPath = QFileDialog::getSaveFileName(openFileButton, name(), startFile.absoluteFilePath(), "", nullptr, QFileDialog::DontConfirmOverwrite);
       if(!selectedPath.isEmpty())
       {
-        selectedPath = tree->stripXmlDirectory(selectedPath);
+        selectedPath = tree->stripWorkingDirectory(selectedPath);
         QString variable;
         QString parsedVariable;
         replaceByVariable(selectedPath, variable, parsedVariable);
