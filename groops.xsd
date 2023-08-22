@@ -2675,7 +2675,7 @@
 								<xs:documentation>variable {station} available. station metadata (antennas, receivers, ...)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat">
+						<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
 							<xs:annotation>
 								<xs:documentation>antenna center offsets and variations</xs:documentation>
 							</xs:annotation>
@@ -3004,12 +3004,12 @@
 								<xs:documentation>ascii file with transmitter PRNs, used to loop variable {prn}</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
+						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml">
 							<xs:annotation>
 								<xs:documentation>variable {prn} available</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfileAntennaDefintion" type="filename" default="{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat">
+						<xs:element name="inputfileAntennaDefintion" type="filename" default="{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
 							<xs:annotation>
 								<xs:documentation>phase centers and variations (ANTEX like)</xs:documentation>
 							</xs:annotation>

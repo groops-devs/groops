@@ -42,7 +42,7 @@ GnssReceiverGeneratorStationNetwork::GnssReceiverGeneratorStationNetwork(Config 
     readConfig(config, "inputfileStationList",               fileNameStationList,     Config::MUSTSET,  "", "ascii file with station names");
     readConfig(config, "maxStationCount",                    maxStationCount,         Config::OPTIONAL, "", "maximum number of stations to be used");
     readConfig(config, "inputfileStationInfo",               fileNameStationInfo,     Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/stationInfo/igs/stationInfo.{station}.xml", "variable {station} available. station metadata (antennas, receivers, ...)");
-    readConfig(config, "inputfileAntennaDefinition",         fileNameAntennaDef,      Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat", "antenna center offsets and variations");
+    readConfig(config, "inputfileAntennaDefinition",         fileNameAntennaDef,      Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat", "antenna center offsets and variations");
     if(readConfigChoice(config, "noAntennaPatternFound", choice, Config::MUSTSET, "ignoreObservation", "what should happen if no antenna pattern is found for an observation"))
     {
       if(readConfigChoiceElement(config, "ignoreObservation",   choice, "ignore observation if no matching pattern is found"))
