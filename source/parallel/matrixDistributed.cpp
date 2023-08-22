@@ -450,10 +450,11 @@ void MatrixDistributed::reduceSum(Bool timing)
 
 void MatrixDistributed::cholesky(Bool timing, UInt startBlock, UInt countBlock, Bool collect)
 {
+  UInt i=0;
   try
   {
     Log::Timer timer(blockCount()-startBlock, 1, timing);
-    for(UInt i=startBlock; i<blockCount(); i++)
+    for(i=startBlock; i<blockCount(); i++)
       if(blockSize(i))
       {
         timer.loopStep(i-startBlock);
@@ -536,7 +537,7 @@ void MatrixDistributed::cholesky(Bool timing, UInt startBlock, UInt countBlock, 
   }
   catch(std::exception &e)
   {
-    GROOPS_RETHROW(e)
+    GROOPS_RETHROW_EXTRA("In block row "s+i%"%i with parameter index "s+blockIndex(i)%"%i"s, e)
   }
 }
 
