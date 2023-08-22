@@ -129,7 +129,7 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
         recv->vel.resize(times.size());
         recv->offset.resize(times.size());
         recv->global2local.resize(times.size());
-        recv->local2antenna.resize(times.size());
+        recv->global2antenna.resize(times.size());
 
         OrbitArc      orbit      = InstrumentFile::read(fileNameOrbit);
         StarCameraArc starCamera = InstrumentFile::read(fileNameStarCamera);
@@ -155,11 +155,11 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
             continue;
           }
 
-          recv->pos.at(idEpoch)           = orbit.at(i).position;
-          recv->vel.at(idEpoch)           = orbit.at(i).velocity;
-          recv->offset.at(idEpoch)        = antenna->position - platform.referencePoint(times.at(idEpoch));
-          recv->global2local.at(idEpoch)  = inverse(starCamera.at(i).rotary);
-          recv->local2antenna.at(idEpoch) = antenna->local2antennaFrame;
+          recv->pos.at(idEpoch)            = orbit.at(i).position;
+          recv->vel.at(idEpoch)            = orbit.at(i).velocity;
+          recv->global2local.at(idEpoch)   = inverse(localNorthEastUp(recv->pos.at(idEpoch), Ellipsoid()));
+          recv->global2antenna.at(idEpoch) = antenna->local2antennaFrame * inverse(starCamera.at(i).rotary);
+          recv->offset.at(idEpoch)         = recv->global2local.at(idEpoch).transform(starCamera.at(i).rotary.rotate(antenna->position - platform.referencePoint(times.at(idEpoch))));
           idEpoch++;
         }
         recv->preprocessingInfo("init()");

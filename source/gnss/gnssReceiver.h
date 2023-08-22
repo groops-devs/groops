@@ -50,7 +50,7 @@ public:
   std::vector<Double>       clk;
   std::vector<Vector3d>     pos, vel;  // regularized marker pos in global system
   std::vector<Vector3d>     offset;    // pos to ARF in local system
-  std::vector<Transform3d>  global2local, local2antenna;
+  std::vector<Transform3d>  global2local, global2antenna;
   std::vector<GnssTrackPtr> tracks;   // tracking phase observations
   Double                    observationSampling;
   Bool                      integerAmbiguities;
@@ -97,11 +97,11 @@ public:
   /** @brief velocity in TRF or CRF [m/s]. */
   Vector3d velocity(UInt idEpoch) const {return vel.at(idEpoch);}
 
-  /** @brief Rotation from terrestrial reference frame (TRF) or celestial reference frame (CRF) to local/body frame (north, east, up or vehicle system). */
+  /** @brief Rotation from terrestrial reference frame (TRF) or celestial reference frame (CRF) to local horizont system (north, east, up). */
   Transform3d global2localFrame(UInt idEpoch) const {return global2local.at(idEpoch);}
 
-  /** @brief Rotation from local/body frame to left-handed antenna system (usually north, east, up). */
-  Transform3d local2antennaFrame(UInt idEpoch) const {return local2antenna.at(idEpoch);}
+  /** @brief Rotation from terrestrial reference frame (TRF) or celestial reference frame (CRF) to left-handed antenna system (usually north, east, up). */
+  Transform3d global2antennaFrame(UInt idEpoch) const {return global2antenna.at(idEpoch);}
 
   /** @brief Transformation matrix for observed (composed) types from original transmitted types.
   * E.g. C2DG = C1CG - C1WG + C2WG.

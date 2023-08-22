@@ -190,14 +190,14 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
             recv->vel.resize(times.size());
             recv->offset.resize(times.size());
             recv->global2local.resize(times.size(), inverse(localNorthEastUp(recv->platform.approxPosition, Ellipsoid())));
-            recv->local2antenna.resize(times.size());
+            recv->global2antenna.resize(times.size());
             for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
             {
               auto antenna = recv->platform.findEquipment<PlatformGnssAntenna>(times.at(idEpoch));
               if(antenna && antenna->antennaDef && antenna->accuracyDef)
               {
-                recv->offset.at(idEpoch)        = antenna->position - recv->platform.referencePoint(times.at(idEpoch));
-                recv->local2antenna.at(idEpoch) = antenna->local2antennaFrame;
+                recv->offset.at(idEpoch)         = antenna->position - recv->platform.referencePoint(times.at(idEpoch));
+                recv->global2antenna.at(idEpoch) = antenna->local2antennaFrame * recv->global2local.at(idEpoch);
               }
               else
                 recv->disable(idEpoch, "missing antenna/accuracy patterns");
