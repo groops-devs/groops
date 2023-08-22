@@ -75,7 +75,7 @@ inline Bool ConditionStringContainsPattern::condition(const VariableList &varLis
     if(!caseSensitive)
     {
       t = String::lowerCase(t);
-      p = String::lowerCase(t);
+      p = String::lowerCase(p);
     }
 
     if(isRegularExpression)
