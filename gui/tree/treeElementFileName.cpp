@@ -48,9 +48,12 @@ QWidget *TreeElementFileName::createEditor()
     // create FileSelector Button
     openFileButton = new QPushButton(layoutWidget);
     openFileButton->setIcon(QIcon(":/icons/scalable/document-open.svg"));
-    layout->addWidget(openFileButton);
+    openFolderButton->setIcon(QIcon(":/icons/scalable/folder.svg"));
+    layout->addWidget( openFileButton   );
+    layout->addWidget( openFolderButton );
     // signals and slots connections
-    connect(openFileButton, SIGNAL(clicked()), this, SLOT(openFileClicked()));
+    connect(openFileButton,   SIGNAL(clicked()), this, SLOT(openFileClicked()));
+    connect(openFolderButton, SIGNAL(clicked()), this, SLOT(openFolderClicked()));
 
     return layoutWidget;
   }
@@ -139,4 +142,148 @@ void TreeElementFileName::openFileClicked()
   }
 }
 
+/***********************************************/
+
+void TreeElementFileName::openFolderClicked()
+{
+  try
+  {
+    QFileInfo startFile(tree->addXmlDirectory(selectedResult()));
+
+    // if directory doesn't exist, repeatedly go up one directory until it exists
+    while(!startFile.isFile() && !startFile.absoluteDir().exists() && !startFile.absoluteDir().isRoot())
+    {
+      QString dir = startFile.absolutePath();
+      dir.truncate(dir.lastIndexOf("/")+1);
+      startFile = QFileInfo(dir + startFile.fileName());
+    }
+
+    // lambda to replace beginning part of path with global variable
+    auto replaceByVariable = [&](QString path, QString &variable, QString &parsedVariable)
+    {
+      for(int i = valueCount(); i < valueList().size(); i++)
+      {
+        QString parsed = parseExpression(valueList().at(i));
+        if(path.startsWith(parsed) && parsed.count() > parsedVariable.count())
+        {
+          variable = "{"+valueList().at(i)+"}";
+          parsedVariable = parsed;
+        }
+      }
+    };
+
+    // possible to add several elements?
+    if(elementAdd())
+    {
+      QStringList files;
+      files.append(QFileDialog::getExistingDirectory(openFileButton, name(), startFile.absoluteFilePath()));
+      if(files.size()==0)
+        return;
+
+      QString lastFile = tree->stripXmlDirectory(files.last());
+      QString variable;
+      QString parsedVariable;
+      replaceByVariable(lastFile, variable, parsedVariable);
+
+      for(int i=0; i<files.size()-1; i++)
+      {
+        XmlNodePtr xmlNode = getXML(true);
+        if(!(xmlNode && parentElement))
+          continue;
+        xmlNode->setText(variable+tree->stripXmlDirectory(files[i]).mid(parsedVariable.count()));
+        parentElement->addChild(this, type(), xmlNode);
+      }
+      changeSelectedValue(variable+lastFile.mid(parsedVariable.count()));
+    }
+    else
+    {
+      // File Selector Dialog
+      QString selectedPath = QFileDialog::getSaveFileName(openFileButton, name(), startFile.absoluteFilePath(), "", nullptr, QFileDialog::DontConfirmOverwrite);
+      if(!selectedPath.isEmpty())
+      {
+        selectedPath = tree->stripXmlDirectory(selectedPath);
+        QString variable;
+        QString parsedVariable;
+        replaceByVariable(selectedPath, variable, parsedVariable);
+        changeSelectedValue(variable+selectedPath.mid(parsedVariable.count()));
+      }
+    }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+/***********************************************/
+
+void TreeElementFileName::openFolderClicked()
+{
+  try
+  {
+    QFileInfo startFile(tree->addXmlDirectory(selectedResult()));
+
+    // if directory doesn't exist, repeatedly go up one directory until it exists
+    while(!startFile.isFile() && !startFile.absoluteDir().exists() && !startFile.absoluteDir().isRoot())
+    {
+      QString dir = startFile.absolutePath();
+      dir.truncate(dir.lastIndexOf("/")+1);
+      startFile = QFileInfo(dir + startFile.fileName());
+    }
+
+    // lambda to replace beginning part of path with global variable
+    auto replaceByVariable = [&](QString path, QString &variable, QString &parsedVariable)
+    {
+      for(int i = valueCount(); i < valueList().size(); i++)
+      {
+        QString parsed = parseExpression(valueList().at(i));
+        if(path.startsWith(parsed) && parsed.count() > parsedVariable.count())
+        {
+          variable = "{"+valueList().at(i)+"}";
+          parsedVariable = parsed;
+        }
+      }
+    };
+
+    // possible to add several elements?
+    if(elementAdd())
+    {
+      QStringList files;
+      files.append(QFileDialog::getExistingDirectory(openFileButton, name(), startFile.absoluteFilePath()));
+      if(files.size()==0)
+        return;
+
+      QString lastFile = tree->stripXmlDirectory(files.last());
+      QString variable;
+      QString parsedVariable;
+      replaceByVariable(lastFile, variable, parsedVariable);
+
+      for(int i=0; i<files.size()-1; i++)
+      {
+        XmlNodePtr xmlNode = getXML(true);
+        if(!(xmlNode && parentElement))
+          continue;
+        xmlNode->setText(variable+tree->stripXmlDirectory(files[i]).mid(parsedVariable.count()));
+        parentElement->addChild(this, type(), xmlNode);
+      }
+      changeSelectedValue(variable+lastFile.mid(parsedVariable.count()));
+    }
+    else
+    {
+      // File Selector Dialog
+      QString selectedPath = QFileDialog::getSaveFileName(openFileButton, name(), startFile.absoluteFilePath(), "", nullptr, QFileDialog::DontConfirmOverwrite);
+      if(!selectedPath.isEmpty())
+      {
+        selectedPath = tree->stripXmlDirectory(selectedPath);
+        QString variable;
+        QString parsedVariable;
+        replaceByVariable(selectedPath, variable, parsedVariable);
+        changeSelectedValue(variable+selectedPath.mid(parsedVariable.count()));
+      }
+    }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
 /***********************************************/
