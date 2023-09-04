@@ -48,6 +48,7 @@ QWidget *TreeElementFileName::createEditor()
     // create FileSelector Button
     openFileButton = new QPushButton(layoutWidget);
     openFileButton->setIcon(QIcon(":/icons/scalable/document-open.svg"));
+    openFolderButton = new QPushButton(layoutWidget);
     openFolderButton->setIcon(QIcon(":/icons/scalable/folder.svg"));
     layout->addWidget( openFileButton   );
     layout->addWidget( openFolderButton );
