@@ -45,7 +45,7 @@ class OrbitPropagatorPolynomial : public OrbitPropagator
 public:
   OrbitPropagatorPolynomial(Config &config);
 
-  OrbitArc integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
+  OrbitArc integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
                         EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const override;
 };
 
@@ -96,7 +96,7 @@ inline OrbitPropagatorPolynomial::OrbitPropagatorPolynomial(Config &config)
 
 /***********************************************/
 
-inline OrbitArc OrbitPropagatorPolynomial::integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces,
+inline OrbitArc OrbitPropagatorPolynomial::integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces,
                                                        SatelliteModelPtr satellite, EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const
 {
   try
@@ -114,7 +114,7 @@ inline OrbitArc OrbitPropagatorPolynomial::integrateArc(OrbitEpoch startEpoch, T
     {
       // Integration: #shift epochs refinement, one new epoch prediction
       OrbitEpoch epoch;
-      epoch.time = orbit.back().time + sampling;
+      epoch.time = startEpoch.time + (shift+k+1) * sampling;
       orbit.push_back(epoch);
 
       Bool correctorRepeatLoop = FALSE;

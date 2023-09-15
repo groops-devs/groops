@@ -37,7 +37,7 @@ class OrbitPropagatorEuler : public OrbitPropagator
 public:
   OrbitPropagatorEuler(Config &/*config*/) {}
 
-  OrbitArc integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite, EarthRotationPtr earthRotation,
+  OrbitArc integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite, EarthRotationPtr earthRotation,
                         EphemeridesPtr ephemerides, Bool timing) const override;
 };
 
@@ -45,20 +45,20 @@ public:
 /***** Inlines *********************************/
 /***********************************************/
 
-inline OrbitArc OrbitPropagatorEuler::integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces,
+inline OrbitArc OrbitPropagatorEuler::integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces,
                                                    SatelliteModelPtr satellite, EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const
 {
   try
   {
     OrbitArc orbit;
-    startEpoch.acceleration = acceleration(startEpoch, forces, satellite, earthRotation, ephemerides);
     orbit.push_back(startEpoch);
+    orbit.back().acceleration = acceleration(startEpoch, forces, satellite, earthRotation, ephemerides);
     const Double dt = sampling.seconds();
 
     Single::forEach(posCount-1, [&](UInt k)
     {
       OrbitEpoch epoch;
-      epoch.time         = orbit.at(k).time + sampling;
+      epoch.time         = startEpoch.time + (k+1) * sampling;
       epoch.position     = orbit.at(k).position + dt * orbit.at(k).velocity;
       epoch.velocity     = orbit.at(k).velocity + dt * orbit.at(k).acceleration;
       epoch.acceleration = acceleration(epoch, forces, satellite, earthRotation, ephemerides);
