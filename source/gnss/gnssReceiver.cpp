@@ -1242,13 +1242,6 @@ void GnssReceiver::cycleSlipsDetection(ObservationEquationList &eqnList, GnssTra
     const UInt order = 3; // AR model order
     if(windowSize && (tec.size() >= order+windowSize+1))
     {
-      // high pass filter via AR model
-      Vector l = tec.row(order, tec.size()-order);
-      Matrix A = Matrix(l.rows(), order);
-      for(UInt k=0; k<order; k++)
-        copy(tec.row(order-k-1, tec.rows()-order), A.column(k));
-      leastSquares(A, l); // l contains AR model residuals after function call
-
       // Estimate AR process with Burg
       // Code mostly from books such as TimeSeriesAnalysis by James Hamilton,
       // Introduction to TimeSeries and Forecasting by brockwell and Davis,
@@ -1380,10 +1373,9 @@ void GnssReceiver::cycleSlipsDetection(ObservationEquationList &eqnList, GnssTra
       }
 
       std::vector<UInt> slips;
-      for(UInt i=0; i<l.size(); i++)
-        if((std::fabs(l(i)) > 0.9*cycles2tecu) &&
-           (std::fabs(l(i)) > tecSigmaFactor*1.4826*medianAbsoluteDeviation(l.row(std::min(std::max(i, windowSize/2)-windowSize/2, l.rows()-windowSize), windowSize))))
-          slips.push_back(i+order);
+      for(UInt i = 0; i < slipsDetect.size(); i++)
+        if(slipsDetect.at(i) == 3)
+          slips.push_back(i);
 
       for(UInt i=slips.size(); i-->0;)
       {
