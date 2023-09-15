@@ -1,5 +1,7 @@
 # main
 - Bugfix:           ObservationDeflctions: fixed index bug.
+- Other:            SimulateOrbit: Improved temporal numerical precision.
+- Other:            GnssRinexNavigation2OrbitClock: add SBAS support.
 
 # Release 2023-08-25
 - New program:      FileMove.

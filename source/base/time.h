@@ -86,8 +86,8 @@ public:
   Time &operator-= (const Time &time);
   Time &operator+= (const Time &time);
   Time &operator*= (Double c);
-  Time  operator+  () {return *this;}
-  Time  operator-  () {return Time(-_mjdInt, -_mjdMod);}
+  Time  operator+  () const {return *this;}
+  Time  operator-  () const {return Time(-_mjdInt, -_mjdMod);}
 
   /** @brief Comparisons.
   * Times considered to be equal within @a TIME_EPSILON seconds margin. */

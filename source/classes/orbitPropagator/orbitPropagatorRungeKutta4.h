@@ -39,23 +39,23 @@ class OrbitPropagatorRungeKutta4 : public OrbitPropagator
 {
 public:
   OrbitPropagatorRungeKutta4(Config &/*config*/) {}
-  OrbitArc integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
+  OrbitArc integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
                         EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const override;
 };
 
 /***********************************************/
 
-inline OrbitArc OrbitPropagatorRungeKutta4::integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces,
+inline OrbitArc OrbitPropagatorRungeKutta4::integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces,
                                                          SatelliteModelPtr satellite, EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const
 {
   try
   {
     OrbitArc orbit;
-    startEpoch.acceleration = acceleration(startEpoch, forces, satellite, earthRotation, ephemerides);
     orbit.push_back(startEpoch);
+    orbit.back().acceleration = acceleration(startEpoch, forces, satellite, earthRotation, ephemerides);
     const Double dt = sampling.seconds();
 
-    Single::forEach(posCount-1, [&](UInt /*k*/)
+    Single::forEach(posCount-1, [&](UInt k)
     {
       // Evaluate accelerations at 4 positions between current epoch and next
       OrbitEpoch k1 = orbit.back();
@@ -80,7 +80,7 @@ inline OrbitArc OrbitPropagatorRungeKutta4::integrateArc(OrbitEpoch startEpoch, 
 
       // Compute final value for this epoch
       OrbitEpoch epoch = k1;
-      epoch.time        += sampling;
+      epoch.time         = startEpoch.time + (k+1)*sampling;
       epoch.position    += (dt/6.) * (k1.velocity + 2*k2.velocity + 2*k3.velocity + k4.velocity);
       epoch.velocity    += (dt/6.) * (k1.acceleration + 2*k2.acceleration + 2*k3.acceleration + k4.acceleration);
       epoch.acceleration = acceleration(epoch, forces, satellite, earthRotation, ephemerides);

@@ -45,7 +45,7 @@ class OrbitPropagatorAdamsBashforthMoulton : public OrbitPropagator
 public:
   OrbitPropagatorAdamsBashforthMoulton(Config &config);
 
-  OrbitArc integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
+  OrbitArc integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
                         EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const override;
 
   static Vector factorsBashforth(UInt order);
@@ -75,7 +75,7 @@ inline OrbitPropagatorAdamsBashforthMoulton::OrbitPropagatorAdamsBashforthMoulto
 
 /***********************************************/
 
-inline OrbitArc OrbitPropagatorAdamsBashforthMoulton::integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces,
+inline OrbitArc OrbitPropagatorAdamsBashforthMoulton::integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces,
                                                                    SatelliteModelPtr satellite, EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const
 {
   try
@@ -90,7 +90,7 @@ inline OrbitArc OrbitPropagatorAdamsBashforthMoulton::integrateArc(OrbitEpoch st
     {
       // Predict using Adams-Bashforth
       OrbitEpoch epoch = orbit.back();
-      epoch.time += sampling;
+      epoch.time = startEpoch.time + (k+1)*sampling;
       for(UInt j=1; j<=order; j++)
         epoch.position += dt * betaAB(j) * orbit.at(k+j-1).velocity;
       for(UInt j=1; j<=order; j++)
@@ -102,7 +102,7 @@ inline OrbitArc OrbitPropagatorAdamsBashforthMoulton::integrateArc(OrbitEpoch st
       if(applyMoultonCorrector)
       {
         epoch = orbit.at(orbit.size()-2);
-        epoch.time += sampling;
+        epoch.time = orbit.at(orbit.size()-1).time;
         for(UInt j=1; j<=order; j++)
           epoch.position += dt * betaAM(j) * orbit.at(k+j).velocity;
         for(UInt j=1; j<=order; j++)
