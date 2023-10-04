@@ -6931,9 +6931,11 @@ This program is \reference{parallelized}{general.parallelization}.
 %==================================
 \subsection{SimulateStarCamera}\label{SimulateStarCamera}
 This program simulates \file{star camera}{instrument} measurements at each satellite's position.
-The orientation is simulated to be x-axis in along track (along velocity),
-y-axis is cross track (normal to position and velocity vector)
-and z-axis forms a right hand system (not exact radial).
+The satellite's orientation follows a local orbit frame with the x-axis in along track (along velocity),
+y-axis is cross track (normal to position and velocity vector) and z-axis pointing nadir (negative position vector).
+As for non circular orbit the position and velocity are not exact normal, the default is the x-axis to be exact
+along velocity and the z-axis forms a right hand system (not exact nadir) or with \config{nadirPointing} the z-axis
+is exact nadir and x-axis approximates along.
 The resulting rotation matrices rotate from satellite frame to inertial frame.
 
 
@@ -6942,8 +6944,9 @@ The resulting rotation matrices rotate from satellite frame to inertial frame.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt rotation from satellite to inertial frame (x: along, y: cross, z: nadir)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt position and velocity defines the orientation of the satellite at each epoch\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~nadirPointing & \hfuzz=500pt boolean & \hfuzz=500pt false: exact along and nearly nadir, true: nearly along and exact nadir\\
 \hline
 \end{tabularx}
 
