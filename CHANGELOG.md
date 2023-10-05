@@ -1,5 +1,6 @@
 # main
 - Bugfix:           ObservationDeflctions: fixed index bug.
+- Other:            SimulateStarCamera: new optional nadir pointing mode.
 - Other:            SimulateOrbit: Improved temporal numerical precision.
 - Other:            GnssRinexNavigation2OrbitClock: add SBAS support.
 

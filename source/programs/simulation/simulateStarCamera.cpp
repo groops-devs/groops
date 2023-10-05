@@ -2,7 +2,7 @@
 /**
 * @file simulateStarCamera.cpp
 *
-* @brief simulate star camera data. orientation of the satellite is (x: along track, y: cross track, z: not exact radial).
+* @brief Rotation from satellite (x: along, y: cross, z: nadir) to inertial frame.
 *
 * @author Torsten Mayer-Guerr
 * @date 2005-01-21
@@ -13,9 +13,11 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program simulates \file{star camera}{instrument} measurements at each satellite's position.
-The orientation is simulated to be x-axis in along track (along velocity),
-y-axis is cross track (normal to position and velocity vector)
-and z-axis forms a right hand system (not exact radial).
+The satellite's orientation follows a local orbit frame with the x-axis in along track (along velocity),
+y-axis is cross track (normal to position and velocity vector) and z-axis pointing nadir (negative position vector).
+As for non circular orbit the position and velocity are not exact normal, the default is the x-axis to be exact
+along velocity and the z-axis forms a right hand system (not exact nadir) or with \config{nadirPointing} the z-axis
+is exact nadir and x-axis approximates along.
 The resulting rotation matrices rotate from satellite frame to inertial frame.
 )";
 
@@ -26,7 +28,7 @@ The resulting rotation matrices rotate from satellite frame to inertial frame.
 
 /***** CLASS ***********************************/
 
-/** @brief simulate star camera data. orientation of the satellite is (x: along track, y: cross track, z: not exact radial).
+/** @brief Rotation from satellite (x: along, y: cross, z: nadir) to inertial frame.
 * @ingroup programsGroup */
 class SimulateStarCamera
 {
@@ -34,7 +36,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(SimulateStarCamera, PARALLEL, "simulate star camera data. orientation of the satellite is (x: along track, y: cross track, z: not exact radial)", Simulation, Instrument)
+GROOPS_REGISTER_PROGRAM(SimulateStarCamera, PARALLEL, "Rotation from satellite (x: along, y: cross, z: nadir) to inertial frame.", Simulation, Instrument)
 
 /***********************************************/
 
@@ -43,9 +45,11 @@ void SimulateStarCamera::run(Config &config, Parallel::CommunicatorPtr comm)
   try
   {
     FileName orbitName, starCameraName;
+    Bool     isNadirPointing;
 
-    readConfig(config, "outputfileStarCamera", starCameraName, Config::MUSTSET,  "", "");
-    readConfig(config, "inputfileOrbit",       orbitName,      Config::MUSTSET, "", "position and velocity defines the orientation of the satellite at each epoch");
+    readConfig(config, "outputfileStarCamera", starCameraName,  Config::MUSTSET, "",  "rotation from satellite to inertial frame (x: along, y: cross, z: nadir)");
+    readConfig(config, "inputfileOrbit",       orbitName,       Config::MUSTSET, "",  "position and velocity defines the orientation of the satellite at each epoch");
+    readConfig(config, "nadirPointing",        isNadirPointing, Config::DEFAULT, "0", "false: exact along and nearly nadir, true: nearly along and exact nadir");
     if(isCreateSchema(config)) return;
 
     logStatus<<"read orbit and generate star camera data"<<Log::endl;
@@ -58,18 +62,22 @@ void SimulateStarCamera::run(Config &config, Parallel::CommunicatorPtr comm)
       StarCameraArc arc;
       for(UInt i=0; i<orbit.size(); i++)
       {
-        Vector3d x = orbit.at(i).velocity;
-        if(x.r()==0)
+
+        Vector3d velocity = orbit.at(i).velocity; // velocity vector
+        if(velocity.r()==0)
         {
           if(i<orbit.size()-1)
-            x = orbit.at(i+1).position - orbit.at(i).position;
+            velocity = orbit.at(i+1).position - orbit.at(i).position;
           else
-            x = orbit.at(i).position - orbit.at(i-1).position;
+            velocity = orbit.at(i).position - orbit.at(i-1).position;
         }
+
+        Vector3d y = normalize(crossProduct(velocity, orbit.at(i).position)); // cross
+        Vector3d x = normalize((isNadirPointing) ? crossProduct(orbit.at(i).position, y) : velocity);  // along
 
         StarCameraEpoch epoch;
         epoch.time   = orbit.at(i).time;
-        epoch.rotary = Rotary3d(x, crossProduct(x, orbit.at(i).position));
+        epoch.rotary = Rotary3d(x, y);
         arc.push_back(epoch);
       }
       return arc;

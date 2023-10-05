@@ -72,15 +72,18 @@
             <h1>SimulateStarCamera</h1><p>
 
 This program simulates <a class="groops-file" href="fileFormat_instrument.html">star camera</a> measurements at each satellite's position.
-The orientation is simulated to be x-axis in along track (along velocity),
-y-axis is cross track (normal to position and velocity vector)
-and z-axis forms a right hand system (not exact radial).
+The satellite's orientation follows a local orbit frame with the x-axis in along track (along velocity),
+y-axis is cross track (normal to position and velocity vector) and z-axis pointing nadir (negative position vector).
+As for non circular orbit the position and velocity are not exact normal, the default is the x-axis to be exact
+along velocity and the z-axis forms a right hand system (not exact nadir) or with <strong class="groops-config-element">nadirPointing</strong> the z-axis
+is exact nadir and x-axis approximates along.
 The resulting rotation matrices rotate from satellite frame to inertial frame.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileStarCamera</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileStarCamera</div></div></td><td>filename</td><td>rotation from satellite to inertial frame (x: along, y: cross, z: nadir)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit</div></div></td><td>filename</td><td>position and velocity defines the orientation of the satellite at each epoch</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">nadirPointing</div></div></td><td>boolean</td><td>false: exact along and nearly nadir, true: nearly along and exact nadir</td></tr>
 </table>
 This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.
 
