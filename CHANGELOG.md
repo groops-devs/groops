@@ -1,5 +1,6 @@
 # main
-- Bugfix:           ObservationDeflctions: fixed index bug.
+- Bugfix:           ObservationDeflections: fixed index bug.
+- Other:            EarthRotation::rotaryAxis: if EOP time series is too short, use simplified equations.
 - Other:            SimulateStarCamera: new optional nadir pointing mode.
 - Other:            SimulateOrbit: Improved temporal numerical precision.
 - Other:            GnssRinexNavigation2OrbitClock: add SBAS support.
