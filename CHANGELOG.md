@@ -2,6 +2,7 @@
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
 - Other:            EarthRotation::rotaryAxis: if EOP time series is too short, use simplified equations.
+- Other:            Gravityfield2Deflections: Computation based now on normal gravity.
 - Other:            SimulateStarCamera: new optional nadir pointing mode.
 - Other:            SimulateOrbit: Improved temporal numerical precision.
 - Other:            GnssRinexNavigation2OrbitClock: add SBAS support.
