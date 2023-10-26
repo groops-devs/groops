@@ -1,5 +1,6 @@
 # main
 - Bugfix:           ObservationDeflections: fixed index bug.
+- Bugfix:           NormalEquationFile: corrected contribution computation.
 - Other:            EarthRotation::rotaryAxis: if EOP time series is too short, use simplified equations.
 - Other:            SimulateStarCamera: new optional nadir pointing mode.
 - Other:            SimulateOrbit: Improved temporal numerical precision.
