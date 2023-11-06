@@ -202,7 +202,7 @@ Vector NormalEquationFile::contribution(MatrixDistributed &Cov)
 
     Parallel::reduceSum(contrib, 0, Cov.communicator());
     Parallel::broadCast(contrib, 0, Cov.communicator());
-    return contrib;
+    return 1./sigma2 * contrib;
   }
   catch(std::exception &e)
   {
