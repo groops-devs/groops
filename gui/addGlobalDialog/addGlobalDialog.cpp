@@ -32,12 +32,11 @@ AddGlobalDialog::AddGlobalDialog(TreeElementGlobal *globalRoot, QWidget *parent)
     resize(minimumSizeHint());
 
     // only allow variable names with letters and numbers
-    QRegExpValidator *validator = new QRegExpValidator(QRegExp("[a-zA-Z]([a-zA-Z0-9])*"), this);
+    QRegularExpressionValidator *validator = new QRegularExpressionValidator(QRegularExpression("[a-zA-Z]([a-zA-Z0-9])*"), this);
     ui->lineEditName->setValidator(validator);
 
     // fill combo box with types
-    xsdElements = globalRoot->xsdComplexGlobalTypes()->element;
-    for(auto element : xsdElements)
+    for(auto element : globalRoot->xsdComplex()->elements)
       ui->comboBoxType->addItem(element->type);
     if(ui->comboBoxType->count() < 1)
       throw(Exception("no global element types found in schema"));
@@ -46,7 +45,7 @@ AddGlobalDialog::AddGlobalDialog(TreeElementGlobal *globalRoot, QWidget *parent)
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
     // list of existing global variable names
-    globalElementNames = globalRoot->getChildrenNames();
+    globalElementNames = globalRoot->names();
 
     // signal-slot connections
     connect(ui->lineEditName, SIGNAL(textEdited(const QString &)), this, SLOT(nameEdited(const QString &)));
@@ -94,11 +93,11 @@ QString AddGlobalDialog::elementName()
 
 /***********************************************/
 
-XsdElementPtr AddGlobalDialog::elementType()
+QString AddGlobalDialog::elementType()
 {
   try
   {
-    return xsdElements.at(static_cast<size_t>(ui->comboBoxType->currentIndex()));
+    return ui->comboBoxType->currentText();
   }
   catch(std::exception &e)
   {

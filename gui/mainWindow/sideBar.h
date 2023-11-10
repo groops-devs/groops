@@ -14,6 +14,7 @@
 
 #include <QStackedWidget>
 #include <QPushButton>
+#include <QButtonGroup>
 #include <QPaintEvent>
 #include <QVBoxLayout>
 #include <QTreeWidget>
@@ -23,107 +24,53 @@
 
 /***** CLASS ***********************************/
 
-class PushButton;
-class StackedWidget;
-
 /** @brief Side bar containing the buttons to switch side bar widgets, but not the side bar widgets themselves. */
 class SideBar : public QWidget
 {
   Q_OBJECT
+
+  QStackedWidget       *_stackedWidget;
+  QButtonGroup          buttonGroup;
+  QVBoxLayout          *layout;
+  QSettings             settings;
+  int                   _lastWidth;
 
 public:
   SideBar(QWidget *parent);
  ~SideBar();
 
   /** @brief Adds a @a button to the side bar and a @a widget to the side bar widgets stack. */
-  void addSideBarWidget(QString buttonLabel, QWidget *widget);
+  void addSideBarWidget(const QString &buttonLabel, QWidget *widget);
 
   /** @brief Returns a pointer to the side bar widgets stack. */
-  StackedWidget* stackedWidget() const { return _stackedWidget; }
+  QStackedWidget *stackedWidget() const {return _stackedWidget;}
 
-  /** @brief Show or @a hide the side bar widgets. */
-  void setSideBarWidgetsHidden(bool hide);
-
-private:
-  /** @brief Adds a new button with @a text and horizontal or vertical @a orientation to the side bar.
-   *  @return Pointer to the button. */
-  PushButton* addPushButton(QString text, Qt::Orientation orientation = Qt::Vertical);
-
-  StackedWidget            *_stackedWidget;
-  std::vector<QPushButton*> buttons;
-  QVBoxLayout              *layout;
-  QSettings                *settings;
-  int                       currentIndex;
-
-signals:
-  /** @brief This signal is emitted when a button on the side bar is pressed.
-   *  @param isCurrent True if the currently selected button was pressed again, false if another button was pressed. */
-  void showHide(bool isCurrent = false);
-
-  /** @brief This signal is emitted when the "page" of the side bar is changed.
-   *  @param newIndex Index of the newly selected "page". */
-  void currentChanged(int newIndex = 0);
+  /** @brief Returns the last set width of the widget. */
+  int lastWidth() {return _lastWidth;}
 
 public slots:
   /** @brief Updates the side bar selection and shows/hides the side bar widget. */
-  void buttonClicked(bool checked = false);
-
-  /** @brief Updates the side bar selection and shows the side bar widget. */
-  void showWidget();
-};
-
-/***********************************************/
-
-/** @brief Stacked widget containing the side bar widgets. */
-class StackedWidget : public QStackedWidget
-{
-  Q_OBJECT
-
-public:
-  StackedWidget(int lastWidth = 200) : _lastWidth(lastWidth) {}
-
-  /** @brief Returns the last set width of the widget. */
-  int lastWidth() { return _lastWidth; }
-
-public slots:
-  /** @brief Shows side bar widget if it is hidden or hides it if @a isCurrent = true (active side bar button pressed again). */
-  void showHide(bool isCurrent = false);
+  void buttonClicked(int id);
 
   /** @brief Set last width of the widget, used for saving settings. */
   void widthChanged(int width, int index);
-
-private:
-  int _lastWidth;
 };
 
 /***********************************************/
 
 /** @brief PushButton that allows for vertical orientation. */
-class PushButton : public QPushButton
+class PushButtonVertical : public QPushButton
 {
   Q_OBJECT
 
 public:
-  PushButton(QString text, QWidget *parent=nullptr);
+  PushButtonVertical(QString text, QWidget *parent=nullptr) : QPushButton(text, parent) {};
 
-  /** @brief Set the @a orientation of the button to vertical or horizontal. */
-  void setOrientation(Qt::Orientation orientation);
-
-  /** @brief Returns the @a orientation of the button. */
-  Qt::Orientation orientation() const;
-
-  /** @brief Returns minimum @a size for the button. Reimplemented to support vertical orientation. */
-  QSize minimumSizeHint() const;
-
-  /** @brief Returns recommended @a size for the button. Reimplemented to support vertical orientation. */
-  QSize sizeHint() const;
+  QSize minimumSizeHint() const override {return QPushButton::minimumSizeHint().transposed();}
+  QSize sizeHint() const override  {return QPushButton::sizeHint().transposed();}
 
 protected:
-  /** @brief Paints the button. Reimplemented to support vertical orientation. */
-  void  paintEvent(QPaintEvent *event);
-
-private:
-  Qt::Orientation _orientation;
+  void  paintEvent(QPaintEvent *event) override; // Reimplemented to support vertical orientation.
 };
 
 /***********************************************/
@@ -133,11 +80,14 @@ class OpenFilesTreeWidget : public QTreeWidget
 {
   Q_OBJECT
 
-public:
-  /** @brief Initializes the widget and populates the tree with items from the @a workspace. */
-  void init(TabEnvironment *workspace, ActionList *actionList);
+  ActionList      actionList;
+  TabEnvironment *tabEnvironment;
 
-  /** @brief Populates the tree with items from the workspace. */
+public:
+  /** @brief Initializes the widget and populates the tree with items from the @a tabEnvironment. */
+  OpenFilesTreeWidget(TabEnvironment *tabEnvironment, ActionList &actionList);
+
+  /** @brief Populates the tree with items from the tabEnvironment. */
   void populateTree();
 
   /** @brief Recursively check if an @a item has a "file" as child, grandchild, ...
@@ -149,7 +99,7 @@ public slots:
   void currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
   /** @brief Updates the tree if anything changes (file opened/changed/closed/...). */
-  void fileChanged(const QString &fileName, bool changed);
+  void fileChanged(const QString &caption, const QString &fileName, bool isClean);
 
 protected:
   /** @brief Catch clicks on "folders" to collapse/expand them instead of selecting them. */
@@ -165,12 +115,6 @@ protected:
 signals:
   /** @brief This signal is emitted if another file is selected in the tree. */
   void fileSelectionChanged(int index);
-
-private:
-  ActionList      actionList;
-  TabEnvironment *workspace;
-
-  QTreeWidgetItem *updateItemStatus(const QString &fileName, bool changed);
 };
 
 /***********************************************/
@@ -179,10 +123,8 @@ private:
 class TreeWidgetItem : public QTreeWidgetItem
 {
 public:
-  TreeWidgetItem(QTreeWidgetItem* parent=nullptr) : QTreeWidgetItem(parent) {}
-
-private:
-  virtual bool operator < (const QTreeWidgetItem &other) const;
+  TreeWidgetItem(QTreeWidgetItem *parent=nullptr) : QTreeWidgetItem(parent) {}
+  virtual bool operator<(const QTreeWidgetItem &other) const;
 };
 
 /***********************************************/

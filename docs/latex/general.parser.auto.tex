@@ -25,6 +25,29 @@ operations and functions are defined:
 Before the mathematical expression parser evaluates the expression, a simple text parser is applied.
 The text parser is used for all input fields (also file names). It scans the text for terms like
 \verb|{variable}| and replaces it by the text content of the \verb|variable| defined in the global section.
+A literal '\verb|{|' character must be escaped with '\verb|#{|'.
+
+The text parser allows regex replacements in the form \verb|{text/regex/replace}|.
+All matches of \verb|regex| in the \verb|text| are replaced by \verb|replace|.
+Possible \verb|{variables}| in the three parts are evaluated beforehand.
+Capturing groups \verb|()| can be accessed by \verb|$1|, \verb|$2|,
+\ldots in the replacement (\verb|$0| is the complete match). Additional escape sequences are:
+\begin{itemize}
+\item \verb|\l| lowercase next char,
+\item \verb|\u| uppercase next char,
+\item \verb|\L| lowercase until \verb|\E|,
+\item \verb|\U| uppercase until \verb|\E|,
+\item \verb|\Q| quote (disable) pattern metacharacters until \verb|\E|,
+\item \verb|\E| end either case modification or quoted section.
+\end{itemize}
+
+Examples:
+\begin{itemize}
+\item \verb|{{variable}/test/text}| replaces all occurrences of \verb|test| by \verb|text|.
+\item \verb|{TEXT/.+/\L$0}| converts text to lower case.
+\item \verb|{012345/.#{2}(.#{3}).*/$1}| extracts the substring at index 2 and length 3 resulting in \verb|234|.
+      Note the escaping \verb|#{|.
+\end{itemize}
 
 The text parser also evaluates terms in the form \verb|{expression:format}| and replaces it by a formatted
 output. The \verb|format| contains the text to be written as output.

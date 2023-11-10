@@ -73,14 +73,14 @@ void GriddedDataTimeSeries2GriddedData::run(Config &config, Parallel::Communicat
     if(timeSeries)
       times = timeSeries->times();
 
-    auto varList = config.getVarList();
-    if(!nameTime.empty())  addVariable(nameTime,  varList);
-    if(!nameIndex.empty()) addVariable(nameIndex, varList);
-    if(!nameCount.empty()) addVariable(nameCount, times.size(), varList);
+    VariableList varList;
+    if(!nameTime.empty())  varList.undefineVariable(nameTime);
+    if(!nameIndex.empty()) varList.undefineVariable(nameIndex);
+    if(!nameCount.empty()) varList.setVariable(nameCount, times.size());
     for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
     {
-      if(!nameTime.empty())  varList[nameTime]->setValue(times.at(idEpoch).mjd());
-      if(!nameIndex.empty()) varList[nameIndex]->setValue(idEpoch);
+      if(!nameTime.empty())  varList.setVariable(nameTime, times.at(idEpoch).mjd());
+      if(!nameIndex.empty()) varList.setVariable(nameIndex, idEpoch);
       logStatus<<"write gridded data <"<<fileNameOut(varList)<<">"<<Log::endl;
       Matrix data = file.data(times.at(idEpoch));
       for(UInt i=0; i<grid.points.size(); i++)

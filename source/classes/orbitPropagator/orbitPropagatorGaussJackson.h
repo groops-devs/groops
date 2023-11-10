@@ -86,7 +86,7 @@ class OrbitPropagatorGaussJackson : public OrbitPropagator
 public:
   OrbitPropagatorGaussJackson(Config &config);
 
-  OrbitArc integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
+  OrbitArc integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
                         EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const override;
 };
 

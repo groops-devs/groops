@@ -80,8 +80,8 @@ void GroupPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     {
       Parallel::broadCastExceptions(comm, [&](Parallel::CommunicatorPtr comm)
       {
-        auto varListTmp = config.getVarList();
-        programs.run(varListTmp, comm);
+        VariableList varList;
+        programs.run(varList, comm);
       });
     }
     catch(std::exception &e)
@@ -90,7 +90,7 @@ void GroupPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
         throw;
       if(Parallel::isMaster(comm))
         logError<<e.what()<<"  continue with error programs..."<<Log::endl;
-      auto varList = config.getVarList();
+      VariableList varList;
       errorPrograms.run(varList, comm);
     }
 

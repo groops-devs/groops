@@ -17,9 +17,9 @@
 #include <QFileInfo>
 #include <QMainWindow>
 #include <QSettings>
-#include <iostream>
 #include "base/importGroops.h"
 #include "base/schema.h"
+#include "settingsDialog/settingsPathDialog.h"
 #include "mainWindow/mainWindow.h"
 
 /***********************************************/
@@ -28,7 +28,6 @@ class MyApplication : public QApplication
 {
 public:
   MyApplication(int &argc, char **argv) : QApplication(argc, argv) {}
-  virtual ~MyApplication() {}
 
   virtual bool notify(QObject *receiver, QEvent *event);
 };
@@ -81,45 +80,65 @@ int main(int argc, char *argv[])
       {{"f", "file"},   "Open <file> at startup.", "file"},
       {{"s", "schema"}, "Set XML schema <file> at startup.", "file"}
     });
-
-    // Handle command line options
-    parser.process(app);
-    const Bool cleanStartup = parser.isSet("clean");
-    QFileInfoList fileNames;
-    for(const auto &file : parser.values("file"))
-      fileNames.push_back(file);
-    QFileInfo schema = parser.isSet("schema") ? parser.value("schema") : QFileInfo();
-
-    // Set XML schema if passed as argument
-    const bool isValidSchema = schema.isFile() ? Schema::validateSchema(schema.absoluteFilePath()) : false;
-    if(isValidSchema)
-    {
-      QSettings *settings = new QSettings();
-      settings->setValue("files/schemaFile", schema.absoluteFilePath());
-      QStringList schemaFiles = settings->value("files/schemaFiles").toStringList();
-      if(!schemaFiles.contains(schema.absoluteFilePath()))
-      {
-        schemaFiles.append(schema.absoluteFilePath());
-        schemaFiles.sort();
-        settings->setValue("files/schemaFiles", schemaFiles);
-      }
-    }
+    parser.process(app); // Handle command line options
 
     MainWindow window;
     window.show();
 
-    if(!schema.absoluteFilePath().isEmpty() && !isValidSchema)
-      QMessageBox::critical(nullptr, "GROOPS", QString("File '%1' passed as argument seems not to be a valid XSD schema").arg(schema.absoluteFilePath()));
+    QSettings settings;
+    QString fileNameSchema = settings.value("files/schemaFile").toString();
+
+    // Set XML schema if passed as argument
+    // ------------------------------------
+    if(parser.isSet("schema"))
+    {
+      QFileInfo fileFromArg(parser.value("schema"));
+      Schema schema;
+      if(fileFromArg.isFile() && schema.readFile(fileFromArg.absoluteFilePath()))
+      {
+        fileNameSchema = fileFromArg.absoluteFilePath();
+        settings.setValue("files/schemaFile", fileNameSchema);
+        QStringList schemaFiles = settings.value("files/schemaFiles").toStringList();
+        if(!schemaFiles.contains(fileNameSchema))
+        {
+          schemaFiles.append(fileNameSchema);
+          schemaFiles.sort();
+          settings.setValue("files/schemaFiles", schemaFiles);
+        }
+      }
+      else
+        QMessageBox::critical(&window, "GROOPS", QString("File '%1' passed as argument seems not to be a valid XSD schema").arg(fileFromArg.absoluteFilePath()));
+    }
+
+    // check schema
+    // ------------
+    if(fileNameSchema.isEmpty())
+    {
+      QMessageBox::information(&window , "GROOPS", "GROOPS seems not to be configured yet. You should set at least the XSD schema file.");
+      SettingsPathDialog dialog(&window);
+      if(!dialog.exec())
+      {
+        window.close();
+        return 0;
+      }
+    }
+
+    // Open the files from the previous session (from settings)
+    // --------------------------------------------------------
+    bool isOpen = false;
+    if(!parser.isSet("clean"))
+      for(const auto &fileName : settings.value("openFiles").toStringList())
+        if(QFileInfo::exists(fileName))
+          isOpen = window.fileOpen(QFileInfo(fileName).absoluteFilePath()) || isOpen;
 
     // Open files from command line arguments
-    if(!cleanStartup)
-      window.fileOpenInitial();
-    else if(fileNames.size() == 0)
-      window.fileNew();
+    // --------------------------------------
+    for(const auto &fileName : parser.values("file"))
+      if(QFileInfo::exists(fileName))
+        isOpen = window.fileOpen(QFileInfo(fileName).absoluteFilePath()) || isOpen;
 
-    for(int i = 0; i < fileNames.size(); i++)
-      if(fileNames.at(i).isFile())
-        window.fileOpen(fileNames.at(i).absoluteFilePath());
+    if(!isOpen)
+      window.fileNew();
 
     return app.exec();
   }

@@ -36,10 +36,9 @@ The \config{variableLoopTime} is set to every time and the \configClass{conditio
 * @see TimeSeries */
 class TimeSeriesConditional : public TimeSeriesBase
 {
-  TimeSeriesPtr        timeSeries;
-  ConditionPtr         conditionPtr;
-  std::string          nameTime;
-  mutable VariableList varList;
+  TimeSeriesPtr timeSeries;
+  ConditionPtr  conditionPtr;
+  std::string   nameTime;
 
 public:
   TimeSeriesConditional(Config &config);
@@ -57,10 +56,6 @@ inline TimeSeriesConditional::TimeSeriesConditional(Config &config)
     readConfig(config, "variableLoopTime", nameTime,     Config::OPTIONAL,  "loopTime", "variable with time of each loop");
     readConfig(config, "condition",        conditionPtr, Config::MUSTSET,   "",         "test for each time");
     if(isCreateSchema(config)) return;
-
-    varList = config.getVarList();
-    if(!nameTime.empty())
-      addVariable(nameTime,  varList);
   }
   catch(std::exception &e)
   {
@@ -74,18 +69,17 @@ inline std::vector<Time> TimeSeriesConditional::times() const
 {
   try
   {
-    const std::vector<Time> times = timeSeries->times();
-    std::vector<Time> timesToKeep;
-
-    for(const auto &t : times)
+    VariableList varList;
+    std::vector<Time> times;
+    for(const auto &t : timeSeries->times())
     {
       if(!nameTime.empty())
-        varList[nameTime]->setValue(t.mjd());
+        varList.setVariable(nameTime, t.mjd());
       if(conditionPtr->condition(varList))
-        timesToKeep.push_back(t);
+        times.push_back(t);
     }
 
-    return timesToKeep;
+    return times;
   }
   catch(std::exception &e)
   {

@@ -46,7 +46,7 @@ OrbitPropagatorGaussJackson::OrbitPropagatorGaussJackson(Config &config)
 
 /***********************************************/
 
-OrbitArc OrbitPropagatorGaussJackson::integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces,
+OrbitArc OrbitPropagatorGaussJackson::integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces,
                                                    SatelliteModelPtr satellite, EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const
 {
   try
@@ -71,7 +71,7 @@ OrbitArc OrbitPropagatorGaussJackson::integrateArc(OrbitEpoch startEpoch, Time s
       // Predict
       // -------
       OrbitEpoch epoch;
-      epoch.time     = orbit.at(k+order).time + sampling;
+      epoch.time     = startEpoch.time + (k+1) * sampling;
       epoch.position = dt*dt * secondSum; // eq. 88;
       for(UInt j=0; j<order+1; j++)
         epoch.position += dt*dt * A(order+1, j) * orbit.at(k+j).acceleration;

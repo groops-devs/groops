@@ -90,10 +90,8 @@ void Matrix2GriddedData::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     std::vector<ExpressionVariablePtr> expr({exprX, exprY, exprZ, exprArea}); // collect all expr
     expr.insert(expr.end(), exprValues.begin(), exprValues.end());            // collect all expr
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    std::for_each(expr.begin(), expr.end(), [&](auto expr) {if(expr) expr->usedVariables(varList, usedVariables);});
-    addDataVariables(A, varList, usedVariables);
+    VariableList varList;
+    addDataVariables(A, varList);
     std::for_each(exprValues.begin(), exprValues.end(), [&](auto expr) {if(expr) expr->simplify(varList);});
 
     // create grid

@@ -42,14 +42,14 @@ class MatrixGeneratorNormalsFile : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorNormalsFile(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorNormalsFile::MatrixGeneratorNormalsFile(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorNormalsFile::MatrixGeneratorNormalsFile(Config &config)
 {
   try
   {
@@ -78,7 +78,7 @@ inline MatrixGeneratorNormalsFile::MatrixGeneratorNormalsFile(Config &config) : 
 
 /***********************************************/
 
-inline void MatrixGeneratorNormalsFile::compute(Matrix &A, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorNormalsFile::compute(Matrix &A, UInt /*rowsBefore*/, UInt /*columnsBefore*/, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {

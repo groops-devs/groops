@@ -250,8 +250,6 @@ void Icgem2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr 
     {
       Time refTime;
       VariableList fileNameVariableList;
-      addVariable("epochReference", fileNameVariableList);
-      addVariable("oscillationPeriod", fileNameVariableList);
       {
         Field staticField(maxDegree);
         for(const Coefficient &c : coefficients)
@@ -267,7 +265,7 @@ void Icgem2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr 
           }
         }
         SphericalHarmonics harm(GM, R, staticField._cnm, staticField._snm, staticField._cnm_error, staticField._snm_error);
-        fileNameVariableList["epochReference"]->setValue(refTime.mjd());
+        fileNameVariableList.setVariable("epochReference", refTime.mjd());
         logStatus<<"write static potential coefficients to <"<<fileNameStatic(fileNameVariableList)<<">"<<Log::endl;
         writeFileSphericalHarmonics(fileNameStatic(fileNameVariableList), harm);
       }
@@ -318,7 +316,7 @@ void Icgem2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr 
           entry.second._snm.slice(0, 0, maxDegreeTemp+1, maxDegreeTemp+1),
           entry.second._cnm_error.slice(0, 0, maxDegreeTemp+1, maxDegreeTemp+1),
           entry.second._snm_error.slice(0, 0, maxDegreeTemp+1, maxDegreeTemp+1));
-          fileNameVariableList["oscillationPeriod"]->setValue(period);
+          fileNameVariableList.setVariable("oscillationPeriod", period);
           logStatus<<"write cosine potential coefficients to <"<<fileNameOscCos(fileNameVariableList)<<">"<<Log::endl;
           writeFileSphericalHarmonics(fileNameOscCos(fileNameVariableList), harm);
         }
@@ -348,7 +346,7 @@ void Icgem2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr 
           entry.second._snm.slice(0, 0, maxDegreeTemp+1, maxDegreeTemp+1),
           entry.second._cnm_error.slice(0, 0, maxDegreeTemp+1, maxDegreeTemp+1),
           entry.second._snm_error.slice(0, 0, maxDegreeTemp+1, maxDegreeTemp+1));
-          fileNameVariableList["oscillationPeriod"]->setValue(period);
+          fileNameVariableList.setVariable("oscillationPeriod", period);
           logStatus<<"write sine potential coefficients to <"<<fileNameOscSin(fileNameVariableList)<<">"<<Log::endl;
           writeFileSphericalHarmonics(fileNameOscSin(fileNameVariableList), harm);
         }
@@ -358,10 +356,6 @@ void Icgem2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr 
     else // icgem2.0
     {
       VariableList fileNameVariableList;
-      addVariable("epochStart", fileNameVariableList);
-      addVariable("epochEnd", fileNameVariableList);
-      addVariable("epochMid", fileNameVariableList);
-      addVariable("oscillationPeriod", fileNameVariableList);
 
       Field staticGLobal(maxDegree);
       for(const Coefficient &c : coefficients)
@@ -403,9 +397,9 @@ void Icgem2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr 
         {
           Time timeStart = entry.first.first;
           Time timeEnd = entry.first.second;
-          fileNameVariableList["epochStart"]-> setValue(timeStart.mjd());
-          fileNameVariableList["epochMid"]-> setValue(timeStart.mjd()*0.5 + timeEnd.mjd()*0.5);
-          fileNameVariableList["epochEnd"]-> setValue(timeEnd.mjd());
+          fileNameVariableList.setVariable("epochStart", timeStart.mjd());
+          fileNameVariableList.setVariable("epochMid", timeStart.mjd()*0.5 + timeEnd.mjd()*0.5);
+          fileNameVariableList.setVariable("epochEnd", timeEnd.mjd());
 
           intervals.push_back(std::pair<Double,Double>(timeStart.mjd(), timeEnd.mjd()));
 
@@ -449,9 +443,9 @@ void Icgem2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr 
         {
           Time timeStart = entry.first.first;
           Time timeEnd = entry.first.second;
-          fileNameVariableList["epochStart"]-> setValue(timeStart.mjd());
-          fileNameVariableList["epochMid"]-> setValue(timeStart.mjd()*0.5 + timeEnd.mjd()*0.5);
-          fileNameVariableList["epochEnd"]-> setValue(timeEnd.mjd());
+          fileNameVariableList.setVariable("epochStart", timeStart.mjd());
+          fileNameVariableList.setVariable("epochMid", timeStart.mjd()*0.5 + timeEnd.mjd()*0.5);
+          fileNameVariableList.setVariable("epochEnd", timeEnd.mjd());
 
           intervals.push_back(std::pair<Double,Double>(timeStart.mjd(), timeEnd.mjd()));
 
@@ -495,10 +489,10 @@ void Icgem2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr 
           Time timeStart = std::get<0>(entry.first);
           Time timeEnd = std::get<1>(entry.first);
           Double period = std::get<2>(entry.first);
-          fileNameVariableList["epochStart"]-> setValue(timeStart.mjd());
-          fileNameVariableList["epochMid"]-> setValue(timeStart.mjd()*0.5 + timeEnd.mjd()*0.5);
-          fileNameVariableList["epochEnd"]-> setValue(timeEnd.mjd());
-          fileNameVariableList["oscillationPeriod"]->setValue(period);
+          fileNameVariableList.setVariable("epochStart", timeStart.mjd());
+          fileNameVariableList.setVariable("epochMid", timeStart.mjd()*0.5 + timeEnd.mjd()*0.5);
+          fileNameVariableList.setVariable("epochEnd", timeEnd.mjd());
+          fileNameVariableList.setVariable("oscillationPeriod", period);
 
           intervals.push_back(std::pair<Double,Double>(timeStart.mjd(), timeEnd.mjd()));
 
@@ -541,10 +535,10 @@ void Icgem2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr 
           Time timeStart = std::get<0>(entry.first);
           Time timeEnd = std::get<1>(entry.first);
           Double period = std::get<2>(entry.first);
-          fileNameVariableList["epochStart"]-> setValue(timeStart.mjd());
-          fileNameVariableList["epochMid"]-> setValue(timeStart.mjd()*0.5 + timeEnd.mjd()*0.5);
-          fileNameVariableList["epochEnd"]-> setValue(timeEnd.mjd());
-          fileNameVariableList["oscillationPeriod"]->setValue(period);
+          fileNameVariableList.setVariable("epochStart", timeStart.mjd());
+          fileNameVariableList.setVariable("epochMid", timeStart.mjd()*0.5 + timeEnd.mjd()*0.5);
+          fileNameVariableList.setVariable("epochEnd", timeEnd.mjd());
+          fileNameVariableList.setVariable("oscillationPeriod", period);
 
           intervals.push_back(std::pair<Double,Double>(timeStart.mjd(), timeEnd.mjd()));
 

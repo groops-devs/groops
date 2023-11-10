@@ -37,7 +37,7 @@ class ParameterSelectorRange : public ParameterSelectorBase
 
 public:
   ParameterSelectorRange(Config &config);
-  std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterNames, VariableList varList);
+  std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterNames);
 };
 
 /***********************************************/
@@ -60,12 +60,13 @@ inline ParameterSelectorRange::ParameterSelectorRange(Config &config)
 
 /***********************************************/
 
-inline std::vector<UInt> ParameterSelectorRange::indexVector(const std::vector<ParameterName> &parameterNames, VariableList varList)
+inline std::vector<UInt> ParameterSelectorRange::indexVector(const std::vector<ParameterName> &parameterNames)
 {
   try
   {
     const UInt parameterCount = parameterNames.size();
-    addVariable("length", static_cast<Double>(parameterCount), varList);
+    VariableList varList;
+    varList.setVariable("length", static_cast<Double>(parameterCount));
     const UInt start = static_cast<UInt>(exprStart->evaluate(varList));
     const UInt count = (exprCount ? static_cast<UInt>(exprCount->evaluate(varList)) : parameterCount-start);
 

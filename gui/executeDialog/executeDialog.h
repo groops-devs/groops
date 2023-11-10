@@ -15,6 +15,7 @@
 
 #include <QDialog>
 #include <QList>
+#include <QSettings>
 #include "base/importGroops.h"
 
 /***** TYPES ***********************************/
@@ -24,7 +25,6 @@ namespace Ui
   class ExecuteDialog;
 }
 
-class QSettings;
 class QTreeWidgetItem;
 class QAbstractButton;
 class Tree;
@@ -37,7 +37,7 @@ class ExecuteDialog : public QDialog
   Q_OBJECT
 
   Ui::ExecuteDialog      *ui;
-  QSettings              *settings;
+  QSettings               settings;
   Tree                   *tree;
   QList<TreeElement*>     programList;
   QList<QTreeWidgetItem*> itemList;

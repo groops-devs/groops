@@ -89,15 +89,15 @@ void TimeSeries2GriddedData::run(Config &config, Parallel::CommunicatorPtr /*com
     grid.values.resize(columns, std::vector<Double>(countPoints));
 
     const std::vector<Time> times = arc.times();
-    auto varList = config.getVarList();
-    if(!nameTime.empty())  addVariable(nameTime,  varList);
-    if(!nameIndex.empty()) addVariable(nameIndex, varList);
-    if(!nameCount.empty()) addVariable(nameCount, times.size(), varList);
+    VariableList varList;
+    if(!nameTime.empty())  varList.undefineVariable(nameTime);
+    if(!nameIndex.empty()) varList.undefineVariable(nameIndex);
+    if(!nameCount.empty()) varList.setVariable(nameCount, times.size());
 
     for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
     {
-      if(!nameTime.empty())  varList[nameTime]->setValue(times.at(idEpoch).mjd());
-      if(!nameIndex.empty()) varList[nameIndex]->setValue(idEpoch);
+      if(!nameTime.empty())  varList.setVariable(nameTime, times.at(idEpoch).mjd());
+      if(!nameIndex.empty()) varList.setVariable(nameIndex, idEpoch);
       logStatus<<"write gridded data <"<<fileNameGrid(varList)<<">"<<Log::endl;
 
       for(UInt i=0; i<grid.points.size(); i++)

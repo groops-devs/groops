@@ -31,33 +31,30 @@ class TreeElementTime : public TreeElementSimple
 
 public:
   TreeElementTime(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
-                  const QString &defaultOverride, XmlNodePtr xmlNode, Bool fromFile)
-    : TreeElementSimple(tree, parentElement, xsdElement, defaultOverride, xmlNode, fromFile) {}
-  virtual ~TreeElementTime() override {}
+                  const QString &defaultOverride, XmlNodePtr xmlNode, bool fillWithDefaults)
+    : TreeElementSimple(tree, parentElement, xsdElement, defaultOverride, xmlNode, fillWithDefaults), mjd(0.) {}
 
-/** @brief Values can be edited. */
-virtual Bool isEditable() const override {return true;}
+  /** @brief changes the current index.
+   * calls TreeElementSimple::selectIndex
+  * Updates the timeEditor. */
+  void setSelectedIndex(int index) override;
 
-/** @brief event handler of current index change.
-* This event handler is called by setSelectedValue whenever the value is changed.
-* Updates the timeEditor. */
-virtual void newSelectedIndex(int index) override;
+  /** @brief creates an editable combo box + dateTimeEdit. */
+  QWidget *createEditor() override;
 
-/** @brief creates an editable combo box + dateTimeEdit. */
-virtual QWidget *createEditor() override;
-
-/** @brief Switches focus between comboBox and dateTimeEdit. */
-virtual void interact() override;
+  /** @brief Switches focus between comboBox and dateTimeEdit. */
+  void interact() override;
 
 private:
+  mutable Double          mjd; // updated by parseExpression
   QPointer<QComboBox>     comboBox;
   QPointer<QDateTimeEdit> dateTimeEdit;
-  Bool changeNotComboBox, changeNotDateTime;
+  bool changeNotComboBox, changeNotDateTime;
 
   QString   date2mjd(const QDateTime &dateTime) const;
-  QDateTime mjd2date(const QString &text) const;
+  QDateTime mjd2date(Double mjd) const;
 
-  virtual QString parseExpression(const QString &value) const override;
+  QString parseExpression(const QString &text, const VariableList &varList) const override;
 
 private slots:
   void comboBoxEditTextChanged(const QString &text);

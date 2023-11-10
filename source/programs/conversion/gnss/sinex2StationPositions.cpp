@@ -458,12 +458,12 @@ void Sinex2StationPositions::run(Config &config, Parallel::CommunicatorPtr /*com
     // =========================================================
 
     VariableList fileNameVariableList;
-    addVariable(variableLoopStation, "****", fileNameVariableList);
+    fileNameVariableList.setVariable(variableLoopStation, "****");
     logStatus<<"write instrument files <"<<fileNameInstrument(fileNameVariableList)<<">"<<Log::endl;
     UInt count = 0;
     for(auto &station : stations)
     {
-      addVariable(variableLoopStation, station.first, fileNameVariableList);
+      fileNameVariableList.setVariable(variableLoopStation, station.first);
       std::vector<Arc> arcs;
       for(auto &interval : station.second.intervals)
         if(interval.arc.size())

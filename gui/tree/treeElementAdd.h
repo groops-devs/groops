@@ -24,33 +24,37 @@ class TreeElementAdd : public TreeElement
 
 public:
   UInt unboundedCount;
-  Bool visible;
+  bool visible;
 
 public:
   TreeElementAdd(Tree *tree, TreeElementComplex *parentElement,
-                 XsdElementPtr xsdElement, Bool visible=true);
-  virtual ~TreeElementAdd() override;
+                 XsdElementPtr xsdElement, bool visible=true);
 
-/** @brief Generate XML-tree. *
-* the add button will not be saved. */
-virtual XmlNodePtr getXML(Bool /*withEmptyNodes*/=false) const override {return XmlNodePtr(nullptr);}
+  bool optional()          const override {return false;}
+  bool unbounded()         const override {return true;}
+  bool isRenamedInSchema() const override {return false;}
 
-/** @brief is this the add-element?.
-* @return true. */
-virtual Bool isElementAdd() const override {return true;}
+  /** @brief Generate XML-tree. *
+  * the add button will not be saved. */
+  XmlNodePtr createXmlTree(bool /*createRootEvenIfEmpty*/) const override {return XmlNodePtr(nullptr);}
 
-/** @brief returns the add element.
-* @return this */
-virtual TreeElementAdd *elementAdd() const override {return const_cast<TreeElementAdd*>(this);}
+  /** @brief returns the add element.
+  * @return this */
+  TreeElementAdd *elementAdd() const override {return const_cast<TreeElementAdd*>(this);}
 
-/** @brief creates visual element (if visible). */
-TreeItem *createItem(TreeItem *parent, TreeItem *after) override;
+  bool canSetLoop()      const override {return false;}
+  bool canSetCondition() const override {return false;}
+  bool canDisabled()     const override {return false;}
+  bool canComment()      const override {return false;}
 
-/** @brief creates a push button. */
-QWidget *createEditor() override;
+  /** @brief creates visual element (if visible). */
+  TreeItem *createItem(TreeItem *parent, TreeItem *after) override;
 
-/** @brief Adds element. */
-virtual void interact() override { pushButtonClicked(); }
+  /** @brief creates a push button. */
+  QWidget *createEditor() override;
+
+  /** @brief Adds element. */
+  void interact() override {pushButtonClicked();}
 
 public slots:
   void pushButtonClicked();

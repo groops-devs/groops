@@ -52,7 +52,6 @@ typedef std::shared_ptr<ParameterSelector> ParameterSelectorPtr;
 * An Instance of this class can be created by @ref readConfig. */
 class ParameterSelector
 {
-  VariableList varList;
   std::vector<ParameterSelectorBase*> parameters;
 
 public:
@@ -96,7 +95,7 @@ class ParameterSelectorBase
 {
 public:
   virtual ~ParameterSelectorBase() {}
-  virtual std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterNames, VariableList varList) = 0;
+  virtual std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterNames) = 0;
 };
 
 /***********************************************/

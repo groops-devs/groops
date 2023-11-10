@@ -78,9 +78,9 @@ inline Bool LoopTimeSeries::iteration(VariableList &varList)
   if(index >= count())
     return FALSE;
 
-  if(!nameTime.empty())  addVariable(nameTime,  times.at(index).mjd(), varList);
-  if(!nameIndex.empty()) addVariable(nameIndex, index,                 varList);
-  if(!nameCount.empty()) addVariable(nameCount, count(),               varList);
+  if(!nameTime.empty())  varList.setVariable(nameTime,  times.at(index).mjd());
+  if(!nameIndex.empty()) varList.setVariable(nameIndex, index);
+  if(!nameCount.empty()) varList.setVariable(nameCount, count());
 
   index++;
   return TRUE;

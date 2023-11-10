@@ -65,7 +65,7 @@ public:
   * @param ephemerides Position of Sun and Moon.
   * @param timing Show a timer.
   * @returns OrbitArc arc of size @a posCount, with @a startEpoch at index 0  */
-  virtual OrbitArc integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
+  virtual OrbitArc integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
                                 EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing=TRUE) const = 0;
 
   /** @brief Generic orientation definition in orbital system.

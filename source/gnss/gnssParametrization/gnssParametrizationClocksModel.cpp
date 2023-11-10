@@ -559,7 +559,7 @@ void GnssParametrizationClocksModel::writeResults(const GnssNormalEquationInfo &
     if(!fileNameTransmitter.empty())
     {
       VariableList fileNameVariableList;
-      addVariable("prn", "***", fileNameVariableList);
+      fileNameVariableList.setVariable("prn", "***");
       logStatus<<"write transmitter clocks to files <"<<fileNameTransmitter(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
       for(auto trans : gnss->transmitters)
         if(isMyRank(trans->idTrans()))
@@ -574,7 +574,7 @@ void GnssParametrizationClocksModel::writeResults(const GnssNormalEquationInfo &
               epoch.value = trans->clockError(idEpoch);
               arc.push_back(epoch);
             }
-          fileNameVariableList["prn"]->setValue(trans->name());
+          fileNameVariableList.setVariable("prn", trans->name());
           InstrumentFile::write(fileNameTransmitter(fileNameVariableList).appendBaseName(suffix), arc);
         }
     }
@@ -582,7 +582,7 @@ void GnssParametrizationClocksModel::writeResults(const GnssNormalEquationInfo &
     if(!fileNameReceiver.empty())
     {
       VariableList fileNameVariableList;
-      addVariable("station", "****", fileNameVariableList);
+      fileNameVariableList.setVariable("station", "****");
       logStatus<<"write receiver clocks to files <"<<fileNameReceiver(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
       for(auto recv : gnss->receivers)
         if(recv->isMyRank())
@@ -597,7 +597,7 @@ void GnssParametrizationClocksModel::writeResults(const GnssNormalEquationInfo &
               epoch.value = recv->clockError(idEpoch);
               arc.push_back(epoch);
             }
-          fileNameVariableList["station"]->setValue(recv->name());
+          fileNameVariableList.setVariable("station", recv->name());
           InstrumentFile::write(fileNameReceiver(fileNameVariableList).appendBaseName(suffix), arc);
         }
     }

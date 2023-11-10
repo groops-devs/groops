@@ -15,7 +15,7 @@
 #include "base/importGroops.h"
 #include "tree/treeElementGlobal.h"
 #include <QDialog>
-#include <QRegExpValidator>
+#include <QRegularExpression>
 
 /***** TYPES ***********************************/
 
@@ -34,15 +34,14 @@ class AddGlobalDialog : public QDialog
 {
   Q_OBJECT
 
-  std::vector<XsdElementPtr> xsdElements;
-  QStringList                globalElementNames;
+  QStringList globalElementNames;
 
 public:
   AddGlobalDialog(TreeElementGlobal *globalRoot, QWidget *parent=nullptr);
-  ~AddGlobalDialog();
+ ~AddGlobalDialog();
 
-  QString       elementName();
-  XsdElementPtr elementType();
+  QString elementName();
+  QString elementType();
 
 private slots:
   void nameEdited(const QString &name);

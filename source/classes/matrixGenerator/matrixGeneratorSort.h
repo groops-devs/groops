@@ -39,14 +39,14 @@ class MatrixGeneratorSort : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorSort(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorSort::MatrixGeneratorSort(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorSort::MatrixGeneratorSort(Config &config)
 {
   try
   {
@@ -63,7 +63,7 @@ inline MatrixGeneratorSort::MatrixGeneratorSort(Config &config) : MatrixGenerato
 
 /***********************************************/
 
-inline void MatrixGeneratorSort::compute(Matrix &A, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorSort::compute(Matrix &A, UInt /*rowsBefore*/, UInt /*columnsBefore*/, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {

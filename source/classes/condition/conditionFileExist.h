@@ -25,7 +25,6 @@ Check for a file or directory existing.
 
 #include "base/import.h"
 #include "parallel/parallel.h"
-#include "parser/stringParser.h"
 #include "inputOutput/system.h"
 #include "classes/condition/condition.h"
 
@@ -67,7 +66,7 @@ inline Bool ConditionFileExist::condition(const VariableList &varList) const
 {
   try
   {
-    return System::exists(StringParser::parse(fileName, varList));
+    return System::exists(fileName(varList));
   }
   catch(std::exception &e)
   {

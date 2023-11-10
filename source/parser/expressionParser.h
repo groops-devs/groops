@@ -49,65 +49,51 @@ operations and functions are defined:
 
 class Expression;
 class ExpressionVariable;
-class VariableList;
 typedef std::shared_ptr<Expression> ExpressionPtr;
 typedef std::shared_ptr<ExpressionVariable> ExpressionVariablePtr;
 
 /***** CLASS ***********************************/
 
-/** @brief Mathematcial Expression
+/** @brief List of variables for expressions
+* With smart memmory management. The variables are only copied if needed (copy on write, late copy).
+* This is not threat save.
 * @ingroup parserGroup
-* Represented as a tree.
-* Can be created by the standard mathemtical operators.
-* Example:
-* @code ExpressionPtr expr = exprValue(5)+(sin(exprVar(x))^2); @endcode
-* expr->string() results in "5+sin(x)^2" */
-class Expression
+* @see ExpressionVariable */
+class VariableList
 {
+  mutable std::map<std::string, ExpressionVariablePtr> map;
+
+  std::shared_ptr<ExpressionVariable> find(const std::string &name);
+  ExpressionVariablePtr getVariable(const std::string &name);
+
 public:
-  enum Priority : UInt {NONE, LOGICAL_OR, LOGICAL_AND, EQUALITY, RELATION, ADDITIVE, MULTIPLICATIVE, UNARY, EXPONENTIAL, FUNCTION, VALUE};
+  VariableList() {}                                         //!< Constructor.
+  VariableList(const VariableList &) = default;             //!< Copy constructor.
+ ~VariableList() {}                                         //!< Destructor
+  VariableList &operator=(const VariableList &) = default;  //!< Assignment.
 
-  /// Destructor
-  virtual ~Expression() {}
+  /// Concatenate.
+  VariableList &operator+=(const VariableList &x);
 
-  Expression() = default;
-  Expression(const Expression &x) = delete;
-  Expression &operator=(const Expression &x) = delete;
+  void addVariable(ExpressionVariablePtr var);
 
-  /** @brief Parse an expression given as string.
-  * Example: "3+5*sin(1.0)+x^2".
-  * @return expression represented as a tree. */
-  static ExpressionPtr parse(const std::string &text);
+  /** @brief Set @a value of a variable with @a name. The variable is created when needed.*/
+  void setVariable(const std::string &name, Double value);
 
-  /** @brief Add all used variable names to @a usedName. */
-  virtual void usedVariables(const VariableList &varList, std::set<std::string> &usedName) const = 0;
+  /** @brief Set @a text of a variable with @a name. The variable is created when needed.*/
+  void setVariable(const std::string &name, const std::string &text);
 
-  /** @brief Simplifies expression.
-  * @param varList values of the variables contained in the expression.
-  * @param[out] resolved expression can be evaluated directly (is a constant value).
-  * @return Simplified expression. */
-  virtual ExpressionPtr simplify(const VariableList &varList, Bool &resolved) const = 0;
+  /** @brief Set status of a variable with @a name undefined. The variable is created when needed.*/
+  void undefineVariable(const std::string &name);
 
-  /** @brief Calculate thep result of an expression.
-  * Example: "5*x" results in 10 if variable x=5 is given.
-  * @param varList values of the variables contained in the expression. */
-  virtual Double evaluate(const VariableList &varList) const = 0;
+  /** @brief Remove the variable with @a name.*/
+  void eraseVariable(const std::string &name) {map.erase(name);}
 
-  /** @brief Derivative of an expression.
-  * @param var derivative with respect to this variable. */
-  virtual ExpressionPtr derivative(const std::string &var) const = 0;
+  /** @brief Find variable with @a name.*/
+  std::shared_ptr<const ExpressionVariable> find(const std::string &name) const;
 
-  /** @brief Deep copy of an expression. */
-  virtual ExpressionPtr clone() const = 0;
-
-  /** @brief String representation of an expression. */
-  virtual std::string string() const = 0;
-
-  /// Internal.
-  std::string string(UInt aprio) const;
-
-  /// Internal.
-  virtual UInt priority() const = 0;
+  friend class ExpressionVariable;
+  friend class ExpressionVar;
 };
 
 /***** CLASS ***********************************/
@@ -118,17 +104,32 @@ public:
 * @see Expression */
 class ExpressionVariable
 {
-  enum Status {UNDEFINED, TEXT, EXPRESSION, VALUE, CIRCULAR};
+public:
+  class Func
+  {
+  public:
+    virtual ~Func() {}
+    virtual Double operator()() const = 0;
+  };
 
-  std::string   _name;
-  Status        status;
-  std::string   text;
-  Double        value;
-  ExpressionPtr expr;
+private:
+  enum Status {UNDEFINED, TEXT, EXPRESSION, VALUE, FUNC, CIRCULAR};
+
+  std::string    _name;
+  mutable Status status;
+  std::string    text;
+  mutable Double value;
+  ExpressionPtr  expr;
+  VariableList   varList;
+  mutable std::shared_ptr<Func> func;
+  Bool           isSimplified;
+
+  /** @brief The unparsed content of the variable. */
+  std::string getText() const;
 
 public:
   /** @brief Constructor: variable with undefined value. */
-  ExpressionVariable(const std::string &name="_undefined_");
+  ExpressionVariable(const std::string &name);
 
   /** @brief Constructor: variable with value. */
   ExpressionVariable(const std::string &name, Double value);
@@ -136,20 +137,27 @@ public:
   /** @brief Constructor: variable with parseable expression text. */
   ExpressionVariable(const std::string &name, const std::string &text);
 
+  /** @brief Constructor: variable with parseable expression text. */
+  ExpressionVariable(const std::string &name, const std::string &text, const VariableList &varList);
+
   /** @brief Constructor: variable with expression. */
-  ExpressionVariable(const std::string &name, ExpressionPtr expr);
+  ExpressionVariable(const std::string &name, ExpressionPtr expr, const VariableList &varList);
+
+  /** @brief Constructor: variable value computed with @a func.
+  * The @a func is evaluated only if needed and only once. For computational expensive calculations. */
+  ExpressionVariable(const std::string &name, const std::shared_ptr<Func> &func);
 
   /// Copy constructor.
   ExpressionVariable(const ExpressionVariable &x);
 
-  /// Assignement.
-  ExpressionVariable &operator=(const ExpressionVariable &x);
+  ExpressionVariable &operator=(const ExpressionVariable &) = delete;
+
+  /** @brief Parse an expression given as string.
+   * Example: "3+5*sin(1.0)+x^2". */
+  static Double parse(const std::string &text, const VariableList &varList);
 
   /** @brief Name of the variable. */
   const std::string &name() const {return _name;}
-
-  /** @brief The unparsed content of the variable. */
-  std::string getText() const;
 
   /** @brief set value of this variable. */
   void setValue(Double value_) {status = VALUE; value = value_;}
@@ -165,19 +173,15 @@ public:
   * The variable @a name is set to 'name' and removed from the text.
   * The 'expr' is not evaluated. If 'expr' is not given the value is set to zero.
   * The @a StringParser with the @a varList is called before. */
-  void parseVariableName(const VariableList &varList);
-
-  /** @brief Add all used variable names to @a usedName. */
-  void usedVariables(const VariableList &varList, std::set<std::string> &usedName);
+  void parseVariableName();
 
   /** @brief Evaluate as much as possible.
   * The @a StringParser with the @a varList is called before and
   * if not all variables {names} can be resolved an exception is thrown.
   * Should be called before evaluation of the expression for long data lists
   * to accelerate the computation. Variables which changes the value after
-  * this call (e.g. data0) must be undefined
-  * or not in the @a varList when this function is called. */
-  void simplify(const VariableList &varList);
+  * this call (e.g. data0) must be undefined in the @a varList. */
+  void simplify(VariableList &varList);
 
   /** @brief Derivative of an expression.
   * The @a StringParser with the @a varList is called before and
@@ -191,59 +195,10 @@ public:
   * @param varList values of the variables contained in the expression. */
   Double evaluate(const VariableList &varList) const;
 
-  /** @brief Returns the result of the @a StringParser. */
+  /** @brief Returns the result of the @a StringParser.
+  * @a resolved is set to FALSE if not all variables defined. Untouched by success. */
   std::string getParsedText(const VariableList &varList, Bool &resolved) const;
 };
-
-
-/***** CLASS ***********************************/
-
-/** @brief List of variables for expressions
-* @ingroup parserGroup
-* @see ExpressionVariable */
-class VariableList
-{
-  std::map<std::string, ExpressionVariablePtr> map;
-
-public:
-  VariableList() {}
- ~VariableList() {}
-
-  /// Copy constructor.
-  VariableList(const VariableList &x);
-
-  /// Assignement.
-  VariableList &operator=(const VariableList &x);
-
-  /// Concatenate.
-  VariableList &operator+=(const VariableList &x);
-
-  ExpressionVariablePtr operator[](const std::string &name);
-  ExpressionVariablePtr find(const std::string &name) const;
-  ExpressionVariablePtr addVariable(ExpressionVariablePtr var);
-  void                  clear() { map.clear(); }
-  UInt                  erase(const std::string &name) { return map.erase(name); }
-  auto                  begin() const { return map.begin(); } // BEWARE: VariableList key and ExpressionVariable name must be identical
-  auto                  end()   const { return map.end(); }
-};
-
-/***** FUNCTIONS *******************************/
-
-/** @brief Add a variable with undefined value to the variable list.
-* @relates VariableList */
-void addVariable(const std::string &name, VariableList &varList);
-
-/** @brief Add a variable with value to the variable list.
-* @relates VariableList */
-void addVariable(const std::string &name, Double value, VariableList &varList);
-
-/** @brief Add a variable with a parseable text to the variable list.
-* @relates VariableList */
-void addVariable(const std::string &name, const std::string &text, VariableList &varList);
-
-/** @brief Add a variable to the variable list.
-* @relates VariableList */
-void addVariable(ExpressionVariablePtr var, VariableList &varList);
 
 /***********************************************/
 

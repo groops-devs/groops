@@ -39,41 +39,38 @@ class TreeItem : public QObject, public QTreeWidgetItem
   TreeItem(TreeElement *treeElement, TreeItem  *parent)                  : QTreeWidgetItem()              {parent->insertChild(0,this); init(treeElement);}
   TreeItem(TreeElement *treeElement, TreeItem  *parent, TreeItem *after) : QTreeWidgetItem(parent, after) {init(treeElement);}
 
+  // adjust tooltip text
+  QVariant data(int column, int role) const override;
+
 public:
   virtual ~TreeItem();
 
-/**
-* @brief Append a new item to the tree.
-*
-* If parent==nullptr the element will be appended to root.
-*/
-static TreeItem *newTreeItem(TreeElement *treeElement, TreeItem *parent=nullptr, TreeItem *after=nullptr);
+  /** @brief Append a new item to the tree.
+  * If parent==nullptr the element will be appended to root. */
+  static TreeItem *newTreeItem(TreeElement *treeElement, TreeItem *parent=nullptr, TreeItem *after=nullptr);
 
-/**
-* @brief The corresponding tree element.
-*/
-TreeElement *treeElement() const {return _treeElement;}
+  /** @brief The corresponding tree element. */
+  TreeElement *treeElement() const {return _treeElement;}
 
-QVariant data(int column, int role) const;
+  void updateIcon();
+  void updateName();
+  void updateValue();
+  void updateAnnotation(const QString &text);
+  void updateComment();
 
-void updateDisabled();
-void updateName();
-void updateValue();
-void updateAnnotation(const QString &text);
-void updateComment();
+  void becomeCurrent();
+  void lostCurrent();
 
-void becomeCurrent();
-void lostCurrent();
+  void setFocus();
 
-void setFocus();
-void setSelection(int start, int length);
-void selection(int &start, int &length) const;
+  // for and search/replace
+  void setSelection(int start, int length);
+  void selection(int &start, int &length) const;
 
-void editComment();
+  void editComment();
 
 public slots:
-void editCommentFinished();
-
+  void editCommentFinished();
 };
 
 /***********************************************/

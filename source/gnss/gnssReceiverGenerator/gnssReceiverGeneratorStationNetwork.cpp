@@ -42,7 +42,7 @@ GnssReceiverGeneratorStationNetwork::GnssReceiverGeneratorStationNetwork(Config 
     readConfig(config, "inputfileStationList",               fileNameStationList,     Config::MUSTSET,  "", "ascii file with station names");
     readConfig(config, "maxStationCount",                    maxStationCount,         Config::OPTIONAL, "", "maximum number of stations to be used");
     readConfig(config, "inputfileStationInfo",               fileNameStationInfo,     Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/stationInfo/igs/stationInfo.{station}.xml", "variable {station} available. station metadata (antennas, receivers, ...)");
-    readConfig(config, "inputfileAntennaDefinition",         fileNameAntennaDef,      Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat", "antenna center offsets and variations");
+    readConfig(config, "inputfileAntennaDefinition",         fileNameAntennaDef,      Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat", "antenna center offsets and variations");
     if(readConfigChoice(config, "noAntennaPatternFound", choice, Config::MUSTSET, "ignoreObservation", "what should happen if no antenna pattern is found for an observation"))
     {
       if(readConfigChoiceElement(config, "ignoreObservation",   choice, "ignore observation if no matching pattern is found"))
@@ -114,14 +114,13 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
     std::vector<std::vector<std::string>> stationName;
     readFileStringTable(fileNameStationList, stationName);
     VariableList fileNameVariableList;
-    addVariable("station", fileNameVariableList);
     std::vector<std::vector<GnssReceiverPtr>> receiversWithAlternatives(stationName.size());
     for(UInt i=0; i<stationName.size(); i++)
       for(UInt k=0; k<stationName.at(i).size(); k++) // alternatives
       {
         try
         {
-          fileNameVariableList["station"]->setValue(stationName.at(i).at(k));
+          fileNameVariableList.setVariable("station", stationName.at(i).at(k));
           if(!fileNameObs.empty() && !System::exists(fileNameObs(fileNameVariableList)))
             continue;
 
@@ -181,7 +180,7 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
         {
           try
           {
-            fileNameVariableList["station"]->setValue(receiversWithAlternatives.at(i).at(k)->name());
+            fileNameVariableList.setVariable("station", receiversWithAlternatives.at(i).at(k)->name());
             GnssReceiverPtr recv = receiversWithAlternatives.at(i).at(k);
             recv->isMyRank_ = TRUE;
 
@@ -191,14 +190,14 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
             recv->vel.resize(times.size());
             recv->offset.resize(times.size());
             recv->global2local.resize(times.size(), inverse(localNorthEastUp(recv->platform.approxPosition, Ellipsoid())));
-            recv->local2antenna.resize(times.size());
+            recv->global2antenna.resize(times.size());
             for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
             {
               auto antenna = recv->platform.findEquipment<PlatformGnssAntenna>(times.at(idEpoch));
               if(antenna && antenna->antennaDef && antenna->accuracyDef)
               {
-                recv->offset.at(idEpoch)        = antenna->position - recv->platform.referencePoint(times.at(idEpoch));
-                recv->local2antenna.at(idEpoch) = antenna->local2antennaFrame;
+                recv->offset.at(idEpoch)         = antenna->position - recv->platform.referencePoint(times.at(idEpoch));
+                recv->global2antenna.at(idEpoch) = antenna->local2antennaFrame * recv->global2local.at(idEpoch);
               }
               else
                 recv->disable(idEpoch, "missing antenna/accuracy patterns");
@@ -358,7 +357,6 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
   {
     logStatus<<"init observations"<<Log::endl;
     VariableList fileNameVariableList;
-    addVariable("station", fileNameVariableList);
     Single::forEach(receivers.size(), [&](UInt idRecv)
     {
       Parallel::peek(comm);
@@ -367,7 +365,7 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
         try
         {
           auto recv = receivers.at(idRecv);
-          fileNameVariableList["station"]->setValue(recv->name());
+          fileNameVariableList.setVariable("station", recv->name());
           std::vector<Vector3d> posApriori = recv->pos;
           if(fileNameClock.empty())
             recv->pos = recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, FALSE/*estimateKinematicPosition*/);

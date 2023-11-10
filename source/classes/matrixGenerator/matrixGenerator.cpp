@@ -144,9 +144,7 @@ Matrix MatrixGenerator::compute()
     UInt                cols = 0;
     for(UInt i=0; i<matrix.size(); i++)
     {
-      matrix.at(i)->varList["rowsBefore"]->setValue(static_cast<Double>(rows));
-      matrix.at(i)->varList["columnsBefore"]->setValue(static_cast<Double>(cols));
-      matrix.at(i)->compute(A.at(i), startRow.at(i), startCol.at(i));
+      matrix.at(i)->compute(A.at(i), rows, cols, startRow.at(i), startCol.at(i));
       rows = std::max(rows, A.at(i).rows()    + startRow.at(i));
       cols = std::max(cols, A.at(i).columns() + startCol.at(i));
     }
@@ -178,23 +176,6 @@ Matrix MatrixGenerator::compute()
       }
 
     return B;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-/***********************************************/
-
-MatrixGeneratorBase::MatrixGeneratorBase(Config &config)
-{
-  try
-  {
-    varList = config.getVarList();
-    addVariable("rowsBefore",    varList);
-    addVariable("columnsBefore", varList);
   }
   catch(std::exception &e)
   {

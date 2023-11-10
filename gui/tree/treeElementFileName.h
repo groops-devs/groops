@@ -14,7 +14,7 @@
 #define __GROOPSGUI__TREEELEMENTFILENAME__
 
 #include "base/importGroops.h"
-#include "tree/treeElement.h"
+#include "tree/treeElementSimple.h"
 
 /***** TYPES ***********************************/
 
@@ -22,26 +22,19 @@ class QPushButton;
 
 /***** CLASS ***********************************/
 
-class TreeElementFileName : public TreeElement
+class TreeElementFileName : public TreeElementSimple
 {
   Q_OBJECT
 
 public:
   TreeElementFileName(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
-                      const QString &defaultOverride, XmlNodePtr xmlNode, Bool fromFile);
-  virtual ~TreeElementFileName() override {}
+                      const QString &defaultOverride, XmlNodePtr xmlNode, bool fillWithDefaults);
 
-/** @brief Generate XML-tree. */
-virtual XmlNodePtr getXML(Bool withEmptyNodes=false) const override;
+  /** @brief creates an editable combo box with additional file selector. */
+  QWidget *createEditor() override;
 
-/** @brief Values can be edited. */
-virtual Bool isEditable() const override {return true;}
-
-/** @brief creates an editable combo box with additional file selector. */
-virtual QWidget *createEditor() override;
-
-/** @brief Opens file selector dialog. */
-virtual void interact() override;
+  /** @brief Opens file selector dialog. */
+  void interact() override;
 
 private:
   QPointer<QPushButton> openFileButton;

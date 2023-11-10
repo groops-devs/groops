@@ -343,12 +343,12 @@ void InstrumentSynchronize::run(Config &config, Parallel::CommunicatorPtr /*comm
     std::vector<Arc> arcList;
     for(UInt k=0; k<data.size(); k++)
     {
+      arcList.resize(0);
+      for(UInt i=0; i<subArcStart.size(); i++)
+        arcList.push_back( arc.at(k).subArc(subArcStart.at(i), subArcLen.at(i)) );
       if(!data.at(k).outName.empty())
       {
         logStatus<<"write instrument file <"<<data.at(k).outName<<">"<<Log::endl;
-        arcList.resize(0);
-        for(UInt i=0; i<subArcStart.size(); i++)
-          arcList.push_back( arc.at(k).subArc(subArcStart.at(i), subArcLen.at(i)) );
         InstrumentFile::write(data.at(k).outName, arcList);
       }
     }

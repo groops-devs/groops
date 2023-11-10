@@ -49,14 +49,13 @@ void GnssParametrizationSignalBiases::init(Gnss *gnss, Parallel::CommunicatorPtr
     if(!fileNameInTransmitter.empty())
     {
       VariableList fileNameVariableList;
-      addVariable("prn", fileNameVariableList);
       auto selectedTransmitters = gnss->selectTransmitters(selectTransmitters);
       for(UInt idTrans=0; idTrans<gnss->transmitters.size(); idTrans++)
         if(selectedTransmitters.at(idTrans) && gnss->transmitters.at(idTrans)->useable())
         {
+          fileNameVariableList.setVariable("prn", gnss->transmitters.at(idTrans)->name());
           try
           {
-            fileNameVariableList["prn"]->setValue(gnss->transmitters.at(idTrans)->name());
             readFileGnssSignalBias(fileNameInTransmitter(fileNameVariableList), gnss->transmitters.at(idTrans)->signalBias);
           }
           catch(std::exception &/*e*/)
@@ -70,14 +69,13 @@ void GnssParametrizationSignalBiases::init(Gnss *gnss, Parallel::CommunicatorPtr
     if(!fileNameInReceiver.empty())
     {
       VariableList fileNameVariableList;
-      addVariable("station", fileNameVariableList);
       auto selectedReceivers = gnss->selectReceivers(selectReceivers);
       for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
         if(selectedReceivers.at(idRecv) && gnss->receivers.at(idRecv)->useable())
         {
+          fileNameVariableList.setVariable("station", gnss->receivers.at(idRecv)->name());
           try
           {
-            fileNameVariableList["station"]->setValue(gnss->receivers.at(idRecv)->name());
             readFileGnssSignalBias(fileNameInReceiver(fileNameVariableList), gnss->receivers.at(idRecv)->signalBias);
           }
           catch(std::exception &/*e*/)
@@ -106,7 +104,7 @@ void GnssParametrizationSignalBiases::writeResults(const GnssNormalEquationInfo 
     if(!fileNameOutTransmitter.empty() && !normalEquationInfo.isEachReceiverSeparately && Parallel::isMaster(normalEquationInfo.comm))
     {
       VariableList fileNameVariableList;
-      addVariable("prn", "***", fileNameVariableList);
+      fileNameVariableList.setVariable("prn", "***");
       logStatus<<"write transmitter signal biases to files <"<<fileNameOutTransmitter(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
       auto selectedTransmitters = gnss->selectTransmitters(selectTransmitters);
       for(auto trans : gnss->transmitters)
@@ -116,7 +114,7 @@ void GnssParametrizationSignalBiases::writeResults(const GnssNormalEquationInfo 
           for(UInt idType=0; idType<signalBias.types.size(); idType++)
             if(signalBias.types.at(idType) == GnssType::PHASE)
               signalBias.biases.at(idType) = std::remainder(signalBias.biases.at(idType), signalBias.types.at(idType).wavelength());
-          fileNameVariableList["prn"]->setValue(trans->name());
+          fileNameVariableList.setVariable("prn", trans->name());
           writeFileGnssSignalBias(fileNameOutTransmitter(fileNameVariableList).appendBaseName(suffix), signalBias);
         }
     }
@@ -124,7 +122,7 @@ void GnssParametrizationSignalBiases::writeResults(const GnssNormalEquationInfo 
     if(!fileNameOutReceiver.empty())
     {
       VariableList fileNameVariableList;
-      addVariable("station", "****", fileNameVariableList);
+      fileNameVariableList.setVariable("station", "****");
       logStatus<<"write receiver signal biases to files <"<<fileNameOutReceiver(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
       auto selectedReceivers = gnss->selectReceivers(selectReceivers);
       for(auto recv : gnss->receivers)
@@ -134,7 +132,7 @@ void GnssParametrizationSignalBiases::writeResults(const GnssNormalEquationInfo 
           for(UInt idType=0; idType<signalBias.types.size(); idType++)
             if(signalBias.types.at(idType) == GnssType::PHASE)
               signalBias.biases.at(idType) = std::remainder(signalBias.biases.at(idType), signalBias.types.at(idType).wavelength());
-          fileNameVariableList["station"]->setValue(recv->name());
+          fileNameVariableList.setVariable("station", recv->name());
           writeFileGnssSignalBias(fileNameOutReceiver(fileNameVariableList).appendBaseName(suffix), signalBias);
         }
     }

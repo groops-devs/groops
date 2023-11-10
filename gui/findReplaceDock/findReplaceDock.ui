@@ -221,4 +221,10 @@
    </hints>
   </connection>
  </connections>
+ <slots>
+  <slot>clickedNext()</slot>
+  <slot>clickedPrevious()</slot>
+  <slot>clickedReplace()</slot>
+  <slot>clickedReplaceAll()</slot>
+ </slots>
 </ui>

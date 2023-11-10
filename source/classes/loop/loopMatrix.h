@@ -37,11 +37,11 @@ data variables of the matrix are available, see~\reference{dataVariables}{genera
 * @see Loop */
 class LoopMatrix : public Loop
 {
-  Matrix       A;
+  Matrix          A;
   std::vector<ExpressionVariablePtr> variables;
-  std::string  nameIndex, nameCount;
-  VariableList varListConfig, varListMatrix;
-  UInt         index;
+  std::string     nameIndex, nameCount;
+  VariableList    varListMatrix;
+  UInt            index;
 
 public:
   LoopMatrix(Config &config);
@@ -75,18 +75,12 @@ inline LoopMatrix::LoopMatrix(Config &config)
     if(transpose)
       A = A.trans();
 
-    varListConfig = config.getVarList();
-    addVariable("rows", A.rows(), varListConfig);
-    A = A.row(static_cast<UInt>(startRow->evaluate(varListConfig)), static_cast<UInt>(countRows->evaluate(varListConfig)));
+    varListMatrix.setVariable("rows", A.rows());
+    A = A.row(static_cast<UInt>(startRow->evaluate(varListMatrix)), static_cast<UInt>(countRows->evaluate(varListMatrix)));
 
     for(auto &variable : variables)
-      variable->parseVariableName(varListConfig); // get real variable names, otherwise all named 'variableLoop'
-    for(auto &variable : variables)
-      addVariable(variable->name(), varListConfig);
-    std::set<std::string> usedVariables;
-    for(auto &variable : variables)
-      variable->usedVariables(varListConfig, usedVariables);
-    addDataVariables(A, varListMatrix, usedVariables);
+      variable->parseVariableName(); // get real variable names, otherwise all named 'variableLoop'
+    addDataVariables(A, varListMatrix);
 
     index = 0;
   }
@@ -104,14 +98,10 @@ inline Bool LoopMatrix::iteration(VariableList &varList)
     return FALSE;
 
   evaluateDataVariables(A, index, varListMatrix);
-  auto varListTmp = varListConfig;
-  varListTmp     += varList;
-  varListTmp     += varListMatrix;
-
   for(auto &variable : variables)
-    addVariable(variable->name(), variable->evaluate(varListTmp), varList);
-  if(!nameIndex.empty()) addVariable(nameIndex, index,   varList);
-  if(!nameCount.empty()) addVariable(nameCount, count(), varList);
+    varList.setVariable(variable->name(), variable->evaluate(varListMatrix));
+  if(!nameIndex.empty()) varList.setVariable(nameIndex, index);
+  if(!nameCount.empty()) varList.setVariable(nameCount, count());
 
   index++;
   return TRUE;

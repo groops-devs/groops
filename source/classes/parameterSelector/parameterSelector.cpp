@@ -62,8 +62,6 @@ ParameterSelector::ParameterSelector(Config &config, const std::string &name)
       if(isCreateSchema(config))
         return;
     }
-
-    varList = config.getVarList();
   }
   catch(std::exception &e)
   {
@@ -88,7 +86,7 @@ std::vector<UInt> ParameterSelector::indexVector(const std::vector<ParameterName
     std::vector<UInt> vector;
     for(const auto &param : parameters)
     {
-      std::vector<UInt> vec = param->indexVector(parameterNames, varList);
+      std::vector<UInt> vec = param->indexVector(parameterNames);
       vector.insert(vector.end(), vec.begin(), vec.end());
     }
     return vector;

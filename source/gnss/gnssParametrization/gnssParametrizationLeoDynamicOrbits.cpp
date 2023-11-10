@@ -72,7 +72,7 @@ void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::Communicato
     auto selectedReceivers = gnss->selectReceivers(selectReceivers);
 
     VariableList fileNameVariableList;
-    addVariable("station", "****", fileNameVariableList);
+    fileNameVariableList.setVariable("station", "****");
     parameters.resize(gnss->receivers.size(), nullptr);
     Vector recvProcess(gnss->receivers.size());
     for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
@@ -105,7 +105,7 @@ void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::Communicato
         std::vector<Time> pulsesInterval;
         std::copy_if(pulses.begin(), pulses.end(), std::back_inserter(pulsesInterval), [&](auto &p) {return (timeStart < p) && (p < timeEnd);});
 
-        fileNameVariableList["station"]->setValue(para->recv->name());
+        fileNameVariableList.setVariable("station", para->recv->name());
         VariationalEquationFromFile file;
         file.open(fileNameVariational(fileNameVariableList), nullptr/*parametrizationGravity*/, parametrizationAcceleration, pulsesInterval, ephemerides, integrationDegree);
         para->x = Vector(file.parameterCount());
@@ -313,7 +313,7 @@ void GnssParametrizationLeoDynamicOrbits::writeResults(const GnssNormalEquationI
     if(!fileNameOrbit.empty())
     {
       VariableList fileNameVariableList;
-      addVariable("station", "***", fileNameVariableList);
+      fileNameVariableList.setVariable("station", "***");
       logStatus<<"write receiver orbits to files <"<<fileNameOrbit(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
       for(auto para : parameters)
         if(para && para->index && para->recv->isMyRank())
@@ -332,7 +332,7 @@ void GnssParametrizationLeoDynamicOrbits::writeResults(const GnssNormalEquationI
             }
             arcList.push_back(arc);
           }
-          fileNameVariableList["station"]->setValue(para->recv->name());
+          fileNameVariableList.setVariable("station", para->recv->name());
           InstrumentFile::write(fileNameOrbit(fileNameVariableList).appendBaseName(suffix), arcList);
         }
     }
@@ -340,12 +340,12 @@ void GnssParametrizationLeoDynamicOrbits::writeResults(const GnssNormalEquationI
     if(!fileNameParameter.empty())
     {
       VariableList fileNameVariableList;
-      addVariable("station", "***", fileNameVariableList);
+      fileNameVariableList.setVariable("station", "***");
       logStatus<<"write estimated receiver parameters to files <"<<fileNameParameter(fileNameVariableList).appendBaseName(suffix)<<">"<<Log::endl;
       for(auto para : parameters)
         if(para && para->index && para->recv->isMyRank())
         {
-          fileNameVariableList["station"]->setValue(para->recv->name());
+          fileNameVariableList.setVariable("station", para->recv->name());
           writeFileMatrix(fileNameParameter(fileNameVariableList).appendBaseName(suffix), para->x);
         }
     }

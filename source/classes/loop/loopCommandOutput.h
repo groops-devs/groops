@@ -92,9 +92,9 @@ inline Bool LoopCommandOutput::iteration(VariableList &varList)
   if(index >= count())
     return FALSE;
 
-  if(!nameString.empty()) addVariable(nameString, strings.at(index), varList);
-  if(!nameIndex.empty())  addVariable(nameIndex,  index,             varList);
-  if(!nameCount.empty())  addVariable(nameCount,  count(),           varList);
+  if(!nameString.empty()) varList.setVariable(nameString, strings.at(index));
+  if(!nameIndex.empty())  varList.setVariable(nameIndex,  index);
+  if(!nameCount.empty())  varList.setVariable(nameCount,  count());
 
   index++;
   return TRUE;

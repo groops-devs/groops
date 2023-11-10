@@ -67,7 +67,6 @@ void Instrument2Scaleogram::run(Config &config, Parallel::CommunicatorPtr /*comm
     if(isCreateSchema(config)) return;
 
     VariableList fileNameVariableList;
-    addVariable("loopLevel", fileNameVariableList);
 
     logStatus<<"read instrument file <"<<fileNameIn<<">"<<Log::endl;
     Arc arc = InstrumentFile::read(fileNameIn);
@@ -97,7 +96,7 @@ void Instrument2Scaleogram::run(Config &config, Parallel::CommunicatorPtr /*comm
           output(i, 0) = interpTimes.at(i).mjd();
           output(i, 1) = levels.at(k)(i,0);
         }
-        fileNameVariableList["loopLevel"]->setValue(k);
+        fileNameVariableList.setVariable("loopLevel", k);
         writeFileMatrix(fileNameLevels(fileNameVariableList), output);
       }
 

@@ -78,10 +78,8 @@ void GriddedData2Matrix::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     // create data variables
     // ---------------------
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    std::for_each(expression.begin(), expression.end(), [&](auto expr) {expr->usedVariables(varList, usedVariables);});
-    addDataVariables(grid, varList, usedVariables);
+    VariableList varList;
+    addDataVariables(grid, varList);
     std::for_each(expression.begin(), expression.end(), [&](auto expr) {expr->simplify(varList);});
 
     // calculate output grid

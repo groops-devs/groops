@@ -90,11 +90,8 @@ template<> Bool readConfig(Config &config, const std::string &name, MatrixGenera
 class MatrixGeneratorBase
 {
 public:
-  VariableList varList;
-
-  MatrixGeneratorBase(Config &config);
   virtual ~MatrixGeneratorBase() {}
-  virtual void compute(Matrix &A, UInt &startRow, UInt &startCol) = 0;
+  virtual void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol) = 0;
 };
 
 /***********************************************/

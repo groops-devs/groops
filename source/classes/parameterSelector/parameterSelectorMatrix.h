@@ -39,7 +39,7 @@ class ParameterSelectorMatrix : public ParameterSelectorBase
 
 public:
   ParameterSelectorMatrix(Config &config);
-  std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterNames, VariableList varList);
+  std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterNames);
 };
 
 /***********************************************/
@@ -64,15 +64,16 @@ inline ParameterSelectorMatrix::ParameterSelectorMatrix(Config &config)
 
 /***********************************************/
 
-inline std::vector<UInt> ParameterSelectorMatrix::indexVector(const std::vector<ParameterName> &parameterNames, VariableList varList)
+inline std::vector<UInt> ParameterSelectorMatrix::indexVector(const std::vector<ParameterName> &parameterNames)
 {
   try
   {
     Matrix matrix;
-    readFileMatrix(fileName(varList), matrix);
+    readFileMatrix(fileName, matrix);
 
-    addVariable("rows",    static_cast<Double>(matrix.rows()),    varList);
-    addVariable("columns", static_cast<Double>(matrix.columns()), varList);
+    VariableList varList;
+    varList.setVariable("rows",    static_cast<Double>(matrix.rows()));
+    varList.setVariable("columns", static_cast<Double>(matrix.columns()));
     const UInt   column    = static_cast<UInt>(exprColumn->evaluate(varList));
     const UInt   startRow  = static_cast<UInt>(exprStartRow->evaluate(varList));
     const UInt   countRows = (exprCountRows ? static_cast<UInt>(exprCountRows->evaluate(varList)) : matrix.rows()-startRow);

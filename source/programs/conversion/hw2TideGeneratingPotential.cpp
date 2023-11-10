@@ -129,7 +129,7 @@ void Hw2TideGeneratingPotential::run(Config &config, Parallel::CommunicatorPtr /
       if(n != 2)
       {
         countNDegree++;
-        maxAmp1 = std::max(maxAmp1, sqrt(c0*c0+s0*s0));
+        maxAmp1 = std::max(maxAmp1, std::sqrt(c0*c0+s0*s0));
         continue;
       }
 
@@ -139,10 +139,10 @@ void Hw2TideGeneratingPotential::run(Config &config, Parallel::CommunicatorPtr /
         Int sum = 0;
         for(UInt i=6; i<kn.size(); i++)
           sum += static_cast<Int>(std::fabs(kn.at(i)));
-        if((sum!=0)||((generatingBody!="SU")&&(generatingBody!="MO")))
+        if(sum || ((generatingBody != "SU") && (generatingBody != "MO")))
         {
           countNSunMoon++;
-          maxAmp2 = std::max(maxAmp2, sqrt(c0*c0+s0*s0));
+          maxAmp2 = std::max(maxAmp2, std::sqrt(c0*c0+s0*s0));
           continue;
         }
       }
@@ -152,17 +152,17 @@ void Hw2TideGeneratingPotential::run(Config &config, Parallel::CommunicatorPtr /
       {
         Bool flag = FALSE;
         for(UInt i=0; i<6; i++)
-          flag |= kn.at(i)<-5 || kn.at(i)>10;   //--> corresponding multipliers ranging from 0 to f
+          flag |= (kn.at(i)+5 < -13) || (kn.at(i)+5 > 23);   //--> corresponding multipliers ranging from 0 to f
         if(flag)
         {
           countNDoodson++;
-          maxAmp3 = std::max(maxAmp3, sqrt(c0*c0+s0*s0));
+          maxAmp3 = std::max(maxAmp3, std::sqrt(c0*c0+s0*s0));
           continue;
         }
       }
 
       // test frequency
-      if(fabs(Doodson(kn).frequency()-frequency*86400)>1e-8)
+      if(std::fabs(Doodson(kn).frequency()-frequency*86400) > 1e-8)
         logWarning<<Doodson(kn).name()<<" frequency difference: "<<Doodson(kn).frequency()<<" - "<<frequency*86400<<" = "<<Doodson(kn).frequency()-frequency*86400<<Log::endl;
 
       tgp.push_back(TideGeneratingConstituent(Doodson(kn), c0, s0));

@@ -39,14 +39,14 @@ class MatrixGeneratorShift : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorShift(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorShift::MatrixGeneratorShift(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorShift::MatrixGeneratorShift(Config &config)
 {
   try
   {
@@ -63,14 +63,17 @@ inline MatrixGeneratorShift::MatrixGeneratorShift(Config &config) : MatrixGenera
 
 /***********************************************/
 
-inline void MatrixGeneratorShift::compute(Matrix &A, UInt &startRow, UInt &startCol)
+inline void MatrixGeneratorShift::compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol)
 {
   try
   {
     A = matrix->compute();
 
-    addVariable("rows",    static_cast<Double>(A.rows()),    varList);
-    addVariable("columns", static_cast<Double>(A.columns()), varList);
+    VariableList varList;
+    varList.setVariable("rowsBefore",    static_cast<Double>(rowsBefore));
+    varList.setVariable("columnsBefore", static_cast<Double>(columnsBefore));
+    varList.setVariable("rows",          static_cast<Double>(A.rows()));
+    varList.setVariable("columns",       static_cast<Double>(A.columns()));
     startRow = static_cast<UInt>(exprStartRow->evaluate(varList));
     startCol = static_cast<UInt>(exprStartCol->evaluate(varList));
   }

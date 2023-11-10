@@ -78,18 +78,17 @@ void evaluateTimeVariables(UInt index, const Time &timeStart, const Time &timeEn
 
 /** @brief Create variables to evaluate a vector.
 * @ingroup parserGroup
-* The following variable are created if they occur in @a usedName
+* The following variable are created:
 * prefix, prefixmean, prefixmedian, prefixrms, prefixstd, prefixmad, prefixmin, prefixmax, prefixstep
 * @param prefix to build parameter names.
 * @param data The vector for which the variables are created.
-* @param varList The @a VariableList to which the variables are added.
-* @param usedName Only variables are created which are in the list */
-void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, VariableList &varList, const std::set<std::string> &usedName);
+* @param varList The @a VariableList to which the variables are added. */
+void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, VariableList &varList);
 
 class Time;
-void addDataVariables(const std::string &prefix, const std::vector<Time> &times, VariableList &varList, const std::set<std::string> &usedName);
+void addDataVariables(const std::string &prefix, const std::vector<Time> &times, VariableList &varList);
 
-void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, const_MatrixSliceRef weight, VariableList &varList, const std::set<std::string> &usedName);
+void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, const_MatrixSliceRef weight, VariableList &varList);
 
 /** @brief Create variables to evaluate a matrix.
 * @ingroup parserGroup
@@ -100,9 +99,8 @@ void addDataVariables(const std::string &prefix, const_MatrixSliceRef data, cons
 * data1mean, data1median, data1rms, data1std, data1mad, data1min, data1max, data1step
 * ...
 * @param data The matrix for which the variables are created.
-* @param varList The @a VariableList to which the variables are added.
-* @param usedName Only variables are created which are in the list */
-void addDataVariables(const_MatrixSliceRef data, VariableList &varList, const std::set<std::string> &usedName);
+* @param varList The @a VariableList to which the variables are added. */
+void addDataVariables(const_MatrixSliceRef data, VariableList &varList);
 
 /** @brief Compute the values of the variables of a matrix.
 * @ingroup parserGroup */
@@ -124,8 +122,8 @@ class GriddedDataRectangular;
 * data, data0, data1, ...
 * data0mean, data0rms, data0std, data0min, data0max,
 * data1mean, data1rms, data1std, data1min, data1max, ... */
-void addDataVariables(const GriddedData            &grid, VariableList &varList, const std::set<std::string> &usedName);
-void addDataVariables(const GriddedDataRectangular &grid, VariableList &varList, const std::set<std::string> &usedName);
+void addDataVariables(const GriddedData            &grid, VariableList &varList);
+void addDataVariables(const GriddedDataRectangular &grid, VariableList &varList);
 
 /** @brief Compute the values of the variables of a grid.
 * @ingroup parserGroup */

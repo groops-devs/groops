@@ -73,7 +73,7 @@ OrbitPropagatorPtr OrbitPropagator::create(Config &config, const std::string &na
 
 /***********************************************/
 
-Rotary3d OrbitPropagator::orientation(const Time& /*time*/, const Vector3d& position, const Vector3d& velocity, SatelliteModelPtr /*satellite*/) const
+Rotary3d OrbitPropagator::orientation(const Time &/*time*/, const Vector3d &position, const Vector3d &velocity, SatelliteModelPtr /*satellite*/) const
 {
   return Rotary3d(velocity, crossProduct(velocity, position));
 }

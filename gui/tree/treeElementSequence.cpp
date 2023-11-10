@@ -20,28 +20,24 @@
 /***********************************************/
 
 TreeElementSequence::TreeElementSequence(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
-                                         const QString &defaultOverride, XmlNodePtr xmlNode, Bool fromFile)
+                                         const QString &defaultOverride, XmlNodePtr xmlNode, bool fillWithDefaults)
   : TreeElementComplex(tree, parentElement, xsdElement, defaultOverride, xmlNode)
 {
   try
   {
     int index = 0;
-    if((optional()) && (!unbounded()))
+    if(optional() && !unbounded())
     {
       index = addChoice("<none>",    XsdElementPtr(nullptr), QJsonObject());
       index = addChoice("<enabled>", xsdElement,             defaultObject);
-      if(xmlNode && (!isLinked()))
-        createChildrenElements(index, xmlNode);
-      else
-        index = ((!defaultObject.isEmpty()) && !fromFile ? 1 : 0);
+      if(!xmlNode || isLinked())
+        index = (fillWithDefaults && !defaultObject.isEmpty()) ? 1 : 0;
     }
     else
-    {
       index = addChoice("", xsdElement, defaultObject);
-      if(xmlNode && (!isLinked()))
-        createChildrenElements(index, xmlNode);
-    }
 
+    if(xmlNode && !isLinked())
+      createChildrenElements(index, xmlNode);
     setSelectedIndex(isLinked() ? selectedIndex() : index);
   }
   catch(std::exception &e)
@@ -52,17 +48,51 @@ TreeElementSequence::TreeElementSequence(Tree *tree, TreeElementComplex *parentE
 
 /***********************************************/
 
-XmlNodePtr TreeElementSequence::getXML(Bool withEmptyNodes) const
+XmlNodePtr TreeElementSequence::createXmlTree(bool /*createRootEvenIfEmpty*/) const
 {
   try
   {
     if(selectedValue()=="<none>")
       return XmlNodePtr(nullptr);
-    XmlNodePtr xmlNode = getBaseXML();
-    if((xmlNode==nullptr) || isLinked())
-      return xmlNode;
-    getChildrenXML(xmlNode, withEmptyNodes);
+    XmlNodePtr xmlNode = createXmlBaseNode();
+    if(!isLinked())
+      createXmlChildren(xmlNode);
     return xmlNode;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+bool TreeElementSequence::overwrite(const QString &type, XmlNodePtr xmlNode, bool contentOnly)
+{
+  try
+  {
+    if(!canOverwrite(type))
+      return false;
+
+    if(!xmlNode && optional() && !unbounded()) // <none>
+    {
+      tree->undoStack->beginMacro("overwrite "+name());
+      changeSelectedIndex(0);
+      tree->undoStack->endMacro();
+      return true;
+    }
+
+    if(!xmlNode)
+      return false;
+
+    tree->undoStack->beginMacro("overwrite "+name());
+    if(baseOverwrite(xmlNode, contentOnly))
+    {
+      changeSelectedIndex((optional() && !unbounded()) ? 1 : 0); // change to <enabled>
+      overwriteChildren(xmlNode);
+    }
+    tree->undoStack->endMacro();
+    return true;
   }
   catch(std::exception &e)
   {

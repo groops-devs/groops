@@ -102,7 +102,7 @@ Config::Config(FileName &fileName, const std::map<std::string, std::string> &com
       if(!xmlNode->hasChildren()) // not complex type?
       {
         XmlAttrPtr link = xmlNode->findAttribute("link");
-        addVariable(xmlNode->getName(), ((link) ? "{"+link->getText()+"}" : xmlNode->getText()), varList);
+        varList.setVariable(xmlNode->getName(), ((link) ? "{"+link->getText()+"}" : xmlNode->getText()));
       }
     }
 
@@ -212,7 +212,7 @@ XmlNodePtr Config::getChildWithLoopCheck(const std::string &name, Bool remove)
     // --------------------
     if(stack.top().loopPtr && stack.top().loopNext && !stack.top().loopPtr->iteration(varList))
     {
-      varList     = stack.top().loopVarListOld; // restore old varList
+      varList = stack.top().loopVarListOld; // restore old varList
       stack.top().xmlNode->getChild(stack.top().xmlLastChild->getName());
       stack.top().loopPtr = LoopPtr(nullptr);
     }
@@ -272,7 +272,8 @@ XmlNodePtr Config::getChildWithLoopCheck(const std::string &name, Bool remove)
 
 /***********************************************/
 
-Bool Config::getConfigValue(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, std::string &text)
+Bool Config::getConfigText(const std::string &name, const std::string &type, Config::Appearance mustSet,
+                           const std::string &defaultValue, const std::string &annotation, Bool parse, std::string &text)
 {
   if(createSchema)
   {
@@ -295,8 +296,13 @@ Bool Config::getConfigValue(const std::string &name, const std::string &type, Co
   if(text.empty() && (mustSet == DEFAULT))
     text = defaultValue;
 
-  Bool resolved;
-  text = StringParser::parse(name, text, varList, resolved);
+  if(parse)
+  {
+    Bool resolved = TRUE;
+    text = StringParser::parse(name, text, varList, resolved);
+    if(!resolved)
+      throw(Exception("In readConfig("+currentNodeName()+"."+name+", type="+type+")='"+text+"': unresolved variables"));
+  }
   return !text.empty();
 }
 
@@ -307,9 +313,9 @@ Bool Config::getConfigValue(const std::string &name, const std::string &type, Co
   std::string text;
   try
   {
-    if(!getConfigValue(name, type, mustSet, defaultValue, annotation, text))
+    if(!getConfigText(name, type, mustSet, defaultValue, annotation, TRUE, text))
       return FALSE;
-    v = Expression::parse(text)->evaluate(varList);
+    v = ExpressionVariable::parse(text, varList);
     return TRUE;
   }
   catch(std::exception &e)
@@ -355,7 +361,7 @@ Bool Config::getUnboundedConfig(const std::string &name, Config &conf)
     // --------------------
     if(stack.top().loopPtr && stack.top().loopNext && !stack.top().loopPtr->iteration(varList))
     {
-      varList     = stack.top().loopVarListOld; // restore old varList
+      varList = stack.top().loopVarListOld; // restore old varList
       stack.top().xmlNode->getChild(stack.top().xmlLastChild->getName());
       stack.top().loopPtr = LoopPtr(nullptr);
     }
@@ -712,8 +718,12 @@ void ProgramConfig::run(VariableList &variableList, Parallel::CommunicatorPtr co
             logStatus<<"--- "<<program->name()<<" ---"<<Log::endl;
           else
           {
-            Bool resolved;
-            comment = StringParser::parse("comment", comment, config.getVarList(), resolved);
+            try
+            {
+              Bool resolved = TRUE;
+              comment = StringParser::parse("comment", comment, config.getVarList(), resolved);
+            }
+            catch(std::exception &/*e*/) {}
             logStatus<<"--- "<<program->name()<<" ("<<comment<<") ---"<<Log::endl;
           }
           program->run(config, comm);
@@ -952,7 +962,7 @@ template<> Bool readConfig(Config &config, const std::string &name, Double &var,
 template<> Bool readConfig(Config &config, const std::string &name, std::string &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
 {
   std::string text;
-  Bool found = config.getConfigValue(name, "string", mustSet, defaultValue, annotation, text);
+  Bool found = config.getConfigText(name, "string", mustSet, defaultValue, annotation, TRUE, text);
   if(found)
     var = text;
   return found;
@@ -1000,7 +1010,7 @@ template<> Bool readConfig(Config &config, const std::string &name, Time &var, C
 template<> Bool readConfig(Config &config, const std::string &name, Doodson &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
 {
   std::string text;
-  Bool found = config.getConfigValue(name, "doodson", mustSet, defaultValue, annotation, text);
+  Bool found = config.getConfigText(name, "doodson", mustSet, defaultValue, annotation, TRUE, text);
   if(found)
     var = Doodson(text);
   return found;
@@ -1012,9 +1022,16 @@ template<> Bool readConfig(Config &config, const std::string &name, Doodson &var
 template<> Bool readConfig(Config &config, const std::string &name, FileName &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
 {
   std::string text;
-  Bool found = config.getConfigValue(name, "filename", mustSet, defaultValue, annotation, text);
+  Bool found = config.getConfigText(name, "filename", mustSet, defaultValue, annotation, FALSE, text);
   if(found)
-    var = FileName(text);
+  {
+    Bool resolved = TRUE;
+    std::string textResolved = StringParser::parse(name, text, VariableList(), resolved);
+    if(resolved)
+      var = FileName(textResolved);
+    else
+      var = FileName(text, config.getVarList());
+  }
   return found;
 }
 
@@ -1024,9 +1041,9 @@ template<> Bool readConfig(Config &config, const std::string &name, FileName &va
 template<> Bool readConfig(Config &config, const std::string &name, ExpressionVariablePtr &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
 {
   std::string text;
-  Bool found = config.getConfigValue(name, "expression", mustSet, defaultValue, annotation, text);
+  Bool found = config.getConfigText(name, "expression", mustSet, defaultValue, annotation, FALSE, text);
   if(found)
-    var = ExpressionVariablePtr(new ExpressionVariable(name, text));
+    var = std::make_shared<ExpressionVariable>(name, text, config.getVarList());
   return found;
 }
 
@@ -1036,7 +1053,7 @@ template<> Bool readConfig(Config &config, const std::string &name, ExpressionVa
 template<> Bool readConfig(Config &config, const std::string &name, GnssType &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
 {
   std::string text;
-  Bool found = config.getConfigValue(name, "gnssType", mustSet, defaultValue, annotation, text);
+  Bool found = config.getConfigText(name, "gnssType", mustSet, defaultValue, annotation, TRUE, text);
   if(found)
     var = GnssType(text);
   return found;

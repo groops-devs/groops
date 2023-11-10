@@ -57,18 +57,16 @@ ObservationDeflections::ObservationDeflections(Config &config)
 
     // evaluate expression
     // -------------------
-    auto varList = config.getVarList();
+    VariableList varList;
+    addDataVariables(grid, varList);
     std::vector<ExpressionVariablePtr> expr({exprXi, exprEta, exprSigmaXi, exprSigmaEta});
-    std::set<std::string> usedVariables;
-    std::for_each(expr.begin(),  expr.end(),  [&](auto expr) {if(expr) expr->usedVariables(varList, usedVariables);});
-    addDataVariables(grid, varList, usedVariables);
     std::for_each(expr.begin(),  expr.end(),  [&](auto expr) {if(expr) expr->simplify(varList);});
 
     xi.resize(grid.points.size(), 0.);
     eta.resize(grid.points.size(), 0.);
     sigmasXi.resize(grid.points.size(), 1.);
     sigmasEta.resize(grid.points.size(), 1.);
-    for(UInt i=0; i<grid.values.size(); i++)
+    for(UInt i=0; i<xi.size(); i++)
     {
       evaluateDataVariables(grid, i, varList);
       if(exprXi)       xi.at(i)        = exprXi      ->evaluate(varList);
@@ -100,14 +98,14 @@ void ObservationDeflections::observation(UInt arcNo, Matrix &l, Matrix &A, Matri
       const Transform3d trf2neu = inverse(localNorthEastUp(pos, ellipsoid));
       Vector3d g;
       if(referencefield)
-        g = trf2neu.transform(normalize(referencefield->gravity(time, pos)));
+        g = 1./Planets::normalGravity(pos) * trf2neu.transform(referencefield->gravity(time, pos));
 
       l(2*obsNo+0, 0) = xi.at (idx(arcNo, obsNo)) - g.x();
       l(2*obsNo+1, 0) = eta.at(idx(arcNo, obsNo)) - g.y();
 
       Matrix G(3, parameterCount());
       parametrization->gravity(time, pos, G);
-      matMult(-1./Planets::normalGravity(pos), trf2neu.matrix().row(0,2), G, A.row(2*obsNo, 2));
+      matMult(1./Planets::normalGravity(pos), trf2neu.matrix().row(0,2), G, A.row(2*obsNo, 2));
 
       l.row(2*obsNo+0) *= 1/sigmasXi.at (idx(arcNo, obsNo));
       l.row(2*obsNo+1) *= 1/sigmasEta.at(idx(arcNo, obsNo));

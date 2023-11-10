@@ -22,19 +22,44 @@ class TreeElementSimple : public TreeElement
 {
   Q_OBJECT
 
+  QString result; // parsed value
+
 public:
   TreeElementSimple(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
-                    const QString &defaultOverride, XmlNodePtr xmlNode, Bool fromFile);
-  virtual ~TreeElementSimple() override {}
+                    const QString &defaultOverride, XmlNodePtr xmlNode, bool fillWithDefaults);
 
-/** @brief Generate XML-tree. */
-virtual XmlNodePtr getXML(Bool withEmptyNodes=false) const override;
+  /** @brief Generate XML-tree. */
+  XmlNodePtr createXmlTree(bool createRootEvenIfEmpty) const override;
 
-/** @brief Values can be edited. */
-virtual Bool isEditable() const override {return true;}
+  /** @brief Values can be edited. */
+  bool isEditable() const override {return true;}
 
-/** @brief creates an editable combo box. */
-virtual QWidget *createEditor() override {return createComboBox(true);}
+  /** @brief the selected value as result of parser. */
+  QString selectedResult() const override {return result;}
+
+  /** @brief changes the current index.
+  * calls TreeElement::selectIndex
+  * Updates the parsed result. */
+  void setSelectedIndex(int index) override;
+
+  /** @brief inform this element about changed variables.
+  * recursively called for all children. */
+  void updateParserResults(const VariableList &varList, bool /*recursively*/) override;
+
+protected:
+  virtual QString parseExpression(const QString &text, const VariableList &varList) const;
+
+public:
+  /** @brief Is it possible to overweite the element? */
+  bool canOverwrite(const QString &type) override {return (this->type() == type);}
+
+  /** @brief Copy the content of @a xmlNode into this.
+  * Is undoable.
+  * @return success */
+  bool overwrite(const QString &type, XmlNodePtr xmlNode, bool contentOnly=false) override;
+
+  /** @brief creates an editable combo box. */
+  QWidget *createEditor() override {return createComboBox(true);}
 };
 
 /***********************************************/

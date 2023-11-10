@@ -17,41 +17,75 @@
 
 /*************************************************/
 
-FileName FileName::append(const FileName& fileName) const
+FileName::FileName() : resolved(TRUE) {}
+
+/*************************************************/
+
+FileName::FileName(const std::string &name)
+  : nameUnparsed(name), nameParsed(name), resolved(TRUE) {}
+
+/*************************************************/
+
+FileName::FileName(const std::string &name, const VariableList &varList)
+  : nameUnparsed(name), resolved(FALSE), varList(varList) {}
+
+/*************************************************/
+
+void FileName::resolve() const
 {
+  try
+  {
+    if(resolved)
+      return;
+    nameParsed = StringParser::parse(nameUnparsed, varList);
+    resolved = TRUE;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/*************************************************/
+
+FileName FileName::append(const FileName &fileName) const
+{
+  resolve();
   if(empty())
     return fileName;
   std::string separator;
-  if((name_.back() != '/') && (name_.back() != '\\'))
+  if((nameParsed.back() != '/') && (nameParsed.back() != '\\'))
 #ifdef _WIN32
     separator = '\\'; // = std::filesystem::path::preferred_separator;
 #else
     separator = '/';
 #endif
-  return FileName(name_+separator+fileName.str());
+  return FileName(nameParsed+separator+fileName.str());
 }
 
 /*************************************************/
 
 FileName FileName::fullExtension() const
 {
-  auto pos = name_.rfind('.');
-  if((pos == std::string::npos) || (pos+1 == name_.size()))
+  resolve();
+  auto pos = nameParsed.rfind('.');
+  if((pos == std::string::npos) || (pos+1 == nameParsed.size()))
     return FileName();
-  std::string ext = String::upperCase(name_.substr(pos+1));
+  std::string ext = String::upperCase(nameParsed.substr(pos+1));
   if((pos > 0) && (ext == "GZ" || ext == "Z"))
   {
-    auto posNew = name_.rfind('.', pos-1);
+    auto posNew = nameParsed.rfind('.', pos-1);
     if(posNew != std::string::npos)
       pos = posNew;
   }
-  return FileName(name_.substr(pos+1));
+  return FileName(nameParsed.substr(pos+1));
 }
 
 /*************************************************/
 
 FileName FileName::typeExtension() const
 {
+  resolve();
   std::string ext = fullExtension();
   return FileName(ext.substr(0, ext.find('.')));
 }
@@ -60,6 +94,7 @@ FileName FileName::typeExtension() const
 
 FileName FileName::packExtension() const
 {
+  resolve();
   std::string ext = fullExtension();
   auto pos = ext.find('.');
   if(pos == std::string::npos)
@@ -71,16 +106,18 @@ FileName FileName::packExtension() const
 
 FileName FileName::stripFullExtension() const
 {
-  auto pos = name_.rfind("."+fullExtension().str());
+  resolve();
+  auto pos = nameParsed.rfind("."+fullExtension().str());
   if(pos == std::string::npos)
     return *this;
-  return FileName(name_.substr(0, pos));
+  return FileName(nameParsed.substr(0, pos));
 }
 
 /*************************************************/
 
 FileName FileName::replaceFullExtension(const std::string &text) const
 {
+  resolve();
   return FileName(stripFullExtension().str() + ((text.empty() || String::startsWith(text, ".")) ? "" : ".") + text);
 }
 
@@ -88,30 +125,33 @@ FileName FileName::replaceFullExtension(const std::string &text) const
 
 FileName FileName::directory() const
 {
-  auto pos = name_.find_last_of("/\\");
+  resolve();
+  auto pos = nameParsed.find_last_of("/\\");
   if(pos == std::string::npos)
     return FileName();
-  return FileName(name_.substr(0, pos+1));
+  return FileName(nameParsed.substr(0, pos+1));
 }
 
 /*************************************************/
 
 FileName FileName::stripDirectory() const
 {
-  std::string::size_type pos = name_.find_last_of("/\\");
+  resolve();
+  std::string::size_type pos = nameParsed.find_last_of("/\\");
   if(pos == std::string::npos)
     return *this;
-  return FileName(name_.substr(pos+1));
+  return FileName(nameParsed.substr(pos+1));
 }
 
 /*************************************************/
 
 FileName FileName::appendBaseName(const std::string &text) const
 {
-  auto pos = name_.rfind("."+fullExtension().str());
+  resolve();
+  auto pos = nameParsed.rfind("."+fullExtension().str());
   if(pos == std::string::npos)
-    return FileName(name_+text);
-  std::string tmp = name_;
+    return FileName(nameParsed+text);
+  std::string tmp = nameParsed;
   return FileName(tmp.insert(pos, text));
 }
 
@@ -121,7 +161,9 @@ FileName FileName::operator()(const VariableList &varList) const
 {
   try
   {
-    return FileName(StringParser::parse(name_, varList));
+    VariableList varList2 = this->varList;
+    varList2 += varList;
+    return FileName(StringParser::parse(nameUnparsed, varList2));
   }
   catch(std::exception &e)
   {

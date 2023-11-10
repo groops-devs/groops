@@ -63,11 +63,8 @@ void GriddedDataCreate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     if(exprValues.size())
     {
-      auto varList = config.getVarList();
-      std::set<std::string> usedVariables;
-      for(auto exprValue : exprValues)
-        exprValue->usedVariables(varList, usedVariables);
-      addDataVariables(grid, varList, usedVariables);
+      VariableList varList;
+      addDataVariables(grid, varList);
       for(auto exprValue : exprValues)
         exprValue->simplify(varList);
 

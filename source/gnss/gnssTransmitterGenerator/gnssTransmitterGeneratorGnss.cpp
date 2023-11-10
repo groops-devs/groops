@@ -31,8 +31,8 @@ GnssTransmitterGeneratorGnss::GnssTransmitterGeneratorGnss(Config &config)
     std::string choice;
 
     readConfig(config, "inputfileTransmitterList",  fileNamesTransmitterList, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterList.gps.txt", "ascii file with transmitter PRNs, used to loop variable {prn}");
-    readConfig(config, "inputfileTransmitterInfo",  fileNameTransmitterInfo,  Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "variable {prn} available");
-    readConfig(config, "inputfileAntennaDefintion", fileNameAntennaDef,       Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat", "phase centers and variations (ANTEX like)");
+    readConfig(config, "inputfileTransmitterInfo",  fileNameTransmitterInfo,  Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml", "variable {prn} available");
+    readConfig(config, "inputfileAntennaDefintion", fileNameAntennaDef,       Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat", "phase centers and variations (ANTEX like)");
     if(readConfigChoice(config, "noAntennaPatternFound", choice, Config::MUSTSET, "useNearestFrequency", "what should happen is no antenna pattern is found for an observation"))
     {
       if(readConfigChoiceElement(config, "ignoreObservation",   choice, "ignore observation if no matching pattern is found"))
@@ -80,13 +80,12 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
       transmitterList.insert(transmitterList.end(), list.begin(), list.end());
     }
     VariableList fileNameVariableList;
-    addVariable("prn", fileNameVariableList);
     UInt countTrans = 0;
     for(const std::string &prn : transmitterList)
     {
       try
       {
-        fileNameVariableList["prn"]->setValue(prn);
+        fileNameVariableList.setVariable("prn", prn);
 
         Platform platform;
         readFilePlatform(fileNameTransmitterInfo(fileNameVariableList), platform);
@@ -206,7 +205,7 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
 
     if(!countTrans)
     {
-      fileNameVariableList["prn"]->setValue("***");
+      fileNameVariableList.setVariable("prn", "***");
       logWarningOnce<<"Initialization of all satellites failed. Wrong file name <"<<fileNameOrbit(fileNameVariableList)<<">?"<<Log::endl;
     }
   }

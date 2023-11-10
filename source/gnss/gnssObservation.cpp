@@ -45,7 +45,7 @@ static void positionVelocityTime(const GnssReceiver &receiver, const GnssTransmi
 
     // line of sight from transmitter to receiver
     k              = normalize(posRecv - posTrans);
-    kRecv          = receiver.local2antennaFrame(idEpoch).transform(receiver.global2localFrame(idEpoch).transform(rotCrf2Trf.rotate(-k))); // line of sight in receiver antenna system (north, east, up)
+    kRecv          = receiver.global2antennaFrame(idEpoch).transform(rotCrf2Trf.rotate(-k)); // line of sight in receiver antenna system (north, east, up)
     azimutRecv     = kRecv.lambda();
     elevationRecv  = kRecv.phi();
     kTrans         = transmitter.celestial2antennaFrame(idEpoch, timeTrans).transform(k);
@@ -129,7 +129,7 @@ Bool GnssObservation::init(const GnssReceiver &receiver, const GnssTransmitter &
     // phase wind-up
     // Carrier phase wind-up in GPS reflectometry, Georg Beyerle, Springer Verlag 2008
     // -------------------------------------------------------------------------------
-    const Transform3d crf2arfRecv  = receiver.local2antennaFrame(idEpoch) * receiver.global2localFrame(idEpoch) * rotCrf2Trf;
+    const Transform3d crf2arfRecv  = receiver.global2antennaFrame(idEpoch) * rotCrf2Trf;
     const Transform3d crf2arfTrans = transmitter.celestial2antennaFrame(idEpoch, timeTrans);
     const Vector3d Tx = crf2arfRecv.transform(crossProduct(crossProduct(k, crf2arfTrans.inverseTransform(Vector3d(1,0,0))), k));
     const Vector3d Ty = crf2arfRecv.transform(crossProduct(crossProduct(k, crf2arfTrans.inverseTransform(Vector3d(0,1,0))), k));
@@ -300,7 +300,7 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
                          k, kRecvAnt, kTrans);
     const Double   rDotTrans  = inner(k, velocityTrans)/LIGHT_VELOCITY;
     const Double   rDotRecv   = inner(k, velocityRecv) /LIGHT_VELOCITY;
-    const Vector3d kRecvLocal = receiver_.local2antennaFrame(idEpoch).inverseTransform(kRecvAnt);
+    const Vector3d kRecvLocal = receiver_.global2localFrame(idEpoch).transform(rotCrf2Trf.rotate(-k));
     azimutRecvLocal    = kRecvLocal.lambda();
     elevationRecvLocal = kRecvLocal.phi();
 

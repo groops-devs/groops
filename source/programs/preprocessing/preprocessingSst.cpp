@@ -369,16 +369,13 @@ void PreprocessingSst::run(Config &config, Parallel::CommunicatorPtr comm)
 
     // Iteration
     // ---------
-    VariableList variableIteration;
-    if(iterVariableName.size())
-      addVariable(iterVariableName, variableIteration);
-
     Double sigma2ShortTimeModel = 1.;
     for(UInt iter=0; iter<iterCount; iter++)
     {
       logInfo<<"starting iteration "<<iter<<Log::endl;
+      VariableList variableIteration;
       if(iterVariableName.size())
-        variableIteration[iterVariableName]->setValue(iter);
+        variableIteration.setVariable(iterVariableName, iter);
 
       // solve normal equations
       // ----------------------

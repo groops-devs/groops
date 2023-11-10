@@ -90,10 +90,8 @@ void FilterMatrixWindowedPotentialCoefficients::run(Config &config, Parallel::Co
 
     // evaluate expression
     // -------------------
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    exprValue->usedVariables(varList, usedVariables);
-    addDataVariables(grid, varList, usedVariables);
+    VariableList varList;
+    addDataVariables(grid, varList);
     exprValue->simplify(varList);
 
     Vector windowFunction(points.size());

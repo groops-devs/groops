@@ -38,14 +38,14 @@ class MatrixGeneratorRankKUpdate : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorRankKUpdate(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorRankKUpdate::MatrixGeneratorRankKUpdate(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorRankKUpdate::MatrixGeneratorRankKUpdate(Config &config)
 {
   try
   {
@@ -61,7 +61,7 @@ inline MatrixGeneratorRankKUpdate::MatrixGeneratorRankKUpdate(Config &config) : 
 
 /***********************************************/
 
-inline void MatrixGeneratorRankKUpdate::compute(Matrix &N, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorRankKUpdate::compute(Matrix &N, UInt /*rowsBefore*/, UInt /*columnsBefore*/, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {

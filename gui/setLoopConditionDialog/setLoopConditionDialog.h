@@ -37,7 +37,7 @@ class SetLoopConditionDialog : public QDialog
 
 public:
   SetLoopConditionDialog(TreeElementGlobal *globalRoot, const QString &type, QWidget *parent=nullptr);
-  ~SetLoopConditionDialog();
+ ~SetLoopConditionDialog();
 
   QString name();
 

@@ -22,15 +22,22 @@ class TreeElementSequence : public TreeElementComplex
 {
 public:
   TreeElementSequence(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
-                      const QString &defaultOverride, XmlNodePtr xmlNode, Bool fromFile);
-  virtual ~TreeElementSequence() override {}
+                      const QString &defaultOverride, XmlNodePtr xmlNode, bool fillWithDefaults);
 
-/** @brief Generate XML-tree.
-* recursively called for all children. */
-virtual XmlNodePtr getXML(Bool withEmptyNodes=false) const override;
+  /** @brief Generate XML-tree.
+  * recursively called for all children. */
+  XmlNodePtr createXmlTree(bool /*createRootEvenIfEmpty*/) const override;
 
-/** @brief creates an uneditable combo box. */
-virtual QWidget *createEditor() override {return createComboBox(false);}
+  /** @brief Is it possible to overweite the element? */
+  bool canOverwrite(const QString &type) override {return (this->type() == type) && parentElement;}
+
+  /** @brief Copy the content of @a xmlNode into this.
+  * Is undoable.
+  * @return success */
+  bool overwrite(const QString &type, XmlNodePtr xmlNode, bool contentOnly=false) override;
+
+  /** @brief creates an uneditable combo box. */
+  QWidget *createEditor() override {return createComboBox(false);}
 };
 
 /***********************************************/
