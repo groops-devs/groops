@@ -10,7 +10,6 @@
 */
 /***********************************************/
 
-#include "ui_programDialog.h"
 #include <QSettings>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
@@ -24,6 +23,7 @@
 #include "tree/tree.h"
 #include "tree/treeElementProgram.h"
 #include "programDialog.h"
+#include "ui_programDialog.h"
 
 /***********************************************/
 
@@ -41,14 +41,12 @@ ProgramListWidget::ProgramListWidget(QWidget *parent) : QWidget(parent)
     gridLayout->addWidget(lineEdit,   1, 1);
     gridLayout->setContentsMargins(0, 0, 0, gridLayout->spacing());
 
-    this->settings = new QSettings(this);
-
     // init table
     // ----------
     QStringList headerLabel;
     treeWidget->setHeaderLabels(headerLabel << "Program" << "Comment" << "Tags");
     treeWidget->hideColumn(2);
-    treeWidget->setColumnWidth(0, settings->value("programListWidget/columnWidth", 200).toInt());
+    treeWidget->setColumnWidth(0, settings.value("programListWidget/columnWidth", 200).toInt());
     treeWidget->setAlternatingRowColors(true);
     treeWidget->setRootIsDecorated(false);
     treeWidget->setItemsExpandable(false);
@@ -83,9 +81,7 @@ ProgramListWidget::ProgramListWidget(Tree *tree, int indexSelected, QWidget *par
 
 ProgramListWidget::~ProgramListWidget()
 {
-  settings->setValue("programListWidget/columnWidth", columnWidth());
-
-  delete settings;
+  settings.setValue("programListWidget/columnWidth", columnWidth());
 }
 
 /***********************************************/
@@ -94,23 +90,20 @@ void ProgramListWidget::init(Tree *tree, int indexSelected)
 {
   try
   {
-    if(tree)
-      this->tree = tree;
-    else
-      throw(Exception("tree is null pointer"));
+    this->tree = tree;
 
     // clear list
     treeWidget->clear();
 
     // fill list
-    programList = tree->programListFromSchema();
+    programList = tree->programList();
     QTreeWidgetItem *selectedItem = nullptr;
-    for(size_t i = 0; i < programList.size(); i++)
+    for(int i=0; i<programList.size(); i++)
     {
       QTreeWidgetItem *item = new QTreeWidgetItem();
       item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
       item->setIcon(0, QIcon(":/icons/scalable/program.svg"));
-      item->setText(0, programList.at(i)->name);
+      item->setText(0, programList.at(i)->names.front());
       item->setText(1, programList.at(i)->annotation);
       item->setText(2, programList.at(i)->tags.join(", "));
 
@@ -152,62 +145,15 @@ void ProgramListWidget::init(Tree *tree, int indexSelected)
 
 void ProgramListWidget::setColumnWidth(int width)
 {
-  try
-  {
-    if(width < 0 || !treeWidget)
-      return;
-
-    treeWidget->setColumnWidth(0, width);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
+  treeWidget->setColumnWidth(0, width);
 }
 
 /***********************************************/
 
 int ProgramListWidget::selectedIndex()
 {
-  try
-  {
-    return treeWidget->getItemIndex(treeWidget->currentItem());
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
+  return treeWidget->getItemIndex(treeWidget->currentItem());
 }
-
-/***********************************************/
-
-void ProgramListWidget::setUnknownProgram(const QString &name)
-{
-  try
-  {
-    QTreeWidgetItem *tagItem = new QTreeWidgetItem();
-    tagItem->setText(0, "Unknown");
-    treeWidget->addTopLevelItem(tagItem);
-
-    QTreeWidgetItem *item = new QTreeWidgetItem();
-    item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    item->setIcon(0, QIcon(":/icons/scalable/element-unknown.svg"));
-    item->setText(0, name);
-    tagItem->addChild(item);
-    treeWidget->expandAll();
-
-    if(selectedIndex() < 0)
-    {
-      item->setSelected(true);
-      treeWidget->setCurrentItem(item);
-    }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
 
 /***********************************************/
 
@@ -248,8 +194,8 @@ void ProgramListWidget::itemActivated(QTreeWidgetItem *item, int /*column*/)
   {
     if(!item || item->childCount() || item->isHidden())
       return;
-
     emit programSelected(treeWidget->getItemIndex(item));
+    emit addProgram(programList.at(treeWidget->getItemIndex(item))->names.front());
   }
   catch(std::exception &e)
   {
@@ -272,26 +218,23 @@ void ProgramListWidget::filterChanged(QString text)
     itemsFound.append(treeWidget->findItems(filterStrings.at(0), Qt::MatchContains | Qt::MatchRecursive, 0));
     itemsFound.append(treeWidget->findItems(filterStrings.at(0), Qt::MatchContains | Qt::MatchRecursive, 1));
     itemsFound.append(treeWidget->findItems(filterStrings.at(0), Qt::MatchContains | Qt::MatchRecursive, 2));
-    itemsFound = itemsFound.toSet().values();
+    itemsFound = QSet<QTreeWidgetItem*>(itemsFound.begin(), itemsFound.end()).values();
 
     // remove items that don't contain further filter strings
-    for(int i = 1; i < filterStrings.size(); i++)
-      for(int j = itemsFound.size()-1; j >= 0; j--)
+    for(int i=1; i<filterStrings.size(); i++)
+      for(int j=itemsFound.size(); j-->0;)
         if(!itemsFound.at(j)->text(0).contains(filterStrings.at(i), Qt::CaseInsensitive) && !itemsFound.at(j)->text(1).contains(filterStrings.at(i), Qt::CaseInsensitive))
           itemsFound.removeAt(j);
 
     // hide all items
-    QTreeWidgetItemIterator it(treeWidget);
-    while(*it) {
+    for(QTreeWidgetItemIterator it(treeWidget); *it; it++)
       (*it)->setHidden(true);
-      ++it;
-    }
 
     // show found items
-    for(int i = 0; i < itemsFound.size(); i++)
+    for(int i=0; i<itemsFound.size(); i++)
     {
       itemsFound.at(i)->setHidden(false);
-      if(itemsFound.at(i)->parent() != nullptr)
+      if(itemsFound.at(i)->parent())
         itemsFound.at(i)->parent()->setHidden(false);
     }
 
@@ -302,6 +245,8 @@ void ProgramListWidget::filterChanged(QString text)
     GROOPS_RETHROW(e);
   }
 }
+
+/***********************************************/
 
 void ProgramListWidget::itemSelectionChanged()
 {
@@ -319,41 +264,16 @@ void ProgramListWidget::itemSelectionChanged()
 /***********************************************/
 /***********************************************/
 
-ProgramListWidget::TreeWidget::TreeWidget(ProgramListWidget *parent) : QTreeWidget(parent)
-{
-  try
-  {
-    if(parent)
-      programListWidget = parent;
-    else
-      throw(Exception("parent is null pointer"));
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-
-
-/***********************************************/
-
 int ProgramListWidget::TreeWidget::getItemIndex(QTreeWidgetItem *item)
 {
   try
   {
-    if(item == nullptr)
+    if(!item)
       return -1;
-
-    QTreeWidgetItemIterator it(this, QTreeWidgetItemIterator::NoChildren);
-    int index = 0;
-    while(*it) {
-      if((*it) == item)
+    QTreeWidgetItemIterator it(this, QTreeWidgetItemIterator::NoChildren); // tag items excluded
+    for(int index=0; *it; index++, it++)
+      if(*it == item)
         return index;
-      ++it;
-      ++index;
-    }
-
     return -1;
   }
   catch(std::exception &e)
@@ -398,16 +318,10 @@ void ProgramListWidget::TreeWidget::mouseMoveEvent(QMouseEvent *event)
     int index = getItemIndex(item);
     if(index >= 0 && index < static_cast<int>(programListWidget->programList.size()))
     {
-      TreeElement *element = TreeElementProgram::newTreeElement(programListWidget->tree, nullptr, programListWidget->programList.at(index), "", XmlNodePtr(nullptr), false);
-      if(element->name().startsWith("==="))
-        return;
-      QString type = element->tree->programType();
-      if(type.isEmpty())
-        return;
-      QString name = type.left(type.lastIndexOf("Type"));
-      XmlNodePtr xmlNode = XmlNodePtr(new XmlNode(name));
-      writeAttribute(xmlNode, "xsdType", type);
-      xmlNode->addChild(element->getXML());
+      TreeElement *element = TreeElementProgram::newTreeElement(programListWidget->tree, nullptr, programListWidget->programList.at(index), "", XmlNodePtr(nullptr), true/*fillWithDefaults*/);
+      XmlNodePtr xmlNode = XmlNodePtr(new XmlNode("program"));
+      writeAttribute(xmlNode, "xsdType", "programType");
+      xmlNode->addChild(element->createXmlTree());
 
       QTextStream stream(&xmlData, QIODevice::WriteOnly);
       XmlNode::write(stream, xmlNode);
@@ -443,24 +357,19 @@ ProgramDialog::ProgramDialog(TreeElementProgram *treeElement, QWidget *parent) :
   try
   {
     ui->setupUi(this);
-
     this->treeElement = treeElement;
-    this->settings = new QSettings(this);
 
     // restore size of window
     // ----------------------
     QRect parentRect(parentWidget()->mapToGlobal(QPoint(0, 0)), parentWidget()->size());
-    resize(settings->value("programDialog/size", size()).toSize());
-    move(settings->value("programDialog/position", QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), parentRect).topLeft()).toPoint());
+    resize(settings.value("programDialog/size", size()).toSize());
+    move(settings.value("programDialog/position", QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), parentRect).topLeft()).toPoint());
 
     programListWidget = new ProgramListWidget(treeElement->tree, treeElement->selectedIndex(), this);
-    programListWidget->setColumnWidth(settings->value("programDialog/columnWidth", 350).toInt());
+    programListWidget->setColumnWidth(settings.value("programDialog/columnWidth", 350).toInt());
     ui->verticalLayout->addWidget(programListWidget);
 
-    if(programListWidget->programCount() < treeElement->valueList().size())
-      programListWidget->setUnknownProgram(treeElement->selectedValue());
-
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok |QDialogButtonBox::Cancel);
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     ui->verticalLayout->addWidget(buttonBox);
 
     connect(programListWidget, SIGNAL(selectionChanged(bool)), buttonBox->button(QDialogButtonBox::Ok), SLOT(setEnabled(bool)));
@@ -478,12 +387,11 @@ ProgramDialog::ProgramDialog(TreeElementProgram *treeElement, QWidget *parent) :
 
 ProgramDialog::~ProgramDialog()
 {
-  settings->setValue("programDialog/position",    pos());
-  settings->setValue("programDialog/size",        size());
-  settings->setValue("programDialog/columnWidth", programListWidget->columnWidth());
+  settings.setValue("programDialog/position",    pos());
+  settings.setValue("programDialog/size",        size());
+  settings.setValue("programDialog/columnWidth", programListWidget->columnWidth());
 
   delete ui;
-  delete settings;
 }
 
 /***********************************************/
@@ -499,7 +407,7 @@ void ProgramDialog::programSelected(int index)
 void ProgramDialog::accept()
 {
   int index = programListWidget->selectedIndex();
-  if(index > 0)
+  if(index >= 0)
     programSelected(index);
 }
 

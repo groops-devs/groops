@@ -23,26 +23,21 @@
 
 /***********************************************/
 
-SideBar::SideBar(QWidget *parent)
+SideBar::SideBar(QWidget *parent) : QWidget(parent)
 {
   try
   {
-    if(parent)
-      this->setParent(parent);
-
-    settings = new QSettings(this);
-
     layout = new QVBoxLayout(this);
     layout->setAlignment(this, Qt::AlignTop);
     layout->setSpacing(0);
     layout->setContentsMargins(0,0,0,0);
 
-    currentIndex = -1;
+    _stackedWidget = new QStackedWidget(this);
+    _stackedWidget->setHidden(settings.value("sideBar/isHidden", false).toBool());
+    _lastWidth = settings.value("sideBar/width", parentWidget()->width()/5).toInt();
 
-    _stackedWidget = new StackedWidget(settings->value("sideBar/width", parentWidget()->width()/5).toInt());
-
-    connect(this, SIGNAL(currentChanged(int)), _stackedWidget, SLOT(setCurrentIndex(int)));
-    connect(this, SIGNAL(showHide(bool)),      _stackedWidget, SLOT(showHide(bool)));
+    buttonGroup.setExclusive(false);
+    connect(&buttonGroup, &QButtonGroup::idClicked, this, &SideBar::buttonClicked);
   }
   catch(std::exception &e)
   {
@@ -54,339 +49,167 @@ SideBar::SideBar(QWidget *parent)
 
 SideBar::~SideBar()
 {
-  if(layout)
-    delete layout;
-  if(_stackedWidget)
-    delete _stackedWidget;
+  settings.setValue("sideBar/width",    lastWidth());
+  settings.setValue("sideBar/isHidden", stackedWidget()->isHidden());
 }
 
 /***********************************************/
 
-void SideBar::addSideBarWidget(QString buttonLabel, QWidget *widget)
+void SideBar::addSideBarWidget(const QString &buttonLabel, QWidget *widget)
 {
-  addPushButton(buttonLabel);
-  _stackedWidget->addWidget(widget);
-}
-
-/***********************************************/
-
-void SideBar::setSideBarWidgetsHidden(bool hide)
-{
-  stackedWidget()->setHidden(hide);
-
-  if(hide)
-    for(size_t i = 0; i < buttons.size(); i++)
-      buttons.at(i)->setChecked(false);
-}
-
-/***********************************************/
-
-PushButton* SideBar::addPushButton(QString text, Qt::Orientation orientation)
-{
-  PushButton *button = new PushButton(text, this);
-
-  if(orientation == Qt::Vertical)
-    button->setMaximumWidth(button->minimumSizeHint().height());
-  button->setOrientation(orientation);
+  // add push button
+  PushButtonVertical *button = new PushButtonVertical(buttonLabel, this);
+  button->setMaximumWidth(button->minimumSizeHint().height()); // orientation = Qt::Vertical;
   button->setFlat(true);
   button->setCheckable(true);
-
-  connect(button, SIGNAL(clicked(bool)), this, SLOT(buttonClicked(bool)));
-
-  buttons.push_back(button);
+  button->setChecked(false);
+  buttonGroup.addButton(button, _stackedWidget->count());
   layout->addWidget(button);
 
-  if(currentIndex == -1 && !settings->value("sideBar/isHidden", false).toBool())
-  {
-    currentIndex = 0;
-    button->setChecked(true);
-  }
+  _stackedWidget->addWidget(widget);
 
-  return button;
+  buttonGroup.button(0)->setChecked(!_stackedWidget->isHidden());
+  _stackedWidget->setCurrentIndex(0);
 }
 
 /***********************************************/
 
-void SideBar::buttonClicked(bool /*checked*/)
+void SideBar::buttonClicked(int id)
 {
-  QObject* obj = sender();
-  for(size_t i = 0; i < buttons.size(); i++)
-  {
-    if(obj == buttons.at(i) || obj == _stackedWidget->widget(static_cast<int>(i)))
-    {
-      if(static_cast<int>(i) == currentIndex)
-      {
-        emit showHide(true);
-        currentIndex = -1;
-        buttons.at(i)->setChecked(false);
-      }
-      else
-      {
-        emit currentChanged(static_cast<int>(i));
-        emit showHide(false);
-        currentIndex = static_cast<int>(i);
-        buttons.at(i)->setChecked(true);
-      }
-    }
-    else
-      buttons.at(i)->setChecked(false);
-  }
+  // deselect all others
+  for(int i=0; i<_stackedWidget->count(); i++)
+    if(i != id)
+      buttonGroup.button(i)->setChecked(false);
+
+  _stackedWidget->setVisible(buttonGroup.button(id)->isChecked());
+  if(buttonGroup.button(id)->isChecked())
+    _stackedWidget->setCurrentIndex(id);
 }
 
 /***********************************************/
 
-void SideBar::showWidget()
+void SideBar::widthChanged(int width, int /*index*/)
 {
-  QObject* obj = sender();
-  for(size_t i = 0; i < buttons.size(); i++)
-  {
-    if(obj == buttons.at(i) || obj == _stackedWidget->widget(static_cast<int>(i)))
-    {
-      emit currentChanged(static_cast<int>(i));
-      emit showHide(false);
-      currentIndex = static_cast<int>(i);
-      buttons.at(i)->setChecked(true);
-    }
-    else
-      buttons.at(i)->setChecked(false);
-  }
-}
-
-/***********************************************/
-
-void StackedWidget::widthChanged(int width, int /*index*/)
-{
-  if(!isHidden())
+  if(!_stackedWidget->isHidden())
     _lastWidth = width;
 }
 
 /***********************************************/
 
-void StackedWidget::showHide(bool isCurrent)
+void PushButtonVertical::paintEvent(QPaintEvent */*event*/)
 {
-  if(!isHidden() && isCurrent)
-    hide();
-  else
-    show();
+  // support focus/hover styles
+  QStyleOptionButton options;
+  options.initFrom(this);
+  options.icon     = icon();
+  options.iconSize = iconSize();
+  if(isFlat())                                    options.features |= QStyleOptionButton::Flat;
+  if(menu())                                      options.features |= QStyleOptionButton::HasMenu;
+  if(autoDefault() || isDefault())                options.features |= QStyleOptionButton::AutoDefaultButton;
+  if(isDefault())                                 options.features |= QStyleOptionButton::DefaultButton;
+  if(isDown() || (menu() && menu()->isVisible())) options.state    |= QStyle::State_Sunken;
+  if(isChecked())                                 options.state    |= QStyle::State_On;
+  if(!isFlat() && !isDown())                      options.state    |= QStyle::State_Raised;
+
+  QPainter painter(this);
+  style()->drawControl(QStyle::CE_PushButton, &options, &painter, this);
+
+  // text render hint
+  painter.setRenderHints(QPainter::TextAntialiasing);
+  painter.rotate(-90);
+  painter.drawText(QRect(0, 0, -height(), width()), Qt::AlignHCenter | Qt::AlignVCenter, QPushButton::text());
 }
 
 /***********************************************/
 
-PushButton::PushButton(QString text, QWidget *parent)
+OpenFilesTreeWidget::OpenFilesTreeWidget(TabEnvironment *tabEnvironment, ActionList &actionList) : actionList(actionList), tabEnvironment(tabEnvironment)
 {
-  setText(text);
-  if(parent)
-    setParent(parent);
-}
-
-/***********************************************/
-
-void PushButton::setOrientation(Qt::Orientation orientation)
-{
-  _orientation = orientation;
-}
-
-/***********************************************/
-
-Qt::Orientation PushButton::orientation() const
-{
-  return _orientation;
-}
-
-/***********************************************/
-
-void PushButton::paintEvent(QPaintEvent *event)
-{
-  if(orientation() == Qt::Vertical)
-  {
-    QPainter painter(this);
-
-    // support focus/hover styles
-    QStyleOptionButton options;
-    options.initFrom(this);
-    options.icon = icon();
-    options.iconSize = iconSize();
-    if(isFlat())
-        options.features |= QStyleOptionButton::Flat;
-    if(menu())
-        options.features |= QStyleOptionButton::HasMenu;
-    if(autoDefault() || isDefault())
-        options.features |= QStyleOptionButton::AutoDefaultButton;
-    if(isDefault())
-        options.features |= QStyleOptionButton::DefaultButton;
-    if(isDown() || (menu() && menu()->isVisible()))
-        options.state |= QStyle::State_Sunken;
-    if(isChecked())
-        options.state |= QStyle::State_On;
-    if(!isFlat() && !isDown())
-        options.state |= QStyle::State_Raised;
-
-    style()->drawControl(QStyle::CE_PushButton, &options, &painter, this);
-
-    // text render hint
-    painter.setRenderHints(QPainter::TextAntialiasing);
-    painter.rotate(-90);
-
-    QRect r(0, 0, -height(), width());
-    painter.drawText(r, Qt::AlignHCenter | Qt::AlignVCenter, QPushButton::text());
-  }
-  else  // default drawing for horizontal buttons
-    QPushButton::paintEvent(event);
-}
-
-/***********************************************/
-
-QSize PushButton::minimumSizeHint() const
-{
-  QSize size = QPushButton::minimumSizeHint();
-  if(orientation() == Qt::Vertical)
-    size.transpose();
-  return size;
-}
-
-/***********************************************/
-
-QSize PushButton::sizeHint() const
-{
-  QSize size = QPushButton::sizeHint();
-  if(orientation() == Qt::Vertical)
-    size.transpose();
-  return size;
-}
-
-/***********************************************/
-
-void OpenFilesTreeWidget::init(TabEnvironment *workspace, ActionList *actionList)
-{
-  if(workspace)
-    this->workspace = workspace;
-  else
-    throw Exception("workspace uninitialized, cannot initialize Open Files side bar widget");
-
-  this->actionList = *actionList;
-
   setColumnCount(1);
   header()->close();
   setSortingEnabled(true);
   sortByColumn(0, Qt::AscendingOrder);
   viewport()->setAcceptDrops(true); // internal & external drag
-
   populateTree();
 
-  // select initial item in tree
-  Tree *tree = workspace->currentTree();
-  if(tree)
-  {
-    QTreeWidgetItemIterator it(this);
-    while(*it)
-    {
-      if((*it)->data(0, Qt::UserRole+1).toString() == "file" && (*it)->toolTip(0) == tree->fileName())
-      {
-        setCurrentItem((*it));
-        break;
-      }
-      ++it;
-    }
-  }
-
-  connect(workspace, SIGNAL(fileChanged(const QString &, bool)), this, SLOT(fileChanged(const QString &, bool)));
+  connect(tabEnvironment, SIGNAL(fileChanged(const QString&, const QString&, bool)), this, SLOT(fileChanged(const QString&, const QString&, bool)));
   connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
-  connect(this, SIGNAL(fileSelectionChanged(int)), workspace, SLOT(tabChanged(int)));
+  connect(this, SIGNAL(fileSelectionChanged(int)), tabEnvironment, SLOT(tabChanged(int)));
 }
 
 /***********************************************/
 
 void OpenFilesTreeWidget::populateTree()
 {
-  // remember collapsed status of folders and changed status of files
-  QStringList changedFiles;
+  // remember collapsed status of folders
   QStringList collapsedFolders;
-  QTreeWidgetItemIterator it(this);
-  while(*it)
-  {
-    if((*it)->data(0, Qt::UserRole+1).toString() == "folder" && !(*it)->isExpanded())
+  for(auto it = QTreeWidgetItemIterator(this); *it; it++)
+    if(((*it)->data(0, Qt::UserRole).toString() == "folder") && !(*it)->isExpanded())
       collapsedFolders.push_back((*it)->toolTip(0));
-    else if((*it)->data(0, Qt::UserRole+1).toString() == "file" && (*it)->data(0, Qt::UserRole+2).toBool() == true)
-      changedFiles.push_back((*it)->toolTip(0));
-    ++it;
-  }
 
-  // clear tree
-  clear();
+  clear(); // clear tree
 
   // populate tree with opened files
   TreeWidgetItem *topLevelItem = nullptr;
-  foreach(const QString &fileName, workspace->openedFileNames())
-  {
-    QStringList splitFileName = fileName.split("/");
-
-    // add root folder as top level item if treeWidget doesn't already have it
-    if(findItems(splitFileName[0], Qt::MatchFixedString).isEmpty())
+  for(auto &tree : tabEnvironment->trees())
+    if(!tree->fileName().isEmpty())
     {
-      topLevelItem = new TreeWidgetItem;
-      topLevelItem->setText(0, splitFileName[0]);
-      topLevelItem->setIcon(0, QIcon(":/icons/scalable/folder.svg"));
-      addTopLevelItem(topLevelItem);
-    }
+      QStringList splitFileName = tree->fileName().split("/");
 
-    QTreeWidgetItem *parentItem = topLevelItem;
-
-    // iterate through non-root directories (file name comes after)
-    for(int i = 1; i < splitFileName.size() - 1; ++i)
-    {
-      // iterate through children of parentItem to see if this directory exists
-      bool thisDirectoryExists = false;
-      for(int j = 0; j < parentItem->childCount(); ++j)
+      // add root folder as top level item if treeWidget doesn't already have it
+      if(findItems(splitFileName[0], Qt::MatchFixedString).isEmpty())
       {
-        if(splitFileName[i] == parentItem->child(j)->text(0))
+        topLevelItem = new TreeWidgetItem;
+        topLevelItem->setText(0, splitFileName[0]);
+        topLevelItem->setIcon(0, QIcon(":/icons/scalable/folder.svg"));
+        addTopLevelItem(topLevelItem);
+      }
+
+      QTreeWidgetItem *parentItem = topLevelItem;
+
+      // iterate through non-root directories (file name comes after)
+      for(int i=1; i<splitFileName.size()-1; i++)
+      {
+        // iterate through children of parentItem to see if this directory exists
+        bool thisDirectoryExists = false;
+        for(int k=0; k<parentItem->childCount(); k++)
+          if(splitFileName[i] == parentItem->child(k)->text(0))
+          {
+            thisDirectoryExists = true;
+            parentItem = parentItem->child(k);
+            break;
+          }
+
+        if(!thisDirectoryExists)
         {
-          thisDirectoryExists = true;
-          parentItem = parentItem->child(j);
-          break;
+          parentItem = new TreeWidgetItem(parentItem);
+          parentItem->setText(0, splitFileName[i].toUtf8());
+          QStringList fileName;
+          for(int k=0; k<=i; k++)
+            fileName<<splitFileName[k];
+          parentItem->setToolTip(0, fileName.join("/").toUtf8());
+          parentItem->setData(0, Qt::UserRole, QVariant(QString("folder")));
+          parentItem->setIcon(0, QIcon(":/icons/scalable/folder.svg"));
+          parentItem->setFlags(Qt::ItemIsEnabled);
         }
       }
 
-      if(!thisDirectoryExists)
-      {
-        parentItem = new TreeWidgetItem(parentItem);
-        parentItem->setText(0, splitFileName[i].toUtf8());
-        QStringList fileName;
-        for(int j = 0; j <= i; j++)
-          fileName << splitFileName[j];
-        parentItem->setToolTip(0, fileName.join("/").toUtf8());
-        parentItem->setData(0, Qt::UserRole+1, QVariant(QString("folder")));
-        parentItem->setIcon(0, QIcon(":/icons/scalable/folder.svg"));
-        parentItem->setFlags(Qt::ItemIsEnabled);
-      }
+      QTreeWidgetItem *childItem = new TreeWidgetItem(parentItem);
+      childItem->setText(0,    tree->caption());
+      childItem->setToolTip(0, tree->fileName());
+      childItem->setData(0, Qt::UserRole, QVariant(QString("file")));
+      childItem->setIcon(0, tree->isClean() ? QIcon(":/icons/scalable/text-xml.svg") : QIcon(":/icons/scalable/document-save.svg"));
     }
-
-    QTreeWidgetItem *childItem = new TreeWidgetItem(parentItem);
-    childItem->setText(0, splitFileName.last().toUtf8());
-    childItem->setToolTip(0, fileName.toUtf8());
-    childItem->setData(0, Qt::UserRole+1, QVariant(QString("file")));
-    if(changedFiles.contains(fileName))
-    {
-      childItem->setIcon(0, QIcon(":/icons/scalable/document-save.svg"));
-      childItem->setData(0, Qt::UserRole+2, QVariant(true));
-    }
-    else
-    {
-      childItem->setIcon(0, QIcon(":/icons/scalable/text-xml.svg"));
-      childItem->setData(0, Qt::UserRole+2, QVariant(false));
-    }
-  }
 
   // reduce branches to a maximum of one folder above the first file
-  it = QTreeWidgetItemIterator(this);
+  auto it = QTreeWidgetItemIterator(this);
   while(*it)
   {
-    if((*it)->data(0, Qt::UserRole+1).toString() == "folder" && (*it)->childCount() == 1 &&
-       (*it)->child(0)->data(0, Qt::UserRole+1).toString() == "folder")
+    if(((*it)->data(0, Qt::UserRole).toString() == "folder") && ((*it)->childCount() == 1) &&
+       ((*it)->child(0)->data(0, Qt::UserRole).toString() == "folder"))
     {
-      QTreeWidgetItem *parentParent = (*it)->parent();
       QTreeWidgetItem *child = (*it)->takeChild(0);
-      if(parentParent)
-        parentParent->addChild(child);
+      if((*it)->parent())
+        (*it)->parent()->addChild(child);
       else
         addTopLevelItem(child);
       it = QTreeWidgetItemIterator(this);
@@ -399,7 +222,7 @@ void OpenFilesTreeWidget::populateTree()
   it = QTreeWidgetItemIterator(this);
   while(*it)
   {
-    if((*it)->data(0, Qt::UserRole+1).toString() == "folder" && !hasFileChild((*it)))
+    if((*it)->data(0, Qt::UserRole).toString() == "folder" && !hasFileChild((*it)))
     {
       delete (*it);
       it = QTreeWidgetItemIterator(this);
@@ -413,58 +236,41 @@ void OpenFilesTreeWidget::populateTree()
   {
     QTreeWidgetItem *topLevelItem = this->topLevelItem(0);
     int directFileChildren = 0;
-    for(int i = 0; i < topLevelItem->childCount(); i++)
-      if(topLevelItem->child(i)->data(0, Qt::UserRole+1).toString() == "file")
+    for(int i=0; i<topLevelItem->childCount(); i++)
+      if(topLevelItem->child(i)->data(0, Qt::UserRole).toString() == "file")
         directFileChildren++;
-
-    if(directFileChildren == 0)
-    {
-      this->insertTopLevelItems(topLevelItemCount(), topLevelItem->takeChildren());
-      delete topLevelItem;
-    }
-    else
+    if(directFileChildren > 0)
       break;
+    this->insertTopLevelItems(topLevelItemCount(), topLevelItem->takeChildren());
+    delete topLevelItem;
   }
 
   // restore expanded/collapsed status of folders
   expandAll();
-  it = QTreeWidgetItemIterator(this);
-  while(*it)
-  {
-    if((*it)->data(0, Qt::UserRole+1).toString() == "folder" && collapsedFolders.contains((*it)->toolTip(0)))
+  for(auto it=QTreeWidgetItemIterator(this); *it; it++)
+    if(((*it)->data(0, Qt::UserRole).toString() == "folder") && collapsedFolders.contains((*it)->toolTip(0)))
       (*it)->setExpanded(false);
-    ++it;
-  }
 
   // add newly created files (without associated XML file) to top level
-  foreach(const QString &fileName, workspace->newFileNames())
-  {
-    QTreeWidgetItem *item = new TreeWidgetItem();
-    item->setText(0, fileName.toUtf8());
-    item->setToolTip(0, fileName.toUtf8());
-    item->setData(0, Qt::UserRole+1, QVariant(QString("file")));
-    if(changedFiles.contains(fileName))
+  for(auto &tree : tabEnvironment->trees())
+    if(tree->fileName().isEmpty())
     {
-      item->setIcon(0, QIcon(":/icons/scalable/document-save.svg"));
-      item->setData(0, Qt::UserRole+2, QVariant(true));
+      QTreeWidgetItem *item = new TreeWidgetItem();
+      item->setText(0, tree->caption());
+      // item->setToolTip(0, tree->caption());
+      item->setData(0, Qt::UserRole, QVariant(QString("file")));
+      item->setIcon(0, tree->isClean() ? QIcon(":/icons/scalable/text-xml.svg") : QIcon(":/icons/scalable/document-save.svg"));
+      insertTopLevelItem(topLevelItemCount(), item);
     }
-    else
-    {
-      item->setIcon(0, QIcon(":/icons/scalable/text-xml.svg"));
-      item->setData(0, Qt::UserRole+2, QVariant(false));
-    }
-    this->insertTopLevelItem(topLevelItemCount(), item);
-  }
 }
 
 /***********************************************/
 
 bool OpenFilesTreeWidget::hasFileChild(const QTreeWidgetItem *item) const
 {
-  for(int i = 0; i < item->childCount(); i++)
-    if(item->child(i)->data(0, Qt::UserRole+1).toString() == "file" || hasFileChild(item->child(i)))
+  for(int i=0; i<item->childCount(); i++)
+    if((item->child(i)->data(0, Qt::UserRole).toString() == "file") || hasFileChild(item->child(i)))
       return true;
-
   return false;
 }
 
@@ -472,73 +278,26 @@ bool OpenFilesTreeWidget::hasFileChild(const QTreeWidgetItem *item) const
 
 void OpenFilesTreeWidget::currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem */*previous*/)
 {
-  Tree *tree = workspace->currentTree();
-  if(workspace && tree && current->data(0, Qt::UserRole+1) == "file" && current->toolTip(0) != tree->fileName())
-  {
-    disconnect(workspace, SIGNAL(fileChanged(const QString &, bool)), this, SLOT(fileChanged(const QString &, bool)));
-    emit fileSelectionChanged(workspace->allFileNames().indexOf(current->toolTip(0)));
-    connect(workspace, SIGNAL(fileChanged(const QString &, bool)), this, SLOT(fileChanged(const QString &, bool)));
-  }
+  for(auto &tree : tabEnvironment->trees())
+    if((tree != tabEnvironment->currentTree()) && (current->text(0) == tree->caption()) && (current->toolTip(0) == tree->fileName()))
+    {
+      disconnect(tabEnvironment, SIGNAL(fileChanged(const QString&, const QString&, bool)), this, SLOT(fileChanged(const QString&, const QString&, bool)));
+      tabEnvironment->setCurrentTree(tree);
+      connect(tabEnvironment, SIGNAL(fileChanged(const QString&, const QString&, bool)), this, SLOT(fileChanged(const QString&, const QString&, bool)));
+      break;
+    }
 }
 
 /***********************************************/
 
-QTreeWidgetItem *OpenFilesTreeWidget::updateItemStatus(const QString &fileName, bool changed)
-{
-  QTreeWidgetItem *item = nullptr;
-  // opened file with associated XML file
-  if(!fileName.isEmpty())
-  {
-    QTreeWidgetItemIterator it(this);
-    while(*it)
-    {
-      if((*it)->toolTip(0) == fileName && (*it)->data(0, Qt::UserRole+1) == "file")
-      {
-        item = (*it);
-        break;
-      }
-      ++it;
-    }
-  }
-  // newly created file without associated XML file
-  else
-  {
-    for(int i = 0; i < topLevelItemCount(); i++)
-      if(topLevelItem(i)->data(0, Qt::UserRole+1) == "file" && topLevelItem(i)->text(0) == workspace->currentTabText())
-      {
-        item = topLevelItem(i);
-        break;
-      }
-  }
-
-  if(item)
-  {
-    if(changed)
-    {
-      item->setIcon(0, QIcon(":/icons/scalable/document-save.svg"));
-      item->setData(0, Qt::UserRole+2, QVariant(true));
-    }
-    else
-    {
-      item->setIcon(0, QIcon(":/icons/scalable/text-xml.svg"));
-      item->setData(0, Qt::UserRole+2, QVariant(false));
-    }
-  }
-
-  return item;
-}
-
-/***********************************************/
-
-void OpenFilesTreeWidget::fileChanged(const QString &fileName, bool changed)
+void OpenFilesTreeWidget::fileChanged(const QString &caption, const QString &fileName, bool /*isClean*/)
 {
   this->blockSignals(true);
   populateTree();
+  for(auto it=QTreeWidgetItemIterator(this); *it; it++)
+    if(((*it)->text(0) == caption) && ((*it)->toolTip(0) == fileName))
+      this->setCurrentItem(*it);
   this->blockSignals(false);
-
-  QTreeWidgetItem *item = updateItemStatus(fileName, changed);
-  if(item)
-    this->setCurrentItem(item);
 }
 
 /***********************************************/
@@ -546,7 +305,7 @@ void OpenFilesTreeWidget::fileChanged(const QString &fileName, bool changed)
 void OpenFilesTreeWidget::mousePressEvent(QMouseEvent *event)
 {
   QTreeWidgetItem *item = itemAt(event->pos());
-  if(item && item->data(0, Qt::UserRole+1) == "folder")
+  if(item && item->data(0, Qt::UserRole).toString() == "folder")
     item->setExpanded(!item->isExpanded());
   else
     QTreeWidget::mousePressEvent(event);
@@ -557,7 +316,7 @@ void OpenFilesTreeWidget::mousePressEvent(QMouseEvent *event)
 void OpenFilesTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 {
   QTreeWidgetItem *item = itemAt(e->pos());
-  if(!item || item->data(0, Qt::UserRole+1) == "folder")
+  if(!item || item->data(0, Qt::UserRole).toString() == "folder")
     return;
   setCurrentItem(item);
 
@@ -582,66 +341,41 @@ void OpenFilesTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 
 void OpenFilesTreeWidget::dragEnterEvent(QDragEnterEvent *event)
 {
-  try
-  {
-    // file names?
-    if(event->mimeData()->hasUrls())
-    {
-      event->acceptProposedAction();
-      return;
-    }
-
+  if(event->mimeData()->hasUrls()) // file names?
+    event->acceptProposedAction();
+  else
     event->ignore();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
 }
 
 /***********************************************/
 
 void OpenFilesTreeWidget::dragMoveEvent(QDragMoveEvent *event)
 {
-  try
-  {
-    // file names?
-    if(event->mimeData()->hasUrls())
-    {
-      event->acceptProposedAction();
-      return;
-    }
-
+  if(event->mimeData()->hasUrls()) // file names?
+    event->acceptProposedAction();
+  else
     event->ignore();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
 }
 
+/***********************************************/
 
 void OpenFilesTreeWidget::dropEvent(QDropEvent *event)
 {
-  // file names?
-  if(event->mimeData()->hasUrls())
+  if(event->mimeData()->hasUrls())  // file names?
   {
-    QList<QUrl> urls = event->mimeData()->urls();
-    for(int i=0; i<urls.size(); i++)
-      workspace->openFile(urls.at(i).toLocalFile());
+    for(auto &url : event->mimeData()->urls())
+      tabEnvironment->fileOpen(url.toLocalFile());
     event->acceptProposedAction();
   }
 }
 
 /***********************************************/
 
-bool TreeWidgetItem::operator < (const QTreeWidgetItem &other) const
+bool TreeWidgetItem::operator<(const QTreeWidgetItem &other) const
 {
-  int column = this->treeWidget()->sortColumn();
-
-  if(this->data(column, Qt::UserRole+1) == "file" && other.data(column, Qt::UserRole+1) == "folder")
+  if((this->data(0, Qt::UserRole).toString() == "file") && (other.data(0, Qt::UserRole).toString() == "folder"))
     return false;
-  else if(this->data(column, Qt::UserRole+1) == "folder" && other.data(column, Qt::UserRole+1) == "file")
+  else if((this->data(0, Qt::UserRole).toString() == "folder") && (other.data(0, Qt::UserRole).toString() == "file"))
     return true;
   else
     return QTreeWidgetItem::operator<(other);

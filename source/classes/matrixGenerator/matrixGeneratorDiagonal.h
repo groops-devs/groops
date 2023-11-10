@@ -40,14 +40,14 @@ class MatrixGeneratorDiagonal : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorDiagonal(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorDiagonal::MatrixGeneratorDiagonal(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorDiagonal::MatrixGeneratorDiagonal(Config &config)
 {
   try
   {
@@ -63,7 +63,7 @@ inline MatrixGeneratorDiagonal::MatrixGeneratorDiagonal(Config &config) : Matrix
 
 /***********************************************/
 
-inline void MatrixGeneratorDiagonal::compute(Matrix &A, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorDiagonal::compute(Matrix &A, UInt /*rowsBefore*/, UInt /*columnsBefore*/, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {

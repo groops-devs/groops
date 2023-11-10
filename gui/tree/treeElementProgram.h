@@ -27,18 +27,14 @@ class TreeElementProgram : public TreeElementChoice
 
 public:
   TreeElementProgram(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
-                       const QString &defaultOverride, XmlNodePtr xmlNode, Bool fromFile)
-    : TreeElementChoice(tree, parentElement, xsdElement, defaultOverride, xmlNode, fromFile, true/*recieveAutoComments*/) {}
-  virtual ~TreeElementProgram() override {}
+                       const QString &defaultOverride, XmlNodePtr xmlNode, bool fillWithDefaults)
+    : TreeElementChoice(tree, parentElement, xsdElement, defaultOverride, xmlNode, fillWithDefaults, true/*recieveAutoComments*/) {}
 
   /** @brief creates an uneditable combo box with addtional selector. */
-  virtual QWidget *createEditor() override;
+  QWidget *createEditor() override;
 
   /** @brief Opens program selector dialog. */
-  virtual void interact() override;
-
-  /** @brief collects all program in a list. */
-  virtual void getProgramList(QList<TreeElement*> &list) override {list.push_back(this);}
+  void interact() override;
 
 protected:
   /** @brief changes the current index.

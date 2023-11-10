@@ -15,41 +15,24 @@
 #include "tree/tree.h"
 #include "tree/treeElementComplex.h"
 #include "tree/treeElementGlobal.h"
+#include "tree/treeElementProgram.h"
 #include "tree/treeElementAdd.h"
 #include "addGlobalDialog/addGlobalDialog.h"
 
 /***********************************************/
 
 TreeElementAdd::TreeElementAdd(Tree *tree, TreeElementComplex *parentElement,
-                               XsdElementPtr xsdElement, Bool visible)
-  : TreeElement(tree, parentElement, xsdElement, "", XmlNodePtr(nullptr))
+                               XsdElementPtr xsdElement, bool visible)
+  : TreeElement(tree, parentElement, xsdElement, "", XmlNodePtr(nullptr)), unboundedCount(0), visible(visible)
 {
   try
   {
-    this->unboundedCount = 0;
-    this->visible = visible;
-
     insertNewValue("...", false);
     setSelectedIndex(0);
   }
   catch(std::exception &e)
   {
     GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-TreeElementAdd::~TreeElementAdd()
-{
-  try
-  {
-    if(unboundedCount!=0)
-      throw(Exception("unboundedCount is not empty"));
-  }
-  catch(std::exception &e)
-  {
-    qDebug() << QString::fromStdString("Exception in destructor at "+_GROOPS_ERRORLINE+"\n"+e.what());
   }
 }
 
@@ -97,16 +80,9 @@ void TreeElementAdd::pushButtonClicked()
 {
   try
   {
-    if(parentElement && parentElement == tree->elementGlobal())
-    {
-      AddGlobalDialog dialog(tree->elementGlobal(), tree);
-      if(dialog.exec())
-      {
-        QString label = dialog.elementName();
-        tree->elementGlobal()->addChild(nullptr, dialog.elementType()->type, XmlNodePtr(nullptr), label, true);
-      }
-    }
-    else if(parentElement)
+    if(dynamic_cast<TreeElementGlobal*>(parentElement))
+      dynamic_cast<TreeElementGlobal*>(parentElement)->addNewChild();
+    else
       parentElement->addChild(this, type(), XmlNodePtr(nullptr));
   }
   catch(std::exception &e)

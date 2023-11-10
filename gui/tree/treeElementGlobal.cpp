@@ -12,34 +12,53 @@
 
 #include <QtDebug>
 #include <QInputDialog>
+#include "addGlobalDialog/addGlobalDialog.h"
 #include "base/importGroops.h"
 #include "tree/tree.h"
 #include "tree/treeElement.h"
+#include "tree/treeElementSimple.h"
 #include "tree/treeElementAdd.h"
 #include "tree/treeElementComplex.h"
+#include "tree/treeElementComment.h"
 #include "tree/treeElementUnknown.h"
+#include "tree/treeItem.h"
 #include "tree/treeElementGlobal.h"
 
 /***********************************************/
 
 TreeElementGlobal::TreeElementGlobal(Tree *tree, TreeElementComplex *parentElement,
                                      XsdElementPtr xsdElement, XmlNodePtr xmlNode)
-  : TreeElementComplex(tree, parentElement, xsdElement, "", xmlNode, false, true)
+  : TreeElementComplex(tree, parentElement, xsdElement, "", xmlNode, false/*recieveAutoComments*/)
 {
   try
   {
-    tree->_elementGlobal = this;
-    addChoice("", xsdElement, QJsonObject());
-    createChildrenElements(0, xmlNode);
     if(isLinked())
       throw(Exception("global cannot be linked"));
-    setSelectedIndex(0);
+
+    addChoice("", xsdElement, QJsonObject());
+
+    // add children
+    if(xmlNode)
+      for(XmlNodePtr xmlChild = xmlNode->getNextChild(); xmlChild; xmlChild = xmlNode->getNextChild())
+      {
+        XsdElementPtr xsdChild = xsdElement->complex->getXsdElement(xmlChild->getName());
+        if(xsdChild)
+          children_[0].push_back(TreeElement::newTreeElement(tree, this, xsdChild, "", xmlChild, false/*fillWithDefaults*/));
+        else
+          children_[0].push_back(new TreeElementUnknown(tree, this, xmlChild));
+      }
+
+    // sort unknown at end
+    std::stable_sort(children_[0].begin(), children_[0].end(), [](auto e1, auto e2) {return (!dynamic_cast<TreeElementUnknown*>(e1) && dynamic_cast<TreeElementUnknown*>(e2));});
 
     // the add element
     TreeElementAdd *elementAdd = new TreeElementAdd(tree, this, xsdElement, true/*visible*/);
-    for(auto &&child : children[0])
+    for(auto &child : children_[0])
       child->setElementAdd(elementAdd);
-    children[0].push_back(elementAdd);
+    children_[0].push_back(elementAdd);
+
+    setSelectedIndex(0);
+    tree->elementGlobal = this;
   }
   catch(std::exception &e)
   {
@@ -51,26 +70,18 @@ TreeElementGlobal::TreeElementGlobal(Tree *tree, TreeElementComplex *parentEleme
 
 TreeElementGlobal::~TreeElementGlobal()
 {
-  try
-  {
-    tree->_elementGlobal = nullptr;
-  }
-  catch(std::exception &e)
-  {
-    qDebug() << QString::fromStdString("Exception in destructor at "+_GROOPS_ERRORLINE+"\n"+e.what());
-  }
+  tree->elementGlobal = nullptr;
 }
 
 /***********************************************/
 
-XmlNodePtr TreeElementGlobal::getXML(Bool /*withEmptyNodes*/) const
+XmlNodePtr TreeElementGlobal::createXmlTree(bool /*createRootEvenIfEmpty*/) const
 {
   try
   {
-    XmlNodePtr xmlNode = getBaseXML();
-    if((xmlNode==nullptr) || isLinked())
-      return xmlNode;
-    getChildrenXML(xmlNode, true/*withEmptyNodes*/);
+    XmlNodePtr xmlNode = createXmlBaseNode();
+    if(!isLinked())
+      createXmlChildren(xmlNode, true/*createRootEvenIfEmpty*/);
     return xmlNode;
   }
   catch(std::exception &e)
@@ -81,13 +92,23 @@ XmlNodePtr TreeElementGlobal::getXML(Bool /*withEmptyNodes*/) const
 
 /***********************************************/
 
-void TreeElementGlobal::informAboutGlobalElements(TreeElement *element) const
+XsdElementPtr TreeElementGlobal::findXsdElement(const QString &type) const
+{
+  auto iter = std::find_if(xsdElement->complex->elements.begin(), xsdElement->complex->elements.end(),
+                           [&type](auto &x) {return x->type == type;});
+  return (iter == xsdElement->complex->elements.end()) ? XsdElementPtr(nullptr) : *iter;
+}
+
+/***********************************************/
+/***********************************************/
+
+void TreeElementGlobal::informAboutGlobalElements(TreeElement *element, bool recursively) const
 {
   try
   {
-    for(int i=0; i<children[0].size(); i++)
-      if(!children[0][i]->isElementAdd()) // Do not send the Add element
-        element->newLink(children[0][i]);
+    for(auto elementInGlobal : children_[selectedIndex()])
+      if(!dynamic_cast<TreeElementAdd*>(elementInGlobal) && !dynamic_cast<TreeElementComment*>(elementInGlobal))
+        element->informAboutLink(elementInGlobal, recursively);
   }
   catch(std::exception &e)
   {
@@ -97,30 +118,14 @@ void TreeElementGlobal::informAboutGlobalElements(TreeElement *element) const
 
 /***********************************************/
 
-XsdComplexPtr TreeElementGlobal::xsdComplexGlobalTypes() const
-{
-  try
-  {
-    return xsdElement->complex;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-QStringList TreeElementGlobal::getChildrenNames() const
+QStringList TreeElementGlobal::names() const
 {
   try
   {
     QStringList childrenNames;
-    for(int i = 0; i < children.size(); i++)
-      for(int j = 0; j < children.at(i).size(); j++)
-        if(children.at(i).at(j)->canDisabled())
-          childrenNames.push_back(children.at(i).at(j)->name());
-
+    for(auto elementInGlobal : children_[selectedIndex()])
+      if(!dynamic_cast<TreeElementAdd*>(elementInGlobal) && !dynamic_cast<TreeElementComment*>(elementInGlobal))
+        childrenNames.push_back(elementInGlobal->name());
     return childrenNames;
   }
   catch(std::exception &e)
@@ -131,68 +136,23 @@ QStringList TreeElementGlobal::getChildrenNames() const
 
 /***********************************************/
 
-void TreeElementGlobal::createChildrenElements(int index, XmlNodePtr xmlNode)
+void TreeElementGlobal::updateVariableList()
 {
   try
   {
-    if((index<0) || (index>=xsdElementList.size()))
+    if(!tree->rootElement)
       return;
-
-    if(xmlNode && hasChildren(index))
-      throw(Exception("cannot create"));
-
-    // children not created yet?
-    if(!hasChildren(index) && xmlNode)
+    varList = VariableList();
+    for(auto elementInGlobal : children_[selectedIndex()])
     {
-      XsdComplexPtr xsdComplex = xsdComplexGlobalTypes();
-      XmlNodePtr xmlChild = xmlNode->getNextChild();
-      while(xmlChild)
-      {
-        XsdElementPtr xsdElement = xsdComplex->getXsdElement(xmlChild->getName());
+      TreeElementSimple *element = dynamic_cast<TreeElementSimple*>(elementInGlobal);
+      if(element)
+        varList.setVariable(element->name().toStdString(),
+                            (element->isLinked() ? "{"+element->selectedValue()+"}" : element->selectedValue()).toStdString());
+    }
 
-        if(!xsdElement)
-        {
-          TreeElementUnknown *treeElement = new TreeElementUnknown(tree, this, xmlChild);
-          treeElement->setElementAdd(elementAdd());
-          children[index].push_back(treeElement);
-          treeElement->trackUnknown(true);
-          xmlChild = xmlNode->getNextChild();
-          continue;
-        }
-
-        TreeElement* treeElement;
-        try
-        {
-          treeElement = TreeElement::newTreeElement(tree, this, xsdElement, "", xmlChild, true);
-        }
-        catch(...)
-        {
-          xmlChild = xmlNode->getNextChild();
-          continue;
-        }
-
-        if(treeElement && xmlChild && treeElement->type() != xmlChild->getName())
-          treeElement->setOriginalName(xmlChild->getName());
-        if(treeElement)
-          treeElement->trackRenamed(true);
-
-        // update varList
-        if(treeElement->isLinked())
-          tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(treeElement->label().toStdString(), "{"+treeElement->selectedValue().toStdString()+"}")));
-        else
-          tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(treeElement->label().toStdString(), treeElement->selectedValue().toStdString())));
-
-        children[index].push_back(treeElement);
-        xmlChild = xmlNode->getNextChild();
-      }
-    } // if(!hasChildren)
-
-    std::stable_sort(children[index].begin(), children[index].end(), [](TreeElement* e1, TreeElement* e2){ return (!e1->isUnknown() && e2->isUnknown()); });
-
-    // set autocomment for the first element
-    // -------------------------------------
-    if(recieveAutoComments && hasChildren(index))
-      children[index][0]->setPushAutoComments(true);
+    // inform all elements about changes
+    tree->rootElement->updateParserResults(varList, true/*recursively*/);
   }
   catch(std::exception &e)
   {
@@ -202,47 +162,33 @@ void TreeElementGlobal::createChildrenElements(int index, XmlNodePtr xmlNode)
 
 /***********************************************/
 
-Bool TreeElementGlobal::canAddChild(TreeElement *beforeElement, const QString &type) const
+bool TreeElementGlobal::checkLabel(const QString &oldLabel, const QString &defaultLabel, QString &label) const
 {
-  if(isProgram())
-    return false;
-
-  if(beforeElement && beforeElement->isElementAdd())
-    return true;
-
-  std::vector<XsdElementPtr> schemaTypes = xsdComplexGlobalTypes()->element;
-  for(UInt i = 0; i < schemaTypes.size(); i++)
-    if(schemaTypes.at(i)->type == type)
-      return true;
-
-  return false;
+  bool ok = true;
+  QStringList existingNames = names();
+  existingNames.removeAt(existingNames.indexOf(oldLabel));
+  if(label.isEmpty() || existingNames.contains(label))
+  {
+    if(label.isEmpty())
+      label = defaultLabel; // default name
+    label = QInputDialog::getText(tree, tr("Add global element - GROOPS"), tr("Name of global element:"), QLineEdit::Normal, label, &ok);
+    QRegularExpression regex("^[a-zA-Z]([a-zA-Z0-9])*$");
+    while(ok && (label.isEmpty() || existingNames.contains(label) || !regex.match(label).hasMatch()))
+      label = QInputDialog::getText(tree, tr("Add global element - GROOPS"), tr("Name already exists or is invalid (only letters and digits allowed)!\nChoose another name:"), QLineEdit::Normal, label, &ok);
+  }
+  return ok;
 }
 
 /***********************************************/
-
-Bool TreeElementGlobal::canRemoveChild(TreeElement *element) const
-{
-  if(element && element->isElementAdd())
-    return false;
-
-  return true;
-}
-
-
 /***********************************************/
 
-Bool TreeElementGlobal::canSetGlobal(TreeElement *element) const
+bool TreeElementGlobal::canSetGlobal(TreeElement *element) const
 {
   try
   {
-    if((!element) || element->isElementAdd())
+    if(dynamic_cast<TreeElementAdd*>(element))
       return false;
-
-    std::vector<XsdElementPtr> xsdElementList = xsdComplexGlobalTypes()->element;
-    for(UInt i=0; i<xsdElementList.size(); i++)
-      if(xsdElementList.at(i)->type == element->type())
-        return true;
-    return false;
+    return (findXsdElement(element->type()) != nullptr);
   }
   catch(std::exception &e)
   {
@@ -252,7 +198,7 @@ Bool TreeElementGlobal::canSetGlobal(TreeElement *element) const
 
 /***********************************************/
 
-Bool TreeElementGlobal::setGlobal(TreeElement *element)
+bool TreeElementGlobal::setGlobal(TreeElement *element)
 {
   try
   {
@@ -260,34 +206,26 @@ Bool TreeElementGlobal::setGlobal(TreeElement *element)
       return false;
 
     // new global elements are added to the bottom of the list by default
-    TreeElement *beforeElement = children[0].back();
-
+    TreeElement *targetElement = children_[selectedIndex()].back();
     // if element is already in global, new global element is added directly in front of it
     if(element->parentElement == this)
-      beforeElement = element;
+      targetElement = element;
 
+    tree->undoStack->beginMacro("set global "+element->name());
     // add element to global section
-    tree->undoStack()->beginMacro("set global "+element->name());
-    QString label = element->name();
-    if(!addChild(beforeElement, element->type(), element->getXML(), label))
+    TreeElement *elementGlobal = addChild(targetElement, element->type(), element->createXmlTree());
+    if(!elementGlobal)
     {
       // abort/end macro and overwrite it with empty command
-      tree->undoStack()->endMacro();
-      tree->undoStack()->undo();
-      tree->undoStack()->push(new QUndoCommand);
-      tree->undoStack()->undo();
+      tree->undoStack->endMacro();
+      tree->undoStack->undo();
+      tree->undoStack->push(new QUndoCommand);
+      tree->undoStack->undo();
       return false;
     }
-
-    // element becomes linked
-    int index = element->findLinkIndex(label);
-    if(index < 0)
-      throw(Exception("cannot find link"));
-    element->changeSelectedIndex(index);
-    element->updateExpression();
-
-    tree->undoStack()->endMacro();
-
+    // element will be linked
+    element->changeSelectedIndex(element->findLinkIndex(elementGlobal->label()));
+    tree->undoStack->endMacro();
     return true;
   }
   catch(std::exception &e)
@@ -298,67 +236,143 @@ Bool TreeElementGlobal::setGlobal(TreeElement *element)
 
 /***********************************************/
 
-Bool TreeElementGlobal::addChild(TreeElement *beforeElement, const QString &type, XmlNodePtr xmlNode, bool moved)
+TreeElement *TreeElementGlobal::addNewChild(QString type, QString label)
+{
+  try
+  {
+    if(type.isEmpty() && label.isEmpty())
+    {
+      AddGlobalDialog dialog(this, tree);
+      if(!dialog.exec())
+        return nullptr;
+      type  = dialog.elementType();
+      label = dialog.elementName();
+    }
+
+    XsdElementPtr xsdElement = findXsdElement(type);
+    if(!xsdElement)
+      return nullptr;
+
+    // create xmlNode from new element
+    TreeElement *element = TreeElement::newTreeElement(tree, this, xsdElement, "", nullptr, true/*fillWithDefaults*/);
+    element->_label = label;
+    XmlNodePtr xmlNode = element->createXmlTree(true/*createRootEvenIfEmpty*/);
+    delete element;
+
+    return addChild(children_[selectedIndex()].back(), type, xmlNode);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+bool TreeElementGlobal::canAddChild(TreeElement */*targetElement*/, const QString &type) const
+{
+  return findXsdElement(type) || (type == "COMMENT");
+}
+
+/***********************************************/
+
+bool TreeElementGlobal::canRemoveChild(TreeElement *element) const
+{
+  return element && !dynamic_cast<TreeElementAdd*>(element);
+}
+
+/***********************************************/
+
+TreeElement *TreeElementGlobal::addChild(TreeElement *targetElement, const QString &type, XmlNodePtr xmlNode)
+{
+  try
+  {
+    if(!canAddChild(targetElement, type) || !xmlNode)
+      return nullptr;
+
+    if(!targetElement)
+      targetElement = children_[selectedIndex()].back(); // default: add at end
+
+    if(type == "COMMENT")
+      return TreeElementComplex::addChild(targetElement, type, xmlNode);
+
+    QString label;
+    readAttribute(xmlNode, "label", label);
+    if(!checkLabel(QString(), xmlNode->getName(), label))
+      return nullptr;
+    writeAttribute(xmlNode, "label", label);
+
+     // create & init new element
+    TreeElement *newElement = TreeElement::newTreeElement(tree, this, findXsdElement(type), "", xmlNode, false/*fillWithDefaults*/);
+    newElement->_name  = newElement->_schemaName;
+    newElement->_label = label;
+    tree->elementGlobal->informAboutGlobalElements(newElement, false); // inform the new element about all links
+
+    tree->undoStack->beginMacro("add link "+label);
+    tree->undoStack->push(new UndoCommandRemoveAddChild(newElement, targetElement, this, true/*isAdd*/));
+    tree->rootElement->addedLink(newElement);
+    tree->undoStack->endMacro();
+
+    return newElement;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+bool TreeElementGlobal::removeChild(TreeElement *element)
+{
+  try
+  {
+    tree->undoStack->beginMacro("remove link "+element->name());
+    TreeElementComplex::removeChild(element);
+    tree->rootElement->removedLink(element);
+    tree->undoStack->endMacro();
+    return true;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+class TreeElementGlobal::UndoCommandRename : public TreeElement::UndoCommand
 {
   QString label;
-  return addChild(beforeElement, type, xmlNode, label, moved);
-}
+
+public:
+  UndoCommandRename(TreeElement *treeElement, QString label)
+  : UndoCommand(treeElement, "rename"), label(label)
+  {
+    setText("rename "+treeElement->name()+" to "+label);
+  }
+
+  void redo();
+  void undo() {redo();}
+};
 
 /***********************************************/
 
-Bool TreeElementGlobal::addChild(TreeElement *beforeElement, const QString &type, XmlNodePtr xmlNode, QString &label, bool moved)
+void TreeElementGlobal::UndoCommandRename::redo()
 {
   try
   {
-    if(!TreeElementGlobal::canAddChild(beforeElement, type))
-      throw(Exception("Cannot add child to global section"));
+    std::swap(label, treeElement->_label);
+    tree->rootElement->renamedLink(label, treeElement->_label);
+    dynamic_cast<TreeElementGlobal*>(treeElement->parentElement)->updateVariableList();
 
-    QStringList existingNames = getChildrenNames();
-    if(!moved || existingNames.contains(label))
+    if(treeElement->item())
     {
-      if(xmlNode && label.isEmpty())
-      {
-        XmlAttrPtr attributeLabel = xmlNode->getAttribute("label");
-        label = attributeLabel ? attributeLabel->getText() : xmlNode->getName();
-      }
-
-      bool ok;
-      label = QInputDialog::getText(tree, tr("Add global element - GROOPS"), tr("Name of global element:"), QLineEdit::Normal, label, &ok);
-      QRegExp regex("[a-zA-Z]([a-zA-Z0-9])*");
-      while(ok && (label.isEmpty() || existingNames.contains(label) || !regex.exactMatch(label)))
-        label = QInputDialog::getText(tree, tr("Add global element - GROOPS"), tr("Name already exists or is invalid (only letters and digits allowed)!\nChoose another name:"), QLineEdit::Normal, label, &ok);
-
-      if(!ok)
-        return false;
+      tree->setSelectedItem(treeElement->item());
+      treeElement->item()->updateName();
+      treeElement->item()->updateIcon();
     }
-
-    // set schema type of new element
-    XsdElementPtr xsdElement;
-    std::vector<XsdElementPtr> schemaTypes = xsdComplexGlobalTypes()->element;
-    for(UInt i = 0; i < schemaTypes.size(); i++)
-      if(schemaTypes.at(i)->type == type)
-        xsdElement = schemaTypes.at(i);
-
-    // remove loop and condition attributes
-    if(xmlNode)
-    {
-      xmlNode->getAttribute("loop");
-      xmlNode->getAttribute("condition");
-    }
-
-    // create & init new element
-    TreeElement *newElement = TreeElement::newTreeElement(tree, this, xsdElement, "", xmlNode, xmlNode!=nullptr);
-
-    if(!label.isEmpty())
-      newElement->setLabel(label);
-
-    tree->pushUndoCommand(new UndoCommandRemoveAddChild(newElement, beforeElement, this, true/*isAdd*/));
-    if(newElement->isLinked())
-      tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(newElement->label().toStdString(), "{"+newElement->selectedValue().toStdString()+"}")));
-    else
-      tree->setVarList().addVariable(ExpressionVariablePtr(new ExpressionVariable(newElement->label().toStdString(), newElement->selectedValue().toStdString())));
-
-    return true;
   }
   catch(std::exception &e)
   {
@@ -368,71 +382,25 @@ Bool TreeElementGlobal::addChild(TreeElement *beforeElement, const QString &type
 
 /***********************************************/
 
-Bool TreeElementGlobal::removeChild(TreeElement *element)
+bool TreeElementGlobal::canRenameChild(TreeElement *element) const
+{
+  if(dynamic_cast<const TreeElementAdd*>(element))
+    return false; // the add button cannot be renamed
+  return true;    // global elements can always be renamed
+}
+
+/***********************************************/
+
+void TreeElementGlobal::renameChild(TreeElement *element, const QString &label)
 {
   try
   {
-    tree->undoStack()->beginMacro("remove link "+element->name());
+    if(!element || !canRenameChild(element) || (label == element->label()))
+      return;
 
-    // count how often this element exists in global section (==> at this point there are two copies of the element if it was moved)
-    QStringList existingNames = getChildrenNames();
-    int count = 0;
-    for(QString name : existingNames)
-      if(name == element->name())
-        count++;
-
-    // only remove links if element was not moved
-    if(count <= 1)
-    {
-      // replace selected links to global element with copy of global element
-      QList<TreeElement*> list;
-      tree->rootElement()->getLinkedList(element->label(), list);
-      for(QList<TreeElement*>::iterator iter=list.begin(); iter!=list.end(); iter++)
-      {
-        XmlNodePtr xmlNode = element->getXML();
-        if(xmlNode != nullptr)
-        {
-          xmlNode->getAttribute("label"); // remove label
-          XmlNodePtr xmlNodeOld = (*iter)->getXML();
-          xmlNode->addAttribute(xmlNodeOld->getAttribute("loop"));
-          xmlNode->addAttribute(xmlNodeOld->getAttribute("condition"));
-          (*iter)->parentElement->overwrite(*iter, element->type(), xmlNode);
-        }
-      }
-
-      // remove unselected links to global element from all elements
-      for(int i = children[0].size()-1; i >= 0; i--)
-        if(children[0][i] == element)
-          tree->rootElement()->removeLink(element);
-
-      // remove loop from all elements in tree
-      if(element->type() == "loopType")
-      {
-        QList<TreeElement*> list;
-        tree->rootElement()->getLoopList(element->name(), list);
-        for(QList<TreeElement*>::iterator iter=list.begin(); iter!=list.end(); iter++)
-          if((*iter)->loop() == element->name())
-            (*iter)->setLoop("");
-      }
-
-      // remove condition from all elements in tree
-      if(element->type() == "conditionType")
-      {
-        QList<TreeElement*> list;
-        tree->rootElement()->getConditionList(element->name(), list);
-        for(QList<TreeElement*>::iterator iter=list.begin(); iter!=list.end(); iter++)
-          if((*iter)->condition() == element->name())
-            (*iter)->setCondition("");
-      }
-    }
-
-    // remove global element
-    if(!TreeElementComplex::removeChild(element))
-      throw(Exception("Cannot remove child from global section"));
-
-    tree->undoStack()->endMacro();
-
-    return true;
+    QString label2 = label;
+    if(checkLabel(element->label(), element->label(), label2))
+      tree->undoStack->push(new UndoCommandRename(element, label2));
   }
   catch(std::exception &e)
   {

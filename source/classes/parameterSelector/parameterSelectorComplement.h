@@ -37,7 +37,7 @@ class ParameterSelectorComplement : public ParameterSelectorBase
 
 public:
   ParameterSelectorComplement(Config &config);
-  std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterNames, VariableList varList);
+  std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterNames);
 };
 
 /***********************************************/
@@ -59,7 +59,7 @@ inline ParameterSelectorComplement::ParameterSelectorComplement(Config &config)
 
 /***********************************************/
 
-inline std::vector<UInt> ParameterSelectorComplement::indexVector(const std::vector<ParameterName> &parameterNames, VariableList /*varList*/)
+inline std::vector<UInt> ParameterSelectorComplement::indexVector(const std::vector<ParameterName> &parameterNames)
 {
   try
   {

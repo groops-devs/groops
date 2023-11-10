@@ -28,7 +28,7 @@ QWidget *TreeElementProgram::createEditor()
     openButton->setText(selectedValue());
     openButton->setStyleSheet("Text-align:left; padding: 2px; padding-left: 4px");
     openButton->setDefault(true);
-    if(isSelectionRenamed(selectedIndex()))
+    if(isSelectionRenamedInSchema(selectedIndex()))
       openButton->setIcon(QIcon(":/icons/scalable/edit-rename.svg"));
     else if(isSelectionUnknown(selectedIndex()))
       openButton->setIcon(QIcon(":/icons/scalable/element-unknown.svg"));
@@ -57,7 +57,15 @@ void TreeElementProgram::setSelectedIndex(int index)
 {
   TreeElementChoice::setSelectedIndex(index);
   if(openButton)
+  {
+    if(isSelectionRenamedInSchema(selectedIndex()))
+      openButton->setIcon(QIcon(":/icons/scalable/edit-rename.svg"));
+    else if(isSelectionUnknown(selectedIndex()))
+      openButton->setIcon(QIcon(":/icons/scalable/element-unknown.svg"));
+    else
+      openButton->setIcon(QIcon());
     openButton->setText(selectedValue());
+  }
 }
 
 /***********************************************/

@@ -14,6 +14,7 @@
 #define __GROOPSGUI__SETTINGSPATHDIALOG__
 
 #include <QDialog>
+#include <QSettings>
 #include "base/importGroops.h"
 
 /***** TYPES ***********************************/
@@ -23,8 +24,6 @@ namespace Ui
   class SettingsPathDialog;
 }
 
-class QSettings;
-
 /***** CLASS ***********************************/
 
 class SettingsPathDialog : public QDialog
@@ -32,7 +31,7 @@ class SettingsPathDialog : public QDialog
   Q_OBJECT
 
   Ui::SettingsPathDialog *ui;
-  QSettings              *settings;
+  QSettings               settings;
 
 public:
   SettingsPathDialog(QWidget *parent=nullptr);

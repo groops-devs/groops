@@ -141,9 +141,9 @@ void Grace2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr 
     }
 
     VariableList fileNameVariableList;
-    addVariable("epochStart", timeStart.mjd(),                   fileNameVariableList);
-    addVariable("epochEnd",   timeEnd.mjd(),                     fileNameVariableList);
-    addVariable("epochMid",   (0.5*timeStart+0.5*timeEnd).mjd(), fileNameVariableList);
+    fileNameVariableList.setVariable("epochStart", timeStart.mjd());
+    fileNameVariableList.setVariable("epochEnd",   timeEnd.mjd());
+    fileNameVariableList.setVariable("epochMid",   (0.5*timeStart+0.5*timeEnd).mjd());
     logStatus<<"writing potential coefficients to file <"<<fileNameOut(fileNameVariableList)<<">"<<Log::endl;
     writeFileSphericalHarmonics(fileNameOut(fileNameVariableList), SphericalHarmonics(GM, R, cnm, snm, sigma2cnm, sigma2snm));
   }

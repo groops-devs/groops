@@ -346,8 +346,7 @@ PlotAxisLabeled::PlotAxisLabeled(Config &config)
     margin = 0.5;
 
     VariableList fileNameVariableList;
-    addVariable("labelCount", fileNameVariableList);
-    fileNameVariableList["labelCount"]->setValue(static_cast<Double>(labels.size()));
+    fileNameVariableList.setVariable("labelCount", static_cast<Double>(labels.size()));
 
     vMin = exprMin->evaluate(fileNameVariableList) - 0.5;
     vMax = exprMax->evaluate(fileNameVariableList) + 0.5;

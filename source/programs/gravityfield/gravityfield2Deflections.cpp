@@ -13,10 +13,13 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 This program computes the deflections of the vertical $\xi$ in north direction
-and $\eta$ in east direction in radian of the \configClass{gravityfield}{gravityfieldType}
-vector relative to the ellipsoidal normal.
-The \configClass{gravityfield}{gravityfieldType} must provide the full gravity vector
-inclusive the centrifugal part, see \configClass{gravityfield:tides:centrifugal}{tidesType:centrifugal}.
+and $\eta$ in east direction in radian
+according to
+\begin{equation}
+\xi = g_x/\gamma \qquad\text{and}\qquad \eta=g_y/\gamma,
+\end{equation}
+where $\M g=\nabla V$ is the gravity vector from \configClass{gravityfield}{gravityfieldType} in
+the local ellipsoidal system (north, east, up) and $\gamma$ is the normal gravity at that point.
 
 The values will be saved together with points expressed as ellipsoidal coordinates (longitude, latitude, height)
 based on a reference ellipsoid with parameters \config{R} and \config{inverseFlattening}.
@@ -75,7 +78,7 @@ void Gravityfield2Deflections::run(Config &config, Parallel::CommunicatorPtr com
     std::vector<Vector3d> g(points.size());
     Parallel::forEach(g, [&](UInt i)
     {
-      return normalize(localNorthEastUp(points.at(i), ellipsoid).inverseTransform(gravityfield->gravity(time, points.at(i))));
+      return localNorthEastUp(points.at(i), ellipsoid).inverseTransform(gravityfield->gravity(time, points.at(i)))/Planets::normalGravity(points.at(i));
     }, comm);
 
     if(Parallel::isMaster(comm))

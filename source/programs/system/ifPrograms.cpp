@@ -50,7 +50,7 @@ void IfPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     readConfig(config, "elseProgram", elsePrograms, Config::OPTIONAL, "", "executed if condition evaluates to false");
     if(isCreateSchema(config)) return;
 
-    auto varList = config.getVarList();
+    VariableList varList;
     if(conditionPtr->condition(varList))
     {
       logInfo<<"  condition is true."<<Log::endl;

@@ -61,13 +61,9 @@ GravityfieldTopography::GravityfieldTopography(Config &config)
 
     // evaluate upper and lower height
     // -------------------------------
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    expressionUpper->usedVariables(varList, usedVariables);
-    expressionLower->usedVariables(varList, usedVariables);
-    expressionRho  ->usedVariables(varList, usedVariables);
-    addDataVariables(grid, varList, usedVariables);
-    addVariable("area", varList);
+    VariableList varList;
+    addDataVariables(grid, varList);
+    varList.undefineVariable("area");
     expressionUpper->simplify(varList);
     expressionLower->simplify(varList);
     expressionRho  ->simplify(varList);
@@ -79,7 +75,7 @@ GravityfieldTopography::GravityfieldTopography(Config &config)
       for(UInt s=0; s<cols; s++)
       {
         evaluateDataVariables(grid, z, s, varList);
-        varList["area"]->setValue( dLambda.at(s)*dPhi.at(z)*std::cos(phi.at(z)) ); // area
+        varList.setVariable("area", dLambda.at(s)*dPhi.at(z)*std::cos(phi.at(z)) ); // area
         rUpper(z,s) = radius.at(z) + expressionUpper->evaluate(varList);
         rLower(z,s) = radius.at(z) + expressionLower->evaluate(varList);
         rho(z,s)    = expressionRho->evaluate(varList);

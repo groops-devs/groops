@@ -102,11 +102,8 @@ void InstrumentRemoveEpochsByCriteria::run(Config &config, Parallel::Communicato
 
     // initialize data variables
     // -------------------------
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    for(UInt i=0; i<expressions.size(); i++)
-      expressions.at(i)->usedVariables(varList, usedVariables);
-    addDataVariables(data, varList, usedVariables);
+    VariableList varList;
+    addDataVariables(data, varList);
     for(UInt i=0; i<expressions.size(); i++)
       expressions.at(i)->simplify(varList);
 

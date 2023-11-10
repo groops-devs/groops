@@ -48,7 +48,7 @@ private:
 public:
   OrbitPropagatorStoermerCowell(Config &config);
 
-  OrbitArc integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
+  OrbitArc integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
                         EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const override;
 
   /** @brief Compute Stoermer predictor coefficients.
@@ -110,7 +110,7 @@ inline OrbitPropagatorStoermerCowell::OrbitPropagatorStoermerCowell(Config &conf
 
 /***********************************************/
 
-inline OrbitArc OrbitPropagatorStoermerCowell::integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces,
+inline OrbitArc OrbitPropagatorStoermerCowell::integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces,
                                                             SatelliteModelPtr satellite, EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const
 {
   try
@@ -126,7 +126,7 @@ inline OrbitArc OrbitPropagatorStoermerCowell::integrateArc(OrbitEpoch startEpoc
       // Predictor step
       // --------------
       OrbitEpoch epoch;
-      epoch.time     = orbit.at(k+order-1).time + sampling;
+      epoch.time     = startEpoch.time + (k+1) * sampling;
       epoch.position += 2*orbit.at(k+order-1).position - orbit.at(k+order-2).position;
       for(UInt j=1; j<=order; j++) // Stoermer predictor
         epoch.position += dt*dt * stoermer(j) * orbit.at(k+j-1).acceleration;

@@ -121,8 +121,22 @@ Vector3d EarthRotation::rotaryAxis(const Time &timeGPS) const
     const UInt   degree = 8;
     const Double dt     = 30*60; // 30 min
     std::vector<Rotary3d> rot(degree+1);
-    for(UInt i=0; i<=degree; i++)
-      rot.at(i) = rotaryMatrix(timeGPS + seconds2time((i-degree/2.)*dt));
+
+    try
+    {
+      for(UInt i=0; i<=degree; i++)
+        rot.at(i) = rotaryMatrix(timeGPS + seconds2time((i-degree/2.)*dt));
+    }
+    catch(std::exception &/*e*/)
+    {
+      // if time series is too short, use simplified equations
+      Double xp, yp, sp, deltaUT, LOD, X, Y, S;
+      earthOrientationParameter(timeGPS, xp, yp, sp, deltaUT, LOD, X, Y, S);
+      const Double r2  = X*X + Y*Y;
+      const Double E   = (r2 != 0.) ? std::atan2(Y, X) : 0.;
+      const Double D   = std::atan(std::sqrt(r2/(1-r2)));
+      return rotaryZ(Angle(-E)).rotate(rotaryY(Angle(-D)).rotate(Vector3d(0, 0, 72921151.467064e-12*(1-LOD/86400))));
+    }
 
     Rotary3d rot0 = inverse(rot.at(degree/2));
     for(UInt i=0; i<=degree; i++)

@@ -1194,11 +1194,11 @@ void GnssReceiver::writeTracks(const FileName &fileName, ObservationEquationList
           typeStr += type.str().substr(0, 3);
         typeStr = String::replaceAll(typeStr, "?", "");
         VariableList varList;
-        addVariable("station",        name(),                     varList);
-        addVariable("prn",            track->transmitter->name(), varList);
-        addVariable("trackTimeStart", timesTrack.front().mjd(),   varList);
-        addVariable("trackTimeEnd",   timesTrack.back().mjd(),    varList);
-        addVariable("types",          typeStr,                    varList);
+        varList.setVariable("station",        name());
+        varList.setVariable("prn",            track->transmitter->name());
+        varList.setVariable("trackTimeStart", timesTrack.front().mjd());
+        varList.setVariable("trackTimeEnd",   timesTrack.back().mjd());
+        varList.setVariable("types",          typeStr);
         InstrumentFile::write(fileName(varList), Arc(timesTrack, A));
       }
   }
@@ -1243,7 +1243,6 @@ void GnssReceiver::cycleSlipsDetection(ObservationEquationList &eqnList, GnssTra
     Matrix                combinations;
     Double                cycles2tecu;
     linearCombinations(eqnList, track, extraTypes, typesPhase, idEpochs, combinations, cycles2tecu);
-
     Vector slips(idEpochs.size());
     for(UInt k=0; k<combinations.columns(); k++)
     {
@@ -1267,23 +1266,142 @@ void GnssReceiver::cycleSlipsDetection(ObservationEquationList &eqnList, GnssTra
     rangeAndTec(eqnList, track->transmitter->idTrans(), idEpochs, typesPhase, range, tec);
 
     const UInt order = 3; // AR model order
-    if(windowSize && (tec.size() >= order+windowSize))
+    if(windowSize && (tec.size() >= order+windowSize+1))
     {
-      // high pass filter via AR model
-      Vector l = tec.row(order, tec.size()-order);
-      Matrix A = Matrix(l.rows(), order);
-      for(UInt k=0; k<order; k++)
-        copy(tec.row(order-k-1, tec.rows()-order), A.column(k));
-      leastSquares(A, l); // l contains AR model residuals after function call
+      // Estimate AR process with Burg
+      // Code mostly from books such as TimeSeriesAnalysis by James Hamilton,
+      // Introduction to TimeSeries and Forecasting by brockwell and Davis,
+      // and statsmodels implementaiton which seems to be the easiest way todo imo by using burg->lev
 
-      // peak/outlier detection using moving standard deviation over AR model residuals.
-      // automatic threshold scaling via standard deviation is used to prevent excessive
+      // Compute first diff and convert to cycles
+      // First diff is used to get rid of any additional issues within the tec
+      // also to make sure the timeseries is stationary as possible for AR estimation
+      // basically an ARIMA(3,1,0) model is used for the jump detection
+      Vector x(tec.rows()-1, 0.);
+      for(UInt i=1; i<tec.rows(); i++)
+        x(i-1) = (tec(i) - tec(i-1))/cycles2tecu;
+      x -= mean(x);
+
+      // Burg algorithm to compute the partial autocorrelations
+      Vector d(order+1, 0.);
+      d(0) = 2 * quadsum(x);
+      Vector pacf(order+1, 0.);
+      Vector u (x.rows());
+      Vector v (x.rows());
+
+      for(UInt i=1; i<=x.rows(); i++)
+      {
+        u(i-1) = x(x.rows()-i);
+        v(i-1) = x(x.rows()-i);
+      }
+
+      d(1) = inner(u.slice(0, u.rows()-1), u.slice(0, u.rows()-1)) + inner(v.slice(1, v.rows()-1), v.slice(1, v.rows()-1));
+      pacf(1) = 2./d(1) * inner(v.slice(1, v.rows()-1), u.slice(0, u.rows()-1));
+
+      Vector last_u(u.rows());
+      Vector last_v(u.rows());
+      for(UInt i=1; i<order; i++)
+      {
+        swap(u, last_u);
+        swap(v, last_v);
+        copy(last_u.slice(0, last_u.rows()-1) - pacf(i) * last_v.slice(1, last_v.rows()-1), u.slice(1, u.rows()-1));
+        copy(last_v.slice(1, last_v.rows()-1) - pacf(i) * last_u.slice(0, last_u.rows()-1), v.slice(1, v.rows()-1));
+        d(i+1)    = (1 - pacf(i)*pacf(i)) * d(i) - v(i)*v(i) - u(u.rows()-1)*u(u.rows()-1);
+        pacf(i+1) = 2/d(i+1) * inner(v.slice(i+1, v.rows()-i-1), u.slice(i, u.rows()-i-1));
+      }
+      // Solve coefficients with levinson
+      // first coefficient of pacf is always 1 and not necessary
+      pacf = pacf.slice(1, pacf.rows()-1);
+
+      Vector arCoeffs = pacf;
+      for(UInt i=1; i<order; i++)
+      {
+        Vector prev = arCoeffs.slice(0, arCoeffs.rows() - (order-i));
+        std::vector<UInt> prevIdx(prev.rows());
+        std::iota(prevIdx.begin(), prevIdx.end(), 0);
+        std::reverse(prevIdx.begin(), prevIdx.end());
+        Vector prevReverse = reorder(prev, prevIdx);
+        Vector temp = prev;
+        temp -= arCoeffs(i) * prevReverse;
+        copy(temp, arCoeffs.slice(0, arCoeffs.rows()-(order-i)));
+      }
+
+      // compute forward/backwards prediction error
+      // could also be done with slicing stuff but I think this is
+      // easier to understand
+      // Formula: x(t) - phi_1*x(t-1) - phi_2*x(t-2) - phi_3*x(t-3) = e_forward
+      //          x(t-3) - phi_1*x(t-2) - phi_2*x(t-1) - phi_3*x(t) = e_backward
+      // AR coefficients should be the same according to a lot of conditions which
+      // would theoretically need to be checked but honestly its not necessary
+      // for this scenarios.
+      Vector eForward(x.rows()-order);
+      Vector eBackward(x.rows()-order);
+      for(UInt i=0; i<x.rows()-order; i++)
+      {
+        eForward(i)  = x(i+order);
+        eBackward(i) = x(x.rows()-order-i-1);
+        for(UInt k=1; k<=order; k++)
+        {
+          eForward(i)  += (-1. * arCoeffs(k-1) * x(i+order-k));
+          eBackward(i) += (-1. * arCoeffs(k-1) * x(x.rows()-i-order-1+k));
+        }
+      }
+
+      std::vector<UInt> reverseIdx(eBackward.rows());
+      std::iota(reverseIdx.begin(), reverseIdx.end(), 0);
+      std::reverse(reverseIdx.begin(), reverseIdx.end());
+      eBackward = reorder(eBackward, reverseIdx);
+
+      // peak deteciton with the forward/backward prediction error.
+      // automatic threshold scaling via MAD is used to prevent excessive
       // splitting during periods with high ionospheric variations/scintillations
+      // Only if a jump in forward and backward occur a jump is decided to be true
+      // in case of the first n-th windowsize samples only the backwards error decides
+      // in case of the last n-th windowsize samples on the forward error decides
+      // this is due to the median and MAD otherwise loosing p-order values for the MAD etc
+      // Also this enables to check all values for a cycleslip except the first and last value in the ts
+      // slipsdetect contain the detection value for each epoch of the obs.
+      // incase a jump in forward or backward is detected will add +1 ont hat respective idx
+      // Jump is concluded to be a real jump incase forward nad backward detect a jump and the reuslt is 3
+      std::vector<UInt> slipsDetect(eForward.rows() + order + 1, 0);
+      for(UInt i=0; i<eForward.size(); i++)
+      {
+        MatrixSlice currentWindowForward  = eForward.row (std::min(std::max(i, windowSize/2)-windowSize/2, eForward.rows()-windowSize), windowSize);
+        MatrixSlice currentWindowBackward = eBackward.row(std::min(std::max(i, windowSize/2)-windowSize/2, eForward.rows()-windowSize), windowSize);
+        const Double medForw = median(currentWindowForward);
+        const Double medBack = median(currentWindowBackward);
+        const Double MADForw = tecSigmaFactor*1.4826*medianAbsoluteDeviation(currentWindowForward);
+        const Double MADBack = tecSigmaFactor*1.4826*medianAbsoluteDeviation(currentWindowBackward);
+        const UInt   idxForw = i+order+1; // These decribe the idx of the undifferenced timeseries btw
+        const UInt   idxBack = i;
+
+        // 2 different ifs required since the forward idx is not the same as the backwards idx
+        if((std::abs(eForward(i)-medForw) > 0.9) && (std::abs(eForward(i)-medForw) > MADForw))
+        {
+          // In case we are in the last window size only use forward prediction error as slip detection
+          // doing this since the MAD is worse estimated for backwards prediction error due to missing values
+          if(idxForw > slips.size()-windowSize)
+            slipsDetect.at(idxForw) += 3;
+
+          if((idxForw >= windowSize) && (idxForw <= slips.size()-windowSize))
+            slipsDetect.at(idxForw) += 2;
+        }
+        // Since this goes backwards add +1 to the idxBack to be consistent with the jump idx from forward
+        if((std::abs(eBackward(i)-medBack) > 0.9) && (std::abs(eBackward(i)-medBack) > MADBack))
+        {
+          // in case we are in the first window size only use backward prediction error as slip detection
+          if(idxBack < windowSize)
+            slipsDetect.at(idxBack+1) += 3;
+
+          if((idxBack >= windowSize) && (idxBack <= slips.size()-windowSize))
+            slipsDetect.at(idxBack+1) += 1;
+        }
+      }
+
       std::vector<UInt> slips;
-      for(UInt i=0; i<l.size(); i++)
-        if((std::fabs(l(i)) > 0.9*cycles2tecu) &&
-           (std::fabs(l(i)) > tecSigmaFactor*1.4826*medianAbsoluteDeviation(l.row(std::min(std::max(i, windowSize/2)-windowSize/2, l.rows()-windowSize), windowSize))))
-          slips.push_back(i+order);
+      for(UInt i = 0; i < slipsDetect.size(); i++)
+        if(slipsDetect.at(i) == 3)
+          slips.push_back(i);
 
       for(UInt i=slips.size(); i-->0;)
       {

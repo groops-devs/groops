@@ -99,13 +99,13 @@ void DoodsonHarmonics2PotentialCoefficients::run(Config &config, Parallel::Commu
 
     // write tides
     // -----------
-    logStatus<<"writing potential coefficients to files <"<<fileNameOut<<">"<<Log::endl;
-    auto varList = config.getVarList();
-    if(!nameName.empty())    addVariable(nameName,    varList);
-    if(!nameDoodson.empty()) addVariable(nameDoodson, varList);
-    if(!nameCosSin.empty())  addVariable(nameCosSin,  varList);
-    if(!nameIndex.empty())   addVariable(nameIndex,   varList);
-    if(!nameCount.empty())   addVariable(nameCount, static_cast<Double>(d.doodson.size()), varList);
+    VariableList varList;
+    if(!nameName.empty())    varList.undefineVariable(nameName);
+    if(!nameDoodson.empty()) varList.undefineVariable(nameDoodson);
+    if(!nameCosSin.empty())  varList.undefineVariable(nameCosSin);
+    if(!nameIndex.empty())   varList.undefineVariable(nameIndex);
+    if(!nameCount.empty())   varList.setVariable(nameCount, static_cast<Double>(d.doodson.size()));
+    logStatus<<"writing potential coefficients to files <"<<fileNameOut(varList)<<">"<<Log::endl;
 
     for(UInt i=0; i<d.doodson.size(); i++)
     {
@@ -122,12 +122,12 @@ void DoodsonHarmonics2PotentialCoefficients::run(Config &config, Parallel::Commu
       const SphericalHarmonics harmCos(d.GM, d.R, cnmCos, snmCos);
       const SphericalHarmonics harmSin(d.GM, d.R, cnmSin, snmSin);
 
-      if(!nameName.empty())    varList[nameName]->setValue(d.doodson.at(i).name());
-      if(!nameDoodson.empty()) varList[nameDoodson]->setValue(d.doodson.at(i).code());
-      if(!nameIndex.empty())   varList[nameIndex]->setValue(static_cast<Double>(i));
-      if(!nameCosSin.empty())  varList[nameCosSin]->setValue("cos");
+      if(!nameName.empty())    varList.setVariable(nameName, d.doodson.at(i).name());
+      if(!nameDoodson.empty()) varList.setVariable(nameDoodson, d.doodson.at(i).code());
+      if(!nameIndex.empty())   varList.setVariable(nameIndex, static_cast<Double>(i));
+      if(!nameCosSin.empty())  varList.setVariable(nameCosSin, "cos");
       writeFileSphericalHarmonics(fileNameOut(varList), harmCos.get(maxDegree, minDegree, GM, R));
-      if(!nameCosSin.empty())  varList[nameCosSin]->setValue("sin");
+      if(!nameCosSin.empty())  varList.setVariable(nameCosSin, "sin");
       writeFileSphericalHarmonics(fileNameOut(varList), harmSin.get(maxDegree, minDegree, GM, R));
     }
   }

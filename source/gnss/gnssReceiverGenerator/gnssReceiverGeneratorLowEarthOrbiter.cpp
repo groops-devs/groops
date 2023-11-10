@@ -71,8 +71,6 @@ GnssReceiverGeneratorLowEarthOrbiter::GnssReceiverGeneratorLowEarthOrbiter(Confi
       endSequence(config);
     } // readConfigSequence(preprocessing)
     if(isCreateSchema(config)) return;
-
-    varList = config.getVarList();
   }
   catch(std::exception &e)
   {
@@ -131,7 +129,7 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
         recv->vel.resize(times.size());
         recv->offset.resize(times.size());
         recv->global2local.resize(times.size());
-        recv->local2antenna.resize(times.size());
+        recv->global2antenna.resize(times.size());
 
         OrbitArc      orbit      = InstrumentFile::read(fileNameOrbit);
         StarCameraArc starCamera = InstrumentFile::read(fileNameStarCamera);
@@ -157,11 +155,11 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
             continue;
           }
 
-          recv->pos.at(idEpoch)           = orbit.at(i).position;
-          recv->vel.at(idEpoch)           = orbit.at(i).velocity;
-          recv->offset.at(idEpoch)        = antenna->position - platform.referencePoint(times.at(idEpoch));
-          recv->global2local.at(idEpoch)  = inverse(starCamera.at(i).rotary);
-          recv->local2antenna.at(idEpoch) = antenna->local2antennaFrame;
+          recv->pos.at(idEpoch)            = orbit.at(i).position;
+          recv->vel.at(idEpoch)            = orbit.at(i).velocity;
+          recv->global2local.at(idEpoch)   = inverse(localNorthEastUp(recv->pos.at(idEpoch), Ellipsoid()));
+          recv->global2antenna.at(idEpoch) = antenna->local2antennaFrame * inverse(starCamera.at(i).rotary);
+          recv->offset.at(idEpoch)         = recv->global2local.at(idEpoch).transform(starCamera.at(i).rotary.rotate(antenna->position - platform.referencePoint(times.at(idEpoch))));
           idEpoch++;
         }
         recv->preprocessingInfo("init()");
@@ -223,19 +221,20 @@ void GnssReceiverGeneratorLowEarthOrbiter::preprocessing(Gnss *gnss, Parallel::C
               GnssObservation *obs = recv->observation(idTrans, idEpoch);
               if(obs)
               {
-                varList["ROTI"]->setValue(0);
+                VariableList varList;
+                varList.setVariable("ROTI", 0);
                 const UInt idx = obs->index(GnssType::ROTI);
                 if(idx != NULLINDEX)
-                  varList["ROTI"]->setValue(obs->at(idx).observation);
+                  varList.setVariable("ROTI", obs->at(idx).observation);
 
                 for(UInt idType=0; idType<obs->size(); idType++)
                   if((obs->at(idType).type == GnssType::RANGE) || (obs->at(idType).type == GnssType::PHASE))
                   {
-                    varList["FREQ"]->setValue( obs->at(idType).type.frequency() );
-                    varList["SNR"]->setValue(0);
+                    varList.setVariable("FREQ",  obs->at(idType).type.frequency() );
+                    varList.setVariable("SNR", 0);
                     const UInt idx = obs->index(GnssType::SNR + (obs->at(idType).type & GnssType::FREQUENCY));
                     if(idx != NULLINDEX)
-                      varList["SNR"]->setValue(obs->at(idx).observation);
+                      varList.setVariable("SNR", obs->at(idx).observation);
 
                     if(exprSigmaPhase && (obs->at(idType).type == GnssType::PHASE))
                     {

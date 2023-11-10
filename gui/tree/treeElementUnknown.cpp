@@ -38,16 +38,14 @@ TreeElementUnknown::TreeElementUnknown(Tree *tree, TreeElementComplex *parentEle
 
 /***********************************************/
 
-XmlNodePtr TreeElementUnknown::getXML(Bool withEmptyNodes) const
+XmlNodePtr TreeElementUnknown::createXmlTree(bool /*createRootEvenIfEmpty*/) const
 {
   try
   {
-    XmlNodePtr xmlNode = TreeElement::getBaseXML();
-    if(xmlNode==nullptr)
-      return xmlNode;
+    XmlNodePtr xmlNode = TreeElement::createXmlBaseNode();
     if(!isLinked())
       xmlNode->setText(selectedValue());
-    getChildrenXML(xmlNode, withEmptyNodes);
+    createXmlChildren(xmlNode, true/*createRootEvenIfEmpty*/);
     return xmlNode;
   }
   catch(std::exception &e)

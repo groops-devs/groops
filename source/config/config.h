@@ -46,7 +46,8 @@ public:
   Config &operator=(const Config &) = delete;  //!< assignment not allowed
 
   /** @brief Gives the parsed content of the node with @a name. */
-  Bool getConfigValue(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, std::string &text);
+  Bool getConfigText(const std::string &name, const std::string &type, Config::Appearance mustSet,
+                     const std::string &defaultValue, const std::string &annotation, Bool parse, std::string &text);
 
   /** @brief Gives the parsed content of the node with @a name. */
   Bool getConfigValue(const std::string &name, const std::string &type, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation, Double &v);
@@ -212,12 +213,12 @@ template<typename T> Bool readConfig(Config &config, const std::string &name, T 
 /** @brief Removes the config of a variable from @a config and stores it in configNew.
 * It can be later evluated with configNew.read(). @a var is untouched and only used to determine the type.
 * @ingroup config */
-template<typename T> Bool readConfigLater(Config &config, const std::string &name, T &var, Config &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
+template<typename T> Bool readConfigLater(Config &config, const std::string &name, const T &var, Config &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
 /** @brief Removes the config of a variable from @a config and stores it in configNew.
 * It can be later evluated with configNew.read(). @a var is untouched and only used to determine the type.
 * @ingroup config */
-template<typename T> Bool readConfigLater(Config &config, const std::string &name, std::vector<T> &var, std::vector<Config> &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
+template<typename T> Bool readConfigLater(Config &config, const std::string &name, const std::vector<T> &var, std::vector<Config> &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
 /// @}
 
@@ -266,17 +267,17 @@ template<typename T> inline Bool readConfig(Config &config, const std::string &n
 
 /***********************************************/
 
-template<typename T> inline Bool readConfigLater(Config &config, const std::string &name, T &var, Config &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
+template<typename T> inline Bool readConfigLater(Config &config, const std::string &name, const T &var, Config &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
 {
   if(isCreateSchema(config))
   {
-    readConfig(config, name, var, mustSet, defaultValue, annotation);
+    readConfig(config, name, const_cast<T&>(var), mustSet, defaultValue, annotation);
     return FALSE;
   }
 
   // get type and unbounded
   Config configXsd;
-  readConfig(configXsd, name, var, mustSet, defaultValue, annotation);
+  readConfig(configXsd, name, const_cast<T&>(var), mustSet, defaultValue, annotation);
   XmlNodePtr xmlNode = configXsd.table()->getNextChild();
 
   if(xmlNode->getAttribute("maxOccurs"))
@@ -286,11 +287,11 @@ template<typename T> inline Bool readConfigLater(Config &config, const std::stri
 
 /***********************************************/
 
-template<typename T> inline Bool readConfigLater(Config &config, const std::string &name, std::vector<T> &var, std::vector<Config> &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
+template<typename T> inline Bool readConfigLater(Config &config, const std::string &name, const std::vector<T> &var, std::vector<Config> &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
 {
   if(isCreateSchema(config))
   {
-    readConfig(config, name, var, mustSet, defaultValue, annotation);
+    readConfig(config, name, const_cast<std::vector<T>&>(var), mustSet, defaultValue, annotation);
     return FALSE;
   }
 

@@ -38,14 +38,14 @@ class MatrixGeneratorReshape : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorReshape(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorReshape::MatrixGeneratorReshape(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorReshape::MatrixGeneratorReshape(Config &config)
 {
   try
   {
@@ -62,13 +62,17 @@ inline MatrixGeneratorReshape::MatrixGeneratorReshape(Config &config) : MatrixGe
 
 /***********************************************/
 
-inline void MatrixGeneratorReshape::compute(Matrix &A, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorReshape::compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {
     A = matrix->compute();
-    addVariable("rows",    static_cast<Double>(A.rows()),    varList);
-    addVariable("columns", static_cast<Double>(A.columns()), varList);
+
+    VariableList varList;
+    varList.setVariable("rowsBefore",    static_cast<Double>(rowsBefore));
+    varList.setVariable("columnsBefore", static_cast<Double>(columnsBefore));
+    varList.setVariable("rows",          static_cast<Double>(A.rows()));
+    varList.setVariable("columns",       static_cast<Double>(A.columns()));
     A = reshape(A, static_cast<UInt>(exprRows->evaluate(varList)), static_cast<UInt>(exprCols->evaluate(varList)));
   }
   catch(std::exception &e)

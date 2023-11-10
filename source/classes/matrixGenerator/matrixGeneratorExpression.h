@@ -41,14 +41,14 @@ class MatrixGeneratorExpression : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorExpression(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorExpression::MatrixGeneratorExpression(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorExpression::MatrixGeneratorExpression(Config &config)
 {
   try
   {
@@ -65,23 +65,27 @@ inline MatrixGeneratorExpression::MatrixGeneratorExpression(Config &config) : Ma
 
 /***********************************************/
 
-inline void MatrixGeneratorExpression::compute(Matrix &A, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorExpression::compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {
+    VariableList varList;
+    varList.setVariable("rowsBefore",    static_cast<Double>(rowsBefore));
+    varList.setVariable("columnsBefore", static_cast<Double>(columnsBefore));
+
     A = Matrix(static_cast<UInt>(exprRows->evaluate(varList)), static_cast<UInt>(exprCols->evaluate(varList)));
 
-    addVariable("rows",    static_cast<Double>(A.rows()),    varList);
-    addVariable("columns", static_cast<Double>(A.columns()), varList);
+    varList.setVariable("rows",          static_cast<Double>(A.rows()));
+    varList.setVariable("columns",       static_cast<Double>(A.columns()));
+    varList.undefineVariable("row");
+    varList.undefineVariable("column");
     expression->simplify(varList);
-    addVariable("row",    varList);
-    addVariable("column", varList);
 
     for(UInt z=0; z<A.rows(); z++)
       for(UInt s=0; s<A.columns(); s++)
       {
-        varList["row"]->setValue(static_cast<Double>(z));
-        varList["column"]->setValue(static_cast<Double>(s));
+        varList.setVariable("row",    static_cast<Double>(z));
+        varList.setVariable("column", static_cast<Double>(s));
         A(z,s) = expression->evaluate(varList);
       }
   }

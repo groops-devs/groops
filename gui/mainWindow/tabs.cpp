@@ -31,6 +31,7 @@
 #include "tree/tree.h"
 #include "tree/treeItem.h"
 #include "tree/treeElement.h"
+#include "tree/treeElementProgram.h"
 #include "mainWindow/mainWindow.h"
 #include "tabs.h"
 
@@ -40,24 +41,23 @@ TabEnvironment::TabEnvironment(QWidget *parent, ActionList *actionList, QUndoGro
 {
   try
   {
-    TabBar *tabBar = new TabBar(this, this);
+    TabBar *tabBar = new TabBar(this);
     setTabBar(tabBar);
     setMovable(true);
     setTabsClosable(true);
     setDocumentMode(true);
-    this->actionList = *actionList;
-    this->undoGroup  = undoGroup;
-    this->settings   = new QSettings(this);
+    this->actionList     = *actionList;
+    this->undoGroup      = undoGroup;
     this->newFileCounter = 0;
-    this->isFullyLoaded = false;
+    this->isFullyLoaded  = false;
 
     QPushButton *addButton = new QPushButton(QIcon(":/icons/scalable/document-new.svg"), "");
     addButton->setFlat(true);
     addButton->resize(tabBar->contentsRect().height(), tabBar->contentsRect().height());
     addButton->setIconSize(addButton->contentsRect().size()*0.9);
     setCornerWidget(addButton, Qt::TopRightCorner);
-    connect(addButton, SIGNAL(clicked()),              this, SLOT(newFile()));
 
+    connect(addButton, SIGNAL(clicked()),              this, SLOT(fileNew()));
     connect(this,      SIGNAL(currentChanged(int)),    this, SLOT(tabChanged(int)));
     connect(this,      SIGNAL(tabCloseRequested(int)), this, SLOT(tabClose(int)));
   }
@@ -75,168 +75,76 @@ TabEnvironment::~TabEnvironment()
   if(tree)
   {
     const Double width = this->width();
-    settings->setValue("tree/relativeColumnWidth0", tree->columnWidth(0)/width);
-    settings->setValue("tree/relativeColumnWidth1", tree->columnWidth(1)/width);
-    settings->setValue("tree/relativeColumnWidth2", tree->columnWidth(2)/width);
-  }
-  delete settings;
-}
-
-/***********************************************/
-/***********************************************/
-
-void TabEnvironment::saveOpenFiles()
-{
-  try
-  {
-    QStringList fileList;
-    for(int i=0; i<count(); i++)
-    {
-      Tree *tree = treeAt(i);
-      if(tree)
-      {
-        QString fileName = tree->fileName();
-        if(!fileName.isEmpty())
-          fileList<<fileName;
-      }
-    }
-    settings->setValue("openFiles", fileList);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
+    settings.setValue("tree/relativeColumnWidth0", tree->columnWidth(0)/width);
+    settings.setValue("tree/relativeColumnWidth1", tree->columnWidth(1)/width);
+    settings.setValue("tree/relativeColumnWidth2", tree->columnWidth(2)/width);
   }
 }
 
+/***********************************************/
 /***********************************************/
 
 Tree *TabEnvironment::currentTree() const
 {
-  TabPage *tabPage = dynamic_cast<TabPage*>(currentWidget());
-  return (tabPage ? tabPage->tree() : nullptr);
+  return dynamic_cast<Tree*>(currentWidget());
+}
+
+/***********************************************/
+
+void TabEnvironment::setCurrentTree(Tree *tree)
+{
+  setCurrentWidget(tree);
+}
+
+/***********************************************/
+
+QVector<Tree*> TabEnvironment::trees() const
+{
+  QVector<Tree*> trees(count());
+  for(int i=0; i<count(); i++)
+    trees[i] = dynamic_cast<Tree*>(widget(i));
+  return trees;
 }
 
 /***********************************************/
 
 Tree *TabEnvironment::treeAt(int index) const
 {
-  TabPage *tabPage = dynamic_cast<TabPage*>(widget(index));
-  return (tabPage ? tabPage->tree() : nullptr);
+  return dynamic_cast<Tree*>(widget(index));
 }
 
 /***********************************************/
-
-QStringList TabEnvironment::allFileNames() const
-{
-  QStringList fileNames;
-  for(int i=0; i<count(); i++)
-  {
-    Tree *tree = treeAt(i);
-    if(tree && !tree->fileName().isEmpty())
-      fileNames.push_back(tree->fileName());
-    else if(tree && tree->fileName().isEmpty())
-      fileNames.push_back(tabText(i));
-  }
-
-  return fileNames;
-}
-
 /***********************************************/
 
-QStringList TabEnvironment::openedFileNames() const
-{
-  QStringList fileNames;
-  for(int i=0; i<count(); i++)
-  {
-    Tree *tree = treeAt(i);
-    if(tree && !tree->fileName().isEmpty())
-      fileNames.push_back(tree->fileName());
-  }
-
-  return fileNames;
-}
-
-/***********************************************/
-
-QStringList TabEnvironment::newFileNames() const
-{
-  QStringList fileNames;
-  for(int i=0; i<count(); i++)
-  {
-    Tree *tree = treeAt(i);
-    if(tree && tree->fileName().isEmpty())
-      fileNames.push_back(tabText(i));
-  }
-
-  return fileNames;
-}
-
-/***********************************************/
-
-QString TabEnvironment::currentTabText() const
-{
-  return tabText(currentIndex());
-}
-
-/***********************************************/
-
-void TabEnvironment::resizeTreeColumns(const std::vector<int> &columnWidths)
-{
-  for(int i=0; i<count(); i++)
-  {
-    Tree *tree = treeAt(i);
-    if(tree)
-      for(size_t i = 0; i < columnWidths.size(); i++)
-        tree->setColumnWidth(i, columnWidths.at(i));
-  }
-}
-
-/***********************************************/
-
-void TabEnvironment::setShowDescriptions(Bool state)
-{
-  for(int i=0; i<count(); i++)
-  {
-    Tree *tree = treeAt(i);
-    if(tree)
-      tree->setShowDescriptions(state);
-  }
-}
-
-/***********************************************/
-
-void TabEnvironment::setShowResults(Bool state)
-{
-  for(int i=0; i<count(); i++)
-  {
-    Tree *tree = treeAt(i);
-    if(tree)
-      tree->setShowResults(state);
-  }
-}
-
-/***********************************************/
-
-Bool TabEnvironment::newFile()
+bool TabEnvironment::newTab(const QString &fileName)
 {
   try
   {
     Tree *tree = new Tree(nullptr, &actionList, this);
-    undoGroup->addStack(tree->undoStack());
-    connect(tree, SIGNAL(fileChanged(const QString &, bool)), this, SLOT(treeChanged(const QString &, bool)));
-    TabPage *page = new TabPage(tree, this);
-    insertTab(currentIndex()+1, page, QString("new%1").arg(++newFileCounter).toUtf8());
-    tree->header()->blockSignals(true);
-    Tree *currentTree = this->currentTree();
-    if(currentTree)
+
+    bool ok = false;
+    if(fileName.isEmpty())
+      ok = tree->fileNew(QString("new%1").arg(++newFileCounter));
+    else
+      ok = tree->fileOpen(fileName);
+    if(!ok)
     {
-      tree->setColumnWidth(0, currentTree->columnWidth(0));
-      tree->setColumnWidth(1, currentTree->columnWidth(1));
-      tree->setColumnWidth(2, currentTree->columnWidth(2));
+      delete tree;
+      return false;
     }
-    setCurrentWidget(page);
-    tree->header()->blockSignals(false);
-    emit fileChanged(currentTabText(), false);
+
+    // copy sections sizes from current tree
+    if(currentTree())
+    {
+      tree->setColumnWidth(0, currentTree()->columnWidth(0));
+      tree->setColumnWidth(1, currentTree()->columnWidth(1));
+      tree->setColumnWidth(2, currentTree()->columnWidth(2));
+    }
+
+    undoGroup->addStack(tree->undoStack);
+    connect(tree, SIGNAL(fileChanged(const QString&, const QString&, bool)), this, SLOT(treeFileChanged(const QString&, const QString&, bool)));
+    connect(tree, SIGNAL(sectionResized(int, int, int)), this, SLOT(treeSectionResized(int, int, int)));
+    setCurrentIndex(insertTab(currentIndex()+1, tree, tree->caption()));
     return true;
   }
   catch(std::exception &e)
@@ -247,19 +155,68 @@ Bool TabEnvironment::newFile()
 
 /***********************************************/
 
-Bool TabEnvironment::closeFile()
+bool TabEnvironment::fileOpen(const QString &fileNameConst)
+{
+  try
+  {
+    QString fileName = fileNameConst;
+
+    // no file name -> open file selector
+    if(fileName.isEmpty())
+    {
+      if(currentTree())
+        fileName = QFileInfo(currentTree()->fileName()).absolutePath();
+      if(fileName.isEmpty())
+        fileName = settings.value("files/workingDirectory", QString("../scenario")).toString();
+      fileName = QFileDialog::getOpenFileName(this, tr("Open File - GROOPS"), fileName, tr("XML files (*.xml)"));
+      if(fileName.isEmpty())
+        return false;
+    }
+
+    // file is already opened? -> select tab and reOpen
+    for(int i=0; i<count(); i++)
+      if(treeAt(i)->fileName() == QFileInfo(fileName).absoluteFilePath())
+      {
+        setCurrentIndex(i);
+        fileReOpen();
+        return true;
+      }
+
+    // current tab is new and unchanged -> overwrite
+    if(currentTree() && currentTree()->fileName().isEmpty() && currentTree()->isClean())
+      return currentTree()->fileOpen(fileName);
+
+    // new tab
+    return newTab(fileName);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+bool TabEnvironment::fileReOpen()
+{
+  return currentTree() ? currentTree()->fileOpen(currentTree()->fileName()) : false;
+}
+
+/***********************************************/
+
+bool TabEnvironment::fileClose()
 {
   try
   {
     Tree *tree = currentTree();
-    int index = currentIndex();
     if(!tree || !tree->okToAbandon())
       return false;
+    int index = currentIndex();
     if(count()==1)
-      newFile();
-    undoGroup->removeStack(tree->undoStack());
-    tree->deleteLater();
+      fileNew();
     removeTab(index);
+    undoGroup->removeStack(tree->undoStack);
+    tree->deleteLater();
     return true;
   }
   catch(std::exception &e)
@@ -270,33 +227,18 @@ Bool TabEnvironment::closeFile()
 
 /***********************************************/
 
-Bool TabEnvironment::closeOtherFiles()
+void TabEnvironment::fileCloseOther()
 {
   try
   {
-    bool allOthersClosed = true;
-    Tree* remainingTree = currentTree();
-    for(int i = count(); i --> 0; )
-    {
-      setCurrentIndex(i);
-      Tree* tree = currentTree();
-      if(!tree || tree == remainingTree)
-        continue;
-
-      if(tree->okToAbandon())
-      {
-        undoGroup->removeStack(tree->undoStack());
-        tree->deleteLater();
-        removeTab(i);
-      }
-      else
-        allOthersClosed = false;
-    }
-
-    remainingTree = currentTree();
+    Tree *remainingTree = currentTree();
     if(remainingTree)
-      emit fileChanged(remainingTree->fileName(), false);
-    return allOthersClosed;
+      for(int i=count(); i-->0;)
+      {
+        setCurrentIndex(i);
+        if(currentTree() != remainingTree)
+          fileClose();
+      }
   }
   catch(std::exception &e)
   {
@@ -306,148 +248,20 @@ Bool TabEnvironment::closeOtherFiles()
 
 /***********************************************/
 
-Bool TabEnvironment::reopenFile()
+bool TabEnvironment::okToAbandon()
 {
-  Tree *tree = currentTree();
-  bool success = tree ? tree->reopenFile() : false;
-  if(success)
-    emit fileOpened(tree->fileName());
-  return success;
-}
-
-/***********************************************/
-
-void TabEnvironment::showFileInManager() const
-{
-  Tree *tree = currentTree();
-  if(tree)
-    QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(tree->fileName()).absoluteDir().path()));
-}
-
-/***********************************************/
-
-Bool TabEnvironment::openFile(const QString &fileName, bool emitFileOpened)
-{
-  if(!fileName.isEmpty() && openedFileNames().contains(fileName))
-  {
-    setCurrentIndex(allFileNames().indexOf(fileName));
-    Tree *tree = currentTree();
-    bool success = tree ? tree->openFile(fileName) : false;
-    if(success && emitFileOpened)
-      emit fileOpened(fileName);
-    return success;
-  }
-  else if(!fileName.isEmpty() && QFileInfo(fileName).isFile())
-  {
-    if(newFile())
-    {
-      Tree *tree = currentTree();
-      bool success = tree ? tree->openFile(fileName) : false;
-      if(success && emitFileOpened)
-        emit fileOpened(fileName);
-      else if(!success)
-        closeFile();
-      return success;
-    }
-  }
-  else
-  {
-    QString name = fileName;
-    if(name.isEmpty())
-    {
-      Tree *tree = currentTree();
-      if(tree)
-        name = QFileInfo(tree->fileName()).absolutePath();
-    }
-    if(name.isEmpty())
-      name = settings->value("files/workingDirectory", QString("../scenario")).toString();
-
-    name = QFileDialog::getOpenFileName(this, tr("Open File - GROOPS"), name, tr("XML files (*.xml)"));
-    if(!name.isEmpty())
-    {
-      bool success = openFile(name);
-      if(success && emitFileOpened)
-        emit fileOpened(fileName);
-      return success;
-    }
-  }
-
-  return false;
-}
-
-void TabEnvironment::openInitialFiles()
-{
-  QStringList fileList = settings->value("openFiles").toStringList();
-  if(fileList.size())
-  {
-    for(int i=0; i<fileList.size(); i++)
-      if(QFileInfo(fileList[i]).isFile())
-        openFile(fileList[i], false/*emitFileOpened*/);
-  }
-  else
-    newFile();
-
-  if(fileList.size())
-    this->newFileCounter = 0;
-  else
-    this->newFileCounter = 1;
-}
-
-/***********************************************/
-
-Bool TabEnvironment::saveFile()
-{
-  Tree *tree = currentTree();
-  return tree ? tree->saveFile() : false;
-}
-
-/***********************************************/
-
-Bool TabEnvironment::saveAsFile(const QString &fileName)
-{
-  Tree *tree = currentTree();
-  return tree ? tree->saveAsFile(fileName) : false;
-}
-
-/***********************************************/
-
-Bool TabEnvironment::execFile()
-{
-  Tree *tree = currentTree();
-  return tree ? tree->execFile() : false;
-}
-
-/***********************************************/
-
-Bool TabEnvironment::okToAbandon()
-{
+  QStringList fileList;
   for(int i=0; i<count(); i++)
   {
     setCurrentIndex(i);
-    Tree *tree = treeAt(i);
-    if(tree && !tree->okToAbandon())
+    if(!treeAt(i)->fileName().isEmpty())
+      fileList<<treeAt(i)->fileName();
+    if(!treeAt(i)->okToAbandon())
       return false;
   }
-  saveOpenFiles();
+
+  settings.setValue("openFiles", fileList);
   return true;
-}
-
-/***********************************************/
-
-QUrl TabEnvironment::documentationUrl()
-{
-  Tree *tree = currentTree();
-  if(tree)
-  {
-    TreeItem *item = tree->getSelectedItem();
-    if(item)
-    {
-      TreeElement *element = item->treeElement();
-      QString name = (element->isProgram() ? element->selectedValue() : element->type())+".html";
-      return QUrl::fromLocalFile(settings->value("files/documentationDirectory").toString()+"/"+name);
-    }
-  }
-  return QUrl::fromLocalFile(settings->value("files/documentationDirectory").toString()+"/index.html");
 }
 
 /***********************************************/
@@ -456,21 +270,59 @@ QUrl TabEnvironment::documentationUrl()
 void TabEnvironment::showEvent(QShowEvent *event)
 {
   if(!isFullyLoaded)
-  {
-    for(int i = 0; i < count(); i++)
+    for(Tree *tree : trees())
     {
-      Tree *tree = treeAt(i);
-      if(tree)
-      {
-        tree->setColumnWidth(0, static_cast<int>(std::round(settings->value("tree/relativeColumnWidth0", 0.2).toDouble()*width())));
-        tree->setColumnWidth(1, static_cast<int>(std::round(settings->value("tree/relativeColumnWidth1", 0.4).toDouble()*width())));
-        tree->setColumnWidth(2, static_cast<int>(std::round(settings->value("tree/relativeColumnWidth2", 0.2).toDouble()*width())));
-      }
+      tree->setColumnWidth(0, static_cast<int>(std::round(settings.value("tree/relativeColumnWidth0", 0.2).toDouble()*width())));
+      tree->setColumnWidth(1, static_cast<int>(std::round(settings.value("tree/relativeColumnWidth1", 0.4).toDouble()*width())));
+      tree->setColumnWidth(2, static_cast<int>(std::round(settings.value("tree/relativeColumnWidth2", 0.2).toDouble()*width())));
     }
-    isFullyLoaded = true;
+  isFullyLoaded = true;
+  QTabWidget::showEvent(event);
+}
+
+/***********************************************/
+
+void TabEnvironment::resizeEvent(QResizeEvent *event)
+{
+  Tree *tree = currentTree();
+  if(tree && (event->oldSize().width() > 0))
+  {
+    const Double scale = 1.*event->size().width()/event->oldSize().width();
+    tree->setColumnWidth(0, static_cast<int>(std::round(scale*tree->columnWidth(0))));
+    tree->setColumnWidth(1, static_cast<int>(std::round(scale*tree->columnWidth(1))));
+    tree->setColumnWidth(2, static_cast<int>(std::round(scale*tree->columnWidth(2))));
+  }
+  QTabWidget::resizeEvent(event);
+}
+
+/***********************************************/
+/***********************************************/
+
+void TabEnvironment::treeSectionResized(int logicalIndex, int /*oldSize*/, int newSize)
+{
+  if(logicalIndex > 2)
+    return;
+  for(Tree *tree : trees())
+  {
+    tree->blockSignals(true);
+    tree->setColumnWidth(logicalIndex, newSize);
+    tree->blockSignals(false);
+  }
+}
+
+/***********************************************/
+
+void TabEnvironment::treeFileChanged(const QString &/*caption*/, const QString &/*fileName*/, bool /*isClean*/)
+{
+  for(int i=0; i<count(); i++)
+  {
+    setTabToolTip(i, treeAt(i)->fileName());
+    setTabText   (i, treeAt(i)->caption());
+    setTabIcon   (i, treeAt(i)->isClean() ? QIcon() : QIcon(":/icons/scalable/document-save.svg"));
   }
 
-  QTabWidget::showEvent(event);
+  if(currentTree())
+    emit fileChanged(currentTree()->caption(), currentTree()->fileName(), currentTree()->isClean());
 }
 
 /***********************************************/
@@ -479,13 +331,10 @@ void TabEnvironment::tabClose(int index)
 {
   // deselect all other tabs
   for(int i=0; i<count(); i++)
-  {
-    Tree *tree = treeAt(i);
-    if(tree && i != index)
-      tree->setSelectedItem(nullptr);
-  }
+    if(i != index)
+      treeAt(i)->setSelectedItem(nullptr);
   setCurrentIndex(index);
-  closeFile();
+  fileClose();
 }
 
 /***********************************************/
@@ -497,64 +346,30 @@ void TabEnvironment::tabChanged(int index)
 
   // deselect all other tabs
   for(int i=0; i<count(); i++)
-  {
-    Tree *tree = treeAt(i);
-    if(tree && i != index)
-      tree->setSelectedItem(nullptr);
-  }
+    if(i != index)
+      treeAt(i)->setCurrent(false);
 
-  Tree *tree = currentTree();
-  if(tree)
+  if(currentTree())
   {
-    undoGroup->setActiveStack(tree->undoStack());
-    emit fileChanged(tree->fileName(), tree->isChanged());
-  }
-}
-
-/***********************************************/
-
-void TabEnvironment::treeChanged(const QString &/*fileName*/, bool /*changed*/)
-{
-  for(int i=0; i<count(); i++)
-  {
-    Tree *tree = treeAt(i);
-    if(tree)
-    {
-      QString fileName = tree->fileName();
-      setTabToolTip(i, fileName);
-      setTabText   (i, (fileName.isEmpty()) ? tabText(i) : QFileInfo(fileName).fileName());
-      setTabIcon   (i, ((tree->isChanged()) ? QIcon(":/icons/scalable/document-save.svg") : QIcon()));
-    }
-  }
-
-  Tree *tree = currentTree();
-  if(tree)
-  {
-    undoGroup->setActiveStack(tree->undoStack());
-    emit fileChanged(tree->fileName(), tree->isChanged());
+    currentTree()->setCurrent(true);
+    undoGroup->setActiveStack(currentTree()->undoStack);
+    emit fileChanged(currentTree()->caption(), currentTree()->fileName(), currentTree()->isClean());
   }
 }
 
 /***********************************************/
 /***********************************************/
 
-TabBar::TabBar(TabEnvironment *tabEnvironment, QWidget *parent) : QTabBar(parent)
+TabBar::TabBar(TabEnvironment *tabEnvironment) : QTabBar(tabEnvironment), tabEnvironment(tabEnvironment)
 {
-  tabs = tabEnvironment;
   setAcceptDrops(true);
-}
-
-/***********************************************/
-
-TabBar::~TabBar()
-{
 }
 
 /***********************************************/
 
 void TabBar::mouseDoubleClickEvent(QMouseEvent */*e*/)
 {
-  tabs->newFile();
+  tabEnvironment->fileNew();
 }
 
 /***********************************************/
@@ -564,25 +379,25 @@ void TabBar::contextMenuEvent(QContextMenuEvent *e)
   int index = tabAt(e->pos());
   if(index < 0)
     return;
-  tabs->setCurrentIndex(index);
+  tabEnvironment->setCurrentIndex(index);
 
   QMenu *contextMenu = new QMenu(this);
-  contextMenu->addAction(tabs->actionList.fileNewAction);
-  contextMenu->addAction(tabs->actionList.fileOpenAction);
-  contextMenu->addAction(tabs->actionList.fileReOpenAction);
-  contextMenu->addAction(tabs->actionList.fileShowInManagerAction);
+  contextMenu->addAction(tabEnvironment->actionList.fileNewAction);
+  contextMenu->addAction(tabEnvironment->actionList.fileOpenAction);
+  contextMenu->addAction(tabEnvironment->actionList.fileReOpenAction);
+  contextMenu->addAction(tabEnvironment->actionList.fileShowInManagerAction);
   contextMenu->addSeparator();
-  contextMenu->addAction(tabs->actionList.fileSaveAction);
-  contextMenu->addAction(tabs->actionList.fileSaveAsAction);
+  contextMenu->addAction(tabEnvironment->actionList.fileSaveAction);
+  contextMenu->addAction(tabEnvironment->actionList.fileSaveAsAction);
   contextMenu->addSeparator();
-  contextMenu->addAction(tabs->actionList.fileRunAction);
+  contextMenu->addAction(tabEnvironment->actionList.fileRunAction);
   contextMenu->addSeparator();
-  contextMenu->addAction(tabs->actionList.editEnableAllAction);
-  contextMenu->addAction(tabs->actionList.editDisableAllAction);
-  contextMenu->addAction(tabs->actionList.editCollapseAllAction);
+  contextMenu->addAction(tabEnvironment->actionList.editEnableAllAction);
+  contextMenu->addAction(tabEnvironment->actionList.editDisableAllAction);
+  contextMenu->addAction(tabEnvironment->actionList.editCollapseAllAction);
   contextMenu->addSeparator();
-  contextMenu->addAction(tabs->actionList.fileCloseAction);
-  contextMenu->addAction(tabs->actionList.fileCloseOtherAction);
+  contextMenu->addAction(tabEnvironment->actionList.fileCloseAction);
+  contextMenu->addAction(tabEnvironment->actionList.fileCloseOtherAction);
   contextMenu->exec(e->globalPos());
   delete contextMenu;
 }
@@ -635,36 +450,23 @@ void TabBar::dragMoveEvent(QDragMoveEvent *event)
 
 void TabBar::dropEvent(QDropEvent *event)
 {
-  try
+  if(event->mimeData()->hasUrls()) // file names?
   {
-    // file names?
-    if(!event->mimeData()->hasUrls())
-    {
-      QTabBar::dropEvent(event);
-      return;
-    }
-
-    QList<QUrl> urls = event->mimeData()->urls();
-    for(int i=0; i<urls.size(); i++)
-    {
-      tabs->openFile(urls.at(i).toLocalFile());
-    }
+    for(auto &url : event->mimeData()->urls())
+      tabEnvironment->fileOpen(url.toLocalFile());
     event->acceptProposedAction();
   }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
+  else
+    QTabBar::dropEvent(event);
 }
 
 /***********************************************/
 
 void TabBar::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton)
-        dragStartPosition = event->pos();
-
-    QTabBar::mousePressEvent(event);
+  if(event->button() == Qt::LeftButton)
+    dragStartPosition = event->pos();
+  QTabBar::mousePressEvent(event);
 }
 
 /***********************************************/
@@ -690,8 +492,8 @@ void TabBar::mouseMoveEvent(QMouseEvent *event)
 
   // Tab is dragged outside of TabBar
   // --------------------------------
-  tabs->setCurrentIndex(index);
-  Tree *tree = tabs->currentTree();
+  tabEnvironment->setCurrentIndex(index);
+  Tree *tree = tabEnvironment->currentTree();
   if(!tree)
     return;
 
@@ -731,152 +533,8 @@ void TabBar::mouseMoveEvent(QMouseEvent *event)
     // close tab if file is moved (Shift+Drag)
     Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
     if(modifiers == Qt::ShiftModifier)
-      tabs->closeFile();
+      tabEnvironment->fileClose();
   }
-}
-
-/***********************************************/
-
-TabPage::TabPage(Tree *tree, TabEnvironment *parent) : QWidget(parent)
-{
-  this->_tree = tree;
-
-  // Bar handling external file changes
-  {
-    QPushButton *buttonReopen = new QPushButton(QIcon(":/icons/scalable/view-refresh.svg"), "Reopen", this);
-    QPushButton *buttonIgnore = new QPushButton(QIcon(":/icons/scalable/ignore.svg"), "Ignore", this);
-    QLabel *iconLabel = new QLabel(this);
-    iconLabel->setPixmap(QIcon(":/icons/scalable/warning.svg").pixmap(24,24));
-    QHBoxLayout *layoutBar = new QHBoxLayout(this);
-    layoutBar->addWidget(iconLabel);
-    layoutBar->addWidget(new QLabel("File was modified externally. Reopen?", this), 1);
-    layoutBar->addWidget(buttonReopen);
-    layoutBar->addWidget(buttonIgnore);
-    layoutBar->setMargin(3);
-    barFileChanged = new QFrame(this);
-    barFileChanged->setFrameStyle(QFrame::Box);
-    barFileChanged->setLayout(layoutBar);
-    barFileChanged->setVisible(false);
-    const QString highlightColor = barFileChanged->palette().highlight().color().name().right(6);
-    barFileChanged->setStyleSheet(".QFrame { color: #"+highlightColor+"; background-color: #4d"+highlightColor+" }");
-
-    connect(buttonReopen, &QPushButton::clicked,  this, &TabPage::fileChangeClickedReopen);
-    connect(buttonIgnore, &QPushButton::clicked,  this, &TabPage::barClickedIgnore);
-    connect(tree,         &Tree::treeFileChanged, this, &TabPage::treeFileChanged);
-  }
-
-  // Bar handling unknown elements
-  {
-    QPushButton *buttonShowAll = new QPushButton(QIcon(":/icons/scalable/edit-find-replace.svg"), "Show all", this);
-    QPushButton *buttonRemoveAll = new QPushButton(QIcon(":/icons/scalable/edit-delete.svg"), "Remove all", this);
-    QPushButton *buttonIgnore = new QPushButton(QIcon(":/icons/scalable/ignore.svg"), "Ignore", this);
-    buttonRemoveAll->setMinimumWidth(95);
-    QLabel *iconLabel = new QLabel(this);
-    iconLabel->setPixmap(QIcon(":/icons/scalable/help-about.svg").pixmap(24,24));
-    QHBoxLayout *layoutBar = new QHBoxLayout(this);
-    labelUnknownElements = new QLabel(this);
-    layoutBar->addWidget(iconLabel);
-    layoutBar->addWidget(labelUnknownElements, 1);
-    layoutBar->addWidget(buttonShowAll);
-    layoutBar->addWidget(buttonRemoveAll);
-    layoutBar->addWidget(buttonIgnore);
-    layoutBar->setMargin(3);
-    barUnknownElements = new QFrame(this);
-    barUnknownElements->setFrameStyle(QFrame::Box);
-    barUnknownElements->setLayout(layoutBar);
-    barUnknownElements->setVisible(false);
-    const QString highlightColor = barUnknownElements->palette().highlight().color().name().right(6);
-    barUnknownElements->setStyleSheet(".QFrame { color: #"+highlightColor+"; background-color: #4d"+highlightColor+" }");
-
-    connect(buttonShowAll,   &QPushButton::clicked,         tree, &Tree::expandUnknownElements);
-    connect(buttonRemoveAll, &QPushButton::clicked,         tree, &Tree::removeAllUnknownElements);
-    connect(buttonIgnore,    &QPushButton::clicked,         this, &TabPage::barClickedIgnore);
-    connect(tree,            &Tree::unknownElementsChanged, this, &TabPage::unknownElementsChanged);
-  }
-
-  // Bar handling renamed elements
-  {
-    QPushButton *buttonShowAll = new QPushButton(QIcon(":/icons/scalable/edit-find-replace.svg"), "Show all", this);
-    QPushButton *buttonUpdateAll = new QPushButton(QIcon(":/icons/scalable/edit-rename.svg"), "Update all", this);
-    QPushButton *buttonIgnore = new QPushButton(QIcon(":/icons/scalable/ignore.svg"), "Ignore", this);
-    buttonUpdateAll->setMinimumWidth(95);
-    QLabel *iconLabel = new QLabel(this);
-    iconLabel->setPixmap(QIcon(":/icons/scalable/help-about.svg").pixmap(24,24));
-    QHBoxLayout *layoutBar = new QHBoxLayout(this);
-    labelRenamedElements = new QLabel(this);
-    layoutBar->addWidget(iconLabel);
-    layoutBar->addWidget(labelRenamedElements, 1);
-    layoutBar->addWidget(buttonShowAll);
-    layoutBar->addWidget(buttonUpdateAll);
-    layoutBar->addWidget(buttonIgnore);
-    layoutBar->setMargin(3);
-    barRenamedElements = new QFrame(this);
-    barRenamedElements->setFrameStyle(QFrame::Box);
-    barRenamedElements->setLayout(layoutBar);
-    barRenamedElements->setVisible(false);
-    const QString highlightColor = barRenamedElements->palette().highlight().color().name().right(6);
-    barRenamedElements->setStyleSheet(".QFrame { color: #"+highlightColor+"; background-color: #4d"+highlightColor+" }");
-
-    connect(buttonShowAll,   &QPushButton::clicked,         tree, &Tree::expandRenamedElements);
-    connect(buttonUpdateAll, &QPushButton::clicked,         tree, &Tree::updateAllRenamedElements);
-    connect(buttonIgnore,    &QPushButton::clicked,         this, &TabPage::barClickedIgnore);
-    connect(tree,            &Tree::renamedElementsChanged, this, &TabPage::renamedElementsChanged);
-  }
-
-  QVBoxLayout *layout = new QVBoxLayout();
-  layout->setSpacing(3);
-  layout->setContentsMargins(0, 3, 0, 0);
-  layout->addWidget(barFileChanged);
-  layout->addWidget(barUnknownElements);
-  layout->addWidget(barRenamedElements);
-  layout->addWidget(tree, 1);
-  setLayout(layout);
-}
-
-/***********************************************/
-
-void TabPage::treeFileChanged(const QString &/*fileName*/, bool changed)
-{
-  if(barFileChanged)
-    barFileChanged->setVisible(changed);
-}
-
-/***********************************************/
-
-void TabPage::unknownElementsChanged(int count)
-{
-  if(barUnknownElements)
-    barUnknownElements->setVisible(count>0);
-  if(labelUnknownElements)
-    labelUnknownElements->setText(QString("File contains %1 unknown elements.").arg(count));
-}
-
-/***********************************************/
-
-void TabPage::renamedElementsChanged(int count)
-{
-  if(barRenamedElements)
-    barRenamedElements->setVisible(count>0);
-  if(labelRenamedElements)
-    labelRenamedElements->setText(QString("File contains %1 elements that were renamed in the schema.").arg(count));
-}
-
-/***********************************************/
-
-void TabPage::fileChangeClickedReopen()
-{
-  if(tree() && barFileChanged)
-    if(tree()->reopenFile())
-      barFileChanged->setHidden(true);
-}
-
-/***********************************************/
-
-void TabPage::barClickedIgnore()
-{
-  QFrame *bar = dynamic_cast<QFrame*>(sender()->parent());
-  if(bar)
-    bar->setHidden(true);
 }
 
 /***********************************************/

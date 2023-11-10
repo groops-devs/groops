@@ -159,6 +159,21 @@ Each row must have the same number of columns.
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
 </table>
 
+<h2>FileLines</h2><p>
+Loop over lines of a text file.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td>simple ASCII file with lines</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sort</div></div></td><td>boolean</td><td>sort lines alphabetically (ascending)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">removeDuplicates</div></div></td><td>boolean</td><td>remove duplicate lines (order is preserved)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startIndex</div></div></td><td>uint</td><td>start at element startIndex (counting from 0)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">count</div></div></td><td>uint</td><td>use number of lines only (default: use all)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopLine</div></div></td><td>string</td><td>name of the variable to be replaced</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
+</table>
+
 <h2>Matrix</h2><p>
 Loop over rows of a matrix. To define the loop variables the standard
 data variables of the matrix are available, see <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>.
@@ -183,6 +198,19 @@ Loop over sequence of numbers.
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">rangeEnd</div></div></td><td>double</td><td>end of range (inclusive)</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">sampling</div></div></td><td>double</td><td>sampling</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopNumber</div></div></td><td>string</td><td>name of the variable to be replaced</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
+</table>
+
+<h2 id="directoryListing">DirectoryListing</h2><p>
+Loop over files of a directory.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">directory</div></div></td><td>filename</td><td>directory</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">pattern</div></div></td><td>string</td><td>wildcard pattern</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">isRegularExpression</div></div></td><td>boolean</td><td>pattern is a regular expression</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopFile</div></div></td><td>string</td><td>name of the variable to be replaced</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
 </table>

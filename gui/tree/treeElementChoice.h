@@ -22,38 +22,58 @@ class TreeElementChoice : public TreeElementComplex
 {
   Q_OBJECT
 
+  QStringList schemaNameList;
   QStringList annotationList;
-  QStringList renamedList;
 
 public:
   TreeElementChoice(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement, const QString &defaultOverride,
-                    XmlNodePtr xmlNode, Bool fromFile, Bool recieveAutoComments=false);
-  virtual ~TreeElementChoice() override {}
+                    XmlNodePtr xmlNode, bool fillWithDefaults, bool recieveAutoComments=false);
 
-/** @brief Is the selection renamed, i.e. has the selection been renamed in the schema? */
-virtual Bool isSelectionRenamed(int index) const override;
+  /** @brief Is the selection without coresponding schema? */
+  bool isSelectionUnknown(int index) const override;
 
-/** @brief Returns the new name of the current selection in case the selection has been renamed in the schema. */
-virtual QString renamedSelection() const;
+  /** @brief Is the selection renamed (new name in the schema)? */
+  bool isSelectionRenamedInSchema(int index) const override;
 
-/** @brief Generate XML-tree.
-* recursively called for all children. */
-virtual XmlNodePtr getXML(Bool withEmptyNodes=false) const override;
+  /** @brief Generate XML-tree.
+  * recursively called for all children. */
+  XmlNodePtr createXmlTree(bool /*createRootEvenIfEmpty*/) const override;
 
-/** @brief event handler of current index change.
-* This event handler is called by setSelectedValue whenever the value is changed. */
-virtual void newSelectedIndex(int index) override;
+  /** @brief changes the current index.
+  * calls TreeElemenComplex::selectIndex
+  * updates annotation */
+  void setSelectedIndex(int index) override;
 
-/** @brief creates an uneditable combo box. */
-virtual QWidget *createEditor() override;
+  /** @brief Is it possible to overweite the element? */
+  bool canOverwrite(const QString &type) override {return (this->type() == type);}
 
-/** @brief event handler called by item when it gets selected. */
-void startSelected() override;
+  /** @brief Copy the content of @a xmlNode into this.
+  * Is undoable.
+  * @return success */
+  bool overwrite(const QString &type, XmlNodePtr xmlNode, bool contentOnly=false) override;
 
-/** @brief event handler called by item when it losts the selection. */
-void stopSelected() override;
+  // ========================================================
 
-QString annotationChild(int index) const;
+  // Update name of elements in case of schema changes
+  // -------------------------------------------------
+  /** @brief Is it possible to update name of the element?
+  * Only elements with name changes in the schema can be updated. */
+  bool canUpdateName() const override;
+
+  /** @brief Update name of the element.
+  * Is undoable. */
+  void updateName() override;
+
+  // ========================================================
+
+  /** @brief creates an uneditable combo box. */
+  QWidget *createEditor() override;
+
+  /** @brief event handler called by item when it gets selected. */
+  void startSelected() override;
+
+  /** @brief event handler called by item when it losts the selection. */
+  void stopSelected() override;
 
 protected slots:
   void comboBoxHighlighted(int index);

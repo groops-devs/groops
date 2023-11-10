@@ -27,20 +27,19 @@ SettingsCommandDialog::SettingsCommandDialog(QWidget *parent) : QDialog(parent),
   try
   {
     ui->setupUi(this);
-    this->settings = new QSettings(this);
 
     // restore size of window
     // ----------------------
     setMinimumSize(QGuiApplication::primaryScreen()->size()/4);
     QRect parentRect(parentWidget()->mapToGlobal(QPoint(0, 0)), parentWidget()->size());
-    resize(settings->value("settingsCommandDialog/size", minimumSizeHint()).toSize());
-    move(settings->value("settingsCommandDialog/position", QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), parentRect).topLeft()).toPoint());
+    resize(settings.value("settingsCommandDialog/size", minimumSizeHint()).toSize());
+    move(settings.value("settingsCommandDialog/position", QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, size(), parentRect).topLeft()).toPoint());
 
     // commands
     // --------
     QStringList labelList, commandList;
-    readCommandList(settings, labelList, commandList);
-    int commandIndex = settings->value("execute/commandIndex", int(0)).toInt();
+    readCommandList(labelList, commandList);
+    int commandIndex = settings.value("execute/commandIndex", int(0)).toInt();
 
     // init table
     // ----------
@@ -48,7 +47,7 @@ SettingsCommandDialog::SettingsCommandDialog(QWidget *parent) : QDialog(parent),
     ui->table->setColumnCount(2);
     ui->table->setRowCount(labelList.size()+1);
     ui->table->horizontalHeader()->setStretchLastSection(true);
-    ui->table->setColumnWidth(0, settings->value("settingsCommandDialog/columnWidth", int(200)).toInt());
+    ui->table->setColumnWidth(0, settings.value("settingsCommandDialog/columnWidth", int(200)).toInt());
     ui->table->setHorizontalHeaderLabels(headerLable << "Label" << "Command");
     ui->table->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -72,31 +71,29 @@ SettingsCommandDialog::SettingsCommandDialog(QWidget *parent) : QDialog(parent),
 SettingsCommandDialog::~SettingsCommandDialog()
 {
   delete ui;
-  delete settings;
 }
 
 /***********************************************/
 
-void SettingsCommandDialog::readCommandList(QSettings *settings, QStringList &labelList, QStringList &commandList)
+void SettingsCommandDialog::readCommandList(QStringList &labelList, QStringList &commandList)
 {
   try
   {
-    labelList    = settings->value("execute/commandLabels").toStringList();
-    commandList  = settings->value("execute/commands").toStringList();
+    QSettings settings;
+    labelList    = settings.value("execute/commandLabels").toStringList();
+    commandList  = settings.value("execute/commands").toStringList();
     if(labelList.size() != commandList.size())
       throw(Exception("size mismatch between command labels and commands"));
     if(labelList.isEmpty())
     {
-      labelList<<"groops (Windows)"<<"groops (KDE)"<<"groops (GNOME)";
-      labelList<<"groopsMPI (Windows, 4 processes)"<<"groopsMPI (KDE, 4 processes)"<<"groopsMPI (GNOME, 4 processes)";
-      commandList<<"cd /d %w && groops.exe %f";
-      commandList<<"konsole --workdir %w -e bash -ic \"groops %f; bash\"";
-      commandList<<"gnome-terminal --working-directory=%w -x bash -ic \"groops %f; bash\"";
-      commandList<<"cd /d %w && mpiexec /genv OMP_NUM_THREADS 1 -n 4 groopsMPI.exe %f";
-      commandList<<"konsole --workdir %w -e bash -ic \"OMP_NUM_THREADS=1 mpiexec -x OMP_NUM_THREADS -n 4 groopsMPI %f; bash\"";
-      commandList<<"gnome-terminal --working-directory=%w -x bash -ic \"OMP_NUM_THREADS=1 mpiexec -x OMP_NUM_THREADS -n 4 groopsMPI %f; bash\"";
-      settings->setValue("execute/commandLabels", labelList);
-      settings->setValue("execute/commands",      commandList);
+      labelList<<"groops (Windows)";                 commandList<<"cd /d %w && groops.exe %f";
+      labelList<<"groops (KDE)";                     commandList<<"konsole --workdir %w -e bash -ic \"groops %f; bash\"";
+      labelList<<"groops (GNOME)";                   commandList<<"gnome-terminal --working-directory=%w -x bash -ic \"groops %f; bash\"";
+      labelList<<"groopsMPI (Windows, 4 processes)"; commandList<<"cd /d %w && mpiexec /genv OMP_NUM_THREADS 1 -n 4 groopsMPI.exe %f";
+      labelList<<"groopsMPI (KDE, 4 processes)";     commandList<<"konsole --workdir %w -e bash -ic \"OMP_NUM_THREADS=1 mpiexec -x OMP_NUM_THREADS -n 4 groopsMPI %f; bash\"";
+      labelList<<"groopsMPI (GNOME, 4 processes)";   commandList<<"gnome-terminal --working-directory=%w -x bash -ic \"OMP_NUM_THREADS=1 mpiexec -x OMP_NUM_THREADS -n 4 groopsMPI %f; bash\"";
+      settings.setValue("execute/commandLabels", labelList);
+      settings.setValue("execute/commands",      commandList);
     }
   }
   catch(std::exception &e)
@@ -197,12 +194,12 @@ void SettingsCommandDialog::clickedApply()
     }
     int commandIndex = ui->table->currentRow();
 
-    settings->setValue("execute/commandLabels",             labelList);
-    settings->setValue("execute/commands",                  commandList);
-    settings->setValue("execute/commandIndex",              commandIndex);
-    settings->setValue("settingsCommandDialog/position",    pos());
-    settings->setValue("settingsCommandDialog/size",        size());
-    settings->setValue("settingsCommandDialog/columnWidth", ui->table->columnWidth(0));
+    settings.setValue("execute/commandLabels",             labelList);
+    settings.setValue("execute/commands",                  commandList);
+    settings.setValue("execute/commandIndex",              commandIndex);
+    settings.setValue("settingsCommandDialog/position",    pos());
+    settings.setValue("settingsCommandDialog/size",        size());
+    settings.setValue("settingsCommandDialog/columnWidth", ui->table->columnWidth(0));
   }
   catch(std::exception &e)
   {

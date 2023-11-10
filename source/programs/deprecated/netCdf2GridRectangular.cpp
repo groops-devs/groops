@@ -2,21 +2,20 @@
 /**
 * @file netCdf2GridRectangular.cpp
 *
-* @brief Convert a NetCDF file to a sequence of GridRectangular files
+* @brief DEPRECATED. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.
 *
 * @author Andreas Kvas
 * @author Torsten Mayer-Guerr
 * @date 2018-06-17
+*
+* @deprecated Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.
 */
 /***********************************************/
 
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts a COARDS compliant NetCDF file into a sequence of
-\configFile{outputfileGridRectangular}{griddedData}.
-
-See also \program{NetCdfInfo}, \program{GridRectangular2NetCdf}.
+DEPRECATED. Please use \program{NetCdf2GriddedData} or \program{NetCdf2GriddedDataTimeSeries} instead.
 )";
 
 /***********************************************/
@@ -27,7 +26,7 @@ See also \program{NetCdfInfo}, \program{GridRectangular2NetCdf}.
 
 /***** CLASS ***********************************/
 
-/** @brief Convert COARDS compliant grids to GROOPS rectangular grid
+/** @brief DEPRECATED. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.
 * @ingroup programsConversionGroup */
 class NetCdf2GridRectangular
 {
@@ -35,7 +34,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(NetCdf2GridRectangular, SINGLEPROCESS, "Convert COARDS compliant grids to GROOPS rectangular grid", Conversion, Grid)
+GROOPS_REGISTER_PROGRAM(NetCdf2GridRectangular, SINGLEPROCESS, "DEPRECATED. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.", Deprecated)
 
 /***********************************************/
 
@@ -60,13 +59,15 @@ void NetCdf2GridRectangular::run(Config &config, Parallel::CommunicatorPtr /*com
     readConfig(config, "inverseFlattening",         f,        Config::DEFAULT,  STRING_DEFAULT_GRS80_f, "reference flattening for ellipsoidal coordinates");
     if(isCreateSchema(config)) return;
 
+    logWarning<<"DEPRECATED. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead."<<Log::endl;
+
 #ifdef GROOPS_DISABLE_NETCDF
     throw(Exception("Compiled without NetCDF library"));
 #else
     // add variable for output files
     // -----------------------------
     VariableList fileNameVariableList;
-    addVariable(loopVar, fileNameVariableList);
+    fileNameVariableList.undefineVariable(loopVar);
 
     // open netCDF file
     // ----------------
@@ -100,7 +101,7 @@ void NetCdf2GridRectangular::run(Config &config, Parallel::CommunicatorPtr /*com
     // --------------
     Single::forEach(epochs.size(), [&](UInt idEpoch)
     {
-      fileNameVariableList[loopVar]->setValue(epochs.at(idEpoch).mjd());
+      fileNameVariableList.setVariable(loopVar, epochs.at(idEpoch).mjd());
 
       grid.values.clear();
       for(const std::string &name : dataName)

@@ -2,21 +2,20 @@
 /**
 * @file gridRectangular2NetCdf.cpp
 *
-* @brief Convert sequence of GridRectangular files to a netCDF file.
+* @brief DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.
 *
 * @author Andreas Kvas
 * @author Torsten Mayer-Guerr
 * @date 2018-06-17
+*
+* @deprecated Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.
 */
 /***********************************************/
 
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program converts a sequence of \configFile{inputfileGridRectangular}{griddedData}
-to a COARDS compliant NetCDF file.
-
-See also \program{NetCdfInfo}, \program{NetCdf2GridRectangular}.
+DEPRECATED. Please use \program{GriddedData2NetCdf} or \program{GriddedDataTimeSeries2NetCdf} instead.
 )";
 
 /***********************************************/
@@ -29,7 +28,7 @@ See also \program{NetCdfInfo}, \program{NetCdf2GridRectangular}.
 
 /***** CLASS ***********************************/
 
-/** @brief Convert sequence of GridRectangular files to a netCDF file.
+/** @brief DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.
 * @ingroup programsConversionGroup */
 class GridRectangular2NetCdf
 {
@@ -56,7 +55,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GridRectangular2NetCdf, SINGLEPROCESS, "Convert sequence of GridRectangular files to a netCDF file", Conversion, Grid)
+GROOPS_REGISTER_PROGRAM(GridRectangular2NetCdf, SINGLEPROCESS, "DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.", Deprecated)
 
 /***********************************************/
 
@@ -126,6 +125,8 @@ void GridRectangular2NetCdf::run(Config &config, Parallel::CommunicatorPtr /*com
     readConfig(config, "dataVariable",             dataVariables,    Config::MUSTSET,  "", "metadata for data variables");
     readConfig(config, "globalAttribute",          globalAttributes, Config::OPTIONAL, "", "additional meta data");
     if(isCreateSchema(config)) return;
+
+    logWarning<<"DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead."<<Log::endl;
 
 #ifdef GROOPS_DISABLE_NETCDF
     throw(Exception("Compiled without NetCDF library"));

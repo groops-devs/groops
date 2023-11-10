@@ -110,10 +110,8 @@ PlotMapLayerGrid::PlotMapLayerGrid(Config &config)
 
     // evaluate expression
     // -------------------
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    exprValue->usedVariables(varList, usedVariables);
-    addDataVariables(grid, varList, usedVariables);
+    VariableList varList;
+    addDataVariables(grid, varList);
     exprValue->simplify(varList);
 
     data = Matrix(points.size(), 1);
@@ -214,10 +212,8 @@ PlotMapLayerPoints::PlotMapLayerPoints(Config &config)
     // -------------------
     if(exprValue)
     {
-      auto varList = config.getVarList();
-      std::set<std::string> usedVariables;
-      exprValue->usedVariables(varList, usedVariables);
-      addDataVariables(grid, varList, usedVariables);
+      VariableList varList;
+      addDataVariables(grid, varList);
       exprValue->simplify(varList);
 
       data = Matrix(points.size(), 1);
@@ -338,12 +334,10 @@ PlotMapLayerArrows::PlotMapLayerArrows(Config &config)
 
     // create data variables
     // ---------------------
+    VariableList varList;
+    addDataVariables(grid, varList);
+
     std::vector<ExpressionVariablePtr> expressions = {exprValue, exprValueNorth, exprValueEast};
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    for(ExpressionVariablePtr expr : expressions)
-      if(expr) expr->usedVariables(varList, usedVariables);
-    addDataVariables(grid, varList, usedVariables);
     for(ExpressionVariablePtr expr : expressions)
       if(expr) expr->simplify(varList);
 

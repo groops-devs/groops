@@ -136,19 +136,15 @@ void FunctionsCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     // create data variables
     // ---------------------
-    auto varList = config.getVarList();
     // get real variable names, otherwise all named after config element
-    std::for_each(constExpr.begin(), constExpr.end(), [&](auto expr) {expr->parseVariableName(varList);});
-    std::for_each(paramExpr.begin(), paramExpr.end(), [&](auto expr) {expr->parseVariableName(varList);});
+    std::for_each(constExpr.begin(), constExpr.end(), [&](auto expr) {expr->parseVariableName();});
+    std::for_each(paramExpr.begin(), paramExpr.end(), [&](auto expr) {expr->parseVariableName();});
 
-    std::set<std::string> usedVariables;
-    std::for_each(outExpr.begin(),    outExpr.end(),    [&](auto expr) {expr->usedVariables(varList, usedVariables);});
-    std::for_each(lsaExpr.begin(),    lsaExpr.end(),    [&](auto expr) {expr->usedVariables(varList, usedVariables);});
-    std::for_each(removeExpr.begin(), removeExpr.end(), [&](auto expr) {expr->usedVariables(varList, usedVariables);});
-    std::for_each(constExpr.begin(), constExpr.end(), [&](auto expr) {addVariable(expr, varList);});
-    std::for_each(paramExpr.begin(), paramExpr.end(), [&](auto expr) {addVariable(expr, varList);});
+    VariableList varList;
+    std::for_each(constExpr.begin(), constExpr.end(), [&](auto expr) {varList.addVariable(expr);});
+    std::for_each(paramExpr.begin(), paramExpr.end(), [&](auto expr) {varList.addVariable(expr);});
     auto varListWoData = varList;
-    addDataVariables(data, varList, usedVariables);
+    addDataVariables(data, varList);
 
     // build observation equations
     // ---------------------------
@@ -183,8 +179,8 @@ void FunctionsCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       {
         x(s) += paramExpr.at(s)->evaluate(varList);
         paramExpr.at(s)->setValue( x(s) );
-        varList[paramExpr.at(s)->name()]->setValue( x(s) );
-        varListWoData[paramExpr.at(s)->name()]->setValue( x(s) );
+        varList.setVariable(paramExpr.at(s)->name(),  x(s) );
+        varListWoData.setVariable(paramExpr.at(s)->name(),  x(s) );
         logInfo<<"  "<<paramExpr.at(s)->name()<<" = "<<x(s)<<Log::endl;
       }
     }
@@ -226,9 +222,7 @@ void FunctionsCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     {
       logStatus<<"write statistics to <"<<fileNameStatistics<<">"<<Log::endl;
       auto varList = varListWoData;
-      std::set<std::string> usedVariables;
-      std::for_each(statisticsExpr.begin(), statisticsExpr.end(), [&](auto expr) {expr->usedVariables(varList, usedVariables);});
-      addDataVariables(outData, varList, usedVariables);
+      addDataVariables(outData, varList);
       Matrix statistics(1, statisticsExpr.size());
       for(UInt k=0; k<statistics.columns(); k++)
         statistics(0, k) = statisticsExpr.at(k)->evaluate(varList);

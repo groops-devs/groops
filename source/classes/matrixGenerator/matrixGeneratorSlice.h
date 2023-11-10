@@ -39,14 +39,14 @@ class MatrixGeneratorSlice : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorSlice(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorSlice::MatrixGeneratorSlice(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorSlice::MatrixGeneratorSlice(Config &config)
 {
   try
   {
@@ -65,14 +65,17 @@ inline MatrixGeneratorSlice::MatrixGeneratorSlice(Config &config) : MatrixGenera
 
 /***********************************************/
 
-inline void MatrixGeneratorSlice::compute(Matrix &A, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorSlice::compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {
     A = matrix->compute();
 
-    addVariable("rows",    static_cast<Double>(A.rows()),    varList);
-    addVariable("columns", static_cast<Double>(A.columns()), varList);
+    VariableList varList;
+    varList.setVariable("rowsBefore",    static_cast<Double>(rowsBefore));
+    varList.setVariable("columnsBefore", static_cast<Double>(columnsBefore));
+    varList.setVariable("rows",          static_cast<Double>(A.rows()));
+    varList.setVariable("columns",       static_cast<Double>(A.columns()));
     const UInt row  = static_cast<UInt>(exprRow->evaluate(varList));
     const UInt col  = static_cast<UInt>(exprCol->evaluate(varList));
     const UInt rows = static_cast<UInt>(exprRows->evaluate(varList));

@@ -52,6 +52,9 @@ namespace NetCdf
     /// Return all variables of this groups
     std::vector<Variable> variables() const;
 
+    /// Exists the variable with name @a name?
+    Bool hasVariable(const std::string &name) const;
+
     /// Returns the variable with name @a name.
     Variable variable(const std::string &name) const;
 

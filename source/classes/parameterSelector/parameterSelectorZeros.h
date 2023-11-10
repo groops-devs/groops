@@ -37,7 +37,7 @@ class ParameterSelectorZeros : public ParameterSelectorBase
 
 public:
   ParameterSelectorZeros(Config &config);
-  std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterNames, VariableList varList);
+  std::vector<UInt> indexVector(const std::vector<ParameterName> &parameterNames);
 };
 
 /***********************************************/
@@ -59,12 +59,12 @@ inline ParameterSelectorZeros::ParameterSelectorZeros(Config &config)
 
 /***********************************************/
 
-inline std::vector<UInt> ParameterSelectorZeros::indexVector(const std::vector<ParameterName> &parameterNames, VariableList varList)
+inline std::vector<UInt> ParameterSelectorZeros::indexVector(const std::vector<ParameterName> &parameterNames)
 {
   try
   {
-    const UInt parameterCount = parameterNames.size();
-    addVariable("length", static_cast<Double>(parameterCount), varList);
+    VariableList varList;
+    varList.setVariable("length", static_cast<Double>(parameterNames.size()));
     const UInt count = static_cast<UInt>(exprCount->evaluate(varList));
     return std::vector<UInt>(count, NULLINDEX);
   }

@@ -62,7 +62,7 @@ void GnssGlonassFrequencyNumberUpdate::run(Config &config, Parallel::Communicato
       logStatus<<"read transmitter infos from <"<<fileNameInTransmitterInfo<<">"<< Log::endl;
       for(UInt idPrn = 0; idPrn < prnList.size(); idPrn++)
       {
-        varList[variableNamePrn]->setValue(prnList.at(idPrn));
+        varList.setVariable(variableNamePrn, prnList.at(idPrn));
         readFileGnssStationInfo(fileNameInTransmitterInfo(varList), transmitterInfos.at(idPrn));
       }
     }
@@ -113,7 +113,7 @@ void GnssGlonassFrequencyNumberUpdate::run(Config &config, Parallel::Communicato
       logStatus<<"write transmitter infos to <"<<fileNameOutTransmitterInfo<<">"<< Log::endl;
       for(UInt idPrn = 0; idPrn < prnList.size(); idPrn++)
       {
-        varList[variableNamePrn]->setValue(prnList.at(idPrn));
+        varList.setVariable(variableNamePrn, prnList.at(idPrn));
         std::sort(receiverInfos.at(idPrn).begin(), receiverInfos.at(idPrn).end(), [](GnssReceiverInfo &info1, GnssReceiverInfo &info2){ return info1.timeStart < info2.timeStart; });
         transmitterInfos.at(idPrn).receiver = receiverInfos.at(idPrn);
         writeFileGnssStationInfo(fileNameOutTransmitterInfo(varList), transmitterInfos.at(idPrn));

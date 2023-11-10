@@ -14,6 +14,7 @@
 #define __GROOPSGUI__MAINWINDOW_
 
 #include <QMainWindow>
+#include <QSettings>
 
 /***** TYPES ***********************************/
 
@@ -22,7 +23,6 @@ namespace Ui
   class MainWindow;
 }
 
-class QSettings;
 class QMenu;
 class QUndoGroup;
 class QUndoView;
@@ -39,16 +39,16 @@ class MainWindow : public QMainWindow
 {
   Q_OBJECT
 
-  Ui::MainWindow      *ui;
-  QSettings           *settings;
-  QMenu               *menuFileLastOpened;
-  QUndoGroup          *undoGroup;
-  QUndoView           *undoView;
-  TabEnvironment      *workspace;
-  FindReplaceDock     *findReplaceDock;
-  SideBar             *sideBar;
-  ProgramListWidget   *programListWidget;
-  SchemaSelector      *schemaSelector;
+  Ui::MainWindow    *ui;
+  QSettings          settings;
+  QMenu             *menuFileLastOpened;
+  QUndoGroup        *undoGroup;
+  QUndoView         *undoView;
+  TabEnvironment    *tabEnvironment;
+  FindReplaceDock   *findReplaceDock;
+  SideBar           *sideBar;
+  ProgramListWidget *programListWidget;
+  SchemaSelector    *schemaSelector;
 
 public:
   MainWindow(QWidget *parent=nullptr);
@@ -57,15 +57,10 @@ public:
   Tree *getCurrentTree() const;
 
 public slots:
-  void fileNew();
-  void fileOpen(const QString &fileName = "");
-  void fileOpenInitial();
-  void fileReOpen();
-  void fileShowInManager();
-  void fileSave();
-  void fileSaveAs();
-  void fileRun();
-  void fileClose();
+  bool fileNew();
+  bool fileOpen(const QString &fileName=QString());
+  bool fileReOpen();
+  bool fileClose();
   void fileCloseOther();
   void fileExit();
   void fileLastOpened(QAction *whichAction);
@@ -73,12 +68,8 @@ public slots:
   void settingsCommand();
   void settingsPath();
   void settingsFont();
-  void showDescriptionsToggle(bool state);
-  void showResultsToggle(bool state);
   void helpAbout();
-  void fileChanged(const QString &fileName, bool changed);
-  void addToRecentFiles(const QString &fileName);
-  void helpOpenDocumentationExternally();
+  void fileChanged(const QString &caption, const QString &fileName, bool isClean);
 
 protected:
   void closeEvent(QCloseEvent *e);
@@ -95,11 +86,11 @@ public:
   QAction *fileReOpenAction;
   QAction *fileOpenRecentAction;
   QAction *fileShowInManagerAction;
-  QAction *fileCloseAction;
-  QAction *fileCloseOtherAction;
   QAction *fileSaveAction;
   QAction *fileSaveAsAction;
   QAction *fileRunAction;
+  QAction *fileCloseAction;
+  QAction *fileCloseOtherAction;
   QAction *editCutAction;
   QAction *editCopyAction;
   QAction *editPasteAction;
@@ -116,9 +107,12 @@ public:
   QAction *editDisableAllAction;
   QAction *editRenameAction;
   QAction *editUpdateNameAction;
-  QAction *editCommentAction;
+  QAction *editAddCommentAction;
   QAction *editCollapseAllAction;
   QAction *editOpenExternallyAction;
+  QAction *settingsPathAction;
+  QAction *helpShowDescriptionsAction;
+  QAction *helpShowResultsAction;
   QAction *helpOpenDocumentationAction;
 };
 

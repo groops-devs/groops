@@ -22,21 +22,24 @@ class TreeElementUnknown : public TreeElementComplex
 {
   Q_OBJECT
 
-  Bool _isEditable;
+  bool _isEditable;
 
 public:
   TreeElementUnknown(Tree *tree, TreeElementComplex *parentElement, XmlNodePtr xmlNode);
-  virtual ~TreeElementUnknown() override {}
 
-/** @brief Values can be edited. */
-virtual Bool isEditable() const override {return _isEditable;}
+  bool optional()          const override {return true;}
+  bool unbounded()         const override {return true;}
+  bool isRenamedInSchema() const override {return false;}
 
-/** @brief Generate XML-tree.
-* recursivly called for all children. */
-virtual XmlNodePtr getXML(Bool withEmptyNodes=false) const override;
+  /** @brief Values can be edited. */
+  bool isEditable() const override {return _isEditable;}
 
-/** @brief creates an editable combo box. */
-virtual QWidget *createEditor() override {return createComboBox(_isEditable);}
+  /** @brief Generate XML-tree.
+  * recursivly called for all children. */
+  XmlNodePtr createXmlTree(bool /*createRootEvenIfEmpty*/) const override;
+
+  /** @brief creates an editable combo box. */
+  QWidget *createEditor() override {return createComboBox(_isEditable);}
 };
 
 /***********************************************/

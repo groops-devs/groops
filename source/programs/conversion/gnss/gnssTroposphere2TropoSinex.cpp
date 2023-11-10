@@ -155,10 +155,9 @@ void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /
     logStatus<<"reading station infos from <"<<fileNameStationInfo<<">"<<Log::endl;
     std::vector<Platform> stationInfos;
     VariableList fileNameVariableList;
-    addVariable(variableStationName, fileNameVariableList);
     for(const auto &station : stationList)
     {
-      fileNameVariableList[variableStationName]->setValue(station);
+      fileNameVariableList.setVariable(variableStationName, station);
       Platform stationInfo;
       readFilePlatform(fileNameStationInfo(fileNameVariableList), stationInfo);
 
@@ -173,7 +172,7 @@ void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /
       logStatus<<"reading troposphere data from <"<<fileNameTropoData<<">"<<Log::endl;
       for(UInt i=0; i<stationList.size(); i++)
       {
-        fileNameVariableList[variableStationName]->setValue(stationList.at(i));
+        fileNameVariableList.setVariable(variableStationName, stationList.at(i));
         readFileMatrix(fileNameTropoData(fileNameVariableList),   tropDataStations.at(i));
         if(!fileNameTropoSigmas.empty())
           readFileMatrix(fileNameTropoSigmas(fileNameVariableList), tropSigmasStations.at(i));

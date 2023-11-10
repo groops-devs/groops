@@ -171,10 +171,9 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     logStatus<<"reading station infos from <"<<fileNameStationInfo<<">"<<Log::endl;
     std::vector<Platform> stationInfos;
     VariableList fileNameVariableList;
-    addVariable(variableStationName, fileNameVariableList);
     for(const auto &station : stationList)
     {
-      fileNameVariableList[variableStationName]->setValue(station);
+      fileNameVariableList.setVariable(variableStationName, station);
       Platform stationInfo;
       readFilePlatform(fileNameStationInfo(fileNameVariableList), stationInfo);
       stationInfo.fillGnssAntennaDefinition(antennaDefinitionList);
@@ -193,10 +192,9 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       readFileGnssAntennaDefinition(constellation.fileNameAntennaDef, antennaDefinitionList);
 
       logStatus<<"reading transmitter infos from <"<<constellation.fileNameTransmitterInfo<<">"<<Log::endl;
-      addVariable(constellation.variablePrn, fileNameVariableList);
       for(const auto &prn : transmitterList)
       {
-        fileNameVariableList[constellation.variablePrn]->setValue(prn);
+        fileNameVariableList.setVariable(constellation.variablePrn, prn);
         Platform transmitterInfo;
         readFilePlatform(constellation.fileNameTransmitterInfo(fileNameVariableList), transmitterInfo);
         transmitterInfo.fillGnssAntennaDefinition(antennaDefinitionList);

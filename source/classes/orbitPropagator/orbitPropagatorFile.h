@@ -40,7 +40,7 @@ class OrbitPropagatorFile : public OrbitPropagator
 public:
   OrbitPropagatorFile(Config &config);
 
-  OrbitArc integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
+  OrbitArc integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces, SatelliteModelPtr satellite,
                         EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const override;
 };
 
@@ -63,7 +63,7 @@ inline OrbitPropagatorFile::OrbitPropagatorFile(Config &config)
 
 /***********************************************/
 
-inline OrbitArc OrbitPropagatorFile::integrateArc(OrbitEpoch startEpoch, Time sampling, UInt posCount, ForcesPtr forces,
+inline OrbitArc OrbitPropagatorFile::integrateArc(const OrbitEpoch &startEpoch, const Time &sampling, UInt posCount, ForcesPtr forces,
                                                   SatelliteModelPtr satellite, EarthRotationPtr earthRotation, EphemeridesPtr ephemerides, Bool timing) const
 {
   try

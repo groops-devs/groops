@@ -31,14 +31,14 @@ class XsdElement
 public:
   XsdElement() : optional(true), unbounded(false), complex(nullptr) {}
 
-  QString         name;
-  QString         type;
-  QString         annotation;
-  QStringList     tags;
-  QString         defaultValue;
-  Bool            optional;
-  Bool            unbounded;
-  XsdComplexPtr   complex;
+  QStringList   names; // with possible renames
+  QString       type;
+  QString       annotation;
+  QString       defaultValue;
+  QStringList   tags;
+  bool          optional;
+  bool          unbounded;
+  XsdComplexPtr complex;
 };
 
 /***** CLASS ***********************************/
@@ -48,10 +48,9 @@ class XsdComplex
 public:
   XsdComplex() : isReady(false) {}
 
-  QString                    type;
-  std::vector<XsdElementPtr> element;
-  Bool                       isReady; // internal: complex pointer is set for all children?
-  std::map<QString, QString> renames; // oldName --> newName
+  QString                    type;    // "choice" or "sequence"
+  std::vector<XsdElementPtr> elements;
+  bool                       isReady; // internal: complex pointer is set for all children?
 
   /** @brief Return type for @p name from schema considering renames, or nullptr if not found. */
   XsdElementPtr getXsdElement(QString name) const;
@@ -59,29 +58,23 @@ public:
 
 /***** CLASS ***********************************/
 
-/**
-* @brief XSD (XML schema) tree.
-*/
+/** @brief XSD (XML schema) tree. */
 class Schema
 {
-  std::vector<XsdComplexPtr> complexList;
   std::vector<XsdElementPtr> complexType;
 
-  XsdElementPtr readElement(XmlNodePtr xmlNode);
-  XsdComplexPtr readComplex(XmlNodePtr xmlNode);
+  XsdElementPtr readElement(XmlNodePtr xmlNode, const std::map<QString, QString> &renames, bool isComplexType);
+  XsdComplexPtr readComplex(XmlNodePtr xmlNode, const std::map<QString, QString> &renames);
   void          setComplexPointer(XsdElementPtr element);
 
 public:
   XsdElementPtr rootElement;
 
-  Schema() {}
-  Schema(const QString &fileName);
+  QList<XsdElementPtr> programList() const;
 
-  std::vector<XsdElementPtr> programList() const;
-  QString programType() const;
-
-  /** Returns true if @p fileName is a valid GROOPS XML schema, false otherweise. */
-  static bool validateSchema(QString fileName);
+  /** @brief reads a GROOPS XML schema.
+  * @return is a valid GROOPS XML schema. */
+  bool readFile(QString fileName);
 };
 
 /***********************************************/

@@ -84,10 +84,10 @@ void TimeSeries2PotentialCoefficients::run(Config &config, Parallel::Communicato
     // write data
     // ----------
     const std::vector<Time> times = arc.times();
-    auto varList = config.getVarList();
-    if(!nameTime.empty())  addVariable(nameTime,  varList);
-    if(!nameIndex.empty()) addVariable(nameIndex, varList);
-    if(!nameCount.empty()) addVariable(nameCount, times.size(), varList);
+    VariableList varList;
+    if(!nameTime.empty())  varList.undefineVariable(nameTime);
+    if(!nameIndex.empty()) varList.undefineVariable(nameIndex);
+    if(!nameCount.empty()) varList.setVariable(nameCount, times.size());
 
     for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
     {
@@ -103,8 +103,8 @@ void TimeSeries2PotentialCoefficients::run(Config &config, Parallel::Communicato
         }
       }
 
-      if(!nameTime.empty())  varList[nameTime]->setValue(times.at(idEpoch).mjd());
-      if(!nameIndex.empty()) varList[nameIndex]->setValue(idEpoch);
+      if(!nameTime.empty())  varList.setVariable(nameTime, times.at(idEpoch).mjd());
+      if(!nameIndex.empty()) varList.setVariable(nameIndex, idEpoch);
       logStatus<<"write potential coefficients <"<<fileNameOut(varList)<<">"<<Log::endl;
       writeFileSphericalHarmonics(fileNameOut(varList), SphericalHarmonics(GM, R, cnm, snm));
     }

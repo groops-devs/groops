@@ -72,10 +72,12 @@
             <h1>Gravityfield2Deflections</h1><p>
 
 This program computes the deflections of the vertical $\xi$ in north direction
-and $\eta$ in east direction in radian of the <a class="groops-class" href="gravityfieldType.html">gravityfield</a>
-vector relative to the ellipsoidal normal.
-The <a class="groops-class" href="gravityfieldType.html">gravityfield</a> must provide the full gravity vector
-inclusive the centrifugal part, see <a class="groops-class" href="tidesType.html#centrifugal">gravityfield:tides:centrifugal</a>.</p><p>The values will be saved together with points expressed as ellipsoidal coordinates (longitude, latitude, height)
+and $\eta$ in east direction in radian
+according to
+\[
+\xi = g_x/\gamma \qquad\text{and}\qquad \eta=g_y/\gamma,
+\]where $\M g=\nabla V$ is the gravity vector from <a class="groops-class" href="gravityfieldType.html">gravityfield</a> in
+the local ellipsoidal system (north, east, up) and $\gamma$ is the normal gravity at that point.</p><p>The values will be saved together with points expressed as ellipsoidal coordinates (longitude, latitude, height)
 based on a reference ellipsoid with parameters <strong class="groops-config-element">R</strong> and <strong class="groops-config-element">inverseFlattening</strong>.
 </p>
 <table class="table table-hover">

@@ -51,11 +51,8 @@ ObservationTerrestrial::ObservationTerrestrial(Config &config)
 
     // evaluate expression
     // -------------------
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    if(exprValue) exprValue->usedVariables(varList, usedVariables);
-    if(exprSigma) exprSigma->usedVariables(varList, usedVariables);
-    addDataVariables(grid, varList, usedVariables);
+    VariableList varList;
+    addDataVariables(grid, varList);
     if(exprValue) exprValue->simplify(varList);
     if(exprSigma) exprSigma->simplify(varList);
 

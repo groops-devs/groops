@@ -17,8 +17,7 @@
 SchemaSelector::SchemaSelector(QWidget *parent) : QWidget(parent), ui(new Ui::SchemaSelector)
 {
   ui->setupUi(this);
-  settings = new QSettings(this);
-  action   = nullptr;
+  action = nullptr;
 
   ui->icon->hide();
   int iconSize = parentWidget()->minimumSizeHint().height()*7/10;
@@ -42,7 +41,6 @@ SchemaSelector::~SchemaSelector()
 void SchemaSelector::setAction(QAction *action)
 {
   this->action = action;
-
   if(action != nullptr)
     action->setVisible(ui->comboBox->count() > 1);
 }
@@ -59,8 +57,8 @@ void SchemaSelector::setCurrentTreeSchema(QString schemaFile)
 
 void SchemaSelector::updateList()
 {
-  QString     schemaFile  = settings->value("files/schemaFile").toString();
-  QStringList schemaFiles = settings->value("files/schemaFiles").toStringList();
+  QString     schemaFile  = settings.value("files/schemaFile").toString();
+  QStringList schemaFiles = settings.value("files/schemaFiles").toStringList();
   ui->comboBox->blockSignals(true);
   ui->comboBox->clear();
   if(schemaFiles.size())
@@ -85,7 +83,7 @@ void SchemaSelector::updateList()
 
 void SchemaSelector::selectionChanged()
 {
-  settings->setValue("files/schemaFile", ui->comboBox->currentText());
+  settings.setValue("files/schemaFile", ui->comboBox->currentText());
   ui->icon->setVisible(currentTreeSchema != ui->comboBox->currentText());
 }
 

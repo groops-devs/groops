@@ -87,8 +87,8 @@ void PotentialCoefficients2Icgem::run(Config &config, Parallel::CommunicatorPtr 
     readConfig(config, "inputfilePotentialCoefficients", fileNameStatic,   Config::MUSTSET,  "", "");
     readConfig(config, "inputfileTrend",                 fileNameTrend,    Config::OPTIONAL, "", "");
     readConfig(config, "oscillation",                    oscillation,      Config::OPTIONAL, "", "");
-    readConfig(config, "inputfileComment",               fileNameComments, Config::OPTIONAL, "", "file containing comments for header");
     readConfig(config, "comment",                        comment,          Config::OPTIONAL, "", "comment in header");
+    readConfig(config, "inputfileComment",               fileNameComments, Config::OPTIONAL, "", "file containing comments for header");
     readConfig(config, "modelname",                      modelname,        Config::MUSTSET,  "", "name of the model");
     if(readConfigChoice(config, "tideSystem", choice,  Config::OPTIONAL, "", "tide system of model"))
     {
@@ -146,17 +146,16 @@ void PotentialCoefficients2Icgem::run(Config &config, Parallel::CommunicatorPtr 
     // --------------------------------
     logStatus<<"writing potential coefficients to file <"<<fileNameOut<<">"<<Log::endl;
     OutFile file(fileNameOut);
+    for(UInt i=0; i<comment.size(); i++)
+      file<<comment.at(i)<<std::endl;
     if(!fileNameComments.empty())
     {
       InFile commentFile(fileNameComments);
       std::string line;
       while(std::getline(commentFile, line))
         file<<line<<std::endl;
-      file<<std::endl;
     }
-    for(UInt i=0; i<comment.size(); i++)
-      file<<comment.at(i)<<std::endl;
-    if(comment.size())
+    if(comment.size() || !fileNameComments.empty())
       file<<std::endl;
     file<<"begin_of_head "<<std::string(ssHeader.str().size()-14, '=')<<std::endl<<std::endl;
     file<<"modelname              "<<modelname<<std::endl;

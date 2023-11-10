@@ -158,7 +158,7 @@ class GnssRinexNavigation2OrbitClock
   const std::map<GnssType, Double> a_e {{GnssType::GLONASS, 6378136}};
 
 
-  const std::vector<GnssType> notImplementedSystems = {GnssType::SBAS};
+  const std::vector<GnssType> notImplementedSystems;
 
   Double rinexVersion;
   Char   system;
@@ -238,7 +238,7 @@ void GnssRinexNavigation2OrbitClock::run(Config &config, Parallel::CommunicatorP
           {
 
             Double dt = 0.;
-            if(satellite.first == GnssType::GLONASS)
+            if(satellite.first == GnssType::GLONASS || satellite.first == GnssType::SBAS)
               dt = (times.at(idEpoch) - satellite.second.at(idx).toc()).seconds();
             else
               dt = (times.at(idEpoch) - refTime.at(satellite.first & GnssType::SYSTEM)).seconds() - satellite.second.at(idx).toe();
@@ -275,6 +275,25 @@ void GnssRinexNavigation2OrbitClock::run(Config &config, Parallel::CommunicatorP
               intermediateEpoch = rungeKutta4(refEpoch.time+seconds2time(i*integrationStep*dt/std::fabs(dt)), intermediateEpoch, refEpoch.acceleration, earthRotation, GM.at(GnssType::GLONASS), C20.at(GnssType::GLONASS), a_e.at(GnssType::GLONASS));
             epoch = rungeKutta4(epoch.time, intermediateEpoch, refEpoch.acceleration, earthRotation, GM.at(GnssType::GLONASS), C20.at(GnssType::GLONASS), a_e.at(GnssType::GLONASS));
             // NOTE: integration can lead to errors up to ~10 m after 15 minutes, unclear if that's the accuracy limit or there's an issue somewhere in the code
+          }
+          else if(satellite.first == GnssType::SBAS)
+          {
+            OrbitEpoch refEpoch;
+            refEpoch.time = epochNavData.toc();
+            refEpoch.position     = Vector3d(epochNavData.posX(), epochNavData.posY(), epochNavData.posZ()) * 1.e3;
+            refEpoch.velocity     = Vector3d(epochNavData.velX(), epochNavData.velY(), epochNavData.velZ()) * 1.e3;
+            refEpoch.acceleration = Vector3d(epochNavData.accX(), epochNavData.accY(), epochNavData.accZ()) * 1.e3;
+
+            //ref to  RTCA DO229
+            const Double dt = (epoch.time - refEpoch.time).seconds();
+            epoch.position = refEpoch.position;
+            epoch.velocity = refEpoch.velocity;
+            epoch.acceleration = refEpoch.acceleration;
+
+            epoch.position  += epoch.velocity*dt + epoch.acceleration*dt*dt/2.0;
+            epoch.velocity  += epoch.acceleration*dt;
+
+            epoch.position = earthRotation->rotaryMatrix(epoch.time).inverseRotate(epoch.position);// TRF -> CRF
           }
           else // all systems using GPS-like ephemerides
           {
@@ -369,9 +388,17 @@ void GnssRinexNavigation2OrbitClock::run(Config &config, Parallel::CommunicatorP
           Double currentDt = 0.;
           for(UInt idx = 0; idx < satellite.second.size(); idx++)
           {
-            Double dt = (times.at(idEpoch) - mjd2time(satellite.second.at(idx).toe())).seconds();
-            if(selection == NULLINDEX || dt < currentDt)
+            Double dt = 0.;
+            if(satellite.first == GnssType::GLONASS || satellite.first == GnssType::SBAS)
+              dt = (times.at(idEpoch) - satellite.second.at(idx).toc()).seconds();
+            else
+              dt = (times.at(idEpoch) - mjd2time(satellite.second.at(idx).toe())).seconds();
+
+            if(selection == NULLINDEX || fabs(dt) < currentDt)
+            {
               selection = idx;
+              currentDt = fabs(dt);
+            }
           }
 
           const NavData &epochNavData = satellite.second.at(selection);
@@ -584,7 +611,7 @@ void GnssRinexNavigation2OrbitClock::readData(InFile &file, const std::vector<st
       if(satellites.count(prn) == 0)
         satellites.insert({prn, std::vector<NavData>()});
 
-      if(prn == GnssType::GLONASS)
+      if(prn == GnssType::GLONASS || prn == GnssType::SBAS)
         satellites.at(prn).push_back(NavData(prn, clockParam, time, orbitParam,messageType));
       else
         satellites.at(prn).push_back(NavData(rinexVersion, prn, time, clockParam, orbitParam, refTime.at(prn & GnssType::SYSTEM), messageType));

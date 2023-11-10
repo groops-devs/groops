@@ -41,14 +41,14 @@ class MatrixGeneratorSetType : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorSetType(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorSetType::MatrixGeneratorSetType(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorSetType::MatrixGeneratorSetType(Config &config)
 {
   try
   {
@@ -74,7 +74,7 @@ inline MatrixGeneratorSetType::MatrixGeneratorSetType(Config &config) : MatrixGe
 
 /***********************************************/
 
-inline void MatrixGeneratorSetType::compute(Matrix &A, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorSetType::compute(Matrix &A, UInt /*rowsBefore*/, UInt /*columnsBefore*/, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {

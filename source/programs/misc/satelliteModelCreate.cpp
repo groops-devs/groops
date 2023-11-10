@@ -172,21 +172,8 @@ template<> Bool readConfig(Config &config, const std::string &name, std::vector<
 
     // calculate output
     // -----------------
-    auto varList = config.getVarList();
-    std::set<std::string> usedVariables;
-    typeExpr                ->usedVariables(varList, usedVariables);
-    areaExpr                ->usedVariables(varList, usedVariables);
-    normalXExpr             ->usedVariables(varList, usedVariables);
-    normalYExpr             ->usedVariables(varList, usedVariables);
-    normalZExpr             ->usedVariables(varList, usedVariables);
-    absorptionVisibleExpr   ->usedVariables(varList, usedVariables);
-    diffusionVisibleExpr    ->usedVariables(varList, usedVariables);
-    reflexionVisibleExpr    ->usedVariables(varList, usedVariables);
-    absorptionInfraredExpr  ->usedVariables(varList, usedVariables);
-    diffusionInfraredExpr   ->usedVariables(varList, usedVariables);
-    reflexionInfraredExpr   ->usedVariables(varList, usedVariables);
-    specificHeatCapacityExpr->usedVariables(varList, usedVariables);
-    addDataVariables(data, varList, usedVariables);
+    VariableList varList;
+    addDataVariables(data, varList);
     surfaces.resize(data.rows());
     for(UInt i=0; i<data.rows(); i++)
     {

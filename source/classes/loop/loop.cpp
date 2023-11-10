@@ -21,8 +21,10 @@
 #include "loopManualTable.h"
 #include "loopFileAscii.h"
 #include "loopFileAsciiTable.h"
+#include "loopFileLines.h"
 #include "loopMatrix.h"
 #include "loopUniformSampling.h"
+#include "loopDirectoryListing.h"
 #include "loopCommandOutput.h"
 #include "loopLoop.h"
 #include "loopPlatformEquipment.h"
@@ -38,8 +40,10 @@ GROOPS_REGISTER_CLASS(Loop, "loopType",
                       LoopManualTable,
                       LoopFileAscii,
                       LoopFileAsciiTable,
+                      LoopFileLines,
                       LoopMatrix,
                       LoopUniformSampling,
+                      LoopDirectoryListing,
                       LoopCommandOutput,
                       LoopLoop,
                       LoopPlatformEquipment,
@@ -72,10 +76,14 @@ LoopPtr Loop::create(Config &config, const std::string &name)
       loop = LoopPtr(new LoopFileAscii(config));
     if(readConfigChoiceElement(config, "fileAsciiTable",      type, "Loop over of a table containing strings"))
       loop = LoopPtr(new LoopFileAsciiTable(config));
+    if(readConfigChoiceElement(config, "fileLines",           type, "Loop over of lines of a text file"))
+      loop = LoopPtr(new LoopFileLines(config));
     if(readConfigChoiceElement(config, "matrix",              type, "Loop over rows of a matrix"))
       loop = LoopPtr(new LoopMatrix(config));
     if(readConfigChoiceElement(config, "uniformSampling",     type, "Loop over sequence of numbers"))
       loop = LoopPtr(new LoopUniformSampling(config));
+    if(readConfigChoiceElement(config, "directoryListing",    type, "Loop over files of a directory"))
+      loop = LoopPtr(new LoopDirectoryListing(config));
     if(readConfigChoiceElement(config, "commandOutput",       type, "Loop over lines of command output"))
       loop = LoopPtr(new LoopCommandOutput(config));
     if(readConfigChoiceElement(config, "loop",                type, "Loop over loops"))

@@ -16,6 +16,7 @@
 #include <QDockWidget>
 #include "base/importGroops.h"
 #include "tree/tree.h"
+#include "tree/treeElementComplex.h"
 
 /***** TYPES ***********************************/
 
@@ -35,12 +36,11 @@ class FindReplaceDock : public QDockWidget
   Ui::FindReplaceDock *ui;
   MainWindow          *mainWindow;
   Tree                *tree;
-  QSettings           *settings;
+  QSettings            settings;
 
   void    messageNotFound();
-  QRegExp getExpression();
-  Bool    replace(TreeElement *treeElement, const QRegExp &regExp, const QString &replaceStr);
-  int     find(TreeElement *treeElement, const QRegExp &regExp, bool backwards, int &startIndex);
+  QRegularExpression getExpression();
+  void    findNext(bool forwards);
 
 public:
   FindReplaceDock(MainWindow *parent);

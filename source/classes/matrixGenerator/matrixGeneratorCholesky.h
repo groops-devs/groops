@@ -37,14 +37,14 @@ class MatrixGeneratorCholesky : public MatrixGeneratorBase
 
 public:
   MatrixGeneratorCholesky(Config &config);
-  void compute(Matrix &A, UInt &startRow, UInt &startCol);
+  void compute(Matrix &A, UInt rowsBefore, UInt columnsBefore, UInt &startRow, UInt &startCol);
 };
 
 /***********************************************/
 /***** Inlines *********************************/
 /***********************************************/
 
-inline MatrixGeneratorCholesky::MatrixGeneratorCholesky(Config &config) : MatrixGeneratorBase(config)
+inline MatrixGeneratorCholesky::MatrixGeneratorCholesky(Config &config)
 {
   try
   {
@@ -59,7 +59,7 @@ inline MatrixGeneratorCholesky::MatrixGeneratorCholesky(Config &config) : Matrix
 
 /***********************************************/
 
-inline void MatrixGeneratorCholesky::compute(Matrix &A, UInt &/*startRow*/, UInt &/*startCol*/)
+inline void MatrixGeneratorCholesky::compute(Matrix &A, UInt /*rowsBefore*/, UInt /*columnsBefore*/, UInt &/*startRow*/, UInt &/*startCol*/)
 {
   try
   {

@@ -18,6 +18,60 @@
 #include "parser/stringParser.h"
 #include "parser/expressionParser.h"
 
+/***** CLASS ***********************************/
+
+/** @brief Mathematcial Expression
+ * @ingroup parserGroup
+ * Represented as a tree.
+ * Can be created by the standard mathemtical operators.
+ * Example:
+ * @code ExpressionPtr expr = exprValue(5)+(sin(exprVar(x))^2); @endcode
+ * expr->string() results in "5+sin(x)^2" */
+class Expression
+{
+public:
+  enum Priority : UInt {NONE, LOGICAL_OR, LOGICAL_AND, EQUALITY, RELATION, ADDITIVE, MULTIPLICATIVE, UNARY, EXPONENTIAL, FUNCTION, VALUE};
+
+  /// Destructor
+  virtual ~Expression() {}
+
+  Expression() = default;
+  Expression(const Expression &x) = delete;
+  Expression &operator=(const Expression &x) = delete;
+
+  /** @brief Parse an expression given as string.
+   * Example: "3+5*sin(1.0)+x^2".
+   * @return expression represented as a tree. */
+  static ExpressionPtr parse(const std::string &text);
+
+  /** @brief Simplifies expression.
+   * @param varList values of the variables contained in the expression.
+   * @param[out] resolved expression can be evaluated directly (is a constant value).
+   * @return Simplified expression. */
+  virtual ExpressionPtr simplify(VariableList &varList, Bool &resolved) const = 0;
+
+  /** @brief Calculate thep result of an expression.
+   * Example: "5*x" results in 10 if variable x=5 is given.
+   * @param varList values of the variables contained in the expression. */
+  virtual Double evaluate(const VariableList &varList) const = 0;
+
+  /** @brief Derivative of an expression.
+   * @param var derivative with respect to this variable. */
+  virtual ExpressionPtr derivative(const std::string &var) const = 0;
+
+  /** @brief Deep copy of an expression. */
+  virtual ExpressionPtr clone() const = 0;
+
+  /** @brief String representation of an expression. */
+  virtual std::string string() const = 0;
+
+  /// Internal.
+  std::string string(UInt aprio) const;
+
+  /// Internal.
+  virtual UInt priority() const = 0;
+};
+
 /***********************************************/
 
 ExpressionPtr sqrt(const ExpressionPtr &ob);
@@ -84,8 +138,7 @@ class ExpressionValue : public Expression
 public:
   explicit ExpressionValue(Double v) : value(v) {}
   std::string   string() const override;
-  void          usedVariables(const VariableList &/*varList*/, std::set<std::string> &/*usedName*/) const override {}
-  ExpressionPtr simplify(const VariableList &/*varList*/, Bool &resolved) const override {resolved = TRUE; return clone();}
+  ExpressionPtr simplify(VariableList &/*varList*/, Bool &resolved) const override {resolved = TRUE; return clone();}
   Double        evaluate(const VariableList &/*varList*/) const override {return value;}
   ExpressionPtr derivative(const std::string &/*var*/) const override {return std::make_shared<ExpressionValue>(0);}
   ExpressionPtr clone() const override {return std::make_shared<ExpressionValue>(value);}
@@ -103,8 +156,7 @@ class ExpressionVar : public Expression
 public:
   explicit ExpressionVar(const std::string &_name) : name(_name) {}
   std::string   string() const override {return name;}
-  void          usedVariables(const VariableList &varList, std::set<std::string> &usedName) const override;
-  ExpressionPtr simplify(const VariableList &varList, Bool &resolved) const override;
+  ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   Double        evaluate(const VariableList &varList) const override;
   ExpressionPtr derivative(const std::string &var) const override  {return exprValue((var == this->name) ? 1 : 0);}
   ExpressionPtr clone() const override {return std::make_shared<ExpressionVar>(name);}
@@ -128,8 +180,7 @@ public:
   virtual std::string name() const = 0;
   std::string   string() const override {return name()+"()";}
   virtual ExpressionPtr create() const = 0;
-  void          usedVariables(const VariableList &/*varList*/, std::set<std::string> &/*usedName*/) const override {}
-  ExpressionPtr simplify(const VariableList &/*varList*/, Bool &resolved) const override {resolved = TRUE; return clone();}
+  ExpressionPtr simplify(VariableList &/*varList*/, Bool &resolved) const override {resolved = TRUE; return clone();}
   Double        evaluate(const VariableList &/*varList*/) const override {return value;}
   ExpressionPtr derivative(const std::string &/*var*/) const override {return exprValue(0);}
   ExpressionPtr clone()  const override {return create();}
@@ -150,8 +201,7 @@ public:
   virtual std::string   name() const {return "operator";}
   virtual std::string   string() const override {return name()+"("+operand->string()+")";}
   virtual ExpressionPtr create(const ExpressionPtr &ob) const = 0;
-  virtual void          usedVariables(const VariableList &varList, std::set<std::string> &usedName) const override {operand->usedVariables(varList, usedName);}
-  virtual ExpressionPtr simplify(const VariableList &varList, Bool &resolved) const override;
+  virtual ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   virtual ExpressionPtr derivative(const std::string &/*var*/) const override {throw(Exception("Derivative not defined for \""+name()+"\"."));}
   virtual ExpressionPtr clone()  const override {return create(operand->clone());}
   virtual UInt          priority() const override {return Expression::Priority::FUNCTION;}
@@ -171,8 +221,7 @@ public:
   virtual std::string   name() const {return "operator";}
   virtual std::string   string() const override {return name()+"("+left->string()+", "+right->string()+")";}
   virtual ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const = 0;
-  virtual void          usedVariables(const VariableList &varList, std::set<std::string> &usedName) const override {left->usedVariables(varList, usedName); right->usedVariables(varList, usedName);}
-  virtual ExpressionPtr simplify(const VariableList &varList, Bool &resolved) const override;
+  virtual ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   virtual ExpressionPtr derivative(const std::string &/*var*/) const override {throw(Exception("Derivative not defined for \""+name()+"\"."));}
   virtual ExpressionPtr clone()  const override {return create(left->clone(), right->clone());}
   virtual UInt priority() const override {return Expression::Priority::FUNCTION;}
@@ -192,8 +241,7 @@ public:
   virtual std::string   name() const {return "operator";}
   virtual std::string   string() const override {return name()+"("+arg1->string()+", "+arg2->string()+", "+arg3->string()+")";}
   virtual ExpressionPtr create(const ExpressionPtr &a1, const ExpressionPtr &a2, const ExpressionPtr &a3) const = 0;
-  virtual void          usedVariables(const VariableList &varList, std::set<std::string> &usedName) const override {arg1->usedVariables(varList, usedName); arg2->usedVariables(varList, usedName); arg3->usedVariables(varList, usedName);}
-  virtual ExpressionPtr simplify(const VariableList &varList, Bool &resolved) const override;
+  virtual ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   virtual ExpressionPtr derivative(const std::string &/*var*/) const override {throw(Exception("Derivative not defined for \""+name()+"\"."));}
   virtual ExpressionPtr clone()  const override {return create(arg1->clone(), arg2->clone(), arg3->clone());}
   virtual UInt priority() const override {return Expression::Priority::FUNCTION;}
@@ -309,10 +357,23 @@ public:
   ExpressionAdd(const ExpressionPtr &l, const ExpressionPtr &r) : ExpressionFunction2(l, r) {}
   std::string   string() const override {return left->string(priority()) + " + " + right->string(priority());}
   ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionAdd>(l, r);}
+  ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   Double        evaluate(const VariableList &v) const override {return left->evaluate(v) + right->evaluate(v);}
   ExpressionPtr derivative(const std::string &var) const override {return left->derivative(var) + right->derivative(var);}
   UInt priority() const override {return Expression::Priority::ADDITIVE;}
 };
+
+ExpressionPtr ExpressionAdd::simplify(VariableList &varList, Bool &resolved) const
+{
+  Bool resolved1, resolved2;
+  ExpressionPtr l = left->simplify(varList, resolved1);
+  ExpressionPtr r = right->simplify(varList, resolved2);
+  resolved = resolved1 && resolved2;
+  if(resolved)                                  return exprValue(create(l, r)->evaluate(varList));
+  if(resolved1 && (l->evaluate(varList) == 0.)) return r;
+  if(resolved2 && (r->evaluate(varList) == 0.)) return l;
+  return create(l, r);
+}
 
 inline ExpressionPtr operator+(const ExpressionPtr &l, const ExpressionPtr &r) {return std::make_shared<ExpressionAdd>(l,r);}
 
@@ -324,10 +385,23 @@ public:
   ExpressionSub(const ExpressionPtr &l, const ExpressionPtr &r) : ExpressionFunction2(l, r) {}
   std::string   string() const override {return left->string(priority()) + " - " + right->string(priority()+1);}
   ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionSub>(l, r);}
+  ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   Double        evaluate(const VariableList &v) const override {return left->evaluate(v) - right->evaluate(v);}
   ExpressionPtr derivative(const std::string &var) const override {return left->derivative(var) - right->derivative(var);}
   UInt priority() const override {return Expression::Priority::ADDITIVE;}
 };
+
+ExpressionPtr ExpressionSub::simplify(VariableList &varList, Bool &resolved) const
+{
+  Bool resolved1, resolved2;
+  ExpressionPtr l = left->simplify(varList, resolved1);
+  ExpressionPtr r = right->simplify(varList, resolved2);
+  resolved = resolved1 && resolved2;
+  if(resolved)                                  return exprValue(create(l, r)->evaluate(varList));
+  if(resolved1 && (l->evaluate(varList) == 0.)) return -r;
+  if(resolved2 && (r->evaluate(varList) == 0.)) return l;
+  return create(l, r);
+}
 
 inline ExpressionPtr operator-(const ExpressionPtr &l, const ExpressionPtr &r) {return std::make_shared<ExpressionSub>(l,r);}
 
@@ -339,10 +413,25 @@ public:
   ExpressionMult(const ExpressionPtr &l, const ExpressionPtr &r) : ExpressionFunction2(l, r) {}
   std::string   string() const override {return left->string(priority()) + "*" + right->string(priority());}
   ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionMult>(l, r);}
+  ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   Double        evaluate(const VariableList &v) const override {return left->evaluate(v) * right->evaluate(v);}
   ExpressionPtr derivative(const std::string &var) const override {return left->derivative(var)*right->clone() + left->clone()*right->derivative(var);}
   UInt priority() const override {return Expression::Priority::MULTIPLICATIVE;}
 };
+
+ExpressionPtr ExpressionMult::simplify(VariableList &varList, Bool &resolved) const
+{
+  Bool resolved1, resolved2;
+  ExpressionPtr l = left->simplify(varList, resolved1);
+  ExpressionPtr r = right->simplify(varList, resolved2);
+  resolved = resolved1 && resolved2;
+  if(resolved)                                  return exprValue(create(l, r)->evaluate(varList));
+  if(resolved1 && (l->evaluate(varList) == 1.)) return r;
+  if(resolved1 && (l->evaluate(varList) == 0.)) {resolved = TRUE; return exprValue(0);}
+  if(resolved2 && (r->evaluate(varList) == 1.)) return l;
+  if(resolved2 && (r->evaluate(varList) == 0.)) {resolved = TRUE; return exprValue(0);}
+  return create(l, r);
+}
 
 inline ExpressionPtr operator*(const ExpressionPtr &l, const ExpressionPtr &r) {return std::make_shared<ExpressionMult>(l,r);}
 
@@ -352,12 +441,25 @@ class ExpressionDiv : public ExpressionFunction2
 {
 public:
   ExpressionDiv(const ExpressionPtr &l, const ExpressionPtr &r) : ExpressionFunction2(l, r) {}
-  std::string string() const override {return left->string(priority()) + "/" + right->string(priority()+1);}
-  inline ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionDiv>(l, r);}
-  inline Double        evaluate(const VariableList &v) const override {return left->evaluate(v) / right->evaluate(v);}
-  inline ExpressionPtr derivative(const std::string &var) const override {return (left->derivative(var)*right->clone() - left->clone()*right->derivative(var))/(right->clone()^exprValue(2));}
+  std::string   string() const override {return left->string(priority()) + "/" + right->string(priority()+1);}
+  ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionDiv>(l, r);}
+  ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
+  Double        evaluate(const VariableList &v) const override {return left->evaluate(v) / right->evaluate(v);}
+  ExpressionPtr derivative(const std::string &var) const override {return (left->derivative(var)*right->clone() - left->clone()*right->derivative(var))/(right->clone()^exprValue(2));}
   UInt priority() const override {return Expression::Priority::MULTIPLICATIVE;}
 };
+
+ExpressionPtr ExpressionDiv::simplify(VariableList &varList, Bool &resolved) const
+{
+  Bool resolved1, resolved2;
+  ExpressionPtr l = left->simplify(varList, resolved1);
+  ExpressionPtr r = right->simplify(varList, resolved2);
+  resolved = resolved1 && resolved2;
+  if(resolved)                                  return exprValue(create(l, r)->evaluate(varList));
+  if(resolved1 && (l->evaluate(varList) == 0.)) {resolved = TRUE; return exprValue(0);}
+  if(resolved2 && (r->evaluate(varList) == 1.)) return l;
+  return create(l, r);
+}
 
 inline ExpressionPtr operator/(const ExpressionPtr &l, const ExpressionPtr &r) {return std::make_shared<ExpressionDiv>(l,r);}
 
@@ -369,10 +471,23 @@ public:
   ExpressionPow(const ExpressionPtr &l, const ExpressionPtr &r) : ExpressionFunction2(l, r) {}
   std::string   string() const override {return left->string(priority()) + "^" + right->string(priority());}
   ExpressionPtr create(const ExpressionPtr &l, const ExpressionPtr &r) const override {return std::make_shared<ExpressionPow>(l, r);}
+  ExpressionPtr simplify(VariableList &varList, Bool &resolved) const override;
   Double        evaluate(const VariableList &v) const override {return pow(left->evaluate(v),right->evaluate(v));}
   ExpressionPtr derivative(const std::string &var) const override {return left->derivative(var)*right->clone()/left->clone() * (left->clone()^(right->clone()-exprValue(1)));} // this derivative is not completly correct!!!!
   UInt priority() const override {return Expression::Priority::EXPONENTIAL;}
 };
+
+ExpressionPtr ExpressionPow::simplify(VariableList &varList, Bool &resolved) const
+{
+  Bool resolved1, resolved2;
+  ExpressionPtr l = left->simplify(varList, resolved1);
+  ExpressionPtr r = right->simplify(varList, resolved2);
+  resolved = resolved1 && resolved2;
+  if(resolved)                                  return exprValue(create(l, r)->evaluate(varList));
+  if(resolved1 && (l->evaluate(varList) == 0.)) {resolved = TRUE; return exprValue(0);}
+  if(resolved2 && (r->evaluate(varList) == 1.)) return l;
+  return create(l, r);
+}
 
 inline ExpressionPtr operator^(const ExpressionPtr &l, const ExpressionPtr &r) {return std::make_shared<ExpressionPow>(l,r);}
 
@@ -882,30 +997,34 @@ Double ExpressionVar::evaluate(const VariableList &varList) const
 {
   auto variable = varList.find(name);
   if(!variable)
+  {
+    // Hack to read old constant definition without brackets
+    std::string name2 = name;
+    std::transform(name2.begin(), name2.end(), name2.begin(), [](auto c){return std::tolower(c);});
+    if(name2 == "pi")  return PI;
+    if(name2 == "rho") return RAD2DEG;
+    if(name2 == "nan") return NAN_EXPR;
     throw(Exception("unknown variable: "+name));
+  }
   return variable->evaluate(varList);
 }
 
 /***********************************************/
 
-void ExpressionVar::usedVariables(const VariableList &varList, std::set<std::string> &usedName) const
-{
-  usedName.insert(name);
-  auto variable = varList.find(name);
-  if(variable)
-    variable->usedVariables(varList, usedName);
-}
-
-/***********************************************/
-
-ExpressionPtr ExpressionVar::simplify(const VariableList &varList, Bool &resolved) const
+ExpressionPtr ExpressionVar::simplify(VariableList &varList, Bool &resolved) const
 {
   auto variable = varList.find(name);
   if(!variable)
   {
-    resolved = FALSE;
-    return clone();
+    // Hack to read old constant definition without brackets
+    std::string name2 = name;
+    std::transform(name2.begin(), name2.end(), name2.begin(), [](auto c){return std::tolower(c);});
+    if(name2 == "pi")  return exprPi();
+    if(name2 == "rho") return exprRho();
+    if(name2 == "nan") return exprNan();
+    throw(Exception("unknown variable: "+name));
   }
+
   try
   {
     resolved = TRUE;
@@ -920,7 +1039,7 @@ ExpressionPtr ExpressionVar::simplify(const VariableList &varList, Bool &resolve
 
 /***********************************************/
 
-ExpressionPtr ExpressionFunction1::simplify(const VariableList &varList, Bool &resolved) const
+ExpressionPtr ExpressionFunction1::simplify(VariableList &varList, Bool &resolved) const
 {
   ExpressionPtr expr = create(operand->simplify(varList, resolved));
   if(resolved)
@@ -930,7 +1049,7 @@ ExpressionPtr ExpressionFunction1::simplify(const VariableList &varList, Bool &r
 
 /***********************************************/
 
-ExpressionPtr ExpressionFunction2::simplify(const VariableList &varList, Bool &resolved) const
+ExpressionPtr ExpressionFunction2::simplify(VariableList &varList, Bool &resolved) const
 {
   Bool resolved1, resolved2;
   ExpressionPtr expr = create(left->simplify(varList, resolved1), right->simplify(varList, resolved2));
@@ -942,7 +1061,7 @@ ExpressionPtr ExpressionFunction2::simplify(const VariableList &varList, Bool &r
 
 /***********************************************/
 
-ExpressionPtr ExpressionFunction3::simplify(const VariableList &varList, Bool &resolved) const
+ExpressionPtr ExpressionFunction3::simplify(VariableList &varList, Bool &resolved) const
 {
   Bool resolved1, resolved2, resolved3;
   ExpressionPtr expr = create(arg1->simplify(varList, resolved1), arg2->simplify(varList, resolved2), arg3->simplify(varList, resolved3));
@@ -1319,33 +1438,42 @@ ExpressionPtr Expression::parse(const std::string &text)
 /***********************************************/
 /***********************************************/
 
-ExpressionVariable::ExpressionVariable(const std::string &name)
-  : _name(name), status(UNDEFINED) {}
-
-ExpressionVariable::ExpressionVariable(const std::string &name, Double _value)
-  : _name(name), status(VALUE), value(_value) {}
-
-ExpressionVariable::ExpressionVariable(const std::string &name, const std::string &_text)
-  : _name(name), status(TEXT), text(_text) {}
-
-ExpressionVariable::ExpressionVariable(const std::string &name, ExpressionPtr _expr)
-  : _name(name), status(EXPRESSION), expr(_expr) {if(!expr) throw(Exception("ExpressionVariable: Null-Pointer."));}
-
-ExpressionVariable::ExpressionVariable(const ExpressionVariable &x)
-  : _name(x._name), status(x.status), text(x.text), value(x.value) {if(x.expr) expr = x.expr->clone();}
-
+Double ExpressionVariable::parse(const std::string &text, const VariableList &varList)
+{
+  try
+  {
+    return Expression::parse(text)->evaluate(varList);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
 
 /***********************************************/
 
-ExpressionVariable &ExpressionVariable::operator=(const ExpressionVariable &x)
-{
-  _name  = x._name;
-  status = x.status;
-  text   = x.text;
-  value  = x.value;
-  expr   = (x.expr) ? x.expr->clone() : x.expr;
-  return *this;
-}
+ExpressionVariable::ExpressionVariable(const std::string &name)
+  : _name(name), status(UNDEFINED), isSimplified(FALSE) {}
+
+ExpressionVariable::ExpressionVariable(const std::string &name, Double _value)
+  : _name(name), status(VALUE), value(_value), isSimplified(FALSE) {}
+
+ExpressionVariable::ExpressionVariable(const std::string &name, const std::string &_text)
+  : _name(name), status(TEXT), text(_text), isSimplified(FALSE) {}
+
+ExpressionVariable::ExpressionVariable(const std::string &name, const std::string &_text, const VariableList &_varList)
+  : _name(name), status(TEXT), text(_text), varList(_varList), isSimplified(FALSE) {}
+
+ExpressionVariable::ExpressionVariable(const std::string &name, ExpressionPtr _expr, const VariableList &_varList)
+  : _name(name), status(EXPRESSION), expr(_expr), varList(_varList), isSimplified(FALSE)
+{if(!expr) throw(Exception("ExpressionVariable: Null-Pointer."));}
+
+ExpressionVariable::ExpressionVariable(const std::string &name, const std::shared_ptr<Func> &func)
+  : _name(name), status(FUNC), func(func), isSimplified(FALSE) {}
+
+ExpressionVariable::ExpressionVariable(const ExpressionVariable &x)
+  : _name(x._name), status(x.status), text(x.text), value(x.value), varList(x.varList), func(x.func), isSimplified(x.isSimplified)
+{if(x.expr) expr = x.expr->clone();}
 
 /***********************************************/
 
@@ -1363,6 +1491,9 @@ std::string ExpressionVariable::getText() const
     if(status == EXPRESSION)
       return expr->string();
 
+    if(status == FUNC)
+      return "{func()}";
+
     if(status == UNDEFINED)
       return "{_undefined_}";
 
@@ -1377,21 +1508,24 @@ std::string ExpressionVariable::getText() const
 
 /***********************************************/
 
-void ExpressionVariable::parseVariableName(const VariableList &varList)
+void ExpressionVariable::parseVariableName()
 {
   try
   {
     if(status != TEXT)
       throw(Exception("must contain a variable name ('name [= expr]')"));
 
-    Bool resolved;
+    Bool resolved = TRUE;
     auto text_ = StringParser::parse(name(), this->text, varList, resolved);
 
     // parse variable name
     auto pos     = text_.find('=');
     auto nameStr = text_.substr(0, pos);
     if(!resolved)
+    {
+      resolved = TRUE;
       nameStr = StringParser::parse(name(), nameStr, varList, resolved);
+    }
     if(!resolved)
       throw(Exception("must contain a variable name ('name [= expr]')"));
     Tokenizer token(nameStr);
@@ -1421,56 +1555,43 @@ void ExpressionVariable::parseVariableName(const VariableList &varList)
 
 /***********************************************/
 
-void ExpressionVariable::usedVariables(const VariableList &varList, std::set<std::string> &usedName)
+void ExpressionVariable::simplify(VariableList &varList)
 {
   try
   {
-    if(status == UNDEFINED)
-      throw(Exception("undefined variable"));
-    if(status == VALUE)
+    if(isSimplified)
       return;
+    isSimplified = TRUE;
+
+    VariableList varList2 = this->varList;
+    varList2 += varList;
+
     if(status == TEXT)
     {
-      Bool resolved;
-      std::string text_ = StringParser::parse(name(), this->text, varList, resolved);
-      if(!resolved)
-        throw(Exception("unresolved variables"));
-      expr = Expression::parse(text_);
-      status = EXPRESSION;
-    }
-    if(status == EXPRESSION)
-      expr->usedVariables(varList, usedName);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW_EXTRA("Expression("+name()+" = '"+getText()+"')", e)
-  }
-}
-
-/***********************************************/
-
-void ExpressionVariable::simplify(const VariableList &varList)
-{
-  try
-  {
-    if(status == TEXT)
-    {
-      Bool resolved;
-      std::string text_ = StringParser::parse(name(), this->text, varList, resolved);
+      Bool resolved = TRUE;
+      std::string text_ = StringParser::parse(name(), this->text, varList2, resolved);
       if(!resolved)
         return;
-      expr = Expression::parse(text_);
+      expr   = Expression::parse(text_);
       status = EXPRESSION;
     }
 
     if(status == EXPRESSION)
     {
       Bool resolved;
-      expr = expr->simplify(varList, resolved);
-      if(!resolved)
+      expr = expr->simplify(varList2, resolved);
+      if(resolved)
+      {
+        value  = expr->evaluate(varList2);
+        status = VALUE;
         return;
-      value  = expr->evaluate(varList);
-      status = VALUE;
+      }
+
+      // store only used variables
+      this->varList.map.clear();
+      for(auto &var : varList2.map)
+        if(!varList.find(var.first) && var.second->isSimplified)
+          this->varList.map[var.first] = var.second;
     }
   }
   catch(std::exception &e)
@@ -1485,18 +1606,22 @@ ExpressionVariablePtr ExpressionVariable::derivative(const std::string &varName,
 {
   try
   {
+    if(status == CIRCULAR)
+      throw(Exception("circular expression"));
     if(status == UNDEFINED)
       throw(Exception("undefined variable"));
-    if(status == VALUE)
+    if((status == VALUE) || (status == FUNC))
       return std::make_shared<ExpressionVariable>(name(), 0.0);
     if(status == EXPRESSION)
-      return std::make_shared<ExpressionVariable>(name(), expr->derivative(varName));
+      return std::make_shared<ExpressionVariable>(name(), expr->derivative(varName), this->varList);
     // status == TEXT
-    Bool resolved;
-    std::string text_ = StringParser::parse(name(), this->text, varList, resolved);
+    VariableList varList2 = this->varList;
+    varList2 += varList;
+    Bool resolved = TRUE;
+    std::string text_ = StringParser::parse(name(), this->text, varList2, resolved);
     if(!resolved)
       throw(Exception("unresolved variables"));
-    return std::make_shared<ExpressionVariable>(name(), Expression::parse(text_)->derivative(varName));
+    return std::make_shared<ExpressionVariable>(name(), Expression::parse(text_)->derivative(varName), this->varList);
   }
   catch(std::exception &e)
   {
@@ -1510,23 +1635,49 @@ Double ExpressionVariable::evaluate(const VariableList &varList) const
 {
   try
   {
-    if(status == CIRCULAR)
-      throw(Exception("circular expression"));
     if(status == VALUE)
       return value;
+
+    if(status == FUNC)
+    {
+      if(!func)
+        throw(Exception("nullptr function"));
+      status = VALUE;
+      value  = (*func)();
+      func   = nullptr;
+      return value;
+    }
+
     if(status == EXPRESSION)
-      return expr->evaluate(varList);
+    {
+      if(this->varList.map.empty())
+        return expr->evaluate(varList);
+      VariableList varList2 = this->varList;
+      varList2 += varList;
+      return expr->evaluate(varList2);
+    }
 
-    Bool resolved;
-    std::string text_ = StringParser::parse(name(), this->text, varList, resolved);
-    if(!resolved)
-      throw(Exception("unresolved variables"));
+    if(status == TEXT)
+    {
+      VariableList varList2 = this->varList;
+      varList2 += varList;
+      Bool resolved = TRUE;
+      std::string text_ = StringParser::parse(name(), this->text, varList2, resolved);
+      if(!resolved)
+        throw(Exception("unresolved variables"));
 
-    const Status stat = status;
-    const_cast<ExpressionVariable*>(this)->status = CIRCULAR;
-    Double d = Expression::parse(text_)->evaluate(varList);
-    const_cast<ExpressionVariable*>(this)->status = stat;
-    return d;
+      const Status stat = status;
+      status = CIRCULAR;  // prevent endless searching
+      Double d = Expression::parse(text_)->evaluate(varList2);
+      status = stat;
+      return d;
+    }
+
+    if(status == CIRCULAR)
+      throw(Exception("circular expression"));
+
+    //if(status == UNDEFINED)
+    throw(Exception("undefined variable"));
   }
   catch(std::exception &e)
   {
@@ -1540,6 +1691,28 @@ std::string ExpressionVariable::getParsedText(const VariableList &varList, Bool 
 {
   try
   {
+    if(status == TEXT)
+    {
+      status = CIRCULAR; // prevent endless searching
+      VariableList varList2 = this->varList;
+      varList2 += varList;
+      auto result = StringParser::parse(name(), text, varList2, resolved);
+      status = TEXT;
+      return result;
+    }
+
+    if(status == UNDEFINED)
+      return name();
+
+    if(status == FUNC)
+    {
+      if(!func)
+        throw(Exception("nullptr function"));
+      status = VALUE;
+      value  = (*func)();
+      func   = nullptr;
+    }
+
     if(status == VALUE)
     {
       std::stringstream ss;
@@ -1550,20 +1723,8 @@ std::string ExpressionVariable::getParsedText(const VariableList &varList, Bool 
     if(status == EXPRESSION)
       return expr->string();
 
-    if(status == UNDEFINED)
-    {
-      resolved = FALSE;
-      return "{_undefined_}";
-    }
-
-    if(status == CIRCULAR)
-      throw(Exception("is circular defined"));
-
-    // status == TEXT
-    const_cast<ExpressionVariable*>(this)->status = CIRCULAR;
-    auto result = StringParser::parse(name(), text, varList, resolved);
-    const_cast<ExpressionVariable*>(this)->status = TEXT;
-    return result;
+    //if(status == CIRCULAR)
+    throw(Exception("is circular defined"));
   }
   catch(std::exception &e)
   {
@@ -1574,63 +1735,22 @@ std::string ExpressionVariable::getParsedText(const VariableList &varList, Bool 
 /***********************************************/
 /***********************************************/
 
-VariableList::VariableList(const VariableList &x) : map(x.map)
-{
-  for(auto &p : map)
-    p.second = std::make_shared<ExpressionVariable>(*p.second); // clone data
-}
-
-/***********************************************/
-
-VariableList &VariableList::operator=(const VariableList &x)
-{
-  map = x.map;
-  for(auto &p : map)
-    p.second = std::make_shared<ExpressionVariable>(*p.second); // clone data
-  return *this;
-}
-
-/***********************************************/
-
 VariableList &VariableList::operator+=(const VariableList &x)
 {
-  for(const auto &var : x)
-    addVariable(var.second);
+  for(const auto &var : x.map)
+    map[var.second->name()] = var.second;
   return *this;
 }
 
 /***********************************************/
 
-ExpressionVariablePtr VariableList::operator[](const std::string &name)
-{
-  try
-  {
-    auto var = find(name);
-    if(!var)
-      return addVariable(std::make_shared<ExpressionVariable>(name));
-    return var;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-ExpressionVariablePtr VariableList::find(const std::string &name) const
+std::shared_ptr<const ExpressionVariable> VariableList::find(const std::string &name) const
 {
   try
   {
     auto iter = map.find(name);
     if(iter != map.end())
       return iter->second;
-    // Hack to read old constant definition without brackets
-    std::string name2 = name;
-    std::transform(name2.begin(), name2.end(), name2.begin(), [](auto c){return std::tolower(c);});
-    if(name2 == "pi")  return std::make_shared<ExpressionVariable>("pi",  PI);
-    if(name2 == "rho") return std::make_shared<ExpressionVariable>("rho", RAD2DEG);
-    if(name2 == "nan") return std::make_shared<ExpressionVariable>("nan", NAN_EXPR);
     return ExpressionVariablePtr(nullptr);
   }
   catch(std::exception &e)
@@ -1641,12 +1761,51 @@ ExpressionVariablePtr VariableList::find(const std::string &name) const
 
 /***********************************************/
 
-ExpressionVariablePtr VariableList::addVariable(ExpressionVariablePtr var)
+std::shared_ptr<ExpressionVariable> VariableList::find(const std::string &name)
 {
   try
   {
-    var = std::make_shared<ExpressionVariable>(*var); // copy
-    map[var->name()] = var;
+    auto iter = map.find(name);
+    if(iter != map.end())
+    {
+      if(iter->second.use_count() > 1) // not threat save
+        iter->second = std::make_shared<ExpressionVariable>(*(iter->second)); // copy
+      return iter->second;
+    }
+    return ExpressionVariablePtr(nullptr);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void VariableList::addVariable(ExpressionVariablePtr var)
+{
+  try
+  {
+    map[var->name()] = std::make_shared<ExpressionVariable>(*var);  // copy
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+ExpressionVariablePtr VariableList::getVariable(const std::string &name)
+{
+  try
+  {
+    ExpressionVariablePtr var = find(name);
+    if(!var) // new variable
+    {
+      var = std::make_shared<ExpressionVariable>(name);
+      map[name] = var;
+    }
     return var;
   }
   catch(std::exception &e)
@@ -1656,32 +1815,9 @@ ExpressionVariablePtr VariableList::addVariable(ExpressionVariablePtr var)
 }
 
 /***********************************************/
-/***********************************************/
 
-void addVariable(const std::string &name, VariableList &varList)
-{
-  addVariable(std::make_shared<ExpressionVariable>(name), varList);
-}
-
-/***********************************************/
-
-void addVariable(const std::string &name, Double value, VariableList &varList)
-{
-  addVariable(std::make_shared<ExpressionVariable>(name, value), varList);
-}
-
-/***********************************************/
-
-void addVariable(const std::string &name, const std::string &text, VariableList &varList)
-{
-  addVariable(std::make_shared<ExpressionVariable>(name, text), varList);
-}
-
-/***********************************************/
-
-void addVariable(ExpressionVariablePtr var, VariableList &varList)
-{
-  varList.addVariable(var);
-}
+void VariableList::setVariable(const std::string &name, Double value)            {getVariable(name)->setValue(value);}
+void VariableList::setVariable(const std::string &name, const std::string &text) {getVariable(name)->setValue(text);}
+void VariableList::undefineVariable(const std::string &name)                     {getVariable(name)->setUndefined();}
 
 /***********************************************/

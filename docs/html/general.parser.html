@@ -103,7 +103,37 @@ Condition: <code>if(c,x,y)</code>: If the first argument is true (not 0), the se
 <h2 id="text">Text parser</h2><p>
 Before the mathematical expression parser evaluates the expression, a simple text parser is applied.
 The text parser is used for all input fields (also file names). It scans the text for terms like
-<code>{variable}</code> and replaces it by the text content of the <code>variable</code> defined in the global section.</p><p>The text parser also evaluates terms in the form <code>{expression:format}</code> and replaces it by a formatted
+<code>{variable}</code> and replaces it by the text content of the <code>variable</code> defined in the global section.
+A literal '<code>{</code>' character must be escaped with '<code>#{</code>'.</p><p>The text parser allows regex replacements in the form <code>{text/regex/replace}</code>.
+All matches of <code>regex</code> in the <code>text</code> are replaced by <code>replace</code>.
+Possible <code>{variables}</code> in the three parts are evaluated beforehand.
+Capturing groups <code>()</code> can be accessed by <code>$1</code>, <code>$2</code>,
+&hellip; in the replacement (<code>$0</code> is the complete match). Additional escape sequences are:
+<ul>
+
+<li><code>\l</code> lowercase next char,
+</li><li>
+<code>\u</code> uppercase next char,
+</li><li>
+<code>\L</code> lowercase until <code>\E</code>,
+</li><li>
+<code>\U</code> uppercase until <code>\E</code>,
+</li><li>
+<code>\Q</code> quote (disable) pattern metacharacters until <code>\E</code>,
+</li><li>
+<code>\E</code> end either case modification or quoted section.
+</li></ul>
+</p><p>Examples:
+<ul>
+
+<li><code>{{variable}/test/text}</code> replaces all occurrences of <code>test</code> by <code>text</code>.
+</li><li>
+<code>{TEXT/.+/\L$0}</code> converts text to lower case.
+</li><li>
+<code>{012345/.#{2}(.#{3}).*/$1}</code> extracts the substring at index 2 and length 3 resulting in <code>234</code>.
+      Note the escaping <code>#{</code>.
+</li></ul>
+</p><p>The text parser also evaluates terms in the form <code>{expression:format}</code> and replaces it by a formatted
 output. The <code>format</code> contains the text to be written as output.
 It can contain embedded format specifiers that are replaced by the value of the expression
 and formatted as requested (also multiple times). In the following, the resulting formatted output is given in the

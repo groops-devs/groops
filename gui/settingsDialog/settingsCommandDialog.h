@@ -14,6 +14,7 @@
 #define __GROOPSGUI__SETTINGSCOMMANDDIALOG__
 
 #include <QDialog>
+#include <QSettings>
 #include "base/importGroops.h"
 
 /***** TYPES ***********************************/
@@ -23,7 +24,6 @@ namespace Ui
   class SettingsCommandDialog;
 }
 
-class QSettings;
 class QAbstractButton;
 
 /***** CLASS ***********************************/
@@ -33,7 +33,7 @@ class SettingsCommandDialog : public QDialog
   Q_OBJECT
 
   Ui::SettingsCommandDialog *ui;
-  QSettings                 *settings;
+  QSettings                  settings;
 
   void insertItem(int row, const QString &label, const QString &command);
 
@@ -41,7 +41,7 @@ public:
   SettingsCommandDialog(QWidget *parent=nullptr);
  ~SettingsCommandDialog();
 
- static void readCommandList(QSettings *settings, QStringList &lableList, QStringList &commandList);
+ static void readCommandList(QStringList &lableList, QStringList &commandList);
 
 public slots:
   void clickedUp();

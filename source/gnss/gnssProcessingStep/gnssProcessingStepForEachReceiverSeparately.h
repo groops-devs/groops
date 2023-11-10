@@ -97,7 +97,7 @@ inline void GnssProcessingStepForEachReceiverSeparately::process(GnssProcessingS
       {
         logStatus<<"=== select single receiver ("<<state.gnss->receivers.at(idRecv)->name()<<") ==========================="<<Log::endl;
         VariableList varList;
-        addVariable(variableReceiver, state.gnss->receivers.at(idRecv)->name(), varList);
+        varList.setVariable(variableReceiver, state.gnss->receivers.at(idRecv)->name());
 
         std::fill(state.normalEquationInfo.estimateReceiver.begin(), state.normalEquationInfo.estimateReceiver.end(), FALSE);
         state.normalEquationInfo.estimateReceiver.at(idRecv) = TRUE;
