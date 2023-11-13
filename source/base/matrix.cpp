@@ -1176,7 +1176,7 @@ Matrix toeplitz(const Vector &a)
   {
     Matrix A(a.rows(), Matrix::SYMMETRIC);
     for(UInt i=0; i<A.columns(); i++)
-      copy(a.row(0, a.rows()-i), A.slice(i, i, A.rows()-i, 1));
+      copy(a.row(0, a.rows()-i).trans(), A.slice(i, i, 1, A.rows()-i));
     fillSymmetric(A);
     return A;
   }
