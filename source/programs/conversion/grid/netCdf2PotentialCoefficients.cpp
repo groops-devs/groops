@@ -217,11 +217,9 @@ void NetCdf2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr
       }
     }
 
-    logStatus<<"write results to <"<<outName<<">"<<Log::endl;
+    logStatus<<"write results"<<Log::endl;
     if(Parallel::isMaster(comm))
     {
-      VariableList fileNameVariableList;
-
       Matrix Cnm(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
       Matrix Snm(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
       for(UInt k=0; k<epochs.size(); k++)
@@ -233,6 +231,7 @@ void NetCdf2PotentialCoefficients::run(Config &config, Parallel::CommunicatorPtr
           copy(x.at(m).slice(maxDegree+1-m, k, maxDegree+1-m, 1), Snm.slice(m, m, maxDegree+1-m, 1));
         }
 
+        VariableList fileNameVariableList;
         fileNameVariableList.setVariable(loopVar, epochs.at(k).mjd());
         writeFileSphericalHarmonics(outName(fileNameVariableList), SphericalHarmonics(GM, R, Cnm, Snm).get(maxDegree, minDegree));
       }
