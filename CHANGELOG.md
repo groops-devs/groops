@@ -1,4 +1,5 @@
 # main
+- New program:      eclipseFactor2GriddedData.cpp, returns a global grid with eclipse factors
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
 - Other:            EarthRotation::rotaryAxis: if EOP time series is too short, use simplified equations.

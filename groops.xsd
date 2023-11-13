@@ -15186,6 +15186,37 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="EclipseFactor2GriddedData">
+				<xs:annotation>
+					<xs:documentation>eclipse factor on a grid.</xs:documentation>
+					<xs:appinfo>tag: Misc</xs:appinfo>
+					<xs:appinfo>tag: Grid</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileGriddedData" type="filename">
+							<xs:annotation>
+								<xs:documentation>eclipse factor</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="grid" type="gridType" maxOccurs="unbounded"/>
+						<xs:element name="eclipse" type="eclipseType"/>
+						<xs:element name="ephemerides" type="ephemeridesType"/>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file"/>
+						<xs:element name="time" type="time"/>
+						<xs:element name="R" type="double" minOccurs="0" default="6378137.0">
+							<xs:annotation>
+								<xs:documentation>reference radius for ellipsoidal coordinates on output</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inverseFlattening" type="double" minOccurs="0" default="298.2572221010">
+							<xs:annotation>
+								<xs:documentation>reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="FilterMatrixWindowedPotentialCoefficients">
 				<xs:annotation>
 					<xs:documentation>create a spherical harmonic window matrix.</xs:documentation>
