@@ -17,7 +17,20 @@
 #ifdef DOCSTRING_ParametrizationAcceleration
 static const char *docstringParametrizationAccelerationPerRevolution = R"(
 \subsection{PerRevolution}\label{parametrizationAccelerationType:perRevolution}
-Oscillation per revolution.
+Oscillation once, twice, ... per revolution in Satellite Reference Frame (SRF)
+with the argument of latitude as input angle.  If the attitude of the satellite
+is not provided the Celestial Reference Frame (CRF) is used instead.
+Paramters are estimated in $[nm/s^2=10^{-9}\,m/s^2]$.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:perRevolution.cos(<order>*u).x::<interval>|,
+\item \verb|*:perRevolution.cos(<order>*u).y::<interval>|,
+\item \verb|*:perRevolution.cos(<order>*u).z::<interval>|,
+\item \verb|*:perRevolution.sin(<order>*u).x::<interval>|,
+\item \verb|*:perRevolution.sin(<order>*u).y::<interval>|,
+\item \verb|*:perRevolution.sin(<order>*u).z::<interval>|.
+\end{itemize}
 )";
 #endif
 
@@ -124,12 +137,12 @@ inline void ParametrizationAccelerationPerRevolution::parameterName(std::vector<
 
       for(UInt k=0; k<order; k++)
       {
-        if(estimateX) name.push_back(ParameterName("satellite", "perRevolution.cos("+(k+1)%"%i"s+"*u).x", dateStr));
-        if(estimateY) name.push_back(ParameterName("satellite", "perRevolution.cos("+(k+1)%"%i"s+"*u).y", dateStr));
-        if(estimateZ) name.push_back(ParameterName("satellite", "perRevolution.cos("+(k+1)%"%i"s+"*u).z", dateStr));
-        if(estimateX) name.push_back(ParameterName("satellite", "perRevolution.sin("+(k+1)%"%i"s+"*u).x", dateStr));
-        if(estimateY) name.push_back(ParameterName("satellite", "perRevolution.sin("+(k+1)%"%i"s+"*u).y", dateStr));
-        if(estimateZ) name.push_back(ParameterName("satellite", "perRevolution.sin("+(k+1)%"%i"s+"*u).z", dateStr));
+        if(estimateX) name.push_back(ParameterName("satellite", "perRevolution.cos("+(k+1)%"%i"s+"*u).x", "", dateStr));
+        if(estimateY) name.push_back(ParameterName("satellite", "perRevolution.cos("+(k+1)%"%i"s+"*u).y", "", dateStr));
+        if(estimateZ) name.push_back(ParameterName("satellite", "perRevolution.cos("+(k+1)%"%i"s+"*u).z", "", dateStr));
+        if(estimateX) name.push_back(ParameterName("satellite", "perRevolution.sin("+(k+1)%"%i"s+"*u).x", "", dateStr));
+        if(estimateY) name.push_back(ParameterName("satellite", "perRevolution.sin("+(k+1)%"%i"s+"*u).y", "", dateStr));
+        if(estimateZ) name.push_back(ParameterName("satellite", "perRevolution.sin("+(k+1)%"%i"s+"*u).z", "", dateStr));
       }
     }
   }

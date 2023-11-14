@@ -24,6 +24,8 @@ f(x,t) = \frac{1}{T}(t-t_0) \cdot f_t(x),
 \end{equation}
 with $t_0$ is \config{timeStart} and $T$ is \config{timeStep} in days.
 A constant term is not included and must added separately.
+
+The \file{parameter name}{parameterName} is \verb|*:*:trend.<timeStep(days)>*(t-<timeStart>):*|.
 )";
 #endif
 

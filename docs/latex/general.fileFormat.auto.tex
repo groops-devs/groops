@@ -466,6 +466,16 @@ See also \program{Iers2OceanPoleTide}.
 \subsection{ParameterName}\label{general.fileFormat:parameterName}
 Name of parameters of a system of \file{normal equations}{normalEquation} or \file{solution vector}{matrix}.
 
+A parameter name is a string \verb|<object>:<type>:<temporal>:<interval>| containg four parts divided by \verb|:|
+\begin{enumerate}
+\item object: Object this parameter refers to, e.g. \verb|graceA|, \verb|G023|, \verb|earth|, \ldots
+\item type: Type of this parameter, e.g. \verb|accBias|, \verb|position.x|, \ldots
+\item temporal: Temporal representation of this parameter, e.g. \verb|trend|, \verb|polynomial.degree1|, \ldots
+\item interval: Interval/epoch this parameter represents, e.g. \verb|2017-01-01_00-00-00_2017-01-02_00-00-00|, \verb|2018-01-01_00-00-00|.
+\end{enumerate}
+In the documentation a star (\verb|*|) in the name means this part is untouched and useally set by other classes.
+Times are written as \verb|yyyy-mm-dd_hh-mm-ss| and intervals (if not empty) as \verb|<timeStart>_<timeEnd>|.
+
 See \program{ParameterNamesCreate}.
 
 \begin{verbatim}

@@ -17,9 +17,17 @@
 #ifdef DOCSTRING_ParametrizationGnssAntenna
 static const char *docstringParametrizationGnssAntennaSphericalHarmonics = R"(
 \subsection{SphericalHarmonics}
-Parametrization of antenna center variations in terms of spherical harmonics.
+Parametrization of antenna center variations in $[m]$ in terms of spherical harmonics.
 As usually only data above the horizon are observed only the even spherical harmonics
 (degree/order $m+n$ even), which are symmetric to the equator, are setup.
+
+The total count of parameters is $((n_{max}+1)(n_{max}+2)-n_{min}(n_{min}+1)/2$ and
+the \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:antennaCenterVariations.sphericalHarmonics.c_<degree>_<order>:*:*|,
+\item \verb|*:antennaCenterVariations.sphericalHarmonics.s_<degree>_<order>:*:*|.
+\end{itemize}
+
 )";
 #endif
 

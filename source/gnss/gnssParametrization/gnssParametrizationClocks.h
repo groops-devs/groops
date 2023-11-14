@@ -29,6 +29,8 @@ This is realized with an additional observation equation
 \end{equation}
 summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
 with a standard deviation of \config{sigmaZeroMeanConstraint}.
+
+The \file{parameter names}{parameterName} are \verb|<station or prn>:clock::<time>|.
 )";
 #endif
 

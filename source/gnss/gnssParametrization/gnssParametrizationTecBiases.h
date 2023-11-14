@@ -38,6 +38,8 @@ a standard deviation of \config{sigmaZeroMeanConstraint}.
 
 The accumulated estimated result can be written to files in
 \configClass{parametrization:signalBiases}{gnssParametrizationType:signalBiases}.
+
+The \file{parameter names}{parameterName} are \verb|<station or prn>:tecBias0<index><combi of gnssTypes>::|.
 )";
 #endif
 

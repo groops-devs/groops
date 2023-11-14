@@ -105,7 +105,7 @@ see <a class="groops-ref" href="gnssType.html">GnssType</a>.</p><p>See also <a c
 
 <h2 id="ionosphereSTEC">IonosphereSTEC</h2><p>
 The influence of the ionosphere is modelled by a STEC parameter (slant total electron content)
-between each transmitter and receiver at each epoch. These parameters are pre-eliminated
+in terms of $[TECU]$ between each transmitter and receiver at each epoch. These parameters are pre-eliminated
 from the observation equations before accumulating the normal equations.
 This is similar to using the ionosphere-free linear combination as observations
 but only one STEC parameter is needed for an arbitrary number of observation types.</p><p>The influcence to the code and phase observation is modelled as
@@ -136,7 +136,7 @@ with a standard deviation of <strong class="groops-config-element">sigmaSTEC</st
 
 <h2 id="ionosphereVTEC">IonosphereVTEC</h2><p>
 The influence of the ionosphere is modelled by a VTEC parameter (vertical total electron content)
-for every selected receiver each epoch. The slant TEC is computed
+in terms of $[TECU]$ for every selected receiver each epoch. The slant TEC is computed
 using the elevation $E$ dependent Modified Single-Layer Model (MSLM) mapping function
 \[\label{gnssParametrizationType:IonosphereVTEC:STEC}
   STEC = \frac{VTEC}{\cos z'}
@@ -147,7 +147,7 @@ depending on <a class="groops-class" href="gnssProcessingStepType.html#selectEpo
 and enables the separation of the TEC and signal biases, meaning
 <a class="groops-class" href="gnssParametrizationType.html#tecBiases">parametrization:tecBiases</a> becomes estimable.
 Local and short-term scintillations should be considered by adding loosely constrained
-<a class="groops-class" href="gnssParametrizationType.html#ionosphereSTEC">parametrization:ionosphereSTEC</a>.
+<a class="groops-class" href="gnssParametrizationType.html#ionosphereSTEC">parametrization:ionosphereSTEC</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station>:VTEC::&lt;time></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -161,9 +161,8 @@ Local and short-term scintillations should be considered by adding loosely const
 
 <h2 id="ionosphereMap">IonosphereMap</h2><p>
 TODO: reading and writing ionosphere maps not implemented yet.
-</p><p>The ionosphere is parametrized as a <a class="groops-class" href="parametrizationTemporalType.html">temporal</a>ly changing
-(e.g. hourly linear splines)
-spherical harmonics expansion
+</p><p>The ionosphere is parametrized in terms of $[TECU]$ as a <a class="groops-class" href="parametrizationTemporalType.html">temporal</a>ly
+changing (e.g. hourly linear splines) spherical harmonics expansion
 \[
   VTEC(\lambda,\theta,t) = \sum_{n=0}^{n_{max}} \sum_{m=0}^n c_{nm}(t)C_{nm}(\lambda,\theta)+s_{nm}(t)S_{nm}(\lambda,\theta)
 \]up to <strong class="groops-config-element">maxDegree</strong>=<code>15</code> in a solar-geomagentic frame defined
@@ -171,7 +170,14 @@ by <a class="groops-class" href="magnetosphereType.html">magnetosphere</a>.
 The VTEC values are mapped to STEC values via eq. \eqref{gnssParametrizationType:IonosphereVTEC:STEC}.</p><p>Local and short-term scintillations can be considered by adding constrained
 <a class="groops-class" href="gnssParametrizationType.html#ionosphereSTEC">parametrization:ionosphereSTEC</a>.
 To account for signal biases add
-<a class="groops-class" href="gnssParametrizationType.html#tecBiases">parametrization:tecBiases</a>.
+<a class="groops-class" href="gnssParametrizationType.html#tecBiases">parametrization:tecBiases</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>VTEC:sphericalHarmonics.c_&lt;degree>_&lt;order>:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>VTEC:sphericalHarmonics.s_&lt;degree>_&lt;order>:&lt;temporal>:&lt;interval></code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -193,7 +199,7 @@ This is realized with an additional observation equation
 \[
  0 = \sum_i \delta t^{s_i} + \sum_k \delta t_{r_k}
 \]summed over all <a class="groops-class" href="platformSelectorType.html">selectTransmitters/ReceiversZeroMean</a>
-with a standard deviation of <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>.
+with a standard deviation of <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station or prn>:clock::&lt;time></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -230,7 +236,8 @@ The realization of the constraint is done as an additional observation equation 
 \[
  0 = \sum_i \delta t^{s_i} + \sum_k \delta t_{r_k}
 \]summed over all <a class="groops-class" href="platformSelectorType.html">selectTransmitters/ReceiversZeroMean</a>
-with a standard deviation of <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>.
+with a standard deviation of <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station or prn>:clock::&lt;time></code>
+and <code>&lt;station or prn>:clockDrift::</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -294,7 +301,16 @@ which reduces the number of float bias parameters and increases the number of re
 Resolved integer ambiguities are not estimated as unknown parameters in
 <a class="groops-class" href="gnssProcessingStepType.html">gnssProcessingStepType:estimate</a> anymore
 and are removed from the system of normal equations.</p><p>The estimated phase biases can be written to files in
-<a class="groops-class" href="gnssParametrizationType.html#signalBiases">parametrization:signalBiases</a>.
+<a class="groops-class" href="gnssParametrizationType.html#signalBiases">parametrization:signalBiases</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>&lt;station>:phaseBias(&lt;gnssType>)::</code>,
+</li><li>
+<code>&lt;prn>:phaseBias(&lt;gnssType>)::</code>,
+</li><li>
+<code>&lt;station>.&lt;prn>:ambiguity&lt;index>of&lt;count>(&lt;GnssTypes>)::&lt;track interval></code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -329,7 +345,7 @@ is formulated as zero constraint equations and added with a standard deviation o
 (frequency division multiple access, FDMA) and for each channel an extra code bias is estimated.
 With <strong class="groops-config-element">linearGlonassBias</strong> a linear relationship between bias and frequency channel is assumed,
 which reduces the number of bias parameters.</p><p>The estimated biases can be written to files in
-<a class="groops-class" href="gnssParametrizationType.html#signalBiases">parametrization:signalBiases</a>.
+<a class="groops-class" href="gnssParametrizationType.html#signalBiases">parametrization:signalBiases</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station or prn>:codeBias0&lt;index>&lt;combi of gnssTypes>::</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -356,7 +372,7 @@ Furthermore, additional information about the ionosphere is required from
 transmitters and receivers are estimated together.
 The minimum norm nullspace is formulated as zero constraint equations and added with
 a standard deviation of <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>.</p><p>The accumulated estimated result can be written to files in
-<a class="groops-class" href="gnssParametrizationType.html#signalBiases">parametrization:signalBiases</a>.
+<a class="groops-class" href="gnssParametrizationType.html#signalBiases">parametrization:signalBiases</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station or prn>:tecBias0&lt;index>&lt;combi of gnssTypes>::</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -379,7 +395,8 @@ or the sampling set by <a class="groops-class" href="gnssProcessingStepType.html
 <a class="groops-class" href="gnssParametrizationType.html#signalBiases">parametrization:signalBiases</a>.
 Depending on the temporal representation a temporal zero-mean constraint is needed
 to separate this parametrization from the constant component. The constraint equations are added with
-a standard deviation of <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>.
+a standard deviation of <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<code>&lt;prn>:signalBias.&lt;gnssType>:&lt;temporal>:&lt;interval></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -408,7 +425,16 @@ the rotation/translation parameters are estimated in a
 <a class="groops-ref" href="fundamentals.robustLeastSquares.html">robust least squares adjustment</a>
 beforehand. The computed weight matrix is used to downweight corrupted stations
 in the constraint equations.</p><p>In case you want to align to an ITRF/IGS reference frame, precise coordinates can be
-generated with <a class="groops-program" href="Sinex2StationPositions.html">Sinex2StationPositions</a>.
+generated with <a class="groops-program" href="Sinex2StationPositions.html">Sinex2StationPositions</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>&lt;station>:position.x::</code>,
+</li><li>
+<code>&lt;station>:position.y::</code>,
+</li><li>
+<code>&lt;station>:position.z::</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -429,7 +455,16 @@ generated with <a class="groops-program" href="Sinex2StationPositions.html">Sine
 Estimates the epoch-wise <a class="groops-class" href="fileFormat_instrument.html">outputfilePositions</a>
 in an Earth-fixed frame (or in case of LEO satellites in an intertial frame).</p><p>The $3\times3$ epoch wise <a class="groops-class" href="fileFormat_instrument.html">outputfileCovarianceEpoch</a>
 are computed within
-<a class="groops-class" href="gnssProcessingStepType.html#computeCovarianceMatrix">GnssProcessing:processingStep:computeCovarianceMatrix</a>
+<a class="groops-class" href="gnssProcessingStepType.html#computeCovarianceMatrix">GnssProcessing:processingStep:computeCovarianceMatrix</a></p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>&lt;station>:position.x::&lt;time></code>,
+</li><li>
+<code>&lt;station>:position.y::&lt;time></code>,
+</li><li>
+<code>&lt;station>:position.z::&lt;time></code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -446,7 +481,36 @@ Necessary integrations are performed by integrating a moving interpolation polyn
 The <a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration</a> must include at least those
 parameters that were estimated in <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a>.
 Additional <a class="groops-class" href="timeSeriesType.html">stochasticPulse</a> parameters can be set up to reduce orbit mismodeling.
-If not enough epochs with observations are available (<strong class="groops-config-element">minEstimableEpochsRatio</strong>) the LEO satellite is disabled.
+If not enough epochs with observations are available (<strong class="groops-config-element">minEstimableEpochsRatio</strong>) the LEO satellite is disabled.</p><p>The parameters and <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are divided into global
+<ul>
+
+<li><code>&lt;station>:&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;station>:stochasticPulse.x::&lt;time></code>,
+</li><li>
+<code>&lt;station>:stochasticPulse.y::&lt;time></code>,
+</li><li>
+<code>&lt;station>:stochasticPulse.z::&lt;time></code>,
+</li></ul>
+
+and arc related parameters
+<ul>
+
+<li><code>&lt;station>:arc&lt;no>.&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;station>:arc&lt;no>.position0.x::</code>,
+</li><li>
+<code>&lt;station>:arc&lt;no>.position0.y::</code>,
+</li><li>
+<code>&lt;station>:arc&lt;no>.position0.z::</code>.
+</li><li>
+<code>&lt;station>:arc&lt;no>.velocity0.x::</code>,
+</li><li>
+<code>&lt;station>:arc&lt;no>.velocity0.y::</code>,
+</li><li>
+<code>&lt;station>:arc&lt;no>.velocity0.z::</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -485,12 +549,21 @@ For more details see <a class="groops-ref" href="cookbook.gnssNetwork.html#orbit
 
 <h2 id="troposphere">Troposphere</h2><p>
 A priori tropospheric correction is handled by a <a class="groops-class" href="troposphereType.html">troposphere</a> model (e.g. Vienna Mapping Functions 3).
-Additional parameters for zenith wet delay and gradients can be set up via
+Additional parameters in $[m]$ for zenith wet delay and gradients can be set up via
 <a class="groops-class" href="parametrizationTemporalType.html">troposphereWetEstimation</a> (usually 2-hourly linear splines)
 and <a class="groops-class" href="parametrizationTemporalType.html">troposphereGradientEstimation</a> (usually a daily trend).
 These parameters can be soft-constrained using
 <a class="groops-class" href="gnssParametrizationType.html#constraints">parametrization:constraints</a>
-to avoid an unsolvable system of normal equations in case of data gaps.
+to avoid an unsolvable system of normal equations in case of data gaps.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>&lt;station>:troposphereWet:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>&lt;station>:troposphereGradient.x:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>&lt;station>:troposphereGradient.y:&lt;temporal>:&lt;interval></code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -504,12 +577,25 @@ to avoid an unsolvable system of normal equations in case of data gaps.
 
 <h2 id="earthRotation">EarthRotation</h2><p>
 Earth rotation parameters (ERPs) can be estimated by defining
-<strong class="groops-config-element">estimatePole</strong> ($x_p$, $y_p$) and <strong class="groops-config-element">estimateUT1</strong> ($dUT1, LOD$).</p><p>Estimating length of day (LOD) with the sign according to IGS conventions requires a negative
+<strong class="groops-config-element">estimatePole</strong> ($x_p$, $y_p\, [mas]$) and <strong class="groops-config-element">estimateUT1</strong> ($dUT1\, [ms], LOD$).</p><p>Estimating length of day (LOD) with the sign according to IGS conventions requires a negative
 value in <a class="groops-class" href="parametrizationTemporalType.html#trend">parametrizationTemporal:trend:timeStep</a>.</p><p>Constraints on the defined parameters can be added via
 <a class="groops-class" href="gnssParametrizationType.html#constraints">parametrization:constraints</a>.
 An example would be to set up <a class="groops-class" href="parametrizationTemporalType.html#constant">estimateUT1:constant</a>
 so the $dUT1$ parameter is included in the normal equation system . Since $dUT1$ cannot be
-determined by GNSS, a hard constraint to its a priori value can then be added.
+determined by GNSS, a hard constraint to its a priori value can then be added.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>earth:polarMotion.xp:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>earth:polarMotion.yp:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>earth:UT1:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>earth:nutation.X:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>earth:nutation.>:&lt;temporal>:&lt;interval></code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -562,7 +648,8 @@ These normal equation files are then processed with the programs:</p><p><ul>
 <a class="groops-program" href="ParameterVector2GnssAntennaDefinition.html">ParameterVector2GnssAntennaDefinition</a>: writes the solution into a <a class="groops-file" href="fileFormat_gnssAntennaDefinition.html">antenna definition file</a>
 </li></ul>
 </p><p>Note that the apriori value $\M x_0$ for this parametrization is always zero and never updated
-according to eq. \eqref{gnssParametrizationType:update}.
+according to eq. \eqref{gnssParametrizationType:update}.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<code>&lt;antennaName>:&lt;antennaCenterVariations>.&lt;gnssType>::</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -576,7 +663,8 @@ according to eq. \eqref{gnssParametrizationType:update}.
 
 <h2 id="transmitterAntennas">TransmitterAntennas</h2><p>
 Same as <a class="groops-class" href="gnssParametrizationType.html#receiverAntennas">receiverAntennas</a> but
-for transmitting antennas (GNSS satellites).
+for transmitting antennas (GNSS satellites).</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<code>&lt;antennaName>:&lt;antennaCenterVariations>.&lt;gnssType>::</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

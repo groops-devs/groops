@@ -65,6 +65,9 @@ These normal equation files are then processed with the programs:
 
 Note that the apriori value $\M x_0$ for this parametrization is always zero and never updated
 according to eq.~\eqref{gnssParametrizationType:update}.
+
+The \file{parameter names}{parameterName} are
+\verb|<antennaName>:<antennaCenterVariations>.<gnssType>::|.
 )";
 #endif
 

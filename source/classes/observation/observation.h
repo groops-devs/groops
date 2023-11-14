@@ -48,7 +48,8 @@ gives an estimation from decorrelated observations with equal variance
 \qquad\text{and}\qquad
 \mathcal{C}(\bar{\M e})= \sigma^2 \M I.
 \end{equation}
-Usually the arc depending parameters are eliminated in the next step.
+Usually the arc depending parameters are eliminated in the next step
+and not mentioned for the parameter names in the following.
 )";
 #endif
 

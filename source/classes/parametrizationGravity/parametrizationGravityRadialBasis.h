@@ -29,6 +29,8 @@ functions given by isotropic radial \configClass{kernel}{kernelType} functions
 \end{equation}
 The basis functions are located on a grid~$\M x_i$ given by \configClass{grid}{gridType}.
 This class can also be used to estimate point masses if \configClass{kernel}{kernelType} is set to density.
+
+The \file{parameter names}{parameterName} are \verb|*:radialBasis.<index>.<total count>:*:*|.
 )";
 #endif
 

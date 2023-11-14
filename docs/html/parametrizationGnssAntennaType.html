@@ -77,7 +77,16 @@ Usually the parametrization is setup separately for different <a class="groops-c
 
 <h2 id="center">Center</h2><p>
 Antenna center or, if setup for a specific <a class="groops-class" href="gnssType.html">gnssType</a>,
-phase/code center offset (e.g. <code>*1*G</code> for GPS L1 phase center offset).
+phase/code center offset (e.g. <code>*1*G</code> for GPS L1 phase center offset) in $[m]$.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>*:antennaCenter.x:*:*</code>,
+</li><li>
+<code>*:antennaCenter.y:*:*</code>,
+</li><li>
+<code>*:antennaCenter.z:*:*</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -87,10 +96,17 @@ phase/code center offset (e.g. <code>*1*G</code> for GPS L1 phase center offset)
 </table>
 
 <h2>SphericalHarmonics</h2><p>
-Parametrization of antenna center variations in terms of spherical harmonics.
+Parametrization of antenna center variations in $[m]$ in terms of spherical harmonics.
 As usually only data above the horizon are observed only the even spherical harmonics
-(degree/order $m+n$ even), which are symmetric to the equator, are setup.
-</p>
+(degree/order $m+n$ even), which are symmetric to the equator, are setup.</p><p>The total count of parameters is $((n_{max}+1)(n_{max}+2)-n_{min}(n_{min}+1)/2$ and
+the <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>*:antennaCenterVariations.sphericalHarmonics.c_&lt;degree>_&lt;order>:*:*</code>,
+</li><li>
+<code>*:antennaCenterVariations.sphericalHarmonics.s_&lt;degree>_&lt;order>:*:*</code>.
+</li></ul>
+</p><p></p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">minDegree</div></div></td><td>uint</td><td>min degree</td></tr>
@@ -101,12 +117,13 @@ As usually only data above the horizon are observed only the even spherical harm
 Parametrization of antenna center variations with radial basis functions
 \[
   ACV(\M x(A, E)) = \sum_i a_i \Phi(\M x\cdot\M x_i)
-\]where $a_i$ the coefficients which has to be estimated and $\Phi$ are the basis
+\]where $a_i$ in $[m]$ the coefficients which has to be estimated and $\Phi$ are the basis
 functions
 \[
   \Phi(\cos\psi) = \sum_n \sqrt{2n+1}P_n(\cos\psi).
 \]
-<figure><img class="figure" style="width:40%;" src="../figures/parametrizationGnssAntennaRadialBasis.png" alt="parametrizationGnssAntennaRadialBasis"><figcaption class="center">Figure: Nodal points of the basis functions
+The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<code>*:antennaCenterVariations.radialBasis.&lt;index>.&lt;total count>:*:*</code>.</p><p><figure><img class="figure" style="width:40%;" src="../figures/parametrizationGnssAntennaRadialBasis.png" alt="parametrizationGnssAntennaRadialBasis"><figcaption class="center">Figure: Nodal points of the basis functions
 using a Reuter grid for transmitting satellites (view angle of 18 deg). The red line indicates the view angle of 14 deg of ground stations.</figcaption></figure>
 </p>
 <table class="table table-hover">

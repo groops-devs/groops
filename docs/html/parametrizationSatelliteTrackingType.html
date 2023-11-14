@@ -78,9 +78,24 @@ are sequently appended.
 </p>
 
 <h2 id="antennaCenter">AntennaCenter</h2><p>
-Estimate the KBR antenna phase centre (APC) coordinates for each spacecraft in satellite reference frame (SRF)
-as constant per axis, once per month. The observation equations are computed by taking the derivative
-of the antenna offset correction equation w.r.t. the KBR APC coordinates.
+Estimate the KBR antenna phase centre (APC) coordinates in $[m]$ for each spacecraft in satellite reference frame (SRF)
+as constant per axis. The observation equations are computed by taking the derivative
+of the antenna offset correction equation w.r.t. the KBR APC coordinates.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>satellite1.satellite2:sstAntennaCenter1.x:*:*</code>,
+</li><li>
+<code>satellite1.satellite2:sstAntennaCenter1.y:*:*</code>,
+</li><li>
+<code>satellite1.satellite2:sstAntennaCenter1.z:*:*</code>,
+</li><li>
+<code>satellite1.satellite2:sstAntennaCenter2.x:*:*</code>,
+</li><li>
+<code>satellite1.satellite2:sstAntennaCenter2.y:*:*</code>,
+</li><li>
+<code>satellite1.satellite2:sstAntennaCenter2.z:*:*</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -94,7 +109,8 @@ of the antenna offset correction equation w.r.t. the KBR APC coordinates.
 </table>
 
 <h2 id="bias">Bias</h2><p>
-Estimate bias for SST observations. The temporal variation is defined by <a class="groops-class" href="parametrizationTemporalType.html">parametrizationTemporal</a>.
+Estimate bias for SST observations in $[m]$ or $[m/s$]. The temporal variation is defined by
+<a class="groops-class" href="parametrizationTemporalType.html">parametrizationTemporal</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>satellite1.satellite2:sstBias:&lt;temporal>:&lt;interval></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -103,7 +119,9 @@ Estimate bias for SST observations. The temporal variation is defined by <a clas
 </table>
 
 <h2 id="scale">Scale</h2><p>
-Estimate scale factor for SST observations with respect to reference SST data <a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a>. The temporal variation is defined by <a class="groops-class" href="parametrizationTemporalType.html">parametrizationTemporal</a>.
+Estimate scale factor for SST observations with respect to reference SST data
+<a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a>.
+The temporal variation is defined by <a class="groops-class" href="parametrizationTemporalType.html">parametrizationTemporal</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>satellite1.satellite2:sstScale:&lt;temporal>:&lt;interval></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -113,7 +131,9 @@ Estimate scale factor for SST observations with respect to reference SST data <a
 </table>
 
 <h2 id="timeBias">TimeBias</h2><p>
-Estimate time shift in seconds in SST observations, with defined temporal variation by <a class="groops-class" href="parametrizationTemporalType.html">parametrizationTemporal</a>. The design matrix is computed by taking the derivative of the ranging data w.r.t. time.
+Estimate time shift in seconds in SST observations, with defined temporal variation
+by <a class="groops-class" href="parametrizationTemporalType.html">parametrizationTemporal</a>.
+The design matrix is computed by taking the derivative of the ranging data w.r.t. time.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>satellite1.satellite2:sstTimeBias:&lt;temporal>:&lt;interval></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -124,7 +144,7 @@ Estimate time shift in seconds in SST observations, with defined temporal variat
 
 <h2 id="scaleModel">ScaleModel</h2><p>
 Estimate scale factors for deterministic signal models from satellite tracking instrument file <a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a>, see <a class="groops-program" href="EnsembleAveragingScaleModel.html">EnsembleAveragingScaleModel</a>.
-Amplitude variation of model waveforms is defined by <a class="groops-class" href="parametrizationTemporalType.html">parametrizationTemporal</a>.
+Amplitude variation of model waveforms is defined by <a class="groops-class" href="parametrizationTemporalType.html">parametrizationTemporal</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>satellite1.satellite2:scaleModel:&lt;temporal>:&lt;interval></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -140,7 +160,7 @@ These events can be time-indexed beforehand using satellite position and orienta
 see <a class="groops-program" href="GraceSstSpecialEvents.html">GraceSstSpecialEvents</a>. The shape of this short-period waveform is nearly
 constant within one month and can be approximated by a polynomial.
 The amplitude variation of the waveform can also be taken into account
-by <a class="groops-class" href="parametrizationTemporalType.html">parametrizationTemporal</a>.
+by <a class="groops-class" href="parametrizationTemporalType.html">parametrizationTemporal</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>satellite1.satellite2:&lt;type>.legendrePolynomial.n&lt;degree>:&lt;temporal>:&lt;interval></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

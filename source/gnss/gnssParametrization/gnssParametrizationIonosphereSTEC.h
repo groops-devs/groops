@@ -19,7 +19,7 @@
 static const char *docstringGnssParametrizationIonosphereSTEC = R"(
 \subsection{IonosphereSTEC}\label{gnssParametrizationType:ionosphereSTEC}
 The influence of the ionosphere is modelled by a STEC parameter (slant total electron content)
-between each transmitter and receiver at each epoch. These parameters are pre-eliminated
+in terms of $[TECU]$ between each transmitter and receiver at each epoch. These parameters are pre-eliminated
 from the observation equations before accumulating the normal equations.
 This is similar to using the ionosphere-free linear combination as observations
 but only one STEC parameter is needed for an arbitrary number of observation types.
