@@ -36,7 +36,8 @@ using the file \configFile{inputfileAdmittance}{admittance}. This file can be cr
 \program{DoodsonHarmonicsCalculateAdmittance}.
 
 The total parameter count is $2N$ with $N$ the number of doodson frequencies.
-The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$.
+The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$ with
+the \file{parameter names}{parameterName} \verb|*:*:doodson.cos(<doodsonName>):*| and \verb|*:*:doodson.sin(<doodsonName>):*|.
 )";
 #endif
 

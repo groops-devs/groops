@@ -26,6 +26,28 @@ can easily be added. Empirical parameters for the SST observations can be setup 
 \configClass{parametrizationSst}{parametrizationSatelliteTrackingType}.
 The accuracy or the full covariance matrix of SST is provided in
 \configClass{covarianceSst}{covarianceSstType}.
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|<satellite1>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite1>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite1>:arc<no>.position0.x::|,
+\item \verb|<satellite1>:arc<no>.position0.y::|,
+\item \verb|<satellite1>:arc<no>.position0.z::|.
+\item \verb|<satellite1>:arc<no>.velocity0.x::|,
+\item \verb|<satellite1>:arc<no>.velocity0.y::|,
+\item \verb|<satellite1>:arc<no>.velocity0.z::|.
+\item \verb|<satellite2>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite2>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite2>:arc<no>.position0.x::|,
+\item \verb|<satellite2>:arc<no>.position0.y::|,
+\item \verb|<satellite2>:arc<no>.position0.z::|.
+\item \verb|<satellite2>:arc<no>.velocity0.x::|,
+\item \verb|<satellite2>:arc<no>.velocity0.y::|,
+\item \verb|<satellite2>:arc<no>.velocity0.z::|.
+\item \verb|<satellite1>.<satellite2>:<parametrizationSatelliteTracking>:*:*|.
+\end{itemize}
 )";
 #endif
 

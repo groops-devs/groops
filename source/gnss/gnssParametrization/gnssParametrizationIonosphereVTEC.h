@@ -19,7 +19,7 @@
 static const char *docstringGnssParametrizationIonosphereVTEC = R"(
 \subsection{IonosphereVTEC}\label{gnssParametrizationType:ionosphereVTEC}
 The influence of the ionosphere is modelled by a VTEC parameter (vertical total electron content)
-for every selected receiver each epoch. The slant TEC is computed
+in terms of $[TECU]$ for every selected receiver each epoch. The slant TEC is computed
 using the elevation $E$ dependent Modified Single-Layer Model (MSLM) mapping function
 \begin{equation}\label{gnssParametrizationType:IonosphereVTEC:STEC}
   STEC = \frac{VTEC}{\cos z'}
@@ -36,6 +36,8 @@ and enables the separation of the TEC and signal biases, meaning
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases} becomes estimable.
 Local and short-term scintillations should be considered by adding loosely constrained
 \configClass{parametrization:ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}.
+
+The \file{parameter names}{parameterName} are \verb|<station>:VTEC::<time>|.
 )";
 #endif
 

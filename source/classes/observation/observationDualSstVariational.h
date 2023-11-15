@@ -37,6 +37,29 @@ The covariance matrix of the reduced observations is given by
                    \M\Sigma_{ACC} & \M\Sigma_{SST2} + \M\Sigma_{ACC}
     \end{bmatrix}.
 \end{equation}
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|<satellite1>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite1>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite1>:arc<no>.position0.x::|,
+\item \verb|<satellite1>:arc<no>.position0.y::|,
+\item \verb|<satellite1>:arc<no>.position0.z::|.
+\item \verb|<satellite1>:arc<no>.velocity0.x::|,
+\item \verb|<satellite1>:arc<no>.velocity0.y::|,
+\item \verb|<satellite1>:arc<no>.velocity0.z::|.
+\item \verb|<satellite2>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite2>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite2>:arc<no>.position0.x::|,
+\item \verb|<satellite2>:arc<no>.position0.y::|,
+\item \verb|<satellite2>:arc<no>.position0.z::|.
+\item \verb|<satellite2>:arc<no>.velocity0.x::|,
+\item \verb|<satellite2>:arc<no>.velocity0.y::|,
+\item \verb|<satellite2>:arc<no>.velocity0.z::|.
+\item \verb|<satellite1>.<satellite2>:<parametrizationSatelliteTracking1>:*:*|.
+\item \verb|<satellite1>.<satellite2>:<parametrizationSatelliteTracking2>:*:*|.
+\end{itemize}
 )";
 #endif
 

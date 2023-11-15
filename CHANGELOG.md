@@ -1,4 +1,5 @@
 # main
+- New program:      eclipseFactor2GriddedData.cpp, returns a global grid with eclipse factors
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
 - Other:            EarthRotation::rotaryAxis: if EOP time series is too short, use simplified equations.
@@ -6,6 +7,7 @@
 - Other:            SimulateStarCamera: new optional nadir pointing mode.
 - Other:            SimulateOrbit: Improved temporal numerical precision.
 - Other:            GnssRinexNavigation2OrbitClock: add SBAS support.
+- Other:            Updated documentation to explain parameter names.
 
 # Release 2023-08-25
 - New program:      FileMove.

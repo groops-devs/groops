@@ -21,11 +21,14 @@ Parametrization of antenna center variations with radial basis functions
 \begin{equation}
   ACV(\M x(A, E)) = \sum_i a_i \Phi(\M x\cdot\M x_i)
 \end{equation}
-where $a_i$ the coefficients which has to be estimated and $\Phi$ are the basis
+where $a_i$ in $[m]$ the coefficients which has to be estimated and $\Phi$ are the basis
 functions
 \begin{equation}
   \Phi(\cos\psi) = \sum_n \sqrt{2n+1}P_n(\cos\psi).
 \end{equation}
+
+The \file{parameter names}{parameterName} are
+\verb|*:antennaCenterVariations.radialBasis.<index>.<total count>:*:*|.
 
 \fig{!hb}{0.4}{parametrizationGnssAntennaRadialBasis}{fig:parametrizationGnssAntennaRadialBasis}{Nodal points of the basis functions
 using a Reuter grid for transmitting satellites (view angle of 18 deg). The red line indicates the view angle of 14 deg of ground stations.}

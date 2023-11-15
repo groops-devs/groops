@@ -32,6 +32,9 @@ see~\reference{dataVariables}{general.parser:dataVariables}.
 
 The observations can be divided into small blocks for parallelization.
 With \config{blockingSize} set the maximum count of observations in each block.
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\verb|*:<parametrizationGravity>:*:*|.
 )";
 #endif
 

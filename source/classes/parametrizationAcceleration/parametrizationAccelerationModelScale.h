@@ -18,6 +18,7 @@
 static const char *docstringParametrizationAccelerationModelScale = R"(
 \subsection{ModelScale}\label{parametrizationAccelerationType:modelScale}
 Estimate a scale factor for a given model.
+The \file{parameter names}{parameterName} are \verb|*:modelScale:<temporal>:<interval>|.
 )";
 #endif
 

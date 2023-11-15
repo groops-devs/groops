@@ -25,6 +25,24 @@ The \configClass{parametrizationAcceleration}{parametrizationAccelerationType} m
 parameters that were estimated in \program{PreprocessingVariationalEquationOrbitFit}.
 Additional \configClass{stochasticPulse}{timeSeriesType} parameters can be set up to reduce orbit mismodeling.
 If not enough epochs with observations are available (\config{minEstimableEpochsRatio}) the LEO satellite is disabled.
+
+The parameters and \file{parameter names}{parameterName} are divided into global
+\begin{itemize}
+\item \verb|<station>:<parametrizationAcceleration>:*:*|,
+\item \verb|<station>:stochasticPulse.x::<time>|,
+\item \verb|<station>:stochasticPulse.y::<time>|,
+\item \verb|<station>:stochasticPulse.z::<time>|,
+\end{itemize}
+and arc related parameters
+\begin{itemize}
+\item \verb|<station>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<station>:arc<no>.position0.x::|,
+\item \verb|<station>:arc<no>.position0.y::|,
+\item \verb|<station>:arc<no>.position0.z::|.
+\item \verb|<station>:arc<no>.velocity0.x::|,
+\item \verb|<station>:arc<no>.velocity0.y::|,
+\item \verb|<station>:arc<no>.velocity0.z::|.
+\end{itemize}
 )";
 #endif
 

@@ -30,6 +30,8 @@ The parameters are ordered timewise. First all parameters of $f_{i=1}(x)$ then
 $f_{i=2}(x)$ and so on. The total parameter count in each \config{interval} is $N=N_t+d-1$,
 where $N_t$ is the count of time points from \configClass{timeSeries}{timeSeriesType} in each interval and $d$
 is the \config{degree}.
+
+The \file{parameter names}{parameterName} are \verb|*:*:spline.n<degree>:<interval of each spline>|.
 )";
 #endif
 

@@ -48,6 +48,19 @@ can be used to transform the observation equations
 \end{equation}
 As the zero lines should not be considered the computational time for the accumulation is reduced.
 This option is not meaningful for evaluating the residuals such in \program{PreprocessingPod}.
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|<satellite>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite>:arc<no>.position0.x::|,
+\item \verb|<satellite>:arc<no>.position0.y::|,
+\item \verb|<satellite>:arc<no>.position0.z::|.
+\item \verb|<satellite>:arc<no>.velocity0.x::|,
+\item \verb|<satellite>:arc<no>.velocity0.y::|,
+\item \verb|<satellite>:arc<no>.velocity0.z::|.
+\end{itemize}
 )";
 #endif
 

@@ -17,7 +17,15 @@
 #ifdef DOCSTRING_ParametrizationAcceleration
 static const char *docstringParametrizationAccelerationAccBias = R"(
 \subsection{AccBias}\label{parametrizationAccelerationType:accBias}
-Temporal changing accelerometer bias per axis.
+Temporal changing accelerometer bias per axis in $[m/s^2]$ in Satellite Reference Frame (SRF).
+If the attitude of the satellite is not provided the Celestial Reference Frame (CRF) is used instead.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:accBias.x:*:*|,
+\item \verb|*:accBias.y:*:*|,
+\item \verb|*:accBias.z:*:*|.
+\end{itemize}
 )";
 #endif
 

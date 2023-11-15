@@ -24,6 +24,13 @@ in an Earth-fixed frame (or in case of LEO satellites in an intertial frame).
 The $3\times3$ epoch wise \configFile{outputfileCovarianceEpoch}{instrument}
 are computed within
 \configClass{GnssProcessing:processingStep:computeCovarianceMatrix}{gnssProcessingStepType:computeCovarianceMatrix}
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|<station>:position.x::<time>|,
+\item \verb|<station>:position.y::<time>|,
+\item \verb|<station>:position.z::<time>|.
+\end{itemize}
 )";
 #endif
 

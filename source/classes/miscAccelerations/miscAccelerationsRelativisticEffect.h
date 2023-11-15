@@ -20,6 +20,8 @@ static const char *docstringMiscAccelerationsRelativisticEffect = R"(
 \subsection{Relativistic effect}\label{miscAccelerationsType:relativisticEffect}
 The relativistic effect to the acceleration of an artificial Earth satellite
 according to IERS2010 conventions.
+
+The macro model and the attitude of the satellite is not needed.
 )";
 #endif
 

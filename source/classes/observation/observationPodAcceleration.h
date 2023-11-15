@@ -39,6 +39,12 @@ in most cases the kinematic orbit provides good results.
 
 The accuracy or the full covariance matrix of the precise orbit data is provided in
 \configClass{covariancePod}{covariancePodType} and can be estimated with \program{PreprocessingPod}.
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|<satellite>:<parametrizationAcceleration>:*:*|.
+\end{itemize}
 )";
 #endif
 

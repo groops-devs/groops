@@ -30,7 +30,8 @@ and $t_A$ is \config{timeStart}, $t_B$ is \config{timeEnd} in each \config{inter
 and $M$ is the \config{fourierDegree}.
 
 The total parameter count is $2MN$, where $N$ is the number of intervals.
-The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$.
+The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$ with
+the \file{parameter names}{parameterName} \verb|*:*:fourier.cos(<m>*x):<interval>| and \verb|*:*:fourier.sin(<m>*x):<interval>|.
 )";
 #endif
 

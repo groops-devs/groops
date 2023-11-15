@@ -54,6 +54,8 @@ which reduces the number of bias parameters.
 
 The estimated biases can be written to files in
 \configClass{parametrization:signalBiases}{gnssParametrizationType:signalBiases}.
+
+The \file{parameter names}{parameterName} are \verb|<station or prn>:codeBias0<index><combi of gnssTypes>::|.
 )";
 #endif
 

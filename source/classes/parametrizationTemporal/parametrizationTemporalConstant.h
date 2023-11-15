@@ -19,6 +19,8 @@
 static const char *docstringParametrizationTemporalConstant = R"(
 \subsection{Constant}\label{parametrizationTemporalType:constant}
 Represents a parameter being constant in time in each \config{interval}.
+
+The \file{parameter names}{parameterName} are \verb|*:*:*:<interval>|.
 )";
 #endif
 
