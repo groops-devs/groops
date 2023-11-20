@@ -17,7 +17,24 @@
 #ifdef DOCSTRING_ParametrizationAcceleration
 static const char *docstringParametrizationAccelerationGnssSolarRadiation = R"(
 \subsection{GnssSolarRadiation}\label{parametrizationAccelerationType:gnssSolarRadiation}
-GNSS solar radiation pressure model.
+GNSS solar radiation pressure model. Paramters are estimated in $[nm/s^2=10^{-9}\,m/s^2]$.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:solarRadiationPressure.ECOM.D0:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.DC2:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.DS2:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.DC4:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.DS4:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.Y0:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.B0:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.BC1:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.BS1:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.BC3:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.BS3:*:*|.
+\end{itemize}
+
+This parametrization needs the attitude of the satellite.
 )";
 #endif
 

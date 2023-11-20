@@ -93,7 +93,8 @@ In a second step the transformation
 \bar{\M l} = \bar{\M A} \M x + \bar{\M e}
 \qquad\text{and}\qquad
 \mathcal{C}(\bar{\M e})= \sigma^2 \M I.
-\]Usually the arc depending parameters are eliminated in the next step.
+\]Usually the arc depending parameters are eliminated in the next step
+and not mentioned for the parameter names in the following.
 </p>
 
 <h2 id="podVariational">PodVariational</h2><p>
@@ -118,7 +119,28 @@ to the sampling of the observations $\M l$ with more rows than columns. The QR d
   \begin{pmatrix} \M Q_1^T \M R \\ \M 0 \end{pmatrix} \M A \M x +
   \begin{pmatrix} \M Q_1^T \M e \\ \M Q_2^T \M e \end{pmatrix}.
 \]As the zero lines should not be considered the computational time for the accumulation is reduced.
-This option is not meaningful for evaluating the residuals such in <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>.
+This option is not meaningful for evaluating the residuals such in <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+<ul>
+
+<li><code>*:&lt;parametrizationGravity>:*:*</code>,
+</li><li>
+<code>&lt;satellite>:&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.position0.x::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.position0.y::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.position0.z::</code>.
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.velocity0.x::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.velocity0.y::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.velocity0.z::</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -162,7 +184,30 @@ The kinematic positions ${\M r}_\epsilon(\tau)$ should not given equally spaced 
 but must be divided into the same arcs as the other instrument data.
 The observation equations are interpolated to this time by a polynomial interpolation
 with degree <strong class="groops-config-element">interpolationDegree</strong>.</p><p>The accuracy or the full covariance matrix of the precise orbit data is provided in
-<a class="groops-class" href="covariancePodType.html">covariancePod</a> and can be estimated with <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>.</p><p>For <strong class="groops-config-element">accelerateComputation</strong> see <a class="groops-class" href="observationType.html#podVariational">observation:podVariational</a>.
+<a class="groops-class" href="covariancePodType.html">covariancePod</a> and can be estimated with <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>.</p><p>For <strong class="groops-config-element">accelerateComputation</strong> see <a class="groops-class" href="observationType.html#podVariational">observation:podVariational</a>.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+<ul>
+
+<li><code>*:&lt;parametrizationGravity>:*:*</code>,
+</li><li>
+<code>&lt;satellite>:&lt;parametrizationAcceleration>:*:*</code>,
+</li></ul>
+
+and for each arc if <strong class="groops-config-element">keepSatelliteStates</strong> is set
+<ul>
+
+<li><code>&lt;satellite>:arc&lt;no>.position.start.x::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.position.start.y::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.position.start.z::</code>.
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.position.end.x::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.position.end.y::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.position.end.z::</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -196,7 +241,14 @@ with a constant sampling without any gaps in each short arc (see <a class="groop
 is not evaluated at the observed positions but at the orbit given by <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>.
 The same is true for the reference forces. This orbit may be a more accurate dynamical orbit but
 in most cases the kinematic orbit provides good results.</p><p>The accuracy or the full covariance matrix of the precise orbit data is provided in
-<a class="groops-class" href="covariancePodType.html">covariancePod</a> and can be estimated with <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>.
+<a class="groops-class" href="covariancePodType.html">covariancePod</a> and can be estimated with <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+<ul>
+
+<li><code>*:&lt;parametrizationGravity>:*:*</code>,
+</li><li>
+<code>&lt;satellite>:&lt;parametrizationAcceleration>:*:*</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -233,7 +285,8 @@ is not evaluated at the observed positions but at the orbit given by <a class="g
 The same is true for the reference forces. This orbit may be a more accurate dynamical orbit but
 in most cases the kinematic orbit provides good results.</p><p>An unknown energy bias $E$ per arc is parametrized by <a class="groops-class" href="parametrizationTemporalType.html">parametrizationBias</a>
 and should be a constant in theory but temporal changes might help to absorb other unmodelled effects.</p><p>The accuracy or the full covariance matrix of the precise orbit data is provided in
-<a class="groops-class" href="covariancePodType.html">covariancePod</a> and can be estimated with <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>.
+<a class="groops-class" href="covariancePodType.html">covariancePod</a> and can be estimated with <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+<code>*:&lt;parametrizationGravity>:*:*</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -257,7 +310,46 @@ all data are add together. So corrections in extra files like the light time cor
 can easily be added. Empirical parameters for the SST observations can be setup with
 <a class="groops-class" href="parametrizationSatelliteTrackingType.html">parametrizationSst</a>.
 The accuracy or the full covariance matrix of SST is provided in
-<a class="groops-class" href="covarianceSstType.html">covarianceSst</a>.
+<a class="groops-class" href="covarianceSstType.html">covarianceSst</a>.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+<ul>
+
+<li><code>*:&lt;parametrizationGravity>:*:*</code>,
+</li><li>
+<code>&lt;satellite1>:&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.position0.x::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.position0.y::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.position0.z::</code>.
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.velocity0.x::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.velocity0.y::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.velocity0.z::</code>.
+</li><li>
+<code>&lt;satellite2>:&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position0.x::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position0.y::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position0.z::</code>.
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.velocity0.x::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.velocity0.y::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.velocity0.z::</code>.
+</li><li>
+<code>&lt;satellite1>.&lt;satellite2>:&lt;parametrizationSatelliteTracking>:*:*</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -290,7 +382,46 @@ all data are add together. So corrections in extra files like the light time cor
 can easily be added. Empirical parameters for the SST observations can be setup with
 <a class="groops-class" href="parametrizationSatelliteTrackingType.html">parametrizationSst</a>.
 The accuracy or the full covariance matrix of SST is provided in
-<a class="groops-class" href="covarianceSstType.html">covarianceSst</a>.
+<a class="groops-class" href="covarianceSstType.html">covarianceSst</a>.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+<ul>
+
+<li><code>*:&lt;parametrizationGravity>:*:*</code>,
+</li><li>
+<code>&lt;satellite1>:&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite2>:&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite1>.&lt;satellite2>:&lt;parametrizationSatelliteTracking>:*:*</code>,
+</li></ul>
+
+and for each arc if <strong class="groops-config-element">keepSatelliteStates</strong> is set
+<ul>
+
+<li><code>&lt;satellite1>:arc&lt;no>.position.start.x::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.position.start.y::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.position.start.z::</code>.
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.position.end.x::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.position.end.y::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.position.end.z::</code>.
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position.start.x::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position.start.y::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position.start.z::</code>.
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position.end.x::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position.end.y::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position.end.z::</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -337,7 +468,50 @@ The covariance matrix of the reduced observations is given by
   = \begin{bmatrix} \M\Sigma_{SST1} + \M\Sigma_{ACC} & \M\Sigma_{ACC} \\
                    \M\Sigma_{ACC} & \M\Sigma_{SST2} + \M\Sigma_{ACC}
     \end{bmatrix}.
-\]</p>
+\]
+The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+<ul>
+
+<li><code>*:&lt;parametrizationGravity>:*:*</code>,
+</li><li>
+<code>&lt;satellite1>:&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.position0.x::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.position0.y::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.position0.z::</code>.
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.velocity0.x::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.velocity0.y::</code>,
+</li><li>
+<code>&lt;satellite1>:arc&lt;no>.velocity0.z::</code>.
+</li><li>
+<code>&lt;satellite2>:&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position0.x::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position0.y::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.position0.z::</code>.
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.velocity0.x::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.velocity0.y::</code>,
+</li><li>
+<code>&lt;satellite2>:arc&lt;no>.velocity0.z::</code>.
+</li><li>
+<code>&lt;satellite1>.&lt;satellite2>:&lt;parametrizationSatelliteTracking1>:*:*</code>.
+</li><li>
+<code>&lt;satellite1>.&lt;satellite2>:&lt;parametrizationSatelliteTracking2>:*:*</code>.
+</li></ul>
+
+</p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">rightHandSide</div></div></td><td>sequence</td><td>input for observation vectors</td></tr>
@@ -381,7 +555,9 @@ and <a class="groops-class" href="fileFormat_instrument.html">inputfileStarCamer
 into each short arcs (see <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>).</p><p>Additional to the <a class="groops-class" href="parametrizationGravityType.html">parametrizationGravity</a>
 an (temporal changing) bias for each gradiometer component and arc can be estimated with
 <a class="groops-class" href="parametrizationTemporalType.html">parametrizationBias</a>.</p><p>The accuracy or the full covariance matrix of the gradiometer is provided in
-<strong class="groops-config-element">covarianceSgg</strong> and can be estimated with <a class="groops-program" href="PreprocessingGradiometer.html">PreprocessingGradiometer</a>.</p><p></p>
+<strong class="groops-config-element">covarianceSgg</strong> and can be estimated with <a class="groops-program" href="PreprocessingGradiometer.html">PreprocessingGradiometer</a>.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+<code>*:&lt;parametrizationGravity>:*:*</code>.
+</p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">rightHandSide</div></div></td><td><a href="sggRightSideType.html">sggRightSide</a></td><td>input for the observation vector</td></tr>
@@ -413,7 +589,8 @@ A <a class="groops-class" href="gravityfieldType.html">referencefield</a> can be
 <a class="groops-class" href="fileFormat_griddedData.html">inputfileGriddedData</a>.
 The input columns are enumerated by <code>data0</code>, <code>data1</code>, &hellip; ,
 see <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>.</p><p>The observations can be divided into small blocks for parallelization.
-With <strong class="groops-config-element">blockingSize</strong> set the maximum count of observations in each block.
+With <strong class="groops-config-element">blockingSize</strong> set the maximum count of observations in each block.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+<code>*:&lt;parametrizationGravity>:*:*</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -437,7 +614,8 @@ at given positions are calculated from
 The input columns are enumerated by <code>data0</code>, <code>data1</code>, &hellip; ,
 see <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>.</p><p>The ellipsoid parameters <strong class="groops-config-element">R</strong> and <strong class="groops-config-element">inverseFlattening</strong> are used
 to define the local normal direction.</p><p>The observations can be divided into small blocks for parallelization.
-With <strong class="groops-config-element">blockingSize</strong> set the maximum count of observations in each block.
+With <strong class="groops-config-element">blockingSize</strong> set the maximum count of observations in each block.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+<code>*:&lt;parametrizationGravity>:*:*</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -475,7 +653,26 @@ of the station coordinates (<strong class="groops-config-element">estimateTransl
 <a class="groops-class" href="fileFormat_griddedData.html">inputfileGriddedData</a>.
 The input columns are enumerated by <code>data0</code>, <code>data1</code>, &hellip; ,
 see <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>.</p><p>The ellipsoid parameters <strong class="groops-config-element">R</strong> and <strong class="groops-config-element">inverseFlattening</strong> are used
-to define the local frame (north, east, up).</p><p>See also <a class="groops-program" href="Gravityfield2DisplacementTimeSeries.html">Gravityfield2DisplacementTimeSeries</a>.</p><p>Reference:
+to define the local frame (north, east, up).</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+<ul>
+
+<li><code>*:&lt;parametrizationGravity>:*:*</code>,
+</li><li>
+<code>*:translation.x:*:*</code>,
+</li><li>
+<code>*:translation.y:*:*</code>,
+</li><li>
+<code>*:translation.z:*:*</code>,
+</li><li>
+<code>*:scale:*:*</code>,
+</li><li>
+<code>*:rotation.x:*:*</code>,
+</li><li>
+<code>*:rotation.y:*:*</code>,
+</li><li>
+<code>*:rotation.z:*:*</code>.
+</li></ul>
+</p><p>See also <a class="groops-program" href="Gravityfield2DisplacementTimeSeries.html">Gravityfield2DisplacementTimeSeries</a>.</p><p>Reference:
 Rietbroek (2014): Retrieval of Sea Level and Surface Loading Variations from Geodetic Observations
 and Model Simulations: an Integrated Approach, Bonn, 2014. - Dissertation,
 <a href="https://nbn-resolving.org/urn:nbn:de:hbz:5n-35460" target="_blank">https://nbn-resolving.org/urn:nbn:de:hbz:5n-35460</a>

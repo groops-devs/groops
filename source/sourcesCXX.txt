@@ -368,6 +368,7 @@ programs/misc/digitalFilter2FrequencyResponse.cpp
 programs/misc/digitalFilter2ImpulseResponse.cpp
 programs/misc/earthOrientationParameterTimeSeries.cpp
 programs/misc/earthRotaryVectorTimeSeries.cpp
+programs/misc/eclipseFactor2GriddedData.cpp
 programs/misc/filterMatrixWindowedPotentialCoefficients.cpp
 programs/misc/functionsCalculate.cpp
 programs/misc/grs2PotentialCoefficients.cpp

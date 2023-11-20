@@ -19,6 +19,8 @@ static const char *docstringParametrizationSatelliteTrackingScaleModel = R"(
 \subsection{ScaleModel}\label{parametrizationSatelliteTrackingType:scaleModel}
 Estimate scale factors for deterministic signal models from satellite tracking instrument file \configFile{inputfileSatelliteTracking}{instrument}, see \program{EnsembleAveragingScaleModel}.
 Amplitude variation of model waveforms is defined by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+
+The \file{parameter names}{parameterName} are \verb|satellite1.satellite2:scaleModel:<temporal>:<interval>|.
 )";
 #endif
 

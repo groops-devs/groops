@@ -57,6 +57,21 @@ The accuracy or the full covariance matrix of the precise orbit data is provided
 \configClass{covariancePod}{covariancePodType} and can be estimated with \program{PreprocessingPod}.
 
 For \config{accelerateComputation} see \configClass{observation:podVariational}{observationType:podVariational}.
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|<satellite>:<parametrizationAcceleration>:*:*|,
+\end{itemize}
+and for each arc if \config{keepSatelliteStates} is set
+\begin{itemize}
+\item \verb|<satellite>:arc<no>.position.start.x::|,
+\item \verb|<satellite>:arc<no>.position.start.y::|,
+\item \verb|<satellite>:arc<no>.position.start.z::|.
+\item \verb|<satellite>:arc<no>.position.end.x::|,
+\item \verb|<satellite>:arc<no>.position.end.y::|,
+\item \verb|<satellite>:arc<no>.position.end.z::|.
+\end{itemize}
 )";
 #endif
 

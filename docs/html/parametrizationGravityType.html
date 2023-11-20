@@ -85,7 +85,15 @@ V(\lambda,\vartheta,r) = \frac{GM}{R}\sum_{n=0}^\infty \sum_{m=0}^n \left(\frac{
   \left(c_{nm} C_{nm}(\lambda,\vartheta) + s_{nm} S_{nm}(\lambda,\vartheta)\right).
 \]You can set the range of degree $n$ with <strong class="groops-config-element">minDegree</strong> and <strong class="groops-config-element">maxDegree</strong>.
 The sorting sequence of the potential coefficients in the parameter vector can be defined by
-<a class="groops-class" href="sphericalHarmonicsNumberingType.html">numbering</a>.</p><p>The total count of parameters is $(n_{max}+1)^2-n_{min}^2$.
+<a class="groops-class" href="sphericalHarmonicsNumberingType.html">numbering</a>.</p><p>The total count of parameters is $(n_{max}+1)^2-n_{min}^2$ and
+the <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>*:sphericalHarmonics.c_&lt;degree>_&lt;order>:*:*</code>,
+</li><li>
+<code>*:sphericalHarmonics.s_&lt;degree>_&lt;order>:*:*</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -105,7 +113,7 @@ functions given by isotropic radial <a class="groops-class" href="kernelType.htm
 \[
   \Phi(\cos\psi,r,R) = \sum_n \left(\frac{R}{r}\right)^{n+1} k_n\sqrt{2n+1}\bar{P}_n(\cos\psi).
 \]The basis functions are located on a grid $\M x_i$ given by <a class="groops-class" href="gridType.html">grid</a>.
-This class can also be used to estimate point masses if <a class="groops-class" href="kernelType.html">kernel</a> is set to density.
+This class can also be used to estimate point masses if <a class="groops-class" href="kernelType.html">kernel</a> is set to density.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>*:radialBasis.&lt;index>.&lt;total count>:*:*</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -143,7 +151,7 @@ The linear transformation changes the original solution space represented by
 It follows that the rows of the matrix $\mathbf{F}$ in <a class="groops-file" href="fileFormat_matrix.html">inputfileTransformationMatrix</a> coincides with
 the number of parameters in <a class="groops-class" href="parametrizationGravityType.html">pararametrizationGravitySource</a>.
 The new parameter count is given by the number of columns in $\mathbf{F}$ and may be smaller, equal or larger
-than the original parameter count.
+than the original parameter count.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>*:transformedParameter.&lt;index>.&lt;total count>:*:*</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -158,7 +166,22 @@ The results describes the variation in the gravitational potential field caused 
 \[
 C_{lm}(\M t) = \sum_{n=0}^NC_{nlm}(1-\cos(\omega_{nlm}d\M t)\exp(P_{nlm}\omega_{nlm}d\M t)),
 \]with $\omega_{nlm}=\frac{2\pi}{T_{nlm}}$ and $P_{nlm}=\frac{-1}{2Q_{nlm}}$ . In this equation, $Q_{nlm}$ is the attenuation factor,
-$n$ is the overtone factor, $m$ is degree, $l$ is order, and $t$ is time after earthquake in second.
+$n$ is the overtone factor, $m$ is degree, $l$ is order, and $t$ is time after earthquake in second.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>*:earthquakeParameter.c_&lt;degree>_&lt;order>_A:*:*</code>,
+</li><li>
+<code>*:earthquakeParameter.s_&lt;degree>_&lt;order>_A:*:*</code>,
+</li><li>
+<code>*:earthquakeParameter.c_&lt;degree>_&lt;order>_W:*:*</code>,
+</li><li>
+<code>*:earthquakeParameter.s_&lt;degree>_&lt;order>_W:*:*</code>,
+</li><li>
+<code>*:earthquakeParameter.c_&lt;degree>_&lt;order>_P:*:*</code>,
+</li><li>
+<code>*:earthquakeParameter.s_&lt;degree>_&lt;order>_P:*:*</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

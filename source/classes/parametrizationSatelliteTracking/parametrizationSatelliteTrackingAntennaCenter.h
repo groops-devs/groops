@@ -17,9 +17,19 @@
 #ifdef DOCSTRING_ParametrizationSatelliteTracking
 static const char *docstringParametrizationSatelliteTrackingAntennaCenter = R"(
 \subsection{AntennaCenter}\label{parametrizationSatelliteTrackingType:antennaCenter}
-Estimate the KBR antenna phase centre (APC) coordinates for each spacecraft in satellite reference frame (SRF)
-as constant per axis, once per month. The observation equations are computed by taking the derivative
+Estimate the KBR antenna phase centre (APC) coordinates in $[m]$ for each spacecraft in satellite reference frame (SRF)
+as constant per axis. The observation equations are computed by taking the derivative
 of the antenna offset correction equation w.r.t. the KBR APC coordinates.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|satellite1.satellite2:sstAntennaCenter1.x:*:*|,
+\item \verb|satellite1.satellite2:sstAntennaCenter1.y:*:*|,
+\item \verb|satellite1.satellite2:sstAntennaCenter1.z:*:*|,
+\item \verb|satellite1.satellite2:sstAntennaCenter2.x:*:*|,
+\item \verb|satellite1.satellite2:sstAntennaCenter2.y:*:*|,
+\item \verb|satellite1.satellite2:sstAntennaCenter2.z:*:*|.
+\end{itemize}
 )";
 #endif
 

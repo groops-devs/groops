@@ -38,6 +38,13 @@ in the constraint equations.
 
 In case you want to align to an ITRF/IGS reference frame, precise coordinates can be
 generated with \program{Sinex2StationPositions}.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|<station>:position.x::|,
+\item \verb|<station>:position.y::|,
+\item \verb|<station>:position.z::|.
+\end{itemize}
 )";
 #endif
 

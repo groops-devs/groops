@@ -71,7 +71,17 @@
         <div id="content" class="container">
             <h1>ParameterName (file format)</h1><p>
 
-Name of parameters of a system of <a class="groops-file" href="fileFormat_normalEquation.html">normal equations</a> or <a class="groops-file" href="fileFormat_matrix.html">solution vector</a>.</p><p>See <a class="groops-program" href="ParameterNamesCreate.html">ParameterNamesCreate</a>.</p><p><pre>
+Name of parameters of a system of <a class="groops-file" href="fileFormat_normalEquation.html">normal equations</a> or <a class="groops-file" href="fileFormat_matrix.html">solution vector</a>.</p><p>A parameter name is a string <code>&lt;object>:&lt;type>:&lt;temporal>:&lt;interval></code> containg four parts divided by <code>:</code>
+<ol>
+
+<li>object: Object this parameter refers to, e.g. <code>graceA</code>, <code>G023</code>, <code>earth</code>, &hellip; </li><li>
+type: Type of this parameter, e.g. <code>accBias</code>, <code>position.x</code>, &hellip; </li><li>
+temporal: Temporal representation of this parameter, e.g. <code>trend</code>, <code>polynomial.degree1</code>, &hellip; </li><li>
+interval: Interval/epoch this parameter represents, e.g. <code>2017-01-01_00-00-00_2017-01-02_00-00-00</code>, <code>2018-01-01_00-00-00</code>.
+</li></ol>
+
+In the documentation a star (<code>*</code>) in the name means this part is untouched and useally set by other classes.
+Times are written as <code>yyyy-mm-dd_hh-mm-ss</code> and intervals (if not empty) as <code>&lt;timeStart>_&lt;timeEnd></code>.</p><p>See <a class="groops-program" href="ParameterNamesCreate.html">ParameterNamesCreate</a>.</p><p><pre>
 groops parameterName version=20200123
 # object:type:temporal:interval
 # =============================

@@ -17,7 +17,10 @@
 #ifdef DOCSTRING_ParametrizationSatelliteTracking
 static const char *docstringParametrizationSatelliteTrackingBias = R"(
 \subsection{Bias}\label{parametrizationSatelliteTrackingType:bias}
-Estimate bias for SST observations. The temporal variation is defined by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+Estimate bias for SST observations in $[m]$ or $[m/s$]. The temporal variation is defined by
+\configClass{parametrizationTemporal}{parametrizationTemporalType}.
+
+The \file{parameter names}{parameterName} are \verb|satellite1.satellite2:sstBias:<temporal>:<interval>|.
 )";
 #endif
 

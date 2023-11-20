@@ -46,6 +46,9 @@ and should be a constant in theory but temporal changes might help to absorb oth
 
 The accuracy or the full covariance matrix of the precise orbit data is provided in
 \configClass{covariancePod}{covariancePodType} and can be estimated with \program{PreprocessingPod}.
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\verb|*:<parametrizationGravity>:*:*|.
 )";
 #endif
 

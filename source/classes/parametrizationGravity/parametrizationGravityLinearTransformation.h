@@ -33,6 +33,8 @@ It follows that the rows of the matrix $\mathbf{F}$ in \file{inputfileTransforma
 the number of parameters in \configClass{pararametrizationGravitySource}{parametrizationGravityType}.
 The new parameter count is given by the number of columns in $\mathbf{F}$ and may be smaller, equal or larger
 than the original parameter count.
+
+The \file{parameter names}{parameterName} are \verb|*:transformedParameter.<index>.<total count>:*:*|.
 )";
 #endif
 

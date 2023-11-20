@@ -26,6 +26,16 @@ C_{lm}(\M t) = \sum_{n=0}^NC_{nlm}(1-\cos(\omega_{nlm}d\M t)\exp(P_{nlm}\omega_{
 \end{equation}
 with $\omega_{nlm}=\frac{2\pi}{T_{nlm}}$ and $P_{nlm}=\frac{-1}{2Q_{nlm}}$ . In this equation, $Q_{nlm}$ is the attenuation factor,
 $n$ is the overtone factor, $m$ is degree, $l$ is order, and $t$ is time after earthquake in second.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:earthquakeParameter.c_<degree>_<order>_A:*:*|,
+\item \verb|*:earthquakeParameter.s_<degree>_<order>_A:*:*|,
+\item \verb|*:earthquakeParameter.c_<degree>_<order>_W:*:*|,
+\item \verb|*:earthquakeParameter.s_<degree>_<order>_W:*:*|,
+\item \verb|*:earthquakeParameter.c_<degree>_<order>_P:*:*|,
+\item \verb|*:earthquakeParameter.s_<degree>_<order>_P:*:*|.
+\end{itemize}
 )";
 #endif
 
