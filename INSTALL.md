@@ -354,7 +354,7 @@ make
 #### Generic Mapping Tools (GMT)
 
 The Generic Mapping Tools are available from the [Arch User Repository](https://wiki.archlinux.org/index.php/Arch_User_Repository).
-Install the [gmt](https://archlinux.org/packages/community/x86_64/gmt/) and [gmt-coast](https://aur.archlinux.org/packages/gmt-coast) packages.
+Install the [gmt](https://archlinux.org/packages/extra/x86_64/gmt/) and [gmt-coast](https://aur.archlinux.org/packages/gmt-coast) packages.
 
 ### Linux post-installation steps
 
