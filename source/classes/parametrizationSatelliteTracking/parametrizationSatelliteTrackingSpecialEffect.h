@@ -25,6 +25,8 @@ see \program{GraceSstSpecialEvents}. The shape of this short-period waveform is 
 constant within one month and can be approximated by a polynomial.
 The amplitude variation of the waveform can also be taken into account
 by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+
+The \file{parameter names}{parameterName} are \verb|satellite1.satellite2:<type>.legendrePolynomial.n<degree>:<temporal>:<interval>|.
 )";
 #endif
 
@@ -86,11 +88,11 @@ inline ParametrizationSatelliteTrackingSpecialEffect::ParametrizationSatelliteTr
       if(readConfigChoiceElement(config, "starCameraBox6", choice, "")) type = 8;
       endChoice(config);
     }
-    readConfig(config, "marginLeft",           marginBefore,   Config::MUSTSET,  "20", "margin size (on both sides) [seconds]");
-    readConfig(config, "marginRight",           marginAfter,    Config::MUSTSET,  "20", "margin size (on both sides) [seconds]");
-    readConfig(config, "minNumberOfEvents", minCount, Config::DEFAULT,  "1",  "min. number of events to setup parameters");
-    readConfig(config, "polynomialDegree",  degree,   Config::MUSTSET,  "10", "polynomial degree");
-    readConfig(config, "temporal",          temporal, Config::MUSTSET,  "",   "");
+    readConfig(config, "marginLeft",        marginBefore, Config::MUSTSET, "20", "margin size (on both sides) [seconds]");
+    readConfig(config, "marginRight",       marginAfter,  Config::MUSTSET, "20", "margin size (on both sides) [seconds]");
+    readConfig(config, "minNumberOfEvents", minCount,     Config::DEFAULT, "1",  "min. number of events to setup parameters");
+    readConfig(config, "polynomialDegree",  degree,       Config::MUSTSET, "10", "polynomial degree");
+    readConfig(config, "temporal",          temporal,     Config::MUSTSET, "",   "");
     if(isCreateSchema(config)) return;
 
     event = InstrumentFile::read(fileName);

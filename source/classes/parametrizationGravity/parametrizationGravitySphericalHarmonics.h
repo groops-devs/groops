@@ -27,7 +27,12 @@ You can set the range of degree~$n$ with \config{minDegree} and \config{maxDegre
 The sorting sequence of the potential coefficients in the parameter vector can be defined by
 \configClass{numbering}{sphericalHarmonicsNumberingType}.
 
-The total count of parameters is $(n_{max}+1)^2-n_{min}^2$.
+The total count of parameters is $(n_{max}+1)^2-n_{min}^2$ and
+the \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:sphericalHarmonics.c_<degree>_<order>:*:*|,
+\item \verb|*:sphericalHarmonics.s_<degree>_<order>:*:*|.
+\end{itemize}
 )";
 #endif
 

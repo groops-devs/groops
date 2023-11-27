@@ -1270,7 +1270,7 @@ See also \program{GnssProcessing}.
 
 \subsection{IonosphereSTEC}\label{gnssParametrizationType:ionosphereSTEC}
 The influence of the ionosphere is modelled by a STEC parameter (slant total electron content)
-between each transmitter and receiver at each epoch. These parameters are pre-eliminated
+in terms of $[TECU]$ between each transmitter and receiver at each epoch. These parameters are pre-eliminated
 from the observation equations before accumulating the normal equations.
 This is similar to using the ionosphere-free linear combination as observations
 but only one STEC parameter is needed for an arbitrary number of observation types.
@@ -1312,7 +1312,7 @@ Name & Type & Annotation\\
 
 \subsection{IonosphereVTEC}\label{gnssParametrizationType:ionosphereVTEC}
 The influence of the ionosphere is modelled by a VTEC parameter (vertical total electron content)
-for every selected receiver each epoch. The slant TEC is computed
+in terms of $[TECU]$ for every selected receiver each epoch. The slant TEC is computed
 using the elevation $E$ dependent Modified Single-Layer Model (MSLM) mapping function
 \begin{equation}\label{gnssParametrizationType:IonosphereVTEC:STEC}
   STEC = \frac{VTEC}{\cos z'}
@@ -1329,6 +1329,8 @@ and enables the separation of the TEC and signal biases, meaning
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases} becomes estimable.
 Local and short-term scintillations should be considered by adding loosely constrained
 \configClass{parametrization:ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}.
+
+The \file{parameter names}{parameterName} are \verb|<station>:VTEC::<time>|.
 
 
 \keepXColumns
@@ -1350,9 +1352,8 @@ Name & Type & Annotation\\
 TODO: reading and writing ionosphere maps not implemented yet.
 % A priori ionopshere model can be provided with \configFile{inputfileMap}{gnssIonosphereMaps}.
 
-The ionosphere is parametrized as a \configClass{temporal}{parametrizationTemporalType}ly changing
-(e.g. hourly linear splines)
-spherical harmonics expansion
+The ionosphere is parametrized in terms of $[TECU]$ as a \configClass{temporal}{parametrizationTemporalType}ly
+changing (e.g. hourly linear splines) spherical harmonics expansion
 \begin{equation}
   VTEC(\lambda,\theta,t) = \sum_{n=0}^{n_{max}} \sum_{m=0}^n c_{nm}(t)C_{nm}(\lambda,\theta)+s_{nm}(t)S_{nm}(\lambda,\theta)
 \end{equation}
@@ -1364,6 +1365,12 @@ Local and short-term scintillations can be considered by adding constrained
 \configClass{parametrization:ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}.
 To account for signal biases add
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases}.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|VTEC:sphericalHarmonics.c_<degree>_<order>:<temporal>:<interval>|,
+\item \verb|VTEC:sphericalHarmonics.s_<degree>_<order>:<temporal>:<interval>|.
+\end{itemize}
 
 
 \keepXColumns
@@ -1395,6 +1402,8 @@ This is realized with an additional observation equation
 \end{equation}
 summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
 with a standard deviation of \config{sigmaZeroMeanConstraint}.
+
+The \file{parameter names}{parameterName} are \verb|<station or prn>:clock::<time>|.
 
 
 \keepXColumns
@@ -1445,6 +1454,9 @@ The realization of the constraint is done as an additional observation equation 
 \end{equation}
 summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
 with a standard deviation of \config{sigmaZeroMeanConstraint}.
+
+The \file{parameter names}{parameterName} are \verb|<station or prn>:clock::<time>|
+and \verb|<station or prn>:clockDrift::|.
 
 
 \keepXColumns
@@ -1534,6 +1546,13 @@ and are removed from the system of normal equations.
 The estimated phase biases can be written to files in
 \configClass{parametrization:signalBiases}{gnssParametrizationType:signalBiases}.
 
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|<station>:phaseBias(<gnssType>)::|,
+\item \verb|<prn>:phaseBias(<gnssType>)::|,
+\item \verb|<station>.<prn>:ambiguity<index>of<count>(<GnssTypes>)::<track interval>|.
+\end{itemize}
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -1586,6 +1605,8 @@ which reduces the number of bias parameters.
 The estimated biases can be written to files in
 \configClass{parametrization:signalBiases}{gnssParametrizationType:signalBiases}.
 
+The \file{parameter names}{parameterName} are \verb|<station or prn>:codeBias0<index><combi of gnssTypes>::|.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -1624,6 +1645,8 @@ a standard deviation of \config{sigmaZeroMeanConstraint}.
 The accumulated estimated result can be written to files in
 \configClass{parametrization:signalBiases}{gnssParametrizationType:signalBiases}.
 
+The \file{parameter names}{parameterName} are \verb|<station or prn>:tecBias0<index><combi of gnssTypes>::|.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -1658,6 +1681,9 @@ This parametrization should be set up in addition to the constant
 Depending on the temporal representation a temporal zero-mean constraint is needed
 to separate this parametrization from the constant component. The constraint equations are added with
 a standard deviation of \config{sigmaZeroMeanConstraint}.
+
+The \file{parameter names}{parameterName} are
+\verb|<prn>:signalBias.<gnssType>:<temporal>:<interval>|.
 
 
 \keepXColumns
@@ -1698,6 +1724,13 @@ in the constraint equations.
 In case you want to align to an ITRF/IGS reference frame, precise coordinates can be
 generated with \program{Sinex2StationPositions}.
 
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|<station>:position.x::|,
+\item \verb|<station>:position.y::|,
+\item \verb|<station>:position.z::|.
+\end{itemize}
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -1727,6 +1760,13 @@ The $3\times3$ epoch wise \configFile{outputfileCovarianceEpoch}{instrument}
 are computed within
 \configClass{GnssProcessing:processingStep:computeCovarianceMatrix}{gnssProcessingStepType:computeCovarianceMatrix}
 
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|<station>:position.x::<time>|,
+\item \verb|<station>:position.y::<time>|,
+\item \verb|<station>:position.z::<time>|.
+\end{itemize}
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -1749,6 +1789,24 @@ The \configClass{parametrizationAcceleration}{parametrizationAccelerationType} m
 parameters that were estimated in \program{PreprocessingVariationalEquationOrbitFit}.
 Additional \configClass{stochasticPulse}{timeSeriesType} parameters can be set up to reduce orbit mismodeling.
 If not enough epochs with observations are available (\config{minEstimableEpochsRatio}) the LEO satellite is disabled.
+
+The parameters and \file{parameter names}{parameterName} are divided into global
+\begin{itemize}
+\item \verb|<station>:<parametrizationAcceleration>:*:*|,
+\item \verb|<station>:stochasticPulse.x::<time>|,
+\item \verb|<station>:stochasticPulse.y::<time>|,
+\item \verb|<station>:stochasticPulse.z::<time>|,
+\end{itemize}
+and arc related parameters
+\begin{itemize}
+\item \verb|<station>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<station>:arc<no>.position0.x::|,
+\item \verb|<station>:arc<no>.position0.y::|,
+\item \verb|<station>:arc<no>.position0.z::|.
+\item \verb|<station>:arc<no>.velocity0.x::|,
+\item \verb|<station>:arc<no>.velocity0.y::|,
+\item \verb|<station>:arc<no>.velocity0.z::|.
+\end{itemize}
 
 
 \keepXColumns
@@ -1799,12 +1857,19 @@ Name & Type & Annotation\\
 
 \subsection{Troposphere}\label{gnssParametrizationType:troposphere}
 A priori tropospheric correction is handled by a \configClass{troposphere}{troposphereType} model (e.g. Vienna Mapping Functions 3).
-Additional parameters for zenith wet delay and gradients can be set up via
+Additional parameters in $[m]$ for zenith wet delay and gradients can be set up via
 \configClass{troposphereWetEstimation}{parametrizationTemporalType} (usually 2-hourly linear splines)
 and \configClass{troposphereGradientEstimation}{parametrizationTemporalType} (usually a daily trend).
 These parameters can be soft-constrained using
 \configClass{parametrization:constraints}{gnssParametrizationType:constraints}
 to avoid an unsolvable system of normal equations in case of data gaps.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|<station>:troposphereWet:<temporal>:<interval>|,
+\item \verb|<station>:troposphereGradient.x:<temporal>:<interval>|,
+\item \verb|<station>:troposphereGradient.y:<temporal>:<interval>|.
+\end{itemize}
 
 
 \keepXColumns
@@ -1824,7 +1889,7 @@ Name & Type & Annotation\\
 
 \subsection{EarthRotation}\label{gnssParametrizationType:earthRotation}
 Earth rotation parameters (ERPs) can be estimated by defining
-\config{estimatePole} ($x_p$, $y_p$) and \config{estimateUT1} ($dUT1, LOD$).
+\config{estimatePole} ($x_p$, $y_p\, [mas]$) and \config{estimateUT1} ($dUT1\, [ms], LOD$).
 
 Estimating length of day (LOD) with the sign according to IGS conventions requires a negative
 value in \configClass{parametrizationTemporal:trend:timeStep}{parametrizationTemporalType:trend}.
@@ -1834,6 +1899,15 @@ Constraints on the defined parameters can be added via
 An example would be to set up \configClass{estimateUT1:constant}{parametrizationTemporalType:constant}
 so the $dUT1$ parameter is included in the normal equation system . Since $dUT1$ cannot be
 determined by GNSS, a hard constraint to its a priori value can then be added.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|earth:polarMotion.xp:<temporal>:<interval>|,
+\item \verb|earth:polarMotion.yp:<temporal>:<interval>|,
+\item \verb|earth:UT1:<temporal>:<interval>|,
+\item \verb|earth:nutation.X:<temporal>:<interval>|,
+\item \verb|earth:nutation.>:<temporal>:<interval>|.
+\end{itemize}
 
 
 \keepXColumns
@@ -1899,6 +1973,9 @@ These normal equation files are then processed with the programs:
 Note that the apriori value $\M x_0$ for this parametrization is always zero and never updated
 according to eq.~\eqref{gnssParametrizationType:update}.
 
+The \file{parameter names}{parameterName} are
+\verb|<antennaName>:<antennaCenterVariations>.<gnssType>::|.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -1918,6 +1995,9 @@ Name & Type & Annotation\\
 \subsection{TransmitterAntennas}\label{gnssParametrizationType:transmitterAntennas}
 Same as \configClass{receiverAntennas}{gnssParametrizationType:receiverAntennas} but
 for transmitting antennas (GNSS satellites).
+
+The \file{parameter names}{parameterName} are
+\verb|<antennaName>:<antennaCenterVariations>.<gnssType>::|.
 
 
 \keepXColumns
@@ -4370,6 +4450,8 @@ This class gives the non conservative forces acting on satellites.
 The relativistic effect to the acceleration of an artificial Earth satellite
 according to IERS2010 conventions.
 
+The macro model and the attitude of the satellite is not needed.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -4854,7 +4936,8 @@ gives an estimation from decorrelated observations with equal variance
 \qquad\text{and}\qquad
 \mathcal{C}(\bar{\M e})= \sigma^2 \M I.
 \end{equation}
-Usually the arc depending parameters are eliminated in the next step.
+Usually the arc depending parameters are eliminated in the next step
+and not mentioned for the parameter names in the following.
 
 
 \subsection{PodVariational}\label{observationType:podVariational}
@@ -4889,6 +4972,19 @@ can be used to transform the observation equations
 \end{equation}
 As the zero lines should not be considered the computational time for the accumulation is reduced.
 This option is not meaningful for evaluating the residuals such in \program{PreprocessingPod}.
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|<satellite>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite>:arc<no>.position0.x::|,
+\item \verb|<satellite>:arc<no>.position0.y::|,
+\item \verb|<satellite>:arc<no>.position0.z::|.
+\item \verb|<satellite>:arc<no>.velocity0.x::|,
+\item \verb|<satellite>:arc<no>.velocity0.y::|,
+\item \verb|<satellite>:arc<no>.velocity0.z::|.
+\end{itemize}
 
 
 \keepXColumns
@@ -4951,6 +5047,21 @@ The accuracy or the full covariance matrix of the precise orbit data is provided
 
 For \config{accelerateComputation} see \configClass{observation:podVariational}{observationType:podVariational}.
 
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|<satellite>:<parametrizationAcceleration>:*:*|,
+\end{itemize}
+and for each arc if \config{keepSatelliteStates} is set
+\begin{itemize}
+\item \verb|<satellite>:arc<no>.position.start.x::|,
+\item \verb|<satellite>:arc<no>.position.start.y::|,
+\item \verb|<satellite>:arc<no>.position.start.z::|.
+\item \verb|<satellite>:arc<no>.position.end.x::|,
+\item \verb|<satellite>:arc<no>.position.end.y::|,
+\item \verb|<satellite>:arc<no>.position.end.z::|.
+\end{itemize}
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -4997,6 +5108,12 @@ in most cases the kinematic orbit provides good results.
 
 The accuracy or the full covariance matrix of the precise orbit data is provided in
 \configClass{covariancePod}{covariancePodType} and can be estimated with \program{PreprocessingPod}.
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|<satellite>:<parametrizationAcceleration>:*:*|.
+\end{itemize}
 
 
 \keepXColumns
@@ -5050,6 +5167,9 @@ and should be a constant in theory but temporal changes might help to absorb oth
 The accuracy or the full covariance matrix of the precise orbit data is provided in
 \configClass{covariancePod}{covariancePodType} and can be estimated with \program{PreprocessingPod}.
 
+The following parameters with \file{parameter names}{parameterName} are set up:
+\verb|*:<parametrizationGravity>:*:*|.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -5081,6 +5201,28 @@ can easily be added. Empirical parameters for the SST observations can be setup 
 \configClass{parametrizationSst}{parametrizationSatelliteTrackingType}.
 The accuracy or the full covariance matrix of SST is provided in
 \configClass{covarianceSst}{covarianceSstType}.
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|<satellite1>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite1>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite1>:arc<no>.position0.x::|,
+\item \verb|<satellite1>:arc<no>.position0.y::|,
+\item \verb|<satellite1>:arc<no>.position0.z::|.
+\item \verb|<satellite1>:arc<no>.velocity0.x::|,
+\item \verb|<satellite1>:arc<no>.velocity0.y::|,
+\item \verb|<satellite1>:arc<no>.velocity0.z::|.
+\item \verb|<satellite2>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite2>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite2>:arc<no>.position0.x::|,
+\item \verb|<satellite2>:arc<no>.position0.y::|,
+\item \verb|<satellite2>:arc<no>.position0.z::|.
+\item \verb|<satellite2>:arc<no>.velocity0.x::|,
+\item \verb|<satellite2>:arc<no>.velocity0.y::|,
+\item \verb|<satellite2>:arc<no>.velocity0.z::|.
+\item \verb|<satellite1>.<satellite2>:<parametrizationSatelliteTracking>:*:*|.
+\end{itemize}
 
 
 \keepXColumns
@@ -5122,6 +5264,29 @@ can easily be added. Empirical parameters for the SST observations can be setup 
 \configClass{parametrizationSst}{parametrizationSatelliteTrackingType}.
 The accuracy or the full covariance matrix of SST is provided in
 \configClass{covarianceSst}{covarianceSstType}.
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|<satellite1>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite2>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite1>.<satellite2>:<parametrizationSatelliteTracking>:*:*|,
+\end{itemize}
+and for each arc if \config{keepSatelliteStates} is set
+\begin{itemize}
+\item \verb|<satellite1>:arc<no>.position.start.x::|,
+\item \verb|<satellite1>:arc<no>.position.start.y::|,
+\item \verb|<satellite1>:arc<no>.position.start.z::|.
+\item \verb|<satellite1>:arc<no>.position.end.x::|,
+\item \verb|<satellite1>:arc<no>.position.end.y::|,
+\item \verb|<satellite1>:arc<no>.position.end.z::|.
+\item \verb|<satellite2>:arc<no>.position.start.x::|,
+\item \verb|<satellite2>:arc<no>.position.start.y::|,
+\item \verb|<satellite2>:arc<no>.position.start.z::|.
+\item \verb|<satellite2>:arc<no>.position.end.x::|,
+\item \verb|<satellite2>:arc<no>.position.end.y::|,
+\item \verb|<satellite2>:arc<no>.position.end.z::|.
+\end{itemize}
 
 
 \keepXColumns
@@ -5179,6 +5344,29 @@ The covariance matrix of the reduced observations is given by
                    \M\Sigma_{ACC} & \M\Sigma_{SST2} + \M\Sigma_{ACC}
     \end{bmatrix}.
 \end{equation}
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|<satellite1>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite1>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite1>:arc<no>.position0.x::|,
+\item \verb|<satellite1>:arc<no>.position0.y::|,
+\item \verb|<satellite1>:arc<no>.position0.z::|.
+\item \verb|<satellite1>:arc<no>.velocity0.x::|,
+\item \verb|<satellite1>:arc<no>.velocity0.y::|,
+\item \verb|<satellite1>:arc<no>.velocity0.z::|.
+\item \verb|<satellite2>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite2>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite2>:arc<no>.position0.x::|,
+\item \verb|<satellite2>:arc<no>.position0.y::|,
+\item \verb|<satellite2>:arc<no>.position0.z::|.
+\item \verb|<satellite2>:arc<no>.velocity0.x::|,
+\item \verb|<satellite2>:arc<no>.velocity0.y::|,
+\item \verb|<satellite2>:arc<no>.velocity0.z::|.
+\item \verb|<satellite1>.<satellite2>:<parametrizationSatelliteTracking1>:*:*|.
+\item \verb|<satellite1>.<satellite2>:<parametrizationSatelliteTracking2>:*:*|.
+\end{itemize}
 
 
 \keepXColumns
@@ -5238,6 +5426,8 @@ an (temporal changing) bias for each gradiometer component and arc can be estima
 The accuracy or the full covariance matrix of the gradiometer is provided in
 \config{covarianceSgg} and can be estimated with \program{PreprocessingGradiometer}.
 
+The following parameters with \file{parameter names}{parameterName} are set up:
+\verb|*:<parametrizationGravity>:*:*|.
 
 
 \keepXColumns
@@ -5282,6 +5472,9 @@ see~\reference{dataVariables}{general.parser:dataVariables}.
 The observations can be divided into small blocks for parallelization.
 With \config{blockingSize} set the maximum count of observations in each block.
 
+The following parameters with \file{parameter names}{parameterName} are set up:
+\verb|*:<parametrizationGravity>:*:*|.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -5317,6 +5510,9 @@ to define the local normal direction.
 
 The observations can be divided into small blocks for parallelization.
 With \config{blockingSize} set the maximum count of observations in each block.
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\verb|*:<parametrizationGravity>:*:*|.
 
 
 \keepXColumns
@@ -5366,6 +5562,18 @@ see~\reference{dataVariables}{general.parser:dataVariables}.
 
 The ellipsoid parameters \config{R} and \config{inverseFlattening} are used
 to define the local frame (north, east, up).
+
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|*:translation.x:*:*|,
+\item \verb|*:translation.y:*:*|,
+\item \verb|*:translation.z:*:*|,
+\item \verb|*:scale:*:*|,
+\item \verb|*:rotation.x:*:*|,
+\item \verb|*:rotation.y:*:*|,
+\item \verb|*:rotation.z:*:*|.
+\end{itemize}
 
 See also \program{Gravityfield2DisplacementTimeSeries}.
 
@@ -5825,7 +6033,20 @@ are sequently appended.
 
 
 \subsection{PerRevolution}\label{parametrizationAccelerationType:perRevolution}
-Oscillation per revolution.
+Oscillation once, twice, ... per revolution in Satellite Reference Frame (SRF)
+with the argument of latitude as input angle.  If the attitude of the satellite
+is not provided the Celestial Reference Frame (CRF) is used instead.
+Paramters are estimated in $[nm/s^2=10^{-9}\,m/s^2]$.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:perRevolution.cos(<order>*u).x::<interval>|,
+\item \verb|*:perRevolution.cos(<order>*u).y::<interval>|,
+\item \verb|*:perRevolution.cos(<order>*u).z::<interval>|,
+\item \verb|*:perRevolution.sin(<order>*u).x::<interval>|,
+\item \verb|*:perRevolution.sin(<order>*u).y::<interval>|,
+\item \verb|*:perRevolution.sin(<order>*u).z::<interval>|.
+\end{itemize}
 
 
 \keepXColumns
@@ -5844,7 +6065,15 @@ Name & Type & Annotation\\
 
 
 \subsection{AccBias}\label{parametrizationAccelerationType:accBias}
-Temporal changing accelerometer bias per axis.
+Temporal changing accelerometer bias per axis in $[m/s^2]$ in Satellite Reference Frame (SRF).
+If the attitude of the satellite is not provided the Celestial Reference Frame (CRF) is used instead.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:accBias.x:*:*|,
+\item \verb|*:accBias.y:*:*|,
+\item \verb|*:accBias.z:*:*|.
+\end{itemize}
 
 
 \keepXColumns
@@ -5863,6 +6092,21 @@ Name & Type & Annotation\\
 
 \subsection{AccelerometerScaleFactors}\label{parametrizationAccelerationType:accelerometerScaleFactors}
 Accelerometer scale factor per axis.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:accScale.x:<temporal>:<interval>|,
+\item \verb|*:accScale.y:<temporal>:<interval>|,
+\item \verb|*:accScale.z:<temporal>:<interval>|,
+\item \verb|*:accScaleCross.xy:<temporal>:<interval>|,
+\item \verb|*:accScaleCross.xz:<temporal>:<interval>|,
+\item \verb|*:accScaleCross.yz:<temporal>:<interval>|,
+\item \verb|*:accScaleRotation.xy:<temporal>:<interval>|,
+\item \verb|*:accScaleRotation.xz:<temporal>:<interval>|,
+\item \verb|*:accScaleRotation.yz:<temporal>:<interval>|.
+\end{itemize}
+
+This parametrization needs the attitude of the satellite.
 
 
 \keepXColumns
@@ -5883,7 +6127,24 @@ Name & Type & Annotation\\
 
 
 \subsection{GnssSolarRadiation}\label{parametrizationAccelerationType:gnssSolarRadiation}
-GNSS solar radiation pressure model.
+GNSS solar radiation pressure model. Paramters are estimated in $[nm/s^2=10^{-9}\,m/s^2]$.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:solarRadiationPressure.ECOM.D0:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.DC2:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.DS2:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.DC4:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.DS4:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.Y0:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.B0:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.BC1:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.BS1:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.BC3:*:*|,
+\item \verb|*:solarRadiationPressure.ECOM.BS3:*:*|.
+\end{itemize}
+
+This parametrization needs the attitude of the satellite.
 
 
 \keepXColumns
@@ -5908,6 +6169,11 @@ Name & Type & Annotation\\
 Estimate the thermospheric density along the orbit using a satllite macro model.
 An optional thermospheric model can be used to compute temperature and wind.
 The temperature is used to estimate variable drag and lift coefficients, otherwise a constant drag coefficient is used.
+The density is estimated in $[kg/m^3]$.
+
+The \file{parameter names}{parameterName} are \verb|*:density:<temporal>:<interval>|.
+
+This parametrization needs the macro model and the attitude of the satellite.
 
 
 \keepXColumns
@@ -5927,6 +6193,7 @@ Name & Type & Annotation\\
 
 \subsection{ModelScale}\label{parametrizationAccelerationType:modelScale}
 Estimate a scale factor for a given model.
+The \file{parameter names}{parameterName} are \verb|*:modelScale:<temporal>:<interval>|.
 
 
 \keepXColumns
@@ -5952,7 +6219,14 @@ If multiple parametrizations are given the parameters are sequently appended in 
 
 \subsection{Center}\label{parametrizationGnssAntennaType:center}
 Antenna center or, if setup for a specific \configClass{gnssType}{gnssType},
-phase/code center offset (e.g. \verb|*1*G| for GPS L1 phase center offset).
+phase/code center offset (e.g. \verb|*1*G| for GPS L1 phase center offset) in $[m]$.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:antennaCenter.x:*:*|,
+\item \verb|*:antennaCenter.y:*:*|,
+\item \verb|*:antennaCenter.z:*:*|.
+\end{itemize}
 
 
 \keepXColumns
@@ -5968,9 +6242,17 @@ Name & Type & Annotation\\
 
 
 \subsection{SphericalHarmonics}
-Parametrization of antenna center variations in terms of spherical harmonics.
+Parametrization of antenna center variations in $[m]$ in terms of spherical harmonics.
 As usually only data above the horizon are observed only the even spherical harmonics
 (degree/order $m+n$ even), which are symmetric to the equator, are setup.
+
+The total count of parameters is $((n_{max}+1)(n_{max}+2)-n_{min}(n_{min}+1)/2$ and
+the \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:antennaCenterVariations.sphericalHarmonics.c_<degree>_<order>:*:*|,
+\item \verb|*:antennaCenterVariations.sphericalHarmonics.s_<degree>_<order>:*:*|.
+\end{itemize}
+
 
 
 \keepXColumns
@@ -5989,11 +6271,14 @@ Parametrization of antenna center variations with radial basis functions
 \begin{equation}
   ACV(\M x(A, E)) = \sum_i a_i \Phi(\M x\cdot\M x_i)
 \end{equation}
-where $a_i$ the coefficients which has to be estimated and $\Phi$ are the basis
+where $a_i$ in $[m]$ the coefficients which has to be estimated and $\Phi$ are the basis
 functions
 \begin{equation}
   \Phi(\cos\psi) = \sum_n \sqrt{2n+1}P_n(\cos\psi).
 \end{equation}
+
+The \file{parameter names}{parameterName} are
+\verb|*:antennaCenterVariations.radialBasis.<index>.<total count>:*:*|.
 
 \fig{!hb}{0.4}{parametrizationGnssAntennaRadialBasis}{fig:parametrizationGnssAntennaRadialBasis}{Nodal points of the basis functions
 using a Reuter grid for transmitting satellites (view angle of 18 deg). The red line indicates the view angle of 14 deg of ground stations.}
@@ -6031,7 +6316,12 @@ You can set the range of degree~$n$ with \config{minDegree} and \config{maxDegre
 The sorting sequence of the potential coefficients in the parameter vector can be defined by
 \configClass{numbering}{sphericalHarmonicsNumberingType}.
 
-The total count of parameters is $(n_{max}+1)^2-n_{min}^2$.
+The total count of parameters is $(n_{max}+1)^2-n_{min}^2$ and
+the \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:sphericalHarmonics.c_<degree>_<order>:*:*|,
+\item \verb|*:sphericalHarmonics.s_<degree>_<order>:*:*|.
+\end{itemize}
 
 
 \keepXColumns
@@ -6060,6 +6350,8 @@ functions given by isotropic radial \configClass{kernel}{kernelType} functions
 \end{equation}
 The basis functions are located on a grid~$\M x_i$ given by \configClass{grid}{gridType}.
 This class can also be used to estimate point masses if \configClass{kernel}{kernelType} is set to density.
+
+The \file{parameter names}{parameterName} are \verb|*:radialBasis.<index>.<total count>:*:*|.
 
 
 \keepXColumns
@@ -6114,6 +6406,8 @@ the number of parameters in \configClass{pararametrizationGravitySource}{paramet
 The new parameter count is given by the number of columns in $\mathbf{F}$ and may be smaller, equal or larger
 than the original parameter count.
 
+The \file{parameter names}{parameterName} are \verb|*:transformedParameter.<index>.<total count>:*:*|.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -6135,6 +6429,16 @@ C_{lm}(\M t) = \sum_{n=0}^NC_{nlm}(1-\cos(\omega_{nlm}d\M t)\exp(P_{nlm}\omega_{
 \end{equation}
 with $\omega_{nlm}=\frac{2\pi}{T_{nlm}}$ and $P_{nlm}=\frac{-1}{2Q_{nlm}}$ . In this equation, $Q_{nlm}$ is the attenuation factor,
 $n$ is the overtone factor, $m$ is degree, $l$ is order, and $t$ is time after earthquake in second.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:earthquakeParameter.c_<degree>_<order>_A:*:*|,
+\item \verb|*:earthquakeParameter.s_<degree>_<order>_A:*:*|,
+\item \verb|*:earthquakeParameter.c_<degree>_<order>_W:*:*|,
+\item \verb|*:earthquakeParameter.s_<degree>_<order>_W:*:*|,
+\item \verb|*:earthquakeParameter.c_<degree>_<order>_P:*:*|,
+\item \verb|*:earthquakeParameter.s_<degree>_<order>_P:*:*|.
+\end{itemize}
 
 
 \keepXColumns
@@ -6163,9 +6467,19 @@ are sequently appended.
 
 
 \subsection{AntennaCenter}\label{parametrizationSatelliteTrackingType:antennaCenter}
-Estimate the KBR antenna phase centre (APC) coordinates for each spacecraft in satellite reference frame (SRF)
-as constant per axis, once per month. The observation equations are computed by taking the derivative
+Estimate the KBR antenna phase centre (APC) coordinates in $[m]$ for each spacecraft in satellite reference frame (SRF)
+as constant per axis. The observation equations are computed by taking the derivative
 of the antenna offset correction equation w.r.t. the KBR APC coordinates.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|satellite1.satellite2:sstAntennaCenter1.x:*:*|,
+\item \verb|satellite1.satellite2:sstAntennaCenter1.y:*:*|,
+\item \verb|satellite1.satellite2:sstAntennaCenter1.z:*:*|,
+\item \verb|satellite1.satellite2:sstAntennaCenter2.x:*:*|,
+\item \verb|satellite1.satellite2:sstAntennaCenter2.y:*:*|,
+\item \verb|satellite1.satellite2:sstAntennaCenter2.z:*:*|.
+\end{itemize}
 
 
 \keepXColumns
@@ -6185,7 +6499,10 @@ Name & Type & Annotation\\
 
 
 \subsection{Bias}\label{parametrizationSatelliteTrackingType:bias}
-Estimate bias for SST observations. The temporal variation is defined by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+Estimate bias for SST observations in $[m]$ or $[m/s$]. The temporal variation is defined by
+\configClass{parametrizationTemporal}{parametrizationTemporalType}.
+
+The \file{parameter names}{parameterName} are \verb|satellite1.satellite2:sstBias:<temporal>:<interval>|.
 
 
 \keepXColumns
@@ -6200,7 +6517,11 @@ Name & Type & Annotation\\
 
 
 \subsection{Scale}\label{parametrizationSatelliteTrackingType:scale}
-Estimate scale factor for SST observations with respect to reference SST data \configFile{inputfileSatelliteTracking}{instrument}. The temporal variation is defined by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+Estimate scale factor for SST observations with respect to reference SST data
+\configFile{inputfileSatelliteTracking}{instrument}.
+The temporal variation is defined by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+
+The \file{parameter names}{parameterName} are \verb|satellite1.satellite2:sstScale:<temporal>:<interval>|.
 
 
 \keepXColumns
@@ -6216,7 +6537,11 @@ Name & Type & Annotation\\
 
 
 \subsection{TimeBias}\label{parametrizationSatelliteTrackingType:timeBias}
-Estimate time shift in seconds in SST observations, with defined temporal variation by \configClass{parametrizationTemporal}{parametrizationTemporalType}. The design matrix is computed by taking the derivative of the ranging data w.r.t. time.
+Estimate time shift in seconds in SST observations, with defined temporal variation
+by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+The design matrix is computed by taking the derivative of the ranging data w.r.t. time.
+
+The \file{parameter names}{parameterName} are \verb|satellite1.satellite2:sstTimeBias:<temporal>:<interval>|.
 
 
 \keepXColumns
@@ -6234,6 +6559,8 @@ Name & Type & Annotation\\
 \subsection{ScaleModel}\label{parametrizationSatelliteTrackingType:scaleModel}
 Estimate scale factors for deterministic signal models from satellite tracking instrument file \configFile{inputfileSatelliteTracking}{instrument}, see \program{EnsembleAveragingScaleModel}.
 Amplitude variation of model waveforms is defined by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+
+The \file{parameter names}{parameterName} are \verb|satellite1.satellite2:scaleModel:<temporal>:<interval>|.
 
 
 \keepXColumns
@@ -6256,6 +6583,8 @@ see \program{GraceSstSpecialEvents}. The shape of this short-period waveform is 
 constant within one month and can be approximated by a polynomial.
 The amplitude variation of the waveform can also be taken into account
 by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+
+The \file{parameter names}{parameterName} are \verb|satellite1.satellite2:<type>.legendrePolynomial.n<degree>:<temporal>:<interval>|.
 
 
 \keepXColumns
@@ -6297,6 +6626,8 @@ This behaviour can be changed for the last interval with \config{includeLastTime
 \subsection{Constant}\label{parametrizationTemporalType:constant}
 Represents a parameter being constant in time in each \config{interval}.
 
+The \file{parameter names}{parameterName} are \verb|*:*:*:<interval>|.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -6316,6 +6647,8 @@ f(x,t) = \frac{1}{T}(t-t_0) \cdot f_t(x),
 \end{equation}
 with $t_0$ is \config{timeStart} and $T$ is \config{timeStep} in days.
 A constant term is not included and must added separately.
+
+The \file{parameter name}{parameterName} is \verb|*:*:trend.<timeStep(days)>*(t-<timeStart>):*|.
 
 
 \keepXColumns
@@ -6343,6 +6676,8 @@ $f_{i=2}(x)$ and so on. The total parameter count in each \config{interval} is $
 where $N_t$ is the count of time points from \configClass{timeSeries}{timeSeriesType} in each interval and $d$
 is the \config{degree}.
 
+The \file{parameter names}{parameterName} are \verb|*:*:spline.n<degree>:<interval of each spline>|.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -6362,7 +6697,8 @@ A time variable function is represented by Legendre polynomials in each \config{
 The time is normed to $[-1,1)$ in each interval.
 
 The total parameter count is $(N+1)M$,
-where $N$ is the polynmial degree and $M$ the number of intervals.
+where $N$ is the polynmial degree and $M$ the number of intervals with
+the \file{parameter names}{parameterName} \verb|*:*:legendrePolynomial.n<degree>:<interval>|.
 
 
 \keepXColumns
@@ -6384,6 +6720,9 @@ f(x,t) = f^c(\M x)\cos(\omega_i(t)) + f^s(\M x)\sin(\omega_i(t))
 \end{equation}
 with $\omega_i=\frac{2\pi}{T_i}(t-t_0)$,
 $t_0$ is \config{timeStart} and $T$ is \config{timePeriod} in days.
+
+The \file{parameter names}{parameterName} are \verb|*:*:oscillation.cos(2*pi/<period(days)>*(t-<timeStart>)):*|
+and \verb|*:*:oscillation.sin(2*pi/<period(days)>*(t-<timeStart>)):*|.
 
 
 \keepXColumns
@@ -6410,7 +6749,8 @@ and $t_A$ is \config{timeStart}, $t_B$ is \config{timeEnd} in each \config{inter
 and $M$ is the \config{fourierDegree}.
 
 The total parameter count is $2MN$, where $N$ is the number of intervals.
-The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$.
+The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$ with
+the \file{parameter names}{parameterName} \verb|*:*:fourier.cos(<m>*x):<interval>| and \verb|*:*:fourier.sin(<m>*x):<interval>|.
 
 
 \keepXColumns
@@ -6444,7 +6784,8 @@ using the file \configFile{inputfileAdmittance}{admittance}. This file can be cr
 \program{DoodsonHarmonicsCalculateAdmittance}.
 
 The total parameter count is $2N$ with $N$ the number of doodson frequencies.
-The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$.
+The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$ with
+the \file{parameter names}{parameterName} \verb|*:*:doodson.cos(<doodsonName>):*| and \verb|*:*:doodson.sin(<doodsonName>):*|.
 
 
 \keepXColumns

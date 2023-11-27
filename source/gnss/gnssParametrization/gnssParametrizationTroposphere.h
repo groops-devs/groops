@@ -20,12 +20,19 @@
 static const char *docstringGnssParametrizationTroposphere = R"(
 \subsection{Troposphere}\label{gnssParametrizationType:troposphere}
 A priori tropospheric correction is handled by a \configClass{troposphere}{troposphereType} model (e.g. Vienna Mapping Functions 3).
-Additional parameters for zenith wet delay and gradients can be set up via
+Additional parameters in $[m]$ for zenith wet delay and gradients can be set up via
 \configClass{troposphereWetEstimation}{parametrizationTemporalType} (usually 2-hourly linear splines)
 and \configClass{troposphereGradientEstimation}{parametrizationTemporalType} (usually a daily trend).
 These parameters can be soft-constrained using
 \configClass{parametrization:constraints}{gnssParametrizationType:constraints}
 to avoid an unsolvable system of normal equations in case of data gaps.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|<station>:troposphereWet:<temporal>:<interval>|,
+\item \verb|<station>:troposphereGradient.x:<temporal>:<interval>|,
+\item \verb|<station>:troposphereGradient.y:<temporal>:<interval>|.
+\end{itemize}
 )";
 #endif
 

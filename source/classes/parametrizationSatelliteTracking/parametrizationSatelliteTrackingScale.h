@@ -17,7 +17,11 @@
 #ifdef DOCSTRING_ParametrizationSatelliteTracking
 static const char *docstringParametrizationSatelliteTrackingScale = R"(
 \subsection{Scale}\label{parametrizationSatelliteTrackingType:scale}
-Estimate scale factor for SST observations with respect to reference SST data \configFile{inputfileSatelliteTracking}{instrument}. The temporal variation is defined by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+Estimate scale factor for SST observations with respect to reference SST data
+\configFile{inputfileSatelliteTracking}{instrument}.
+The temporal variation is defined by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+
+The \file{parameter names}{parameterName} are \verb|satellite1.satellite2:sstScale:<temporal>:<interval>|.
 )";
 #endif
 

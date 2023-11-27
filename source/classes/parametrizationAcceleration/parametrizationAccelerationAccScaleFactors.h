@@ -19,6 +19,21 @@
 static const char *docstringParametrizationAccelerationAccScaleFactors = R"(
 \subsection{AccelerometerScaleFactors}\label{parametrizationAccelerationType:accelerometerScaleFactors}
 Accelerometer scale factor per axis.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:accScale.x:<temporal>:<interval>|,
+\item \verb|*:accScale.y:<temporal>:<interval>|,
+\item \verb|*:accScale.z:<temporal>:<interval>|,
+\item \verb|*:accScaleCross.xy:<temporal>:<interval>|,
+\item \verb|*:accScaleCross.xz:<temporal>:<interval>|,
+\item \verb|*:accScaleCross.yz:<temporal>:<interval>|,
+\item \verb|*:accScaleRotation.xy:<temporal>:<interval>|,
+\item \verb|*:accScaleRotation.xz:<temporal>:<interval>|,
+\item \verb|*:accScaleRotation.yz:<temporal>:<interval>|.
+\end{itemize}
+
+This parametrization needs the attitude of the satellite.
 )";
 #endif
 

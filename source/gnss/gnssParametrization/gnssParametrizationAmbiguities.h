@@ -41,6 +41,13 @@ and are removed from the system of normal equations.
 
 The estimated phase biases can be written to files in
 \configClass{parametrization:signalBiases}{gnssParametrizationType:signalBiases}.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|<station>:phaseBias(<gnssType>)::|,
+\item \verb|<prn>:phaseBias(<gnssType>)::|,
+\item \verb|<station>.<prn>:ambiguity<index>of<count>(<GnssTypes>)::<track interval>|.
+\end{itemize}
 )";
 #endif
 

@@ -40,6 +40,8 @@ an (temporal changing) bias for each gradiometer component and arc can be estima
 The accuracy or the full covariance matrix of the gradiometer is provided in
 \config{covarianceSgg} and can be estimated with \program{PreprocessingGradiometer}.
 
+The following parameters with \file{parameter names}{parameterName} are set up:
+\verb|*:<parametrizationGravity>:*:*|.
 )";
 #endif
 

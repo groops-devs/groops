@@ -22,7 +22,8 @@ A time variable function is represented by Legendre polynomials in each \config{
 The time is normed to $[-1,1)$ in each interval.
 
 The total parameter count is $(N+1)M$,
-where $N$ is the polynmial degree and $M$ the number of intervals.
+where $N$ is the polynmial degree and $M$ the number of intervals with
+the \file{parameter names}{parameterName} \verb|*:*:legendrePolynomial.n<degree>:<interval>|.
 )";
 #endif
 

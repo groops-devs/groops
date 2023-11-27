@@ -79,7 +79,7 @@ This behaviour can be changed for the last interval with <strong class="groops-c
 </p>
 
 <h2 id="constant">Constant</h2><p>
-Represents a parameter being constant in time in each <strong class="groops-config-element">interval</strong>.
+Represents a parameter being constant in time in each <strong class="groops-config-element">interval</strong>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>*:*:*:&lt;interval></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -92,7 +92,7 @@ A time variable function is given by a linear trend
 \[
 f(x,t) = \frac{1}{T}(t-t_0) \cdot f_t(x),
 \]with $t_0$ is <strong class="groops-config-element">timeStart</strong> and $T$ is <strong class="groops-config-element">timeStep</strong> in days.
-A constant term is not included and must added separately.
+A constant term is not included and must added separately.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter name</a> is <code>*:*:trend.&lt;timeStep(days)>*(t-&lt;timeStart>):*</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -109,7 +109,7 @@ Basis splines are defined as polynomials of degree $n$ in intervals between noda
 for details see <a class="groops-ref" href="fundamentals.basisSplines.html">basis splines</a>.</p><p>The parameters are ordered timewise. First all parameters of $f_{i=1}(x)$ then
 $f_{i=2}(x)$ and so on. The total parameter count in each <strong class="groops-config-element">interval</strong> is $N=N_t+d-1$,
 where $N_t$ is the count of time points from <a class="groops-class" href="timeSeriesType.html">timeSeries</a> in each interval and $d$
-is the <strong class="groops-config-element">degree</strong>.
+is the <strong class="groops-config-element">degree</strong>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>*:*:spline.n&lt;degree>:&lt;interval of each spline></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -122,7 +122,8 @@ is the <strong class="groops-config-element">degree</strong>.
 <h2>Polynomial</h2><p>
 A time variable function is represented by Legendre polynomials in each <strong class="groops-config-element">interval</strong>.
 The time is normed to $[-1,1)$ in each interval.</p><p>The total parameter count is $(N+1)M$,
-where $N$ is the polynmial degree and $M$ the number of intervals.
+where $N$ is the polynmial degree and $M$ the number of intervals with
+the <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> <code>*:*:legendrePolynomial.n&lt;degree>:&lt;interval></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -136,7 +137,8 @@ A time variable function is given by a oscillation
 \[
 f(x,t) = f^c(\M x)\cos(\omega_i(t)) + f^s(\M x)\sin(\omega_i(t))
 \]with $\omega_i=\frac{2\pi}{T_i}(t-t_0)$,
-$t_0$ is <strong class="groops-config-element">timeStart</strong> and $T$ is <strong class="groops-config-element">timePeriod</strong> in days.
+$t_0$ is <strong class="groops-config-element">timeStart</strong> and $T$ is <strong class="groops-config-element">timePeriod</strong> in days.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>*:*:oscillation.cos(2*pi/&lt;period(days)>*(t-&lt;timeStart>)):*</code>
+and <code>*:*:oscillation.sin(2*pi/&lt;period(days)>*(t-&lt;timeStart>)):*</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -153,7 +155,8 @@ f(x,t) = \sum_{m=1}^M f_m^c(\M x)\cos(2\pi m \tau) + f_m^s(\M x)\sin(2\pi m \tau
 \tau = \frac{t-t_A}{t_B-t_A},
 \]and $t_A$ is <strong class="groops-config-element">timeStart</strong>, $t_B$ is <strong class="groops-config-element">timeEnd</strong> in each <strong class="groops-config-element">interval</strong>
 and $M$ is the <strong class="groops-config-element">fourierDegree</strong>.</p><p>The total parameter count is $2MN$, where $N$ is the number of intervals.
-The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$.
+The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$ with
+the <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> <code>*:*:fourier.cos(&lt;m>*x):&lt;interval></code> and <code>*:*:fourier.sin(&lt;m>*x):&lt;interval></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -175,7 +178,8 @@ The multipliers must be given by <a class="groops-class" href="doodson.html">doo
 (e.g. 255.555) or as names intoduced by Darwin (e.g. M2).</p><p>The major constituents given by <a class="groops-class" href="doodson.html">doodson</a> can be used to interpolate minor tidal constituents
 using the file <a class="groops-class" href="fileFormat_admittance.html">inputfileAdmittance</a>. This file can be created with
 <a class="groops-program" href="DoodsonHarmonicsCalculateAdmittance.html">DoodsonHarmonicsCalculateAdmittance</a>.</p><p>The total parameter count is $2N$ with $N$ the number of doodson frequencies.
-The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$.
+The parameters are sorted in following order: $f_1^c, f_1^s, f_2^c, \ldots$ with
+the <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> <code>*:*:doodson.cos(&lt;doodsonName>):*</code> and <code>*:*:doodson.sin(&lt;doodsonName>):*</code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

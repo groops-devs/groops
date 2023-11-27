@@ -24,6 +24,9 @@ f(x,t) = f^c(\M x)\cos(\omega_i(t)) + f^s(\M x)\sin(\omega_i(t))
 \end{equation}
 with $\omega_i=\frac{2\pi}{T_i}(t-t_0)$,
 $t_0$ is \config{timeStart} and $T$ is \config{timePeriod} in days.
+
+The \file{parameter names}{parameterName} are \verb|*:*:oscillation.cos(2*pi/<period(days)>*(t-<timeStart>)):*|
+and \verb|*:*:oscillation.sin(2*pi/<period(days)>*(t-<timeStart>)):*|.
 )";
 #endif
 

@@ -20,6 +20,9 @@ static const char *docstringGnssParametrizationTransmitterAntennas = R"(
 \subsection{TransmitterAntennas}\label{gnssParametrizationType:transmitterAntennas}
 Same as \configClass{receiverAntennas}{gnssParametrizationType:receiverAntennas} but
 for transmitting antennas (GNSS satellites).
+
+The \file{parameter names}{parameterName} are
+\verb|<antennaName>:<antennaCenterVariations>.<gnssType>::|.
 )";
 #endif
 

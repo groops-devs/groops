@@ -17,7 +17,11 @@
 #ifdef DOCSTRING_ParametrizationSatelliteTracking
 static const char *docstringParametrizationSatelliteTrackingTimeBias = R"(
 \subsection{TimeBias}\label{parametrizationSatelliteTrackingType:timeBias}
-Estimate time shift in seconds in SST observations, with defined temporal variation by \configClass{parametrizationTemporal}{parametrizationTemporalType}. The design matrix is computed by taking the derivative of the ranging data w.r.t. time.
+Estimate time shift in seconds in SST observations, with defined temporal variation
+by \configClass{parametrizationTemporal}{parametrizationTemporalType}.
+The design matrix is computed by taking the derivative of the ranging data w.r.t. time.
+
+The \file{parameter names}{parameterName} are \verb|satellite1.satellite2:sstTimeBias:<temporal>:<interval>|.
 )";
 #endif
 

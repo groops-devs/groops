@@ -36,6 +36,9 @@ This parametrization should be set up in addition to the constant
 Depending on the temporal representation a temporal zero-mean constraint is needed
 to separate this parametrization from the constant component. The constraint equations are added with
 a standard deviation of \config{sigmaZeroMeanConstraint}.
+
+The \file{parameter names}{parameterName} are
+\verb|<prn>:signalBias.<gnssType>:<temporal>:<interval>|.
 )";
 #endif
 

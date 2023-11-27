@@ -43,6 +43,18 @@ see~\reference{dataVariables}{general.parser:dataVariables}.
 The ellipsoid parameters \config{R} and \config{inverseFlattening} are used
 to define the local frame (north, east, up).
 
+The following parameters with \file{parameter names}{parameterName} are set up:
+\begin{itemize}
+\item \verb|*:<parametrizationGravity>:*:*|,
+\item \verb|*:translation.x:*:*|,
+\item \verb|*:translation.y:*:*|,
+\item \verb|*:translation.z:*:*|,
+\item \verb|*:scale:*:*|,
+\item \verb|*:rotation.x:*:*|,
+\item \verb|*:rotation.y:*:*|,
+\item \verb|*:rotation.z:*:*|.
+\end{itemize}
+
 See also \program{Gravityfield2DisplacementTimeSeries}.
 
 Reference:

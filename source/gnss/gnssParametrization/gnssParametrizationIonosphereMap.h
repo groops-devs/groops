@@ -21,9 +21,8 @@ static const char *docstringGnssParametrizationIonosphereMap = R"(
 TODO: reading and writing ionosphere maps not implemented yet.
 % A priori ionopshere model can be provided with \configFile{inputfileMap}{gnssIonosphereMaps}.
 
-The ionosphere is parametrized as a \configClass{temporal}{parametrizationTemporalType}ly changing
-(e.g. hourly linear splines)
-spherical harmonics expansion
+The ionosphere is parametrized in terms of $[TECU]$ as a \configClass{temporal}{parametrizationTemporalType}ly
+changing (e.g. hourly linear splines) spherical harmonics expansion
 \begin{equation}
   VTEC(\lambda,\theta,t) = \sum_{n=0}^{n_{max}} \sum_{m=0}^n c_{nm}(t)C_{nm}(\lambda,\theta)+s_{nm}(t)S_{nm}(\lambda,\theta)
 \end{equation}
@@ -35,6 +34,12 @@ Local and short-term scintillations can be considered by adding constrained
 \configClass{parametrization:ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}.
 To account for signal biases add
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases}.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|VTEC:sphericalHarmonics.c_<degree>_<order>:<temporal>:<interval>|,
+\item \verb|VTEC:sphericalHarmonics.s_<degree>_<order>:<temporal>:<interval>|.
+\end{itemize}
 )";
 #endif
 

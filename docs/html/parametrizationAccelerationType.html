@@ -78,7 +78,25 @@ are sequently appended.
 </p>
 
 <h2 id="perRevolution">PerRevolution</h2><p>
-Oscillation per revolution.
+Oscillation once, twice, ... per revolution in Satellite Reference Frame (SRF)
+with the argument of latitude as input angle.  If the attitude of the satellite
+is not provided the Celestial Reference Frame (CRF) is used instead.
+Paramters are estimated in $[nm/s^2=10^{-9}\,m/s^2]$.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>*:perRevolution.cos(&lt;order>*u).x::&lt;interval></code>,
+</li><li>
+<code>*:perRevolution.cos(&lt;order>*u).y::&lt;interval></code>,
+</li><li>
+<code>*:perRevolution.cos(&lt;order>*u).z::&lt;interval></code>,
+</li><li>
+<code>*:perRevolution.sin(&lt;order>*u).x::&lt;interval></code>,
+</li><li>
+<code>*:perRevolution.sin(&lt;order>*u).y::&lt;interval></code>,
+</li><li>
+<code>*:perRevolution.sin(&lt;order>*u).z::&lt;interval></code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -91,7 +109,17 @@ Oscillation per revolution.
 </table>
 
 <h2 id="accBias">AccBias</h2><p>
-Temporal changing accelerometer bias per axis.
+Temporal changing accelerometer bias per axis in $[m/s^2]$ in Satellite Reference Frame (SRF).
+If the attitude of the satellite is not provided the Celestial Reference Frame (CRF) is used instead.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>*:accBias.x:*:*</code>,
+</li><li>
+<code>*:accBias.y:*:*</code>,
+</li><li>
+<code>*:accBias.z:*:*</code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -103,7 +131,28 @@ Temporal changing accelerometer bias per axis.
 </table>
 
 <h2 id="accelerometerScaleFactors">AccelerometerScaleFactors</h2><p>
-Accelerometer scale factor per axis.
+Accelerometer scale factor per axis.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>*:accScale.x:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>*:accScale.y:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>*:accScale.z:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>*:accScaleCross.xy:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>*:accScaleCross.xz:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>*:accScaleCross.yz:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>*:accScaleRotation.xy:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>*:accScaleRotation.xz:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>*:accScaleRotation.yz:&lt;temporal>:&lt;interval></code>.
+</li></ul>
+</p><p>This parametrization needs the attitude of the satellite.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -118,7 +167,32 @@ Accelerometer scale factor per axis.
 </table>
 
 <h2 id="gnssSolarRadiation">GnssSolarRadiation</h2><p>
-GNSS solar radiation pressure model.
+GNSS solar radiation pressure model. Paramters are estimated in $[nm/s^2=10^{-9}\,m/s^2]$.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>*:solarRadiationPressure.ECOM.D0:*:*</code>,
+</li><li>
+<code>*:solarRadiationPressure.ECOM.DC2:*:*</code>,
+</li><li>
+<code>*:solarRadiationPressure.ECOM.DS2:*:*</code>,
+</li><li>
+<code>*:solarRadiationPressure.ECOM.DC4:*:*</code>,
+</li><li>
+<code>*:solarRadiationPressure.ECOM.DS4:*:*</code>,
+</li><li>
+<code>*:solarRadiationPressure.ECOM.Y0:*:*</code>,
+</li><li>
+<code>*:solarRadiationPressure.ECOM.B0:*:*</code>,
+</li><li>
+<code>*:solarRadiationPressure.ECOM.BC1:*:*</code>,
+</li><li>
+<code>*:solarRadiationPressure.ECOM.BS1:*:*</code>,
+</li><li>
+<code>*:solarRadiationPressure.ECOM.BC3:*:*</code>,
+</li><li>
+<code>*:solarRadiationPressure.ECOM.BS3:*:*</code>.
+</li></ul>
+</p><p>This parametrization needs the attitude of the satellite.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -137,6 +211,7 @@ GNSS solar radiation pressure model.
 Estimate the thermospheric density along the orbit using a satllite macro model.
 An optional thermospheric model can be used to compute temperature and wind.
 The temperature is used to estimate variable drag and lift coefficients, otherwise a constant drag coefficient is used.
+The density is estimated in $[kg/m^3]$.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>*:density:&lt;temporal>:&lt;interval></code>.</p><p>This parametrization needs the macro model and the attitude of the satellite.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -150,6 +225,7 @@ The temperature is used to estimate variable drag and lift coefficients, otherwi
 
 <h2 id="modelScale">ModelScale</h2><p>
 Estimate a scale factor for a given model.
+The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>*:modelScale:&lt;temporal>:&lt;interval></code>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

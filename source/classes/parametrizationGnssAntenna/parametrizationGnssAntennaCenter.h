@@ -18,7 +18,14 @@
 static const char *docstringParametrizationGnssAntennaCenter = R"(
 \subsection{Center}\label{parametrizationGnssAntennaType:center}
 Antenna center or, if setup for a specific \configClass{gnssType}{gnssType},
-phase/code center offset (e.g. \verb|*1*G| for GPS L1 phase center offset).
+phase/code center offset (e.g. \verb|*1*G| for GPS L1 phase center offset) in $[m]$.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|*:antennaCenter.x:*:*|,
+\item \verb|*:antennaCenter.y:*:*|,
+\item \verb|*:antennaCenter.z:*:*|.
+\end{itemize}
 )";
 #endif
 

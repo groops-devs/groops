@@ -20,6 +20,11 @@ static const char *docstringParametrizationAccelerationThermosphericDensity = R"
 Estimate the thermospheric density along the orbit using a satllite macro model.
 An optional thermospheric model can be used to compute temperature and wind.
 The temperature is used to estimate variable drag and lift coefficients, otherwise a constant drag coefficient is used.
+The density is estimated in $[kg/m^3]$.
+
+The \file{parameter names}{parameterName} are \verb|*:density:<temporal>:<interval>|.
+
+This parametrization needs the macro model and the attitude of the satellite.
 )";
 #endif
 
