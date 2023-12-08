@@ -1,5 +1,6 @@
 # main
 - New program:      eclipseFactor2GriddedData.cpp, returns a global grid with eclipse factors
+- New program:      orbit2EarhFixedOrbit: Rotate an orbit into a rotation earth fixed frame.
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
 - Bugfix:           NetCdf: in some cases the data has been swapped.

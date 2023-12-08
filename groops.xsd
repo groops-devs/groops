@@ -16670,6 +16670,33 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="Orbit2EarthFixedOrbit">
+				<xs:annotation>
+					<xs:documentation>rotate an orbit into a rotation earth fixed frame</xs:documentation>
+					<xs:appinfo>tag: Orbit</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileOrbit" type="filename"/>
+						<xs:element name="inputfileOrbit" type="filename"/>
+						<xs:element name="earthRotation" type="earthRotationType">
+							<xs:annotation>
+								<xs:documentation>transformation from CRF to TRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="[{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}]">
+							<xs:annotation>
+								<xs:documentation>degree 1 fluid mantle for CM2CE correction</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="celestial2terrestrial" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>yes: crf-&gt;trf, no: trf-&gt;crf</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="Orbit2EclipseFactor">
 				<xs:annotation>
 					<xs:documentation>Create instrument file containing eclipse factors.</xs:documentation>

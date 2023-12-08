@@ -3852,7 +3852,9 @@ Name & Type & Annotation\\
 This program rotates \file{instrument data}{instrument} into a new reference frame
 (using \configFile{inputfileStarCamera}{instrument}).
 The rotation is usually done from satellite frame into inertial frame.
-To apply Earth rotation use \program{InstrumentEarthRotation}.
+
+To apply Earth rotation to orbits use \program{Orbit2EarthFixedOrbit}
+For other instrument data use \program{InstrumentEarthRotation} before.
 
 
 \keepXColumns
@@ -5613,6 +5615,36 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt data are appended\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~planet & \hfuzz=500pt \hyperref[planetType]{planet} & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
+\subsection{Orbit2EarthFixedOrbit}\label{Orbit2EarthFixedOrbit}
+Normally the orbits in GROOPS are given in the celestial reference frame (CRF) with the
+origin in the center of mass (CoM). This program rotates the orbit with
+\configClass{earthRotation}{earthRotationType} from CRF to the TRF.
+
+To additionally tranform into the center of solid Earth (CE) frame (or center of Figure (CF)),
+a correction can be applied by providing degree one coefficients of a
+\configClass{gravityfield}{gravityfieldType} (e.g. ocean tides).
+
+If \config{celestial2terrestrial} is set to no, the inverse transformation is applied.
+
+See also \program{InstrumentRotate}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt transformation from CRF to TRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt degree 1 fluid mantle for CM2CE correction\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~celestial2terrestrial & \hfuzz=500pt boolean & \hfuzz=500pt yes: crf-\$>\$trf, no: trf-\$>\$crf\\
 \hline
 \end{tabularx}
 

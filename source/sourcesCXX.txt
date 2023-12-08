@@ -405,6 +405,7 @@ programs/normals/parameterNamesCreate.cpp
 programs/normals/parameterSelection2IndexVector.cpp
 programs/orbit/orbit2ArgumentOfLatitude.cpp
 programs/orbit/orbit2BetaPrimeAngle.cpp
+programs/orbit/orbit2EarthFixedOrbit.cpp
 programs/orbit/orbit2EclipseFactor.cpp
 programs/orbit/orbit2Groundtracks.cpp
 programs/orbit/orbit2Kepler.cpp
