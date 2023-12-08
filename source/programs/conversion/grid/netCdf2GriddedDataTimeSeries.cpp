@@ -140,7 +140,7 @@ void NetCdf2GriddedDataTimeSeries::run(Config &config, Parallel::CommunicatorPtr
         if((dims.at(i).at(1) == dimLon) && (dims.at(i).at(2) == dimLat))
           copy(vars.at(i).values(start, count), data.at(idEpoch).column(i));
         else if((dims.at(i).at(1) == dimLat) && (dims.at(i).at(2) == dimLon))
-          reshape(reshape(vars.at(i).values(start, count), count.at(2), count.at(1)).trans(), data.at(idEpoch).column(i));
+          reshape(reshape(vars.at(i).values(start, count), count.at(2), count.at(1)), data.at(idEpoch).column(i));
         else
           throw(Exception("variable <"+vars.at(i).name()+"> must have ("+latName+", "+lonName+") dimensions"));
       }

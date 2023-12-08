@@ -2,6 +2,7 @@
 - New program:      eclipseFactor2GriddedData.cpp, returns a global grid with eclipse factors
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
+- Bugfix:           NetCdf: in some cases the data has been swapped.
 - Other:            EarthRotation::rotaryAxis: if EOP time series is too short, use simplified equations.
 - Other:            Gravityfield2Deflections: Computation based now on normal gravity.
 - Other:            SimulateStarCamera: new optional nadir pointing mode.
