@@ -197,7 +197,7 @@ No clock errors are estimated if no valid observations are available (e.g. data 
 matrix. To circumvent this issue, the estimation requires an additional zero-mean constraint added in each epoch.
 This is realized with an additional observation equation
 \[
- 0 = \sum_i \delta t^{s_i} + \sum_k \delta t_{r_k}
+  0 = \frac{1}{n_i + n_k} (\sum_i \Delta t^{s_i} + \sum_k \Delta t_{r_k})
 \]summed over all <a class="groops-class" href="platformSelectorType.html">selectTransmitters/ReceiversZeroMean</a>
 with a standard deviation of <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station or prn>:clock::&lt;time></code>.
 </p>
@@ -224,7 +224,7 @@ of the preceding epoch and an unknown clock drift
   \Delta t_{i+1} = \Delta t_{i} + t_{drift} dt + \epsilon_i.
 \]This equation is applied as an additional constraint equation in each epoch
 \[
-   0 = \Delta t_{i+1} - \Delta t_{i} - t_{drift} dt + \epsilon_i.
+  0 = \Delta t_{i+1} - \Delta t_{i} - t_{drift} dt + \epsilon_i.
 \]The variance $\sigma^2(\epsilon)$ is estimated iteratively by variance component estimation (VCE).
 Clock jumps are treated as outliers and are automatically downweighted as described in
 <a class="groops-class" href="gnssProcessingStepType.html#estimate">GnssProcessing:processingStep:estimate</a>.</p><p>The absolute initial clock error and clock drift cannot be determined if all receiver
@@ -234,7 +234,7 @@ manner as described in <a class="groops-class" href="gnssParametrizationType.htm
 To circumvent the rank deficiency additional zero-mean constraints are required for the first and last epoch.
 The realization of the constraint is done as an additional observation equation in the form
 \[
- 0 = \sum_i \delta t^{s_i} + \sum_k \delta t_{r_k}
+  0 = \frac{1}{n_i + n_k} (\sum_i \Delta t^{s_i} + \sum_k \Delta t_{r_k})
 \]summed over all <a class="groops-class" href="platformSelectorType.html">selectTransmitters/ReceiversZeroMean</a>
 with a standard deviation of <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station or prn>:clock::&lt;time></code>
 and <code>&lt;station or prn>:clockDrift::</code>.
