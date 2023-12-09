@@ -124,7 +124,7 @@ void GriddedData2GriddedDataStatistics::run(Config &config, Parallel::Communicat
         const Angle lon = grid.points.at(i).lambda();
         const Angle lat = grid.points.at(i).phi();
         const UInt  col = std::distance(lambda.begin(), std::min_element(lambda.begin(), lambda.end(),
-                                        [&](Angle lon1, Angle lon2) {return std::fabs(lon-lon1) < std::fabs(lon-lon2);}));
+                                        [&](Angle lon1, Angle lon2) {return std::fabs(std::remainder(lon-lon1, 2*PI)) < std::fabs(std::remainder(lon-lon2, 2*PI));}));
         const UInt  row = std::distance(phi.begin(), std::min_element(phi.begin(), phi.end(),
                                         [&](Angle lat1, Angle lat2) {return std::fabs(lat-lat1) < std::fabs(lat-lat2);}));
         idx = row * lambda.size() + col;

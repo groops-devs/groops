@@ -313,6 +313,7 @@ programs/griddedData/griddedDataCreate.cpp
 programs/griddedData/griddedDataInterpolate.cpp
 programs/griddedData/griddedDataReduceSampling.cpp
 programs/griddedData/griddedDataTimeSeries2GriddedData.cpp
+programs/griddedData/griddedDataTimeSeries2PotentialCoefficients.cpp
 programs/griddedData/griddedTopography2AtmospherePotentialCoefficients.cpp
 programs/griddedData/griddedTopography2PotentialCoefficients.cpp
 programs/griddedData/griddedTopographyEllipsoidal2Radial.cpp
@@ -518,7 +519,6 @@ programs/conversion/grid/griddedData2NetCdf.cpp
 programs/conversion/grid/griddedDataTimeSeries2NetCdf.cpp
 programs/conversion/grid/netCdf2GriddedData.cpp
 programs/conversion/grid/netCdf2GriddedDataTimeSeries.cpp
-programs/conversion/grid/netCdf2PotentialCoefficients.cpp
 programs/conversion/grid/netCdfInfo.cpp
 programs/conversion/satellites/champ2AccStar.cpp
 programs/conversion/satellites/champ2Orbit.cpp

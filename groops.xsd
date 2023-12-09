@@ -12693,22 +12693,7 @@
 								<xs:documentation>reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="outColumn" type="expression" minOccurs="0" default="longitude">
-							<xs:annotation>
-								<xs:documentation>expression (variables: longitude, latitude, height, area, data0, data1, ...)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outColumn" type="expression" minOccurs="0" default="latitude">
-							<xs:annotation>
-								<xs:documentation>expression (variables: longitude, latitude, height, area, data0, data1, ...)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outColumn" type="expression" minOccurs="0" default="height">
-							<xs:annotation>
-								<xs:documentation>expression (variables: longitude, latitude, height, area, data0, data1, ...)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outColumn" type="expression" minOccurs="0" default="data0" maxOccurs="unbounded">
+						<xs:element name="outColumn" type="expression" minOccurs="0" default="[&quot;longitude&quot;, &quot;latitude&quot;, &quot;height&quot;, &quot;data0&quot;]" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>expression (variables: longitude, latitude, height, area, data0, data1, ...)</xs:documentation>
 							</xs:annotation>
@@ -12724,9 +12709,13 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfilePotentialCoefficients" type="filename"/>
+						<xs:element name="outputfilePotentialCoefficients" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>one file for each value expression</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="inputfileGriddedData" type="filename"/>
-						<xs:element name="value" type="expression" default="data0">
+						<xs:element name="value" type="expression" default="data0" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>expression to compute values (input columns are named data0, data1, ...)</xs:documentation>
 							</xs:annotation>
@@ -13042,6 +13031,11 @@
 								<xs:documentation>Generalizing factor</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="volumeConserving" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>data are interpreted as heights above ellipsoid</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -13082,6 +13076,75 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="GriddedDataTimeSeries2PotentialCoefficients">
+				<xs:annotation>
+					<xs:documentation>Convert a griddedDataTimeSeries to a sequence of PotentialCoefficients files</xs:documentation>
+					<xs:appinfo>tag: Grid</xs:appinfo>
+					<xs:appinfo>tag: TimeSeries</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfilesPotentialCoefficients" type="filename" default="coeff_{loopTime:%D}.gfc" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>for each epoch</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopTime" type="string" minOccurs="0" default="loopTime">
+							<xs:annotation>
+								<xs:documentation>variable with time of each epoch</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with index of current epoch (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopCount" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with total number of epochs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileGriddedDataTimeSeries" type="filename"/>
+						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>otherwise times from inputfile are used</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="value" type="expression" default="data0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>expression (variables: longitude, latitude, height, area, data0, data1, ...)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="weight" type="expression" default="area">
+							<xs:annotation>
+								<xs:documentation>expression to compute values (input columns are named data0, data1, ...)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="kernel" type="kernelType">
+							<xs:annotation>
+								<xs:documentation>kernel in which the grid values are given</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="minDegree" type="uint" minOccurs="0" default="0"/>
+						<xs:element name="maxDegree" type="uint"/>
+						<xs:element name="GM" type="double" minOccurs="0" default="3.986004415e+14">
+							<xs:annotation>
+								<xs:documentation>Geocentric gravitational constant</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="R" type="double" minOccurs="0" default="6378136.3">
+							<xs:annotation>
+								<xs:documentation>reference radius for potential coefficients</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="leastSquares" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>false: quadrature formular, true: least squares adjustment order by order</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GriddedTopography2AtmospherePotentialCoefficients">
 				<xs:annotation>
 					<xs:documentation>Estimate interoir and exterior atmospheric potential coefficients above digital terrain models</xs:documentation>
@@ -13090,8 +13153,8 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfilePotentialCoefficientsExterior" type="filename"/>
-						<xs:element name="outputfilePotentialCoefficientsInterior" type="filename"/>
+						<xs:element name="outputfilePotentialCoefficientsExterior" type="filename" minOccurs="0"/>
+						<xs:element name="outputfilePotentialCoefficientsInterior" type="filename" minOccurs="0"/>
 						<xs:element name="inputfileGriddedData" type="filename">
 							<xs:annotation>
 								<xs:documentation>Digital Terrain Model</xs:documentation>
@@ -13154,7 +13217,7 @@
 						</xs:element>
 						<xs:element name="density" type="expression" minOccurs="0" default="2670">
 							<xs:annotation>
-								<xs:documentation>expression [kg/m**3]</xs:documentation>
+								<xs:documentation>expression [kg/m^3]</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="radialUpperBound" type="expression" minOccurs="0" default="data0">
@@ -13194,7 +13257,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfileGriddedData" type="filename"/>
+						<xs:element name="outputfileGriddedData" type="filename" minOccurs="0"/>
 						<xs:element name="inputfileGriddedData" type="filename">
 							<xs:annotation>
 								<xs:documentation>Digital Terrain Model</xs:documentation>
@@ -22831,76 +22894,6 @@
 						<xs:element name="inverseFlattening" type="double" minOccurs="0" default="298.2572221010">
 							<xs:annotation>
 								<xs:documentation>reference flattening for ellipsoidal coordinates</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="NetCdf2PotentialCoefficients">
-				<xs:annotation>
-					<xs:documentation>Convert a NetCDF file to a sequence of PotentialCoefficients files</xs:documentation>
-					<xs:appinfo>tag: Conversion</xs:appinfo>
-					<xs:appinfo>tag: Grid</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfilePotentialCoefficients" type="filename">
-							<xs:annotation>
-								<xs:documentation>One file for each epoch in the NetCDF file. Use loopTimeVariable as template.</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="loopTimeVariable" type="string" default="loopTime"/>
-						<xs:element name="inputfileNetCdf" type="filename"/>
-						<xs:element name="variableNameLongitude" type="string" default="lon">
-							<xs:annotation>
-								<xs:documentation>name of NetCDF variable</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="variableNameLatitude" type="string" default="lat">
-							<xs:annotation>
-								<xs:documentation>name of NetCDF variable</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="variableNameTime" type="string" minOccurs="0" default="time">
-							<xs:annotation>
-								<xs:documentation>name of NetCDF variable (leave blank for static grids)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="variableNameData" type="string" minOccurs="0" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>name of NetCDF variable</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="noDataValue" type="double" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>no data value for data variables</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="semimajorAxis" type="double" minOccurs="0" default="6378137.0">
-							<xs:annotation>
-								<xs:documentation>reference semimajor axis for ellipsoidal coordinates</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inverseFlattening" type="double" minOccurs="0" default="298.2572221010">
-							<xs:annotation>
-								<xs:documentation>reference flattening for ellipsoidal coordinates</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="kernel" type="kernelType">
-							<xs:annotation>
-								<xs:documentation>kernel in which the grid values are given</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="minDegree" type="uint" minOccurs="0" default="0"/>
-						<xs:element name="maxDegree" type="uint"/>
-						<xs:element name="GM" type="double" minOccurs="0" default="3.986004415e+14">
-							<xs:annotation>
-								<xs:documentation>Geocentric gravitational constant</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="R" type="double" minOccurs="0" default="6378136.3">
-							<xs:annotation>
-								<xs:documentation>reference radius for potential coefficients</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>

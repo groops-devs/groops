@@ -78,14 +78,16 @@ inline GridGeograph::GridGeograph(Config &config)
 
     Ellipsoid ellipsoid(a,f);
     for(Double phi=PI/2-deltaPhi/2.0; phi>=-PI/2; phi-=deltaPhi)
+    {
+      Double dPhi = std::sin(ellipsoid(Angle(0), Angle(phi+0.5*deltaPhi), 0).phi())
+                  - std::sin(ellipsoid(Angle(0), Angle(phi-0.5*deltaPhi), 0).phi());
       for(Double lambda=-PI+deltaLambda/2.0; lambda<=PI; lambda+=deltaLambda)
-      {
         if(border->isInnerPoint(Angle(lambda), Angle(phi)))
         {
           points.push_back(ellipsoid(Angle(lambda), Angle(phi), height));
-          areas.push_back(deltaLambda * 2.0 * sin(deltaPhi/2.0) * cos(phi));
+          areas.push_back(deltaLambda * dPhi);
         }
-      }
+    }
   }
   catch(std::exception &e)
   {

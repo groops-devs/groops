@@ -48,7 +48,7 @@ The number of points~$\gamma_j$ for each circle of latitude can then be determin
 Here the Gauss bracket $[x]$ specifies the largest integer equal to or less than $x$.
 The longitudes are subsequently determined by
 \begin{equation}
-\lambda_{ij}=\frac{\Delta\lambda_j}{2}+i\cdot(2\pi/\gamma_j),\qquad \mbox{with\qquad}0\leq i< \gamma_j.
+\lambda_{ij}=\frac{\Delta\lambda_j}{2}+i\cdot(2\pi/\gamma_j),\qquad\mbox{with}\qquad 0\leq i< \gamma_j.
 \end{equation}
 The number of grid points can be estimated by
 \begin{equation}\label{eq:numberReuter}
@@ -130,7 +130,7 @@ inline GridReuter::GridReuter(Config &config)
     if(border->isInnerPoint(L,B))
     {
       points.push_back(ellipsoid(L, B, height));
-      areas.push_back(2*PI*(1-cos(deltaB/2.0)));
+      areas.push_back(2*PI*(1-std::cos(deltaB/2.0)));
     }
   }
   catch(std::exception &e)

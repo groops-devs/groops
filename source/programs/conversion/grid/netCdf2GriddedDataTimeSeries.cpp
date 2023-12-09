@@ -74,14 +74,13 @@ void NetCdf2GriddedDataTimeSeries::run(Config &config, Parallel::CommunicatorPtr
 
     // set up grid
     // -----------
-    GriddedData grid;
     GriddedDataRectangular griddedDataRectangular;
     griddedDataRectangular.ellipsoid  = Ellipsoid(a, f);
     griddedDataRectangular.longitudes = NetCdf::convertAngles(lon.values());
     griddedDataRectangular.latitudes  = NetCdf::convertAngles(lat.values());
     griddedDataRectangular.heights.resize(griddedDataRectangular.latitudes.size(), 0.0);
-    griddedDataRectangular.convert(grid);
-    MiscGriddedData::printStatistics(grid);
+    MiscGriddedData::printStatistics(griddedDataRectangular);
+    GriddedData grid(griddedDataRectangular);
 
     // set up time axis
     // ----------------

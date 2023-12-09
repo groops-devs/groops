@@ -69,9 +69,9 @@ inline GridGauss::GridGauss(Config &config)
     BorderPtr border;
 
     readConfig(config, "parallelsCount",    numberOfParallels, Config::MUSTSET, "", "");
-    readConfig(config, "R",                 a,                 Config::DEFAULT,  STRING_DEFAULT_GRS80_a, "major axsis of the ellipsoid/sphere");
-    readConfig(config, "inverseFlattening", f,                 Config::DEFAULT,  STRING_DEFAULT_GRS80_f, "flattening of the ellipsoid, 0: sphere");
-    readConfig(config, "border",            border,            Config::DEFAULT,  "", "");
+    readConfig(config, "R",                 a,                 Config::DEFAULT, STRING_DEFAULT_GRS80_a, "major axsis of the ellipsoid/sphere");
+    readConfig(config, "inverseFlattening", f,                 Config::DEFAULT, STRING_DEFAULT_GRS80_f, "flattening of the ellipsoid, 0: sphere");
+    readConfig(config, "border",            border,            Config::DEFAULT, "", "");
     if(isCreateSchema(config)) return;
 
     Ellipsoid ellipsoid(a,f);

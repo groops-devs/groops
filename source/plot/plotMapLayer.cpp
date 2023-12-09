@@ -42,7 +42,7 @@ This assumption can be changed with \config{gridlineRegistered} (e.g if the data
 
 class PlotMapLayerGrid : public PlotMapLayer
 {
-  Angle  increment;
+  Angle  incrementLat, incrementLon;
   Bool   illuminate;
   Bool   isGridline;
   Double intermediateDpi, threshold;
@@ -69,7 +69,7 @@ PlotMapLayerGrid::PlotMapLayerGrid(Config &config)
 
     readConfig(config, "inputfileGriddedData", fileNameGrid, Config::MUSTSET,  "",      "");
     readConfig(config, "value",                exprValue,    Config::MUSTSET,  "data0", "expression to compute values (input columns are named data0, data1, ...)");
-    readConfig(config, "increment",            increment,    Config::OPTIONAL, "",      "the grid spacing [degrees]");
+    readConfig(config, "increment",            incrementLon, Config::OPTIONAL, "",      "the grid spacing [degrees]");
     readConfig(config, "illuminate",           illuminate,   Config::DEFAULT,  "0",     "illuminate grid");
     if(readConfigSequence(config, "resample", Config::OPTIONAL, "", ""))
     {
@@ -99,13 +99,28 @@ PlotMapLayerGrid::PlotMapLayerGrid(Config &config)
 
     // try to define grid spacing
     // --------------------------
-    if(increment <= 0)
+    incrementLat = incrementLon;
+    if(incrementLon <= 0)
     {
       std::vector<Angle>  lambda, phi;
       std::vector<Double> radius;
-      if(!grid.isRectangle(lambda, phi, radius) || (lambda.size() < 2))
-        throw(Exception("'increment' must be set for non rectangular grids"));
-      increment = lambda.at(1)-lambda.at(0);
+      if(!grid.isRectangle(lambda, phi, radius))
+         throw(Exception("'increment' must be set for non rectangular grids"));
+
+      Vector dLambda(lambda.size()-1);
+      for(UInt k=0; k<dLambda.size(); k++)
+        dLambda(k) = std::fabs(std::remainder(lambda.at(k+1)-lambda.at(k), 2*PI));
+      incrementLon = mean(dLambda);
+
+      Angle  lon;
+      Double h;
+      for(UInt i=0; i<phi.size(); i++)
+        grid.ellipsoid(polar(Angle(0.), phi.at(i), radius.at(i)), lon, phi.at(i), h);  // geocentric -> ellipsoidal
+
+      Vector dPhi(phi.size()-1);
+      for(UInt i=0; i<dPhi.size(); i++)
+        dPhi(i) = std::fabs(phi.at(i+1)-phi.at(i));
+      incrementLat = mean(dPhi);
     }
 
     // evaluate expression
@@ -122,7 +137,10 @@ PlotMapLayerGrid::PlotMapLayerGrid(Config &config)
     }
 
     if(!isGridline)
-      buffer = 0.5 * increment;
+    {
+      bufferLon = 0.5 * incrementLon;
+      bufferLat = 0.5 * incrementLat;
+    }
   }
   catch(std::exception &e)
   {
@@ -137,7 +155,7 @@ std::string PlotMapLayerGrid::scriptEntry() const
   try
   {
     std::stringstream ss;
-    ss<<"gmt xyz2grd -bi3d "<<dataFileName<<" -G"<<dataFileName<<".grd -Vn -I"<<increment*RAD2DEG<<" -R"<<PlotBasics::scriptVariable("region")<<(isGridline ? "" : " -r")<<std::endl;
+    ss<<"gmt xyz2grd -bi3d "<<dataFileName<<" -G"<<dataFileName<<".grd -Vn -I"<<incrementLon*RAD2DEG*3600.<<"s/"<<incrementLat*RAD2DEG*3600.<<"s -R"<<PlotBasics::scriptVariable("region")<<(isGridline ? "" : " -r")<<std::endl;
     if(illuminate)
       ss<<"gmt grdgradient "<<dataFileName<<".grd -Nt0.8 -A45/315 -G"<<dataFileName<<".intense.grd"<<std::endl;
     ss<<"gmt grdimage "<<dataFileName<<".grd";
@@ -1009,10 +1027,10 @@ void PlotMapLayer::boundary(const Ellipsoid &ellipsoid, Angle &minL, Angle &maxL
       Angle  lon, lat;
       Double h;
       ellipsoid(points.at(k), lon, lat, h);
-      minL = std::min(minL, lon-buffer);
-      maxL = std::max(maxL, lon+buffer);
-      minB = std::min(minB, lat-buffer);
-      maxB = std::max(maxB, lat+buffer);
+      minL = std::min(minL, lon-bufferLon);
+      maxL = std::max(maxL, lon+bufferLon);
+      minB = std::min(minB, lat-bufferLat);
+      maxB = std::max(maxB, lat+bufferLat);
     }
   }
   catch(std::exception &e)

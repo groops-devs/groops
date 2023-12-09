@@ -45,91 +45,57 @@ GravityfieldTopography::GravityfieldTopography(Config &config)
     readConfig(config, "factor",                   factor,          Config::DEFAULT,  "1.0",   "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
 
-    cosPsiMin   /= DEFAULT_R*1e-3; if(cosPsiMin  >PI) cosPsiMin   = PI; cosPsiMin   = std::cos(cosPsiMin);
-    cosPsiPrism /= DEFAULT_R*1e-3; if(cosPsiPrism>PI) cosPsiPrism = PI; cosPsiPrism = std::cos(cosPsiPrism);
-    cosPsiLine  /= DEFAULT_R*1e-3; if(cosPsiLine >PI) cosPsiLine  = PI; cosPsiLine  = std::cos(cosPsiLine);
-    cosPsiMax   /= DEFAULT_R*1e-3; if(cosPsiMax  >PI) cosPsiMax   = PI; cosPsiMax   = std::cos(cosPsiMax);
+    cosPsiMin   = std::cos(std::min(PI, 1e3/DEFAULT_R * cosPsiMin));
+    cosPsiPrism = std::cos(std::min(PI, 1e3/DEFAULT_R * cosPsiPrism));
+    cosPsiLine  = std::cos(std::min(PI, 1e3/DEFAULT_R * cosPsiLine));
+    cosPsiMax   = std::cos(std::min(PI, 1e3/DEFAULT_R * cosPsiMax));
 
     // read rectangular grid
     // ---------------------
     GriddedDataRectangular grid;
     readFileGriddedData(gridName, grid);
     std::vector<Double> radius;
-    grid.geocentric(lambda, phi, radius, dLambda, dPhi);
-    rows = phi.size();
-    cols = lambda.size();
+    grid.geocentric(lambda0, phi0, radius);
+    grid.areaElements(dLambda, dPhi);
+    grid.cellBorders(lambda, phi);
+    for(UInt i=0; i<phi.size(); i++)
+      phi.at(i) = grid.ellipsoid(Angle(0.), Angle(phi.at(i)), 0.).phi();  // geocentric
 
     // evaluate upper and lower height
     // -------------------------------
     VariableList varList;
     addDataVariables(grid, varList);
-    varList.undefineVariable("area");
     expressionUpper->simplify(varList);
     expressionLower->simplify(varList);
     expressionRho  ->simplify(varList);
 
-    rLower = Matrix(rows,cols);
-    rUpper = Matrix(rows,cols);
-    rho    = Matrix(rows,cols);
-    for(UInt z=0; z<rows; z++)
-      for(UInt s=0; s<cols; s++)
+    rLower = Matrix(phi0.size(), lambda0.size());
+    rUpper = Matrix(phi0.size(), lambda0.size());
+    rho    = Matrix(phi0.size(), lambda0.size());
+    for(UInt i=0; i<phi0.size(); i++)
+      for(UInt k=0; k<lambda0.size(); k++)
       {
-        evaluateDataVariables(grid, z, s, varList);
-        varList.setVariable("area", dLambda.at(s)*dPhi.at(z)*std::cos(phi.at(z)) ); // area
-        rUpper(z,s) = radius.at(z) + expressionUpper->evaluate(varList);
-        rLower(z,s) = radius.at(z) + expressionLower->evaluate(varList);
-        rho(z,s)    = expressionRho->evaluate(varList);
+        evaluateDataVariables(grid, i, k, varList);
+        rUpper(i,k) = radius.at(i) + expressionUpper->evaluate(varList);
+        rLower(i,k) = radius.at(i) + expressionLower->evaluate(varList);
+        rho(i,k)    = expressionRho->evaluate(varList);
       }
 
     // precompute sin & cos terms
     // --------------------------
-    sinL = cosL = Vector(cols);
-    for(UInt s=0; s<cols; s++)
+    sinL.resize(lambda0.size());
+    cosL.resize(lambda0.size());
+    for(UInt k=0; k<lambda0.size(); k++)
     {
-      sinL(s) = std::sin(lambda.at(s));
-      cosL(s) = std::cos(lambda.at(s));
+      sinL.at(k) = std::sin(lambda0.at(k));
+      cosL.at(k) = std::cos(lambda0.at(k));
     }
-    sinB = cosB = Vector(rows);
-    for(UInt z=0; z<rows; z++)
+    sinPhi.resize(phi0.size());
+    cosPhi.resize(phi0.size());
+    for(UInt i=0; i<phi0.size(); i++)
     {
-      sinB(z) = std::sin(phi.at(z));
-      cosB(z) = std::cos(phi.at(z));
-    }
-
-    // Restrict computation to rectangle possible?
-    // -------------------------------------------
-    testRectangle = FALSE;
-    if(cosPsiMax>-0.999)
-    {
-      testRectangle = TRUE;
-
-      Bool ascending  = TRUE;
-      Bool descending = TRUE;
-      for(UInt i=1; i<rows; i++)
-      {
-        if(phi.at(i) > phi.at(i-1))
-          descending = FALSE;
-        if(phi.at(i) < phi.at(i-1))
-          ascending = FALSE;
-      }
-      if(!ascending && !descending)
-        testRectangle = FALSE;
-      isPhiAscending = ascending;
-
-      ascending  = descending = TRUE;
-      for(UInt k=1; k<cols; k++)
-      {
-        if(lambda.at(k) > lambda.at(k-1))
-          descending = FALSE;
-        if(lambda.at(k) < lambda.at(k-1))
-          ascending = FALSE;
-      }
-      if(!ascending && !descending)
-        testRectangle = FALSE;
-      isLambdaAscending = ascending;
-
-      if(!testRectangle)
-        logWarningOnce<<"Grid is not strictly ordered => acceleration of computation not possible"<<Log::endl;
+      sinPhi.at(i) = std::sin(phi0.at(i));
+      cosPhi.at(i) = std::cos(phi0.at(i));
     }
   }
   catch(std::exception &e)
@@ -146,47 +112,26 @@ inline void GravityfieldTopography::findRectangle(const Vector3d &point, UInt &c
   {
     colsMin = 0;
     rowsMin = 0;
-    colsMax = cols;
-    rowsMax = rows;
-    if(!testRectangle)
+    colsMax = lambda0.size();
+    rowsMax = phi0.size();
+    if(cosPsiMax < -0.999)
       return;
 
-    const Double delta = std::acos(cosPsiMax);
+    const Double phi    = point.phi();
+    const Double lambda = point.lambda();
+    const Double deltaP = std::acos(cosPsiMax);
+    const Double deltaL = deltaP/std::cos(phi);
 
-    const Double phiMin = point.phi() - delta;
-    const Double phiMax = phiMin + 2*delta;
-    if(isPhiAscending)
-    {
-      for(rowsMin=0;    (rowsMin<rows) && (phi.at(rowsMin) < phiMin); rowsMin++);
-      for(rowsMax=rows; (rowsMax-->0)  && (phi.at(rowsMax) > phiMax););
-    }
-    else
-    {
-      for(rowsMin=0;    (rowsMin<rows) && (phi.at(rowsMin) > phiMax); rowsMin++);
-      for(rowsMax=rows; (rowsMax-->0)  && (phi.at(rowsMax) < phiMin););
-    }
-    rowsMax++;
-
-    const Double lambdaMin = point.lambda() - delta;
-    const Double lambdaMax = lambdaMin + 2*delta;
-    if(isLambdaAscending)
-    {
-      for(colsMin=0;    (colsMin<cols) && (lambda.at(colsMin) < lambdaMin); colsMin++);
-      for(colsMax=cols; (colsMax-->0)  && (lambda.at(colsMax) > lambdaMax););
-    }
-    else
-    {
-      for(colsMin=0;    (colsMin<cols) && (lambda.at(colsMin) > lambdaMax); colsMin++);
-      for(colsMax=cols; (colsMax-->0)  && (lambda.at(colsMax) < lambdaMin););
-    }
-    colsMax++;
+    rowsMin = std::distance(phi0.begin(),    std::find_if(phi0.begin(),    phi0.end(),    [&](auto x){return std::fabs(x-phi)    < deltaP;}));
+    colsMin = std::distance(lambda0.begin(), std::find_if(lambda0.begin(), lambda0.end(), [&](auto x){return std::fabs(x-lambda) < deltaL;}));
+    rowsMax = std::distance(std::find_if(phi0.rbegin(),    phi0.rend(),    [&](auto x){return std::fabs(x-phi)    < deltaP;}), phi0.rend());
+    colsMax = std::distance(std::find_if(lambda0.rbegin(), lambda0.rend(), [&](auto x){return std::fabs(x-lambda) < deltaL;}), lambda0.rend());
   }
   catch(std::exception &e)
   {
     GROOPS_RETHROW(e)
   }
 }
-
 /***********************************************/
 
 Double GravityfieldTopography::potential(const Time &/*time*/, const Vector3d &point) const
@@ -202,25 +147,21 @@ Double GravityfieldTopography::potential(const Time &/*time*/, const Vector3d &p
     Double sum = 0.0;
     for(UInt k=colsMin; k<colsMax; k++)
     {
-      const Double   dL = this->dLambda.at(k);
-      const Vector3d p  = rotaryZ(Angle(lambda.at(k))).rotate(point);
+      const Vector3d p = rotaryZ(Angle(lambda0.at(k))).rotate(point);
 
       for(UInt i=rowsMin; i<rowsMax; i++)
       {
         const Double r1 = rLower(i,k);
         const Double r2 = rUpper(i,k);
         const Double dr = r2-r1;
-        if(std::fabs(dr)<0.001)
+        if(std::fabs(dr) < 0.001)
           continue;
-        const Double dB    = this->dPhi.at(i);
-        const Double cosB0 = this->cosB(i);
-        const Double sinB0 = this->sinB(i);
 
         // transformation into local system
         Double x[2], y[2], z[2];
-        x[0] = -sinB0*p.x() + cosB0*p.z();
+        x[0] = -sinPhi[i]*p.x() + cosPhi[i]*p.z();
         y[0] =  p.y();
-        z[0] = z[1] = cosB0*p.x() + sinB0*p.z();
+        z[0] = z[1] = cosPhi[i]*p.x() + sinPhi[i]*p.z();
         const Double rcosPsi = z[0];
         const Double cosPsi  = rcosPsi/r;
         if((cosPsi < cosPsiMax) || (cosPsi > cosPsiMin))
@@ -231,10 +172,10 @@ Double GravityfieldTopography::potential(const Time &/*time*/, const Vector3d &p
         // ----------
         if(cosPsi < cosPsiLine)
         {
-          const Double r0 = (r2+r1)/2;
+          const Double r0 = 0.5*(r2+r1);
           z[0] -= r0;
           const Double l0 = std::sqrt(x[0]*x[0] + y[0]*y[0] + z[0]*z[0]);
-          sum += rho(i,k)*r0*r0*cosB0*dL*dB*dr/l0;
+          sum += rho(i,k)*r0*r0*dr*dLambda[k]*dPhi[i]/l0;
           continue;
         }
 
@@ -247,31 +188,34 @@ Double GravityfieldTopography::potential(const Time &/*time*/, const Vector3d &p
           const Double hd = x[0]*x[0]+y[0]*y[0];
           const Double l1 = std::sqrt(hd + z[0]*z[0]);
           const Double l2 = std::sqrt(hd + z[1]*z[1]);
-          sum += (l2*r2 - l1*r1 + 3*rcosPsi * (l2-l1) + (3*rcosPsi*rcosPsi-r*r) * std::log((l2+r2-rcosPsi)/(l1+r1-rcosPsi)))*0.5*cosB0*dL*dB*rho(i,k);
+          sum += 0.5*(l2*r2 - l1*r1 + 3*rcosPsi * (l2-l1) + (3*rcosPsi*rcosPsi-r*r) * std::log((l2+r2-rcosPsi)/(l1+r1-rcosPsi)))*rho(i,k)*dLambda[k]*dPhi[i];
           continue;
         }
 
         // prism - Franziska Wild-Pfeiffer Page 26
         // ---------------------------------------
         // coordinates relative to prism corners
-        const Double r0 = (r2+r1)/2;
-        x[0] +=  0.5*r0*dB;
-        x[1]  = x[0]-r0*dB;
-        y[0] +=  0.5*r0*dL*cosB0;
-        y[1]  = y[0]-r0*dL*cosB0;
+        const Double r0 = 0.5*(r2+r1);
+        const Double dy = r0*dLambda[k]*dPhi[i] / std::fabs(phi[i+1]-phi[i]); // Volume of tesseroid: r0*r0*dr*dLambda[k]*dPhi[i] = dx*dy*dz
+        x[0] += r0*std::fabs(phi[i]-phi0[i]);
+        x[1]  = x[0]-r0*std::fabs(phi[i+1]-phi[i]);
+        y[0] += 0.5*dy;
+        y[1]  = y[0]-dy;
         z[0] -= r1;
         z[1] -= r2;
 
-        for(UInt i=0; i<2; i++)
-          for(UInt j=0; j<2; j++)
-            for(UInt h=0; h<2; h++)
+        Double sum2 = 0.;
+        for(UInt ix=0; ix<2; ix++)
+          for(UInt iy=0; iy<2; iy++)
+            for(UInt iz=0; iz<2; iz++)
             {
-              const Double l = std::sqrt(x[i]*x[i]+y[j]*y[j]+z[h]*z[h]);
-              sum += std::pow(-1, i+j+h) * (x[i]*y[j]*std::log(z[h]+l) + y[j]*z[h]*std::log(x[i]+l) + z[h]*x[i]*std::log(y[j]+l)
-                       -0.5*(x[i]*x[i]*std::atan(y[j]*z[h]/(x[i]*l)) + y[j]*y[j]*std::atan(z[h]*x[i]/(y[j]*l)) + z[h]*z[h]*std::atan(x[i]*y[j]/(z[h]*l)))) * rho(i,k);
+              const Double l = std::sqrt(x[ix]*x[ix]+y[iy]*y[iy]+z[iz]*z[iz]);
+              sum2 += std::pow(-1, ix+iy+iz) * (x[ix]*y[iy]*std::log(z[iz]+l) + y[iy]*z[iz]*std::log(x[ix]+l) + z[iz]*x[ix]*std::log(y[iy]+l)
+                     -0.5*(x[ix]*x[ix]*std::atan(y[iy]*z[iz]/(x[ix]*l)) + y[iy]*y[iy]*std::atan(z[iz]*x[ix]/(y[iy]*l)) + z[iz]*z[iz]*std::atan(x[ix]*y[iy]/(z[iz]*l))));
             }
+        sum += sum2 * rho(i,k);
       } // for(i=0..rows)
-    } //for(k=0..cols)
+    } // for(k=0..cols)
 
     return factor * GRAVITATIONALCONSTANT * sum;
   }
@@ -296,8 +240,7 @@ Double GravityfieldTopography::radialGradient(const Time &/*time*/, const Vector
     Double sum = 0.0;
     for(UInt k=colsMin; k<colsMax; k++)
     {
-      const Double   dL = this->dLambda.at(k);
-      const Vector3d p  = rotaryZ(Angle(lambda.at(k))).rotate(point);
+      const Vector3d p = rotaryZ(Angle(lambda0.at(k))).rotate(point);
 
       for(UInt i=rowsMin; i<rowsMax; i++)
       {
@@ -306,15 +249,12 @@ Double GravityfieldTopography::radialGradient(const Time &/*time*/, const Vector
         const Double dr = r2-r1;
         if(std::fabs(dr)<0.001)
           continue;
-        const Double dB    = this->dPhi.at(i);
-        const Double cosB0 = this->cosB(i);
-        const Double sinB0 = this->sinB(i);
 
         // transformation into local system
         Double x[2], y[2], z[2];
-        x[0] = -sinB0*p.x() + cosB0*p.z();
+        x[0] = -sinPhi[i]*p.x() + cosPhi[i]*p.z();
         y[0] =  p.y();
-        z[0] = z[1] = cosB0*p.x() + sinB0*p.z();
+        z[0] = z[1] = cosPhi[i]*p.x() + sinPhi[i]*p.z();
         const Double rcosPsi = z[0];
         const Double cosPsi  = rcosPsi/r;
         if((cosPsi < cosPsiMax) || (cosPsi > cosPsiMin))
@@ -324,10 +264,10 @@ Double GravityfieldTopography::radialGradient(const Time &/*time*/, const Vector
         // ----------
         if(cosPsi < cosPsiLine)
         {
-          const Double r0 = (r2+r1)/2;
+          const Double r0 = 0.5*(r2+r1);
           z[0] -= r0;
           const Double l0 = std::sqrt(x[0]*x[0] + y[0]*y[0] + z[0]*z[0]);
-          sum -= (r*r-r0*rcosPsi)/(l0*l0*l0)*r0*r0*cosB0*dL*dB*dr*rho(i,k);
+          sum -= (r*r-r0*rcosPsi)/(l0*l0*l0)*rho(i,k)*r0*r0*dr*dLambda[k]*dPhi[i];
           continue;
         }
 
@@ -342,7 +282,7 @@ Double GravityfieldTopography::radialGradient(const Time &/*time*/, const Vector
           const Double l2 = std::sqrt(hd + z[1]*z[1]);
           sum += (r1*r1*r1/l1 - r2*r2*r2/l2 + l2*r2 - l1*r1 + 3*rcosPsi * (l2-l1)
                   +(3*rcosPsi*rcosPsi-r*r) * std::log((l2+r2-rcosPsi)/(l1+r1-rcosPsi)))
-                 * rho(i,k) * cosB0*dL*dB;
+                 * rho(i,k)*dLambda[k]*dPhi[i];
           continue;
         }
 
@@ -352,29 +292,30 @@ Double GravityfieldTopography::radialGradient(const Time &/*time*/, const Vector
         // prism - Franziska Wild-Pfeiffer Page 26
         // ---------------------------------------
         // coordinates relative to prism corners
-        const Double r0 = (r2+r1)/2;
-        x[0] +=  0.5*r0*dB;
-        x[1]  = x[0]-r0*dB;
-        y[0] +=  0.5*r0*dL*cosB0;
-        y[1]  = y[0]-r0*dL*cosB0;
+        const Double r0 = 0.5*(r2+r1);
+        const Double dy = r0*dLambda[k]*dPhi[i] / std::fabs(phi[i+1]-phi[i]); // Volume of tesseroid: r0^2*dr*dLambda[k]*dPhi[i] = dx*dy*dz
+        x[0] += r0*std::fabs(phi[i]-phi0[i]);
+        x[1]  = x[0]-r0*std::fabs(phi[i+1]-phi[i]);
+        y[0] += 0.5*dy;
+        y[1]  = y[0]-dy;
         z[0] -= r1;
         z[1] -= r2;
 
         Vector3d dgxyz;
-        for(UInt i=0; i<2; i++)
-          for(UInt j=0; j<2; j++)
-            for(UInt h=0; h<2; h++)
+        for(UInt ix=0; ix<2; ix++)
+          for(UInt iy=0; iy<2; iy++)
+            for(UInt iz=0; iz<2; iz++)
             {
-              const Double sign = std::pow(-1, i+j+h);
-              const Double l    = std::sqrt(x[i]*x[i]+y[j]*y[j]+z[h]*z[h]);
-              const Double logx = std::log(x[i]+l);
-              const Double logy = std::log(y[j]+l);
-              const Double logz = std::log(z[h]+l);
+              const Double sign = std::pow(-1, ix+iy+iz);
+              const Double l    = std::sqrt(x[ix]*x[ix]+y[iy]*y[iy]+z[iz]*z[iz]);
+              const Double logx = std::log(x[ix]+l);
+              const Double logy = std::log(y[iy]+l);
+              const Double logz = std::log(z[iz]+l);
 
               //gradients prism
-              dgxyz.x() += sign * (y[j]*logz + z[h]*logy - x[i]*std::atan(y[j]*z[h]/(x[i]*l)));
-              dgxyz.y() += sign * (z[h]*logx + x[i]*logz - y[j]*std::atan(z[h]*x[i]/(y[j]*l)));
-              dgxyz.z() += sign * (x[i]*logy + y[j]*logx - z[h]*std::atan(x[i]*y[j]/(z[h]*l)));
+              dgxyz.x() += sign * (y[iy]*logz + z[iz]*logy - x[ix]*std::atan(y[iy]*z[iz]/(x[ix]*l)));
+              dgxyz.y() += sign * (z[iz]*logx + x[ix]*logz - y[iy]*std::atan(z[iz]*x[ix]/(y[iy]*l)));
+              dgxyz.z() += sign * (x[ix]*logy + y[iy]*logx - z[iz]*std::atan(x[ix]*y[iy]/(z[iz]*l)));
             }
         sum += rho(i,k) * inner(dgxyz, p1); // projection into radial direction
 
@@ -404,8 +345,7 @@ Vector3d GravityfieldTopography::gravity(const Time &/*time*/, const Vector3d &p
     Vector3d sum;
     for(UInt k=colsMin; k<colsMax; k++)
     {
-      const Double   dL = this->dLambda.at(k);
-      const Vector3d p  = rotaryZ(Angle(lambda.at(k))).rotate(point);
+      const Vector3d p = rotaryZ(Angle(lambda0.at(k))).rotate(point);
 
       Vector3d sum_local;
       for(UInt i=rowsMin; i<rowsMax; i++)
@@ -413,17 +353,14 @@ Vector3d GravityfieldTopography::gravity(const Time &/*time*/, const Vector3d &p
         const Double r1 = rLower(i,k);
         const Double r2 = rUpper(i,k);
         const Double dr = r2-r1;
-        if(std::fabs(dr)<0.001)
+        if(std::fabs(dr) < 0.001)
           continue;
-        const Double dB    = this->dPhi.at(i);
-        const Double cosB0 = this->cosB(i);
-        const Double sinB0 = this->sinB(i);
 
         // transformation into local system
         Double x[2], y[2], z[2];
-        x[0] = -sinB0*p.x() + cosB0*p.z();
+        x[0] = -sinPhi[i]*p.x() + cosPhi[i]*p.z();
         y[0] =  p.y();
-        z[0] = z[1] = cosB0*p.x() + sinB0*p.z();
+        z[0] = z[1] = cosPhi[i]*p.x() + sinPhi[i]*p.z();
         const Double rcosPsi = z[0];
         const Double cosPsi  = rcosPsi/r;
         if((cosPsi < cosPsiMax) || (cosPsi > cosPsiMin))
@@ -434,10 +371,10 @@ Vector3d GravityfieldTopography::gravity(const Time &/*time*/, const Vector3d &p
         {
           // point mass
           // ----------
-          const Double r0 = (r2+r1)/2;
+          const Double r0 = 0.5*(r2+r1);
           z[0] -= r0;
           const Double l0 = std::sqrt(x[0]*x[0] + y[0]*y[0] + z[0]*z[0]);
-          const Double factor = -r0*r0*cosB0*dL*dB*dr/(l0*l0*l0);
+          const Double factor = -r0*r0*dr*dLambda[k]*dPhi[i]/(l0*l0*l0);
           dg = Vector3d(factor*x[0], factor*y[0], factor*z[0]);
         }
         else if(cosPsi < cosPsiPrism)
@@ -456,50 +393,51 @@ Vector3d GravityfieldTopography::gravity(const Time &/*time*/, const Vector3d &p
           const Double term2 = l2+r2-rcosPsi;
           const Double term3 = 3*rcosPsi*rcosPsi-r*r;
           const Double logTerm2Term1 = std::log(term2/term1);
-          const Double dV_dr  = -r * logTerm2Term1*cosB0*dL*dB;
-          const Double dV_dl1 = -(r1 + 3*rcosPsi + term3/term1)*0.5*cosB0*dL*dB;
-          const Double dV_dl2 =  (r2 + 3*rcosPsi + term3/term2)*0.5*cosB0*dL*dB;
+          const Double dV_dr  = -r * logTerm2Term1*dLambda[k]*dPhi[i];
+          const Double dV_dl1 = -(r1 + 3*rcosPsi + term3/term1)*0.5*dLambda[k]*dPhi[i];
+          const Double dV_dl2 =  (r2 + 3*rcosPsi + term3/term2)*0.5*dLambda[k]*dPhi[i];
           dg      = dV_dr*dr + dV_dl2*dl2 + dV_dl1*dl1;
-          dg.z() += (3*(l2-l1) + 6*rcosPsi * logTerm2Term1 - term3/term2 + term3/term1)*0.5*cosB0*dL*dB; // dV_drcosPsi = dV_dz
+          dg.z() += (3*(l2-l1) + 6*rcosPsi * logTerm2Term1 - term3/term2 + term3/term1)*0.5*dLambda[k]*dPhi[i]; // dV_drcosPsi = dV_dz
         }
         else
         {
           // prism - Franziska Wild-Pfeiffer Page 26
           // ---------------------------------------
           // coordinates relative to prism corners
-          const Double r0 = (r2+r1)/2;
-          x[0] +=  0.5*r0*dB;
-          x[1]  = x[0]-r0*dB;
-          y[0] +=  0.5*r0*dL*cosB0;
-          y[1]  = y[0]-r0*dL*cosB0;
+          const Double r0 = 0.5*(r2+r1);
+          const Double dy = r0*dLambda[k]*dPhi[i] / std::fabs(phi[i+1]-phi[i]); // Volume of tesseroid: r0*r0*dr*dLambda[k]*dPhi[i] = dx*dy*dz
+          x[0] += r0*std::fabs(phi[i]-phi0[i]);
+          x[1]  = x[0]-r0*std::fabs(phi[i+1]-phi[i]);
+          y[0] += 0.5*dy;
+          y[1]  = y[0]-dy;
           z[0] -= r1;
           z[1] -= r2;
 
-          for(UInt i=0; i<2; i++)
-            for(UInt j=0; j<2; j++)
-              for(UInt h=0; h<2; h++)
+          for(UInt ix=0; ix<2; ix++)
+            for(UInt iy=0; iy<2; iy++)
+              for(UInt iz=0; iz<2; iz++)
               {
-                const Double sign = std::pow(-1, i+j+h);
-                const Double l    = std::sqrt(x[i]*x[i]+y[j]*y[j]+z[h]*z[h]);
-                const Double logx = std::log(x[i]+l);
-                const Double logy = std::log(y[j]+l);
-                const Double logz = std::log(z[h]+l);
+                const Double sign = std::pow(-1, ix+iy+iz);
+                const Double l    = std::sqrt(x[ix]*x[ix]+y[iy]*y[iy]+z[iz]*z[iz]);
+                const Double logx = std::log(x[ix]+l);
+                const Double logy = std::log(y[iy]+l);
+                const Double logz = std::log(z[iz]+l);
 
                 //gradients prism
-                dg.x() += sign * (y[j]*logz + z[h]*logy - x[i]*std::atan(y[j]*z[h]/(x[i]*l)));
-                dg.y() += sign * (z[h]*logx + x[i]*logz - y[j]*std::atan(z[h]*x[i]/(y[j]*l)));
-                dg.z() += sign * (x[i]*logy + y[j]*logx - z[h]*std::atan(x[i]*y[j]/(z[h]*l)));
+                dg.x() += sign * (y[iy]*logz + z[iz]*logy - x[ix]*std::atan(y[iy]*z[iz]/(x[ix]*l)));
+                dg.y() += sign * (z[iz]*logx + x[ix]*logz - y[iy]*std::atan(z[iz]*x[ix]/(y[iy]*l)));
+                dg.z() += sign * (x[ix]*logy + y[iy]*logx - z[iz]*std::atan(x[ix]*y[iy]/(z[iz]*l)));
               }
         } // prim
 
         // rotate back (step 1)
-        sum_local.x() += rho(i,k) * (-sinB0*dg.x() + cosB0*dg.z());
+        sum_local.x() += rho(i,k) * (-sinPhi[i]*dg.x() + cosPhi[i]*dg.z());
         sum_local.y() += rho(i,k) * dg.y();
-        sum_local.z() += rho(i,k) * (cosB0*dg.x() + sinB0*dg.z());
+        sum_local.z() += rho(i,k) * (cosPhi[i]*dg.x() + sinPhi[i]*dg.z());
       } // for(i=0..rows)
 
       // rotate back (step 2)
-      sum += rotaryZ(Angle(-lambda.at(k))).rotate(sum_local);
+      sum += rotaryZ(Angle(-lambda0.at(k))).rotate(sum_local);
     } //for(k=0..cols)
 
     return factor * GRAVITATIONALCONSTANT * sum;
@@ -509,7 +447,6 @@ Vector3d GravityfieldTopography::gravity(const Time &/*time*/, const Vector3d &p
     GROOPS_RETHROW(e)
   }
 }
-
 
 /***********************************************/
 
@@ -555,54 +492,11 @@ void GravityfieldTopography::variance(const Time &/*time*/, const std::vector<Ve
 
 /***********************************************/
 
-SphericalHarmonics GravityfieldTopography::sphericalHarmonics(const Time &/*time*/, UInt maxDegree, UInt minDegree, Double GM, Double R) const
+SphericalHarmonics GravityfieldTopography::sphericalHarmonics(const Time &/*time*/, UInt /*maxDegree*/, UInt /*minDegree*/, Double /*GM*/, Double /*R*/) const
 {
   try
   {
-    if(maxDegree==INFINITYDEGREE)
-      throw(Exception("INFINITYDEGREE requested"));
-
-    Matrix cnm(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
-    Matrix snm(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
-
-    Matrix cosm(cols, maxDegree+1);
-    Matrix sinm(cols, maxDegree+1);
-    for(UInt i=0; i<cols; i++)
-      for(UInt m=0; m<=maxDegree; m++)
-      {
-        cosm(i,m) = std::cos(m*static_cast<Double>(lambda.at(i)));
-        sinm(i,m) = std::sin(m*static_cast<Double>(lambda.at(i)));
-      }
-
-    for(UInt i=0; i<rows; i++)
-    {
-      Matrix f(cols, maxDegree+1);
-      for(UInt k=0; k<cols; k++)
-      {
-        Double area = dLambda.at(k)*dPhi.at(i)*std::cos(phi.at(i));
-        Double r1R  = rLower(i,k)/R;
-        Double r2R  = rUpper(i,k)/R;
-        Double r1Rn = factor * rho(i,k) * GRAVITATIONALCONSTANT/GM * area * R*R*R * std::pow(r1R, minDegree+3);
-        Double r2Rn = factor * rho(i,k) * GRAVITATIONALCONSTANT/GM * area * R*R*R * std::pow(r2R, minDegree+3);
-
-        for(UInt n=minDegree; n<=maxDegree; n++)
-        {
-          f(k,n) = (r2Rn-r1Rn)/((2*n+1)*(n+3));
-          r1Rn *= r1R;
-          r2Rn *= r2R;
-        }
-      }
-
-      Matrix Pnm = SphericalHarmonics::Pnm(Angle(PI/2-phi.at(i)), 1.0, maxDegree);
-      for(UInt n=minDegree; n<=maxDegree; n++)
-        for(UInt m=0; m<=n; m++)
-        {
-          cnm(n,m) += Pnm(n,m) * inner(cosm.column(m), f.column(n));
-          snm(n,m) += Pnm(n,m) * inner(sinm.column(m), f.column(n));
-        }
-    }
-
-    return SphericalHarmonics(GM, R, cnm, snm);
+    throw(Exception("Conversion to spherical harmonics not implemented\nPlease use program GriddedTopography2PotentialCoefficients before."));
   }
   catch(std::exception &e)
   {

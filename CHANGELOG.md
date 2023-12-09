@@ -1,6 +1,10 @@
 # main
-- New program:      eclipseFactor2GriddedData.cpp, returns a global grid with eclipse factors
+- New program:      eclipseFactor2GriddedData.cpp: returns a global grid with eclipse factors.
 - New program:      orbit2EarhFixedOrbit: Rotate an orbit into a rotation earth fixed frame.
+- New program:      GriddedDataTimeSeries2PotentialCoefficients.
+- New option:       GriddedData2PotentialCoefficients: Handle multiple input data columns at once.
+- New option:       GriddedDataReduceSampling: tesseroid volume conserving for digital elevation models.
+- Removed program:  NetCdf2PotentialCoefficients: Use NetCdf2GriddedDataTimeSeries and GriddedDataTimeSeries2PotentialCoefficients instead.
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
 - Bugfix:           NetCdf: in some cases the data has been swapped.
@@ -10,6 +14,7 @@
 - Other:            SimulateOrbit: Improved temporal numerical precision.
 - Other:            GnssRinexNavigation2OrbitClock: add SBAS support.
 - Other:            Updated documentation to explain parameter names.
+- Other:            GriddedData: reworked area computations.
 
 # Release 2023-08-25
 - New program:      FileMove.

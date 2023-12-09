@@ -100,7 +100,7 @@ void Matrix2GriddedData::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     GriddedData grid;
     grid.ellipsoid = Ellipsoid(a,f);
     grid.values.resize(exprValues.size());
-    for(UInt i=0; i<A.rows(); i++)
+    Single::forEach(A.rows(), [&](UInt i)
     {
       evaluateDataVariables(A, i, varList);
       if(exprLon)
@@ -111,7 +111,7 @@ void Matrix2GriddedData::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         grid.areas.push_back( exprArea->evaluate(varList) );
       for(UInt k=0; k<exprValues.size(); k++)
         grid.values.at(k).push_back( exprValues.at(k)->evaluate(varList) );
-    } // for(i)
+    }, /*timing*/(A.rows() > 1'000'000));
 
     // =====================================================
 
