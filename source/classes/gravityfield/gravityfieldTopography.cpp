@@ -473,7 +473,7 @@ Vector3d GravityfieldTopography::deformation(const Time &/*time*/, const Vector3
 /***********************************************/
 
 void GravityfieldTopography::deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                                         const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const
+                                         const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const
 {
   SphericalHarmonics harm = sphericalHarmonics(Time(), hn.rows()-1, 0, DEFAULT_GM, DEFAULT_R);
   for(UInt k=0; k<point.size(); k++)

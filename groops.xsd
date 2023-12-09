@@ -3349,6 +3349,21 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="group">
+				<xs:annotation>
+					<xs:documentation>group gravityfields</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded"/>
+						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 		</xs:choice>
 	</xs:complexType>
 	<xs:complexType name="gridType">
@@ -5125,6 +5140,21 @@
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
 								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="group">
+				<xs:annotation>
+					<xs:documentation>group misc accelerations</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="miscAccelerations" type="miscAccelerationsType" minOccurs="0" maxOccurs="unbounded"/>
+						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>the result is multiplied by this factor</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -9298,6 +9328,21 @@
 						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
 							<xs:annotation>
 								<xs:documentation>the result is multiplied by this factor, set -1 to subtract the field</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="group">
+				<xs:annotation>
+					<xs:documentation>group tides</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="tides" type="tidesType" minOccurs="0" maxOccurs="unbounded"/>
+						<xs:element name="factor" type="double" minOccurs="0" default="1.0">
+							<xs:annotation>
+								<xs:documentation>the result is multiplied by this factor</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>

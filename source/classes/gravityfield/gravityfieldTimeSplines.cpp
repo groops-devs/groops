@@ -93,7 +93,7 @@ Vector3d GravityfieldTimeSplines::deformation(const Time &time, const Vector3d &
 /***********************************************/
 
 void GravityfieldTimeSplines::deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                                          const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const
+                                          const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const
 {
   if((time.size()==0) || (point.size()==0))
     return;
