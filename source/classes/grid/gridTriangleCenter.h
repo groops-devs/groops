@@ -89,9 +89,9 @@ inline Double Triangle::area() const
   Vector3d e2 = normalize(crossProduct(p2,p3));
   Vector3d e3 = normalize(crossProduct(p3,p1));
 
-  Double w1 = PI-acos(inner(e1,e2));
-  Double w2 = PI-acos(inner(e2,e3));
-  Double w3 = PI-acos(inner(e3,e1));
+  Double w1 = PI-std::acos(inner(e1,e2));
+  Double w2 = PI-std::acos(inner(e2,e3));
+  Double w3 = PI-std::acos(inner(e3,e1));
 
   return w1+w2+w3-PI;
 }

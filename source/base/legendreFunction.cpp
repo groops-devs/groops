@@ -36,17 +36,17 @@ void LegendreFunction::computeFactors(UInt degree)
   factor2 = Matrix(degree+1, Matrix::TRIANGULAR, Matrix::LOWER);
 
   // factors for recursion P[n-1][n-1] -> P[n][n]
-  if(degree>0) factor1(1,1) = sqrt(3.0);
+  if(degree>0) factor1(1,1) = std::sqrt(3.0);
   for(UInt n=2; n<=degree; n++)
-    factor1(n,n) =  sqrt((2.0*n+1)/(2.0*n));
+    factor1(n,n) = std::sqrt((2.*n+1)/(2.*n));
 
   // factors for recursion P[m][n-1] and P[m][n-2] -> P[m][n]
   for(UInt m=0; m<degree; m++)
     for(UInt n=m+1; n<=degree; n++)
     {
-      Double f = (2.0*n+1)/static_cast<Double>((n+m)*(n-m));
-      factor1(n,m) =  sqrt(f*(2.0*n-1));
-      factor2(n,m) = -sqrt(f*(n-m-1.0)*(n+m-1.0)/(2.0*n-3));
+      Double f = (2.*n+1)/((n+m)*(n-m));
+      factor1(n,m) =  std::sqrt(f*(2.*n-1));
+      factor2(n,m) = -std::sqrt(f*(n-m-1.)*(n+m-1.)/(2.*n-3));
     }
 }
 
@@ -64,16 +64,16 @@ void LegendreFunction::computeFactorsIntegral(UInt degree)
   // factors for recursion P[n-1][n-2] and int_P[n-2][n-2] -> P[n][n]
   for(UInt n=2; n<=degree; n++)
   {
-    factor1Integral(n,n) =  1.0/static_cast<Double>(2.*n+2.)*sqrt((2.*n+1.)/static_cast<Double>(n*(n-1.)));
-    factor2Integral(n,n) =  1.0/static_cast<Double>(2.*n+2.)*sqrt(n*(2.*n+1.)*(2.*n-1.)/static_cast<Double>(n-1.));
+    factor1Integral(n,n) =  1./(2.*n+2.)*std::sqrt((2.*n+1.)/(n*(n-1.)));
+    factor2Integral(n,n) =  1./(2.*n+2.)*std::sqrt(n*(2.*n+1.)*(2.*n-1.)/(n-1.));
   }
 
   // factors for recursion P[n-1][m] and int_P[n-2][m] -> P[n][m]
   for(UInt m=0; m<degree; m++)
     for(UInt n=m+1; n<=degree; n++)
     {
-      factor1Integral(n,m) = -1.0/(n+1.)*sqrt((2.*n+1.)*(2.*n-1.)/static_cast<Double>((n-m)*(n+m)));
-      factor2Integral(n,m) = (n-2.)/static_cast<Double>(n+1.)*sqrt((2.*n+1.)*(n+m-1.)*(n-m-1.)/static_cast<Double>((2.*n-3.)*(n+m)*(n-m)));
+      factor1Integral(n,m) = -1.0/(n+1.)*std::sqrt((2.*n+1.)*(2.*n-1.)/((n-m)*(n+m)));
+      factor2Integral(n,m) = (n-2.)/(n+1.)*std::sqrt((2.*n+1.)*(n+m-1.)*(n-m-1.)/((2.*n-3.)*(n+m)*(n-m)));
     }
 
   // factors for Hmain diagonal for small thetas
@@ -82,9 +82,9 @@ void LegendreFunction::computeFactorsIntegral(UInt degree)
   for(UInt n=3; n<=degree; n++)
   {
     factorSmall(n)=1.0;
-    for(UInt k=5; k<=(2*n-1); k=k+2)
-      factorSmall(n)*=k/static_cast<Double>(k+1);
-    factorSmall(n)=sqrt(factorSmall(n)*(2*n+1));
+    for(UInt k=5; k<=(2*n-1); k+=2)
+      factorSmall(n) *= k/(k+1.);
+    factorSmall(n) = std::sqrt(factorSmall(n)*(2*n+1));
   }
 }
 
@@ -100,7 +100,7 @@ const Matrix LegendreFunction::compute(Double t, UInt degree)
 
   // recursion P[n-1][n-1] -> P[n][n] (main diagonals)
   for(UInt n=1; n<=degree; n++)
-    Fkt(n,n) = factor1(n,n) *sqrt(1-t*t)* Fkt(n-1, n-1);
+    Fkt(n,n) = factor1(n,n) *std::sqrt(1-t*t)* Fkt(n-1, n-1);
 
   // recursion P[m][n-1] and P[m][n-2] -> P[m][n]
   // secondary diagonal m=n-1
@@ -125,8 +125,8 @@ const Matrix LegendreFunction::integral(Double t1, Double t2, UInt degree)
 
   Double qt1    = t1*t1;
   Double qt2    = t2*t2;
-  Double y1     = sqrt(1-qt1);
-  Double y2     = sqrt(1-qt2);
+  Double y1     = std::sqrt(1-qt1);
+  Double y2     = std::sqrt(1-qt2);
   Double qy1    = 1-qt1;
   Double qy2    = 1-qt2;
   Double theta1 = acos(t1);
@@ -136,8 +136,8 @@ const Matrix LegendreFunction::integral(Double t1, Double t2, UInt degree)
   Matrix P2 = LegendreFunction::compute(t2, degree);
 
   intP(0,0) = t2-t1;
-  intP(1,1) = sqrt(3.0)/2.0  * (t2*y2-theta2-t1*y1+theta1);
-  intP(2,2) = sqrt(5.0/12.0) * (3*t2-pow(t2,3)-3*t1+pow(t1,3));
+  intP(1,1) = std::sqrt(3.0)/2.0  * (t2*y2-theta2-t1*y1+theta1);
+  intP(2,2) = std::sqrt(5.0/12.0) * (3*t2-std::pow(t2, 3)-3*t1+std::pow(t1, 3));
 
   // recursion P[n-1][n-2] and int_P[n-2][n-2] -> int_P[n][n]
 
@@ -153,16 +153,16 @@ const Matrix LegendreFunction::integral(Double t1, Double t2, UInt degree)
       for(UInt k=0; k<=20; k++)
       {
         for(UInt i=1; i<=k; i++)
-          fak *= (2.*i-1.)/static_cast<Double>(2.*i);
+          fak *= (2.*i-1.)/(2.*i);
 
-        x1 += fak*pow(y1,2*k)/(n+2+2*k);
-        x2 += fak*pow(y2,2*k)/(n+2+2*k);
+        x1 += fak*std::pow(y1, 2*k)/(n+2+2*k);
+        x2 += fak*std::pow(y2, 2*k)/(n+2+2*k);
       }
 
-      intP(n,n) = -factorSmall(n)*(pow(y2,(n+2))*x2 - pow(y1,(n+2))*x1);
+      intP(n,n) = -factorSmall(n)*(std::pow(y2, n+2)*x2 - std::pow(y1, n+2)*x1);
     }
   }
-  else //for large thetas
+  else // for large thetas
   {
     for(UInt n=3; n<=degree; n++)
       intP(n,n) = factor1Integral(n,n) * (qy2*P2(n-1,n-2)-qy1*P1(n-1,n-2)) + factor2Integral(n,n) * intP(n-2,n-2);

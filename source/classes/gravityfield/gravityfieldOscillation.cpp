@@ -104,17 +104,17 @@ Vector3d GravityfieldOscillation::deformation(const Time &time, const Vector3d &
 /***********************************************/
 
 void GravityfieldOscillation::deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                                    const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const
+                                    const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const
 {
   if((time.size()==0) || (point.size()==0))
     return;
 
-  std::vector< std::vector<Vector3d> > dispCos(point.size());
+  std::vector<std::vector<Vector3d>> dispCos(point.size());
   for(UInt k=0; k<point.size(); k++)
     dispCos.at(k).resize(time.size());
   gravityfieldCos->deformation(time, point, gravity, hn, ln, dispCos);
 
-  std::vector< std::vector<Vector3d> > dispSin(point.size());
+  std::vector<std::vector<Vector3d>> dispSin(point.size());
   for(UInt k=0; k<point.size(); k++)
     dispSin.at(k).resize(time.size());
   gravityfieldCos->deformation(time, point, gravity, hn, ln, dispSin);

@@ -52,11 +52,18 @@ inline GridFile::GridFile(Config &config)
     BorderPtr border;
 
     readConfig(config, "inputfileGrid",  fileNameGrid, Config::MUSTSET,  "", "");
-    readConfig(config, "border",         border,       Config::DEFAULT,  "", "");
+    readConfig(config, "border",         border,       Config::OPTIONAL, "", "");
     if(isCreateSchema(config)) return;
 
     GriddedData grid;
     readFileGriddedData(fileNameGrid, grid);
+
+    if(!border)
+    {
+      std::swap(points, grid.points);
+      std::swap(areas,  grid.areas);
+      return;
+    }
 
     for(UInt i=0; i<grid.points.size(); i++)
       if(border->isInnerPoint(grid.points.at(i), grid.ellipsoid))

@@ -204,11 +204,11 @@ void GriddedDataCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*
     GriddedData gridOut;
     gridOut.ellipsoid = Ellipsoid(a,f);
     gridOut.values.resize(valueExpr.size());
-    for(UInt i=0; i<gridIn.points.size(); i++)
+    Single::forEach(gridIn.points.size(), [&](UInt i)
     {
       evaluateDataVariables(gridIn, i, varList);
       if(std::any_of(removeExpr.begin(), removeExpr.end(), [&](auto expr) {return expr->evaluate(varList) != 0.;}))
-        continue;
+        return;
       Double L = lonExpr->evaluate(varList);
       Double B = latExpr->evaluate(varList);
       Double h = heightExpr->evaluate(varList);
@@ -217,7 +217,7 @@ void GriddedDataCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*
         gridOut.areas.push_back( areaExpr->evaluate(varList) );
       for(UInt k=0; k<valueExpr.size(); k++)
         gridOut.values.at(k).push_back( valueExpr.at(k)->evaluate(varList) );
-    }
+    }, /*timing*/(gridIn.points.size() > 10'000'000));
 
     // =====================================================
 

@@ -77,8 +77,16 @@ Grid::Grid(Config &config, const std::string &name)
       if(isCreateSchema(config))
         return;
 
-      points_.insert(points_.end(), base->points.begin(), base->points.end());
-      areas_.insert (areas_.end(),  base->areas.begin(),  base->areas.end());
+      if(points_.empty())
+      {
+        std::swap(points_, base->points);
+        std::swap(areas_,  base->areas);
+      }
+      else
+      {
+        points_.insert(points_.end(), base->points.begin(), base->points.end());
+        areas_.insert (areas_.end(),  base->areas.begin(),  base->areas.end());
+      }
     }
   }
   catch(std::exception &e)

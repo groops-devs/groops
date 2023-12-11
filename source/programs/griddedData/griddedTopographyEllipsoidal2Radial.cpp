@@ -41,8 +41,8 @@ void GriddedTopographyEllipsoidal2Radial::run(Config &config, Parallel::Communic
   {
     FileName fileNameOutGrid, fileNameInGrid;
 
-    readConfig(config, "outputfileGriddedData", fileNameOutGrid, Config::MUSTSET, "", "");
-    readConfig(config, "inputfileGriddedData",  fileNameInGrid,  Config::MUSTSET, "", "Digital Terrain Model");
+    readConfig(config, "outputfileGriddedData", fileNameOutGrid, Config::OPTIONAL, "", "");
+    readConfig(config, "inputfileGriddedData",  fileNameInGrid,  Config::MUSTSET,  "", "Digital Terrain Model");
     if(isCreateSchema(config)) return;
 
     // read grid
@@ -52,57 +52,44 @@ void GriddedTopographyEllipsoidal2Radial::run(Config &config, Parallel::Communic
     readFileGriddedData(fileNameInGrid, grid);
     MiscGriddedData::printStatistics(grid);
 
-    std::vector<Double> radius, dLambda, dPhi;
-    std::vector<Angle>  lambda;
-    std::vector<Angle>  phi;
-    grid.geocentric(lambda, phi, radius, dLambda, dPhi);
-    const UInt rows = phi.size();
-    const UInt cols = lambda.size();
+    std::vector<Angle>  lambda, phi;
+    std::vector<Double> radius;
+    grid.geocentric(lambda, phi, radius);
+    const Double direction = ((phi.back() > phi.front()) ? +1 : -1); // north to south or vice versa
 
-    // Compute origonal top position
-    // -----------------------------
-    logStatus<<"compute original top position"<<Log::endl;
-    const Double direction = ((phi.at(1)>phi.at(0)) ? +1 : -1); // north to south or vice versa
-    Matrix heightOld = grid.values.at(0);
-    Matrix phiShift(rows,cols); // difference of spherical latitude at top of topography
-    Double maxPhiShift = 0.0;
+    logStatus<<"linear interpolation of elevation data"<<Log::endl;
+    Double maxPhiShift    = 0.0;
     Double maxHeightShift = 0.0;
-    Double maxWeight = 0.0;
+    Single::forEach(grid.longitudes.size(), [&](UInt k)
+    {
+      Vector heightOld = grid.values.at(0).column(k);
+      std::vector<Angle> phiTop(grid.latitudes.size()); // spherical latitude at top of topography
+      for(UInt i=0; i<phi.size(); i++)
+        phiTop.at(i) = grid.ellipsoid(grid.longitudes.at(k), grid.latitudes.at(i), heightOld(i)).phi();
 
-    for(UInt z=0; z<rows; z++)
-      for(UInt s=0; s<cols; s++)
+      // linear interpolation
+      for(UInt i=0; i<phi.size(); i++)
       {
-        // x,y,z of top of topography
-        Vector3d pointTop = grid.ellipsoid(grid.longitudes.at(s), grid.latitudes.at(z), heightOld(z,s));
-        phiShift(z,s) = direction * (static_cast<Double>(pointTop.phi()) - phi.at(z)); // >0: point is near z+1
+        // find interval
+        const UInt idx = std::min(i + (direction*(phi.at(i)-phiTop.at(i)) > 0), phiTop.size()-1);
+        const Double w = (phi.at(i)-phiTop.at(idx-1)) / (phiTop.at(idx)-phiTop.at(idx-1));
+        grid.values.at(0)(i,k) = w * heightOld(idx) + (w-1) * heightOld(idx-1);
 
-        maxPhiShift    = std::max(maxPhiShift,    fabs(phiShift(z,s)));
-        maxHeightShift = std::max(maxHeightShift, radius.at(z)*fabs(phiShift(z,s)));
-        maxWeight      = std::max(maxWeight,      fabs(phiShift(z,s)/dPhi.at(z)));
+        maxPhiShift    = std::max(maxPhiShift,    std::fabs(phiTop.at(i)-phi.at(i)));
+        maxHeightShift = std::max(maxHeightShift, std::fabs(grid.values.at(0)(i,k)-heightOld(i)));
       }
-    logInfo<<"  max. shifted point:    "<<maxHeightShift<<" m"<<Log::endl;
+    });
+
     logInfo<<"  max. shifted latitude: "<<maxPhiShift*RAD2DEG<<"°"<<Log::endl;
-    logInfo<<"  max. weight:           "<<maxWeight*100<<"%"<<Log::endl;
-
-    // interpolate data
-    // ----------------
-    logStatus<<"interpolate data"<<Log::endl;
-    for(UInt z=0; z<rows; z++)
-      for(UInt s=0; s<cols; s++)
-      {
-        Double w = phiShift(z,s)/dPhi.at(z);
-        if((w<0) && (z+1<rows))
-          grid.values.at(0)(z,s) = (1+w) * heightOld(z,s) - w * heightOld(z+1,s);
-        else if((w>0) && (z>0))
-          grid.values.at(0)(z,s) = (1-w) * heightOld(z,s) + w * heightOld(z-1,s);
-      }
-
-    MiscGriddedData::printStatistics(grid);
+    logInfo<<"  max. height change:    "<<maxHeightShift<<" m"<<Log::endl;
 
     // write new grid
     // --------------
-    logStatus<<"write grid to file <"<<fileNameOutGrid<<">"<<Log::endl;
-    writeFileGriddedData(fileNameOutGrid, grid);
+    if(!fileNameOutGrid.empty())
+    {
+      logStatus<<"write grid to file <"<<fileNameOutGrid<<">"<<Log::endl;
+      writeFileGriddedData(fileNameOutGrid, grid);
+    }
   }
   catch(std::exception &e)
   {

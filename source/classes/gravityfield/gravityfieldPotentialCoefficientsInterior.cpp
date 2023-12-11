@@ -96,7 +96,7 @@ Vector3d GravityfieldPotentialCoefficientsInterior::deformation(const Time &/*ti
 /***********************************************/
 
 void GravityfieldPotentialCoefficientsInterior::deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                                                                   const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const
+                                                                   const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const
 {
   for(UInt k=0; k<point.size(); k++)
   {
