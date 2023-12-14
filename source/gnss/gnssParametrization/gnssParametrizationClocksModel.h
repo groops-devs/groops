@@ -30,7 +30,7 @@ of the preceding epoch and an unknown clock drift
 \end{equation}
 This equation is applied as an additional constraint equation in each epoch
 \begin{equation}
-   0 = \Delta t_{i+1} - \Delta t_{i} - t_{drift} dt + \epsilon_i.
+  0 = \Delta t_{i+1} - \Delta t_{i} - t_{drift} dt + \epsilon_i.
 \end{equation}
 The variance $\sigma^2(\epsilon)$ is estimated iteratively by variance component estimation (VCE).
 Clock jumps are treated as outliers and are automatically downweighted as described in
@@ -43,7 +43,7 @@ manner as described in \configClass{parametrization:clocks}{gnssParametrizationT
 To circumvent the rank deficiency additional zero-mean constraints are required for the first and last epoch.
 The realization of the constraint is done as an additional observation equation in the form
 \begin{equation}
- 0 = \sum_i \delta t^{s_i} + \sum_k \delta t_{r_k}
+  0 = \frac{1}{n_i + n_k} (\sum_i \Delta t^{s_i} + \sum_k \Delta t_{r_k})
 \end{equation}
 summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
 with a standard deviation of \config{sigmaZeroMeanConstraint}.

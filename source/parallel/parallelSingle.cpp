@@ -65,14 +65,15 @@ template<> void broadCast(GnssType  &/*x*/, UInt /*process*/, CommunicatorPtr /*
 template<> void broadCast(Vector3d  &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
 template<> void broadCast(Vector    &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
 template<> void broadCast(Matrix    &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
-void reduceSum(UInt     &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
-void reduceSum(Double   &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
-void reduceSum(Bool     &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
-void reduceSum(Matrix   &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
-void reduceMin(UInt     &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
-void reduceMin(Double   &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
-void reduceMax(UInt     &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
-void reduceMax(Double   &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
+void reduceSum(UInt                 &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
+void reduceSum(Double               &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
+void reduceSum(Bool                 &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
+void reduceSum(Matrix               &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
+void reduceSum(std::vector<Double>  &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
+void reduceMin(UInt                 &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
+void reduceMin(Double               &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
+void reduceMax(UInt                 &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
+void reduceMax(Double               &/*x*/, UInt /*process*/, CommunicatorPtr /*comm*/) {}
 
 /***********************************************/
 

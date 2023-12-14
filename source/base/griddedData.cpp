@@ -15,6 +15,57 @@
 
 /***********************************************/
 
+void GriddedData::init(const GriddedDataRectangular &grid)
+{
+  try
+  {
+    if(!grid.isValid())
+      throw(Exception("GriddedDataRectangular is not valid"));
+
+    std::vector<Double> radius, dLambda, dPhi;
+    std::vector<Angle>  lambda, phi;
+    grid.geocentric(lambda, phi, radius);
+    grid.areaElements(dLambda, dPhi);
+
+    std::vector<Double> cosL(lambda.size()), sinL(lambda.size());
+    for(UInt k=0; k<lambda.size(); k++)
+    {
+      cosL[k] = std::cos(lambda[k]);
+      sinL[k] = std::sin(lambda[k]);
+    }
+
+    ellipsoid = grid.ellipsoid;
+    points.resize(phi.size()*lambda.size());
+    areas.resize(phi.size()*lambda.size());
+    for(UInt i=0; i<phi.size(); i++)
+    {
+      const Double cosPhi = std::cos(phi[i]);
+      const Double sinPhi = std::sin(phi[i]);
+      for(UInt k=0; k<lambda.size(); k++)
+      {
+        points[i*lambda.size()+k] = Vector3d(radius[i]*cosPhi*cosL[k], radius[i]*cosPhi*sinL[k], radius[i]*sinPhi);
+        areas [i*lambda.size()+k] = dLambda[k]*dPhi[i];
+      }
+    }
+
+    // values
+    values.resize(grid.values.size());
+    for(UInt idx=0; idx<values.size(); idx++)
+    {
+      values.at(idx).resize(phi.size()*lambda.size());
+      for(UInt i=0; i<phi.size(); i++)
+        for(UInt k=0; k<lambda.size(); k++)
+          values[idx][i*lambda.size()+k] = grid.values[idx](i,k);
+    }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
 void GriddedData::sort()
 {
   try
@@ -25,6 +76,8 @@ void GriddedData::sort()
                      {return (std::fabs(points.at(i).theta()-points.at(k).theta()) < 1e-10) ? // same latitude?
                              (points.at(i).lambda() < points.at(k).lambda()) :                // sort longitudes
                              (points.at(i).theta()  < points.at(k).theta());});               // sort latitudes
+
+    // TODO: check regional over date boundary
 
     auto tmpPoints = points;
     for(UInt i=0; i<tmpPoints.size(); i++)
@@ -56,8 +109,8 @@ Bool GriddedData::isRectangle(std::vector<Angle> &lambda, std::vector<Angle> &ph
     if(!points.size())
       return FALSE;
 
-    const Angle  phi1 = points.at(0).phi();
-    const Double r1   = points.at(0).r();
+    const Angle  phi1 = points.front().phi();
+    const Double r1   = points.front().r();
     const Double eps  = 1e-10 * r1;
 
     // first row
@@ -96,31 +149,35 @@ Bool GriddedData::computeArea()
   {
     std::vector<Angle>  lambda, phi;
     std::vector<Double> radius;
-    if(!isRectangle(lambda, phi, radius)) // || !std::is_sorted(phi.begin(), phi.end()) || !std::is_sorted(lambda.begin(), lambda.end()))
+    if(!isRectangle(lambda, phi, radius))
       return FALSE;
 
-    Vector dx(lambda.size(), 2*PI);
+    std::vector<Double> dx(lambda.size(), 2*PI);
     if(lambda.size() > 1)
     {
-      dx(0) = std::fabs(std::remainder(lambda.at(1)-lambda.at(0), 2*PI));
-      for(UInt i=1; i<lambda.size()-1; i++)
-        dx(i) = 0.5*std::fabs(std::remainder(lambda.at(i+1)-lambda.at(i-1), 2*PI));
-      dx(dx.rows()-1) = std::fabs(std::remainder(lambda.at(lambda.size()-1)-lambda.at(lambda.size()-2), 2*PI));
+      dx.front() = std::fabs(std::remainder(lambda.at(1)-lambda.at(0), 2*PI));
+      for(UInt k=1; k<lambda.size()-1; k++)
+        dx.at(k) = 0.5*std::fabs(std::remainder(lambda.at(k+1)-lambda.at(k-1), 2*PI));
+      dx.back() = std::fabs(std::remainder(lambda.at(lambda.size()-1)-lambda.at(lambda.size()-2), 2*PI));
     }
 
-    Vector dy(phi.size(), 2.);
+    // TODO: boundaries should be between ellipsoidal latitudes and not between geocentric phis
+    // integral cos(phi) dPhi
+    std::vector<Double> dy(phi.size(), 2.);
     if(phi.size() > 1)
     {
-      dy(0) = std::fabs(std::cos(phi.at(0)) * 2*std::sin(0.5*(phi.at(0)-phi.at(1))));
+      dy.front() = std::fabs(std::sin(std::min(std::max(static_cast<Double>(phi.front()+0.5*(phi.at(1)-phi.at(0))), -PI), PI))-
+                             std::sin(std::min(std::max(static_cast<Double>(phi.front()-0.5*(phi.at(1)-phi.at(0))), -PI), PI)));
       for(UInt i=1; i<phi.size()-1; i++)
-        dy(i) = std::fabs(std::cos(phi.at(i)) * (std::sin(0.5*(phi.at(i)-phi.at(i+1)))+std::sin(0.5*(phi.at(i-1)-phi.at(i)))));
-      dy(dy.rows()-1) = std::fabs(std::cos(phi.at(phi.size()-1)) * 2*std::sin(0.5*(phi.at(phi.size()-2)-phi.at(phi.size()-1))));
+        dy.at(i) = std::fabs(std::sin(0.5*(phi.at(i+1)+phi.at(i)))-std::sin(0.5*(phi.at(i)+phi.at(i-1))));
+      dy.back() = std::fabs(std::sin(std::min(std::max(static_cast<Double>(phi.back()+0.5*(phi.at(phi.size()-1)-phi.at(phi.size()-2))), -PI), PI))-
+                            std::sin(std::min(std::max(static_cast<Double>(phi.back()-0.5*(phi.at(phi.size()-1)-phi.at(phi.size()-2))), -PI), PI)));
     }
 
     areas.resize(points.size());
-    for(UInt z=0; z<phi.size(); z++)
-      for(UInt s=0; s<lambda.size(); s++)
-        areas.at(z*lambda.size()+s) = dx(s)*dy(z);
+    for(UInt i=0; i<phi.size(); i++)
+      for(UInt k=0; k<lambda.size(); k++)
+        areas.at(i*lambda.size()+k) = dx.at(k)*dy.at(i);
 
     return TRUE;
   }
@@ -136,15 +193,11 @@ Bool GriddedData::isValid() const
 {
   try
   {
-    const UInt count = points.size();
-
-    if((areas.size()!=0) && (areas.size()!=count))
+    if(areas.size() && (areas.size() != points.size()))
       return FALSE;
-
-    for(UInt i=0; i<values.size(); i++)
-      if(values.at(i).size() != count)
+    for(UInt idx=0; idx<values.size(); idx++)
+      if(values.at(idx).size() != points.size())
         return FALSE;
-
     return TRUE;
   }
   catch(std::exception &e)
@@ -154,107 +207,6 @@ Bool GriddedData::isValid() const
 }
 
 /***********************************************/
-/***********************************************/
-
-void GriddedDataRectangular::geocentric(std::vector<Angle> &lambda, std::vector<Angle> &phi, std::vector<Double> &radius,
-                                        std::vector<Double> &dLambda, std::vector<Double> &dPhi) const
-{
-  try
-  {
-    lambda = longitudes;
-    phi.resize(latitudes.size());
-    radius.resize(heights.size());
-    for(UInt i=0; i<phi.size(); i++)
-    {
-      const Vector3d points = ellipsoid(Angle(0), latitudes.at(i), heights.at(i));
-      phi.at(i)      = points.phi();
-      radius.at(i)   = points.r();
-    }
-
-    // areas elements
-    // -------------
-    const UInt cols = lambda.size();
-    dLambda.clear();
-    dLambda.resize(cols, 2*PI);
-    if(cols > 1)
-    {
-      dLambda.at(0) = std::fabs(lambda.at(1)-lambda.at(0));
-      for(UInt s=1; s<cols-1; s++)
-        dLambda.at(s) = std::fabs(0.5*(lambda.at(s+1)-lambda.at(s-1)));
-      dLambda.at(cols-1) = std::fabs(lambda.at(cols-1)-lambda.at(cols-2));
-    }
-
-    // \int_{B0-dB/2}^{B0+dB/2} cosB dB = cosB0 * 2*sin(dB/2)
-    const UInt rows = phi.size();
-    dPhi.clear();
-    dPhi.resize(rows, 2.);
-    if(rows > 1)
-    {
-      dPhi.at(0) = std::fabs(2*std::sin((phi.at(0)-phi.at(1))/2));
-      for(UInt i=1; i<rows-1; i++)
-        dPhi.at(i) = std::fabs(2*std::sin((phi.at(i-1)-phi.at(i+1))/4));
-      dPhi.at(rows-1) = std::fabs(2*std::sin((phi.at(rows-2)-phi.at(rows-1))/2));
-    }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-void GriddedDataRectangular::convert(GriddedData &grid) const
-{
-  try
-  {
-    if(!isValid())
-      throw(Exception("GriddedDataRectangular is not valid"));
-
-    std::vector<Double> radius, dLambda, dPhi;
-    std::vector<Angle>  lambda;
-    std::vector<Angle>  phi;
-    geocentric(lambda, phi, radius, dLambda, dPhi);
-    const UInt rows = phi.size();
-    const UInt cols = lambda.size();
-
-    std::vector<Double> cosL(cols), sinL(cols);
-    for(UInt s=0; s<cols; s++)
-    {
-      cosL[s] = std::cos(lambda[s]);
-      sinL[s] = std::sin(lambda[s]);
-    }
-
-    grid.ellipsoid = ellipsoid;
-    grid.points.resize(rows*cols);
-    grid.areas.resize(rows*cols);
-    for(UInt z=0; z<rows; z++)
-    {
-      const Double cosB = std::cos(phi[z]);
-      const Double sinB = std::sin(phi[z]);
-      for(UInt s=0; s<cols; s++)
-      {
-        grid.points[z*cols+s] = Vector3d(radius[z]*cosB*cosL[s], radius[z]*cosB*sinL[s], radius[z]*sinB);
-        grid.areas[z*cols+s]  = dLambda[s]*dPhi[z]*cosB;
-      }
-    }
-
-    // values
-    grid.values.resize(values.size());
-    for(UInt i=0; i<grid.values.size(); i++)
-    {
-      grid.values.at(i).resize(rows*cols);
-      for(UInt z=0; z<rows; z++)
-        for(UInt s=0; s<cols; s++)
-          grid.values[i][z*cols+s] = values[i](z,s);
-    }
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
 /***********************************************/
 
 Bool GriddedDataRectangular::init(const GriddedData &grid)
@@ -270,27 +222,112 @@ Bool GriddedDataRectangular::init(const GriddedData &grid)
     if(!grid.isRectangle(lambda, phi, radius))
       return FALSE;
 
-    const UInt rows = phi.size();
-    const UInt cols = lambda.size();
-    ellipsoid = grid.ellipsoid;
-
+    ellipsoid  = grid.ellipsoid;
     longitudes = lambda;
-    latitudes.resize(rows);
-    heights.resize(rows);
-    Angle L0;
-    for(UInt z=0; z<rows; z++)
-      ellipsoid(polar(Angle(0), phi.at(z), radius.at(z)), L0, latitudes.at(z), heights.at(z));
+    latitudes.resize(phi.size());
+    heights.resize(phi.size());
+    Angle longitude;
+    for(UInt i=0; i<phi.size(); i++)
+      ellipsoid(polar(Angle(0), phi.at(i), radius.at(i)), longitude, latitudes.at(i), heights.at(i));
 
     values.resize( grid.values.size() );
-    for(UInt i=0; i<values.size(); i++)
+    for(UInt idx=0; idx<values.size(); idx++)
     {
-      values.at(i) = Matrix(rows, cols);
-      for(UInt z=0; z<rows; z++)
-        for(UInt s=0; s<cols; s++)
-          values.at(i)(z,s) = grid.values.at(i).at(z*cols+s);
+      values.at(idx) = Matrix(phi.size(), lambda.size());
+      for(UInt i=0; i<phi.size(); i++)
+        for(UInt k=0; k<lambda.size(); k++)
+          values.at(idx)(i,k) = grid.values.at(idx).at(i*lambda.size()+k);
     }
 
     return TRUE;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void GriddedDataRectangular::geocentric(std::vector<Angle> &lambda, std::vector<Angle> &phi, std::vector<Double> &radius) const
+{
+  try
+  {
+    lambda = longitudes;
+    phi.resize(latitudes.size());
+    radius.resize(heights.size());
+    for(UInt i=0; i<phi.size(); i++)
+    {
+      const Vector3d points = ellipsoid(Angle(0), latitudes.at(i), heights.at(i));
+      phi.at(i)    = points.phi();
+      radius.at(i) = points.r();
+    }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void GriddedDataRectangular::cellBorders(std::vector<Double> &lambda, std::vector<Double> &phi) const
+{
+  try
+  {
+    lambda.clear();
+    if(longitudes.size() > 1)
+    {
+      lambda.resize(longitudes.size()+1);
+      lambda.front() = std::remainder(longitudes.front() - 0.5*std::remainder(longitudes.at(1)-longitudes.at(0), 2*PI), 2*PI);
+      for(UInt k=0; k<longitudes.size()-1; k++)
+        lambda.at(k+1) = std::remainder(longitudes.at(k) + 0.5*std::remainder(longitudes.at(k+1)-longitudes.at(k), 2*PI), 2*PI);
+      lambda.back() = std::remainder(longitudes.back() + 0.5*std::remainder(longitudes.at(longitudes.size()-1)-longitudes.at(longitudes.size()-2), 2*PI), 2*PI);
+    }
+    else if(longitudes.size() == 1)
+      lambda = {std::remainder(longitudes.front()-PI, 2*PI), std::remainder(longitudes.front()+PI, 2*PI)};
+
+    phi.clear();
+    if(latitudes.size() > 1)
+    {
+      phi.resize(latitudes.size()+1);
+      phi.front() = std::min(std::max(static_cast<Double>(latitudes.front()-0.5*(latitudes.at(1)-latitudes.at(0))), -PI), PI);
+      for(UInt i=0; i<latitudes.size()-1; i++)
+        phi.at(i+1) = 0.5 * (latitudes.at(i) + latitudes.at(i+1));
+      phi.back() = std::min(std::max(static_cast<Double>(latitudes.back()+0.5*(latitudes.at(latitudes.size()-1)-latitudes.at(latitudes.size()-2))), -PI), PI);
+    }
+    else if(latitudes.size() == 1)
+      phi = {PI/2, -PI/2};
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+Double GriddedDataRectangular::areaElements(std::vector<Double> &dLambda, std::vector<Double> &dPhi) const
+{
+  try
+  {
+    std::vector<Double> lambda, phi;
+    cellBorders(lambda, phi);
+    for(UInt i=0; i<phi.size(); i++)
+      phi.at(i) = ellipsoid(Angle(0.), Angle(phi.at(i)), 0.).phi();  // geocentric
+
+    dLambda.resize(longitudes.size());
+    for(UInt k=0; k<dLambda.size(); k++)
+      dLambda.at(k) = std::fabs(std::remainder(lambda.at(k+1)-lambda.at(k), 2*PI));
+    if(longitudes.size() == 1)
+      dLambda.front() = 2*PI;
+
+    dPhi.resize(latitudes.size());
+    for(UInt i=0; i<dPhi.size(); i++)
+      dPhi.at(i) = std::fabs(std::sin(phi.at(i+1))-std::sin(phi.at(i))); // area = integral cos(phi) dPhi
+
+    // total area
+    return std::accumulate(dLambda.begin(), dLambda.end(), 0.) * std::accumulate(dPhi.begin(), dPhi.end(), 0.);
   }
   catch(std::exception &e)
   {
@@ -304,16 +341,11 @@ Bool GriddedDataRectangular::isValid() const
 {
   try
   {
-    const UInt rows = latitudes.size();
-    const UInt cols = longitudes.size();
-
-    if(heights.size() != rows)
+    if(heights.size() != latitudes.size())
       return FALSE;
-
-    for(UInt i=0; i<values.size(); i++)
-      if((values.at(i).rows() != rows) || (values.at(i).columns() != cols))
+    for(UInt idx=0; idx<values.size(); idx++)
+      if((values.at(idx).rows() != latitudes.size()) || (values.at(idx).columns() != longitudes.size()))
         return FALSE;
-
     return TRUE;
   }
   catch(std::exception &e)

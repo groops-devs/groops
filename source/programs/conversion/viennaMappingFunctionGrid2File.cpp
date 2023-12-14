@@ -77,8 +77,7 @@ void ViennaMappingFunctionGrid2File::run(Config &config, Parallel::CommunicatorP
     gridRectangular.longitudes = longitudes;
     gridRectangular.latitudes  = latitudes;
     gridRectangular.heights.resize(latitudes.size(), 0.);
-    GriddedData grid;
-    gridRectangular.convert(grid);
+    GriddedData grid(gridRectangular);
 
     // ======================================================
 

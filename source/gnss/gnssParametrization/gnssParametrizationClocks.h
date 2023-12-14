@@ -25,7 +25,7 @@ These parameters are lineary dependent and would lead to a rank deficiency in th
 matrix. To circumvent this issue, the estimation requires an additional zero-mean constraint added in each epoch.
 This is realized with an additional observation equation
 \begin{equation}
- 0 = \sum_i \delta t^{s_i} + \sum_k \delta t_{r_k}
+  0 = \frac{1}{n_i + n_k} (\sum_i \Delta t^{s_i} + \sum_k \Delta t_{r_k})
 \end{equation}
 summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
 with a standard deviation of \config{sigmaZeroMeanConstraint}.

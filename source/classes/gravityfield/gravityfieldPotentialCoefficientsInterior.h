@@ -53,7 +53,7 @@ public:
   Tensor3d gravityGradient(const Time &time, const Vector3d &point) const;
   Vector3d deformation    (const Time &time, const Vector3d &point, Double gravity, const Vector &hn, const Vector &ln) const;
   void     deformation    (const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                           const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const;
+                           const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const;
 
   SphericalHarmonics sphericalHarmonics(const Time &time, UInt maxDegree=INFINITYDEGREE, UInt minDegree=0, Double GM=0.0, Double R=0.0) const;
 

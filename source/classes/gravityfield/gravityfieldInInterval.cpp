@@ -121,7 +121,7 @@ Vector3d GravityfieldInInterval::deformation(const Time &time, const Vector3d &p
 /***********************************************/
 
 void GravityfieldInInterval::deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                                         const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const
+                                         const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const
 {
   try
   {

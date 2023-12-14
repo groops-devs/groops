@@ -74,14 +74,13 @@ void NetCdf2GriddedDataTimeSeries::run(Config &config, Parallel::CommunicatorPtr
 
     // set up grid
     // -----------
-    GriddedData grid;
     GriddedDataRectangular griddedDataRectangular;
     griddedDataRectangular.ellipsoid  = Ellipsoid(a, f);
     griddedDataRectangular.longitudes = NetCdf::convertAngles(lon.values());
     griddedDataRectangular.latitudes  = NetCdf::convertAngles(lat.values());
     griddedDataRectangular.heights.resize(griddedDataRectangular.latitudes.size(), 0.0);
-    griddedDataRectangular.convert(grid);
-    MiscGriddedData::printStatistics(grid);
+    MiscGriddedData::printStatistics(griddedDataRectangular);
+    GriddedData grid(griddedDataRectangular);
 
     // set up time axis
     // ----------------
@@ -140,7 +139,7 @@ void NetCdf2GriddedDataTimeSeries::run(Config &config, Parallel::CommunicatorPtr
         if((dims.at(i).at(1) == dimLon) && (dims.at(i).at(2) == dimLat))
           copy(vars.at(i).values(start, count), data.at(idEpoch).column(i));
         else if((dims.at(i).at(1) == dimLat) && (dims.at(i).at(2) == dimLon))
-          reshape(reshape(vars.at(i).values(start, count), count.at(2), count.at(1)).trans(), data.at(idEpoch).column(i));
+          reshape(reshape(vars.at(i).values(start, count), count.at(2), count.at(1)), data.at(idEpoch).column(i));
         else
           throw(Exception("variable <"+vars.at(i).name()+"> must have ("+latName+", "+lonName+") dimensions"));
       }

@@ -117,7 +117,7 @@ public:
   * @param  hn vertical load love numbers
   * @param  ln horizontal load love numbers
   * @param[out] disp series (stationSize x TimeSize) in TRF [m] */
-  void deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity, const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const;
+  void deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity, const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const;
 
   /** @brief Conversion into a series of spherical harmonics.
   * If @a time==Time(), only the static part will be computed. */
@@ -146,8 +146,6 @@ public:
 
 private:
   std::vector<GravityfieldBase*> gravityfield;
-
-  void variance(const Time &/*time*/, const std::vector<Vector3d> &/*point*/, const Kernel &/*kernel*/, Matrix &/*D*/) const {}
 };
 
 /***** FUNCTIONS *******************************/
@@ -172,26 +170,26 @@ template<> Bool readConfig(Config &config, const std::string &name, Gravityfield
 class GravityfieldBase
 {
 public:
-virtual ~GravityfieldBase() {}
+  virtual ~GravityfieldBase() {}
 
-virtual Double   field          (const Time &time, const Vector3d &point, const Kernel &kernel) const;
-virtual Double   potential      (const Time &time, const Vector3d &point) const = 0;
-virtual Double   radialGradient (const Time &time, const Vector3d &point) const = 0;
-virtual Vector3d gravity        (const Time &time, const Vector3d &point) const = 0;
-virtual Tensor3d gravityGradient(const Time &time, const Vector3d &point) const = 0;
-virtual Vector3d deformation    (const Time &time, const Vector3d &point, Double gravity, const Vector &hn, const Vector &ln) const = 0;
-virtual void     deformation    (const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                                 const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const = 0;
+  virtual Double   field          (const Time &time, const Vector3d &point, const Kernel &kernel) const;
+  virtual Double   potential      (const Time &time, const Vector3d &point) const = 0;
+  virtual Double   radialGradient (const Time &time, const Vector3d &point) const = 0;
+  virtual Vector3d gravity        (const Time &time, const Vector3d &point) const = 0;
+  virtual Tensor3d gravityGradient(const Time &time, const Vector3d &point) const = 0;
+  virtual Vector3d deformation    (const Time &time, const Vector3d &point, Double gravity, const Vector &hn, const Vector &ln) const = 0;
+  virtual void     deformation    (const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
+                                  const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const = 0;
 
-static Matrix deformationMatrix(const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                                const Vector &hn, const Vector &ln, Double GM, Double R, UInt maxDegree);
+  static Matrix deformationMatrix(const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
+                                  const Vector &hn, const Vector &ln, Double GM, Double R, UInt maxDegree);
 
-virtual SphericalHarmonics sphericalHarmonics(const Time &time, UInt maxDegree=INFINITYDEGREE, UInt minDegree=0, Double GM=0.0, Double R=0.0) const = 0;
-virtual Matrix   sphericalHarmonicsCovariance(const Time &time, UInt maxDegree=INFINITYDEGREE, UInt minDegree=0, Double GM=0.0, Double R=0.0) const;
+  virtual SphericalHarmonics sphericalHarmonics(const Time &time, UInt maxDegree=INFINITYDEGREE, UInt minDegree=0, Double GM=0.0, Double R=0.0) const = 0;
+  virtual Matrix   sphericalHarmonicsCovariance(const Time &time, UInt maxDegree=INFINITYDEGREE, UInt minDegree=0, Double GM=0.0, Double R=0.0) const;
 
-virtual void   variance  (const Time &time, const std::vector<Vector3d> &point, const Kernel &kernel, Matrix &D) const=0;
-virtual Double variance  (const Time &time, const Vector3d &point, const Kernel &kernel) const;
-virtual Double covariance(const Time &time, const Vector3d &point1, const Vector3d &point2, const Kernel &kernel) const;
+  virtual void   variance  (const Time &time, const std::vector<Vector3d> &point, const Kernel &kernel, Matrix &D) const=0;
+  virtual Double variance  (const Time &time, const Vector3d &point, const Kernel &kernel) const;
+  virtual Double covariance(const Time &time, const Vector3d &point1, const Vector3d &point2, const Kernel &kernel) const;
 };
 
 /***********************************************/

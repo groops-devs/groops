@@ -12,10 +12,20 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Generate coarse grid by computing mean values.
+Generate coarse grid by computing area weighted mean values.
 The number of points is decimated by averaging integer multiplies of grid points
 (\config{multiplierLongitude}, \config{multiplierLatitude}).
-The fine grid can be written, where the coarse grid values are additionally appended.
+
+if \config{volumeConserving} is set, data are interpreted as heights above ellipsoid
+and the tesseroid volume
+\begin{equation}
+  V=\int_r^{r+H}\int_{\varphi_1}^{\varphi_2}\int_{\lambda_1}^{\lambda_2} r^2\cos\varphi\,d\varphi\,d\lambda\,dr
+\end{equation}
+is conserved, where $r$ is the radius of the ellipsoid at grid center and
+$(\varphi_1-\varphi_2)\times(\lambda_1-\lambda_2)$ are the grid cell boundaries.
+This is meaninful for Digital Elevation Models (DEM).
+
+The fine grid can be written, where the first coarse grid values (data0) are additionally appended.
 )";
 
 /***********************************************/
@@ -45,117 +55,113 @@ void GriddedDataReduceSampling::run(Config &config, Parallel::CommunicatorPtr /*
     FileName fileNameOutCoarseGrid, fileNameOutFineGrid;
     FileName fileNameInFineGrid;
     UInt     numberRows, numberCols;
+    Bool     volumeConserving;
 
     readConfig(config, "outputfileCoarseGridRectangular", fileNameOutCoarseGrid, Config::OPTIONAL, "", "coarse grid");
     readConfig(config, "outputfileFineGridRectangular",   fileNameOutFineGrid,   Config::OPTIONAL, "", "fine grid with additional coarse grid values");
     readConfig(config, "inputfileFineGridRectangular",    fileNameInFineGrid,    Config::MUSTSET,  "", "Digital Terrain Model");
     readConfig(config, "multiplierLongitude",             numberCols,            Config::MUSTSET,  "8", "Generalizing factor");
     readConfig(config, "multiplierLatitude",              numberRows,            Config::MUSTSET,  "8", "Generalizing factor");
+    readConfig(config, "volumeConserving",                volumeConserving,      Config::DEFAULT,  "0", "data are interpreted as heights above ellipsoid");
     if(isCreateSchema(config)) return;
 
     // read grid
     // ---------
     logStatus<<"read grid from file <"<<fileNameInFineGrid<<">"<<Log::endl;
-    GriddedDataRectangular grid1;
-    readFileGriddedData(fileNameInFineGrid, grid1);
-    MiscGriddedData::printStatistics(grid1);
+    GriddedDataRectangular gridFine;
+    readFileGriddedData(fileNameInFineGrid, gridFine);
 
-    std::vector<Double> radius1, dLambda1, dPhi1;
-    std::vector<Angle>  lambda1;
-    std::vector<Angle>  phi1;
-    grid1.geocentric(lambda1, phi1, radius1, dLambda1, dPhi1);
-    const UInt rows1 = phi1.size();
-    const UInt cols1 = lambda1.size();
-
-   // if((rows1%numberRows!=0)||(cols1%numberCols!=0))
-   //   throw(Exception("rows or columns cannot divided by multiplier"));
+    std::vector<Angle>  tmp;
+    std::vector<Double> radiusFine, longitude, latitude, dLambda, dPhi;
+    gridFine.geocentric(tmp, tmp, radiusFine);
+    gridFine.cellBorders(longitude, latitude);
+    gridFine.areaElements(dLambda, dPhi);
 
     // Generate coarse grid
     // --------------------
     logStatus<<"generate coarse grid"<<Log::endl;
-    const UInt rows2 = rows1/numberRows;
-    const UInt cols2 = cols1/numberCols;
-    GriddedDataRectangular grid2;
-    grid2.ellipsoid = grid1.ellipsoid;
-    grid2.longitudes.resize(cols2);
-    grid2.latitudes.resize(rows2);
-    grid2.heights.resize(rows2);
-    for(UInt idx=0; idx<grid1.values.size(); idx++)
-      grid2.values.push_back( Matrix(rows2, cols2) );
+    GriddedDataRectangular gridCoarse;
+    gridCoarse.ellipsoid = gridFine.ellipsoid;
 
-    for(UInt s=0; s<cols2; s++)
+    gridCoarse.latitudes.resize(gridFine.latitudes.size()/numberRows);
+    for(UInt i=0; i<gridCoarse.latitudes.size(); i++)
+      gridCoarse.latitudes.at(i) = 0.5*(latitude.at(i*numberRows) + latitude.at((i+1)*numberRows));
+
+    gridCoarse.longitudes.resize(gridFine.longitudes.size()/numberCols);
+    for(UInt k=0; k<gridCoarse.longitudes.size(); k++)
+      gridCoarse.longitudes.at(k) = std::remainder(longitude.at(k*numberCols) + 0.5*std::remainder(longitude.at((k+1)*numberCols)-longitude.at(k*numberCols), 2*PI), 2*PI);
+
+    gridCoarse.heights.resize(gridCoarse.latitudes.size()); // Compute mean height
+    for(UInt i=0; i<gridCoarse.heights.size(); i++)
     {
-      Double sum    = 0;
-      Double weight = 0;
-      for(UInt k=0; k<numberCols; k++)
+      Double height = 0, weight = 0;
+      for(UInt ii=0; ii<numberRows; ii++)
       {
-        sum    += dLambda1.at(s*numberCols+k) * grid1.longitudes.at(s*numberCols+k);
-        weight += dLambda1.at(s*numberCols+k);
+        height += dPhi.at(i) * gridFine.heights.at(i*numberRows+ii);
+        weight += dPhi.at(i);
       }
-      grid2.longitudes.at(s) = Angle(sum/weight);
+      gridCoarse.heights.at(i) = height/weight;
     }
 
-    for(UInt z=0; z<rows2; z++)
-    {
-      Double sum    = 0;
-      Double weight = 0;
-      for(UInt i=0; i<numberRows; i++)
-      {
-        sum    += dPhi1.at(z*numberRows+i) * grid1.latitudes.at(z*numberRows+i);
-        weight += dPhi1.at(z*numberRows+i);
-      }
-      grid2.latitudes.at(z) = Angle(sum/weight);
-    }
+    gridCoarse.values.resize(gridFine.values.size(), Matrix(gridCoarse.latitudes.size(), gridCoarse.longitudes.size()));
 
-    std::vector<Double> radius2, dLambda2, dPhi2;
-    std::vector<Angle>  lambda2;
-    std::vector<Angle>  phi2;
-    grid2.geocentric(lambda2, phi2, radius2, dLambda2, dPhi2);
+    std::vector<Double> radiusCoarse, dLambdaCoarse, dPhiCoarse;
+    gridCoarse.geocentric(tmp, tmp, radiusCoarse);
+    gridCoarse.areaElements(dLambdaCoarse, dPhiCoarse);
 
     // Compute mean values
     // -------------------
     logStatus<<"compute mean values"<<Log::endl;
-    grid1.values.push_back( Matrix(rows1, cols1) );
-    for(UInt idx=0; idx<grid2.values.size(); idx++)
-      for(UInt z=0; z<rows2; z++)
-        for(UInt s=0; s<cols2; s++)
-        {
-          Double sum    = 0;
-          Double weight = 0;
-          for(UInt i=0; i<numberRows; i++)
+    if(!fileNameOutFineGrid.empty())
+      gridFine.values.push_back(Matrix(gridFine.latitudes.size(), gridFine.longitudes.size()));
+    Single::forEach(gridCoarse.latitudes.size(), [&](UInt i)
+    {
+      for(UInt k=0; k<gridCoarse.longitudes.size(); k++)
+      {
+        // compute volume of tesseroid V = (r2^3-r1^3)/3 * area with r2=r1+h
+        Vector volumes(gridCoarse.values.size());
+        for(UInt ii=0; ii<numberRows; ii++)
+          for(UInt kk=0; kk<numberCols; kk++)
           {
-            const Double dPhicosPhi = cos(phi1.at(z*numberRows+i)) * dPhi1.at(z*numberRows+i);
-            for(UInt k=0; k<numberCols; k++)
-            {
-              const Double w = dPhicosPhi * dLambda1.at(s*numberCols+k);
-              sum    += w * grid1.values.at(idx)(z*numberRows+i, s*numberCols+k);
-              weight += w;
-            }
+            const Double area = dPhi.at(i*numberRows+ii) * dLambda.at(k*numberCols+kk);
+            const Double r1   = radiusFine.at(i*numberRows+ii);
+            for(UInt idx=0; idx<gridCoarse.values.size(); idx++)
+              if(volumeConserving)
+                volumes(idx) += area * (std::pow(r1+gridFine.values.at(idx)(i*numberRows+ii, k*numberCols+kk), 3) - std::pow(r1, 3))/3.;
+            else
+              volumes(idx) += area * gridFine.values.at(idx)(i*numberRows+ii, k*numberCols+kk);
           }
-          sum /= weight;
-          grid2.values.at(idx)(z, s) = sum;
 
-          if(idx==0)
-            for(UInt i=0; i<numberRows; i++)
-              for(UInt k=0; k<numberCols; k++)
-                grid1.values.back()(z*numberRows+i, s*numberCols+k) = sum;
-        }
+        // height of tesseroid = (V*3/area - r1^3)^(1/3) - r1
+        const Double area = dPhiCoarse.at(i) * dLambdaCoarse.at(k);
+        const Double r1   = radiusCoarse.at(i);
+        for(UInt idx=0; idx<gridCoarse.values.size(); idx++)
+          if(volumeConserving)
+            gridCoarse.values.at(idx)(i, k) = std::pow(volumes(idx)*3/area + std::pow(r1, 3), 1./3.) - r1;
+          else
+            gridCoarse.values.at(idx)(i, k) = volumes(idx)/area;
 
-    MiscGriddedData::printStatistics(grid1);
-    MiscGriddedData::printStatistics(grid2);
+        if(!fileNameOutFineGrid.empty())
+          for(UInt ii=0; ii<numberRows; ii++)
+            for(UInt kk=0; kk<numberCols; kk++)
+              gridFine.values.back()(i*numberRows+ii, k*numberCols+kk) = gridCoarse.values.at(0)(i, k);
+      }
+    });
 
     // write new grid
     // --------------
     if(!fileNameOutCoarseGrid.empty())
     {
       logStatus<<"write coarse grid to file <"<<fileNameOutCoarseGrid<<">"<<Log::endl;
-      writeFileGriddedData(fileNameOutCoarseGrid, grid2);
+      writeFileGriddedData(fileNameOutCoarseGrid, gridCoarse);
+      MiscGriddedData::printStatistics(gridCoarse);
     }
 
     if(!fileNameOutFineGrid.empty())
     {
       logStatus<<"write fine grid to file <"<<fileNameOutFineGrid<<">"<<Log::endl;
-      writeFileGriddedData(fileNameOutFineGrid, grid1);
+      writeFileGriddedData(fileNameOutFineGrid, gridFine);
+      MiscGriddedData::printStatistics(gridFine);
     }
   }
   catch(std::exception &e)

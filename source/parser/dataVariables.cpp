@@ -270,17 +270,10 @@ void addDataVariables(const GriddedDataRectangular &grid, VariableList &varList)
 {
   try
   {
-    std::vector<Angle>  lambda, phi;
-    std::vector<Double> radius;
     std::vector<Double> dLambda, dPhi;
-    grid.geocentric(lambda, phi, radius, dLambda, dPhi);
-    const UInt rows = phi.size();
-    const UInt cols = lambda.size();
-
-    // compute area
-    for(UInt z=0; z<rows; z++)
-      dPhi.at(z) *= std::cos(phi.at(z));
-    const Double totalArea = std::accumulate(dLambda.begin(), dLambda.end(), Double(0.)) * std::accumulate(dPhi.begin(), dPhi.end(), Double(0.));
+    const Double totalArea = grid.areaElements(dLambda, dPhi);
+    const UInt   rows      = grid.latitudes.size();
+    const UInt   cols      = grid.longitudes.size();
 
     varList.undefineVariable("longitude");
     varList.undefineVariable("latitude");
@@ -289,19 +282,19 @@ void addDataVariables(const GriddedDataRectangular &grid, VariableList &varList)
     varList.undefineVariable("cartesianY");
     varList.undefineVariable("cartesianZ");
     varList.undefineVariable("index");
-    for(UInt i=0; i<grid.values.size(); i++)
+    for(UInt idx=0; idx<grid.values.size(); idx++)
     {
-      const std::string prefix = "data"+i%"%i"s;
-      addDataVariables(prefix, grid.values.at(i), varList);
+      const std::string prefix = "data"+idx%"%i"s;
+      addDataVariables(prefix, grid.values.at(idx), varList);
 
       Double wmean = 0;
       Double wrms  = 0;
-      for(UInt z=0; z<rows; z++)
-        for(UInt s=0; s<cols; s++)
+      for(UInt i=0; i<rows; i++)
+        for(UInt k=0; k<cols; k++)
         {
-          const Double w = dLambda.at(s)*dPhi.at(z)/totalArea;
-          wmean += w * grid.values.at(i)(z,s);
-          wrms  += w * grid.values.at(i)(z,s) * grid.values.at(i)(z,s);
+          const Double w = dLambda.at(k)*dPhi.at(i)/totalArea;
+          wmean += w * grid.values.at(idx)(i,k);
+          wrms  += w * grid.values.at(idx)(i,k) * grid.values.at(idx)(i,k);
         }
 
       varList.setVariable(prefix+"wmean", wmean);
@@ -323,15 +316,15 @@ void evaluateDataVariables(const GriddedDataRectangular &grid, UInt row, UInt co
   {
     // set values of data variables
     const Vector3d p = grid.ellipsoid(grid.longitudes.at(col), grid.latitudes.at(row), grid.heights.at(row));
-    varList.setVariable("longitude", grid.longitudes.at(col)*RAD2DEG);
-    varList.setVariable("latitude", grid.latitudes.at(row)*RAD2DEG);
-    varList.setVariable("height", grid.heights.at(row));
+    varList.setVariable("longitude",  grid.longitudes.at(col)*RAD2DEG);
+    varList.setVariable("latitude",   grid.latitudes.at(row) *RAD2DEG);
+    varList.setVariable("height",     grid.heights.at(row));
     varList.setVariable("cartesianX", p.x());
     varList.setVariable("cartesianY", p.y());
     varList.setVariable("cartesianZ", p.z());
     varList.setVariable("index", static_cast<Double>(row*grid.longitudes.size()+col));
-    for(UInt i=0; i<grid.values.size(); i++)
-      varList.setVariable("data"+i%"%i"s, grid.values.at(i)(row,col)); // "data(i)"
+    for(UInt idx=0; idx<grid.values.size(); idx++)
+      varList.setVariable("data"+idx%"%i"s, grid.values.at(idx)(row,col)); // "data(idx)"
   }
   catch(std::exception &e)
   {
@@ -352,8 +345,8 @@ void undefineDataVariables(const GriddedDataRectangular &grid, VariableList &var
     varList.undefineVariable("cartesianY");
     varList.undefineVariable("cartesianZ");
     varList.undefineVariable("index");
-    for(UInt i=0; i<grid.values.size(); i++)
-      varList.undefineVariable("data"+i%"%i"s); // "data(i)"
+    for(UInt idx=0; idx<grid.values.size(); idx++)
+      varList.undefineVariable("data"+idx%"%i"s); // "data(idx)"
   }
   catch(std::exception &e)
   {

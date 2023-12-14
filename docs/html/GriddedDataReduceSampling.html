@@ -71,10 +71,15 @@
         <div id="content" class="container">
             <h1>GriddedDataReduceSampling</h1><p>
 
-Generate coarse grid by computing mean values.
+Generate coarse grid by computing area weighted mean values.
 The number of points is decimated by averaging integer multiplies of grid points
-(<strong class="groops-config-element">multiplierLongitude</strong>, <strong class="groops-config-element">multiplierLatitude</strong>).
-The fine grid can be written, where the coarse grid values are additionally appended.
+(<strong class="groops-config-element">multiplierLongitude</strong>, <strong class="groops-config-element">multiplierLatitude</strong>).</p><p>if <strong class="groops-config-element">volumeConserving</strong> is set, data are interpreted as heights above ellipsoid
+and the tesseroid volume
+\[
+  V=\int_r^{r+H}\int_{\varphi_1}^{\varphi_2}\int_{\lambda_1}^{\lambda_2} r^2\cos\varphi\,d\varphi\,d\lambda\,dr
+\]is conserved, where $r$ is the radius of the ellipsoid at grid center and
+$(\varphi_1-\varphi_2)\times(\lambda_1-\lambda_2)$ are the grid cell boundaries.
+This is meaninful for Digital Elevation Models (DEM).</p><p>The fine grid can be written, where the first coarse grid values (data0) are additionally appended.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -83,6 +88,7 @@ The fine grid can be written, where the coarse grid values are additionally appe
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileFineGridRectangular</div></div></td><td>filename</td><td>Digital Terrain Model</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">multiplierLongitude</div></div></td><td>uint</td><td>Generalizing factor</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">multiplierLatitude</div></div></td><td>uint</td><td>Generalizing factor</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">volumeConserving</div></div></td><td>boolean</td><td>data are interpreted as heights above ellipsoid</td></tr>
 </table>
 
         </div>

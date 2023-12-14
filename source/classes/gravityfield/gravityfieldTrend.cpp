@@ -89,12 +89,12 @@ Vector3d GravityfieldTrend::deformation(const Time &time, const Vector3d &point,
 /***********************************************/
 
 void GravityfieldTrend::deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                                    const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const
+                                    const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const
 {
   if((time.size()==0) || (point.size()==0))
     return;
 
-  std::vector< std::vector<Vector3d> > disp2(point.size());
+  std::vector<std::vector<Vector3d>> disp2(point.size());
   for(UInt k=0; k<point.size(); k++)
     disp2.at(k).resize(time.size());
   gravityfield->deformation(time, point, gravity, hn, ln, disp2);

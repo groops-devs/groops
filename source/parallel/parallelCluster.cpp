@@ -1353,6 +1353,27 @@ void reduceSum(Matrix &x, UInt process, CommunicatorPtr comm)
 }
 
 /***********************************************/
+
+void reduceSum(std::vector<Double> &x, UInt process, CommunicatorPtr comm)
+{
+  try
+  {
+    if(myRank(comm) == process)
+    {
+      std::vector<Double> tmp(x.size(), 0.);
+      reduce(x.data(), tmp.data(), x.size(), MPI_DOUBLE, MPI_SUM, process, comm);
+      std::swap(tmp, x);
+    }
+    else
+      reduce(x.data(), nullptr, x.size(), MPI_DOUBLE, MPI_SUM, process, comm);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
 /***********************************************/
 
 void reduceMin(UInt &x, UInt process, CommunicatorPtr comm)

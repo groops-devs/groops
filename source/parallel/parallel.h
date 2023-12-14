@@ -143,10 +143,11 @@ namespace Parallel
 
   /** @brief Sum up @a x at all processes (also rank 0) and send the result to @a process. */
   ///@{
-  void reduceSum(UInt    &x, UInt process, CommunicatorPtr comm);
-  void reduceSum(Double  &x, UInt process, CommunicatorPtr comm);
-  void reduceSum(Bool    &x, UInt process, CommunicatorPtr comm);
-  void reduceSum(Matrix  &x, UInt process, CommunicatorPtr comm);
+  void reduceSum(UInt                &x, UInt process, CommunicatorPtr comm);
+  void reduceSum(Double              &x, UInt process, CommunicatorPtr comm);
+  void reduceSum(Bool                &x, UInt process, CommunicatorPtr comm);
+  void reduceSum(Matrix              &x, UInt process, CommunicatorPtr comm);
+  void reduceSum(std::vector<Double> &x, UInt process, CommunicatorPtr comm);
   ///@}
 
   /** @brief Find min/max of @a x at all processes (also rank 0) and send the result to @a process. */
