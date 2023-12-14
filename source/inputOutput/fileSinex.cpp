@@ -11,6 +11,8 @@
 */
 /***********************************************/
 
+#include <ctype.h>
+
 #include "base/import.h"
 #include "base/string.h"
 #include "inputOutput/logging.h"
@@ -178,6 +180,9 @@ void readFileSinex(const FileName &fileName, Sinex &sinex)
       }
       else if(line.at(0) == '-') // end data block
       {
+        // Do not close the FILE/COMMENT block in case of lines starting with "-"
+        if(block->label=="FILE/COMMENT" && String::trim(line.substr(1))!="FILE/COMMENT")
+          continue;
         if(!block || (block->label != String::trim(line.substr(1))))
           throw(Exception("SINEX block ends unexpectedly: '"+line+"'"));
         block = nullptr;
