@@ -222,7 +222,13 @@ void GnssReceiver2RinexObservation::run(Config &config, Parallel::CommunicatorPt
           file<<satType.str().substr(3, 3);
           for(GnssType type : types.at(satType & GnssType::SYSTEM))
             if(type.isInList(epoch.obsType, idx) && (!useType.size() || (type+satType).isInList(useType)) && !(type+satType).isInList(ignoreType))
-              file<<(epoch.observation.at(idObs+idx-idType) / ((type == GnssType::PHASE) ? (type+satType).wavelength() : 1.))%"%14.3f  "s; // convert to cycles
+            {
+              // Suppress output of nan for invalid observations (e.g. L5 for GPS satellites prior to Block IIF)
+              if(std::isnan(epoch.observation.at(idObs+idx-idType)))
+                file<<"                ";
+              else
+                file<<(epoch.observation.at(idObs+idx-idType) / ((type == GnssType::PHASE) ? (type+satType).wavelength() : 1.))%"%14.3f  "s; // convert to cycles
+            }
             else
               file<<"                ";
           file<<std::endl;
