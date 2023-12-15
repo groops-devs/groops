@@ -141,8 +141,6 @@ public:
 
   void preprocessingInfo(const std::string &info, UInt countEpochs=NULLINDEX, UInt countObservations=NULLINDEX, UInt countTracks=NULLINDEX);
 
-
-
   /** @brief Reads observations from a file. Member variable @a times must be set.
   * Initializes observations. Receiver and Transmitter positions, orientations, ... must be initialized beforehand.
   * Delete observations that don't match the types from receiver and transmitter definition. */
