@@ -163,19 +163,10 @@ void printStatistics(const GriddedDataRectangular &grid)
       return;
     }
 
-    const UInt rows = grid.latitudes.size();
-    const UInt cols = grid.longitudes.size();
-
-    std::vector<Double> radius, dLambda, dPhi;
-    std::vector<Angle>  lambda, phi;
-    grid.geocentric(lambda, phi, radius, dLambda, dPhi);
-
-    Double totalArea = 0.0;
-    Double dL = 0;
-    for(UInt s=0; s<cols; s++)
-      dL += dLambda[s];
-    for(UInt z=0; z<rows; z++)
-      totalArea += std::cos(phi.at(z))*dPhi.at(z)*dL;
+    std::vector<Double> dLambda, dPhi;
+    const Double totalArea = grid.areaElements(dLambda, dPhi);
+    const UInt   rows      = grid.latitudes.size();
+    const UInt   cols      = grid.longitudes.size();
 
     logInfo<<"grid statistics"<<Log::endl;
     logInfo<<"  regular grid ("<<rows<<" x "<<cols<<") = "<<rows*cols<<Log::endl;
@@ -189,23 +180,20 @@ void printStatistics(const GriddedDataRectangular &grid)
     Vector mean(grid.values.size());
     Vector vmin(grid.values.size()), vmax(grid.values.size());
     Vector avg(grid.values.size()),  rms(grid.values.size());
-    for(UInt i=0; i<grid.values.size(); i++)
+    for(UInt idx=0; idx<grid.values.size(); idx++)
     {
-      for(UInt z=0; z<rows; z++)
-      {
-        const Double weight = dPhi.at(z)*std::cos(phi.at(z))/totalArea;
-        for(UInt s=0; s<cols; s++)
+      for(UInt i=0; i<rows; i++)
+        for(UInt k=0; k<cols; k++)
         {
-          const Double w = dLambda[s]*weight;
-          const Double v = grid.values[i](z,s);
-          mean(i) += w * v;
-          avg(i)  += w * std::fabs(v);
-          rms(i)  += w * v * v;
+          const Double w = dLambda[k]*dPhi[i]/totalArea;
+          const Double v = grid.values[idx](i,k);
+          mean(idx) += w * v;
+          avg(idx)  += w * std::fabs(v);
+          rms(idx)  += w * v * v;
         }
-      }
-      vmin(i) = min(grid.values[i]);
-      vmax(i) = max(grid.values[i]);
-      rms(i)  = std::sqrt(rms(i));
+      vmin(idx) = min(grid.values[idx]);
+      vmax(idx) = max(grid.values[idx]);
+      rms(idx)  = std::sqrt(rms(idx));
     }
 
     printStatistics(rms, avg, vmin, vmax, mean);
@@ -226,12 +214,10 @@ std::vector<Double> synthesisSphericalHarmonics(const SphericalHarmonics &harm, 
     std::vector<Double>   field(points.size(), 0.);
     std::vector<Angle>    lambda, phi;
     std::vector<Double>   r;
+
+    // spherical harmonics with recatangular grid
     if(GriddedData(Ellipsoid(), points, std::vector<Double>(), std::vector<std::vector<Double>>()).isRectangle(lambda, phi, r))
     {
-      if(!Parallel::isMaster(comm))
-        return field;
-
-      // spherical harmonics with recatangular grid
       Matrix cossinm(lambda.size(), 2*harm.maxDegree()+1);
       for(UInt i=0; i<lambda.size(); i++)
       {
@@ -244,8 +230,7 @@ std::vector<Double> synthesisSphericalHarmonics(const SphericalHarmonics &harm, 
       }
 
       // Compute Legendre functions for each phi (row)
-      // Parallel::forEach(phi.size(), [&](UInt i)
-      for(UInt i=0; i<phi.size(); i++)
+      Parallel::forEach(phi.size(), [&](UInt i)
       {
         const Vector3d p  = polar(lambda.at(0), phi.at(i), r.at(i));
         const Vector   kn = kernel->inverseCoefficients(p, harm.maxDegree(), harm.isInterior());
@@ -264,8 +249,8 @@ std::vector<Double> synthesisSphericalHarmonics(const SphericalHarmonics &harm, 
         Vector row = cossinm * sum;
         for(UInt k=0; k<lambda.size(); k++)
           field.at(i*lambda.size()+k) = row(k);
-      } //);
-      // Parallel::reduceSum(field);
+      }, comm, timing);
+      Parallel::reduceSum(field, 0, comm);
       return field;
     } // if(isRectangle)
 
@@ -311,6 +296,212 @@ Matrix synthesisSphericalHarmonicsMatrix(UInt maxDegree, Double GM, Double R, co
   {
     GROOPS_RETHROW(e)
   }
+}
+
+/***********************************************/
+/***********************************************/
+
+std::vector<SphericalHarmonics> analysisSphericalHarmonics(const GriddedData &grid, KernelPtr kernel, UInt minDegree, UInt maxDegree, Double GM, Double R,
+                                                           Bool useLeastSquares, Parallel::CommunicatorPtr comm, Bool timing)
+{
+  try
+  {
+    // test rectangular grid
+    // ---------------------
+    std::vector<Angle>  lambda, phi;
+    std::vector<Double> radius;
+    const Bool isRectangle = grid.isRectangle(lambda, phi, radius);
+    // precompute cos(m*lambda), sin(m*lambda)
+    Matrix cosml, sinml;
+    if(isRectangle)
+    {
+      cosml = sinml = Matrix(lambda.size(), maxDegree+1);
+      for(UInt m=0; m<=maxDegree; m++)
+        for(UInt k=0; k<lambda.size(); k++)
+        {
+          cosml(k, m) = std::cos(m*static_cast<Double>(lambda.at(k)));
+          sinml(k, m) = std::sin(m*static_cast<Double>(lambda.at(k)));
+        }
+    }
+
+    // quadrature formular
+    // -------------------
+    if(!useLeastSquares)
+    {
+      if(timing) logStatus<<"computing quadrature formular"<<Log::endl;
+      std::vector<Matrix> cnm(grid.values.size(), Matrix(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER));
+      std::vector<Matrix> snm(grid.values.size(), Matrix(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER));
+
+      if(isRectangle)
+      {
+        Parallel::forEach(phi.size(), [&](UInt i)
+        {
+          // legendre functions with kernel coefficients
+          Matrix Pnm = SphericalHarmonics::Pnm(Angle(0.5*PI-phi.at(i)), radius.at(i)/R, maxDegree, TRUE);
+          Vector kn  = kernel->coefficients(polar(Angle(0.), phi.at(i), radius.at(i)), maxDegree);
+          for(UInt n=0; n<=maxDegree; n++)
+            Pnm.slice(n, 0, 1, n+1) *= kn(n) * R/(4*PI*GM);
+
+          for(UInt idx=0; idx<grid.values.size(); idx++)
+            for(UInt k=0; k<lambda.size(); k++)
+            {
+              const Double f = grid.values.at(idx).at(i*lambda.size()+k) * grid.areas.at(i*lambda.size()+k);
+              for(UInt m=0; m<=maxDegree; m++)
+              {
+                axpy(f * cosml(k, m), Pnm.column(m), cnm.at(idx).column(m));
+                axpy(f * sinml(k, m), Pnm.column(m), snm.at(idx).column(m));
+              }
+            }
+        }, comm, timing);
+      }
+      else
+      {
+        Parallel::forEach(grid.points.size(), [&](UInt i)
+        {
+          const Vector kn = kernel->coefficients(grid.points.at(i), maxDegree);
+          Matrix Cnm, Snm;
+          SphericalHarmonics::CnmSnm(normalize(grid.points.at(i)), maxDegree, Cnm, Snm);
+          for(UInt idx=0; idx<grid.values.size(); idx++)
+          {
+            Double rR = std::pow(grid.points.at(i).r()/R, minDegree+1);
+            for(UInt n=minDegree; n<=maxDegree; n++)
+            {
+              axpy((kn(n)* R/(4*PI*GM) * rR * grid.values.at(idx).at(i) * grid.areas.at(i)), Cnm.row(n), cnm.at(idx).row(n));
+              axpy((kn(n)* R/(4*PI*GM) * rR * grid.values.at(idx).at(i) * grid.areas.at(i)), Snm.row(n), snm.at(idx).row(n));
+              rR *= grid.points.at(i).r()/R;
+            }
+          }
+        }, comm, timing);
+      }
+
+      std::vector<SphericalHarmonics> harm(grid.values.size());
+      for(UInt idx=0; idx<grid.values.size(); idx++)
+      {
+        Parallel::reduceSum(cnm.at(idx), 0, comm);
+        Parallel::reduceSum(snm.at(idx), 0, comm);
+        harm.at(idx) = SphericalHarmonics(GM, R, cnm.at(idx), snm.at(idx)).get(maxDegree, minDegree);
+      }
+
+      return harm;
+    }
+
+    // least squares adjustment order by order
+    // ---------------------------------------
+    if(timing) logStatus<<"least squares adjustment (order by order)"<<Log::endl;
+    if(!isRectangle)
+      throw(Exception("GriddedData must be a rectangle grid"));
+
+    // system of normal equations (order by order)
+    std::vector<Matrix> N, n;
+    N.push_back(Matrix(maxDegree+1, Matrix::SYMMETRIC));
+    n.push_back(Matrix(maxDegree+1, grid.values.size()));
+    for(UInt m=1; m<=maxDegree; m++)
+    {
+      N.push_back(Matrix(2*(maxDegree+1-m), Matrix::SYMMETRIC));
+      n.push_back(Matrix(2*(maxDegree+1-m), grid.values.size()));
+    }
+
+    Vector lPl(grid.values.size());
+    for(UInt idx=0; idx<grid.values.size(); idx++)
+      for(UInt i=0; i<grid.points.size(); i++)
+        lPl(idx) += grid.values.at(idx).at(i) * grid.areas.at(i)/(4*PI) * grid.values.at(idx).at(i);
+
+    if(timing) logStatus<<"accumulate normal equations"<<Log::endl;
+    Parallel::forEach(phi.size(), [&](UInt i)
+    {
+      Matrix l(lambda.size(), grid.values.size());
+      for(UInt idx=0; idx<grid.values.size(); idx++)
+        for(UInt k=0; k<lambda.size(); k++)
+          l(k, idx) = grid.values.at(idx).at(i*lambda.size()+k);
+
+      // legendre functions with kernel coefficients
+      Matrix Pnm = SphericalHarmonics::Pnm(Angle(0.5*PI-phi.at(i)), radius.at(i)/R, maxDegree);
+      Vector kn  = kernel->inverseCoefficients(polar(Angle(0.), phi.at(i), radius.at(i)), maxDegree);
+      for(UInt n=0; n<=maxDegree; n++)
+        Pnm.slice(n, 0, 1, n+1) *= GM/R * kn(n);
+
+      const Double weight = grid.areas.at(i*lambda.size())/(4*PI); // assume same area for all longitudes
+      Matrix A = cosml.column(0) * Pnm.column(0).trans();
+      rankKUpdate(weight, A, N.at(0));
+      matMult(weight, A.trans(), l, n.at(0));
+      for(UInt m=1; m<=maxDegree; m++)
+      {
+        Matrix A(lambda.size(), 2*(maxDegree+1-m));
+        matMult(1.0, cosml.column(m), Pnm.slice(m, m, maxDegree+1-m, 1).trans(), A.column(0, maxDegree+1-m));
+        matMult(1.0, sinml.column(m), Pnm.slice(m, m, maxDegree+1-m, 1).trans(), A.column(maxDegree+1-m, maxDegree+1-m));
+        rankKUpdate(weight, A, N.at(m));
+        matMult(weight, A.trans(), l, n.at(m));
+      }
+    }, comm, timing);
+
+    for(UInt m=0; m<=maxDegree; m++)
+    {
+      Parallel::reduceSum(N.at(m), 0, comm);
+      Parallel::reduceSum(n.at(m), 0, comm);
+    }
+
+    // solve normals
+    // -------------
+    std::vector<SphericalHarmonics> harm(grid.values.size());
+    if(Parallel::isMaster(comm))
+    {
+      if(timing) logStatus<<"solve the system of equations"<<Log::endl;
+      std::vector<Matrix> x(maxDegree+1);
+      std::vector<Vector> sigma2x(maxDegree+1);
+      UInt parameterCount = 0;
+      for(UInt m=0; m<=maxDegree; m++)
+      {
+        parameterCount += n.at(m).rows();
+        for(UInt k=0; k<N.at(m).rows(); k++)
+          if(N.at(m)(k, k) == 0.)
+          {
+            N.at(m)(k, k) = 1;
+            parameterCount--;
+            // logWarning<<k<<". parameter has zero diagonal element -> set to one"<<Log::endl;
+          }
+        x.at(m) = solve(N.at(m), n.at(m));
+        inverse(N.at(m));               // inverse of the cholesky matrix
+        sigma2x.at(m) = Vector(x.at(m).rows());
+        for(UInt k=0; k<N.at(m).rows(); k++)
+          sigma2x.at(m)(k) = quadsum(N.at(m).slice(k, k, 1, N.at(m).columns()-k));
+      }
+
+      // aposteriori sigma
+      Vector sigma2(grid.values.size());
+      for(UInt idx=0; idx<grid.values.size(); idx++)
+      {
+        Double ePe = lPl(idx);
+        for(UInt m=0; m<=maxDegree; m++)
+          ePe -= inner(x.at(m).column(idx), n.at(m).column(idx));
+        sigma2(idx) = std::max(ePe/(grid.points.size()-parameterCount), 0.);
+      }
+
+      // potential coefficients
+      Matrix cnm      (maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
+      Matrix snm      (maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
+      Matrix sigma2cnm(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
+      Matrix sigma2snm(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER);
+      for(UInt idx=0; idx<grid.values.size(); idx++)
+      {
+        copy(x.at(0).column(idx), cnm.column(0));
+        copy(sigma2x.at(0), sigma2cnm.column(0));
+        for(UInt m=1; m<=maxDegree; m++)
+        {
+          copy(x.at(m).slice(0,             idx, maxDegree+1-m, 1),    cnm.slice(m, m, maxDegree+1-m, 1));
+          copy(x.at(m).slice(maxDegree+1-m, idx, maxDegree+1-m, 1),    snm.slice(m, m, maxDegree+1-m, 1));
+          copy(sigma2x.at(m).row(0,              maxDegree+1-m), sigma2cnm.slice(m, m, maxDegree+1-m, 1));
+          copy(sigma2x.at(m).row(maxDegree+1-m,  maxDegree+1-m), sigma2snm.slice(m, m, maxDegree+1-m, 1));
+        }
+        harm.at(idx) = SphericalHarmonics(GM, R, cnm, snm, sigma2(idx)*sigma2cnm, sigma2(idx)*sigma2snm).get(maxDegree, minDegree);
+      }
+    } // if(Parallel::isMaster(comm))
+
+    return harm;
+ }
+ catch(std::exception &e)
+ {
+   GROOPS_RETHROW(e)
+ }
 }
 
 /***********************************************/

@@ -93,6 +93,7 @@ classes/gravityfield/gravityfield.cpp
 classes/gravityfield/gravityfieldEarthquakeOscillation.cpp
 classes/gravityfield/gravityfieldFilter.cpp
 classes/gravityfield/gravityfieldFromParametrization.cpp
+classes/gravityfield/gravityfieldGroup.cpp
 classes/gravityfield/gravityfieldInInterval.cpp
 classes/gravityfield/gravityfieldOscillation.cpp
 classes/gravityfield/gravityfieldPotentialCoefficients.cpp
@@ -172,6 +173,7 @@ classes/tides/tidesAstronomical.cpp
 classes/tides/tidesCentrifugal.cpp
 classes/tides/tidesDoodsonHarmonic.cpp
 classes/tides/tidesEarth.cpp
+classes/tides/tidesGroup.cpp
 classes/tides/tidesOceanPole.cpp
 classes/tides/tidesPole.cpp
 classes/tides/tidesSolidMoon.cpp
@@ -313,6 +315,7 @@ programs/griddedData/griddedDataCreate.cpp
 programs/griddedData/griddedDataInterpolate.cpp
 programs/griddedData/griddedDataReduceSampling.cpp
 programs/griddedData/griddedDataTimeSeries2GriddedData.cpp
+programs/griddedData/griddedDataTimeSeries2PotentialCoefficients.cpp
 programs/griddedData/griddedTopography2AtmospherePotentialCoefficients.cpp
 programs/griddedData/griddedTopography2PotentialCoefficients.cpp
 programs/griddedData/griddedTopographyEllipsoidal2Radial.cpp
@@ -405,6 +408,7 @@ programs/normals/parameterNamesCreate.cpp
 programs/normals/parameterSelection2IndexVector.cpp
 programs/orbit/orbit2ArgumentOfLatitude.cpp
 programs/orbit/orbit2BetaPrimeAngle.cpp
+programs/orbit/orbit2EarthFixedOrbit.cpp
 programs/orbit/orbit2EclipseFactor.cpp
 programs/orbit/orbit2Groundtracks.cpp
 programs/orbit/orbit2Kepler.cpp
@@ -517,7 +521,6 @@ programs/conversion/grid/griddedData2NetCdf.cpp
 programs/conversion/grid/griddedDataTimeSeries2NetCdf.cpp
 programs/conversion/grid/netCdf2GriddedData.cpp
 programs/conversion/grid/netCdf2GriddedDataTimeSeries.cpp
-programs/conversion/grid/netCdf2PotentialCoefficients.cpp
 programs/conversion/grid/netCdfInfo.cpp
 programs/conversion/satellites/champ2AccStar.cpp
 programs/conversion/satellites/champ2Orbit.cpp

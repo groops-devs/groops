@@ -111,7 +111,7 @@ std::vector<NetCdf::Variable> NetCdf::Group::variables() const
 Bool NetCdf::Group::hasVariable(const std::string &name) const
 {
   Int varId;
-  return (nc_inq_varid(groupId, name.c_str(), &varId) != NC_NOERR);
+  return (nc_inq_varid(groupId, name.c_str(), &varId) == NC_NOERR);
 }
 
 /***********************************************/

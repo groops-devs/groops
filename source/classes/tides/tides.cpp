@@ -24,6 +24,7 @@
 #include "classes/tides/tidesOceanPole.h"
 #include "classes/tides/tidesCentrifugal.h"
 #include "classes/tides/tidesSolidMoon.h"
+#include "classes/tides/tidesGroup.h"
 #include "classes/tides/tides.h"
 
 /***********************************************/
@@ -35,7 +36,8 @@ GROOPS_REGISTER_CLASS(Tides, "tidesType",
                       TidesOceanPole,
                       TidesDoodsonHarmonic,
                       TidesCentrifugal,
-                      TidesSolidMoon)
+                      TidesSolidMoon,
+                      TidesGroup)
 
 GROOPS_READCONFIG_UNBOUNDED_CLASS(Tides, "tidesType")
 
@@ -66,6 +68,8 @@ Tides::Tides(Config &config, const std::string &name)
         tides.push_back(new TidesCentrifugal(config));
       if(readConfigChoiceElement(config, "solidMoonTide",       type, "solid moon tides (at moon)"))
         tides.push_back(new TidesSolidMoon(config));
+      if(readConfigChoiceElement(config, "group",               type, "group tides"))
+        tides.push_back(new TidesGroup(config));
       endChoice(config);
       if(isCreateSchema(config))
         return;

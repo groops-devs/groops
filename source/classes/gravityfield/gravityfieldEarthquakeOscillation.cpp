@@ -115,7 +115,7 @@ Vector3d GravityfieldEarthquakeOscillation::deformation(const Time &time, const 
 /***********************************************/
 
 void GravityfieldEarthquakeOscillation::deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                                                    const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const
+                                                    const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const
 {
   for(UInt i=0; i<time.size(); i++)
     for(UInt k=0; k<point.size(); k++)

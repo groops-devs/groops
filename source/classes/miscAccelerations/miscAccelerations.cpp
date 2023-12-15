@@ -22,6 +22,7 @@
 #include "classes/miscAccelerations/miscAccelerationsAlbedo.h"
 #include "classes/miscAccelerations/miscAccelerationsAntennaThrust.h"
 #include "classes/miscAccelerations/miscAccelerationsFromParametrization.h"
+#include "classes/miscAccelerations/miscAccelerationsGroup.h"
 #include "classes/miscAccelerations/miscAccelerations.h"
 
 /***********************************************/
@@ -33,6 +34,7 @@ GROOPS_REGISTER_CLASS(MiscAccelerations, "miscAccelerationsType",
                       MiscAccelerationsAtmosphericDragFromDensityFile,
                       MiscAccelerationsAntennaThrust,
                       MiscAccelerationsFromParametrization,
+                      MiscAccelerationsGroup,
                       MiscAccelerationsSolarRadiationPressure,
                       MiscAccelerationsAlbedo)
 
@@ -58,7 +60,9 @@ MiscAccelerations::MiscAccelerations(Config &config, const std::string &name)
       if(readConfigChoiceElement(config, "atmosphericDragFromDensityFile", type, "atmospheric drag (from density along orbit)"))
        acc.push_back(new MiscAccelerationsAtmosphericDragFromDensityFile(config));
       if(readConfigChoiceElement(config, "fromParametrization",            type, "from a solution vector with given parametrization"))
-       acc.push_back(new MiscAccelerationsFromParametrization(config));
+        acc.push_back(new MiscAccelerationsFromParametrization(config));
+      if(readConfigChoiceElement(config, "group",                          type, "group misc accelerations"))
+        acc.push_back(new MiscAccelerationsGroup(config));
       if(readConfigChoiceElement(config, "solarRadiationPressure",         type, "DEPRECATED"))
        acc.push_back(new MiscAccelerationsSolarRadiationPressure(config));
       if(readConfigChoiceElement(config, "albedo",                         type, "DEPRECATED"))

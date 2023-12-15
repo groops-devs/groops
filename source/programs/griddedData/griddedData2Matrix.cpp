@@ -50,23 +50,14 @@ void GriddedData2Matrix::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
   {
     FileName fileNameOut, fileNameGrid;
     Double   a, f;
-    std::vector<ExpressionVariablePtr> expr1(3), expr2;
+    std::vector<ExpressionVariablePtr> expression;
 
     readConfig(config, "outputfileMatrix",     fileNameOut,  Config::MUSTSET,  "", "point list as matrix with longitude and latitude values in columns and possible additional columns");
     readConfig(config, "inputfileGriddedData", fileNameGrid, Config::MUSTSET,  "",      "");
     readConfig(config, "R",                    a,            Config::DEFAULT,  STRING_DEFAULT_GRS80_a, "reference radius for ellipsoidal coordinates on output");
     readConfig(config, "inverseFlattening",    f,            Config::DEFAULT,  STRING_DEFAULT_GRS80_f, "reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates");
-    readConfig(config, "outColumn",            expr1.at(0),  Config::OPTIONAL, "longitude", "expression (variables: longitude, latitude, height, area, data0, data1, ...)");
-    readConfig(config, "outColumn",            expr1.at(1),  Config::OPTIONAL, "latitude",  "expression (variables: longitude, latitude, height, area, data0, data1, ...)");
-    readConfig(config, "outColumn",            expr1.at(2),  Config::OPTIONAL, "height",    "expression (variables: longitude, latitude, height, area, data0, data1, ...)");
-    readConfig(config, "outColumn",            expr2,        Config::OPTIONAL, "data0",     "expression (variables: longitude, latitude, height, area, data0, data1, ...)");
+    readConfig(config, "outColumn",            expression,   Config::OPTIONAL, R"(["longitude", "latitude", "height", "data0"])", "expression (variables: longitude, latitude, height, area, data0, data1, ...)");
     if(isCreateSchema(config)) return;
-
-    std::vector<ExpressionVariablePtr> expression;
-    for(UInt i=0; i<expr1.size(); i++)
-      if(expr1.at(i))
-        expression.push_back(expr1.at(i));
-    expression.insert(expression.end(), expr2.begin(), expr2.end());
 
     // create grid
     // -----------
@@ -86,12 +77,12 @@ void GriddedData2Matrix::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     // ---------------------
     logStatus<<"calculate output matrix"<<Log::endl;
     Matrix A(grid.points.size(), expression.size());
-    for(UInt i=0; i<A.rows(); i++)
+    Single::forEach(A.rows(), [&](UInt i)
     {
       evaluateDataVariables(grid, i, varList);
       for(UInt k=0; k<A.columns(); k++)
         A(i,k) = expression.at(k)->evaluate(varList);
-    }
+    });
 
     // write
     // -----

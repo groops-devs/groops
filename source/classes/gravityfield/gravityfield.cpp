@@ -26,6 +26,7 @@
 #include "classes/gravityfield/gravityfieldTopography.h"
 #include "classes/gravityfield/gravityfieldEarthquakeOscillation.h"
 #include "classes/gravityfield/gravityfieldFilter.h"
+#include "classes/gravityfield/gravityfieldGroup.h"
 #include "classes/gravityfield/gravityfield.h"
 
 /***********************************************/
@@ -41,7 +42,8 @@ GROOPS_REGISTER_CLASS(Gravityfield, "gravityfieldType",
                       GravityfieldTides,
                       GravityfieldTopography,
                       GravityfieldEarthquakeOscillation,
-                      GravityfieldFilter)
+                      GravityfieldFilter,
+                      GravityfieldGroup)
 
 GROOPS_READCONFIG_UNBOUNDED_CLASS(Gravityfield, "gravityfieldType")
 
@@ -91,6 +93,8 @@ Gravityfield::Gravityfield(Config &config, const std::string &name)
         gravityfield.push_back(new GravityfieldEarthquakeOscillation(config));
       if(readConfigChoiceElement(config, "filter",                type, "filtered spherical harmonics"))
         gravityfield.push_back(new GravityfieldFilter(config));
+      if(readConfigChoiceElement(config, "group",                 type, "group gravityfields"))
+        gravityfield.push_back(new GravityfieldGroup(config));
       endChoice(config);
       if(isCreateSchema(config))
         return;
@@ -172,7 +176,7 @@ Vector3d Gravityfield::deformation(const Time &time, const Vector3d &point, Doub
 
 /***********************************************/
 
-void Gravityfield::deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity, const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const
+void Gravityfield::deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity, const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const
 {
   for(UInt i=0; i<gravityfield.size(); i++)
     gravityfield.at(i)->deformation(time, point, gravity, hn, ln, disp);
@@ -402,10 +406,8 @@ Matrix GravityfieldBase::sphericalHarmonicsCovariance(const Time &time, UInt max
 // Default implementation
 Double GravityfieldBase::variance(const Time &time, const Vector3d &point, const Kernel &kernel) const
 {
-  std::vector<Vector3d> p(1);
-  p[0] = point;
-  Matrix D(p.size(), Matrix::SYMMETRIC);
-  variance(time, p, kernel, D);
+  Matrix D(1, Matrix::SYMMETRIC);
+  variance(time, {point}, kernel, D);
   return D(0,0);
 }
 
@@ -414,11 +416,8 @@ Double GravityfieldBase::variance(const Time &time, const Vector3d &point, const
 // Default implementation
 Double GravityfieldBase::covariance(const Time &time, const Vector3d &point1, const Vector3d &point2, const Kernel &kernel) const
 {
-  std::vector<Vector3d> p(2);
-  p[0] = point1;
-  p[1] = point2;
-  Matrix D(p.size(), Matrix::SYMMETRIC, Matrix::UPPER);
-  variance(time, p, kernel, D);
+  Matrix D(2, Matrix::SYMMETRIC, Matrix::UPPER);
+  variance(time, {point1, point2}, kernel, D);
   return D(0,1);
 }
 

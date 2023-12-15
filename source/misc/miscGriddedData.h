@@ -45,11 +45,12 @@ namespace MiscGriddedData
   * @param comm   communicator for parallel computation.
   * @param timing start a loop timer for all grid points (only relevant for non-rectangular grids).
   * @return values at @a points (only valid at master). */
-  std::vector<Double> synthesisSphericalHarmonics(const SphericalHarmonics &harmonic, const std::vector<Vector3d> &points, KernelPtr kernel, Parallel::CommunicatorPtr comm, Bool timing = TRUE);
+  std::vector<Double> synthesisSphericalHarmonics(const SphericalHarmonics &harmonic, const std::vector<Vector3d> &points, KernelPtr kernel,
+                                                  Parallel::CommunicatorPtr comm, Bool timing = TRUE);
 
   /** @brief Generates a linear functional for the synthesis of spherical harmonics coefficients on a grid.
   * This function generates a matrix A which represents the synthesis of a spherical harmonics vector x by matrix multiplication (y = Ax).
-  * The columns of A start a degree zero are sorted degreewise.
+  * The columns of A start at degree zero are sorted degreewise.
   * @param maxDegree maximum expansion degree
   * @param GM geocentric gravitational constant
   * @param R reference radius
@@ -58,6 +59,21 @@ namespace MiscGriddedData
   * @param isInterior flag whether interior of the sphere is requested
   * @return Matrix A. */
   Matrix synthesisSphericalHarmonicsMatrix(UInt maxDegree, Double GM, Double R, const std::vector<Vector3d> &points, KernelPtr kernel, Bool isInterior=FALSE);
+
+
+  /** @brief Estimate spherical harmonics for each grid data column.
+  * Must be called from every node in parallel computations.
+  * @param grid points, areas (used as weights), data columns.
+  * @param kernel define the input functional.
+  * @param minDegree minumum expansion degree
+  * @param maxDegree maximum expansion degree
+  * @param GM geocentric gravitational constant
+  * @param R reference radius
+  * @param useLeastSquares least suqares adjustment, otherwise simple quadrature formular.
+  * @param comm   communicator for parallel computation.
+  * @param timing start a loop timer for all grid points (only relevant for non-rectangular grids). */
+  std::vector<SphericalHarmonics> analysisSphericalHarmonics(const GriddedData &grid, KernelPtr kernel, UInt minDegree, UInt maxDegree, Double GM, Double R,
+                                                             Bool useLeastSquares, Parallel::CommunicatorPtr comm, Bool timing = TRUE);
 
 } // namespace GriddedData
 
