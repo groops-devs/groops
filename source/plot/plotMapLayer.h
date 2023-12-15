@@ -46,7 +46,7 @@ protected:
   std::vector<Vector3d> points;
   std::vector<Double>   areas;
   Matrix                data;
-  Angle                 buffer;
+  Angle                 bufferLon, bufferLat;
 
 public:
   virtual ~PlotMapLayer() {}

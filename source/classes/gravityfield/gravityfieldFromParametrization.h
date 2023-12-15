@@ -61,7 +61,7 @@ public:
   Tensor3d gravityGradient(const Time &time, const Vector3d &point) const override;
   Vector3d deformation    (const Time &time, const Vector3d &point, Double gravity, const Vector &hn, const Vector &ln) const override;
   void     deformation    (const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                           const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const override;
+                           const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const override;
   SphericalHarmonics sphericalHarmonics(const Time &time, UInt maxDegree, UInt minDegree, Double GM, Double R) const override;
   void variance(const Time &time, const std::vector<Vector3d> &point, const Kernel &kernel, Matrix &D) const override;
 };

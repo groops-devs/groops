@@ -15,7 +15,9 @@ static const char *docstring = R"(
 This program rotates \file{instrument data}{instrument} into a new reference frame
 (using \configFile{inputfileStarCamera}{instrument}).
 The rotation is usually done from satellite frame into inertial frame.
-To apply Earth rotation use \program{InstrumentEarthRotation}.
+
+To apply Earth rotation to orbits use \program{Orbit2EarthFixedOrbit}
+For other instrument data use \program{InstrumentEarthRotation} before.
 )";
 
 /***********************************************/

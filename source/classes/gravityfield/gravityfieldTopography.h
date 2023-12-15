@@ -56,28 +56,24 @@ point can be excluded with \config{distanceMin}.
 class GravityfieldTopography : public GravityfieldBase
 {
   Double              factor;
-  UInt                rows, cols;
-  std::vector<Angle>  lambda, phi;
-  std::vector<Double> dLambda, dPhi;
-  Vector              sinL, cosL, sinB, cosB;
+  std::vector<Angle>  lambda0, phi0;
+  std::vector<Double> lambda, phi, dLambda, dPhi;
+  std::vector<Double> sinL, cosL, sinPhi, cosPhi;
   Matrix              rLower, rUpper, rho;
   Double              cosPsiMin, cosPsiPrism, cosPsiLine, cosPsiMax;
-  Bool                testRectangle;
-  Bool                isPhiAscending, isLambdaAscending;
 
   inline void findRectangle(const Vector3d &point, UInt &colsMin, UInt &rowsMin, UInt &colsMax, UInt &rowsMax) const;
 
 public:
   GravityfieldTopography(Config &config);
 
-  // Einfluss des Referenzfieldes im Aufpunkt:
   Double   potential      (const Time &time, const Vector3d &point) const;
   Double   radialGradient (const Time &time, const Vector3d &point) const;
   Vector3d gravity        (const Time &time, const Vector3d &point) const;
   Tensor3d gravityGradient(const Time &time, const Vector3d &point) const;
   Vector3d deformation    (const Time &time, const Vector3d &point, Double gravity, const Vector &hn, const Vector &ln) const;
   void     deformation    (const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                           const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const;
+                           const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const;
   void     variance       (const Time &time, const std::vector<Vector3d> &point, const Kernel &kernel, Matrix &D) const;
   SphericalHarmonics sphericalHarmonics(const Time &time, UInt maxDegree, UInt minDegree, Double GM, Double R) const;
 };

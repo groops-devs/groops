@@ -20,6 +20,8 @@
 /** @addtogroup base */
 /// @{
 
+class GriddedDataRectangular;
+
 /***** CLASS ***********************************/
 
 /** @brief Point list with (multiple) data. */
@@ -36,6 +38,12 @@ public:
 
   /// Constructor with points, area elements, and multiple values for each point.
   GriddedData(const Ellipsoid &ellip, const std::vector<Vector3d> &_points, const std::vector<Double> &_areas, const std::vector<std::vector<Double>> &_values) : ellipsoid(ellip), points(_points), areas(_areas), values(_values) {}
+
+  /// Constructor from GriddedDataRectangular.
+  GriddedData(const GriddedDataRectangular &grid) {init(grid);}
+
+  /// Create from GriddedDataRectangular.
+  void init(const GriddedDataRectangular &grid);
 
   /** @brief Sort points geographically (North/West->South/East). */
   void sort();
@@ -71,14 +79,19 @@ public:
   std::vector<Double> heights;    //!< Elliposoidal height (rows)
   std::vector<Matrix> values;     //!< Multiple values at each point.
 
-  void geocentric(std::vector<Angle> &lambda, std::vector<Angle> &phi, std::vector<Double> &radius,
-                  std::vector<Double> &dLambda, std::vector<Double> &dPhi) const;
-
-  /// Convert to GriddedData.
-  void convert(GriddedData &grid) const;
-
   /// Create from GriddedData.
   Bool init(const GriddedData &grid);
+
+  /** @brief Conversion from ellipsoidal to geocentric spherical polar coordinates. */
+  void geocentric(std::vector<Angle> &lambda, std::vector<Angle> &phi, std::vector<Double> &radius) const;
+
+  /** @brief borders of grid cell (i,k): (lat(i) - lat(i+1)) x (lon(k) - lon(k+1)). */
+  void cellBorders(std::vector<Double> &longitudes, std::vector<Double> &latitudes) const;
+
+  /** @brief Area elements projected on the unit sphere.
+  * area(i,k) = dPhi(i)*dLambda(k).
+  * @return total area (4pi for global grids). */
+  Double areaElements(std::vector<Double> &dLambda, std::vector<Double> &dPhi) const;
 
   /** @brief Is GriddedDataRectangular valid?.
   * Test dimensions of vectors. */

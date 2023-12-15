@@ -35,52 +35,52 @@ template<> void save(OutArchive &ar, const GriddedData &x)
     ar<<nameValue("phi",         phi);
     ar<<nameValue("radius",      radius);
 
-    // areas elements
+    // area elements
     // -------------
-    const UInt cols = lambda.size();
-    std::vector<Double> dLambda(cols, 2*PI);
-    if(dLambda.size() > 1)
+    if(!x.areas.size()) // empty
     {
-      dLambda.at(0) = std::fabs(lambda.at(1)-lambda.at(0));
-      for(UInt s=1; s<cols-1; s++)
-        dLambda.at(s) = std::fabs(0.5*(lambda.at(s+1)-lambda.at(s-1)));
-      dLambda.at(cols-1) = std::fabs(lambda.at(cols-1)-lambda.at(cols-2));
+      ar<<nameValue("dLambda", std::vector<Double>{});
+      ar<<nameValue("dPhi",    std::vector<Double>{});
     }
-
-    // \int_{B0-dB/2}^{B0+dB/2} cosB dB = cosB0 * 2*sin(dB/2)
-    const UInt rows = phi.size();
-    std::vector<Double> dPhi(rows, 2);
-    if(dPhi.size() > 1)
+    else
     {
-      dPhi.at(0) = std::fabs(2*std::sin((phi.at(0)-phi.at(1))/2));
-      for(UInt i=1; i<rows-1; i++)
-        dPhi.at(i) = std::fabs(2*std::sin((phi.at(i-1)-phi.at(i+1))/4));
-      dPhi.at(rows-1) = std::fabs(2*std::sin((phi.at(rows-2)-phi.at(rows-1))/2));
-    }
+      // try to reconstruct area = dLambda * dPhi
+      std::vector<Double> dLambda(lambda.size(), 2*PI);
+      if(lambda.size() > 1)
+      {
+        dLambda.front() = std::fabs(std::remainder(lambda.at(1)-lambda.at(0), 2*PI));
+        for(UInt k=1; k<lambda.size()-1; k++)
+          dLambda.at(k) = std::fabs(0.5*std::remainder(lambda.at(k+1)-lambda.at(k-1), 2*PI));
+        dLambda.back() = std::fabs(std::remainder(lambda.at(lambda.size()-1)-lambda.at(lambda.size()-2), 2*PI));
+      }
 
-    // compare with given areas
-    if(x.areas.size())
-    {
+      std::vector<Double> dPhi(phi.size(), 0.);
+      for(UInt i=0; i<dPhi.size(); i++)
+        for(UInt k=0; k<dLambda.size(); k++)
+          dPhi.at(i) += x.areas.at(i*dLambda.size()+k)/(dLambda.at(k)*dLambda.size());
+
       Bool differ = FALSE;
       for(UInt i=0; i<dPhi.size(); i++)
         for(UInt k=0; k<dLambda.size(); k++)
-          if(std::fabs(x.areas.at(i*dLambda.size()+k) - dPhi.at(i) * dLambda.at(k)) > 1e-8)
+          if(std::fabs(x.areas.at(i*dLambda.size()+k) - dPhi.at(i)*dLambda.at(k)) > 1e-8)
+          {
             differ = TRUE;
-      if(differ)
+            ar<<nameValue("dLambda", x.areas);
+            ar<<nameValue("dPhi",    std::vector<Double>{1.});
+            break;
+          }
+      if(!differ)
       {
-        dLambda = x.areas;
-        dPhi = {1.};
+        ar<<nameValue("dLambda", dLambda);
+        ar<<nameValue("dPhi",    dPhi);
       }
-    }
-
-    ar<<nameValue("dLambda", dLambda);
-    ar<<nameValue("dPhi",    dPhi);
+    } // if(x.areas.size())
 
     // values
     ar<<nameValue("valueCount", x.values.size());
-    for(UInt id=0; id<x.values.size(); id++)
-      for(UInt i=0; i<x.values.at(id).size(); i++)
-        ar<<nameValue("value", x.values.at(id).at(i));
+    for(UInt idx=0; idx<x.values.size(); idx++)
+      for(UInt i=0; i<x.values.at(idx).size(); i++)
+        ar<<nameValue("value", x.values.at(idx).at(i));
     return;
   } // if(isRectangle)
 
@@ -132,7 +132,8 @@ template<> void save(OutArchive &ar, const GriddedDataRectangular &x)
     std::vector<Angle>  lambda, phi;
     std::vector<Double> radius;
     std::vector<Double> dLambda, dPhi;
-    x.geocentric(lambda, phi, radius, dLambda, dPhi);
+    x.geocentric(lambda, phi, radius);
+    x.areaElements(dLambda, dPhi);
     ar<<nameValue("isRectangle", TRUE);
     ar<<nameValue("ellipsoid",   x.ellipsoid);
     ar<<nameValue("lambda",      lambda);
@@ -148,9 +149,7 @@ template<> void save(OutArchive &ar, const GriddedDataRectangular &x)
     return;
   }
 
-  GriddedData griddedData;
-  x.convert(griddedData);
-  save(ar, griddedData);
+  save(ar, GriddedData(x));
 }
 
 /***********************************************/
@@ -185,10 +184,10 @@ template<> void load(InArchive &ar, GriddedData &x)
       x.points.resize(phi.size()*lambda.size());
       for(UInt z=0; z<phi.size(); z++)
       {
-        const Double cosB = std::cos(phi[z]);
-        const Double sinB = std::sin(phi[z]);
+        const Double cosPhi = std::cos(phi[z]);
+        const Double sinPhi = std::sin(phi[z]);
         for(UInt s=0; s<lambda.size(); s++)
-          x.points[z*lambda.size()+s] = Vector3d(radius[z]*cosB*cosL[s], radius[z]*cosB*sinL[s], radius[z]*sinB);
+          x.points[z*lambda.size()+s] = Vector3d(radius[z]*cosPhi*cosL[s], radius[z]*cosPhi*sinL[s], radius[z]*sinPhi);
       }
 
       // areas
@@ -350,7 +349,7 @@ void readFileGriddedData(const FileName &fileName, GriddedData &x)
     {
       GriddedDataRectangular rectangular;
       readFileGriddedDataRectangular(file, rectangular);
-      rectangular.convert(x);
+      x.init(rectangular);
       return;
     }
 

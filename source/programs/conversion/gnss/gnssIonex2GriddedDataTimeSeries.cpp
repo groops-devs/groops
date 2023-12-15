@@ -119,7 +119,7 @@ void GnssIonex2GriddedDataTimeSeries::run(Config &config, Parallel::Communicator
         gridRectangular.latitudes  = latitudes;
         gridRectangular.heights.resize(latitudes.size(), height);
         gridRectangular.ellipsoid = Ellipsoid(radius);
-        gridRectangular.convert(grid);
+        grid.init(gridRectangular);
       }
 
       // read data

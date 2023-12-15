@@ -68,24 +68,19 @@ void Gravityfield2GriddedData::run(Config &config, Parallel::CommunicatorPtr com
     readConfig(config, "inverseFlattening",     f,                  Config::DEFAULT,   STRING_DEFAULT_GRS80_f, "reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates");
     if(isCreateSchema(config)) return;
 
-    // create grid
-    // -----------
-    std::vector<Vector3d> points = grid->points();
-    std::vector<Double>   areas  = grid->areas();
-
     // Create values on grid
     // ---------------------
     logStatus<<"create values on grid"<<Log::endl;
-    std::vector<Double> field(points.size());
+    std::vector<Double> field(grid->points().size());
     if(!convertToHarmonics) // All representations, all point distributions
-      Parallel::forEach(field, [&](UInt i){return gravityfield->field(time, points.at(i), *kernel);}, comm);
+      Parallel::forEach(field, [&](UInt i){return gravityfield->field(time, grid->points().at(i), *kernel);}, comm);
     else // fast version
-      field = MiscGriddedData::synthesisSphericalHarmonics(gravityfield->sphericalHarmonics(time), points, kernel, comm);
+      field = MiscGriddedData::synthesisSphericalHarmonics(gravityfield->sphericalHarmonics(time), grid->points(), kernel, comm);
 
     if(Parallel::isMaster(comm))
     {
       logStatus<<"save values to file <"<<fileNameGrid<<">"<<Log::endl;
-      GriddedData griddedData(Ellipsoid(a,f), points, areas, {field});
+      GriddedData griddedData(Ellipsoid(a,f), grid->points(), grid->areas(), {field});
       writeFileGriddedData(fileNameGrid, griddedData);
       MiscGriddedData::printStatistics(griddedData);
     } // if(Parallel::isMaster(comm))

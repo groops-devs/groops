@@ -1398,7 +1398,7 @@ These parameters are lineary dependent and would lead to a rank deficiency in th
 matrix. To circumvent this issue, the estimation requires an additional zero-mean constraint added in each epoch.
 This is realized with an additional observation equation
 \begin{equation}
- 0 = \sum_i \delta t^{s_i} + \sum_k \delta t_{r_k}
+  0 = \frac{1}{n_i + n_k} (\sum_i \Delta t^{s_i} + \sum_k \Delta t_{r_k})
 \end{equation}
 summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
 with a standard deviation of \config{sigmaZeroMeanConstraint}.
@@ -1437,7 +1437,7 @@ of the preceding epoch and an unknown clock drift
 \end{equation}
 This equation is applied as an additional constraint equation in each epoch
 \begin{equation}
-   0 = \Delta t_{i+1} - \Delta t_{i} - t_{drift} dt + \epsilon_i.
+  0 = \Delta t_{i+1} - \Delta t_{i} - t_{drift} dt + \epsilon_i.
 \end{equation}
 The variance $\sigma^2(\epsilon)$ is estimated iteratively by variance component estimation (VCE).
 Clock jumps are treated as outliers and are automatically downweighted as described in
@@ -1450,7 +1450,7 @@ manner as described in \configClass{parametrization:clocks}{gnssParametrizationT
 To circumvent the rank deficiency additional zero-mean constraints are required for the first and last epoch.
 The realization of the constraint is done as an additional observation equation in the form
 \begin{equation}
- 0 = \sum_i \delta t^{s_i} + \sum_k \delta t_{r_k}
+  0 = \frac{1}{n_i + n_k} (\sum_i \Delta t^{s_i} + \sum_k \Delta t_{r_k})
 \end{equation}
 summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
 with a standard deviation of \config{sigmaZeroMeanConstraint}.
@@ -3052,6 +3052,21 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
+
+\subsection{Group}\label{gravityfieldType:group}
+Groups a set of \configClass{gravityfield}{gravityfieldType} and has no further effect itself.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
+\hline
+\end{tabularx}
+
 \clearpage
 %==================================
 
@@ -3231,7 +3246,7 @@ The number of points~$\gamma_j$ for each circle of latitude can then be determin
 Here the Gauss bracket $[x]$ specifies the largest integer equal to or less than $x$.
 The longitudes are subsequently determined by
 \begin{equation}
-\lambda_{ij}=\frac{\Delta\lambda_j}{2}+i\cdot(2\pi/\gamma_j),\qquad \mbox{with\qquad}0\leq i< \gamma_j.
+\lambda_{ij}=\frac{\Delta\lambda_j}{2}+i\cdot(2\pi/\gamma_j),\qquad\mbox{with}\qquad 0\leq i< \gamma_j.
 \end{equation}
 The number of grid points can be estimated by
 \begin{equation}\label{eq:numberReuter}
@@ -4603,6 +4618,21 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~indexStart & \hfuzz=500pt uint & \hfuzz=500pt position in the solution vector\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~rightSide & \hfuzz=500pt uint & \hfuzz=500pt if solution contains several right hand sides, select one\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
+\hline
+\end{tabularx}
+
+
+\subsection{Group}\label{miscAccelerationsType:group}
+Groups a set of \configClass{miscAccelerations}{miscAccelerationsType} and has no further effect itself.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~miscAccelerations & \hfuzz=500pt \hyperref[miscAccelerationsType]{miscAccelerations} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor\\
 \hline
 \end{tabularx}
 
@@ -8226,6 +8256,21 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~k20 & \hfuzz=500pt double & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~k30 & \hfuzz=500pt double & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor, set -1 to subtract the field\\
+\hline
+\end{tabularx}
+
+
+\subsection{Group}\label{tidesType:group}
+Groups a set of \configClass{tides}{tidesType} and has no further effect itself.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~tides & \hfuzz=500pt \hyperref[tidesType]{tides} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor\\
 \hline
 \end{tabularx}
 

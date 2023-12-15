@@ -135,18 +135,14 @@ Vector3d GravityfieldFromParametrization::deformation(const Time &time, const Ve
 {
   Matrix A(3, parametrization->parameterCount());
   parametrization->deformation(time, point, gravity, hn, ln, A);
-  Vector l = A*x;
-  Vector3d field;
-  field.x() = l(0);
-  field.y() = l(1);
-  field.z() = l(2);
-  return factor * field;
+  const Vector l = A*x;
+  return factor * Vector3d(l(0), l(1), l(2));
 }
 
 /***********************************************/
 
 void GravityfieldFromParametrization::deformation(const std::vector<Time> &time, const std::vector<Vector3d> &point, const std::vector<Double> &gravity,
-                                                 const Vector &hn, const Vector &ln, std::vector< std::vector<Vector3d> > &disp) const
+                                                 const Vector &hn, const Vector &ln, std::vector<std::vector<Vector3d>> &disp) const
 {
   try
   {

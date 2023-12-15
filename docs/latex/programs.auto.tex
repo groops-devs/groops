@@ -2406,9 +2406,6 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates on output\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outColumn & \hfuzz=500pt expression & \hfuzz=500pt expression (variables: longitude, latitude, height, area, data0, data1, ...)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outColumn & \hfuzz=500pt expression & \hfuzz=500pt expression (variables: longitude, latitude, height, area, data0, data1, ...)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outColumn & \hfuzz=500pt expression & \hfuzz=500pt expression (variables: longitude, latitude, height, area, data0, data1, ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~outColumn & \hfuzz=500pt expression & \hfuzz=500pt expression (variables: longitude, latitude, height, area, data0, data1, ...)\\
 \hline
 \end{tabularx}
@@ -2426,6 +2423,8 @@ For the latter one the data must be regular distributed.
 
 The \config{value}s $f_i$ and the \config{weight}s $\Delta\Phi_i$ are expressions
 using the common data variables for grids, see \reference{dataVariables}{general.parser:dataVariables}.
+Multiple \configFile{outputfilePotentialCoefficients}{potentialCoefficients} can be estimated in one step.
+For each an indivdual \config{value} must be specified.
 The type of the gridded data (e.g gravity anomalies or geoid heights)
 must be set with \configClass{kernel}{kernelType} $k_n$.
 
@@ -2437,15 +2436,17 @@ For irregular distributed data and using the full variance covariance matrix use
 \program{NormalsSolverVCE} together with \configClass{oberservation:terrestrial}{observationType:terrestrial}
 and \configClass{parametrizationGravity:sphericalHarmonics}{parametrizationGravityType:sphericalHarmonics}.
 
+See also \program{GriddedDataTimeSeries2PotentialCoefficients}.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfilePotentialCoefficients & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~outputfilePotentialCoefficients & \hfuzz=500pt filename & \hfuzz=500pt one file for each value expression\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~value & \hfuzz=500pt expression & \hfuzz=500pt expression to compute values (input columns are named data0, data1, ...)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~value & \hfuzz=500pt expression & \hfuzz=500pt expression to compute values (input columns are named data0, data1, ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~weight & \hfuzz=500pt expression & \hfuzz=500pt expression to compute values (input columns are named data0, data1, ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~kernel & \hfuzz=500pt \hyperref[kernelType]{kernel} & \hfuzz=500pt data type of input values\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
@@ -2653,10 +2654,20 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GriddedDataReduceSampling}\label{GriddedDataReduceSampling}
-Generate coarse grid by computing mean values.
+Generate coarse grid by computing area weighted mean values.
 The number of points is decimated by averaging integer multiplies of grid points
 (\config{multiplierLongitude}, \config{multiplierLatitude}).
-The fine grid can be written, where the coarse grid values are additionally appended.
+
+if \config{volumeConserving} is set, data are interpreted as heights above ellipsoid
+and the tesseroid volume
+\begin{equation}
+  V=\int_r^{r+H}\int_{\varphi_1}^{\varphi_2}\int_{\lambda_1}^{\lambda_2} r^2\cos\varphi\,d\varphi\,d\lambda\,dr
+\end{equation}
+is conserved, where $r$ is the radius of the ellipsoid at grid center and
+$(\varphi_1-\varphi_2)\times(\lambda_1-\lambda_2)$ are the grid cell boundaries.
+This is meaninful for Digital Elevation Models (DEM).
+
+The fine grid can be written, where the first coarse grid values (data0) are additionally appended.
 
 
 \keepXColumns
@@ -2669,6 +2680,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileFineGridRectangular & \hfuzz=500pt filename & \hfuzz=500pt Digital Terrain Model\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~multiplierLongitude & \hfuzz=500pt uint & \hfuzz=500pt Generalizing factor\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~multiplierLatitude & \hfuzz=500pt uint & \hfuzz=500pt Generalizing factor\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~volumeConserving & \hfuzz=500pt boolean & \hfuzz=500pt data are interpreted as heights above ellipsoid\\
 \hline
 \end{tabularx}
 
@@ -2703,6 +2715,46 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{GriddedDataTimeSeries2PotentialCoefficients}\label{GriddedDataTimeSeries2PotentialCoefficients}
+This program estimate potential coefficients from
+\configFile{inputfileGriddedDataTimeSeries}{griddedDataTimeSeries}
+in the same way as \program{GriddedData2PotentialCoefficients}
+but not only for one grid but for each epoch of
+\configClass{timeSeries}{timeSeriesType} of if not set
+for the temporal nodal points from the inputfile.
+The \configFile{outputfilePotentialCoefficients}{potentialCoefficients}
+(one for each \config{value}) are written for each epoch with the expansion
+of \config{variableLoopTime} and \config{variableLoopIndex}
+(see \reference{text parser}{general.parser:text}).
+
+See also \program{GriddedData2PotentialCoefficients}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~outputfilesPotentialCoefficients & \hfuzz=500pt filename & \hfuzz=500pt for each epoch\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopTime & \hfuzz=500pt string & \hfuzz=500pt variable with time of each epoch\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current epoch (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of epochs\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGriddedDataTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt otherwise times from inputfile are used\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~value & \hfuzz=500pt expression & \hfuzz=500pt expression (variables: longitude, latitude, height, area, data0, data1, ...)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~weight & \hfuzz=500pt expression & \hfuzz=500pt expression to compute values (input columns are named data0, data1, ...)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~kernel & \hfuzz=500pt \hyperref[kernelType]{kernel} & \hfuzz=500pt kernel in which the grid values are given\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for potential coefficients\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~leastSquares & \hfuzz=500pt boolean & \hfuzz=500pt false: quadrature formular, true: least squares adjustment order by order\\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
 \subsection{GriddedTopography2AtmospherePotentialCoefficients}\label{GriddedTopography2AtmospherePotentialCoefficients}
 Estimate interior and exterior potential coefficients for atmosphere above digital terrain models.
 Coefficients for interior $(1/r)^{n+1}$ and exterior ($r^n$) are computed.
@@ -2722,8 +2774,8 @@ from \configFile{inputfileGriddedData}{griddedData}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfilePotentialCoefficientsExterior & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfilePotentialCoefficientsInterior & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfilePotentialCoefficientsExterior & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfilePotentialCoefficientsInterior & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt Digital Terrain Model\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~densitySeaLevel & \hfuzz=500pt double & \hfuzz=500pt [kg/m**3]\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~ny & \hfuzz=500pt double & \hfuzz=500pt Constant for Atmosphere\\
@@ -2753,7 +2805,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfilePotentialCoefficients & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfilePotentialCoefficientsInterior & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt Digital Terrain Model\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~density & \hfuzz=500pt expression & \hfuzz=500pt expression [kg/m**3]\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~density & \hfuzz=500pt expression & \hfuzz=500pt expression [kg/m\textasciicircum{}3]\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~radialUpperBound & \hfuzz=500pt expression & \hfuzz=500pt expression (variables 'L', 'B', 'height', 'data', and 'area' are taken from the gridded data\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~radialLowerBound & \hfuzz=500pt expression & \hfuzz=500pt expression (variables 'L', 'B', 'height', 'data', and 'area' are taken from the gridded data\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~factor & \hfuzz=500pt double & \hfuzz=500pt the result is multiplied by this factor\\
@@ -2776,7 +2828,7 @@ Interpolate digital terrain models from ellipoidal heights to radial heights.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt Digital Terrain Model\\
 \hline
 \end{tabularx}
@@ -3852,7 +3904,9 @@ Name & Type & Annotation\\
 This program rotates \file{instrument data}{instrument} into a new reference frame
 (using \configFile{inputfileStarCamera}{instrument}).
 The rotation is usually done from satellite frame into inertial frame.
-To apply Earth rotation use \program{InstrumentEarthRotation}.
+
+To apply Earth rotation to orbits use \program{Orbit2EarthFixedOrbit}
+For other instrument data use \program{InstrumentEarthRotation} before.
 
 
 \keepXColumns
@@ -5613,6 +5667,36 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt data are appended\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~planet & \hfuzz=500pt \hyperref[planetType]{planet} & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
+\subsection{Orbit2EarthFixedOrbit}\label{Orbit2EarthFixedOrbit}
+Normally the orbits in GROOPS are given in the celestial reference frame (CRF) with the
+origin in the center of mass (CoM). This program rotates the orbit with
+\configClass{earthRotation}{earthRotationType} from CRF to the TRF.
+
+To additionally tranform into the center of solid Earth (CE) frame (or center of Figure (CF)),
+a correction can be applied by providing degree one coefficients of a
+\configClass{gravityfield}{gravityfieldType} (e.g. ocean tides).
+
+If \config{celestial2terrestrial} is set to no, the inverse transformation is applied.
+
+See also \program{InstrumentRotate}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt transformation from CRF to TRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt degree 1 fluid mantle for CM2CE correction\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~celestial2terrestrial & \hfuzz=500pt boolean & \hfuzz=500pt yes: crf-\$>\$trf, no: trf-\$>\$crf\\
 \hline
 \end{tabularx}
 
@@ -9068,39 +9152,6 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
-\clearpage
-%==================================
-\subsection{NetCdf2PotentialCoefficients}\label{NetCdf2PotentialCoefficients}
-This program converts a COARDS compliant NetCDF file into potential coefficients by least squares.
-If multiple \config{variableNameData} are given the grids values are accumulated before the adjustment.
-
-See also \program{NetCdfInfo}, \program{NetCdf2GridRectangular}.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfilePotentialCoefficients & \hfuzz=500pt filename & \hfuzz=500pt One file for each epoch in the NetCDF file. Use loopTimeVariable as template.\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~loopTimeVariable & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileNetCdf & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~variableNameLongitude & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~variableNameLatitude & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableNameTime & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable (leave blank for static grids)\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~variableNameData & \hfuzz=500pt string & \hfuzz=500pt name of NetCDF variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~noDataValue & \hfuzz=500pt double & \hfuzz=500pt no data value for data variables\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~semimajorAxis & \hfuzz=500pt double & \hfuzz=500pt reference semimajor axis for ellipsoidal coordinates\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~kernel & \hfuzz=500pt \hyperref[kernelType]{kernel} & \hfuzz=500pt kernel in which the grid values are given\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for potential coefficients\\
-\hline
-\end{tabularx}
-
-This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{NetCdfInfo}\label{NetCdfInfo}

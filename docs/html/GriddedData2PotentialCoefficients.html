@@ -78,18 +78,20 @@ gravity field functionals. It used a simple quadrature formular
 \]or a <strong class="groops-config-element">leastSquares</strong> adjustment with block diagonal normal matrix (order by order).
 For the latter one the data must be regular distributed.</p><p>The <strong class="groops-config-element">value</strong>s $f_i$ and the <strong class="groops-config-element">weight</strong>s $\Delta\Phi_i$ are expressions
 using the common data variables for grids, see <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>.
+Multiple <a class="groops-class" href="fileFormat_potentialCoefficients.html">outputfilePotentialCoefficients</a> can be estimated in one step.
+For each an indivdual <strong class="groops-config-element">value</strong> must be specified.
 The type of the gridded data (e.g gravity anomalies or geoid heights)
 must be set with <a class="groops-class" href="kernelType.html">kernel</a> $k_n$.</p><p>The expansion is limited in the range between <strong class="groops-config-element">minDegree</strong>
 and <strong class="groops-config-element">maxDegree</strong> inclusively. The coefficients are related
 to the reference radius <strong class="groops-config-element">R</strong> and the Earth gravitational constant <strong class="groops-config-element">GM</strong>.</p><p>For irregular distributed data and using the full variance covariance matrix use
 <a class="groops-program" href="NormalsSolverVCE.html">NormalsSolverVCE</a> together with <a class="groops-class" href="observationType.html#terrestrial">oberservation:terrestrial</a>
-and <a class="groops-class" href="parametrizationGravityType.html#sphericalHarmonics">parametrizationGravity:sphericalHarmonics</a>.
+and <a class="groops-class" href="parametrizationGravityType.html#sphericalHarmonics">parametrizationGravity:sphericalHarmonics</a>.</p><p>See also <a class="groops-program" href="GriddedDataTimeSeries2PotentialCoefficients.html">GriddedDataTimeSeries2PotentialCoefficients</a>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfilePotentialCoefficients</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">outputfilePotentialCoefficients</div></div></td><td>filename</td><td>one file for each value expression</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileGriddedData</div></div></td><td>filename</td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">value</div></div></td><td>expression</td><td>expression to compute values (input columns are named data0, data1, ...)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">value</div></div></td><td>expression</td><td>expression to compute values (input columns are named data0, data1, ...)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">weight</div></div></td><td>expression</td><td>expression to compute values (input columns are named data0, data1, ...)</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">kernel</div></div></td><td><a href="kernelType.html">kernel</a></td><td>data type of input values</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">minDegree</div></div></td><td>uint</td><td></td></tr>
