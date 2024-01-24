@@ -281,7 +281,8 @@ void GnssReceiverGeneratorLowEarthOrbiter::simulation(const std::vector<GnssType
     {
       try
       {
-        recv->simulateObservations(types, noiseClock, noiseObs, gnss->transmitters,
+        recv->simulateObservations(types, gnss->substituteTrackingMode,
+                                   noiseClock, noiseObs, gnss->transmitters,
                                    gnss->funcRotationCrf2Trf, gnss->funcReduceModels,
                                    minObsCountPerTrack, elevationCutOff, Angle(0), useType, ignoreType,
                                    GnssObservation::RANGE | GnssObservation::PHASE);
