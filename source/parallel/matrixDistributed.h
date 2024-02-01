@@ -25,9 +25,9 @@
 * @ingroup parallelGroup */
 class MatrixDistributed
 {
-  Parallel::CommunicatorPtr         comm;
+  Parallel::CommunicatorPtr             comm;
   std::function<UInt(UInt, UInt, UInt)> calcRank;
-  std::vector<UInt>                _blockIndex;
+  std::vector<UInt>                    _blockIndex;
 
   std::vector<std::vector<std::pair<UInt, UInt>>> _row;      // each column, used row -> idx to _N and _rank
   std::vector<std::vector<std::pair<UInt, UInt>>> _column;   // each row, used column -> idx to _N and _rank
@@ -75,25 +75,25 @@ public:
   * @param blockIndex: boundary indices of the sub-blocks.
   * @param comm: Parallel communicator of the matrix (default: MPI_COMM_WORLD).
   * @param calcRank: function handler to determine the process rank of block(i,k) (default: block cyclic distribution). */
-  explicit MatrixDistributed(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, std::function<UInt(UInt, UInt, UInt)> calcRank=nullptr);
+  explicit MatrixDistributed(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, const std::function<UInt(UInt, UInt, UInt)> &calcRank=nullptr);
 
   /** @copydoc MatrixDistributed(const std::vector<UInt> &, Parallel::CommunicatorPtr, std::function<UInt(UInt, UInt, UInt)>)
   * This method allocates the upper block triangle of a symmetric matrix with zero matrices. */
-  void init(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, std::function<UInt(UInt, UInt, UInt)> calcRank=nullptr);
+  void init(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, const std::function<UInt(UInt, UInt, UInt)> &calcRank=nullptr);
 
   /** @copydoc MatrixDistributed(const std::vector<UInt> &, Parallel::CommunicatorPtr, std::function<UInt(UInt, UInt, UInt)>)
   * No memory is allocated. To assign blocks to processes and allocate memory, @a setBlock(UInt i, UInt k, UInt rank) has to be called. */
-  void initEmpty(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, std::function<UInt(UInt, UInt, UInt)> calcRank=nullptr);
+  void initEmpty(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, const std::function<UInt(UInt, UInt, UInt)> &calcRank=nullptr);
 
   // =========================================
 
   /** @brief Set a new handler to calculate the rank of new blocks.
   * If @p calcRank is nullptr a default block cyclic distribution is assumed.
   * This function must be called by all processes within the communcator in the matrix! */
-  void setCalculateRank(std::function<UInt(UInt, UInt, UInt)> calcRank);
+  void setCalculateRank(const std::function<UInt(UInt, UInt, UInt)> &calcRank);
 
   /** @brief returns the handler to calculate the rank of new blocks. */
-  std::function<UInt(UInt, UInt, UInt)> getCalculateRank() const {return calcRank;}
+  const std::function<UInt(UInt, UInt, UInt)> &getCalculateRank() const {return calcRank;}
 
   /** @brief The default calculateRank handler.
   * Block cyclic distribution.
@@ -186,7 +186,7 @@ public:
   * @param index: indices of the original matrix elements in the reordered matrix
   * @param blockIndex: boundary indices of the sub-blocks.
   * @param calcRank: function handler to determine the process rank of block(i,k) (default: block cyclic distribution). */
-  void reorder(const std::vector<UInt> &index, const std::vector<UInt> &blockIndex, std::function<UInt(UInt, UInt, UInt)> calcRank=nullptr);
+  void reorder(const std::vector<UInt> &index, const std::vector<UInt> &blockIndex, const std::function<UInt(UInt, UInt, UInt)> &calcRank=nullptr);
 
   // =========================================
 

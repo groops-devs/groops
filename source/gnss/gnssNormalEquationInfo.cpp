@@ -61,49 +61,65 @@ GnssParameterIndex GnssNormalEquationInfo::addParameters(UInt idEpoch, UInt idRe
 {
   if(!parameterNames.size())
     return GnssParameterIndex(NULLINDEX);
-  parameters.push_back(std::make_tuple(idEpoch, idRecv, idTrans, parameters.size(), parameterNames));
-  return GnssParameterIndex(parameters.size()-1);
+  const UInt idx = parameters.size();
+  parameters.push_back(Parameter{idEpoch, idRecv, idTrans, NULLINDEX, idx, parameterNames});
+  return GnssParameterIndex(parameters.back().idx);
 }
 
 /***********************************************/
 
-void GnssNormalEquationInfo::calculateIndex()
+void GnssNormalEquationInfo::calculateIndex(const Vector &recvProcess)
 {
   try
   {
+    // ------------------
     auto newBlock = [&]()
     {
       const UInt parameterCount = this->parameterCount();
       if(blockSize(blockCount()-1))
+      {
         blockIndices_.push_back(parameterCount);
+        blockRank_.push_back(NULLINDEX);
+      }
     };
+    // ------------------
 
+    // ------------------
     auto insert = [&](auto iter, UInt defaultBlockSize)
     {
       if((defaultBlockSize > 0) && (blockSize(blockCount()-1) >= defaultBlockSize))
         newBlock();
-      const UInt idx   = std::get<3>(*iter);
+      const UInt idx   = iter->idx;
       index_.at(idx)   = blockIndices_.back();
       block_.at(idx)   = blockCount()-1;
-      count_.at(idx)   = std::get<4>(*iter).size();
-      parameterNames_.insert(parameterNames_.end(), std::get<4>(*iter).begin(), std::get<4>(*iter).end());
-      blockIndices_.back() += std::get<4>(*iter).size();
+      count_.at(idx)   = iter->names.size();
+      parameterNames_.insert(parameterNames_.end(), iter->names.begin(), iter->names.end());
+      blockIndices_.back() += iter->names.size();
+      blockRank_.back() = iter->rank;
     };
+    // ------------------
 
     block_.resize(parameters.size(), NULLINDEX);
     index_.resize(parameters.size(), NULLINDEX);
     count_.resize(parameters.size(), 0);
     blockIndices_ = {0, 0};
-    parameterNames_.reserve(std::accumulate(parameters.begin(), parameters.end(), UInt(0), [](UInt count, const auto &p){return count+std::get<4>(p).size();}));
+    blockRank_    = {NULLINDEX};
+    parameterNames_.reserve(std::accumulate(parameters.begin(), parameters.end(), UInt(0), [](UInt count, const auto &p){return count+p.names.size();}));
 
-    std::stable_sort(parameters.begin(), parameters.end(), [](auto &p1, auto &p2)
+    // set process rank of receivers
+    for(auto &p : parameters)
+      if((p.idRecv != NULLINDEX) && (p.idTrans == NULLINDEX) && recvProcess(p.idRecv))
+        p.rank = recvProcess(p.idRecv)-1;
+
+    parameters.sort([](auto &p1, auto &p2)
                     {
-                      const Bool isAmbi1 = (std::get<1>(p1) != NULLINDEX) && (std::get<2>(p1) != NULLINDEX);
-                      const Bool isAmbi2 = (std::get<1>(p2) != NULLINDEX) && (std::get<2>(p2) != NULLINDEX);
-                      if(isAmbi1 != isAmbi2) return isAmbi2; // ambiguities always at end
-                      if(std::get<0>(p1) != std::get<0>(p2)) return (std::get<0>(p1) < std::get<0>(p2)); // epoch
-                      if(std::get<1>(p1) != std::get<1>(p2)) return (std::get<1>(p1) < std::get<1>(p2)); // idRecv
-                      return (std::get<2>(p1) < std::get<2>(p2));                                        // idTrans
+                      const Bool isAmbi1 = (p1.idRecv != NULLINDEX) && (p1.idTrans != NULLINDEX);
+                      const Bool isAmbi2 = (p2.idRecv != NULLINDEX) && (p2.idTrans != NULLINDEX);
+                      if(isAmbi1 != isAmbi2) return isAmbi2;                         // ambiguities always at end
+                      if(p1.idEpoch != p2.idEpoch) return (p1.idEpoch < p2.idEpoch); // epoch
+                      if(p1.rank    != p2.rank)    return (p1.rank    < p2.rank);    // process rank
+                      if(p1.idRecv  != p2.idRecv)  return (p1.idRecv  < p2.idRecv);  // idRecv
+                      return (p1.idTrans < p2.idTrans);                              // idTrans
                     });
     auto iter = parameters.begin();
 
@@ -115,15 +131,14 @@ void GnssNormalEquationInfo::calculateIndex()
       UInt blockEpochStart = blockIndices_.size();
       UInt idRecv = NULLINDEX;
       UInt countStation = 0;
-      while((iter != parameters.end()) && (std::get<0>(*iter) == idEpoch) && ((std::get<1>(*iter) == NULLINDEX) || (std::get<2>(*iter) == NULLINDEX)))
+      while((iter != parameters.end()) && (iter->idEpoch == idEpoch) && ((iter->idRecv == NULLINDEX) || (iter->idTrans == NULLINDEX)))
       {
-        if(std::get<1>(*iter) != idRecv) // next receiver?
-          if(defaultBlockReceiverCount && ((std::get<1>(*iter) == NULLINDEX) || ((countStation++ % defaultBlockReceiverCount) == 0)))
+        if(iter->idRecv != idRecv) // next receiver?
+          if(defaultBlockReceiverCount && ((iter->idRecv == NULLINDEX) || ((countStation++ % defaultBlockReceiverCount) == 0)))
             newBlock();
-        idRecv = std::get<1>(*iter);
+        idRecv = iter->idRecv;
 
-        insert(iter, defaultBlockSizeEpoch);
-        iter++;
+        insert(iter++, defaultBlockSizeEpoch);
       }
       blockCountEpoch_.at(idEpoch) = blockIndices_.size() - blockEpochStart + (blockSize(blockCount()-1) ? 1 : 0);
     }
@@ -132,55 +147,72 @@ void GnssNormalEquationInfo::calculateIndex()
     newBlock();
     blockInterval_ = blockCount()-1;
     UInt countStation = 0;
-    for(UInt idRecv=0; idRecv<estimateReceiver.size(); idRecv++)
+    while((iter != parameters.end()) && (iter->idEpoch == NULLINDEX) && (iter->idRecv != NULLINDEX) && (iter->idTrans == NULLINDEX))
     {
+      const UInt idRecv = iter->idRecv;
       if(defaultBlockReceiverCount && ((countStation++ % defaultBlockReceiverCount) == 0))
         newBlock();
+
       Bool firstBlock = TRUE;
-      while((iter != parameters.end()) && (std::get<0>(*iter) == NULLINDEX) && (std::get<1>(*iter) == idRecv) && (std::get<2>(*iter) == NULLINDEX))
+      while((iter != parameters.end()) && (iter->idEpoch == NULLINDEX) && (iter->idRecv == idRecv) && (iter->idTrans == NULLINDEX))
       {
-        insert(iter, firstBlock ? defaultBlockSizeInterval : 0); // do not split parameters of a receiver
+        insert(iter++, firstBlock ? defaultBlockSizeInterval : 0); // do not split parameters of a receiver
         firstBlock = FALSE;
-        iter++;
       }
     }
 
     // transmitter interval parameters
     newBlock();
-    for(UInt idTrans=0; idTrans<countTransmitter_; idTrans++)
+    while((iter != parameters.end()) && (iter->idEpoch == NULLINDEX) && (iter->idRecv == NULLINDEX) && (iter->idTrans != NULLINDEX))
     {
+      const UInt idTrans = iter->idTrans;
       Bool firstBlock = TRUE;
-      while((iter != parameters.end()) && (std::get<0>(*iter) == NULLINDEX) && (std::get<1>(*iter) == NULLINDEX) && (std::get<2>(*iter) == idTrans))
+      while((iter != parameters.end()) && (iter->idEpoch == NULLINDEX) && (iter->idRecv == NULLINDEX) && (iter->idTrans == idTrans))
       {
-        insert(iter, firstBlock ? defaultBlockSizeInterval : 0); // do not split parameters of a transmitter
+        insert(iter++, firstBlock ? defaultBlockSizeInterval : 0); // do not split parameters of a transmitter
         firstBlock = FALSE;
-        iter++;
       }
     }
 
     // other interval parameters
     newBlock();
-    while((iter != parameters.end()) && (std::get<0>(*iter) == NULLINDEX) && (std::get<1>(*iter) == NULLINDEX) && (std::get<2>(*iter) == NULLINDEX))
-    {
-      insert(iter, defaultBlockSizeInterval);
-      iter++;
-    }
+    while((iter != parameters.end()) && (iter->idEpoch == NULLINDEX) && (iter->idRecv == NULLINDEX) && (iter->idTrans == NULLINDEX))
+      insert(iter++, defaultBlockSizeInterval);
 
     // ambiguity parameters
     newBlock();
     blockAmbiguity_ = blockCount()-1;
-    while((iter != parameters.end()) && (std::get<1>(*iter) != NULLINDEX) && (std::get<2>(*iter) != NULLINDEX))
-    {
-      insert(iter, defaultBlockSizeAmbiguity);
-      iter++;
-    }
+    while((iter != parameters.end()) && (iter->idRecv != NULLINDEX) && (iter->idTrans != NULLINDEX))
+      insert(iter++, defaultBlockSizeAmbiguity);
 
     // remove possible last empty block
     if(blockCount() && !blockSize(blockCount()-1))
       blockIndices_.pop_back();
 
     parameters.clear();
-    parameters.shrink_to_fit();
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+UInt GnssNormalEquationInfo::normalsBlockRank(UInt i, UInt k, UInt commSize)
+{
+  try
+  {
+    // if(blockRank_.at(i) != NULLINDEX) return blockRank_.at(i);
+    // if(blockRank_.at(k) != NULLINDEX) return blockRank_.at(k);
+
+    // find optimal process grid (nearly quadratic)
+    UInt pRows = static_cast<UInt>(std::floor(std::sqrt(commSize)));
+    while(commSize % pRows)
+      pRows++;
+    const UInt pCols = commSize/pRows;
+
+    return (i%pRows)*pCols+(k%pCols);
   }
   catch(std::exception &e)
   {
