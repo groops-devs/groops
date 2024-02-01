@@ -829,7 +829,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt templated for PRN list (variableNamePrn)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt templated for PRN list (variableNamePrn)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfilePrn2FrequencyNumber & \hfuzz=500pt filename & \hfuzz=500pt GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~prn & \hfuzz=500pt string & \hfuzz=500pt PRN (e.g. G01) for transmitter info files\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~prn & \hfuzz=500pt string & \hfuzz=500pt PRN (e.g. R01) for transmitter info files\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableNamePrn & \hfuzz=500pt string & \hfuzz=500pt variable name for PRN in transmitter info files\\
 \hline
 \end{tabularx}
@@ -9514,6 +9514,26 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~extrapolateForward & \hfuzz=500pt boolean & \hfuzz=500pt also compute positions for epochs after last interval defined in SINEX file\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~extrapolateBackward & \hfuzz=500pt boolean & \hfuzz=500pt also compute positions for epochs before first interval defined in SINEX file\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~stationName & \hfuzz=500pt string & \hfuzz=500pt convert only these stations\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{SinexMetadata2GlonassFrequencyNumber}\label{SinexMetadata2GlonassFrequencyNumber}
+Create \configFile{outputfileMatrixPrn2FrequencyNumber}{matrix} matrix
+from \href{https://www.igs.org/mgex/metadata/#metadata}{IGS SINEX metadata format}
+with the columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber.
+
+See also \program{RinexObservation2GnssReceiver}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMatrixPrn2FrequencyNumber & \hfuzz=500pt filename & \hfuzz=500pt GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinexMetadata & \hfuzz=500pt filename & \hfuzz=500pt IGS SINEX metadata file\\
 \hline
 \end{tabularx}
 
