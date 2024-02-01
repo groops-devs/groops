@@ -41,7 +41,6 @@ class LoopMatrix : public Loop
   std::vector<ExpressionVariablePtr> variables;
   std::string     nameIndex, nameCount;
   VariableList    varListMatrix;
-  UInt            index;
 
 public:
   LoopMatrix(Config &config);
@@ -69,6 +68,7 @@ inline LoopMatrix::LoopMatrix(Config &config)
     readConfig(config, "variableLoop",       variables, Config::MUSTSET,  "loopNumber=data0", "define a variable by name = expression (input columns are named data0, data1, ...)");
     readConfig(config, "variableLoopIndex",  nameIndex, Config::OPTIONAL, "",                 "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount, Config::OPTIONAL, "",                 "variable with total number of iterations");
+    readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
     readFileMatrix(fileName, A);
@@ -81,8 +81,6 @@ inline LoopMatrix::LoopMatrix(Config &config)
     for(auto &variable : variables)
       variable->parseVariableName(); // get real variable names, otherwise all named 'variableLoop'
     addDataVariables(A, varListMatrix);
-
-    index = 0;
   }
   catch(std::exception &e)
   {
@@ -94,17 +92,16 @@ inline LoopMatrix::LoopMatrix(Config &config)
 
 inline Bool LoopMatrix::iteration(VariableList &varList)
 {
-  if(index >= count())
+  if(index() >= count())
     return FALSE;
 
-  evaluateDataVariables(A, index, varListMatrix);
+  evaluateDataVariables(A, index(), varListMatrix);
   for(auto &variable : variables)
     varList.setVariable(variable->name(), variable->evaluate(varListMatrix));
-  if(!nameIndex.empty()) varList.setVariable(nameIndex, index);
+  if(!nameIndex.empty()) varList.setVariable(nameIndex, index());
   if(!nameCount.empty()) varList.setVariable(nameCount, count());
 
-  index++;
-  return TRUE;
+  return checkCondition(varList);
 }
 
 /***********************************************/

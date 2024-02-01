@@ -38,7 +38,6 @@ class LoopCommandOutput : public Loop
 {
   std::string              nameString, nameIndex, nameCount;
   std::vector<std::string> strings;
-  UInt                     index;
 
 public:
   LoopCommandOutput(Config &config);
@@ -58,11 +57,12 @@ inline LoopCommandOutput::LoopCommandOutput(Config &config)
     std::vector<FileName> commands;
     Bool                  silently;
 
-    readConfig(config, "command",            commands,   Config::MUSTSET,   "",            "each output line becomes a loop iteration");
-    readConfig(config, "silently",           silently,   Config::DEFAULT,   "0",           "without showing the output.");
+    readConfig(config, "command",            commands,   Config::MUSTSET,  "",            "each output line becomes a loop iteration");
+    readConfig(config, "silently",           silently,   Config::DEFAULT,  "0",           "without showing the output.");
     readConfig(config, "variableLoopString", nameString, Config::OPTIONAL, "loopCommand", "name of the variable to be replaced");
     readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL, "",            "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL, "",            "variable with total number of iterations");
+    readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
     for(const auto &command : commands)
@@ -74,7 +74,6 @@ inline LoopCommandOutput::LoopCommandOutput(Config &config)
         logWarningOnce<<"Command \""+command.str()+"\" returned no output"<<Log::endl;
     } // for(i)
 
-    index = 0;
     if(!silently)
       for(const auto &str : strings)
         logInfo<<str<<Log::endl;
@@ -89,15 +88,14 @@ inline LoopCommandOutput::LoopCommandOutput(Config &config)
 
 inline Bool LoopCommandOutput::iteration(VariableList &varList)
 {
-  if(index >= count())
+  if(index() >= count())
     return FALSE;
 
-  if(!nameString.empty()) varList.setVariable(nameString, strings.at(index));
-  if(!nameIndex.empty())  varList.setVariable(nameIndex,  index);
+  if(!nameString.empty()) varList.setVariable(nameString, strings.at(index()));
+  if(!nameIndex.empty())  varList.setVariable(nameIndex,  index());
   if(!nameCount.empty())  varList.setVariable(nameCount,  count());
 
-  index++;
-  return TRUE;
+  return checkCondition(varList);
 }
 
 /***********************************************/

@@ -3974,6 +3974,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4008,6 +4013,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4035,6 +4045,11 @@
 						<xs:element name="variableLoopCount" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4116,6 +4131,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4165,6 +4185,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4202,6 +4227,11 @@
 						<xs:element name="variableLoopCount" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4253,6 +4283,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4291,6 +4326,11 @@
 						<xs:element name="variableLoopCount" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4332,6 +4372,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4371,6 +4416,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4405,6 +4455,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4422,6 +4477,11 @@
 						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4517,6 +4577,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4583,6 +4648,11 @@
 						<xs:element name="variableLoopCount" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>

@@ -37,7 +37,6 @@ class LoopTimeIntervals : public Loop
 {
   std::string       nameTimeStart, nameTimeEnd, nameIndex, nameCount;
   std::vector<Time> times;
-  UInt              index;
 
 public:
   LoopTimeIntervals(Config &config);
@@ -61,10 +60,10 @@ inline LoopTimeIntervals::LoopTimeIntervals(Config &config)
     readConfig(config, "variableLoopTimeEnd",   nameTimeEnd,      Config::OPTIONAL,  "loopTimeEnd", "variable with ending time of each interval");
     readConfig(config, "variableLoopIndex",     nameIndex,        Config::OPTIONAL,  "",            "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",     nameCount,        Config::OPTIONAL,  "",            "variable with total number of iterations");
+    readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
     times = timesIntervalPtr->times();
-    index = 0;
   }
   catch(std::exception &e)
   {
@@ -76,16 +75,15 @@ inline LoopTimeIntervals::LoopTimeIntervals(Config &config)
 
 inline Bool LoopTimeIntervals::iteration(VariableList &varList)
 {
-  if(index >= count())
+  if(index() >= count())
     return FALSE;
 
-  if(!nameTimeStart.empty()) varList.setVariable(nameTimeStart, times.at(index).mjd());
-  if(!nameTimeEnd.empty())   varList.setVariable(nameTimeEnd,   times.at(index+1).mjd());
-  if(!nameIndex.empty())     varList.setVariable(nameIndex,     index);
+  if(!nameTimeStart.empty()) varList.setVariable(nameTimeStart, times.at(index()).mjd());
+  if(!nameTimeEnd.empty())   varList.setVariable(nameTimeEnd,   times.at(index()+1).mjd());
+  if(!nameIndex.empty())     varList.setVariable(nameIndex,     index());
   if(!nameCount.empty())     varList.setVariable(nameCount,     count());
 
-  index++;
-  return TRUE;
+  return checkCondition(varList);
 }
 
 /***********************************************/

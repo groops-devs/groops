@@ -39,7 +39,6 @@ class LoopDirectoryListing : public Loop
 {
   std::string           nameFile, nameIndex, nameCount;
   std::vector<FileName> files;
-  UInt                  index;
 
 public:
   LoopDirectoryListing(Config &config);
@@ -66,11 +65,11 @@ inline LoopDirectoryListing::LoopDirectoryListing(Config &config)
     readConfig(config, "variableLoopFile",    nameFile,            Config::OPTIONAL, "loopFile", "name of the variable to be replaced");
     readConfig(config, "variableLoopIndex",   nameIndex,           Config::OPTIONAL, "",         "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",   nameCount,           Config::OPTIONAL, "",         "variable with total number of iterations");
+    readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
     files = System::directoryListing(directory, isRegularExpression ? std::regex(pattern) : String::wildcard2regex(pattern));
     std::sort(files.begin(), files.end());
-    index = 0;
   }
   catch(std::exception &e)
   {
@@ -82,15 +81,14 @@ inline LoopDirectoryListing::LoopDirectoryListing(Config &config)
 
 inline Bool LoopDirectoryListing::iteration(VariableList &varList)
 {
-  if(index >= count())
+  if(index() >= count())
     return FALSE;
 
-  if(!nameFile.empty())  varList.setVariable(nameFile,  files.at(index).str());
-  if(!nameIndex.empty()) varList.setVariable(nameIndex, index);
+  if(!nameFile.empty())  varList.setVariable(nameFile,  files.at(index()).str());
+  if(!nameIndex.empty()) varList.setVariable(nameIndex, index());
   if(!nameCount.empty()) varList.setVariable(nameCount, count());
 
-  index++;
-  return TRUE;
+  return checkCondition(varList);
 }
 
 /***********************************************/

@@ -5,6 +5,7 @@
 - New class:        In Gravityfield/Tides/MiscAccelerations: Group.
 - New option:       GriddedData2PotentialCoefficients: Handle multiple input data columns at once.
 - New option:       GriddedDataReduceSampling: tesseroid volume conserving for digital elevation models.
+- New option:       Loop: optional condition for each loop step.
 - Removed program:  NetCdf2PotentialCoefficients: Use NetCdf2GriddedDataTimeSeries and GriddedDataTimeSeries2PotentialCoefficients instead.
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
