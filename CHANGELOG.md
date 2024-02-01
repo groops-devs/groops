@@ -16,6 +16,7 @@
 - Other:            GnssRinexNavigation2OrbitClock: add SBAS support.
 - Other:            Updated documentation to explain parameter names.
 - Other:            GriddedData: reworked area computations.
+- Other:            IersC04IAU2000EarthOrientationParameter: works also with new file format.
 
 # Release 2023-08-25
 - New program:      FileMove.

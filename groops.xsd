@@ -1122,7 +1122,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="inputfileEOP" type="filename" minOccurs="0" default="{groopsDataDir}/earthRotation/EOP_14C04_IAU2000.txt"/>
+						<xs:element name="inputfileEOP" type="filename" minOccurs="0" default="{groopsDataDir}/earthRotation/EOP_20C04_IAU2000.txt"/>
 						<xs:element name="truncatedNutation" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>use truncated nutation model (IAU2006B)</xs:documentation>
@@ -1137,7 +1137,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="inputfileEOP" type="filename" minOccurs="0" default="{groopsDataDir}/earthRotation/EOP_14C04_IAU2000.txt"/>
+						<xs:element name="inputfileEOP" type="filename" minOccurs="0" default="{groopsDataDir}/earthRotation/EOP_20C04_IAU2000.txt"/>
 						<xs:element name="inputfileDoodsonEOP" type="filename" minOccurs="0" default="{groopsDataDir}/earthRotation/doodsonEOP_desai_jgrb51665-sup-0002-ds01.txt"/>
 					</xs:sequence>
 				</xs:complexType>
@@ -1148,7 +1148,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="inputfileEOP" type="filename" default="{groopsDataDir}/earthRotation/EOP_14C04_IAU2000.txt"/>
+						<xs:element name="inputfileEOP" type="filename" default="{groopsDataDir}/earthRotation/EOP_20C04_IAU2000.txt"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>

@@ -29,7 +29,7 @@ EarthRotationIers2010::EarthRotationIers2010(Config &config)
   try
   {
     FileName eopName;
-    readConfig(config, "inputfileEOP",      eopName,       Config::OPTIONAL, "{groopsDataDir}/earthRotation/EOP_14C04_IAU2000.txt", "");
+    readConfig(config, "inputfileEOP",      eopName,       Config::OPTIONAL, "{groopsDataDir}/earthRotation/EOP_20C04_IAU2000.txt", "");
     readConfig(config, "truncatedNutation", useTruncated,  Config::DEFAULT,  "0", "use truncated nutation model (IAU2006B)");
     if(isCreateSchema(config)) return;
 
