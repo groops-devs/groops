@@ -106,7 +106,7 @@ void Sinex2StationPostSeismicDeformation::run(Config &config, Parallel::Communic
       if(iter != stationInfos.end())
       {
         const Double longitude = String::toDouble(iter->substr(44, 3)) + String::toDouble(iter->substr(48, 2))/60 + String::toDouble(iter->substr(51, 4))/3600;
-        const Double latitude  = String::toDouble(iter->substr(56, 3)) + (String::toDouble(iter->substr(56, 3)) < 0 ? -1 : 1) * (String::toDouble(iter->substr(60, 2))/60 + String::toDouble(iter->substr(63, 4))/3600);
+        const Double latitude  = String::toDouble(iter->substr(56, 3)) + (String::startsWith(String::trim(iter->substr(56, 3)), "-") ? -1 : 1) * (String::toDouble(iter->substr(60, 2))/60 + String::toDouble(iter->substr(63, 4))/3600);
         const Transform3d lnof2trf = localNorthEastUp(polar(Angle(longitude*DEG2RAD), Angle(latitude*DEG2RAD), 1.));
         copy(A.column(1,3) * lnof2trf.matrix().trans(), A.column(1,3));
       }
