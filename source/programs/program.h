@@ -29,7 +29,7 @@ namespace Program
   constexpr Bool SINGLEPROCESS = TRUE;
   constexpr Bool PARALLEL      = FALSE;
 
-  /** @brief Tags to desribe programs. Used in @a GROOPS_REGISTER_PROGRAM. */
+  /** @brief Tags to describe programs. Used in @a GROOPS_REGISTER_PROGRAM. */
   GROOPS_TAGS(NONE,
               Covariance,
               DoodsonHarmonics,

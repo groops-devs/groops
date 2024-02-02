@@ -100,14 +100,16 @@ Bool GnssObservation::init(const GnssReceiver &receiver, const GnssTransmitter &
     // ------------------------------------
     const Vector sigma0   = receiver.accuracy(timeRecv, azimutRecv, elevationRecv, types);
     const Vector acvRecv  = receiver.antennaVariations(timeRecv, azimutRecv, elevationRecv, types);
+    const Vector biasRecv = receiver.signalBiases(types);
     const Vector acvTrans = transmitter.antennaVariations(timeTrans, azimutTrans, elevationTrans, typesTransmitted);
+    const Vector biasTrans= transmitter.signalBiases(typesTransmitted);
     for(UInt i=0; i<size(); i++)
     {
       at(i).sigma0 = sigma0(i);
-      at(i).sigma  = acvRecv(i); // temporarily misuse sigma for ACV pattern nan check
+      at(i).sigma  = acvRecv(i)+biasRecv(i); // temporarily misuse sigma for ACV pattern nan check
       for(UInt k=0; k<T.columns(); k++)
         if(T(i,k))
-          at(i).sigma  += T(i,k) * acvTrans(k);
+          at(i).sigma  += T(i,k) * (acvTrans(k) + biasTrans(k));
     }
     obs.erase(std::remove_if(obs.begin(), obs.end(), [](const auto &x)
     {
@@ -350,7 +352,9 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
     // antenna correction and other corrections
     // ----------------------------------------
     l -= receiver->antennaVariations(timeRecv, azimutRecvAnt,  elevationRecvAnt,  types);
+    l -= receiver->signalBiases(types);
     l -= T * transmitter->antennaVariations(timeTrans, azimutTrans, elevationTrans, typesTransmitted);
+    l -= T * transmitter->signalBiases(typesTransmitted);
     if(track && track->ambiguity)
       l -= track->ambiguity->ambiguities(types);     // reduce ambiguities
     if(reduceModels)
