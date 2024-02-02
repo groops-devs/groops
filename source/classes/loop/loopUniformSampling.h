@@ -36,7 +36,6 @@ class LoopUniformSampling : public Loop
 {
   std::string         nameNumber, nameIndex, nameCount;
   std::vector<Double> numbers;
-  UInt                index;
 
 public:
   LoopUniformSampling(Config &config);
@@ -61,11 +60,11 @@ inline LoopUniformSampling::LoopUniformSampling(Config &config)
     readConfig(config, "variableLoopNumber", nameNumber, Config::OPTIONAL,  "loopNumber", "name of the variable to be replaced");
     readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL,  "",           "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL,  "",           "variable with total number of iterations");
+    readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
     for(UInt i=0; rangeStart+i*sampling<=rangeEnd; i++)
       numbers.push_back(rangeStart + i*sampling);
-    index = 0;
   }
   catch(std::exception &e)
   {
@@ -77,15 +76,14 @@ inline LoopUniformSampling::LoopUniformSampling(Config &config)
 
 inline Bool LoopUniformSampling::iteration(VariableList &varList)
 {
-  if(index >= count())
+  if(index() >= count())
     return FALSE;
 
-  if(!nameNumber.empty()) varList.setVariable(nameNumber, numbers.at(index));
-  if(!nameIndex.empty())  varList.setVariable(nameIndex,  index);
+  if(!nameNumber.empty()) varList.setVariable(nameNumber, numbers.at(index()));
+  if(!nameIndex.empty())  varList.setVariable(nameIndex,  index());
   if(!nameCount.empty())  varList.setVariable(nameCount,  count());
 
-  index++;
-  return TRUE;
+  return checkCondition(varList);
 }
 
 /***********************************************/

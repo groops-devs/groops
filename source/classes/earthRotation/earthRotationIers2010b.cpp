@@ -30,7 +30,7 @@ EarthRotationIers2010b::EarthRotationIers2010b(Config &config)
   try
   {
     FileName eopName, doodsonEopName;
-    readConfig(config, "inputfileEOP",        eopName,        Config::OPTIONAL,  "{groopsDataDir}/earthRotation/EOP_14C04_IAU2000.txt", "");
+    readConfig(config, "inputfileEOP",        eopName,        Config::OPTIONAL,  "{groopsDataDir}/earthRotation/EOP_20C04_IAU2000.txt", "");
     readConfig(config, "inputfileDoodsonEOP", doodsonEopName, Config::OPTIONAL,  "{groopsDataDir}/earthRotation/doodsonEOP_desai_jgrb51665-sup-0002-ds01.txt", "");
     if(isCreateSchema(config)) return;
 

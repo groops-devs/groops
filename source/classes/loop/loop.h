@@ -21,6 +21,11 @@ static const char *docstringLoop = R"(
 Generates a sequence with variables to loop over.
 The variable names can be set with \config{variableLoop...} and
 the current values are assigned to the variables for each loop step.
+
+With \configClass{condition}{conditionType} only a subset of loop steps are performed.
+The \config{variableLoopIndex} and \config{variableLoopCount} are not affected by the condition.
+The result would therefore be the same as using \program{LoopPrograms} with a nested \program{IfPrograms}.
+
 See \reference{Loop and conditions}{general.loopsAndConditions} for usage.
 )";
 #endif
@@ -29,6 +34,7 @@ See \reference{Loop and conditions}{general.loopsAndConditions} for usage.
 
 #include "base/import.h"
 #include "config/config.h"
+#include "classes/condition/condition.h"
 
 /**
 * @defgroup loopGroup Loop
@@ -49,12 +55,23 @@ typedef std::shared_ptr<Loop> LoopPtr;
 * An instance of this class can be created with @ref readConfig. */
 class Loop
 {
+  UInt         index_;
+  Bool         isCondition;
+  Config       conditionConfig;
+
+protected:
+  void readConfigCondition(Config &config);
+  Bool checkCondition(VariableList &varList);
+
 public:
   /// Destructor.
   virtual ~Loop() {}
 
   /** @brief Returns the approximate total number of iterations. */
   virtual UInt count() const = 0;
+
+  /** @brief Returns the number of already performed iteration steps. */
+  UInt index() const {return index_;}
 
   /** @brief Sets values of loop variables in @p varList for current iteration.
   * @return valid iteration step? */

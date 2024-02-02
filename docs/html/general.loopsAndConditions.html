@@ -86,10 +86,9 @@ is only created if the condition is met. Conditions can also be attributed to op
 If the condition is not met, the optional element will be treated as if it was not provided.</p><p>Example: A program needs all files in a download directory as input.
 All the <strong class="groops-config-element">inputfile</strong>s can be selected manually of course, but it is much easier to assign
 a loop variable with <strong class="groops-config-element">inputfile</strong>=<code>{loopFile}</code> and attribute a
-<a class="groops-class" href="loopType.html#commandOutput">loop:commandOutput</a> from the global section.
-The <strong class="groops-config-element">command</strong>='<code>ls -1 download</code>' (or '<code>dir /b download</code>' for Windows)
-lists the content of the download directory and assigns each file name to the
-<strong class="groops-config-element">variableLoopString</strong>=<code>loopFile</code>.
+<a class="groops-class" href="loopType.html#directoryListing">loop:directoryListing</a> from the global section.
+The loop lists the content of the download directory and assigns each file name to the
+<strong class="groops-config-element">variableLoopFile</strong>=<code>loopFile</code>.
 </p>
 
         </div>

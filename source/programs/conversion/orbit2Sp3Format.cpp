@@ -212,7 +212,7 @@ void Orbit2Sp3Format::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
         const Vector3d position = rot.rotate(satellite.orbit.at(satellite.idEpoch).position) + cm2ceCorrection;
         const std::string clock = satellite.clock.size() ? (satellite.clock.at(satellite.idEpoch).value*1e6)%"%14.6f"s : " 999999.999999";
-        if(useSp3k)
+        if(useSp3k || (position.r() < 10000e3))
           file<<"P"<<satellite.identifier<<(position.x()/1000)%"%14.7f"s<<(position.y()/1000)%"%14.7f"s<<(position.z()/1000)%"%14.7f"s<<clock<<"             "<<std::endl;
         else
           file<<"P"<<satellite.identifier<<(position.x()/1000)%"%14.6f"s<<(position.y()/1000)%"%14.6f"s<<(position.z()/1000)%"%14.6f"s<<clock<<"             "<<std::endl;

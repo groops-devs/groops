@@ -39,7 +39,6 @@ class LoopFileAsciiTable : public Loop
   std::vector<std::vector<std::string>>  stringTable;
   std::vector<std::string>               nameString;
   std::string                            nameIndex, nameCount;
-  UInt                                   index;
 
 public:
   LoopFileAsciiTable(Config &config);
@@ -65,6 +64,7 @@ inline LoopFileAsciiTable::LoopFileAsciiTable(Config &config)
     readConfig(config, "variableLoopString", nameString, Config::MUSTSET,  "loopString", "1. variable name for the 1. column, next variable name for the 2. column, ... ");
     readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL, "",           "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL, "",           "variable with total number of iterations");
+    readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
     for(auto &fileName : fileNames)
@@ -82,8 +82,6 @@ inline LoopFileAsciiTable::LoopFileAsciiTable(Config &config)
         if(stringTable.at(i).size() != columns)
           throw(Exception("Varying number of columns in input file(s)"));
     }
-
-    index = 0;
   }
   catch(std::exception &e)
   {
@@ -95,17 +93,16 @@ inline LoopFileAsciiTable::LoopFileAsciiTable(Config &config)
 
 inline Bool LoopFileAsciiTable::iteration(VariableList &varList)
 {
-  if(index >= count())
+  if(index() >= count())
     return FALSE;
 
   for(UInt i=0; i<nameString.size(); i++)
     if(!nameString.at(i).empty())
-      varList.setVariable(nameString.at(i), stringTable.at(index).at(i));
-  if(!nameIndex.empty()) varList.setVariable(nameIndex, index);
+      varList.setVariable(nameString.at(i), stringTable.at(index()).at(i));
+  if(!nameIndex.empty()) varList.setVariable(nameIndex, index());
   if(!nameCount.empty()) varList.setVariable(nameCount, count());
 
-  index++;
-  return TRUE;
+  return checkCondition(varList);
 }
 
 /***********************************************/
