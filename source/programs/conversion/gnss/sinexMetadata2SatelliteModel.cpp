@@ -4,7 +4,7 @@
 *
 * @brief Create satellite model from IGS SINEX metadata file.
 *
-* TODO: Consider time-variability in mass and transmit power.
+* TODO: Consider time-variability in transmit power.
 *
 * @author Sebastian Strasser
 * @date 2018-09-17
@@ -57,8 +57,6 @@ void SinexMetadata2SatelliteModel::run(Config &config, Parallel::CommunicatorPtr
 
     Sinex sinex;
     readFileSinex(inNameSinexMetadata, sinex);
-    std::vector<std::string> massLines  = sinex.findBlock("SATELLITE/MASS")->lines;
-    std::vector<std::string> powerLines = sinex.findBlock("SATELLITE/TX_POWER")->lines;
 
     SatelliteModelPtr satellite(new SatelliteModel);
     if(!inNameSatelliteModel.empty())
@@ -69,13 +67,10 @@ void SinexMetadata2SatelliteModel::run(Config &config, Parallel::CommunicatorPtr
     // mass and mass changes
     std::vector<Double> masses;
     std::vector<Time> massTimes;
-    for(const auto &line : massLines)
+    for(const auto &line : sinex.findBlock("SATELLITE/MASS")->lines)
       if(line.size() >= 45 && line.substr(1,4) == svn)
       {
-        UInt year = static_cast<UInt>(String::toInt(line.substr(6, 4)));
-        UInt day  = static_cast<UInt>(String::toInt(line.substr(11, 3)));
-        UInt sec  = static_cast<UInt>(String::toInt(line.substr(15, 5)));
-        massTimes.push_back(date2time(year,1,1) + mjd2time(day-1.) + seconds2time(static_cast<Double>(sec)));
+        massTimes.push_back(Sinex::str2time(line, 6, FALSE/*zeroIsMaxTime*/, TRUE/*fourDigitYear*/));
         masses.push_back(String::toDouble(line.substr(36, 9)));
       }
     if(masses.size())
@@ -93,6 +88,7 @@ void SinexMetadata2SatelliteModel::run(Config &config, Parallel::CommunicatorPtr
     }
 
     // antenna thrust
+    std::vector<std::string> powerLines = sinex.findBlock("SATELLITE/TX_POWER")->lines;
     auto powerIter = std::find_if(powerLines.rbegin(), powerLines.rend(), [&](const std::string &line){ return (line.size() >= 40 && line.substr(1,4) == svn); });
     if(powerIter != powerLines.rend())
     {

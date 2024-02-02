@@ -1122,7 +1122,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="inputfileEOP" type="filename" minOccurs="0" default="{groopsDataDir}/earthRotation/EOP_14C04_IAU2000.txt"/>
+						<xs:element name="inputfileEOP" type="filename" minOccurs="0" default="{groopsDataDir}/earthRotation/EOP_20C04_IAU2000.txt"/>
 						<xs:element name="truncatedNutation" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>use truncated nutation model (IAU2006B)</xs:documentation>
@@ -1137,7 +1137,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="inputfileEOP" type="filename" minOccurs="0" default="{groopsDataDir}/earthRotation/EOP_14C04_IAU2000.txt"/>
+						<xs:element name="inputfileEOP" type="filename" minOccurs="0" default="{groopsDataDir}/earthRotation/EOP_20C04_IAU2000.txt"/>
 						<xs:element name="inputfileDoodsonEOP" type="filename" minOccurs="0" default="{groopsDataDir}/earthRotation/doodsonEOP_desai_jgrb51665-sup-0002-ds01.txt"/>
 					</xs:sequence>
 				</xs:complexType>
@@ -1148,7 +1148,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="inputfileEOP" type="filename" default="{groopsDataDir}/earthRotation/EOP_14C04_IAU2000.txt"/>
+						<xs:element name="inputfileEOP" type="filename" default="{groopsDataDir}/earthRotation/EOP_20C04_IAU2000.txt"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -3974,6 +3974,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4008,6 +4013,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4035,6 +4045,11 @@
 						<xs:element name="variableLoopCount" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4116,6 +4131,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4165,6 +4185,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4202,6 +4227,11 @@
 						<xs:element name="variableLoopCount" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4253,6 +4283,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4291,6 +4326,11 @@
 						<xs:element name="variableLoopCount" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4332,6 +4372,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4371,6 +4416,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4405,6 +4455,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4422,6 +4477,11 @@
 						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -4517,6 +4577,11 @@
 								<xs:documentation>variable with total number of iterations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -4583,6 +4648,11 @@
 						<xs:element name="variableLoopCount" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -10749,7 +10819,7 @@
 						</xs:element>
 						<xs:element name="prn" type="string" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>PRN (e.g. G01) for transmitter info files</xs:documentation>
+								<xs:documentation>PRN (e.g. R01) for transmitter info files</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableNamePrn" type="string" minOccurs="0" default="prn">
@@ -23465,6 +23535,27 @@
 						<xs:element name="stationName" type="string" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>convert only these stations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SinexMetadata2GlonassFrequencyNumber">
+				<xs:annotation>
+					<xs:documentation>Create glonassPrnSvn2FrequencyNumber matrix from IGS SINEX metadata file.</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Gnss</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileMatrixPrn2FrequencyNumber" type="filename" default="{groopsDataDir}/gnss/transmitter/glonassPrnSvn2FrequencyNumber.txt">
+							<xs:annotation>
+								<xs:documentation>GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSinexMetadata" type="filename" default="igs_satellite_metadata.snx">
+							<xs:annotation>
+								<xs:documentation>IGS SINEX metadata file</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>

@@ -51,15 +51,16 @@ void GnssGlonassFrequencyNumberUpdate::run(Config &config, Parallel::Communicato
     readConfig(config, "outputfileTransmitterInfo",    fileNameOutTransmitterInfo,       Config::OPTIONAL, "",    "templated for PRN list (variableNamePrn)");
     readConfig(config, "inputfileTransmitterInfo",     fileNameInTransmitterInfo,        Config::MUSTSET,  "",    "templated for PRN list (variableNamePrn)");
     readConfig(config, "inputfilePrn2FrequencyNumber", fileNameInPrnSvn2FrequencyNumber, Config::MUSTSET,  "",    "GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber");
-    readConfig(config, "prn",                          prnList,                          Config::OPTIONAL, "",    "PRN (e.g. G01) for transmitter info files");
+    readConfig(config, "prn",                          prnList,                          Config::OPTIONAL, "",    "PRN (e.g. R01) for transmitter info files");
     readConfig(config, "variableNamePrn",              variableNamePrn,                  Config::OPTIONAL, "prn", "variable name for PRN in transmitter info files");
     if(isCreateSchema(config)) return;
 
-    VariableList varList;
     std::vector<GnssStationInfo> transmitterInfos(prnList.size());
     if(!fileNameInTransmitterInfo.empty())
     {
-      logStatus<<"read transmitter infos from <"<<fileNameInTransmitterInfo<<">"<< Log::endl;
+      VariableList varList;
+      varList.setVariable(variableNamePrn, "R**");
+      logStatus<<"read transmitter infos from <"<<fileNameInTransmitterInfo(varList)<<">"<< Log::endl;
       for(UInt idPrn = 0; idPrn < prnList.size(); idPrn++)
       {
         varList.setVariable(variableNamePrn, prnList.at(idPrn));
@@ -77,7 +78,7 @@ void GnssGlonassFrequencyNumberUpdate::run(Config &config, Parallel::Communicato
 
     std::vector<std::vector<GnssReceiverInfo>> receiverInfos(prnList.size());
     std::vector<GnssReceiverDefinitionPtr> receiverDefListNew;
-    for(UInt i = 0; i < prnSvn2FreqNo.rows(); i++)
+    for(UInt i=0; i<prnSvn2FreqNo.rows(); i++)
     {
       const std::string prn    = prnSvn2FreqNo(i,0)%"R%02i"s;
       const std::string svn    = prnSvn2FreqNo(i,1)%"R%03i"s;
@@ -110,8 +111,10 @@ void GnssGlonassFrequencyNumberUpdate::run(Config &config, Parallel::Communicato
 
     if(!fileNameOutTransmitterInfo.empty())
     {
-      logStatus<<"write transmitter infos to <"<<fileNameOutTransmitterInfo<<">"<< Log::endl;
-      for(UInt idPrn = 0; idPrn < prnList.size(); idPrn++)
+      VariableList varList;
+      varList.setVariable(variableNamePrn, "R**");
+      logStatus<<"write transmitter infos to <"<<fileNameOutTransmitterInfo(varList)<<">"<< Log::endl;
+      for(UInt idPrn=0; idPrn<prnList.size(); idPrn++)
       {
         varList.setVariable(variableNamePrn, prnList.at(idPrn));
         std::sort(receiverInfos.at(idPrn).begin(), receiverInfos.at(idPrn).end(), [](GnssReceiverInfo &info1, GnssReceiverInfo &info2){ return info1.timeStart < info2.timeStart; });

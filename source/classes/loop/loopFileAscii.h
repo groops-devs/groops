@@ -38,7 +38,6 @@ class LoopFileAscii : public Loop
 {
   std::string nameString, nameIndex, nameCount;
   std::vector<std::string> strings;
-  UInt index;
 
 public:
   LoopFileAscii(Config &config);
@@ -61,14 +60,15 @@ inline LoopFileAscii::LoopFileAscii(Config &config)
     Bool sort;
     Bool removeDuplicates;
 
-    readConfig(config, "inputfile",          fileName,         Config::MUSTSET,   "",           "simple ASCII file with strings (separated by whitespace)");
-    readConfig(config, "sort",               sort,             Config::DEFAULT,   "0",          "sort entries alphabetically (ascending)");
-    readConfig(config, "removeDuplicates",   removeDuplicates, Config::DEFAULT,   "0",          "remove duplicate entries (order is preserved)");
-    readConfig(config, "startIndex",         startIndex,       Config::DEFAULT,   "0",          "start at element startIndex (counting from 0)");
+    readConfig(config, "inputfile",          fileName,         Config::MUSTSET,  "",           "simple ASCII file with strings (separated by whitespace)");
+    readConfig(config, "sort",               sort,             Config::DEFAULT,  "0",          "sort entries alphabetically (ascending)");
+    readConfig(config, "removeDuplicates",   removeDuplicates, Config::DEFAULT,  "0",          "remove duplicate entries (order is preserved)");
+    readConfig(config, "startIndex",         startIndex,       Config::DEFAULT,  "0",          "start at element startIndex (counting from 0)");
     readConfig(config, "count",              countElements,    Config::OPTIONAL, "",           "use count elements (default: use all)");
     readConfig(config, "variableLoopString", nameString,       Config::OPTIONAL, "loopString", "name of the variable to be replaced");
     readConfig(config, "variableLoopIndex",  nameIndex,        Config::OPTIONAL, "",           "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,        Config::OPTIONAL, "",           "variable with total number of iterations");
+    readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
     for(UInt i=0; i<fileName.size(); i++)
@@ -90,8 +90,6 @@ inline LoopFileAscii::LoopFileAscii(Config &config)
 
     strings.erase(strings.begin(), strings.begin()+std::min(startIndex, strings.size()));
     strings.erase(strings.begin()+std::min(countElements, strings.size()), strings.end());
-
-    index = 0;
   }
   catch(std::exception &e)
   {
@@ -103,15 +101,14 @@ inline LoopFileAscii::LoopFileAscii(Config &config)
 
 inline Bool LoopFileAscii::iteration(VariableList &varList)
 {
-  if(index >= count())
+  if(index() >= count())
     return FALSE;
 
-  if(!nameString.empty()) varList.setVariable(nameString, strings.at(index));
-  if(!nameIndex.empty())  varList.setVariable(nameIndex,  index);
+  if(!nameString.empty()) varList.setVariable(nameString, strings.at(index()));
+  if(!nameIndex.empty())  varList.setVariable(nameIndex,  index());
   if(!nameCount.empty())  varList.setVariable(nameCount,  count());
 
-  index++;
-  return TRUE;
+  return checkCondition(varList);
 }
 
 /***********************************************/

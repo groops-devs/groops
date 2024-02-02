@@ -47,7 +47,6 @@ private:
   std::vector<CellVector>  rows;
   std::vector<std::string> nameString;
   std::string              nameIndex, nameCount;
-  UInt                     index;
 
 public:
   LoopManualTable(Config &config);
@@ -86,9 +85,10 @@ inline LoopManualTable::LoopManualTable(Config &config)
         readConfig(config, "column", columns, Config::MUSTSET, "", "define table by columns");
       endChoice(config);
     }
-    readConfig(config, "variableLoopString", nameString, Config::MUSTSET,   "loopString", "1. variable name for the 1. column, next variable name for the 2. column, ... ");
-    readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL,  "",           "variable with index of current iteration (starts with zero)");
-    readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL,  "",           "variable with total number of iterations");
+    readConfig(config, "variableLoopString", nameString, Config::MUSTSET,  "loopString", "1. variable name for the 1. column, next variable name for the 2. column, ... ");
+    readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL, "",           "variable with index of current iteration (starts with zero)");
+    readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL, "",           "variable with total number of iterations");
+    readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
     // transpose columns
@@ -99,7 +99,6 @@ inline LoopManualTable::LoopManualTable(Config &config)
         rows.at(k).cells.push_back(columns.at(i).cells.at(k));
       }
 
-    index = 0;
     if(rows.size() > 1)
     {
       if(nameString.size() > rows.at(0).cells.size())
@@ -119,17 +118,16 @@ inline LoopManualTable::LoopManualTable(Config &config)
 
 inline Bool LoopManualTable::iteration(VariableList &varList)
 {
-  if(index >= count())
+  if(index() >= count())
     return FALSE;
 
   for(UInt i=0; i<nameString.size(); i++)
     if(!nameString.at(i).empty())
-      varList.setVariable(nameString.at(i), rows.at(index).cells.at(i));
-  if(!nameIndex.empty()) varList.setVariable(nameIndex, index);
+      varList.setVariable(nameString.at(i), rows.at(index()).cells.at(i));
+  if(!nameIndex.empty()) varList.setVariable(nameIndex, index());
   if(!nameCount.empty()) varList.setVariable(nameCount, count());
 
-  index++;
-  return TRUE;
+  return checkCondition(varList);
 }
 
 /***********************************************/

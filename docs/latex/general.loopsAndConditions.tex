@@ -23,7 +23,6 @@ If the condition is not met, the optional element will be treated as if it was n
 Example: A program needs all files in a download directory as input.
 All the \config{inputfile}s can be selected manually of course, but it is much easier to assign
 a loop variable with \config{inputfile}=\verb|{loopFile}| and attribute a
-\configClass{loop:commandOutput}{loopType:commandOutput} from the global section.
-The \config{command}='\verb|ls -1 download|' (or '\verb|dir /b download|' for Windows)
-lists the content of the download directory and assigns each file name to the
-\config{variableLoopString}=\verb|loopFile|.
+\configClass{loop:directoryListing}{loopType:directoryListing} from the global section.
+The loop lists the content of the download directory and assigns each file name to the
+\config{variableLoopFile}=\verb|loopFile|.

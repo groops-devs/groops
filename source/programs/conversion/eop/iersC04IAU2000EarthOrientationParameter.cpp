@@ -20,6 +20,7 @@ and write it as \configFile{outputfileEOP}{earthOrientationParameter}.
 /***********************************************/
 
 #include "programs/program.h"
+#include "base/string.h"
 #include "inputOutput/file.h"
 #include "files/fileEarthOrientationParameter.h"
 
@@ -55,23 +56,35 @@ void IersC04IAU2000EarthOrientationParameter::run(Config &config, Parallel::Comm
     // Erdrotationsparameter einlesen
     // ------------------------------
     logStatus<<"read input file"<<Log::endl;
-    std::vector<Double> mjd, xp, yp, du, ld, dX, dY;
-
     InFile file(inName);
 
-    // Header
+    // check version
     std::string line;
-    for(UInt i=0; i<15; i++)
-      std::getline(file, line);
+    std::getline(file, line);
+    Bool oldVersion = !String::startsWith(line, "#");
 
+    // old Header
+    if(oldVersion)
+    {
+      for(UInt i=0; i<14; i++)
+        std::getline(file, line);
+    }
+
+    std::vector<Double> mjd, xp, yp, du, ld, dX, dY;
     while(std::getline(file, line))
     {
+      if(String::startsWith(line, "#"))
+        continue;
+
       std::stringstream ss(line);
       ss.exceptions(std::ios::badbit | std::ios::failbit);
 
-      UInt   day, month, year;
-      Double _mjd, _xp, _yp, _du, _ld, _dX, _dY;
-      ss>>year>>month>>day>>_mjd>>_xp>>_yp>>_du>>_ld>>_dX>>_dY;
+      Int   day, month, year, hour;
+      Double _mjd, _xp, _yp, _du, _ld, _dX, _dY, tmp;
+      if(oldVersion)
+        ss>>year>>month>>day>>_mjd>>_xp>>_yp>>_du>>_ld>>_dX>>_dY;
+      else
+        ss>>year>>month>>day>>hour>>_mjd>>_xp>>_yp>>_du>>_dX>>_dY>>tmp>>tmp>>_ld;
 
       const Time time = mjd2time(_mjd);
       if((time < timeStart) || (time > timeEnd))

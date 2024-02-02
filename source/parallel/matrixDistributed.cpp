@@ -24,14 +24,14 @@ MatrixDistributed::MatrixDistributed() : _blockIndex{0}
 
 /***********************************************/
 
-MatrixDistributed::MatrixDistributed(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, std::function<UInt(UInt, UInt, UInt)> calcRank)
+MatrixDistributed::MatrixDistributed(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, const std::function<UInt(UInt, UInt, UInt)> &calcRank)
 {
   init(blockIndex, comm, calcRank);
 }
 
 /***********************************************/
 
-void MatrixDistributed::init(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, std::function<UInt(UInt, UInt, UInt)> calcRank)
+void MatrixDistributed::init(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, const std::function<UInt(UInt, UInt, UInt)> &calcRank)
 {
   try
   {
@@ -51,7 +51,7 @@ void MatrixDistributed::init(const std::vector<UInt> &blockIndex, Parallel::Comm
 
 /***********************************************/
 
-void MatrixDistributed::initEmpty(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, std::function<UInt(UInt, UInt, UInt)> calcRank)
+void MatrixDistributed::initEmpty(const std::vector<UInt> &blockIndex, Parallel::CommunicatorPtr comm, const std::function<UInt(UInt, UInt, UInt)> &calcRank)
 {
   try
   {
@@ -249,7 +249,7 @@ const Matrix &MatrixDistributed::N(UInt i, UInt k) const
 /***********************************************/
 /***********************************************/
 
-void MatrixDistributed::setCalculateRank(std::function<UInt(UInt, UInt, UInt)> calcRank_)
+void MatrixDistributed::setCalculateRank(const std::function<UInt(UInt, UInt, UInt)> &calcRank_)
 {
   try
   {
@@ -1056,7 +1056,7 @@ void MatrixDistributed::cholesky2SparseInverse(Bool timing)
 /***********************************************/
 /***********************************************/
 
-void MatrixDistributed::reorder(const std::vector<UInt> &index, const std::vector<UInt> &blockIndexNew, std::function<UInt(UInt, UInt, UInt)> calcRank)
+void MatrixDistributed::reorder(const std::vector<UInt> &index, const std::vector<UInt> &blockIndexNew, const std::function<UInt(UInt, UInt, UInt)> &calcRank)
 {
   try
   {

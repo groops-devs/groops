@@ -37,7 +37,6 @@ class LoopFileLines : public Loop
 {
   std::string nameLine, nameIndex, nameCount;
   std::vector<std::string> lines;
-  UInt index;
 
 public:
   LoopFileLines(Config &config);
@@ -68,6 +67,7 @@ inline LoopFileLines::LoopFileLines(Config &config)
     readConfig(config, "variableLoopLine",  nameLine,         Config::OPTIONAL, "loopLine", "name of the variable to be replaced");
     readConfig(config, "variableLoopIndex", nameIndex,        Config::OPTIONAL, "",         "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount", nameCount,        Config::OPTIONAL, "",         "variable with total number of iterations");
+    readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
     for(auto &fileName : fileNames)
@@ -89,8 +89,6 @@ inline LoopFileLines::LoopFileLines(Config &config)
 
     lines.erase(lines.begin(), lines.begin()+std::min(startIndex, lines.size()));
     lines.erase(lines.begin()+std::min(countElements, lines.size()), lines.end());
-
-    index = 0;
   }
   catch(std::exception &e)
   {
@@ -102,15 +100,14 @@ inline LoopFileLines::LoopFileLines(Config &config)
 
 inline Bool LoopFileLines::iteration(VariableList &varList)
 {
-  if(index >= count())
+  if(index() >= count())
     return FALSE;
 
-  if(!nameLine.empty())  varList.setVariable(nameLine,  lines.at(index));
-  if(!nameIndex.empty()) varList.setVariable(nameIndex, index);
+  if(!nameLine.empty())  varList.setVariable(nameLine,  lines.at(index()));
+  if(!nameIndex.empty()) varList.setVariable(nameIndex, index());
   if(!nameCount.empty()) varList.setVariable(nameCount, count());
 
-  index++;
-  return TRUE;
+  return checkCondition(varList);
 }
 
 /***********************************************/

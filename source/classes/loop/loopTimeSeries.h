@@ -37,7 +37,6 @@ class LoopTimeSeries : public Loop
 {
   std::string       nameTime, nameIndex, nameCount;
   std::vector<Time> times;
-  UInt              index;
 
 public:
   LoopTimeSeries(Config &config);
@@ -60,10 +59,10 @@ inline LoopTimeSeries::LoopTimeSeries(Config &config)
     readConfig(config, "variableLoopTime",  nameTime,      Config::OPTIONAL,  "loopTime", "variable with time of each loop");
     readConfig(config, "variableLoopIndex", nameIndex,     Config::OPTIONAL,  "",         "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount", nameCount,     Config::OPTIONAL,  "",         "variable with total number of iterations");
+    readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
     times = timeSeriesPtr->times();
-    index = 0;
   }
   catch(std::exception &e)
   {
@@ -75,15 +74,14 @@ inline LoopTimeSeries::LoopTimeSeries(Config &config)
 
 inline Bool LoopTimeSeries::iteration(VariableList &varList)
 {
-  if(index >= count())
+  if(index() >= count())
     return FALSE;
 
-  if(!nameTime.empty())  varList.setVariable(nameTime,  times.at(index).mjd());
-  if(!nameIndex.empty()) varList.setVariable(nameIndex, index);
+  if(!nameTime.empty())  varList.setVariable(nameTime,  times.at(index()).mjd());
+  if(!nameIndex.empty()) varList.setVariable(nameIndex, index());
   if(!nameCount.empty()) varList.setVariable(nameCount, count());
 
-  index++;
-  return TRUE;
+  return checkCondition(varList);
 }
 
 /***********************************************/
