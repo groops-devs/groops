@@ -29,7 +29,7 @@ EarthRotationIers2003::EarthRotationIers2003(Config &config)
   try
   {
     FileName eopName;
-    readConfig(config, "inputfileEOP", eopName, Config::MUSTSET, "{groopsDataDir}/earthRotation/EOP_14C04_IAU2000.txt", "");
+    readConfig(config, "inputfileEOP", eopName, Config::MUSTSET, "{groopsDataDir}/earthRotation/EOP_20C04_IAU2000.txt", "");
     if(isCreateSchema(config)) return;
 
 #ifdef GROOPS_DISABLE_ERFA

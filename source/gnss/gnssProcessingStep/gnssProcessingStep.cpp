@@ -275,7 +275,8 @@ void GnssProcessingStep::State::buildNormals(Bool constraintsOnly, Bool solveEpo
 {
   try
   {
-    normals.initEmpty(normalEquationInfo.blockIndices(), normalEquationInfo.comm);
+    normals.initEmpty(normalEquationInfo.blockIndices(), normalEquationInfo.comm,
+                      std::bind(&GnssNormalEquationInfo::normalsBlockRank, &normalEquationInfo, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     n.resize(normals.blockCount());
     for(UInt i=0; i<normals.blockCount(); i++)
       n.at(i) = Vector(normals.blockSize(i));

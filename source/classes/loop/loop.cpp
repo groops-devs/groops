@@ -103,3 +103,32 @@ LoopPtr Loop::create(Config &config, const std::string &name)
 }
 
 /***********************************************/
+
+void Loop::readConfigCondition(Config &config)
+{
+  ConditionPtr condition;
+  isCondition = readConfigLater(config, "condition", condition, conditionConfig, Config::OPTIONAL, "", "check before each loop step");
+  index_ = 0;
+}
+
+/***********************************************/
+
+Bool Loop::checkCondition(VariableList &varList)
+{
+  try
+  {
+    index_++;
+    if(!isCondition)
+      return TRUE;
+    ConditionPtr condition;
+    conditionConfig.read(condition, varList);
+    // is condition false? -> perfrom directly next iteration
+    return (!condition || condition->condition(varList)) ? TRUE : iteration(varList);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
