@@ -306,11 +306,20 @@ void Gnss::initParameter(GnssNormalEquationInfo &normalEquationInfo)
     if(disabledEpochsTrans) logWarningOnce<<disabledEpochsTrans<<" disabled transmitter epochs"<<Log::endl;
     if(disabledEpochsRecv)  logWarningOnce<<disabledEpochsRecv <<" disabled receiver epochs"<<Log::endl;
 
+    // distribute process id of receivers
+    // ----------------------------------
+    Vector recvProcess(receivers.size());
+    for(UInt idRecv=0; idRecv<receivers.size(); idRecv++)
+      if(receivers.at(idRecv)->isMyRank())
+        recvProcess(idRecv) = Parallel::myRank(normalEquationInfo.comm)+1;
+    Parallel::reduceSum(recvProcess, 0, normalEquationInfo.comm);
+    Parallel::broadCast(recvProcess, 0, normalEquationInfo.comm);
+
     // init parameters
     // ---------------
     normalEquationInfo.initNewParameterNames();
     parametrization->initParameter(normalEquationInfo);
-    normalEquationInfo.calculateIndex();
+    normalEquationInfo.calculateIndex(recvProcess);
     logInfo<<"+ ======="<<Log::endl;
     logInfo<<normalEquationInfo.parameterCount()%"%9i parameters in "s<<normalEquationInfo.blockCount()<<" normal equation matrix blocks"<<Log::endl;
   }

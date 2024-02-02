@@ -38,7 +38,6 @@ class LoopFileGnssStationInfo : public Loop
   PlatformEquipment::Type type;
   std::string             nameName, nameSerial, nameInfo, nameTimeStart, nameTimeEnd;
   std::string             nameIndex, nameCount;
-  UInt                    index;
 
 public:
   LoopFileGnssStationInfo(Config &config);
@@ -73,12 +72,12 @@ inline LoopFileGnssStationInfo::LoopFileGnssStationInfo(Config &config)
     readConfig(config, "variableLoopTimeEnd",   nameTimeEnd,   Config::OPTIONAL,  "loopTimeEnd",   "variable with antenna/receiver end time");
     readConfig(config, "variableLoopIndex",     nameIndex,     Config::OPTIONAL,  "",              "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",     nameCount,     Config::OPTIONAL,  "",              "variable with total number of iterations");
+    readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
     logWarningOnce<<"LoopFileGnssStationInfo is DEPRECATDED. Use LoopPlatformEquipment instead."<<Log::endl;
 
     readFilePlatform(fileName, platform);
-    index = 0;
   }
   catch(std::exception &e)
   {
@@ -90,14 +89,14 @@ inline LoopFileGnssStationInfo::LoopFileGnssStationInfo(Config &config)
 
 inline Bool LoopFileGnssStationInfo::iteration(VariableList &varList)
 {
-  if(index >= count())
+  if(index() >= count())
     return FALSE;
 
   UInt idx = 0;
   for(const auto &eq : platform.equipments)
-    if((eq->getType() == type) && (idx++ == index))
+    if((eq->getType() == type) && (idx++ == index()))
     {
-      if(!nameIndex.empty())     varList.setVariable(nameIndex,     index);
+      if(!nameIndex.empty())     varList.setVariable(nameIndex,     index());
       if(!nameCount.empty())     varList.setVariable(nameCount,     count());
       if(!nameName.empty())      varList.setVariable(nameName,      eq->name);
       if(!nameSerial.empty())    varList.setVariable(nameSerial,    eq->serial);
@@ -117,8 +116,7 @@ inline Bool LoopFileGnssStationInfo::iteration(VariableList &varList)
       break;
     }
 
-  index++;
-  return TRUE;
+  return checkCondition(varList);
 }
 
 /***********************************************/

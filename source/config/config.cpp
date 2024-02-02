@@ -163,22 +163,72 @@ XmlNodePtr Config::resolveLink(XmlNodePtr xmlNode) const
 
 /***********************************************/
 
-XmlNodePtr Config::getChild(const std::string &name, Bool remove)
+Bool Config::hasName(const std::string &name)
 {
-  try
+  for(;;)
   {
-    XmlNodePtr xmlNode = getChildWithLoopCheck(name, remove);
-    if(!xmlNode)
-      return xmlNode;
+    if(stack.top().xmlLastChild)
+    {
+      if(stack.top().xmlLastChild->getName() != name)
+        throw(Exception("loop error"));
+      return TRUE;
+    }
 
-    XmlAttrPtr attr = xmlNode->getAttribute("condition");
+    // loop?
+    // -----
+    if(stack.top().loopPtr)
+    {
+      if(!stack.top().loopPtr->iteration(varList)) // finish loop
+      {
+        varList = stack.top().loopVarListOld; // restore old varList
+        stack.top().xmlNode->getChild(name);  // remove child as it is finished
+        stack.top().loopPtr = nullptr;
+      }
+      else // next loop
+        stack.top().xmlLastChild = stack.top().xmlNode->findChild(name)->clone();
+    }
+
+    // get new child
+    // -------------
+    if(!stack.top().xmlLastChild)
+    {
+      // get new child
+      XmlNodePtr xmlNode = stack.top().xmlNode->findChild(name);
+      if(xmlNode == nullptr)
+        return FALSE;
+
+      // expand loop
+      XmlAttrPtr attr = xmlNode->getAttribute("loop");
+      if(attr)
+      {
+        XmlNodePtr xmlNodeLoop = global->findChild(attr->getText());
+        if(!xmlNodeLoop)
+          throw(Exception(std::string("cannot resolve loop link: ")+xmlNode->getName()+" -> "+attr->getText()+"'"));
+        XmlNodePtr tmp = XmlNode::create("tmp");
+        tmp->addChild(xmlNodeLoop->clone()); // make copy
+        push(tmp, SEQUENCE, currentNodeName());
+        LoopPtr loopPtr;
+        readConfig(*this, xmlNodeLoop->getName(), loopPtr, Config::MUSTSET, "", "");
+        pop();
+
+        stack.top().loopPtr = loopPtr;
+        stack.top().loopVarListOld = varList;
+        continue;  // start loop
+      }
+      else
+        stack.top().xmlLastChild = stack.top().xmlNode->getChild(name);  // no loop -> remove node
+    }
+
+    // check condition
+    XmlAttrPtr attr = stack.top().xmlLastChild->getAttribute("condition");
     if(!attr)
-      return xmlNode;
+      return TRUE;
 
     // expand condition
     XmlNodePtr xmlNodeCondition = global->findChild(attr->getText());
     if(!xmlNodeCondition)
-      throw(Exception(std::string("cannot resolve condition link: '")+xmlNode->getName()+"' -> '"+attr->getText()+"'"));
+      throw(Exception(std::string("cannot resolve condition link: '")+stack.top().xmlLastChild->getName()+"' -> '"+attr->getText()+"'"));
+    attr = nullptr;
     XmlNodePtr tmp = XmlNode::create("tmp");
     tmp->addChild(xmlNodeCondition->clone()); // make copy
     push(tmp, SEQUENCE, currentNodeName());
@@ -187,82 +237,24 @@ XmlNodePtr Config::getChild(const std::string &name, Bool remove)
     pop();
 
     // check condition
-    if(!condition->condition(varList))
-    {
-      if(!remove)
-        getChildWithLoopCheck(name, TRUE/*remove*/); // node disabled -> can always be removed
-      return getChild(name, remove);    // node disabled -> try next element
-    }
+    if(condition->condition(varList))
+      return TRUE;
 
-    return xmlNode;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
+    // node disabled -> try next element
+    stack.top().xmlLastChild = nullptr;
+  } // for(;;)
 }
 
 /***********************************************/
 
-XmlNodePtr Config::getChildWithLoopCheck(const std::string &name, Bool remove)
+XmlNodePtr Config::getChild(const std::string &name)
 {
   try
   {
-    // finish old iteration
-    // --------------------
-    if(stack.top().loopPtr && stack.top().loopNext && !stack.top().loopPtr->iteration(varList))
-    {
-      varList = stack.top().loopVarListOld; // restore old varList
-      stack.top().xmlNode->getChild(stack.top().xmlLastChild->getName());
-      stack.top().loopPtr = LoopPtr(nullptr);
-    }
-
-    // if not loop: get new child
-    // --------------------------
-    if(!stack.top().loopPtr)
-    {
-      // get new child
-      XmlNodePtr xmlNode = stack.top().xmlNode->findChild(name);
-      stack.top().xmlLastChild = xmlNode;
-      if(xmlNode == nullptr)
-        return xmlNode;
-
-      XmlAttrPtr attr = xmlNode->getAttribute("loop");
-      if(attr == nullptr)
-      {
-        if(remove)
-          stack.top().xmlNode->getChild(name);
-        return xmlNode;
-      }
-
-      // expand loop
-      XmlNodePtr xmlNodeLoop = global->findChild(attr->getText());
-      if(!xmlNodeLoop)
-        throw(Exception(std::string("cannot resolve loop link: ")+xmlNode->getName()+" -> "+attr->getText()+"'"));
-      XmlNodePtr tmp = XmlNode::create("tmp");
-      tmp->addChild(xmlNodeLoop->clone()); // make copy
-      push(tmp, SEQUENCE, currentNodeName());
-      LoopPtr loopPtr;
-      readConfig(*this, xmlNodeLoop->getName(), loopPtr, Config::MUSTSET, "", "");
-      pop();
-
-      // init loop
-      stack.top().loopVarListOld = varList;
-      stack.top().loopPtr        = loopPtr;
-      if(!stack.top().loopPtr->iteration(varList)) // empty loop?
-      {
-        stack.top().loopNext = TRUE;
-        stack.top().xmlNode->getChild(name); // remove child
-        return getChild(name, remove);       // node disabled -> try next element
-      }
-    }
-
-    // Now we are in a loop
-    // --------------------
-    if(stack.top().xmlLastChild->getName() != name)
-      throw(Exception("loop error"));
-    stack.top().loopNext = remove;
-    return stack.top().xmlLastChild->clone();
+    hasName(name); // get current node in xmlLastChild
+    XmlNodePtr xmlNode;
+    std::swap(stack.top().xmlLastChild, xmlNode);
+    return xmlNode;
   }
   catch(std::exception &e)
   {
@@ -357,17 +349,8 @@ Bool Config::getUnboundedConfig(const std::string &name, Config &conf)
 {
   try
   {
-    // finish old iteration
-    // --------------------
-    if(stack.top().loopPtr && stack.top().loopNext && !stack.top().loopPtr->iteration(varList))
-    {
-      varList = stack.top().loopVarListOld; // restore old varList
-      stack.top().xmlNode->getChild(stack.top().xmlLastChild->getName());
-      stack.top().loopPtr = LoopPtr(nullptr);
-    }
-
-    if(stack.top().loopPtr)
-      throw(Exception("Unexpected loop attribute"));
+    if(stack.top().xmlLastChild || stack.top().loopPtr)
+      throw(Exception("last element not yet finished processed"));
 
     XmlNodePtr xmlNode = XmlNode::create(name);
     for(;;)
@@ -809,7 +792,7 @@ Bool hasName(Config &config, const std::string &name, Config::Appearance mustSet
     if(isCreateSchema(config))
       return TRUE;
 
-    const Bool found = (config.getChild(name, FALSE/*remove*/) != nullptr);
+    const Bool found = config.hasName(name);
     if((mustSet == Config::MUSTSET) && !found)
       throw(Exception("config '"+config.currentNodeName()+"' must contain '"+name+"'"));
     return found;

@@ -714,11 +714,10 @@ void GnssStationLog2Platform::checkSinexFile(const FileName &fileName, Platform 
       platformSinex.markerNumber = platform.markerNumber;
       if(line.size() >= 75)
       {
-        Ellipsoid ellipsoid;
-        Double lon = (String::toDouble(line.substr(44, 3)) + String::toDouble(line.substr(48, 2))/60 + String::toDouble(line.substr(51, 4))/3600) * DEG2RAD;
-        Double lat = String::toDouble(line.substr(56, 3)) * DEG2RAD;
-        lat += (lat < 0 ? -1 : 1) * (String::toDouble(line.substr(60, 2))/60 + String::toDouble(line.substr(63, 4))/3600) * DEG2RAD;
-        platformSinex.approxPosition = ellipsoid(Angle(lon), Angle(lat), String::toDouble(line.substr(68, 7)));
+        const Double longitude   = String::toDouble(line.substr(44, 3)) + String::toDouble(line.substr(48, 2))/60 + String::toDouble(line.substr(51, 4))/3600;
+        const Double latitude    = String::toDouble(line.substr(56, 3)) + (String::startsWith(String::trim(line.substr(56, 3)), "-") ? -1 : 1) * (String::toDouble(line.substr(60, 2))/60 + String::toDouble(line.substr(63, 4))/3600);
+        const Double height      = String::toDouble(line.substr(68, 7));
+        platformSinex.approxPosition = Ellipsoid()(Angle(DEG2RAD*longitude), Angle(DEG2RAD*latitude), height);
       }
       found = TRUE;
     }

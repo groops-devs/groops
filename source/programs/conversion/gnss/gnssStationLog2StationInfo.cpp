@@ -594,6 +594,8 @@ void GnssStationLog2StationInfo::newReceiver(GnssStationInfo &station, GnssRecei
 
     if(receiver.timeEnd == Time())
       receiver.timeEnd = date2time(2500,1,1);
+    if(receiver.timeStart == receiver.timeEnd)
+      return;
     if(receiver.timeStart >= receiver.timeEnd)
       logWarning<<station.markerName<<"."<<station.markerNumber<<": receiver time error (new receiver start: "
                 <<receiver.timeStart.dateTimeStr()<<", new receiver end: "<<receiver.timeEnd.dateTimeStr()<<")"<<Log::endl;
@@ -643,8 +645,11 @@ void GnssStationLog2StationInfo::newAntenna(GnssStationInfo &station, GnssAntenn
 
     if(antenna.timeEnd == Time())
       antenna.timeEnd = date2time(2500,1,1);
+    if(antenna.timeStart == antenna.timeEnd)
+      return;
     if(antenna.timeStart >= antenna.timeEnd)
-      logWarning<<station.markerName<<"."<<station.markerNumber<<" antenna time error"<<Log::endl;
+      logWarning<<station.markerName<<"."<<station.markerNumber<<": antenna time error (new antenna start: "
+                <<antenna.timeStart.dateTimeStr()<<", new antenna end: "<<antenna.timeEnd.dateTimeStr()<<")"<<Log::endl;
 
     if(station.antenna.size()==0)
     {
@@ -668,7 +673,9 @@ void GnssStationLog2StationInfo::newAntenna(GnssStationInfo &station, GnssAntenn
       station.antenna.back().timeEnd = antenna.timeStart - seconds2time(1.);
 
     if(station.antenna.back().timeEnd > antenna.timeStart)
-      logWarning<<station.markerName<<"."<<station.markerNumber<<" antenna time error"<<Log::endl;
+      logWarning<<station.markerName<<"."<<station.markerNumber<<" antenna time error (previous antenna end: "
+                <<station.antenna.back().timeEnd.dateTimeStr()<<", new antenna start: "<<antenna.timeStart.dateTimeStr()<<")"<<Log::endl;
+
 
     station.antenna.push_back(antenna);
   }
@@ -773,18 +780,7 @@ Bool GnssStationLog2StationInfo::readTime(const std::string &line, Time &x) cons
       ss>>year;
       if((!ss.good())&&(!ss.eof()))
         return FALSE;
-      ss>>std::noskipws;
-      ss>>c;
-      if(c==' ')
-      {
-      ss>>hour;
-      if((!ss.good())&&(!ss.eof()))
-        return FALSE;
-      ss>>c; if(c!=':') return FALSE; //throw(Exception(": expected"));
-      ss>>min;
-      if((!ss.good())&&(!ss.eof()))
-        return FALSE;
-      }
+      ss>>hour>>c>>min;  // ignore problems when reading the clock
     }
     else // new date style: 2015-01-28T00:00Z
     {
@@ -800,19 +796,10 @@ Bool GnssStationLog2StationInfo::readTime(const std::string &line, Time &x) cons
         return FALSE;
       ss>>c;
       if(c=='T')
-      {
-        ss>>hour;
-        if((!ss.good())&&(!ss.eof()))
-          return FALSE;
-        ss>>c; if(c!=':') return FALSE; //throw(Exception(": expected"));
-        ss>>min;
-        if((!ss.good())&&(!ss.eof()))
-          return FALSE;
-      }
+        ss>>hour>>c>>min; // ignore problems when reading the clock
     }
 
     x = date2time(year, month, day, hour, min, 0);
-// logInfo<<"read time:   '"<<x.dateTimeStr()<<"'"<<Log::endl;
     return TRUE;
   }
   catch(std::exception &e)
@@ -863,11 +850,10 @@ void GnssStationLog2StationInfo::readSinexStation(std::string &line, const GnssS
       sinexStationInfo.markerNumber = station.markerNumber;
       if(line.size() >= 75)
       {
-        Ellipsoid ellipsoid;
-        Double lon = (String::toDouble(line.substr(44, 3)) + String::toDouble(line.substr(48, 2))/60 + String::toDouble(line.substr(51, 4))/3600) * DEG2RAD;
-        Double lat = String::toDouble(line.substr(56, 3)) * DEG2RAD;
-        lat += (lat < 0 ? -1 : 1) * (String::toDouble(line.substr(60, 2))/60 + String::toDouble(line.substr(63, 4))/3600) * DEG2RAD;
-        sinexStationInfo.approxPosition = ellipsoid(Angle(lon), Angle(lat), String::toDouble(line.substr(68, 7)));
+        const Double longitude   = String::toDouble(line.substr(44, 3)) + String::toDouble(line.substr(48, 2))/60 + String::toDouble(line.substr(51, 4))/3600;
+        const Double latitude    = String::toDouble(line.substr(56, 3)) + (String::startsWith(String::trim(line.substr(56, 3)), "-") ? -1 : 1) * (String::toDouble(line.substr(60, 2))/60 + String::toDouble(line.substr(63, 4))/3600);
+        const Double height      = String::toDouble(line.substr(68, 7));
+        sinexStationInfo.approxPosition = Ellipsoid()(Angle(DEG2RAD*longitude), Angle(DEG2RAD*latitude), height);
       }
     }
   }

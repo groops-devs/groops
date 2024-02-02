@@ -128,7 +128,7 @@ void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::Communicato
               idEpoch--;
             para->endEpoch.push_back(idEpoch);
 
-            auto variationalEquation = file.integrateArc(gnss->times.at(para->startEpoch.back()), gnss->times.at(para->endEpoch.back()), TRUE/*computePosition*/, TRUE/*computeVelocity*/);
+            auto variationalEquation = file.integrateArc(arc.times.front(), arc.times.back(), TRUE/*computePosition*/, TRUE/*computeVelocity*/);
             para->times.emplace_back(variationalEquation.times);
             para->PosDesign.emplace_back(variationalEquation.PosDesign);
             para->VelDesign.emplace_back(variationalEquation.VelDesign);

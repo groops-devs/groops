@@ -98,7 +98,6 @@ protected:
     XmlNodePtr   xmlNode;        // complex node with children
     XmlNodePtr   xmlLastChild;   // last processed child
     LoopPtr      loopPtr;
-    Bool         loopNext;       // move to next iteration before
     VariableList loopVarListOld; // varList without loop variables
 
     StackNode(XmlNodePtr _xmlNode, ComplexType _type, const std::string &_name) : name(_name), type(_type), xmlNode(_xmlNode) {}
@@ -115,8 +114,8 @@ protected:
 
   // normal mode
   XmlNodePtr   resolveLink(XmlNodePtr xmlNode) const;
-  XmlNodePtr   getChild(const std::string &name, Bool remove=TRUE);
-  XmlNodePtr   getChildWithLoopCheck(const std::string &name, Bool remove=TRUE);
+  Bool         hasName(const std::string &name);
+  XmlNodePtr   getChild(const std::string &name);
   void         notEmptyWarning();
   std::string  copy(Config &config, const VariableList &variableList) const;
 

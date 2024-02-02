@@ -3799,6 +3799,11 @@ k_n = \gamma.
 Generates a sequence with variables to loop over.
 The variable names can be set with \config{variableLoop...} and
 the current values are assigned to the variables for each loop step.
+
+With \configClass{condition}{conditionType} only a subset of loop steps are performed.
+The \config{variableLoopIndex} and \config{variableLoopCount} are not affected by the condition.
+The result would therefore be the same as using \program{LoopPrograms} with a nested \program{IfPrograms}.
+
 See \reference{Loop and conditions}{general.loopsAndConditions} for usage.
 
 
@@ -3815,6 +3820,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopTime & \hfuzz=500pt string & \hfuzz=500pt variable with time of each loop\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -3833,6 +3839,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopTimeEnd & \hfuzz=500pt string & \hfuzz=500pt variable with ending time of each interval\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -3850,6 +3857,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -3875,6 +3883,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt 1. variable name for the 1. column, next variable name for the 2. column, ... \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -3896,6 +3905,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -3916,6 +3926,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt 1. variable name for the 1. column, next variable name for the 2. column, ... \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -3937,6 +3948,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopLine & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -3958,6 +3970,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~variableLoop & \hfuzz=500pt expression & \hfuzz=500pt define a variable by name = expression (input columns are named data0, data1, ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -3977,6 +3990,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopNumber & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -3996,6 +4010,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopFile & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -4014,6 +4029,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -4029,6 +4045,7 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~loop & \hfuzz=500pt \hyperref[loopType]{loop} & \hfuzz=500pt subloop\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -4058,6 +4075,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopPositionY & \hfuzz=500pt string & \hfuzz=500pt variable with position z\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 
@@ -4082,6 +4100,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopTimeEnd & \hfuzz=500pt string & \hfuzz=500pt variable with antenna/receiver end time\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
 \hline
 \end{tabularx}
 

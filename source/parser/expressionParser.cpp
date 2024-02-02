@@ -1584,6 +1584,8 @@ void ExpressionVariable::simplify(VariableList &varList)
       {
         value  = expr->evaluate(varList2);
         status = VALUE;
+        this->varList.map.clear();
+        expr = nullptr;
         return;
       }
 

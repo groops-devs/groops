@@ -62,7 +62,7 @@ public:
   GnssParameterIndex parameterNamesTransmitter     (UInt idTrans, const std::vector<ParameterName> &parameterNames)                            {return addParameters(NULLINDEX, NULLINDEX, idTrans,   parameterNames);}
   GnssParameterIndex parameterNamesOther           (const std::vector<ParameterName> &parameterNames)                                          {return addParameters(NULLINDEX, NULLINDEX, NULLINDEX, parameterNames);}
   GnssParameterIndex parameterNamesAmbiguity       (UInt idEpoch, UInt idRecv, UInt idTrans, const std::vector<ParameterName> &parameterNames) {return addParameters(idEpoch,   idRecv,    idTrans,   parameterNames);}
-  void calculateIndex();
+  void calculateIndex(const Vector &recvProcess);
 
   UInt block(const GnssParameterIndex &index) const {return block_.at(index.index);}
   UInt index(const GnssParameterIndex &index) const {return index_.at(index.index);}
@@ -80,12 +80,22 @@ public:
   UInt blockInterval()  const {return blockInterval_;}
   UInt blockAmbiguity() const {return blockAmbiguity_;}
 
+  UInt normalsBlockRank(UInt i, UInt k, UInt commSize);
+
 private:
-  std::vector<std::tuple<UInt, UInt, UInt, UInt, std::vector<ParameterName>>> parameters; // idEpoch, idRecv, idTrans, idx, name
-  std::vector<UInt>          block_, index_, count_;
+  class Parameter
+  {
+  public:
+    UInt idEpoch, idRecv, idTrans, rank, idx;
+    std::vector<ParameterName> names;
+  };
+
+  std::list<Parameter>       parameters;
+  std::vector<UInt>          block_, index_, count_;  // for each parameter index
   std::vector<ParameterName> parameterNames_;
-  std::vector<UInt>          blockIndices_;
-  std::vector<UInt>          blockCountEpoch_;
+  std::vector<UInt>          blockIndices_;           // for each block
+  std::vector<UInt>          blockRank_;              // for each block
+  std::vector<UInt>          blockCountEpoch_;        // for each epoch
   UInt                       blockInterval_, blockAmbiguity_;
   UInt                       countTransmitter_;
 

@@ -488,6 +488,7 @@ programs/conversion/gnss/gnssTroposphere2TropoSinex.cpp
 programs/conversion/gnss/rinexObservation2GnssReceiver.cpp
 programs/conversion/gnss/sinex2StationDiscontinuities.cpp
 programs/conversion/gnss/sinex2StationPositions.cpp
+programs/conversion/gnss/sinexMetadata2GlonassFrequencyNumber.cpp
 programs/conversion/gnss/sinexMetadata2SatelliteModel.cpp
 programs/conversion/goce/goceXml2Gradiometer.cpp
 programs/conversion/goce/goceXml2Orbit.cpp

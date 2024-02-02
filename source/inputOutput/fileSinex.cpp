@@ -180,8 +180,8 @@ void readFileSinex(const FileName &fileName, Sinex &sinex)
       }
       else if(line.at(0) == '-') // end data block
       {
-        // Do not close the FILE/COMMENT block in case of lines starting with "-"
-        if(block->label=="FILE/COMMENT" && String::trim(line.substr(1))!="FILE/COMMENT")
+        // Do not close the FILE/COMMENT block in case of comment lines starting incorrectly with "-"
+        if(block && (block->label == "FILE/COMMENT") && (block->label != String::trim(line.substr(1))))
           continue;
         if(!block || (block->label != String::trim(line.substr(1))))
           throw(Exception("SINEX block ends unexpectedly: '"+line+"'"));

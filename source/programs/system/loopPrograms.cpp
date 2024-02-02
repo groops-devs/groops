@@ -75,14 +75,13 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     // --------------------------------------
     if((processCount == 0) || (processCount+1 >= Parallel::size(comm)) || (Parallel::size(comm) < 3))
     {
-      UInt iter = 0;
       if(loopPtr->iteration(varList))
       {
         Log::Timer timer(loopPtr->count());
         do
         {
-          logStatus<<"=== "<<iter+1<<". loop ==="<<Log::endl;
-          timer.loopStep(iter++);
+          logStatus<<"=== "<<loopPtr->index()<<". loop ==="<<Log::endl;
+          timer.loopStep(loopPtr->index()-1);
           try
           {
             Parallel::broadCastExceptions(comm, [&](Parallel::CommunicatorPtr comm)
@@ -117,16 +116,15 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     {
       // parallel version: main node
       // ---------------------------
-      UInt iter = 0;
       if(loopPtr->iteration(varList))
       {
         Log::Timer timer(loopPtr->count(), Parallel::size(commLoop)-1, TRUE);
         do
         {
-          timer.loopStep(iter);
+          timer.loopStep(loopPtr->index()-1);
           UInt process;
-          Parallel::receive(process, NULLINDEX, commLoop); // which process needs work?
-          Parallel::send(iter++, process, commLoop);       // send new loop number to be computed at process
+          Parallel::receive(process, NULLINDEX, commLoop);  // which process needs work?
+          Parallel::send(loopPtr->index(), process, commLoop); // send new loop number to be computed at process
         }
         while(loopPtr->iteration(varList));
         // send to all processes the end signal (NULLINDEX)
@@ -144,19 +142,18 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     {
       // clients
       // -------
-      UInt k=0;
       for(;;)
       {
-        UInt i;
+        UInt index;
         if(Parallel::isMaster(commLocal))
         {
           Parallel::send(Parallel::myRank(commLoop), 0, commLoop);
-          Parallel::receive(i, 0, commLoop);
+          Parallel::receive(index, 0, commLoop);
         }
-        Parallel::broadCast(i, 0, commLocal);
-        if(i == NULLINDEX) // end signal?
+        Parallel::broadCast(index, 0, commLocal);
+        if(index == NULLINDEX) // end signal?
           break;
-        for(; k<=i; k++) // step to current loop number
+        while(loopPtr->index() != index)
           loopPtr->iteration(varList);
 
         try
