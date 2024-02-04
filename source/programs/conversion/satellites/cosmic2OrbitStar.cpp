@@ -97,7 +97,7 @@ void Cosmic2OrbitStar::readFileCosmic(const FileName &fileName, StarCameraArc &s
     file.exceptions(std::ios::badbit|std::ios::failbit);
 
     //Daten einlesen, Headerzeilen werden hier direkt behandelt
-    for(UInt i=0; ; i++)
+    for(;;)
     {
       std::string line;
       try
