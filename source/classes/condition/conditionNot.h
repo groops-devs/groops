@@ -29,7 +29,7 @@ The result of the condition is inverted.
 /***** CLASS ***********************************/
 
 /** @brief The result of the condition is inverted.
-* @ingroup ConditionGroup
+* @ingroup conditionGroup
 * @see Condition */
 class ConditionNot : public Condition
 {

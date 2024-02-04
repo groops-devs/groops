@@ -42,8 +42,7 @@ The variance of the result (sum) is computed by means of variance propagation.
 * @defgroup gravityfieldGroup GravityField
 * @brief Function values of (time variable) gravity fields.
 * @ingroup classesGroup
-* The interface is given by @ref Gravityfield.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Gravityfield. */
 /// @{
 
 /***** TYPES ***********************************/

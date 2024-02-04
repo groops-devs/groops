@@ -29,7 +29,7 @@ Evaluate expression.
 /***** CLASS ***********************************/
 
 /** @brief Evaluate expression.
-* @ingroup ConditionGroup
+* @ingroup conditionGroup
 * @see Condition */
 class ConditionExpression : public Condition
 {

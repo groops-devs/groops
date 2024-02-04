@@ -32,8 +32,7 @@ between $[0,1]$ with 0: full shadow and 1: full sun light.
 * @defgroup eclipseGroup Eclipse
 * @brief Shadowing of satellites by moon and Earth.
 * @ingroup classesGroup
-* The interface is given by @ref Eclipse.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Eclipse. */
 /// @{
 
 /***** TYPES ***********************************/

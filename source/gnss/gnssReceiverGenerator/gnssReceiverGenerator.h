@@ -70,8 +70,7 @@ See also \program{GnssProcessing} and \program{GnssSimulateReceiver}.
 * @defgroup gnssReceiverGeneratorGroup GnssReceiverGenerator
 * @brief Provides a list of receivers.
 * @ingroup classesGroup
-* The interface is given by @ref GnssReceiverGenerator.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref GnssReceiverGenerator. */
 /// @{
 
 /***** TYPES ***********************************/

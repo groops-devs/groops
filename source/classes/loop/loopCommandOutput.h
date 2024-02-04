@@ -32,7 +32,7 @@ Loop over lines of command output.
 /***** CLASS ***********************************/
 
 /** @brief Loop over lines of command output.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopCommandOutput : public Loop
 {

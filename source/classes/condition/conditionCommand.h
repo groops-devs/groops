@@ -31,7 +31,7 @@ Execute command and check success.
 /***** CLASS ***********************************/
 
 /** @brief Execute command and check success.
-* @ingroup ConditionGroup
+* @ingroup conditionGroup
 * @see Condition */
 class ConditionCommand : public Condition
 {

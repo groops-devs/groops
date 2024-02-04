@@ -66,8 +66,7 @@ is a little bit different as described below.
 * @defgroup normalEquationGroup NormalEquation
 * @brief Systems of normal equations.
 * @ingroup classesGroup
-* The interface is given by @ref NormalEquation.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref NormalEquation. */
 /// @{
 
 /***** TYPES ***********************************/

@@ -53,9 +53,7 @@ To reduce warmup effects, the input time series can be padded by choosing a \con
 /**
 * @defgroup digitalFilterGroup DigitalFilter
 * @brief Digital filter implementation.
-* @ingroup classesGroup
-* The interface is given by @ref DigitalFilter.
-* An Instance can be created by @ref readConfig. */
+* @ingroup classesGroup */
 /// @{
 
 /***** TYPES ***********************************/

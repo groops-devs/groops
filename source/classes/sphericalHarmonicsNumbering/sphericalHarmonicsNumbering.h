@@ -32,8 +32,7 @@ in a parameter vector (e.g \program{Gravityfield2SphericalHarmonicsVector} and t
 * @defgroup sphericalHarmonicsNumberingGroup SphericalHarmonicsNumbering
 * @brief Numbering schema of spherical harmonics coefficients.
 * @ingroup classesGroup
-* The interface is given by @ref SphericalHarmonicsNumbering.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref SphericalHarmonicsNumbering. */
 /// @{
 
 /***** TYPES ***********************************/

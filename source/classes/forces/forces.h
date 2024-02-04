@@ -37,8 +37,7 @@ and \configClass{miscAccelerations}{miscAccelerationsType}.
 * @defgroup forcesGroup Forces
 * @brief Forces acting on satellites.
 * @ingroup classesGroup
-* The interface is given by @ref Forces.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Forces. */
 /// @{
 
 /***** TYPES ***********************************/

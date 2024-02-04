@@ -30,7 +30,7 @@ Loop over list of strings.
 /***** CLASS ***********************************/
 
 /** @brief Loop over list of strings.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopManualList : public Loop
 {

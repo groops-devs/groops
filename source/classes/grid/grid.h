@@ -38,8 +38,7 @@ can be regarded as the surface element associated with each grid point.
 * @defgroup gridGroup Grid
 * @brief Point distributions on the sphere/ellipsoid.
 * @ingroup classesGroup
-* The interface is given by @ref Grid.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Grid. */
 /// @{
 
 /***** TYPES ***********************************/

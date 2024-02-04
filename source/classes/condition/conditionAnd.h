@@ -29,7 +29,7 @@ All conditions must be met (with short-circuit evaluation).
 /***** CLASS ***********************************/
 
 /** @brief All conditions must be met (with short-circuit evaluation).
-* @ingroup ConditionGroup
+* @ingroup conditionGroup
 * @see Condition */
 class ConditionAnd : public Condition
 {

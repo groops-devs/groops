@@ -46,8 +46,7 @@ or \reference{Kinematic orbit determination of LEO satellites}{cookbook.kinemati
 * @defgroup gnssProcessingStepGroup GnssProcessingStep
 * @brief Processing steps in @ref GnssProcessing.
 * @ingroup gnssGroup
-* The interface is given by @ref GnssProcessingStep.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref GnssProcessingStep. */
 /// @{
 
 /***** TYPES ***********************************/

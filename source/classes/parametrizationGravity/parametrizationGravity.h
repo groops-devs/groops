@@ -37,8 +37,7 @@ are sequently appended.
 * @defgroup parametrizationGravityGroup ParametrizationGravity.
 * @brief Parametrization of the gravity field.
 * @ingroup classesGroup
-* The interface is given by @ref ParametrizationGravity.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref ParametrizationGravity. */
 /// @{
 
 /***** TYPES ***********************************/

@@ -33,8 +33,7 @@ If multiple parametrizations are given the parameters are sequently appended in 
 * @defgroup parametrizationGnssAntennaGroup ParametrizationGnssAntenna
 * @brief Parametrization of antenna center variations.
 * @ingroup classesGroup
-* The interface is given by @ref ParametrizationGnssAntenna.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref ParametrizationGnssAntenna. */
 /// @{
 
 /***** TYPES ***********************************/
