@@ -18,7 +18,7 @@
 
 /***********************************************/
 
-GnssNormalEquationInfo::GnssNormalEquationInfo(UInt countEpoch, UInt countReceiver, UInt countTransmitter, Parallel::CommunicatorPtr comm_) :
+GnssNormalEquationInfo::GnssNormalEquationInfo(UInt countEpoch, UInt countReceiver, UInt /*countTransmitter*/, Parallel::CommunicatorPtr comm_) :
     comm(comm_),
     isEachReceiverSeparately(FALSE),
     estimateReceiver(countReceiver, TRUE),
@@ -30,8 +30,7 @@ GnssNormalEquationInfo::GnssNormalEquationInfo(UInt countEpoch, UInt countReceiv
     defaultBlockCountReduction(32),
     keepEpochNormalsInMemory(TRUE),
     accumulateEpochObservations(FALSE),
-    blockCountEpoch_(countEpoch, 0),
-    countTransmitter_(countTransmitter)
+    blockCountEpoch_(countEpoch, 0)
 {
   std::iota(idEpochs.begin(), idEpochs.end(), 0);
 }

@@ -32,7 +32,7 @@ Each row/column must have the same number of cells.
 /***** CLASS ***********************************/
 
 /** @brief Loop over rows of a table containing strings.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopManualTable : public Loop
 {

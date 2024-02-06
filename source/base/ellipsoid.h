@@ -20,7 +20,7 @@
 /***** CLASS ***********************************/
 
 /** @brief Transformation of ellipsoidial coordinates.
-* @ingroup vector3d */
+* @ingroup vector3dGroup */
 class Ellipsoid
 {
   Double _a,_b;

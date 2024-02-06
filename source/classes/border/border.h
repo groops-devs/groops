@@ -46,8 +46,7 @@ it will be included again.
 * @defgroup borderGroup Border
 * @brief Borders of an area on sphere/ellipsoid.
 * @ingroup classesGroup
-* The interface is given by @ref Border.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Border. */
 /// @{
 
 /***** TYPES ***********************************/

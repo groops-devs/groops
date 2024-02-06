@@ -30,7 +30,7 @@ Loop over sequence of numbers.
 /***** CLASS ***********************************/
 
 /** @brief Loop over sequence of numbers.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopUniformSampling : public Loop
 {

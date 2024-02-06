@@ -31,7 +31,7 @@ Loop over lines of a text file.
 /***** CLASS ***********************************/
 
 /** @brief Loop over lines of a text file.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopFileLines : public Loop
 {

@@ -45,7 +45,6 @@ The estimated parameters are written to the file \configFile{outputfileSolution}
 class InstrumentAccelerometerEstimateParameters
 {
   InstrumentFile                 accFile, accFileSim, orbitFile, starCameraFile;
-  Double                         margin;
   EarthRotationPtr               earthRotation;
   EphemeridesPtr                 ephemerides;
   ParametrizationAccelerationPtr parameterAcceleration;

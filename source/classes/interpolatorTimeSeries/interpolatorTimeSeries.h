@@ -30,8 +30,7 @@ This class resamples data of a times series to new poins in time.
 * @defgroup interpolatorTimeSeriesGroup InterpolatorTimeSeries
 * @brief Interpolation of time series data.
 * @ingroup classesGroup
-* The interface is given by @ref InterpolatorTimeSeries.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref InterpolatorTimeSeries. */
 /// @{
 
 /***** TYPES ***********************************/

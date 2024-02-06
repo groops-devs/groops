@@ -31,7 +31,7 @@ Determines if there is a match between a pattern or a regular expression and som
 /***** CLASS ***********************************/
 
 /** @brief Determines if there is a match between a pattern or a regular expression and some subsequence in a string.
-* @ingroup ConditionGroup
+* @ingroup conditionGroup
 * @see Condition */
 class ConditionStringContainsPattern : public Condition
 {

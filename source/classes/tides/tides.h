@@ -40,8 +40,7 @@ and the other by -1. To get the mean of two models just set each factor to 0.5.
 * @defgroup tidesGroup Tides
 * @brief Tidal forces.
 * @ingroup classesGroup
-* The interface is given by @ref Tides.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Tides. */
 /// @{
 
 /***** TYPES ***********************************/

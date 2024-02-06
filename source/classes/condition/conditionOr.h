@@ -29,7 +29,7 @@ One of the conditions must be met (with short-circuit evaluation).
 /***** CLASS ***********************************/
 
 /** @brief One of the conditions must be met (with short-circuit evaluation).
-* @ingroup ConditionGroup
+* @ingroup conditionGroup
 * @see Condition */
 class ConditionOr : public Condition
 {

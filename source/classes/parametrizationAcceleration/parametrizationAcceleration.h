@@ -33,11 +33,10 @@ are sequently appended.
 #include "classes/ephemerides/ephemerides.h"
 
 /**
-* @defgroup parametrizationAcceleration ParametrizationAcceleration
+* @defgroup parametrizationAccelerationGroup ParametrizationAcceleration
 * @brief Orbit force parameters.
 * @ingroup classesGroup
-* The interface is given by @ref ParametrizationAcceleration.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref ParametrizationAcceleration. */
 /// @{
 
 /***** TYPES ***********************************/

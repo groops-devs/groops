@@ -31,7 +31,7 @@ Loop over the intervals between points in time.
 /***** CLASS ***********************************/
 
 /** @brief Loop over time intervals.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopTimeIntervals : public Loop
 {

@@ -32,7 +32,7 @@ Each row must have the same number of columns.
 /***** CLASS ***********************************/
 
 /** @brief Loop over rows of a table containing strings.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopFileAsciiTable : public Loop
 {

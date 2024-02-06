@@ -33,7 +33,7 @@ data variables of the matrix are available, see~\reference{dataVariables}{genera
 /***** CLASS ***********************************/
 
 /** @brief Loop over rows of a matrix.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopMatrix : public Loop
 {

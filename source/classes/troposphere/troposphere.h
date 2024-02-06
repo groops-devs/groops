@@ -33,8 +33,7 @@ the signal delay in the dry and wet atmosphere.
 * @ingroup classesGroup
 * Functions for calculating and estimating
 * the signal delay in the dry and wet atmosphere.
-* The interface is given by @ref Troposphere.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Troposphere. */
 /// @{
 
 /***** TYPES ***********************************/

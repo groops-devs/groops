@@ -39,8 +39,7 @@ Defines the planet to compute the \configClass{ephemeris}{ephemeridesType}.
 * @defgroup ephemeridesGroup Ephemerides
 * @brief Ephemerides of Sun, Moon and planets.
 * @ingroup classesGroup
-* The interface is given by @ref Ephemerides.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Ephemerides. */
 /// @{
 
 /***** TYPES ***********************************/
