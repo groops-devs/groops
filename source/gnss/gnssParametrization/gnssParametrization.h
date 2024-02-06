@@ -74,8 +74,7 @@ See also \program{GnssProcessing}.
 * @defgroup gnssParametrizationGroup GnssParametrization
 * @brief Parametrization of GNSS observations.
 * @ingroup classesGroup
-* The interface is given by @ref GnssParametrization.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref GnssParametrization. */
 /// @{
 
 /***** TYPES ***********************************/

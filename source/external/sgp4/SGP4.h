@@ -3,12 +3,8 @@
 
 /**
  * This class implements the elsetrec data type from Vallado's SGP4 code.
- *
- * From SGP4.h
- * #define SGP4Version  "SGP4 Version 2016-03-09"
- *
+ * "SGP4 Version 2016-03-09"
  * @author aholinch
- *
  */
 class ElsetRec
 {

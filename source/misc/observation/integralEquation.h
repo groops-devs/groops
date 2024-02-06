@@ -21,7 +21,7 @@
 /***** CLASS ***********************************/
 
 /** @brief Functions for the (short arc) integral equation approach.
-* @ingroup misc */
+* @ingroup miscGroup */
 class IntegralEquation
 {
   UInt                integrationDegree, interpolationDegree;

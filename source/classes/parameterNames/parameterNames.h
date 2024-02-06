@@ -30,8 +30,7 @@ Generate a list of parameter names. All parameters are appended.
 * @defgroup parameterNamesGroup Parameter names
 * @brief Generate parameter names.
 * @ingroup classesGroup
-* The interface is given by @ref ParameterNames.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref ParameterNames. */
 /// @{
 
 /***** TYPES ***********************************/

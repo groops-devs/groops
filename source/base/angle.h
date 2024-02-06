@@ -18,7 +18,7 @@
 /***** CLASS ***********************************/
 
 /** @brief Angle in radians.
-* @ingroup vector3d
+* @ingroup vector3dGroup
 * Its only used to distinguish between doubles and angles in input/output.
 * Angle is converted from/to degrees in input/output. */
 class Angle

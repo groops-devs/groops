@@ -32,7 +32,7 @@ Thus, influences from solar and Earth radiation pressure must be reduced beforeh
 /***** CLASS ***********************************/
 
 /** @brief Estimate neutral density from accelerometer data.
-* @ingroup programGroup */
+* @ingroup programsGroup */
 class InstrumentAccelerometer2ThermosphericDensity
 {
 public:

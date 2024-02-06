@@ -31,7 +31,7 @@ Loop over points in time.
 /***** CLASS ***********************************/
 
 /** @brief Loop over points in time.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopTimeSeries : public Loop
 {

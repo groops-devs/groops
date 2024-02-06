@@ -31,11 +31,10 @@ are set. As all matrices can be manipulated before, complex matrix operations ar
 #include "config/config.h"
 
 /**
-* @defgroup matrixGenerator MatrixGenerator
+* @defgroup matrixGeneratorGroup MatrixGenerator
 * @brief Matrix calculation.
 * @ingroup classesGroup
-* The interface is given by @ref MatrixGenerator.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref MatrixGenerator. */
 /// @{
 
 /***** TYPES ***********************************/

@@ -34,8 +34,7 @@ See also \program{GnssProcessing} and \program{GnssSimulateReceiver}.
 * @defgroup gnssTransmitterGeneratorGroup GnssTransmitterGenerator
 * @brief Provides a list of transmitters.
 * @ingroup classesGroup
-* The interface is given by @ref GnssTransmitterGenerator.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref GnssTransmitterGenerator. */
 /// @{
 
 /***** TYPES ***********************************/

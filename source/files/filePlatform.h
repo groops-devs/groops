@@ -118,6 +118,8 @@ public:
   Time        timeStart, timeEnd;
   Vector3d    position;   // position of instrument in north, east, up or vehicle system
 
+  virtual ~PlatformEquipment() {}
+
   /** @brief Create Equipment of given type (as shared_ptr). */
   static PlatformEquipmentPtr create(Type type);
 

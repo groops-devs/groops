@@ -34,8 +34,7 @@ See also \program{GnssProcessing}.
 * @defgroup platformSelectorGroup PlatformSelector
 * @brief Selected platforms.
 * @ingroup classesGroup
-* The interface is given by @ref PlatformSelector.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref PlatformSelector. */
 /// @{
 
 /***** TYPES ***********************************/

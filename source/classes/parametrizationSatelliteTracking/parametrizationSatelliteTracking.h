@@ -31,11 +31,10 @@ are sequently appended.
 #include "config/config.h"
 
 /**
-* @defgroup parametrizationSatelliteTracking ParametrizationSatelliteTracking
+* @defgroup parametrizationSatelliteTrackingGroup ParametrizationSatelliteTracking
 * @brief SST parameters.
 * @ingroup classesGroup
-* The interface is given by @ref ParametrizationSatelliteTracking.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref ParametrizationSatelliteTracking. */
 /// @{
 
 /***** TYPES ***********************************/

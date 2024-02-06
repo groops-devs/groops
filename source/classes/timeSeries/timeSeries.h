@@ -33,8 +33,7 @@ Depending of the application the series is interpreted as list of points or as i
 * @defgroup timeSeriesGroup TimeSeries
 * @brief Generates time series.
 * @ingroup classesGroup
-* The interface is given by @ref TimeSeries.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref TimeSeries. */
 /// @{
 
 /***** TYPES ***********************************/
