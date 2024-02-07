@@ -1,4 +1,4 @@
-# Doxyfile 1.9.5
+# Doxyfile 1.10.0
 
 # This file describes the settings to be used by the documentation system
 # doxygen (www.doxygen.org) for a project.
@@ -86,7 +86,7 @@ CREATE_SUBDIRS         = NO
 # level increment doubles the number of directories, resulting in 4096
 # directories at level 8 which is the default and also the maximum value. The
 # sub-directories are organized in 2 levels, the first level always has a fixed
-# numer of 16 directories.
+# number of 16 directories.
 # Minimum value: 0, maximum value: 8, default value: 8.
 # This tag requires that the tag CREATE_SUBDIRS is set to YES.
 
@@ -568,7 +568,8 @@ HIDE_UNDOC_MEMBERS     = NO
 # If the HIDE_UNDOC_CLASSES tag is set to YES, doxygen will hide all
 # undocumented classes that are normally visible in the class hierarchy. If set
 # to NO, these classes will be included in the various overviews. This option
-# has no effect if EXTRACT_ALL is enabled.
+# will also hide undocumented C++ concepts if enabled. This option has no effect
+# if EXTRACT_ALL is enabled.
 # The default value is: NO.
 
 HIDE_UNDOC_CLASSES     = NO
@@ -859,11 +860,26 @@ WARN_IF_INCOMPLETE_DOC = YES
 
 WARN_NO_PARAMDOC       = NO
 
+# If WARN_IF_UNDOC_ENUM_VAL option is set to YES, doxygen will warn about
+# undocumented enumeration values. If set to NO, doxygen will accept
+# undocumented enumeration values. If EXTRACT_ALL is set to YES then this flag
+# will automatically be disabled.
+# The default value is: NO.
+
+WARN_IF_UNDOC_ENUM_VAL = NO
+
 # If the WARN_AS_ERROR tag is set to YES then doxygen will immediately stop when
 # a warning is encountered. If the WARN_AS_ERROR tag is set to FAIL_ON_WARNINGS
 # then doxygen will continue running as if WARN_AS_ERROR tag is set to NO, but
 # at the end of the doxygen process doxygen will return with a non-zero status.
-# Possible values are: NO, YES and FAIL_ON_WARNINGS.
+# If the WARN_AS_ERROR tag is set to FAIL_ON_WARNINGS_PRINT then doxygen behaves
+# like FAIL_ON_WARNINGS but in case no WARN_LOGFILE is defined doxygen will not
+# write the warning messages in between other messages but write them at the end
+# of a run, in case a WARN_LOGFILE is defined the warning messages will be
+# besides being in the defined file also be shown at the end of a run, unless
+# the WARN_LOGFILE is defined as - i.e. standard output (stdout) in that case
+# the behavior will remain as with the setting FAIL_ON_WARNINGS.
+# Possible values are: NO, YES, FAIL_ON_WARNINGS and FAIL_ON_WARNINGS_PRINT.
 # The default value is: NO.
 
 WARN_AS_ERROR          = NO
@@ -941,12 +957,12 @@ INPUT_FILE_ENCODING    =
 # Note the list of default checked file patterns might differ from the list of
 # default file extension mappings.
 #
-# If left blank the following patterns are tested:*.c, *.cc, *.cxx, *.cpp,
-# *.c++, *.java, *.ii, *.ixx, *.ipp, *.i++, *.inl, *.idl, *.ddl, *.odl, *.h,
-# *.hh, *.hxx, *.hpp, *.h++, *.l, *.cs, *.d, *.php, *.php4, *.php5, *.phtml,
-# *.inc, *.m, *.markdown, *.md, *.mm, *.dox (to be provided as doxygen C
-# comment), *.py, *.pyw, *.f90, *.f95, *.f03, *.f08, *.f18, *.f, *.for, *.vhd,
-# *.vhdl, *.ucf, *.qsf and *.ice.
+# If left blank the following patterns are tested:*.c, *.cc, *.cxx, *.cxxm,
+# *.cpp, *.cppm, *.ccm, *.c++, *.c++m, *.java, *.ii, *.ixx, *.ipp, *.i++, *.inl,
+# *.idl, *.ddl, *.odl, *.h, *.hh, *.hxx, *.hpp, *.h++, *.ixx, *.l, *.cs, *.d,
+# *.php, *.php4, *.php5, *.phtml, *.inc, *.m, *.markdown, *.md, *.mm, *.dox (to
+# be provided as doxygen C comment), *.py, *.pyw, *.f90, *.f95, *.f03, *.f08,
+# *.f18, *.f, *.for, *.vhd, *.vhdl, *.ucf, *.qsf and *.ice.
 
 FILE_PATTERNS          = *.c \
                          *.cc \
@@ -1018,9 +1034,6 @@ EXCLUDE_PATTERNS       = *.new \
 # output. The symbol name can be a fully qualified name, a word, or if the
 # wildcard * is used, a substring. Examples: ANamespace, AClass,
 # ANamespace::AClass, ANamespace::*Test
-#
-# Note that the wildcards are matched against the file with absolute path, so to
-# exclude all test directories use the pattern */test/*
 
 EXCLUDE_SYMBOLS        =
 
@@ -1134,7 +1147,8 @@ FORTRAN_COMMENT_AFTER  = 72
 SOURCE_BROWSER         = YES
 
 # Setting the INLINE_SOURCES tag to YES will include the body of functions,
-# classes and enums directly into the documentation.
+# multi-line macros, enums or list initialized variables directly into the
+# documentation.
 # The default value is: NO.
 
 INLINE_SOURCES         = NO
@@ -1217,10 +1231,11 @@ VERBATIM_HEADERS       = YES
 
 ALPHABETICAL_INDEX     = YES
 
-# In case all classes in a project start with a common prefix, all classes will
-# be put under the same header in the alphabetical index. The IGNORE_PREFIX tag
-# can be used to specify a prefix (or a list of prefixes) that should be ignored
-# while generating the index headers.
+# The IGNORE_PREFIX tag can be used to specify a prefix (or a list of prefixes)
+# that should be ignored while generating the index headers. The IGNORE_PREFIX
+# tag works for classes, function and member names. The entity will be placed in
+# the alphabetical list under the first letter of the entity name that remains
+# after removing the prefix.
 # This tag requires that the tag ALPHABETICAL_INDEX is set to YES.
 
 IGNORE_PREFIX          =
@@ -1299,7 +1314,12 @@ HTML_STYLESHEET        =
 # Doxygen will copy the style sheet files to the output directory.
 # Note: The order of the extra style sheet files is of importance (e.g. the last
 # style sheet in the list overrules the setting of the previous ones in the
-# list). For an example see the documentation.
+# list).
+# Note: Since the styling of scrollbars can currently not be overruled in
+# Webkit/Chromium, the styling will be left out of the default doxygen.css if
+# one or more extra stylesheets have been specified. So if scrollbar
+# customization is desired it has to be added explicitly. For an example see the
+# documentation.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
 HTML_EXTRA_STYLESHEET  =
@@ -1315,17 +1335,13 @@ HTML_EXTRA_STYLESHEET  =
 HTML_EXTRA_FILES       =
 
 # The HTML_COLORSTYLE tag can be used to specify if the generated HTML output
-# should be rendered with a dark or light theme. Default setting AUTO_LIGHT
-# enables light output unless the user preference is dark output. Other options
-# are DARK to always use dark mode, LIGHT to always use light mode, AUTO_DARK to
-# default to dark mode unless the user prefers light mode, and TOGGLE to let the
-# user toggle between dark and light mode via a button.
-# Possible values are: LIGHT Always generate light output., DARK Always generate
-# dark output., AUTO_LIGHT Automatically set the mode according to the user
-# preference, use light mode if no preference is set (the default)., AUTO_DARK
-# Automatically set the mode according to the user preference, use dark mode if
-# no preference is set. and TOGGLE Allow to user to switch between light and
-# dark mode via a button..
+# should be rendered with a dark or light theme.
+# Possible values are: LIGHT always generate light mode output, DARK always
+# generate dark mode output, AUTO_LIGHT automatically set the mode according to
+# the user preference, use light mode if no preference is set (the default),
+# AUTO_DARK automatically set the mode according to the user preference, use
+# dark mode if no preference is set and TOGGLE allow to user to switch between
+# light and dark mode via a button.
 # The default value is: AUTO_LIGHT.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
@@ -1360,15 +1376,6 @@ HTML_COLORSTYLE_SAT    = 100
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
 HTML_COLORSTYLE_GAMMA  = 80
-
-# If the HTML_TIMESTAMP tag is set to YES then the footer of each generated HTML
-# page will contain the date and time when the page was generated. Setting this
-# to YES can help to show when doxygen was last run and thus if the
-# documentation is up to date.
-# The default value is: NO.
-# This tag requires that the tag GENERATE_HTML is set to YES.
-
-HTML_TIMESTAMP         = YES
 
 # If the HTML_DYNAMIC_MENUS tag is set to YES then the generated HTML
 # documentation will contain a main index with vertical navigation menus that
@@ -2007,9 +2014,16 @@ PDF_HYPERLINKS         = YES
 
 USE_PDFLATEX           = YES
 
-# If the LATEX_BATCHMODE tag is set to YES, doxygen will add the \batchmode
-# command to the generated LaTeX files. This will instruct LaTeX to keep running
-# if errors occur, instead of asking the user for help.
+# The LATEX_BATCHMODE tag signals the behavior of LaTeX in case of an error.
+# Possible values are: NO same as ERROR_STOP, YES same as BATCH, BATCH In batch
+# mode nothing is printed on the terminal, errors are scrolled as if <return> is
+# hit at every error; missing files that TeX tries to input or request from
+# keyboard input (\read on a not open input stream) cause the job to abort,
+# NON_STOP In nonstop mode the diagnostic message will appear on the terminal,
+# but there is no possibility of user interaction just like in batch mode,
+# SCROLL In scroll mode, TeX will stop only for missing files to input or if
+# keyboard input is necessary and ERROR_STOP In errorstop mode, TeX will stop at
+# each error, asking for user intervention.
 # The default value is: NO.
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
@@ -2029,14 +2043,6 @@ LATEX_HIDE_INDICES     = NO
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
 LATEX_BIB_STYLE        = plain
-
-# If the LATEX_TIMESTAMP tag is set to YES then the footer of each generated
-# page will contain the date and time when the page was generated. Setting this
-# to NO can help when comparing the output of multiple runs.
-# The default value is: NO.
-# This tag requires that the tag GENERATE_LATEX is set to YES.
-
-LATEX_TIMESTAMP        = NO
 
 # The LATEX_EMOJI_DIRECTORY tag is used to specify the (relative or absolute)
 # path from which the emoji images will be read. If a relative path is entered,
@@ -2203,7 +2209,7 @@ DOCBOOK_OUTPUT         = docbook
 #---------------------------------------------------------------------------
 
 # If the GENERATE_AUTOGEN_DEF tag is set to YES, doxygen will generate an
-# AutoGen Definitions (see http://autogen.sourceforge.net/) file that captures
+# AutoGen Definitions (see https://autogen.sourceforge.net/) file that captures
 # the structure of the code including all documentation. Note that this feature
 # is still experimental and incomplete at the moment.
 # The default value is: NO.
@@ -2352,15 +2358,15 @@ TAGFILES               =
 
 GENERATE_TAGFILE       =
 
-# If the ALLEXTERNALS tag is set to YES, all external class will be listed in
-# the class index. If set to NO, only the inherited external classes will be
-# listed.
+# If the ALLEXTERNALS tag is set to YES, all external classes and namespaces
+# will be listed in the class and namespace index. If set to NO, only the
+# inherited external classes will be listed.
 # The default value is: NO.
 
 ALLEXTERNALS           = NO
 
 # If the EXTERNAL_GROUPS tag is set to YES, all external groups will be listed
-# in the modules index. If set to NO, only the current project's groups will be
+# in the topic index. If set to NO, only the current project's groups will be
 # listed.
 # The default value is: YES.
 
@@ -2374,15 +2380,8 @@ EXTERNAL_GROUPS        = YES
 EXTERNAL_PAGES         = YES
 
 #---------------------------------------------------------------------------
-# Configuration options related to the dot tool
+# Configuration options related to diagram generator tools
 #---------------------------------------------------------------------------
-
-# You can include diagrams made with dia in doxygen documentation. Doxygen will
-# then run dia to produce the diagram and insert it in the documentation. The
-# DIA_PATH tag allows you to specify the directory where the dia binary resides.
-# If left empty dia is assumed to be found in the default search path.
-
-DIA_PATH               =
 
 # If set to YES the inheritance and collaboration graphs will hide inheritance
 # and usage relations if the target is undocumented or is not a class.
@@ -2392,7 +2391,7 @@ HIDE_UNDOC_RELATIONS   = YES
 
 # If you set the HAVE_DOT tag to YES then doxygen will assume the dot tool is
 # available from the path. This tool is part of Graphviz (see:
-# http://www.graphviz.org/), a graph visualization toolkit from AT&T and Lucent
+# https://www.graphviz.org/), a graph visualization toolkit from AT&T and Lucent
 # Bell Labs. The other options in this section have no effect if this option is
 # set to NO
 # The default value is: NO.
@@ -2445,13 +2444,19 @@ DOT_NODE_ATTR          = "shape=box,height=0.2,width=0.4"
 
 DOT_FONTPATH           =
 
-# If the CLASS_GRAPH tag is set to YES (or GRAPH) then doxygen will generate a
-# graph for each documented class showing the direct and indirect inheritance
-# relations. In case HAVE_DOT is set as well dot will be used to draw the graph,
-# otherwise the built-in generator will be used. If the CLASS_GRAPH tag is set
-# to TEXT the direct and indirect inheritance relations will be shown as texts /
-# links.
-# Possible values are: NO, YES, TEXT and GRAPH.
+# If the CLASS_GRAPH tag is set to YES or GRAPH or BUILTIN then doxygen will
+# generate a graph for each documented class showing the direct and indirect
+# inheritance relations. In case the CLASS_GRAPH tag is set to YES or GRAPH and
+# HAVE_DOT is enabled as well, then dot will be used to draw the graph. In case
+# the CLASS_GRAPH tag is set to YES and HAVE_DOT is disabled or if the
+# CLASS_GRAPH tag is set to BUILTIN, then the built-in generator will be used.
+# If the CLASS_GRAPH tag is set to TEXT the direct and indirect inheritance
+# relations will be shown as texts / links. Explicit enabling an inheritance
+# graph or choosing a different representation for an inheritance graph of a
+# specific class, can be accomplished by means of the command \inheritancegraph.
+# Disabling an inheritance graph can be accomplished by means of the command
+# \hideinheritancegraph.
+# Possible values are: NO, YES, TEXT, GRAPH and BUILTIN.
 # The default value is: YES.
 
 CLASS_GRAPH            = YES
@@ -2459,15 +2464,21 @@ CLASS_GRAPH            = YES
 # If the COLLABORATION_GRAPH tag is set to YES then doxygen will generate a
 # graph for each documented class showing the direct and indirect implementation
 # dependencies (inheritance, containment, and class references variables) of the
-# class with other documented classes.
+# class with other documented classes. Explicit enabling a collaboration graph,
+# when COLLABORATION_GRAPH is set to NO, can be accomplished by means of the
+# command \collaborationgraph. Disabling a collaboration graph can be
+# accomplished by means of the command \hidecollaborationgraph.
 # The default value is: YES.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
 COLLABORATION_GRAPH    = YES
 
 # If the GROUP_GRAPHS tag is set to YES then doxygen will generate a graph for
-# groups, showing the direct groups dependencies. See also the chapter Grouping
-# in the manual.
+# groups, showing the direct groups dependencies. Explicit enabling a group
+# dependency graph, when GROUP_GRAPHS is set to NO, can be accomplished by means
+# of the command \groupgraph. Disabling a directory graph can be accomplished by
+# means of the command \hidegroupgraph. See also the chapter Grouping in the
+# manual.
 # The default value is: YES.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
@@ -2509,8 +2520,8 @@ DOT_UML_DETAILS        = NO
 
 # The DOT_WRAP_THRESHOLD tag can be used to set the maximum number of characters
 # to display on a single line. If the actual line length exceeds this threshold
-# significantly it will wrapped across multiple lines. Some heuristics are apply
-# to avoid ugly line breaks.
+# significantly it will be wrapped across multiple lines. Some heuristics are
+# applied to avoid ugly line breaks.
 # Minimum value: 0, maximum value: 1000, default value: 17.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
@@ -2527,7 +2538,9 @@ TEMPLATE_RELATIONS     = NO
 # If the INCLUDE_GRAPH, ENABLE_PREPROCESSING and SEARCH_INCLUDES tags are set to
 # YES then doxygen will generate a graph for each documented file showing the
 # direct and indirect include dependencies of the file with other documented
-# files.
+# files. Explicit enabling an include graph, when INCLUDE_GRAPH is is set to NO,
+# can be accomplished by means of the command \includegraph. Disabling an
+# include graph can be accomplished by means of the command \hideincludegraph.
 # The default value is: YES.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
@@ -2536,7 +2549,10 @@ INCLUDE_GRAPH          = YES
 # If the INCLUDED_BY_GRAPH, ENABLE_PREPROCESSING and SEARCH_INCLUDES tags are
 # set to YES then doxygen will generate a graph for each documented file showing
 # the direct and indirect include dependencies of the file with other documented
-# files.
+# files. Explicit enabling an included by graph, when INCLUDED_BY_GRAPH is set
+# to NO, can be accomplished by means of the command \includedbygraph. Disabling
+# an included by graph can be accomplished by means of the command
+# \hideincludedbygraph.
 # The default value is: YES.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
@@ -2576,7 +2592,10 @@ GRAPHICAL_HIERARCHY    = YES
 # If the DIRECTORY_GRAPH tag is set to YES then doxygen will show the
 # dependencies a directory has on other directories in a graphical way. The
 # dependency relations are determined by the #include relations between the
-# files in the directories.
+# files in the directories. Explicit enabling a directory graph, when
+# DIRECTORY_GRAPH is set to NO, can be accomplished by means of the command
+# \directorygraph. Disabling a directory graph can be accomplished by means of
+# the command \hidedirectorygraph.
 # The default value is: YES.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
@@ -2592,7 +2611,7 @@ DIR_GRAPH_MAX_DEPTH    = 1
 # The DOT_IMAGE_FORMAT tag can be used to set the image format of the images
 # generated by dot. For an explanation of the image formats see the section
 # output formats in the documentation of the dot tool (Graphviz (see:
-# http://www.graphviz.org/)).
+# https://www.graphviz.org/)).
 # Note: If you choose svg you need to set HTML_FILE_EXTENSION to xhtml in order
 # to make the SVG files visible in IE 9+ (other browsers do not have this
 # requirement).
@@ -2629,11 +2648,12 @@ DOT_PATH               =
 
 DOTFILE_DIRS           =
 
-# The MSCFILE_DIRS tag can be used to specify one or more directories that
-# contain msc files that are included in the documentation (see the \mscfile
-# command).
+# You can include diagrams made with dia in doxygen documentation. Doxygen will
+# then run dia to produce the diagram and insert it in the documentation. The
+# DIA_PATH tag allows you to specify the directory where the dia binary resides.
+# If left empty dia is assumed to be found in the default search path.
 
-MSCFILE_DIRS           =
+DIA_PATH               =
 
 # The DIAFILE_DIRS tag can be used to specify one or more directories that
 # contain dia files that are included in the documentation (see the \diafile

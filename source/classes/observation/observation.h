@@ -63,8 +63,7 @@ and not mentioned for the parameter names in the following.
 * @defgroup observationGroup Observation
 * @brief Observation equations (design matrix).
 * @ingroup classesGroup
-* The interface is given by @ref Observation.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Observation. */
 /// @{
 
 /***** TYPES ***********************************/

@@ -97,16 +97,16 @@ inline Transform3d flipY() {return Transform3d(std::array<std::array<Double,3>,3
 inline Transform3d flipZ() {return Transform3d(std::array<std::array<Double,3>,3>{{{1.,0.,0.}, {0.,1.,0.}, {0.,0.,-1.}}});}
 
 /** @brief Transform3d of inverse rotation.
-* @ingroup vector3d
+* @ingroup vector3dGroup
 * Transposed matrix. */
 Transform3d inverse(const Transform3d &b);
 
 /** @brief Rotational matrix from local system (north, east, up) to the global system (coordinate system of point).
-* @ingroup vector3d */
+* @ingroup vector3dGroup */
 Transform3d localNorthEastUp(const Vector3d &point);
 
 /** @brief Rotational matrix from local system (north, east, up) to the global system (coordinate system of point).
-* @ingroup vector3d
+* @ingroup vector3dGroup
 * Converts @p point to ellipsoidal coordinates beforehand. */
 Transform3d localNorthEastUp(const Vector3d &point, const Ellipsoid &ellipsoid);
 

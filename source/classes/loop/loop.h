@@ -40,8 +40,7 @@ See \reference{Loop and conditions}{general.loopsAndConditions} for usage.
 * @defgroup loopGroup Loop
 * @brief Loop config elements of programs.
 * @ingroup classesGroup
-* The interface is given by @ref Loop.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Loop. */
 /// @{
 
 /***** TYPES ***********************************/

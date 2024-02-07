@@ -34,8 +34,7 @@ for more information.
 * @defgroup noiseGeneratorGroup NoiseGenerator
 * @brief Generate different types of noise.
 * @ingroup classesGroup
-* The interface is given by @ref NoiseGenerator.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref NoiseGenerator. */
 /// @{
 
 /***** TYPES ***********************************/

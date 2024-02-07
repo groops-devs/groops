@@ -31,8 +31,7 @@ Defines the type of an \file{instrument file}{instrument}.
 * @defgroup instrumentTypeGroup InstrumentType
 * @brief Defines the type of instrument files.
 * @ingroup classesGroup
-* The interface is given by @ref Epoch::Type.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Epoch::Type. */
 /// @{
 
 /***** FUNCTIONS *******************************/

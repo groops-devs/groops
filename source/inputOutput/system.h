@@ -18,7 +18,7 @@
 #include <regex>
 
 /** @brief System operations.
-* @ingroup inputOutputGroupGroup */
+* @ingroup inputOutputGroup */
 namespace System
 {
   /** @brief Execute a command using the system shell.

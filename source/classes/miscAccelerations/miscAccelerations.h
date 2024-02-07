@@ -32,8 +32,7 @@ This class gives the non conservative forces acting on satellites.
 * @defgroup miscAccelerationsGroup MiscAccelerations
 * @brief Non conservative forces acting on satellites.
 * @ingroup classesGroup
-* The interface is given by @ref MiscAccelerations.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref MiscAccelerations. */
 /// @{
 
 /***** TYPES ***********************************/

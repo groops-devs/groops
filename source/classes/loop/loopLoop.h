@@ -30,7 +30,7 @@ Loop over nested loops. First \config{loop} is outermost loop, every subsequent 
 /***** CLASS ***********************************/
 
 /** @brief Loop over nested loops.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopLoop : public Loop
 {

@@ -30,7 +30,7 @@ DEPRECATDED. Use LoopPlatformEquipment instead.
 /***** CLASS ***********************************/
 
 /** @brief DEPRECATDED. Use LoopPlatformEquipment instead.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopFileGnssStationInfo : public Loop
 {

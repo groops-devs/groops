@@ -30,7 +30,7 @@ Loop over specific equipment of a \file{platform file}{platform}.
 /***** CLASS ***********************************/
 
 /** @brief Loop over equipment of a platform file.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopPlatformEquipment : public Loop
 {

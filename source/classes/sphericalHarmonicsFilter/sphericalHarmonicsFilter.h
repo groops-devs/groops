@@ -31,8 +31,7 @@ Filtering of a spherical harmonics expansion.
 * @defgroup sphericalHarmonicsFilterGroup SphericalHarmonicsFilter
 * @brief Filtering spherical harmonics.
 * @ingroup classesGroup
-* The interface is given by @ref SphericalHarmonicsFilter.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref SphericalHarmonicsFilter. */
 /// @{
 
 /***** TYPES ***********************************/

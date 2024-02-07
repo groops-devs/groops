@@ -31,7 +31,7 @@ Check for a file or directory existing.
 /***** CLASS ***********************************/
 
 /** @brief Check for a file or directory existing.
-* @ingroup ConditionGroup
+* @ingroup conditionGroup
 * @see Condition */
 class ConditionFileExist : public Condition
 {

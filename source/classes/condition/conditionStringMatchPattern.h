@@ -31,7 +31,7 @@ Determines if a pattern or a regular expression matches the entire string.
 /***** CLASS ***********************************/
 
 /** @brief Determines if a pattern or a regular expression matches the entire string.
-* @ingroup ConditionGroup
+* @ingroup conditionGroup
 * @see Condition */
 class ConditionStringMatchPattern : public Condition
 {

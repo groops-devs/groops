@@ -45,8 +45,7 @@ the gravity field, e.g. as spline functions or wavelets.
 * @defgroup kernelGroup Kernel
 * @brief Isotropic harmonic integral kernels.
 * @ingroup classesGroup
-* The interface is given by @ref Kernel.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Kernel. */
 /// @{
 
 /***** TYPES ***********************************/

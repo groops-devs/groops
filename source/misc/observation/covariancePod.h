@@ -70,8 +70,7 @@ The last matrix can be used to downweight outliers in single epochs and will be 
 /**
 * @defgroup CovariancePodGroup CovariancePod
 * @brief Covariance function to decorrelate observation equations.
-* @ingroup miscGroup
-* An Instance can be created by @ref readConfig. */
+* @ingroup miscGroup */
 /// @{
 
 /***** TYPES ***********************************/

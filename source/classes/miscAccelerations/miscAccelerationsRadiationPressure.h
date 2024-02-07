@@ -207,7 +207,7 @@ inline Vector3d MiscAccelerationsRadiationPressure::acceleration(SatelliteModelP
       constexpr Double sigma = 5.670374419e-8; // Stefan–Boltzmann constant [W/m^2/K^4]
 
       // set temperature to be in equillibrium with input power
-      auto computeEquillibriumTemperature = [sigma](State &state, const Time &time, const Vector &absorbedPressure)
+      auto computeEquillibriumTemperature = [](State &state, const Time &time, const Vector &absorbedPressure)
       {
         auto &surfaces = state.satellite->surfaces;
         state.time             = time;

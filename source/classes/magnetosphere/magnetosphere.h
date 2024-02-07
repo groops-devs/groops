@@ -30,8 +30,7 @@ This class provides functions of the magnetic field of the Earth.
 * @defgroup magnetosphereGroup Magnetosphere
 * @brief Magentic field of the Earth.
 * @ingroup classesGroup
-* The interface is given by @ref Magnetosphere.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Magnetosphere. */
 /// @{
 
 /***** TYPES ***********************************/

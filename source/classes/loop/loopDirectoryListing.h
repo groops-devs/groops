@@ -33,7 +33,7 @@ Loop over files of a directory.
 /***** CLASS ***********************************/
 
 /** @brief Loop over files of a directory.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopDirectoryListing : public Loop
 {

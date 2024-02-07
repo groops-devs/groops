@@ -37,8 +37,7 @@ This behaviour can be changed for the last interval with \config{includeLastTime
 * @defgroup parametrizationTemporalGroup ParametrizationTemporal
 * @brief Parametrization of temporal variations.
 * @ingroup classesGroup
-* The interface is given by @ref ParametrizationTemporal.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref ParametrizationTemporal. */
 /// @{
 
 /***** TYPES ***********************************/

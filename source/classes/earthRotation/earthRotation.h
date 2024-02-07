@@ -31,8 +31,7 @@ reference frame (TRF) and a celestial reference frame (CRF).
 * @defgroup earthRotationGroup EarthRotation
 * @brief Transformation between CRF and TRF.
 * @ingroup classesGroup
-* The interface is given by @ref EarthRotation.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref EarthRotation. */
 /// @{
 
 /***** TYPES ***********************************/
