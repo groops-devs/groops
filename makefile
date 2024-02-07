@@ -14,7 +14,7 @@
 
 # Paths
 
-GROOPS     = $(HOME)/Software/groops
+GROOPS     = .
 GROOPS_bin = $(GROOPS)/bin
 GROOPS_gui = $(GROOPS)/gui
 GROOPS_bld = $(GROOPS)/source/build
