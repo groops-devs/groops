@@ -88,7 +88,6 @@ void GnssProcessing::run(Config &config, Parallel::CommunicatorPtr comm)
     GnssParametrizationPtr      gnssParametrization;
     EarthRotationPtr            earthRotation;
     GnssProcessingStepPtr       processingSteps;
-    Bool                        substituteTrackingMode = false;
 
     readConfig(config, "timeSeries",      timeSeries,           Config::MUSTSET,  "",    "defines observation epochs");
     readConfig(config, "timeMargin",      marginSeconds,        Config::DEFAULT,  "0.1", "[seconds] margin to consider two times identical");

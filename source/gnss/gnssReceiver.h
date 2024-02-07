@@ -147,9 +147,6 @@ public:
   void readObservations(const FileName &fileName, const std::vector<GnssTransmitterPtr> &transmitters, const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
                         const Time &timeMargin, Angle elevationCutOff, const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group);
 
-  /** @brief Substitute tracking attribute of signal type depending on receiver type */
-  GnssType substituteSignal(GnssType type) const;
-
   /** @brief Simulate observations. Member variable @a times must be set.
   * Receiver and Transmitter positions, orientations, ... must be initialized beforehand.
   * Delete observations that don't match the types from receiver and transmitter definition. */
