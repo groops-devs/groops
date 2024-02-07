@@ -602,12 +602,6 @@ std::vector<GnssType> GnssType::replaceCompositeSignals(const std::vector<GnssTy
 
 /***********************************************/
 
-void GnssType::replaceAttribute(GnssType att) {
-  type = (type & ~ATTRIBUTE.type) + att.type;
-};
-
-/***********************************************/
-
 Bool GnssType::hasWildcard(GnssType mask) const
 {
   return ((mask.type & TYPE.type)      && !(type & TYPE.type))      ||

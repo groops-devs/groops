@@ -302,9 +302,6 @@ public:
   * Phase types returned without tracking attribute and all other observations are removed. */
   static std::vector<GnssType> replaceCompositeSignals(const std::vector<GnssType> &types);
 
-  /** @brief Replaces the signal tracking mode (RINEXv3 attribute) depending on receiver type. */
-  void replaceAttribute(GnssType att);
-  
   /** @brief Returns true if a wildcard (*) is used in the parts given by @a mask. */
   Bool hasWildcard(GnssType mask=GnssType::ALL) const;
 

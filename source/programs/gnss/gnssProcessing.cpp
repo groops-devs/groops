@@ -106,9 +106,7 @@ void GnssProcessing::run(Config &config, Parallel::CommunicatorPtr comm)
     logInfo<<"Init GNSS"<<Log::endl;
     std::vector<Time> times = timeSeries->times();
     GnssPtr gnss = std::make_shared<Gnss>();
-    gnss->init(times, seconds2time(marginSeconds),
-               transmitterGenerator, receiverGenerator, earthRotation,
-               gnssParametrization, substituteTrackingMode, comm);
+    gnss->init(times, seconds2time(marginSeconds), transmitterGenerator, receiverGenerator, earthRotation, gnssParametrization, comm);
     receiverGenerator->preprocessing(gnss.get(), comm);
     gnss->synchronizeTransceivers(comm);
     transmitterGenerator = nullptr;

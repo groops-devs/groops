@@ -28,15 +28,12 @@
 /***********************************************/
 
 void Gnss::init(const std::vector<Time> &times, const Time &timeMargin,
-                GnssTransmitterGeneratorPtr transmitterGenerator,
-                GnssReceiverGeneratorPtr receiverGenerator,
-                EarthRotationPtr earthRotation, GnssParametrizationPtr parametrization,
-                Bool substituteTrackingMode, Parallel::CommunicatorPtr comm)
+                GnssTransmitterGeneratorPtr transmitterGenerator, GnssReceiverGeneratorPtr receiverGenerator,
+                EarthRotationPtr earthRotation, GnssParametrizationPtr parametrization, Parallel::CommunicatorPtr comm)
 {
   try
   {
     this->times = times;
-    this->substituteTrackingMode = substituteTrackingMode;
 
     // init earth rotation
     // -------------------

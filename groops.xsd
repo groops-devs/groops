@@ -11169,11 +11169,6 @@
 								<xs:documentation>models and parameters</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="substituteTrackingMode" type="boolean" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>Substitute signal tracking mode depending on receiver type</xs:documentation>
-							</xs:annotation>
-						</xs:element>
 						<xs:element name="observationType" type="gnssType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>simulated observation types</xs:documentation>

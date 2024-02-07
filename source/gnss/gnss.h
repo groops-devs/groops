@@ -56,12 +56,10 @@ public:
   std::function<Rotary3d(const Time &time)>         funcRotationCrf2Trf;
   Matrix                          eop;             // Matrix eop columns: xp, yp, sp, deltaUT, LOD, X, Y, S
   std::vector<std::vector<std::vector<GnssType>>> typesRecvTrans; // for each receiver and transmitter: used types (receiver types)
-  Bool                            substituteTrackingMode;
 
   void init(const std::vector<Time> &times, const Time &timeMargin,
             GnssTransmitterGeneratorPtr transmitterGenerator, GnssReceiverGeneratorPtr receiverGenerator,
-            EarthRotationPtr earthRotation, GnssParametrizationPtr parametrization,
-            Bool substituteTrackingMode, Parallel::CommunicatorPtr comm);
+            EarthRotationPtr earthRotation, GnssParametrizationPtr parametrization, Parallel::CommunicatorPtr comm);
 
   Rotary3d rotationCrf2Trf(const Time &time) const; // Inertial system (CRF) -> earth fixed system (TRF).
   void     synchronizeTransceivers(Parallel::CommunicatorPtr comm);

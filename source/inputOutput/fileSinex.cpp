@@ -11,8 +11,6 @@
 */
 /***********************************************/
 
-#include <ctype.h>
-
 #include "base/import.h"
 #include "base/string.h"
 #include "inputOutput/logging.h"

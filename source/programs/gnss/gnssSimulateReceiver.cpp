@@ -73,20 +73,18 @@ void GnssSimulateReceiver::run(Config &config, Parallel::CommunicatorPtr comm)
     EarthRotationPtr            earthRotation;
     NoiseGeneratorPtr           noiseClock, noiseObs;
     std::vector<GnssType>       obsTypes;
-    Bool                        substituteTrackingMode;
 
-    readConfig(config, "outputfileGnssReceiver",  fileNameReceiver,      Config::MUSTSET,  "gnssReceiver_{loopTime:%D}.{station}.dat.gz", "variable {station} available, simulated observations");
-    readConfig(config, "outputfileClock",         fileNameClock,         Config::OPTIONAL, "clock_{loopTime:%D}.{station}.dat", "variable {station} available, simulated receiver clock errors");
-    readConfig(config, "timeSeries",              timeSeries,            Config::MUSTSET,  "",    "defines observation epochs");
-    readConfig(config, "timeMargin",              marginSeconds,         Config::DEFAULT,  "0.1", "[seconds] margin to consider two times identical");
-    readConfig(config, "transmitter",             transmitterGenerator,  Config::MUSTSET,  "",    "constellation of GNSS satellites");
-    readConfig(config, "receiver",                receiverGenerator,     Config::MUSTSET,  "",    "ground station network or LEO satellite");
-    readConfig(config, "earthRotation",           earthRotation,         Config::MUSTSET,  "",    "apriori earth rotation");
-    readConfig(config, "parametrization",         gnssParametrization,   Config::DEFAULT,  "1",   "models and parameters");
-    readConfig(config, "observationType",         obsTypes,              Config::MUSTSET,  "",    "simulated observation types");
-    readConfig(config, "substituteTrackingMode",  substituteTrackingMode,Config::DEFAULT,  "1",   "Substitute signal tracking mode (attribute) depending on receiver type");
-    readConfig(config, "noiseObservation",        noiseObs,              Config::DEFAULT,  "",    "[-] noise is multiplied with type accuracy pattern of receiver");
-    readConfig(config, "noiseClockReceiver",      noiseClock,            Config::DEFAULT,  "",    "[m] noise added to the simulated receiver clock");
+    readConfig(config, "outputfileGnssReceiver",  fileNameReceiver,     Config::MUSTSET,  "gnssReceiver_{loopTime:%D}.{station}.dat.gz", "variable {station} available, simulated observations");
+    readConfig(config, "outputfileClock",         fileNameClock,        Config::OPTIONAL, "clock_{loopTime:%D}.{station}.dat", "variable {station} available, simulated receiver clock errors");
+    readConfig(config, "timeSeries",              timeSeries,           Config::MUSTSET,  "",    "defines observation epochs");
+    readConfig(config, "timeMargin",              marginSeconds,        Config::DEFAULT,  "0.1", "[seconds] margin to consider two times identical");
+    readConfig(config, "transmitter",             transmitterGenerator, Config::MUSTSET,  "",    "constellation of GNSS satellites");
+    readConfig(config, "receiver",                receiverGenerator,    Config::MUSTSET,  "",    "ground station network or LEO satellite");
+    readConfig(config, "earthRotation",           earthRotation,        Config::MUSTSET,  "",    "apriori earth rotation");
+    readConfig(config, "parametrization",         gnssParametrization,  Config::DEFAULT,  "1",   "models and parameters");
+    readConfig(config, "observationType",         obsTypes,             Config::MUSTSET,  "",    "simulated observation types");
+    readConfig(config, "noiseObservation",        noiseObs,             Config::DEFAULT,  "",    "[-] noise is multiplied with type accuracy pattern of receiver");
+    readConfig(config, "noiseClockReceiver",      noiseClock,           Config::DEFAULT,  "",    "[m] noise added to the simulated receiver clock");
     if(isCreateSchema(config)) return;
 
     // ============================
@@ -97,7 +95,7 @@ void GnssSimulateReceiver::run(Config &config, Parallel::CommunicatorPtr comm)
     std::sort(obsTypes.begin(), obsTypes.end());
     std::vector<Time> times = timeSeries->times();
     Gnss gnss;
-    gnss.init(times, seconds2time(marginSeconds), transmitterGenerator, receiverGenerator, earthRotation, gnssParametrization, substituteTrackingMode, comm);
+    gnss.init(times, seconds2time(marginSeconds), transmitterGenerator, receiverGenerator, earthRotation, gnssParametrization, comm);
     receiverGenerator->simulation(obsTypes, noiseClock, noiseObs, &gnss, comm);
     gnss.synchronizeTransceivers(comm);
     logInfo<<"  transmitter: "<<std::count_if(gnss.transmitters.begin(), gnss.transmitters.end(), [](auto t) {return t->useable();})<<Log::endl;
