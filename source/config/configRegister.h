@@ -105,7 +105,7 @@
 * Call: GROOPS_REGISTER_CLASS_WITHOUT_SUBS(ClassName, "schemaType").
 * A string named "docstring{ClassName}" must exist.
 * The class must provide a static function "create(Config &config, const std::string &name)".
-* @ingroup config */
+* @ingroup configGroup */
 #define GROOPS_REGISTER_CLASS_WITHOUT_SUBS(_className, _typeName)\
 _GROOPS_REGISTER_CLASS(_className, _typeName)\
 inline void _Class##_className::generateDocumentation(Documentation &documentation) const\
@@ -124,7 +124,7 @@ inline void _Class##_className::generateDocumentation(Documentation &documentati
 * A string named "docstring{ClassName}" must exist for the class and subclasses.
 * The class must provide a static function "create(Config &config, const std::string &name)".
 * The sub classes must have a constructor of type {ClassName}(Config &config).
-* @ingroup config */
+* @ingroup configGroup */
 #define GROOPS_REGISTER_CLASS(_className, _typeName, ...)\
 _GROOPS_REGISTER_CLASS(_className, _typeName)\
 inline void _Class##_className::generateDocumentation(Documentation &documentation) const\
@@ -139,7 +139,7 @@ inline void _Class##_className::generateDocumentation(Documentation &documentati
 
 /** @brief Register an old name of a renamed class.
 * This macro can be used to keep old config files working.
-* @ingroup config */
+* @ingroup configGroup */
 #define GROOPS_RENAMED_CLASS(_oldname, _newname, _time) \
 class _RenamedSchemaClass##_oldname : public RenamedSchemaClass\
 {\
@@ -153,7 +153,7 @@ static _RenamedSchemaClass##_oldname renamedSchemaClass##_oldname(RenamedSchemaC
 
 /** @brief Generate the readConfig function for a class.
 * Call: GROOPS_READCONFIG_CLASS(ClassName, "schemaType").
-* @ingroup config */
+* @ingroup configGroup */
 #define GROOPS_READCONFIG_CLASS(_className, _typeName)\
 template<> Bool readConfig(Config &config, const std::string &name, _className##Ptr &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)\
 {\
@@ -183,7 +183,7 @@ template<> Bool readConfig(Config &config, const std::string &name, _className##
 
 /** @brief Generate the readConfig function for an unbounded class.
 * Call: GROOPS_READCONFIG_UNBOUNDED_CLASS(ClassName, "schemaType").
-* @ingroup config */
+* @ingroup configGroup */
 #define GROOPS_READCONFIG_UNBOUNDED_CLASS(_className, _typeName)\
 template<> Bool readConfig(Config &config, const std::string &name, _className##Ptr &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)\
 {\
@@ -237,7 +237,7 @@ static _Class##_className _class##_className;\
 
 /** @brief Class registration in schema and documentation.
 * Use macros GROOPS_REGISTER_CLASS and GROOPS_REGISTER_CLASS_WITHOUT_SUBS.
-* @ingroup config */
+* @ingroup configGroup */
 class SchemaClass
 {
 public:
@@ -265,7 +265,7 @@ public:
 /***** CLASS ***********************************/
 
 /** @brief Interface for renamed classes.
-* @ingroup config */
+* @ingroup configGroup */
 class RenamedSchemaClass
 {
 public:

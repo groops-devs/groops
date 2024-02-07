@@ -30,7 +30,7 @@ Evaluate if \file{matrix}{matrix} (or \file{instrument}{instrument}) file is emp
 /***** CLASS ***********************************/
 
 /** @brief Evaluate if matrix (or instrument) file is empty/has zero size.
-* @ingroup ConditionGroup
+* @ingroup conditionGroup
 * @see Condition */
 class ConditionMatrixEmpty : public Condition
 {

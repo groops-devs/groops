@@ -36,8 +36,7 @@ used in \program{SimulateOrbit}
 * @defgroup orbitPropagatorGroup OrbitPropagator
 * @brief Propagate a satellite orbit.
 * @ingroup classesGroup
-* The interface is given by @ref OrbitPropagator.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref OrbitPropagator. */
 /// @{
 
 /***** TYPES ***********************************/

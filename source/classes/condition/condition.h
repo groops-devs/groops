@@ -30,8 +30,7 @@ Test for conditions. See \reference{Loop and conditions}{general.loopsAndConditi
 * @defgroup conditionGroup Condition
 * @brief Conditional application of config elements or programs.
 * @ingroup classesGroup
-* The interface is given by @ref Condition.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Condition. */
 /// @{
 
 /***** TYPES ***********************************/

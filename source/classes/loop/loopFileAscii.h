@@ -32,7 +32,7 @@ Loop over list of strings from files.
 /***** CLASS ***********************************/
 
 /** @brief Loop over list of strings from files.
-* @ingroup LoopGroup
+* @ingroup loopGroup
 * @see Loop */
 class LoopFileAscii : public Loop
 {

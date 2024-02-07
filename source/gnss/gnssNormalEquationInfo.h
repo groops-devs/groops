@@ -97,7 +97,6 @@ private:
   std::vector<UInt>          blockRank_;              // for each block
   std::vector<UInt>          blockCountEpoch_;        // for each epoch
   UInt                       blockInterval_, blockAmbiguity_;
-  UInt                       countTransmitter_;
 
   GnssParameterIndex addParameters(UInt idEpoch, UInt idRecv, UInt idTrans, const std::vector<ParameterName> &parameterNames);
 };

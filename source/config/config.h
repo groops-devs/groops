@@ -144,7 +144,7 @@ public:
 /** @brief Config elements of a program.
 * It can be read with @a readConfig().
 * The config is evaluated and the is program executed with @a run().
-* @ingroup config */
+* @ingroup configGroup */
 class ProgramConfig : public Config
 {
 public:
@@ -155,49 +155,49 @@ public:
 
 /** @brief Check if functions are called in schema mode.
 * No code is allowed except the readConfig functions in schema mode.
-* @ingroup config */
+* @ingroup configGroup */
 Bool isCreateSchema(Config &config);
 
 /** @brief Has Config an element with @a name?
 * If @a mustSet is MUSTSET and name is not found, an exception is thrown.
-* @ingroup config */
+* @ingroup configGroup */
 Bool hasName(Config &config, const std::string &name, Config::Appearance mustSet=Config::OPTIONAL);
 
 /** @brief Indicate a renamed config element.
 * Must be called before the @a readConfig functions.
-* @ingroup config */
+* @ingroup configGroup */
 void renameDeprecatedConfig(Config &config, const std::string &oldName, const std::string &newName, const Time &time);
 
 /** @brief Indicate a renamed choice element.
 * Must be called after @a readConfigChoice and before the @a readConfigChoiceElement functions.
-* @ingroup config */
+* @ingroup configGroup */
 void renameDeprecatedChoice(Config &config, std::string &type, const std::string &oldName, const std::string &newName, const Time &time);
 
 /** @brief Starts a group of readConfig elements.
 * If @a mustSet is MUSTSET and name is not found, an exception is thrown.
-* @ingroup config */
+* @ingroup configGroup */
 Bool readConfigSequence(Config &config, const std::string &name, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
 /** @brief Ends a group of readConfig elements.
 * Must be called only if the @a readConfigSequence return TRUE before.
-* @ingroup config */
+* @ingroup configGroup */
 void endSequence(Config &config);
 
 /** @brief Starts a choice.
 * If result is TRUE the selected choice is given in @a choice.
 * If @a mustSet is MUSTSET and name is not found, an exception is thrown.
-* @ingroup config */
+* @ingroup configGroup */
 Bool readConfigChoice(Config &config, const std::string &name, std::string &choice, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
 /** @brief Check the selected choice.
 * Returns TRUE if @a name is the selected @a choice.
 * In schema mode all possible @a readConfigChoiceElement must be called.
-* @ingroup config */
+* @ingroup configGroup */
 Bool readConfigChoiceElement(Config &config, const std::string &name, const std::string &choice, const std::string &annotation="");
 
 /** @brief Ends a group of choice elements.
 * Must be called only if the @a readConfigChoice return TRUE before.
-* @ingroup config */
+* @ingroup configGroup */
 void endChoice(Config &config);
 
 /** @brief Reads a variable from @a config.
@@ -206,17 +206,17 @@ void endChoice(Config &config);
 * @a mustSet = Config::MUSTSET: an exception is thrown.
 * @a mustSet = Config::OPTIONAL: @a var is left untouched and @a defaultValue is not used (@a defaultValue might be set as hint for groopsGui).
 * @a mustSet = Config::DEFAULT: @a var is set to @a defaultValue (or in case an empty class is created).
-* @ingroup config */
+* @ingroup configGroup */
 template<typename T> Bool readConfig(Config &config, const std::string &name, T &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
 /** @brief Removes the config of a variable from @a config and stores it in configNew.
 * It can be later evluated with configNew.read(). @a var is untouched and only used to determine the type.
-* @ingroup config */
+* @ingroup configGroup */
 template<typename T> Bool readConfigLater(Config &config, const std::string &name, const T &var, Config &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
 /** @brief Removes the config of a variable from @a config and stores it in configNew.
 * It can be later evluated with configNew.read(). @a var is untouched and only used to determine the type.
-* @ingroup config */
+* @ingroup configGroup */
 template<typename T> Bool readConfigLater(Config &config, const std::string &name, const std::vector<T> &var, std::vector<Config> &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
 /// @}

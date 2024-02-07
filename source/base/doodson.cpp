@@ -146,7 +146,7 @@ Doodson::Doodson(const std::string &str)
       if(std::isdigit(c))          return static_cast<Int>(c-'0');
       if(('a' <= c) && (c <= 'm')) return static_cast<Int>(c-'a')+10;
       if(('n' <= c) && (c <= 'z')) return static_cast<Int>(c-'n')-13;
-      throw(Exception("unknown character: "+c));
+      throw(Exception("unknown character: "s+c));
     };
 
     d[0] = doodNumber(str2.at(0));

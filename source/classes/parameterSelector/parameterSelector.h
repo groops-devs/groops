@@ -32,11 +32,10 @@ parameter list or NULLINDEX for zero/new parameters.
 #include "config/config.h"
 
 /**
-* @defgroup parameterSelector ParameterSelector
+* @defgroup parameterSelectorGroup ParameterSelector
 * @brief Index vector from selected parameters.
 * @ingroup classesGroup
-* The interface is given by @ref ParameterSelector.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref ParameterSelector. */
 /// @{
 
 /***** TYPES ***********************************/

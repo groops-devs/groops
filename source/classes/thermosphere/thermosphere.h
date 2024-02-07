@@ -34,8 +34,7 @@ A quiet thermosphere is assumed if \config{inputfileMagnetic3hAp} is not given.
 * @defgroup thermosphereGroup Thermosphere
 * @brief Density, temperature and velocity.
 * @ingroup classesGroup
-* The interface is given by @ref Thermosphere.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref Thermosphere. */
 /// @{
 
 /***** TYPES ***********************************/

@@ -32,7 +32,7 @@ for the condition to be fulfilled, otherwise any element evaluating to true is s
 /***** CLASS ***********************************/
 
 /** @brief Evaluate elements of a matrix based on an expression.
-* @ingroup ConditionGroup
+* @ingroup conditionGroup
 * @see Condition */
 class ConditionMatrix : public Condition
 {
