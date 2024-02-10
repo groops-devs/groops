@@ -10892,7 +10892,7 @@
 								<xs:documentation>apriori earth rotation</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="parametrization" type="gnssParametrizationType" maxOccurs="unbounded" default="1">
+						<xs:element name="parametrization" type="gnssParametrizationType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>models and parameters</xs:documentation>
 							</xs:annotation>
@@ -11081,7 +11081,7 @@
 								<xs:documentation>apriori earth rotation</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="parametrization" type="gnssParametrizationType" minOccurs="0" maxOccurs="unbounded" default="1">
+						<xs:element name="parametrization" type="gnssParametrizationType" minOccurs="0" maxOccurs="unbounded" default="[&quot;troposphere&quot;]">
 							<xs:annotation>
 								<xs:documentation>models and parameters</xs:documentation>
 							</xs:annotation>
@@ -12674,7 +12674,7 @@
 						<xs:element name="outputfileGriddedData" type="filename"/>
 						<xs:element name="inputfileGriddedData" type="filename"/>
 						<xs:element name="grid" type="gridType" maxOccurs="unbounded"/>
-						<xs:element name="statistic" default="mean">
+						<xs:element name="statistic">
 							<xs:annotation>
 								<xs:documentation>statistic used if multiple values fall on the same cell</xs:documentation>
 							</xs:annotation>
@@ -12959,7 +12959,7 @@
 								<xs:documentation>expression: e.g. deltaL * 2.0 * sin(deltaB/2.0) * cos(latitude/rho)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="value" type="expression" minOccurs="0" default="data0" maxOccurs="unbounded">
+						<xs:element name="value" type="expression" minOccurs="0" default="[&quot;data0&quot;]" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>expression to compute values (input columns are named data0, data1, ...)</xs:documentation>
 							</xs:annotation>
@@ -13444,7 +13444,7 @@
 								<xs:documentation>expression (e.g. deltaL*2*sin(deltaB/2)*cos(data1/RHO))</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="value" type="expression" minOccurs="0" default="data3" maxOccurs="unbounded">
+						<xs:element name="value" type="expression" minOccurs="0" default="[&quot;data3&quot;]" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>expression</xs:documentation>
 							</xs:annotation>
@@ -13955,7 +13955,7 @@
 								<xs:documentation>add non-gravitational forces in satellite reference frame</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0"/>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file"/>
 						<xs:element name="ephemerides" type="ephemeridesType" minOccurs="0" default="jpl">
 							<xs:annotation>
 								<xs:documentation>may be needed by parametrizationAcceleration</xs:documentation>
@@ -14014,7 +14014,7 @@
 						</xs:element>
 						<xs:element name="inputfileOrbit" type="filename" minOccurs="0"/>
 						<xs:element name="inputfileStarCamera" type="filename" minOccurs="0"/>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0"/>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file"/>
 						<xs:element name="ephemerides" type="ephemeridesType" minOccurs="0" default="jpl">
 							<xs:annotation>
 								<xs:documentation>may be needed by parametrizationAcceleration</xs:documentation>
@@ -14100,7 +14100,7 @@
 								<xs:documentation>satellite macro model (may be needed by parametrizationAcceleration)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>may be needed by parametrizationAcceleration</xs:documentation>
 							</xs:annotation>
@@ -14190,7 +14190,7 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="outType" type="instrumentTypeType" minOccurs="0"/>
-						<xs:element name="outColumn" type="expression" minOccurs="0" default="data0" maxOccurs="unbounded">
+						<xs:element name="outColumn" type="expression" minOccurs="0" default="[&quot;data0&quot;]" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>expression of output columns, extra &apos;epoch&apos; variable</xs:documentation>
 							</xs:annotation>
@@ -15471,7 +15471,7 @@
 								<xs:documentation>row is removed if one criterion evaluates true.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="outColumn" type="expression" minOccurs="0" default="data0" maxOccurs="unbounded">
+						<xs:element name="outColumn" type="expression" minOccurs="0" default="[&quot;data0&quot;]" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>expression to compute output columns (input columns are named data0, data1, ...)</xs:documentation>
 							</xs:annotation>
@@ -20115,7 +20115,7 @@
 					<xs:sequence>
 						<xs:element name="outputfileOrbit" type="filename"/>
 						<xs:element name="outputfileCovariance" type="filename"/>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>from TRF to CRF</xs:documentation>
 							</xs:annotation>
@@ -20388,7 +20388,7 @@
 								<xs:documentation>resample to these epochs (otherwise input file epochs are used)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>rotate data into Earth-fixed frame</xs:documentation>
 							</xs:annotation>
@@ -20931,7 +20931,7 @@
 								<xs:documentation>(empty = all) satellite identifier, e.g. G23 or E05</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>rotation from TRF to CRF</xs:documentation>
 							</xs:annotation>
@@ -21548,7 +21548,7 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileOrbit" type="filename"/>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>rotation from TRF to CRF</xs:documentation>
 							</xs:annotation>
@@ -23199,12 +23199,12 @@
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>rotate data into Earth-fixed frame</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}">
+						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="[{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}]">
 							<xs:annotation>
 								<xs:documentation>degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)</xs:documentation>
 							</xs:annotation>
@@ -23610,12 +23610,12 @@
 								<xs:documentation>e.g. L09 for GRACE A, empty: take first satellite</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>rotation from TRF to CRF</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}">
+						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="[{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}]">
 							<xs:annotation>
 								<xs:documentation>degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)</xs:documentation>
 							</xs:annotation>

@@ -66,8 +66,8 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "outputfileClock",      fileNameClock, Config::OPTIONAL, "", "");
     readConfig(config, "outputfileCovariance", fileNameCov,   Config::OPTIONAL, "", "3x3 epoch covariance");
     readConfig(config, "satelliteIdentifier",  satId,         Config::OPTIONAL, "", "e.g. L09 for GRACE A, empty: take first satellite");
-    readConfig(config, "earthRotation",        earthRotation, Config::OPTIONAL, "", "rotation from TRF to CRF");
-    readConfig(config, "gravityfield",         gravityfield,  Config::DEFAULT,  R"({"tides": {"tides": {"doodsonHarmonicTide": {"minDegree":1, "maxDegree":1}}}})", "degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)");
+    readConfig(config, "earthRotation",        earthRotation, Config::OPTIONAL, "file", "rotation from TRF to CRF");
+    readConfig(config, "gravityfield",         gravityfield,  Config::DEFAULT,  R"([{"tides": {"tides": {"doodsonHarmonicTide": {"minDegree":1, "maxDegree":1}}}}])", "degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)");
     readConfig(config, "inputfile",            fileNamesIn,   Config::MUSTSET,  "", "orbits in SP3 format");
     if(isCreateSchema(config)) return;
 

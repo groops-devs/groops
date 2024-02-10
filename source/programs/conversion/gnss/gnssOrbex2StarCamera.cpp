@@ -52,7 +52,7 @@ void GnssOrbex2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*
     readConfig(config, "outputfileStarCamera", fileNameOutStarCamera, Config::MUSTSET,  "",  "rotation from body frame to TRF/CRF, identifier is appended to each file");
     readConfig(config, "inputfileOrbex",       fileNameInOrbex,       Config::MUSTSET,  "",  "");
     readConfig(config, "identifier",           identifiers,           Config::OPTIONAL, "",  "(empty = all) satellite identifier, e.g. G23 or E05");
-    readConfig(config, "earthRotation",        earthRotation,         Config::OPTIONAL, "",  "rotation from TRF to CRF");
+    readConfig(config, "earthRotation",        earthRotation,         Config::OPTIONAL, "file",  "rotation from TRF to CRF");
     if(isCreateSchema(config)) return;
 
     logStatus<<"read ORBEX file <"<<fileNameInOrbex<<">"<<Log::endl;

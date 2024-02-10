@@ -71,7 +71,7 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "inputfileAttitude",        fileNameAttitude,        Config::MUSTSET,  "attitude.{prn}.dat", "instrument file containing attitude");
     readConfig(config, "variablePrn",              variablePrn,             Config::DEFAULT,  "prn",   "loop variable for PRNs from transmitter list");
     readConfig(config, "timeSeries",               timeSeriesPtr,           Config::DEFAULT,  "",      "resample to these epochs (otherwise input file epochs are used)");
-    readConfig(config, "earthRotation",            earthRotation,           Config::OPTIONAL, "",      "rotate data into Earth-fixed frame");
+    readConfig(config, "earthRotation",            earthRotation,           Config::OPTIONAL, "file",  "rotate data into Earth-fixed frame");
     readConfig(config, "interpolationDegree",      interpolationDegree,     Config::MUSTSET,  "7",     "for attitude and Earth rotation interpolation");
     readConfig(config, "description",              description,             Config::MUSTSET,  "",      "description of file contents");
     readConfig(config, "createdBy",                createdBy,               Config::MUSTSET,  "",      "name of agency");

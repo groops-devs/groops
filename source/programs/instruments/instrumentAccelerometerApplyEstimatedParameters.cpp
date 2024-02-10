@@ -62,7 +62,7 @@ void InstrumentAccelerometerApplyEstimatedParameters::run(Config &config, Parall
     readConfig(config, "inputfileOrbit",              fileNameOrbit,            Config::OPTIONAL, "",  "");
     readConfig(config, "inputfileStarCamera",         fileNameStarCamera,       Config::OPTIONAL, "",  "");
     readConfig(config, "inputfileAccelerometer",      fileNameAccelerometer,    Config::OPTIONAL, "",  "add non-gravitational forces in satellite reference frame");
-    readConfig(config, "earthRotation",               earthRotation,            Config::OPTIONAL, "",  "");
+    readConfig(config, "earthRotation",               earthRotation,            Config::OPTIONAL, "file",  "");
     readConfig(config, "ephemerides",                 ephemerides,              Config::OPTIONAL, "jpl", "may be needed by parametrizationAcceleration");
     readConfig(config, "parametrizationAcceleration", parameterAcceleration,    Config::MUSTSET,  "",  "orbit force parameters");
     readConfig(config, "inputfileParameter",          fileNameSolution,         Config::MUSTSET,  "",  "estimated orbit force parameters");
