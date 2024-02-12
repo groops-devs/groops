@@ -126,7 +126,7 @@ void GnssSignalBias2SinexBias::run(Config &config, Parallel::CommunicatorPtr /*c
     UInt intervalLength = 0;
 
     readConfig(config, "outputfileSinexBias",      outNameSinexBias,      Config::MUSTSET,  "", "");
-    readConfig(config, "inputfileTransmitterInfo", inNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "one file per satellite");
+    readConfig(config, "inputfileTransmitterInfo", inNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml", "one file per satellite");
     readConfig(config, "transmitterBiases",        transmitterBiases,     Config::OPTIONAL, "", "one element per satellite");
     readConfig(config, "receiverBiases",           receiverBiases,        Config::OPTIONAL, "", "one element per station");
     readConfig(config, "agencyCode",               agencyCode,            Config::MUSTSET,  "TUG", "identify the agency providing the data");

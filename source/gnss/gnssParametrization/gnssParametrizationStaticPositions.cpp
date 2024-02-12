@@ -36,7 +36,7 @@ GnssParametrizationStaticPositions::GnssParametrizationStaticPositions(Config &c
     readConfig(config, "outputfilePosition",        fileNamePosition,       Config::OPTIONAL, "output/stationPosition_{loopTime:%D}.{station}.dat", "variable {station} available, full estimated coordinates (in TRF)");
     readConfig(config, "nameConstraint",            nameConstraint,         Config::OPTIONAL, "constraint.staticPositions", "used for parameter selection");
     readConfig(config, "selectNoNetReceivers",      selectNoNetReceivers,   Config::DEFAULT,  R"(["all"])", "");
-    readConfig(config, "inputfileNoNetPositions",   fileNameNoNetPositions, Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/position/igs/igb14/stationPosition.{station}.dat", "variable {station} available, precise coordinates used for no-net constraints (in TRF)");
+    readConfig(config, "inputfileNoNetPositions",   fileNameNoNetPositions, Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/position/igs/igs20/stationPosition.{station}.dat", "variable {station} available, precise coordinates used for no-net constraints (in TRF)");
     readConfig(config, "noNetTranslationSigma",     sigmaNoNetTranslation,  Config::OPTIONAL, "0.01",  "(0 = unconstrained) sigma [m] for no-net translation constraint on station coordinates");
     readConfig(config, "noNetRotationSigma",        sigmaNoNetRotation,     Config::OPTIONAL, "0.001", "(0 = unconstrained) sigma [m] at Earth's surface for no-net rotation constraint on station coordinates");
     readConfig(config, "huber",                     huber,                  Config::OPTIONAL, "2.5",   "stations > huber*sigma0 are downweighted in no-net constraint");

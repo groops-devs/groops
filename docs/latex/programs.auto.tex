@@ -9439,7 +9439,7 @@ Name & Type & Annotation\\
 \subsection{Sinex2StationDiscontinuities}\label{Sinex2StationDiscontinuities}
 Convert station discontinuities from
 \href{http://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX format}
-(e.g. ITRF14) to \configFile{outputfileInstrument}{instrument} (MISCVALUE).
+(e.g. ITRF20) to \configFile{outputfileInstrument}{instrument} (MISCVALUE).
 A value of 1 means position discontinuity, a value of 2 means velocity discontinuity.
 Start and end epochs with value 0 are added in addition to the discontinuities from
 SINEX to define continuity interval borders.
@@ -9453,7 +9453,7 @@ See also \program{Sinex2StationPosition} and \program{Sinex2StationPostSeismicDe
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt loop variable is replaced with station name (e.g. wtzz)\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileDiscontinuities & \hfuzz=500pt filename & \hfuzz=500pt SINEX (e.g. ITRF14) station discontinuities\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileDiscontinuities & \hfuzz=500pt filename & \hfuzz=500pt SINEX (e.g. ITRF20) station discontinuities\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopStation & \hfuzz=500pt string & \hfuzz=500pt variable name for station loop\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~stationName & \hfuzz=500pt string & \hfuzz=500pt only export these stations\\
 \hline

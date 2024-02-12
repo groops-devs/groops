@@ -1887,7 +1887,7 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="selectNoNetReceivers" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
-						<xs:element name="inputfileNoNetPositions" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/position/igs/igb14/stationPosition.{station}.dat">
+						<xs:element name="inputfileNoNetPositions" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/position/igs/igs20/stationPosition.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {station} available, precise coordinates used for no-net constraints (in TRF)</xs:documentation>
 							</xs:annotation>
@@ -2714,7 +2714,7 @@
 								<xs:documentation>elevation and azimuth dependent accuracy</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfileStationPosition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/position/igs/igb14/stationPosition.{station}.dat">
+						<xs:element name="inputfileStationPosition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/position/igs/igs20/stationPosition.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {station} available.</xs:documentation>
 							</xs:annotation>
@@ -10701,7 +10701,7 @@
 											<xs:documentation>(GLONASS only) signal bias file</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
+									<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml">
 										<xs:annotation>
 											<xs:documentation>transmitter platform file</xs:documentation>
 										</xs:annotation>
@@ -20485,7 +20485,7 @@
 								<xs:documentation>program and source for applied differential code bias</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="phaseCenterVariations" type="string" default="GROOPS            igs14.atx @ files.igs.org ">
+						<xs:element name="phaseCenterVariations" type="string" default="GROOPS            igs20.atx @ files.igs.org ">
 							<xs:annotation>
 								<xs:documentation>program and source for applied phase center variations</xs:documentation>
 							</xs:annotation>
@@ -20733,12 +20733,12 @@
 											<xs:documentation>transmitter PRNs used in solution</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
+									<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml">
 										<xs:annotation>
 											<xs:documentation>transmitter info file template</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs14/transmitterInfo_igs14.dat">
+									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs20/transmitterInfo_igs20.dat">
 										<xs:annotation>
 											<xs:documentation>transmitter phase centers and variations (ANTEX)</xs:documentation>
 										</xs:annotation>
@@ -20764,7 +20764,7 @@
 											<xs:documentation>station info file template</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat">
+									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
 										<xs:annotation>
 											<xs:documentation>station phase centers and variations (ANTEX)</xs:documentation>
 										</xs:annotation>
@@ -21017,7 +21017,7 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileSinexBias" type="filename"/>
-						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml" maxOccurs="unbounded">
+						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>one file per satellite</xs:documentation>
 							</xs:annotation>
@@ -21253,7 +21253,7 @@
 					<xs:sequence>
 						<xs:element name="outputfileStationInfo" type="filename"/>
 						<xs:element name="inputfileStationLog" type="filename"/>
-						<xs:element name="inputfileAntennaDefinition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat">
+						<xs:element name="inputfileAntennaDefinition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
 							<xs:annotation>
 								<xs:documentation>used to check antennas</xs:documentation>
 							</xs:annotation>
@@ -21308,7 +21308,7 @@
 											<xs:documentation>File including stations positions</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat">
+									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
 										<xs:annotation>
 											<xs:documentation>station phase centers and variations (ANTEX)</xs:documentation>
 										</xs:annotation>
@@ -23418,7 +23418,7 @@
 			</xs:element>
 			<xs:element name="Sinex2StationDiscontinuities">
 				<xs:annotation>
-					<xs:documentation>Convert station discontinuities from SINEX (e.g. ITRF14) to InstrumentMiscValue.</xs:documentation>
+					<xs:documentation>Convert station discontinuities from SINEX (e.g. ITRF20) to InstrumentMiscValue.</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Gnss</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
@@ -23432,7 +23432,7 @@
 						</xs:element>
 						<xs:element name="inputfileDiscontinuities" type="filename">
 							<xs:annotation>
-								<xs:documentation>SINEX (e.g. ITRF14) station discontinuities</xs:documentation>
+								<xs:documentation>SINEX (e.g. ITRF20) station discontinuities</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopStation" type="string" minOccurs="0" default="station">

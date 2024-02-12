@@ -72,7 +72,7 @@ void GnssTroposphere2TropoSinex::run(Config &config, Parallel::CommunicatorPtr /
       readConfig(config, "inputfileStationInfo",       fileNameStationInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/stationInfo/igs/stationInfo.{station}.xml", "station info file template");
       readConfig(config, "inputfileGeoidHeight",       fileNameGeoidHeight, Config::OPTIONAL, "", "File including geoid height");
       readConfig(config, "inputfileGridPos",           fileNameGridPos,     Config::MUSTSET,  "", "File including stations positions");
-      readConfig(config, "inputfileAntennaDefinition", fileNameAntennaDef,  Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat", "station phase centers and variations (ANTEX)");
+      readConfig(config, "inputfileAntennaDefinition", fileNameAntennaDef,  Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat", "station phase centers and variations (ANTEX)");
       readConfig(config, "variableStationName",        variableStationName, Config::DEFAULT,  "station", "Loop variable for station names from station list");
       readConfig(config, "observationTimeStart",       timeStartObs,        Config::MUSTSET,  "", "Start time for which solution has observations");
       readConfig(config, "observationTimeEnd",         timeEndObs,          Config::MUSTSET,  "", "End time for which solution has observations");
