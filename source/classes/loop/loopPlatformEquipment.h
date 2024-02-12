@@ -16,7 +16,7 @@
 // Latex documentation
 #ifdef DOCSTRING_Loop
 static const char *docstringLoopPlatformEquipment = R"(
-\subsection{PlatformEquipment}
+\subsection{PlatformEquipment}\label{loopType:platformEquipment}
 Loop over specific equipment of a \file{platform file}{platform}.
 )";
 #endif

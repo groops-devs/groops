@@ -10830,36 +10830,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GnssPrn2SvnBlockVariables">
-				<xs:annotation>
-					<xs:documentation>Create variables containing SVN and block based on a transmitter info file of a GNSS satellite/PRN and a specified time.</xs:documentation>
-					<xs:appinfo>tag: Gnss</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="variableSVN" type="string" minOccurs="0" default="svn">
-							<xs:annotation>
-								<xs:documentation>name of the SVN variable</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="variableBlock" type="string" minOccurs="0" default="block">
-							<xs:annotation>
-								<xs:documentation>name of the satellites block variable</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
-							<xs:annotation>
-								<xs:documentation>used for GNSS PRN-to-SVN/model relation</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="time" type="time">
-							<xs:annotation>
-								<xs:documentation>used for GNSS PRN-to-SVN/model relation</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="GnssProcessing">
 				<xs:annotation>
 					<xs:documentation>GNSS/LEO satellite orbit determination, station network analysis, PPP</xs:documentation>
@@ -23753,6 +23723,36 @@
 						<xs:element name="inputfileStationInfo" type="filename" default="{groopsDataDir}/gnss/receiverStation/stationInfo/igs/stationInfo.{station}.xml"/>
 						<xs:element name="inputfileStation" type="filename"/>
 						<xs:element name="inputfileVmf" type="filename"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GnssPrn2SvnBlockVariables">
+				<xs:annotation>
+					<xs:documentation>This program no longer works! See documentation for help.</xs:documentation>
+					<xs:appinfo>tag: Deprecated</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="variableSVN" type="string" minOccurs="0" default="svn">
+							<xs:annotation>
+								<xs:documentation>name of the SVN variable</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableBlock" type="string" minOccurs="0" default="block">
+							<xs:annotation>
+								<xs:documentation>name of the satellites block variable</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
+							<xs:annotation>
+								<xs:documentation>used for GNSS PRN-to-SVN/model relation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="time" type="time">
+							<xs:annotation>
+								<xs:documentation>used for GNSS PRN-to-SVN/model relation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>

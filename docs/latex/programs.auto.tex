@@ -836,27 +836,6 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
-\subsection{GnssPrn2SvnBlockVariables}\label{GnssPrn2SvnBlockVariables}
-Create \reference{variables}{general.parser} containing SVN and block based on an
-\configFile{inputfileTransmitterInfo}{platform} of a GNSS satellite/PRN and
-a specified \config{time}.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableSVN & \hfuzz=500pt string & \hfuzz=500pt name of the SVN variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableBlock & \hfuzz=500pt string & \hfuzz=500pt name of the satellites block variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt used for GNSS PRN-to-SVN/model relation\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~time & \hfuzz=500pt time & \hfuzz=500pt used for GNSS PRN-to-SVN/model relation\\
-\hline
-\end{tabularx}
-
-This program is \reference{parallelized}{general.parallelization}.
-\clearpage
-%==================================
 \subsection{GnssProcessing}\label{GnssProcessing}
 This program processes GNSS observations. It calculates the linearized observation equations,
 accumulates them into a system of normal equations and solves it.
@@ -9715,6 +9694,40 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \section{Programs: Deprecated}
+\subsection{GnssPrn2SvnBlockVariables}\label{GnssPrn2SvnBlockVariables}
+DEPRECATED. This program will no longer work from the next release!
+
+Setup up a \configClass{loop:platformEquipment}{loopType:platformEquipment} instead with
+\begin{itemize}
+  \item \configFile{inputfilePlatform}{platform}: the old \config{inputfileTransmitterInfo}
+  \item \config{equipmentType}         = \verb|gnssAntenna|
+  \item \config{variableLoopName}      = \verb|block|
+  \item \config{variableLoopSerial}    = \verb|svn|
+  \item \config{variableLoopTimeStart} = \verb|svnTimeStart|
+  \item \config{variableLoopTimeEnd}   = \verb|svnTimeEnd|
+  \item \configClass{condition:expression}{conditionType:expression}
+  \begin{itemize}
+    \item \config{expression} = \verb|(svnTimeStart <= time) && (time < svnTimeEnd)|
+  \end{itemize}
+\end{itemize}
+Attribute this loop to programs, which uses the variables.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableSVN & \hfuzz=500pt string & \hfuzz=500pt name of the SVN variable\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableBlock & \hfuzz=500pt string & \hfuzz=500pt name of the satellites block variable\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt used for GNSS PRN-to-SVN/model relation\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~time & \hfuzz=500pt time & \hfuzz=500pt used for GNSS PRN-to-SVN/model relation\\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
 \subsection{GridRectangular2NetCdf}\label{GridRectangular2NetCdf}
 DEPRECATED. Please use \program{GriddedData2NetCdf} or \program{GriddedDataTimeSeries2NetCdf} instead.
 

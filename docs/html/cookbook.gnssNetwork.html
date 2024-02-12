@@ -111,11 +111,35 @@ Dynamic orbits are integrated based on <a class="groops-class" href="forcesType.
 by estimating their initial state and additional empirical parameters for solar radiation pressure to improve the orbit fit.
 The resulting <a class="groops-file" href="fileFormat_variationalEquation.html">variational equations</a> file contains the integrated orbit, derivatives
 with respect to the satellite state vector, attitude, Earth rotation and satellite model.</p><p>Orbit preprocessing is covered by the script <code>020groopsGnssPreprocessing.xml</code> in the <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip">example scenario</a>.</p><p>It is recommended to perform the steps below in a <a class="groops-ref" href="general.loopsAndConditions.html">loop</a> over all
-satellites/PRNs using <a class="groops-program" href="LoopPrograms.html">LoopPrograms</a>.</p><p><ul>
+satellites/PRNs using <a class="groops-program" href="LoopPrograms.html">LoopPrograms</a>. To get the relation between <code>{prn}</code> and <code>{svn}</code> setup
+an additional <a class="groops-class" href="loopType.html#platformEquipment">loop:platformEquipment</a> inside
+<a class="groops-class" href="loopType.html#loop">loop:loop</a> with
+<ul>
 
-  <li><a class="groops-program" href="GnssPrn2SvnBlockVariables.html">GnssPrn2SvnBlockVariables</a>
+  <li><a class="groops-class" href="fileFormat_platform.html">inputfilePlatform</a>: the old <strong class="groops-config-element">inputfileTransmitterInfo</strong>
   </li><li>
-<a class="groops-program" href="InstrumentResample.html">InstrumentResample</a>: resample approximate orbits from <a class="groops-ref" href="cookbook.gnssPpp.html#metadata">data preparation</a> to target sampling (e.g., 1 minute) by defining a <a class="groops-class" href="timeSeriesType.html">timeSeries</a> based on a <strong class="groops-config-element">method:polynomial</strong> (<strong class="groops-config-element">polynomialDegree</strong>=<code>7</code>, <strong class="groops-config-element">maxDataPointRange</strong>=<code>7200</code>, <strong class="groops-config-element">maxExtrapolationDistance</strong>=<code>900</code>).
+<strong class="groops-config-element">equipmentType</strong>         = <code>gnssAntenna</code>
+  </li><li>
+<strong class="groops-config-element">variableLoopName</strong>      = <code>block</code>
+  </li><li>
+<strong class="groops-config-element">variableLoopSerial</strong>    = <code>svn</code>
+  </li><li>
+<strong class="groops-config-element">variableLoopTimeStart</strong> = <code>svnTimeStart</code>
+  </li><li>
+<strong class="groops-config-element">variableLoopTimeEnd</strong>   = <code>svnTimeEnd</code>
+  </li><li>
+<a class="groops-class" href="conditionType.html#expression">condition:expression</a>
+  <ul>
+
+    </li><li>
+<strong class="groops-config-element">expression</strong> = <code>(svnTimeStart &lt;= loopTime) && (loopTime &lt; svnTimeEnd)</code>
+  </li></ul>
+
+</ul>
+This second loop should perform only one step. The following programs are looped over all <code>{prn}</code>:
+<ul>
+
+  <li><a class="groops-program" href="InstrumentResample.html">InstrumentResample</a>: resample approximate orbits from <a class="groops-ref" href="cookbook.gnssPpp.html#metadata">data preparation</a> to target sampling (e.g., 1 minute) by defining a <a class="groops-class" href="timeSeriesType.html">timeSeries</a> based on a <strong class="groops-config-element">method:polynomial</strong> (<strong class="groops-config-element">polynomialDegree</strong>=<code>7</code>, <strong class="groops-config-element">maxDataPointRange</strong>=<code>7200</code>, <strong class="groops-config-element">maxExtrapolationDistance</strong>=<code>900</code>).
   </li><li>
 <a class="groops-program" href="OrbitAddVelocityAndAcceleration.html">OrbitAddVelocityAndAcceleration</a>: add velocity via running polynomial (<strong class="groops-config-element">polynomialDegree</strong>=<code>2</code>) derivation (needed for attitude computation)
   </li><li>
