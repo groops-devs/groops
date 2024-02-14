@@ -2,7 +2,7 @@
 /**
 * @file sinex2StationDiscontinuities.cpp
 *
-* @brief Convert station discontinuities from SINEX (e.g. ITRF14) to InstrumentMiscValue.
+* @brief Convert station discontinuities from SINEX (e.g. ITRF20) to InstrumentMiscValue.
 *
 * A value of 1 means position discontinuity, a value of 2 means velocity discontinuity.
 *
@@ -16,7 +16,7 @@
 static const char *docstring = R"(
 Convert station discontinuities from
 \href{http://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX format}
-(e.g. ITRF14) to \configFile{outputfileInstrument}{instrument} (MISCVALUE).
+(e.g. ITRF20) to \configFile{outputfileInstrument}{instrument} (MISCVALUE).
 A value of 1 means position discontinuity, a value of 2 means velocity discontinuity.
 Start and end epochs with value 0 are added in addition to the discontinuities from
 SINEX to define continuity interval borders.
@@ -33,7 +33,7 @@ See also \program{Sinex2StationPosition} and \program{Sinex2StationPostSeismicDe
 
 /***** CLASS ***********************************/
 
-/** @brief Convert station discontinuities from SINEX (e.g. ITRF14) to InstrumentMiscValue.
+/** @brief Convert station discontinuities from SINEX (e.g. ITRF20) to InstrumentMiscValue.
 * @ingroup programsConversionGroup */
 class Sinex2StationDiscontinuities
 {
@@ -41,7 +41,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(Sinex2StationDiscontinuities, SINGLEPROCESS, "Convert station discontinuities from SINEX (e.g. ITRF14) to InstrumentMiscValue.", Conversion, Gnss, Instrument)
+GROOPS_REGISTER_PROGRAM(Sinex2StationDiscontinuities, SINGLEPROCESS, "Convert station discontinuities from SINEX (e.g. ITRF20) to InstrumentMiscValue.", Conversion, Gnss, Instrument)
 
 /***********************************************/
 
@@ -54,7 +54,7 @@ void Sinex2StationDiscontinuities::run(Config &config, Parallel::CommunicatorPtr
     std::string variableLoopStation;
 
     readConfig(config, "outputfileInstrument",     outName,             Config::MUSTSET,  "",        "loop variable is replaced with station name (e.g. wtzz)");
-    readConfig(config, "inputfileDiscontinuities", fileNameSinex,       Config::MUSTSET,  "",        "SINEX (e.g. ITRF14) station discontinuities");
+    readConfig(config, "inputfileDiscontinuities", fileNameSinex,       Config::MUSTSET,  "",        "SINEX (e.g. ITRF20) station discontinuities");
     readConfig(config, "variableLoopStation",      variableLoopStation, Config::DEFAULT,  "station", "variable name for station loop");
     readConfig(config, "stationName",              stationNames,        Config::OPTIONAL, "",        "only export these stations");
     if(isCreateSchema(config)) return;

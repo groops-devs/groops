@@ -61,7 +61,7 @@ void GriddedData2GriddedDataStatistics::run(Config &config, Parallel::Communicat
     readConfig(config, "outputfileGriddedData", fileNameOutGrid, Config::MUSTSET,  "",    "");
     readConfig(config, "inputfileGriddedData",  fileNameInGrid,  Config::MUSTSET,  "",    "");
     readConfig(config, "grid",                  gridPtr,         Config::MUSTSET,  "",    "");
-    if(readConfigChoice(config, "statistic", choice, Config::MUSTSET, "mean", "statistic used if multiple values fall on the same cell"))
+    if(readConfigChoice(config, "statistic", choice, Config::MUSTSET, "", "statistic used if multiple values fall on the same cell"))
     {
       if(readConfigChoiceElement(config, "mean",  choice, "mean"))                             type = MEAN;
       if(readConfigChoiceElement(config, "wmean", choice, "area weighted mean"))               type = WMEAN;

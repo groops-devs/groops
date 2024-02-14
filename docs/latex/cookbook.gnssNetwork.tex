@@ -52,10 +52,23 @@ with respect to the satellite state vector, attitude, Earth rotation and satelli
 Orbit preprocessing is covered by the script \verb|020groopsGnssPreprocessing.xml| in the \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip}{example scenario}.
 
 It is recommended to perform the steps below in a \reference{loop}{general.loopsAndConditions} over all
-satellites/PRNs using \program{LoopPrograms}.
-
+satellites/PRNs using \program{LoopPrograms}. To get the relation between \verb|{prn}| and \verb|{svn}| setup
+an additional \configClass{loop:platformEquipment}{loopType:platformEquipment} inside
+\configClass{loop:loop}{loopType:loop} with
 \begin{itemize}
-  \item \program{GnssPrn2SvnBlockVariables}
+  \item \configFile{inputfilePlatform}{platform}: the old \config{inputfileTransmitterInfo}
+  \item \config{equipmentType}         = \verb|gnssAntenna|
+  \item \config{variableLoopName}      = \verb|block|
+  \item \config{variableLoopSerial}    = \verb|svn|
+  \item \config{variableLoopTimeStart} = \verb|svnTimeStart|
+  \item \config{variableLoopTimeEnd}   = \verb|svnTimeEnd|
+  \item \configClass{condition:expression}{conditionType:expression}
+  \begin{itemize}
+    \item \config{expression} = \verb|(svnTimeStart <= loopTime) && (loopTime < svnTimeEnd)|
+  \end{itemize}
+\end{itemize}
+This second loop should perform only one step. The following programs are looped over all \verb|{prn}|:
+\begin{itemize}
   \item \program{InstrumentResample}: resample approximate orbits from \reference{data preparation}{cookbook.gnssPpp:metadata} to target sampling (e.g., 1 minute) by defining a \configClass{timeSeries}{timeSeriesType} based on a \config{method:polynomial} (\config{polynomialDegree}=\verb|7|, \config{maxDataPointRange}=\verb|7200|, \config{maxExtrapolationDistance}=\verb|900|).
   \item \program{OrbitAddVelocityAndAcceleration}: add velocity via running polynomial (\config{polynomialDegree}=\verb|2|) derivation (needed for attitude computation)
   \item \program{SimulateStarCameraGnss}

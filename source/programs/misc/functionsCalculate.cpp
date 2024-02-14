@@ -99,7 +99,7 @@ void FunctionsCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "parameter",       paramExpr,   Config::OPTIONAL, "",      "define a parameter by name[=value]");
     readConfig(config, "leastSquares",    lsaExpr,     Config::OPTIONAL, "",      "try to minimize the expression by adjustment of the parameters");
     readConfig(config, "removalCriteria", removeExpr,  Config::OPTIONAL, "",      "row is removed if one criterion evaluates true.");
-    readConfig(config, "outColumn",       outExpr,     Config::OPTIONAL, "data0", "expression to compute output columns (input columns are named data0, data1, ...)");
+    readConfig(config, "outColumn",       outExpr,     Config::OPTIONAL, R"(["data0"])", "expression to compute output columns (input columns are named data0, data1, ...)");
     if(readConfigSequence(config, "statistics", Config::OPTIONAL, "", ""))
     {
       readConfig(config, "outputfile", fileNameStatistics, Config::MUSTSET, "",         "matrix with one row, columns are user defined");
