@@ -17,7 +17,7 @@
 // Latex documentation
 #ifdef DOCSTRING_Loop
 static const char *docstringLoopLoop = R"(
-\subsection{Loop}
+\subsection{Loop}\label{loopType:loop}
 Loop over nested loops. First \config{loop} is outermost loop, every subsequent \config{loop} is one level below the previous \config{loop}.
 )";
 #endif

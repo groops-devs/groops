@@ -55,7 +55,7 @@ GnssReceiverGeneratorStationNetwork::GnssReceiverGeneratorStationNetwork(Config 
     }
     readConfig(config, "inputfileReceiverDefinition",        fileNameReceiverDef,     Config::OPTIONAL, "", "observed signal types");
     readConfig(config, "inputfileAccuracyDefinition",        fileNameAccuracyDef,     Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/accuracyDefinition/accuracyDefinition.xml", "elevation and azimuth dependent accuracy");
-    readConfig(config, "inputfileStationPosition",           fileNameStationPosition, Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/position/igs/igb14/stationPosition.{station}.dat", "variable {station} available.");
+    readConfig(config, "inputfileStationPosition",           fileNameStationPosition, Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/position/igs/igs20/stationPosition.{station}.dat", "variable {station} available.");
     readConfig(config, "inputfileClock",                     fileNameClock,           Config::OPTIONAL, "",     "variable {station} available");
     readConfig(config, "inputfileObservations",              fileNameObs,             Config::OPTIONAL, "gnssReceiver_{loopTime:%D}.{station}.dat", "variable {station} available");
     readConfig(config, "loadingDisplacement",                gravityfield,            Config::DEFAULT,  "",     "loading deformation");

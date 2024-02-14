@@ -89,8 +89,8 @@ void Orbit2Sp3Format::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     readConfig(config, "outputfile",          outName,        Config::MUSTSET,  "", "");
     readConfig(config, "satellite",           satellites,     Config::MUSTSET,  "", "");
-    readConfig(config, "earthRotation",       earthRotation,  Config::OPTIONAL, "", "rotate data into Earth-fixed frame");
-    readConfig(config, "gravityfield",        gravityfield,   Config::DEFAULT,  R"({"tides": {"tides": {"doodsonHarmonicTide": {"minDegree":1, "maxDegree":1}}}})", "degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)");
+    readConfig(config, "earthRotation",       earthRotation,  Config::OPTIONAL, "file", "rotate data into Earth-fixed frame");
+    readConfig(config, "gravityfield",        gravityfield,   Config::DEFAULT,  R"([{"tides": {"tides": {"doodsonHarmonicTide": {"minDegree":1, "maxDegree":1}}}}])", "degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)");
     readConfig(config, "comment",             commentLines,   Config::OPTIONAL, "", "comment lines (77 char max)");
     readConfig(config, "firstLine",           textLine1,      Config::DEFAULT,  "RAW   IGb14 FIT  TUG", "Text for first line e.g:  u+U  IGb14 KIN ITSG");
     readConfig(config, "writeVelocity",       writeVel,       Config::DEFAULT,  "0", "write velocity in addition to position");

@@ -1887,7 +1887,7 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="selectNoNetReceivers" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
-						<xs:element name="inputfileNoNetPositions" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/position/igs/igb14/stationPosition.{station}.dat">
+						<xs:element name="inputfileNoNetPositions" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/position/igs/igs20/stationPosition.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {station} available, precise coordinates used for no-net constraints (in TRF)</xs:documentation>
 							</xs:annotation>
@@ -2714,7 +2714,7 @@
 								<xs:documentation>elevation and azimuth dependent accuracy</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfileStationPosition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/position/igs/igb14/stationPosition.{station}.dat">
+						<xs:element name="inputfileStationPosition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/position/igs/igs20/stationPosition.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {station} available.</xs:documentation>
 							</xs:annotation>
@@ -10701,7 +10701,7 @@
 											<xs:documentation>(GLONASS only) signal bias file</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
+									<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml">
 										<xs:annotation>
 											<xs:documentation>transmitter platform file</xs:documentation>
 										</xs:annotation>
@@ -10830,36 +10830,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GnssPrn2SvnBlockVariables">
-				<xs:annotation>
-					<xs:documentation>Create variables containing SVN and block based on a transmitter info file of a GNSS satellite/PRN and a specified time.</xs:documentation>
-					<xs:appinfo>tag: Gnss</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="variableSVN" type="string" minOccurs="0" default="svn">
-							<xs:annotation>
-								<xs:documentation>name of the SVN variable</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="variableBlock" type="string" minOccurs="0" default="block">
-							<xs:annotation>
-								<xs:documentation>name of the satellites block variable</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
-							<xs:annotation>
-								<xs:documentation>used for GNSS PRN-to-SVN/model relation</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="time" type="time">
-							<xs:annotation>
-								<xs:documentation>used for GNSS PRN-to-SVN/model relation</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="GnssProcessing">
 				<xs:annotation>
 					<xs:documentation>GNSS/LEO satellite orbit determination, station network analysis, PPP</xs:documentation>
@@ -10892,7 +10862,7 @@
 								<xs:documentation>apriori earth rotation</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="parametrization" type="gnssParametrizationType" maxOccurs="unbounded" default="1">
+						<xs:element name="parametrization" type="gnssParametrizationType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>models and parameters</xs:documentation>
 							</xs:annotation>
@@ -11081,7 +11051,7 @@
 								<xs:documentation>apriori earth rotation</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="parametrization" type="gnssParametrizationType" minOccurs="0" maxOccurs="unbounded" default="1">
+						<xs:element name="parametrization" type="gnssParametrizationType" minOccurs="0" maxOccurs="unbounded" default="[&quot;troposphere&quot;]">
 							<xs:annotation>
 								<xs:documentation>models and parameters</xs:documentation>
 							</xs:annotation>
@@ -12674,7 +12644,7 @@
 						<xs:element name="outputfileGriddedData" type="filename"/>
 						<xs:element name="inputfileGriddedData" type="filename"/>
 						<xs:element name="grid" type="gridType" maxOccurs="unbounded"/>
-						<xs:element name="statistic" default="mean">
+						<xs:element name="statistic">
 							<xs:annotation>
 								<xs:documentation>statistic used if multiple values fall on the same cell</xs:documentation>
 							</xs:annotation>
@@ -12959,7 +12929,7 @@
 								<xs:documentation>expression: e.g. deltaL * 2.0 * sin(deltaB/2.0) * cos(latitude/rho)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="value" type="expression" minOccurs="0" default="data0" maxOccurs="unbounded">
+						<xs:element name="value" type="expression" minOccurs="0" default="[&quot;data0&quot;]" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>expression to compute values (input columns are named data0, data1, ...)</xs:documentation>
 							</xs:annotation>
@@ -13444,7 +13414,7 @@
 								<xs:documentation>expression (e.g. deltaL*2*sin(deltaB/2)*cos(data1/RHO))</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="value" type="expression" minOccurs="0" default="data3" maxOccurs="unbounded">
+						<xs:element name="value" type="expression" minOccurs="0" default="[&quot;data3&quot;]" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>expression</xs:documentation>
 							</xs:annotation>
@@ -13955,7 +13925,7 @@
 								<xs:documentation>add non-gravitational forces in satellite reference frame</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0"/>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file"/>
 						<xs:element name="ephemerides" type="ephemeridesType" minOccurs="0" default="jpl">
 							<xs:annotation>
 								<xs:documentation>may be needed by parametrizationAcceleration</xs:documentation>
@@ -14014,7 +13984,7 @@
 						</xs:element>
 						<xs:element name="inputfileOrbit" type="filename" minOccurs="0"/>
 						<xs:element name="inputfileStarCamera" type="filename" minOccurs="0"/>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0"/>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file"/>
 						<xs:element name="ephemerides" type="ephemeridesType" minOccurs="0" default="jpl">
 							<xs:annotation>
 								<xs:documentation>may be needed by parametrizationAcceleration</xs:documentation>
@@ -14100,7 +14070,7 @@
 								<xs:documentation>satellite macro model (may be needed by parametrizationAcceleration)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>may be needed by parametrizationAcceleration</xs:documentation>
 							</xs:annotation>
@@ -14190,7 +14160,7 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="outType" type="instrumentTypeType" minOccurs="0"/>
-						<xs:element name="outColumn" type="expression" minOccurs="0" default="data0" maxOccurs="unbounded">
+						<xs:element name="outColumn" type="expression" minOccurs="0" default="[&quot;data0&quot;]" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>expression of output columns, extra &apos;epoch&apos; variable</xs:documentation>
 							</xs:annotation>
@@ -15471,7 +15441,7 @@
 								<xs:documentation>row is removed if one criterion evaluates true.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="outColumn" type="expression" minOccurs="0" default="data0" maxOccurs="unbounded">
+						<xs:element name="outColumn" type="expression" minOccurs="0" default="[&quot;data0&quot;]" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>expression to compute output columns (input columns are named data0, data1, ...)</xs:documentation>
 							</xs:annotation>
@@ -20115,7 +20085,7 @@
 					<xs:sequence>
 						<xs:element name="outputfileOrbit" type="filename"/>
 						<xs:element name="outputfileCovariance" type="filename"/>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>from TRF to CRF</xs:documentation>
 							</xs:annotation>
@@ -20388,7 +20358,7 @@
 								<xs:documentation>resample to these epochs (otherwise input file epochs are used)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>rotate data into Earth-fixed frame</xs:documentation>
 							</xs:annotation>
@@ -20515,7 +20485,7 @@
 								<xs:documentation>program and source for applied differential code bias</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="phaseCenterVariations" type="string" default="GROOPS            igs14.atx @ files.igs.org ">
+						<xs:element name="phaseCenterVariations" type="string" default="GROOPS            igs20.atx @ files.igs.org ">
 							<xs:annotation>
 								<xs:documentation>program and source for applied phase center variations</xs:documentation>
 							</xs:annotation>
@@ -20763,12 +20733,12 @@
 											<xs:documentation>transmitter PRNs used in solution</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
+									<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml">
 										<xs:annotation>
 											<xs:documentation>transmitter info file template</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs14/transmitterInfo_igs14.dat">
+									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs20/transmitterInfo_igs20.dat">
 										<xs:annotation>
 											<xs:documentation>transmitter phase centers and variations (ANTEX)</xs:documentation>
 										</xs:annotation>
@@ -20794,7 +20764,7 @@
 											<xs:documentation>station info file template</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat">
+									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
 										<xs:annotation>
 											<xs:documentation>station phase centers and variations (ANTEX)</xs:documentation>
 										</xs:annotation>
@@ -20931,7 +20901,7 @@
 								<xs:documentation>(empty = all) satellite identifier, e.g. G23 or E05</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>rotation from TRF to CRF</xs:documentation>
 							</xs:annotation>
@@ -21047,7 +21017,7 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileSinexBias" type="filename"/>
-						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml" maxOccurs="unbounded">
+						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>one file per satellite</xs:documentation>
 							</xs:annotation>
@@ -21283,7 +21253,7 @@
 					<xs:sequence>
 						<xs:element name="outputfileStationInfo" type="filename"/>
 						<xs:element name="inputfileStationLog" type="filename"/>
-						<xs:element name="inputfileAntennaDefinition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat">
+						<xs:element name="inputfileAntennaDefinition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
 							<xs:annotation>
 								<xs:documentation>used to check antennas</xs:documentation>
 							</xs:annotation>
@@ -21338,7 +21308,7 @@
 											<xs:documentation>File including stations positions</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat">
+									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
 										<xs:annotation>
 											<xs:documentation>station phase centers and variations (ANTEX)</xs:documentation>
 										</xs:annotation>
@@ -21548,7 +21518,7 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileOrbit" type="filename"/>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>rotation from TRF to CRF</xs:documentation>
 							</xs:annotation>
@@ -23199,12 +23169,12 @@
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>rotate data into Earth-fixed frame</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}">
+						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="[{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}]">
 							<xs:annotation>
 								<xs:documentation>degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)</xs:documentation>
 							</xs:annotation>
@@ -23448,7 +23418,7 @@
 			</xs:element>
 			<xs:element name="Sinex2StationDiscontinuities">
 				<xs:annotation>
-					<xs:documentation>Convert station discontinuities from SINEX (e.g. ITRF14) to InstrumentMiscValue.</xs:documentation>
+					<xs:documentation>Convert station discontinuities from SINEX (e.g. ITRF20) to InstrumentMiscValue.</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Gnss</xs:appinfo>
 					<xs:appinfo>tag: Instrument</xs:appinfo>
@@ -23462,7 +23432,7 @@
 						</xs:element>
 						<xs:element name="inputfileDiscontinuities" type="filename">
 							<xs:annotation>
-								<xs:documentation>SINEX (e.g. ITRF14) station discontinuities</xs:documentation>
+								<xs:documentation>SINEX (e.g. ITRF20) station discontinuities</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopStation" type="string" minOccurs="0" default="station">
@@ -23610,12 +23580,12 @@
 								<xs:documentation>e.g. L09 for GRACE A, empty: take first satellite</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0">
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
 							<xs:annotation>
 								<xs:documentation>rotation from TRF to CRF</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}">
+						<xs:element name="gravityfield" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded" default="[{&quot;tides&quot;: {&quot;tides&quot;: {&quot;doodsonHarmonicTide&quot;: {&quot;minDegree&quot;:1, &quot;maxDegree&quot;:1}}}}]">
 							<xs:annotation>
 								<xs:documentation>degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)</xs:documentation>
 							</xs:annotation>
@@ -23753,6 +23723,36 @@
 						<xs:element name="inputfileStationInfo" type="filename" default="{groopsDataDir}/gnss/receiverStation/stationInfo/igs/stationInfo.{station}.xml"/>
 						<xs:element name="inputfileStation" type="filename"/>
 						<xs:element name="inputfileVmf" type="filename"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GnssPrn2SvnBlockVariables">
+				<xs:annotation>
+					<xs:documentation>This program no longer works! See documentation for help.</xs:documentation>
+					<xs:appinfo>tag: Deprecated</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="variableSVN" type="string" minOccurs="0" default="svn">
+							<xs:annotation>
+								<xs:documentation>name of the SVN variable</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableBlock" type="string" minOccurs="0" default="block">
+							<xs:annotation>
+								<xs:documentation>name of the satellites block variable</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
+							<xs:annotation>
+								<xs:documentation>used for GNSS PRN-to-SVN/model relation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="time" type="time">
+							<xs:annotation>
+								<xs:documentation>used for GNSS PRN-to-SVN/model relation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>

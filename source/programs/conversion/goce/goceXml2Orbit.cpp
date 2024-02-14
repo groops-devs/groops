@@ -48,7 +48,7 @@ void GoceXml2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     EarthRotationPtr earthRotation;
 
     readConfig(config, "outputfileOrbit", outName,       Config::MUSTSET,  "", "");
-    readConfig(config, "earthRotation",   earthRotation, Config::OPTIONAL, "", "rotation from TRF to CRF");
+    readConfig(config, "earthRotation",   earthRotation, Config::OPTIONAL, "file", "rotation from TRF to CRF");
     readConfig(config, "inputfile",       fileName,      Config::MUSTSET,  "", "");
     if(isCreateSchema(config)) return;
 

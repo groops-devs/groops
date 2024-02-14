@@ -16,7 +16,7 @@
 // Latex documentation
 #ifdef DOCSTRING_Condition
 static const char *docstringConditionExpression = R"(
-\subsection{Expression}
+\subsection{Expression}\label{conditionType:expression}
 Evaluate expression.
 )";
 #endif

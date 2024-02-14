@@ -60,8 +60,8 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssNormals2
   if(!readConfigSequence(config, name, mustSet, defaultValue, annotation))
     return FALSE;
   readConfig(config, "inputfileTransmitterList",   var.fileNameTransmitterList, Config::MUSTSET,  "",    "transmitter PRNs used in solution");
-  readConfig(config, "inputfileTransmitterInfo",   var.fileNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "transmitter info file template");
-  readConfig(config, "inputfileAntennaDefinition", var.fileNameAntennaDef,      Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs14/transmitterInfo_igs14.dat",     "transmitter phase centers and variations (ANTEX)");
+  readConfig(config, "inputfileTransmitterInfo",   var.fileNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml", "transmitter info file template");
+  readConfig(config, "inputfileAntennaDefinition", var.fileNameAntennaDef,      Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs20/transmitterInfo_igs20.dat",     "transmitter phase centers and variations (ANTEX)");
   readConfig(config, "variablePrn",                var.variablePrn,             Config::DEFAULT,  "prn", "loop variable for PRNs from transmitter list");
   endSequence(config);
   return TRUE;
@@ -94,7 +94,7 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     {
       readConfig(config, "inputfileStationList",       fileNameStationList, Config::MUSTSET,  "", "stations contained in normal equations");
       readConfig(config, "inputfileStationInfo",       fileNameStationInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/stationInfo/igs/stationInfo.{station}.xml", "station info file template");
-      readConfig(config, "inputfileAntennaDefinition", fileNameAntennaDef,  Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat", "station phase centers and variations (ANTEX)");
+      readConfig(config, "inputfileAntennaDefinition", fileNameAntennaDef,  Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat", "station phase centers and variations (ANTEX)");
       readConfig(config, "variableStationName",        variableStationName, Config::DEFAULT,  "station", "loop variable for station names from station list");
       readConfig(config, "observationTimeStart",       timeStartObs,        Config::MUSTSET,  "", "start time for which solution has observations");
       readConfig(config, "observationTimeEnd",         timeEndObs,          Config::MUSTSET,  "", "end time for which solution has observations");

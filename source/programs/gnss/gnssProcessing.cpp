@@ -94,7 +94,7 @@ void GnssProcessing::run(Config &config, Parallel::CommunicatorPtr comm)
     readConfig(config, "transmitter",     transmitterGenerator, Config::MUSTSET,  "",    "constellation of GNSS satellites");
     readConfig(config, "receiver",        receiverGenerator,    Config::MUSTSET,  "",    "ground station network or LEO satellite");
     readConfig(config, "earthRotation",   earthRotation,        Config::MUSTSET,  "",    "apriori earth rotation");
-    readConfig(config, "parametrization", gnssParametrization,  Config::MUSTSET,  "1",   "models and parameters");
+    readConfig(config, "parametrization", gnssParametrization,  Config::MUSTSET,  "",    "models and parameters");
     readConfig(config, "processingStep",  processingSteps,      Config::MUSTSET,  "",    "steps are processed consecutively");
     if(isCreateSchema(config)) return;
 

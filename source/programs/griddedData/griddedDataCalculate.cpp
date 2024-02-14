@@ -93,7 +93,7 @@ void GriddedDataCalculate::run(Config &config, Parallel::CommunicatorPtr /*comm*
     readConfig(config, "latitude",              latExpr,     Config::MUSTSET,  "latitude",  "expression");
     readConfig(config, "height",                heightExpr,  Config::MUSTSET,  "height",    "expression");
     readConfig(config, "area",                  areaExpr,    Config::OPTIONAL, "area",      "expression: e.g. deltaL * 2.0 * sin(deltaB/2.0) * cos(latitude/rho)");
-    readConfig(config, "value",                 valueExpr,   Config::OPTIONAL, "data0",     "expression to compute values (input columns are named data0, data1, ...)");
+    readConfig(config, "value",                 valueExpr,   Config::OPTIONAL, R"(["data0"])", "expression to compute values (input columns are named data0, data1, ...)");
     readConfig(config, "computeArea",           computeArea, Config::DEFAULT,  "0",         "automatically area computation of rectangular grids (overwrite area)");
     readConfig(config, "R",                     a,           Config::DEFAULT,  STRING_DEFAULT_GRS80_a, "reference radius for ellipsoidal coordinates");
     readConfig(config, "inverseFlattening",     f,           Config::DEFAULT,  STRING_DEFAULT_GRS80_f, "reference flattening for ellipsoidal coordinates");

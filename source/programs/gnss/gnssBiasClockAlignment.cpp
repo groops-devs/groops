@@ -74,7 +74,7 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssBiasCloc
   readConfig(config, "inputfileClock",           var.inNameClock,           Config::MUSTSET,  "", "clock instrument file");
   readConfig(config, "inputfileReferenceClock",  var.inNameReferenceClock,  Config::MUSTSET,  "", "reference clock instrument file");
   readConfig(config, "inputfileSignalBias",      var.inNameBias,            Config::OPTIONAL, "", "(GLONASS only) signal bias file");
-  readConfig(config, "inputfileTransmitterInfo", var.inNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml", "transmitter platform file");
+  readConfig(config, "inputfileTransmitterInfo", var.inNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml", "transmitter platform file");
   endSequence(config);
   return TRUE;
 }
