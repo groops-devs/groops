@@ -81,7 +81,7 @@ public:
     /** @brief Constructor. */
     State(GnssPtr gnss, Parallel::CommunicatorPtr comm);
 
-    void regularizeNotUsedParameters(UInt blockStart, UInt blockCount);
+    void regularizeNotUsedParameters(UInt blockStart, UInt blockCount, const std::vector<ParameterName> &parameterNames);
     void collectNormalsBlocks       (UInt blockStart, UInt blockCount);
     void buildNormals               (Bool constraintsOnly, Bool solveEpochParameters);
     Double estimateSolution         (const std::function<Vector(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, Vector &xInt, Double &sigma)> &searchInteger,
