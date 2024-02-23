@@ -126,7 +126,11 @@
 			<xs:element name="fileExist">
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="file" type="filename"/>
+						<xs:element name="file" type="filename">
+							<xs:annotation>
+								<xs:documentation>supports wildcards: * and ?</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
