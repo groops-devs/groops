@@ -44,7 +44,7 @@ public:
 
   /** @brief inform this element about changed variables.
   * recursively called for all children. */
-  void updateParserResults(const VariableList &varList, bool /*recursively*/) override;
+  void updateParserResults(VariableList &varList) override;
 
 protected:
   virtual QString parseExpression(const QString &text, const VariableList &varList) const;

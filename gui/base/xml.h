@@ -74,6 +74,9 @@ public:
   /** @brief Returns the name of the node. */
   const QString &getName() const {return name;}
 
+  /** @brief Sets the name of the node. */
+  void setName(const QString &name) {this->name = name;}
+
   /** @brief Returns the text/content of the node. */
   const QString &getText() const {return text;}
 
@@ -95,7 +98,7 @@ public:
 
   /** @brief Adds a child to the node.
   * A node must not be added to the node tree multiple times. */
-  void addChild(const XmlNodePtr &child) {children.push_back(child);}
+  void addChild(const XmlNodePtr &child, bool front=false) {if(front) children.push_front(child); else children.push_back(child);}
 
   /** @brief Returns the next child.
   * The child is removed from the node tree.
@@ -109,6 +112,10 @@ public:
   /** @brief Returns the attribute with name @p name.
   * Returns a nullptr if attribute does not exist. */
   XmlAttrPtr getAttribute(const QString &name);
+
+  /** @brief Returns the attribute with name @p name.
+  * Returns a nullptr if attribute does not exist. */
+  XmlAttrPtr findAttribute(const QString &name);
 
   /** @brief Adds a new attribute to the node. */
   void addAttribute(const XmlAttrPtr &attr) {if(attr) attribute.push_back(attr);}

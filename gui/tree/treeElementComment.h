@@ -32,13 +32,16 @@ public:
   TreeElementComment(Tree *tree, TreeElementComplex *parentElement, const QString &text);
  ~TreeElementComment() {}
 
+  QString name()              const override {return "comment";}
+  QString xmlName()           const override {return "COMMENT";}
+  QString label()             const override {return QString();}
   QString type()              const override {return "COMMENT";}
   bool    optional()          const override {return true;}
   bool    unbounded()         const override {return true;}
   bool    isRenamedInSchema() const override {return false;}
 
   /** @brief Generate XML-tree. */
-  XmlNodePtr createXmlTree(bool /*createRootEvenIfEmpty*/) const override;
+  XmlNodePtr createXmlTree(bool createRootEvenIfEmpty) const override;
 
   /** @brief Values can be edited. */
   bool isEditable() const override {return true;}

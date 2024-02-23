@@ -77,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     // additional keyboard shortcuts
     // -----------------------------
     ui->editFindReplaceAction->setShortcuts({tr("Ctrl+F"), tr("Ctrl+H")});
+    ui->editRemoveAction->setShortcuts({tr("Del"), tr("Ctrl+-")});
 
     // restore window
     // --------------
@@ -125,11 +126,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     actionList.editPasteOverwriteAction    = ui->editPasteOverwriteAction;
     actionList.editAddAction               = ui->editAddAction;
     actionList.editRemoveAction            = ui->editRemoveAction;
-    actionList.editSetGlobalAction         = ui->editSetGlobalAction;
+    actionList.editAddVariableAction       = ui->editAddVariableAction;
     actionList.editSetLoopAction           = ui->editSetLoopAction;
-    actionList.editRemoveLoopAction        = ui->editRemoveLoopAction;
     actionList.editSetConditionAction      = ui->editSetConditionAction;
-    actionList.editRemoveConditionAction   = ui->editRemoveConditionAction;
     actionList.editEnabledAction           = ui->editEnabledAction;
     actionList.editEnableAllAction         = ui->editEnableAllAction;
     actionList.editDisableAllAction        = ui->editDisableAllAction;

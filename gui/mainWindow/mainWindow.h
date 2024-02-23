@@ -97,11 +97,9 @@ public:
   QAction *editPasteOverwriteAction;
   QAction *editAddAction;
   QAction *editRemoveAction;
-  QAction *editSetGlobalAction;
+  QAction *editAddVariableAction;
   QAction *editSetLoopAction;
-  QAction *editRemoveLoopAction;
   QAction *editSetConditionAction;
-  QAction *editRemoveConditionAction;
   QAction *editEnabledAction;
   QAction *editEnableAllAction;
   QAction *editDisableAllAction;
