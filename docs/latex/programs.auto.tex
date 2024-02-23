@@ -9700,7 +9700,7 @@ Name & Type & Annotation\\
 %==================================
 \section{Programs: Deprecated}
 \subsection{GnssPrn2SvnBlockVariables}\label{GnssPrn2SvnBlockVariables}
-DEPRECATED. This program will no longer work from the next release!
+DEPRECATED. This program no longer works!
 
 Setup up a \configClass{loop:platformEquipment}{loopType:platformEquipment} instead with
 \begin{itemize}
@@ -9717,20 +9717,6 @@ Setup up a \configClass{loop:platformEquipment}{loopType:platformEquipment} inst
 \end{itemize}
 Attribute this loop to programs, which uses the variables.
 
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableSVN & \hfuzz=500pt string & \hfuzz=500pt name of the SVN variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableBlock & \hfuzz=500pt string & \hfuzz=500pt name of the satellites block variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt used for GNSS PRN-to-SVN/model relation\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~time & \hfuzz=500pt time & \hfuzz=500pt used for GNSS PRN-to-SVN/model relation\\
-\hline
-\end{tabularx}
-
-This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{GridRectangular2NetCdf}\label{GridRectangular2NetCdf}

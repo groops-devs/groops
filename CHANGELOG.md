@@ -1,4 +1,7 @@
 # main
+- Interface change: Variables can now declared at any place in the config file (not only in the global section).
+                    They have local scope within the hierarchy level.
+                    Loop and conditions attributed to elements no longer need to be declared in the global section.
 - New program:      eclipseFactor2GriddedData.cpp: returns a global grid with eclipse factors.
 - New program:      orbit2EarhFixedOrbit: Rotate an orbit into a rotation earth fixed frame.
 - New program:      GriddedDataTimeSeries2PotentialCoefficients.

@@ -20,7 +20,7 @@ static const char *docstringParserText = R"(
 \subsection{Text parser}\label{general.parser:text}
 Before the mathematical expression parser evaluates the expression, a simple text parser is applied.
 The text parser is used for all input fields (also file names). It scans the text for terms like
-\verb|{variable}| and replaces it by the text content of the \verb|variable| defined in the global section.
+\verb|{variable}| and replaces it by the text content of the \verb|variable|.
 A literal '\verb|{|' character must be escaped with '\verb|#{|'.
 
 The text parser allows regex replacements in the form \verb|{text/regex/replace}|.
@@ -46,9 +46,10 @@ Examples:
 \end{itemize}
 
 The text parser also evaluates terms in the form \verb|{expression:format}| and replaces it by a formatted
-output. The \verb|format| contains the text to be written as output.
-It can contain embedded format specifiers that are replaced by the value of the expression
-and formatted as requested (also multiple times). In the following, the resulting formatted output is given in the
+output. In order not to get confused with the regex replacements, the '\verb|/|' character must be escaped
+with '\verb|#/|' in the expression. The \verb|format| contains the text to be written as output.
+It can contain embedded format specifiers that are replaced by the value of the expression and formatted
+as requested (also multiple times). In the following, the resulting formatted output is given in the
 brackets for an expression with the example value of 57493.8:
 \begin{itemize}
 \item \verb|%i|: Integer [57494]
