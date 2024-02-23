@@ -4,6 +4,7 @@
 - New program:      GriddedDataTimeSeries2PotentialCoefficients.
 - New program:      SinexMetadata2GlonassFrequencyNumber.
 - New class:        In Gravityfield/Tides/MiscAccelerations: Group.
+- New option:       Sp3Fromat2Orbit: Write all satellites (identifier is appended to each file).
 - New option:       GriddedData2PotentialCoefficients: Handle multiple input data columns at once.
 - New option:       GriddedDataReduceSampling: tesseroid volume conserving for digital elevation models.
 - New option:       Loop: optional condition for each loop step.

@@ -71,10 +71,13 @@
         <div id="content" class="container">
             <h1>Sp3Format2Orbit</h1><p>
 
-Read IGS orbits from <a href="https://files.igs.org/pub/data/format/sp3d.pdf">SP3 format</a>
+Read orbits from <a href="https://files.igs.org/pub/data/format/sp3d.pdf">SP3 format</a>
 and write an <a class="groops-file" href="fileFormat_instrument.html">instrument file (ORBIT)</a>.
 The additional <strong class="groops-config-element">outputfileClock</strong> is an <a class="groops-file" href="fileFormat_instrument.html">instrument file (MISCVALUE)</a>
-and <strong class="groops-config-element">outputfileCovariance</strong> is an <a class="groops-file" href="fileFormat_instrument.html">instrument file (COVARIANCE3D)</a>.</p><p>If <a class="groops-class" href="earthRotationType.html">earthRotation</a> is provided the data are transformed
+and <strong class="groops-config-element">outputfileCovariance</strong> is an <a class="groops-file" href="fileFormat_instrument.html">instrument file (COVARIANCE3D)</a>.</p><p>With <strong class="groops-config-element">satelliteIdentifier</strong> a single satellite can be selected if the <strong class="groops-config-element">inputfile</strong>s
+contain more than one satellites. If <strong class="groops-config-element">satelliteIdentifier</strong> is empty the first satellite is taken.
+All satellites can be selected with <strong class="groops-config-element">satelliteIdentifier</strong>=<code>&lt;all></code>.
+In this case the identifier is appended to each output file.</p><p>If <a class="groops-class" href="earthRotationType.html">earthRotation</a> is provided the data are transformed
 from terrestrial (TRF) to celestial reference frame (CRF).
 Since SP3 orbits often use the center of Earth as a reference, a correction from center
 of Earth to center of mass can be applied to the orbits by providing <a class="groops-class" href="gravityfieldType.html">gravityfield</a> (e.g. ocean tides).</p><p>See also <a class="groops-program" href="Orbit2Sp3Format.html">Orbit2Sp3Format</a>.
@@ -84,7 +87,7 @@ of Earth to center of mass can be applied to the orbits by providing <a class="g
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileOrbit</div></div></td><td>filename</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileClock</div></div></td><td>filename</td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileCovariance</div></div></td><td>filename</td><td>3x3 epoch covariance</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">satelliteIdentifier</div></div></td><td>string</td><td>e.g. L09 for GRACE A, empty: take first satellite</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">satelliteIdentifier</div></div></td><td>string</td><td>e.g. L09 for GRACE A, empty: take first satellite, <all>: identifier is appended to each file</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">earthRotation</div></div></td><td><a href="earthRotationType.html">earthRotation</a></td><td>rotation from TRF to CRF</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">gravityfield</div></div></td><td><a href="gravityfieldType.html">gravityfield</a></td><td>degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td>orbits in SP3 format</td></tr>

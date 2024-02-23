@@ -23560,7 +23560,7 @@
 			</xs:element>
 			<xs:element name="Sp3Format2Orbit">
 				<xs:annotation>
-					<xs:documentation>read IGS orbits from SP3 format</xs:documentation>
+					<xs:documentation>read orbits from SP3 format</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Orbit</xs:appinfo>
 					<xs:appinfo>tag: Covariance</xs:appinfo>
@@ -23577,7 +23577,7 @@
 						</xs:element>
 						<xs:element name="satelliteIdentifier" type="string" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>e.g. L09 for GRACE A, empty: take first satellite</xs:documentation>
+								<xs:documentation>e.g. L09 for GRACE A, empty: take first satellite, &lt;all&gt;: identifier is appended to each file</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
