@@ -38,17 +38,18 @@ class Tree: public QWidget
 {
   Q_OBJECT
 
-  QSettings   settings;
-  ActionList  actionList;
-  bool        _showResults;
-  bool        _isCurrent;
-  TreeItem   *_selectedItem;
-  Schema      _schema;
-  QString     _fileNameSchema;
-  bool        _isClean;         // file is unchanged
-  QString     _caption;         // fileName without path or something like 'newX'.
-  QString     _fileName;        // absolute path
-  QDir        workingDirectory;
+  QSettings      settings;
+  ActionList     actionList;
+  bool           _showResults;
+  bool           _isCurrent;
+  TreeItem      *_selectedItem;
+  Schema         _schema;
+  XsdComplexPtr  _xsdGlobal;
+  QString        _fileNameSchema;
+  bool           _isClean;         // file is unchanged
+  QString        _caption;         // fileName without path or something like 'newX'.
+  QString        _fileName;        // absolute path
+  QDir           workingDirectory;
 
   void clearTree();
   bool readSchema();
@@ -63,6 +64,8 @@ public:
   QUndoStack         *undoStack;
   TreeElementComplex *rootElement;
   TreeElementGlobal  *elementGlobal; // set by TreeElementGlobal
+  XsdElementPtr       xsdElementLoop;
+  XsdElementPtr       xsdElementCondition;
 
   /** @brief Is the tree selected?
   * Tree reacts in actions (like saveAs).  */
@@ -126,6 +129,8 @@ signals:
   void fileChanged(const QString &caption, const QString &fileName, bool isClean);
 
 public:
+  const std::vector<XsdElementPtr> &xsdElements() const;
+  XsdElementPtr xsdElement(const QString &type) const;
   QList<XsdElementPtr> programList() const;
 
 public slots:
@@ -157,11 +162,9 @@ public slots:
   void editPasteOverwrite();
   void editAdd();
   void editRemove();
-  void editSetGlobal();
+  void editAddVariable();
   void editSetLoop();
-  void editRemoveLoop();
   void editSetCondition();
-  void editRemoveCondition();
   void editEnabled(bool checked);
   void editEnableAll();
   void editDisableAll();
@@ -186,11 +189,13 @@ signals:
 
 private:
   QFrame     *barFileExternallyChanged;
+  QFrame     *barBrokenLinks;
   QFrame     *barUnknownElements;
   QFrame     *barSchemaRenamedElements;
+  QLabel     *labelBrokenLinks;
   QLabel     *labelUnknownElements;
   QLabel     *labelSchemaRenamedElements;
-  int         unknownCount, renamedCount;
+  int         brokenLinkCount, unknownCount, renamedCount;
   TreeWidget *treeWidget;
 
 public:
@@ -205,6 +210,7 @@ private slots:
   void treeItemClicked       (QTreeWidgetItem *item, int column);
   void treeItemDoubleClicked (QTreeWidgetItem *item, int column);
   void barFileExternallyChangedReopen();
+  void barBrokenLinksExpand();
   void barUnknownElementsExpand();
   void barUnknownElementsRemoveAll();
   void barSchemaRenamedElementsExpand();

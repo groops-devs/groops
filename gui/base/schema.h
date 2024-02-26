@@ -61,16 +61,13 @@ public:
 /** @brief XSD (XML schema) tree. */
 class Schema
 {
-  std::vector<XsdElementPtr> complexType;
-
   XsdElementPtr readElement(XmlNodePtr xmlNode, const std::map<QString, QString> &renames, bool isComplexType);
   XsdComplexPtr readComplex(XmlNodePtr xmlNode, const std::map<QString, QString> &renames);
   void          setComplexPointer(XsdElementPtr element);
 
 public:
+  std::vector<XsdElementPtr> complexType;
   XsdElementPtr rootElement;
-
-  QList<XsdElementPtr> programList() const;
 
   /** @brief reads a GROOPS XML schema.
   * @return is a valid GROOPS XML schema. */

@@ -18,6 +18,7 @@
 static const char *docstringConditionFileExist = R"(
 \subsection{FileExist}
 Check for a file or directory existing.
+Supports wildcards * for any number of characters and ? for exactly one character.
 )";
 #endif
 
@@ -51,7 +52,7 @@ inline ConditionFileExist::ConditionFileExist(Config &config)
 {
   try
   {
-    readConfig(config, "file", fileName, Config::MUSTSET,  "",  "");
+    readConfig(config, "file", fileName, Config::MUSTSET, "", "supports wildcards: * and ?");
     if(isCreateSchema(config)) return;
   }
   catch(std::exception &e)

@@ -138,6 +138,10 @@ public:
   * The child is removed from tree. If child not exists, a NULL pointer is returned. */
   XmlNodePtr getNextChild();
 
+  /** @brief Returns the next child.
+  * The child is NOT removed from tree. If child not exists, a NULL pointer is returned. */
+  XmlNodePtr findNextChild();
+
   /** @brief Has the node attributes? */
   Bool hasAttribute() const {return !attribute.empty();}
 

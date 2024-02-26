@@ -48,7 +48,7 @@ TreeElementChoice::TreeElementChoice(Tree *tree, TreeElementComplex *parentEleme
     {
       XmlNodePtr xmlNode2 = xmlNode->getNextChild();
       if(!xmlNode2)
-        throw(Exception("xml node doesn't match with schema"));
+        throw(Exception(xmlNode->getName().toStdString()+": xml node doesn't match with schema"));
       XsdElementPtr xsdChoice = xsdElement->complex->getXsdElement(xmlNode2->getName()); // find also renamed
       if(xsdChoice)
         index = findValueIndex(xsdChoice->names.front());

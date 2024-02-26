@@ -215,15 +215,3 @@ void Schema::setComplexPointer(XsdElementPtr element)
 
 /***********************************************/
 
-QList<XsdElementPtr> Schema::programList() const
-{
-  QList<XsdElementPtr> programList;
-  for(auto element : complexType)
-    if(element->names.front() == "programmeType" || element->names.front() == "programType")
-      for(auto program : element->complex->elements)
-        programList.push_back(program);
-  return programList;
-}
-
-/***********************************************/
-

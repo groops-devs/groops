@@ -30,6 +30,7 @@ class  TreeElement;
 class  TreeElementComplex;
 class  TreeElementProgram;
 class  TreeElementAdd;
+class  TreeElementLoopCondition;
 class  TreeItem;
 class  QComboBox;
 
@@ -68,13 +69,14 @@ public:
   XsdElementPtr       xsdElement;
   QString             defaultValue;
 
-  QString name()                   const {return (_label.isEmpty()) ? _name : _label;}
-  QString label()                  const {return _label;}
-  QString annotation()             const {return (xsdElement) ? QString (xsdElement->annotation) : QString();}
-  virtual QString type()           const {return (xsdElement) ? QString (xsdElement->type)       : QString();}
-  virtual bool optional()          const {return (xsdElement) ? xsdElement->optional  : true;}
-  virtual bool unbounded()         const {return (xsdElement) ? xsdElement->unbounded : false;}
-  virtual bool isRenamedInSchema() const {return (_name != _schemaName);}
+  virtual QString name()              const {return (_label.isEmpty()) ? _name : _label;}
+  virtual QString xmlName()           const {return _name;}
+  virtual QString label()             const {return _label;}
+  virtual QString annotation()        const {return (xsdElement) ? QString (xsdElement->annotation) : QString();}
+  virtual QString type()              const {return (xsdElement) ? QString (xsdElement->type)       : QString();}
+  virtual bool    optional()          const {return (xsdElement) ? xsdElement->optional  : true;}
+  virtual bool    unbounded()         const {return (xsdElement) ? xsdElement->unbounded : false;}
+  virtual bool    isRenamedInSchema() const {return (xmlName() != _schemaName);}
 
   /** @brief Is the selection without coresponding schema? (choice only) */
   virtual bool isSelectionUnknown(int /*index*/) const  {return false;}
@@ -100,13 +102,12 @@ protected:
   // -------------------------
 protected:
   int         _selectedIndex;
-  int         _valueCount;   // _selectedIndex >= _valueCount is a link
-  QStringList _valueList;    // History or Choices
+  int         _valueCount;        // _selectedIndex >= _valueCount is a link
+  int         _brokenLinkIndex;
+  QStringList _valueList;         // History or Choices
 
   class UndoCommandChangeSelectedIndex;
-  class UndoCommandAddRemoveLink;
   friend class UndoCommandChangeSelectedIndex;
-  friend class UndoCommandAddRemoveLink;
 
 public:
   /** @brief Can values be edited?. */
@@ -123,6 +124,9 @@ public:
 
   /** @brief is the selected value a link? */
   bool isLinked() const {return _selectedIndex >= _valueCount;}
+
+  /** @brief is the selected value a broken link? */
+  bool isBrokenLinked() const {return _selectedIndex == _brokenLinkIndex;}
 
   /** @brief find index of a value.
   * returns -1 if not found. */
@@ -142,6 +146,11 @@ public:
   * Is undoable. */
   void changeSelectedValue(const QString &value);
 
+  /** @brief changes the current index.
+  * - calls changeSelectedIndex
+  * Is undoable. */
+  void changeSelectedLink(const QString &link);
+
 protected:
   /** @brief changes the current index.
   * if selected index is changed:
@@ -155,33 +164,26 @@ protected:
   * @return the index of the new value */
   int insertNewValue(const QString &value, bool prepend=false);
 
-  // Inform about changes in global variables
-  // ----------------------------------------
-private:
-  /** @brief inform this element about a link.
-  * @a recursively called for all children.  */
-  virtual void informAboutLink(TreeElement *elementInGlobal, bool recursively);
+  // Inform about changes in variables
+  // ---------------------------------
+public:
+  /** @brief inform this element about a renamed link.
+   * recursively called for all children.
+   * @return next element can also be renamed. */
+  virtual bool renamedLink(const QString &oldLabel, const QString &newLabel);
+
+protected:
+  /** @brief inform this element about changed variables.
+  * recursively called for all children. */
+  virtual void updateParserResults(VariableList &varList);
 
   /** @brief inform this element about changed variables.
-  * @a recursively called for all children. */
-  virtual void updateParserResults(const VariableList &/*varList*/, bool /*recursively*/) {};
-
-  /** @brief inform this element about a new link.
-  * recursively called for all children.
-  * Is undoable. */
-  virtual void addedLink(TreeElement *elementInGlobal);
-
-  /** @brief inform this element about a removed link.
-  * recursively called for all children.
-  * Is undoable. */
-  virtual void removedLink(TreeElement *elementInGlobal);
-
-  /** @brief inform this element about a renamed link.
   * recursively called for all children. */
-  virtual void renamedLink(const QString &oldLabel, const QString &newLabel);
+  virtual void updateLinks(QMap<QString, QString> &labelTypes);
 
   friend class TreeElementComplex;
   friend class TreeElementGlobal;
+  friend class TreeElementLoopCondition;
 
   // ========================================================
 
@@ -208,42 +210,42 @@ public:
   // Set/remove loop for elements
   // ----------------------------
 private:
-  QString _loop;
-
   class UndoCommandSetLoop;
   friend class UndoCommandSetLoop;
 
 public:
-  QString loop() const {return _loop;}
+  TreeElementLoopCondition *loop;
 
   /** @brief Is it possible to set a loop for the element?
   * Loops can only be set for unbounded elements, but not for the add element or global elements. */
   virtual bool canSetLoop() const;
 
-  /** @brief Set/remove loop for element.
+  /** @brief Set loop for element.
   * Is undoable. */
-  void setLoop(const QString &loop);
+  void setLoop();
 
   // ========================================================
 
   // Set/remove conditions for elements
   // ----------------------------------
 private:
-  QString _condition;
-
   class UndoCommandSetCondition;
   friend class UndoCommandSetCondition;
 
 public:
-  QString condition() const {return _condition;}
+  TreeElementLoopCondition *condition;
 
   /** @brief Is it possible to set a condition for the element?
   * Conditions can only be set for unbounded elements, but not for the add element or global elements. */
   virtual bool canSetCondition() const;
 
-  /** @brief Set/remove condition for element.
+  /** @brief Set condition for element.
   * Is undoable. */
-  void setCondition(const QString &condition);
+  void setCondition();
+
+  /** @brief Remove loop/condition for element.
+  * Is undoable. */
+  void removeLoopOrCondition(TreeElement *element);
 
   // ========================================================
 
@@ -260,12 +262,29 @@ public:
   bool disabled() const {return _disabled;}
 
   /** @brief Is it possible to disable the element?
-  * optional or unbounded elements can be disabled. */
+   * optional or unbounded elements can be disabled. */
   virtual bool canDisabled() const;
 
   /** @brief disable/enable the element.
-  * Is undoable. */
+   * Is undoable. */
   void setDisabled(bool disabled=true);
+
+  // ========================================================
+
+  // Rename elements
+  // ---------------
+private:
+  class UndoCommandRename;
+  friend class UndoCommandRename;
+
+public:
+  /** @brief Is it possible to rename the element? */
+  virtual bool canRename() const;
+
+  /** @brief Rename the element.
+  * Is undoable.
+  * All elements informed by @a renamedLink() and @a updateParserResults(). */
+  virtual bool rename(const QString &label);
 
   // ========================================================
 

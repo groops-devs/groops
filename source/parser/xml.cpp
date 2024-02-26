@@ -73,6 +73,15 @@ XmlNodePtr XmlNode::getNextChild()
 }
 
 /***********************************************/
+
+XmlNodePtr XmlNode::findNextChild()
+{
+  if(!children.empty())
+    return children.front();
+  return nullptr;
+}
+
+/***********************************************/
 /***********************************************/
 
 XmlAttrPtr XmlNode::getAttribute(const std::string &name)

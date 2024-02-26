@@ -1,9 +1,13 @@
 # main
+- Interface change: Variables can now declared at any place in the config file (not only in the global section).
+                    They have local scope within the hierarchy level.
+                    Loop and conditions attributed to elements no longer need to be declared in the global section.
 - New program:      eclipseFactor2GriddedData.cpp: returns a global grid with eclipse factors.
 - New program:      orbit2EarhFixedOrbit: Rotate an orbit into a rotation earth fixed frame.
 - New program:      GriddedDataTimeSeries2PotentialCoefficients.
 - New program:      SinexMetadata2GlonassFrequencyNumber.
 - New class:        In Gravityfield/Tides/MiscAccelerations: Group.
+- New option:       Sp3Fromat2Orbit: Write all satellites (identifier is appended to each file).
 - New option:       GriddedData2PotentialCoefficients: Handle multiple input data columns at once.
 - New option:       GriddedDataReduceSampling: tesseroid volume conserving for digital elevation models.
 - New option:       Loop: optional condition for each loop step.
@@ -20,6 +24,7 @@
 - Other:            Updated documentation to explain parameter names.
 - Other:            GriddedData: reworked area computations.
 - Other:            IersC04IAU2000EarthOrientationParameter: works also with new file format.
+- Other:            condition->fileExist: Supports now wildcards: * and ?.
 
 # Release 2023-08-25
 - New program:      FileMove.
