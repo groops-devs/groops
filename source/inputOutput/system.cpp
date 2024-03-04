@@ -29,6 +29,7 @@ namespace fs = std::experimental::filesystem;
 
 #include <ctime>
 #include "base/importStd.h"
+#include "base/string.h"
 #include "base/time.h"
 #include "system.h"
 
@@ -106,7 +107,46 @@ Bool System::move(const FileName &fileNameOld, const FileName &fileNameNew)
 
 Bool System::exists(const FileName &fileName)
 {
-  return fs::exists(fileName.str());
+  try
+  {
+    // contains no wildcards?
+    if(fileName.str().find_first_of("*?") == std::string::npos)
+      return fs::exists(fileName.str());
+
+    // split path into parts
+    std::vector<std::string> parts = String::split(fileName.str(), "/\\");
+
+    // deepest directory without wildcards
+    std::string path;
+    UInt level = 0;
+    while((level<parts.size()-1) && (parts.at(level).find_first_of("*?") == std::string::npos))
+      path += parts.at(level++) + "/";
+    if(path.empty())
+      path = currentWorkingDirectory().str() + "/";
+
+    // search directory for matching entries
+    const std::regex pattern = String::wildcard2regex(parts.at(level));
+    for(auto const &entry : fs::directory_iterator{path})
+      if(std::regex_match(entry.path().filename().string(), pattern))
+      {
+        if(level == parts.size()-1)
+          return TRUE;
+        if(fs::is_directory(entry))
+        {
+          // replace pattern by current entry
+          std::string path2 = path + entry.path().filename().string() + "/";
+          for(UInt i=level+1; i<parts.size()-1; i++)
+            path2 += parts.at(i) + "/";
+          if(exists(path2+parts.back()))
+            return TRUE;
+        }
+      }
+    return FALSE;
+  }
+  catch(std::exception &/*e*/)
+  {
+    return FALSE;
+  }
 }
 
 /***********************************************/
@@ -130,10 +170,9 @@ std::vector<FileName> System::directoryListing(const FileName &path, const std::
   try
   {
     std::vector<FileName> files;
-    const fs::directory_iterator end;
-    for(fs::directory_iterator iter{path.str()}; iter!=end; iter++)
-      if(fs::is_regular_file(*iter) && std::regex_match(iter->path().filename().string(), pattern))
-        files.push_back(FileName(iter->path().filename().string()));
+    for(auto const &entry : fs::directory_iterator{path.str()})
+      if(fs::is_regular_file(entry) && std::regex_match(entry.path().filename().string(), pattern))
+        files.push_back(FileName(entry.path().filename().string()));
     return files;
   }
   catch(std::exception &e)

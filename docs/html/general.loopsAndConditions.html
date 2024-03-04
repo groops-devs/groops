@@ -77,16 +77,15 @@ and <a class="groops-class" href="conditionType.html">condition</a>. The easiest
 should have been created in previous programs actually exists. Further options are string comparisons and
 checking the result of a numerical expression or the return value of an external command.</p><p>With <a class="groops-program" href="LoopPrograms.html">LoopPrograms</a> it is possible to repeat the programs defined inside within a loop.
 The class <a class="groops-class" href="loopType.html">loop</a> creates a sequence to loop over and defines <a class="groops-ref" href="general.parser.html">variables</a>
-that contain the index and element for the current iteration.</p><p>If <a class="groops-class" href="loopType.html">loop</a> and <a class="groops-class" href="conditionType.html">condition</a> are defined in the global
-section (see section <a class="groops-ref" href="general.configFiles.html">Config files</a>) they become powerful tools as the
-they can be attributed to single config elements (including programs).
-Config elements with an assigned loop are repeated, with the loop variables being evaluated for each element.
-If a <a class="groops-class" href="conditionType.html">condition</a> is attributed to a config element in addition to a loop, each element within the loop
-is only created if the condition is met. Conditions can also be attributed to optional elements without an associated loop.
+that contain the index and element for the current iteration.</p><p>The <a class="groops-class" href="loopType.html">loop</a> and <a class="groops-class" href="conditionType.html">condition</a> can also be attributed to single
+config elements (including programs). Config elements with an assigned loop are repeated, with the loop variables
+being evaluated for each element. If a <a class="groops-class" href="conditionType.html">condition</a> is attributed to a config element
+in addition to a loop, each element within the loop is only created if the condition is met. Conditions can also
+be attributed to optional elements without an associated loop.
 If the condition is not met, the optional element will be treated as if it was not provided.</p><p>Example: A program needs all files in a download directory as input.
 All the <strong class="groops-config-element">inputfile</strong>s can be selected manually of course, but it is much easier to assign
 a loop variable with <strong class="groops-config-element">inputfile</strong>=<code>{loopFile}</code> and attribute a
-<a class="groops-class" href="loopType.html#directoryListing">loop:directoryListing</a> from the global section.
+<a class="groops-class" href="loopType.html#directoryListing">loop:directoryListing</a>.
 The loop lists the content of the download directory and assigns each file name to the
 <strong class="groops-config-element">variableLoopFile</strong>=<code>loopFile</code>.
 </p>

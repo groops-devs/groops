@@ -49,7 +49,8 @@ namespace System
   * @return TRUE if the file was moved. */
   Bool move(const FileName &fileNameOld, const FileName &fileNameNew);
 
-  /** @brief Checks if the given file or path corresponds to an existing file or directory. */
+  /** @brief Checks if the given file or path corresponds to an existing file or directory.
+  * Supports wildcards: * and ?. */
   Bool exists(const FileName &fileName);
 
   /** @brief Check whether fileName is an existing directory */
