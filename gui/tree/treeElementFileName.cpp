@@ -161,7 +161,6 @@ void TreeElementFileName::openFolderClicked()
     // lambda to replace beginning part of path with global variable
     auto replaceByVariable = [&](QString path, QString &variable, QString &parsedVariable)
     {
-      const VariableList &varList = tree->elementGlobal->variableList();
       for(int i=_valueCount; i<_valueList.size(); i++) // all possible links
       {
         QString parsed = parseExpression("{"+_valueList.at(i)+"}", varList);
@@ -192,7 +191,7 @@ void TreeElementFileName::openFolderClicked()
         if(!(xmlNode && parentElement))
           continue;
         xmlNode->setText(variable+tree->stripWorkingDirectory(files[i]).mid(parsedVariable.size()));
-        parentElement->addChild(this, type(), xmlNode);
+        parentElement->addChild(this, type(), "", xmlNode);
       }
       changeSelectedValue(variable+lastFile.mid(parsedVariable.count()));
     }
