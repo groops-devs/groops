@@ -9059,7 +9059,7 @@
 					<xs:sequence>
 						<xs:element name="level" type="uint">
 							<xs:annotation>
-								<xs:documentation>DDK filter level (1, 2, 3, ...)</xs:documentation>
+								<xs:documentation>DDK filter level (1, 2, 3, ..., 8)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileNormalEquation" type="filename" default="{groopsDataDir}/sphericalHarmonicsFilter/DDK/normalsKuscheGfzBlock_n2-120_orderwiseNonAlternating.dat.gz"/>
