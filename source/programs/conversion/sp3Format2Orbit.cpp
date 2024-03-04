@@ -2,7 +2,7 @@
 /**
 * @file sp3Format2Orbit.cpp
 *
-* @brief Read IGS orbits from SP3 format.
+* @brief Read orbits from SP3 format.
 *
 * @author Torsten Mayer-Guerr
 * @author Sebastian Strasser
@@ -14,10 +14,15 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Read IGS orbits from \href{https://files.igs.org/pub/data/format/sp3d.pdf}{SP3 format}
+Read orbits from \href{https://files.igs.org/pub/data/format/sp3d.pdf}{SP3 format}
 and write an \file{instrument file (ORBIT)}{instrument}.
 The additional \config{outputfileClock} is an \file{instrument file (MISCVALUE)}{instrument}
 and \config{outputfileCovariance} is an \file{instrument file (COVARIANCE3D)}{instrument}.
+
+With \config{satelliteIdentifier} a single satellite can be selected if the \config{inputfile}s
+contain more than one satellites. If \config{satelliteIdentifier} is empty the first satellite is taken.
+All satellites can be selected with \config{satelliteIdentifier}=\verb|<all>|.
+In this case the identifier is appended to each output file.
 
 If \configClass{earthRotation}{earthRotationType} is provided the data are transformed
 from terrestrial (TRF) to celestial reference frame (CRF).
@@ -46,7 +51,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(Sp3Format2Orbit, SINGLEPROCESS, "read IGS orbits from SP3 format", Conversion, Orbit, Covariance, Instrument)
+GROOPS_REGISTER_PROGRAM(Sp3Format2Orbit, SINGLEPROCESS, "read orbits from SP3 format", Conversion, Orbit, Covariance, Instrument)
 GROOPS_RENAMED_PROGRAM(Sp3file2Orbit, Sp3Format2Orbit, date2time(2020, 8, 4))
 GROOPS_RENAMED_PROGRAM(Igs2Orbit,     Sp3Format2Orbit, date2time(2020, 8, 4))
 
@@ -57,7 +62,7 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
   try
   {
     FileName              fileNameOrbit, fileNameClock, fileNameCov;
-    std::string           satId;
+    std::string           identifier;
     EarthRotationPtr      earthRotation;
     GravityfieldPtr       gravityfield;
     std::vector<FileName> fileNamesIn;
@@ -65,7 +70,7 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "outputfileOrbit",      fileNameOrbit, Config::MUSTSET,  "", "");
     readConfig(config, "outputfileClock",      fileNameClock, Config::OPTIONAL, "", "");
     readConfig(config, "outputfileCovariance", fileNameCov,   Config::OPTIONAL, "", "3x3 epoch covariance");
-    readConfig(config, "satelliteIdentifier",  satId,         Config::OPTIONAL, "", "e.g. L09 for GRACE A, empty: take first satellite");
+    readConfig(config, "satelliteIdentifier",  identifier,    Config::OPTIONAL, "", "e.g. L09 for GRACE A, empty: take first satellite, <all>: identifier is appended to each file");
     readConfig(config, "earthRotation",        earthRotation, Config::OPTIONAL, "file", "rotation from TRF to CRF");
     readConfig(config, "gravityfield",         gravityfield,  Config::DEFAULT,  R"([{"tides": {"tides": {"doodsonHarmonicTide": {"minDegree":1, "maxDegree":1}}}}])", "degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)");
     readConfig(config, "inputfile",            fileNamesIn,   Config::MUSTSET,  "", "orbits in SP3 format");
@@ -73,9 +78,9 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     // ==============================
 
-    OrbitArc        orbit;
-    MiscValueArc    clock;
-    Covariance3dArc cov;
+    std::map<std::string, OrbitArc>        orbits;
+    std::map<std::string, MiscValueArc>    clocks;
+    std::map<std::string, Covariance3dArc> covs;
     for(FileName &filenameIn : fileNamesIn)
     {
       try
@@ -85,9 +90,11 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         std::string line;
         enum TimeSystem {GPS, UTC, TAI};
         TimeSystem timeSystem = GPS;
-        Time time;
-        Vector3d cm2ceCorrection;
-        Bool positionRecord = FALSE;
+        Time        time;
+        std::string satId;
+        Rotary3d    rotation;
+        Vector3d    omega;
+        Vector3d    cm2ceCorrection;
         while(std::getline(file, line))
         {
           // Header
@@ -100,8 +107,8 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
           if(String::startsWith(line, "+"))     // satellite list and orbit accuracy lines
           {
-            if(satId.empty() && String::toInt(line.substr(3, 3)) > 0)
-              satId = line.substr(9, 3);
+            if(identifier.empty() && String::toInt(line.substr(3, 3)) > 0)
+              identifier = line.substr(9, 3);
             continue;
           }
 
@@ -130,47 +137,47 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
               time = timeUTC2GPS(time);
             else if(timeSystem == TAI)
               time -= seconds2time(DELTA_TAI_GPS);
-            positionRecord = FALSE;
 
             const SphericalHarmonics harmonics = gravityfield->sphericalHarmonics(time, 1, 1);
             const Vector coeff = harmonics.x(); // [c00, c10, c11, s11]
             cm2ceCorrection = std::sqrt(3.) * harmonics.R() * Vector3d(coeff(2), coeff(3), coeff(1));
+
+            if(earthRotation)
+            {
+              rotation = inverse(earthRotation->rotaryMatrix(time));
+              omega    = earthRotation->rotaryAxis(time);
+            }
           }
 
           // Position
           // --------
           if(String::startsWith(line, "P"))
           {
-            if(line.substr(1,3) != satId)
-              positionRecord = FALSE;
-            else
+            satId = line.substr(1,3);
+            Double x = String::toDouble(line.substr(4, 14));
+            Double y = String::toDouble(line.substr(18, 14));
+            Double z = String::toDouble(line.substr(32, 14));
+            Double c = String::toDouble(line.substr(46, 14));
+            const Vector3d pos = 1e3*Vector3d(x,y,z); // km -> m
+            if(pos.r())
             {
-              positionRecord = TRUE;
-              Double x = String::toDouble(line.substr(4, 14));
-              Double y = String::toDouble(line.substr(18, 14));
-              Double z = String::toDouble(line.substr(32, 14));
-              Double c = String::toDouble(line.substr(46, 14));
-
-              if(x != 0. && y != 0. && z != 0.)
-              {
-                OrbitEpoch epoch;
-                epoch.time     = time;
-                epoch.position = 1e3*Vector3d(x,y,z) - cm2ceCorrection; // km -> m
-                orbit.push_back(epoch);
-              }
-              if(c < 999999)
-              {
-                MiscValueEpoch epoch;
-                epoch.time  = time;
-                epoch.value = 1e-6*c; // microsecond -> second
-                clock.push_back(epoch);
-              }
+              OrbitEpoch epoch;
+              epoch.time     = time;
+              epoch.position = rotation.rotate(1e3*Vector3d(x,y,z)-cm2ceCorrection); // km -> m
+              orbits[satId].push_back(epoch);
+            }
+            if(c < 999999)
+            {
+              MiscValueEpoch epoch;
+              epoch.time  = time;
+              epoch.value = 1e-6*c; // microsecond -> second
+              clocks[satId].push_back(epoch);
             }
           }
 
           // Position covariance
           // -------------------
-          if(String::startsWith(line, "EP") && positionRecord)
+          if(String::startsWith(line, "EP"))
           {
             Double xx = String::toDouble(line.substr(4, 4));
             Double yy = String::toDouble(line.substr(9, 4));
@@ -182,18 +189,21 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
             epochCov.time = time;
             // mm -> m, correlation [1e-7] -> covariance
             epochCov.setData(Vector({std::pow(1e-3*xx,2), std::pow(1e-3*yy,2), std::pow(1e-3*zz,2), 1e-13*xy*xx*yy, 1e-13*xz*xx*zz, 1e-13*yz*yy*zz}));
-            cov.push_back(epochCov);
+            epochCov.covariance = rotation.rotate(epochCov.covariance);
+            covs[satId].push_back(epochCov);
           }
 
           // Velocity
           // --------
-          if(String::startsWith(line, "V") && (line.substr(1,3) == satId) && positionRecord)
+          if(String::startsWith(line, "V"))
           {
+            satId = line.substr(1,3);
             Double x = String::toDouble(line.substr(4, 14));
             Double y = String::toDouble(line.substr(18, 14));
             Double z = String::toDouble(line.substr(32, 14));
-            if(x != 0. && y != 0. && z != 0.)
-              orbit.at(orbit.size()-1).velocity = 0.1*Vector3d(x,y,z);  // dm/s -> m/s
+            const Vector3d vel = 0.1*Vector3d(x,y,z);  // dm/s -> m/s
+            if(vel.r())
+              orbits[satId].back().velocity = rotation.rotate(vel) + crossProduct(omega, orbits[satId].back().position);
           }
 
           // end of file
@@ -209,53 +219,56 @@ void Sp3Format2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       }
     } // for(inputFiles)
 
-    if(orbit.size() == 0)
-      throw(Exception("empty arc"));
-
-    // ==============================
-
-    // Rotation TRF -> CRF
-    // -------------------
-    if(earthRotation)
-    {
-      logStatus<<"rotation from TRF to CRF"<<Log::endl;
-      UInt idxCov = 0;
-      Single::forEach(orbit.size(), [&](UInt i)
-      {
-        const Rotary3d rotation = inverse(earthRotation->rotaryMatrix(orbit.at(i).time));
-        const Vector3d omega    = earthRotation->rotaryAxis(orbit.at(i).time);
-        orbit.at(i).position = rotation.rotate(orbit.at(i).position);
-        if(orbit.at(i).velocity.r() > 0)
-          orbit.at(i).velocity = rotation.rotate(orbit.at(i).velocity) + crossProduct(omega, orbit.at(i).position);
-        if(cov.size() && !fileNameCov.empty())
-        {
-          while((idxCov < cov.size()) && (cov.at(idxCov).time < orbit.at(i).time))
-            idxCov++;
-          if((idxCov < cov.size()) && (cov.at(idxCov).time == orbit.at(i).time))
-            cov.at(idxCov).covariance = rotation.rotate(cov.at(idxCov).covariance);
-        }
-      });
-    }
-
     // ==============================
 
     // write results
     // -------------
-    if(!fileNameOrbit.empty() && orbit.size())
+    if(identifier == "<all>")
     {
-      logStatus<<"write orbit data to file <"<<fileNameOrbit<<">"<<Log::endl;
-      InstrumentFile::write(fileNameOrbit, orbit);
-      Arc::printStatistics(orbit);
+      if(!fileNameOrbit.empty())
+        for(auto &pair : orbits)
+          if(pair.second.size())
+          {
+            logStatus<<"write orbit data to file <"<<fileNameOrbit.appendBaseName("."+pair.first)<<">"<<Log::endl;
+            InstrumentFile::write(fileNameOrbit.appendBaseName("."+pair.first), pair.second);
+          }
+      if(!fileNameClock.empty())
+        for(auto &pair : clocks)
+          if(pair.second.size())
+          {
+            logStatus<<"write clock data to file <"<<fileNameClock.appendBaseName("."+pair.first)<<">"<<Log::endl;
+            InstrumentFile::write(fileNameClock.appendBaseName("."+pair.first), pair.second);
+          }
+      if(!fileNameCov.empty())
+        for(auto &pair : covs)
+          if(pair.second.size())
+          {
+            logStatus<<"write covariance data to file <"<<fileNameCov.appendBaseName("."+pair.first)<<">"<<Log::endl;
+            InstrumentFile::write(fileNameCov.appendBaseName("."+pair.first), pair.second);
+          }
     }
-    if(!fileNameClock.empty() && clock.size())
+    else
     {
-      logStatus<<"write clock data to file <"<<fileNameClock<<">"<<Log::endl;
-      InstrumentFile::write(fileNameClock, clock);
-    }
-    if(!fileNameCov.empty() && cov.size())
-    {
-      logStatus<<"write covariance data to file <"<<fileNameCov<<">"<<Log::endl;
-      InstrumentFile::write(fileNameCov, cov);
+      // single satellite
+      if(!orbits[identifier].size())
+        logWarning<<"No data found for identifier='"<<identifier<<"'"<<Log::endl;
+
+      if(!fileNameOrbit.empty() && orbits[identifier].size())
+      {
+        logStatus<<"write orbit data to file <"<<fileNameOrbit<<">"<<Log::endl;
+        InstrumentFile::write(fileNameOrbit, orbits[identifier]);
+        Arc::printStatistics(orbits[identifier]);
+      }
+      if(!fileNameClock.empty() && clocks[identifier].size())
+      {
+        logStatus<<"write clock data to file <"<<fileNameClock<<">"<<Log::endl;
+        InstrumentFile::write(fileNameClock, clocks[identifier]);
+      }
+      if(!fileNameCov.empty() && covs[identifier].size())
+      {
+        logStatus<<"write covariance data to file <"<<fileNameCov<<">"<<Log::endl;
+        InstrumentFile::write(fileNameCov, covs[identifier]);
+      }
     }
   }
   catch(std::exception &e)

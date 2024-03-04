@@ -70,11 +70,12 @@
     <main class="container px-0 pt-2 top-buffer">
         <div id="content" class="container">
             <h1 id="general.parser">Parsers and variables</h1><p>
-The XML configuration input is evaluated by two parsers. In a first step a text parser is applied.
-In the second step mathematical expressions are resolved to a number. Basic data types in the
-global section serve as input variables for the parsers.</p><p><h2 id="expression">Mathematical expression parser</h2><p>
+The XML configuration file is evaluated by two parsers. In a first step a text parser is applied.
+In the second step mathematical expressions are resolved to a number.
+Variables (see section <a class="groops-ref" href="general.configFiles.html#variables">variables</a>) can be referenced via their
+name directly for the expression parser or in the form <code>{name}</code> for the text parser.</p><p><h2 id="expression">Mathematical expression parser</h2><p>
 In all input fields that accept numbers (int, uint, double, angle, time) numerical
-expressions are also allowed. Values from the global section can be used as variables. The following
+expressions are also allowed. Declared variables can be accessed via their name. The following
 operations and functions are defined:
 <ul>
 
@@ -103,7 +104,7 @@ Condition: <code>if(c,x,y)</code>: If the first argument is true (not 0), the se
 <h2 id="text">Text parser</h2><p>
 Before the mathematical expression parser evaluates the expression, a simple text parser is applied.
 The text parser is used for all input fields (also file names). It scans the text for terms like
-<code>{variable}</code> and replaces it by the text content of the <code>variable</code> defined in the global section.
+<code>{variable}</code> and replaces it by the text content of the <code>variable</code>.
 A literal '<code>{</code>' character must be escaped with '<code>#{</code>'.</p><p>The text parser allows regex replacements in the form <code>{text/regex/replace}</code>.
 All matches of <code>regex</code> in the <code>text</code> are replaced by <code>replace</code>.
 Possible <code>{variables}</code> in the three parts are evaluated beforehand.
@@ -134,9 +135,10 @@ Capturing groups <code>()</code> can be accessed by <code>$1</code>, <code>$2</c
       Note the escaping <code>#{</code>.
 </li></ul>
 </p><p>The text parser also evaluates terms in the form <code>{expression:format}</code> and replaces it by a formatted
-output. The <code>format</code> contains the text to be written as output.
-It can contain embedded format specifiers that are replaced by the value of the expression
-and formatted as requested (also multiple times). In the following, the resulting formatted output is given in the
+output. In order not to get confused with the regex replacements, the '<code>/</code>' character must be escaped
+with '<code>#/</code>' in the expression. The <code>format</code> contains the text to be written as output.
+It can contain embedded format specifiers that are replaced by the value of the expression and formatted
+as requested (also multiple times). In the following, the resulting formatted output is given in the
 brackets for an expression with the example value of 57493.8:
 <ul>
 

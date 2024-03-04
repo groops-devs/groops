@@ -72,7 +72,7 @@ bool TreeElementBool::overwrite(const QString &type, XmlNodePtr xmlNode, bool co
       return false;
 
     tree->undoStack->beginMacro("overwrite "+name());
-    if(baseOverwrite(xmlNode), contentOnly)
+    if(baseOverwrite(xmlNode, contentOnly))
       changeSelectedIndex(xmlNode->getText() == "1");
     tree->undoStack->endMacro();
     return true;

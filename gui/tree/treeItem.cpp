@@ -20,6 +20,7 @@
 #include "tree/treeElementComplex.h"
 #include "tree/treeElementGlobal.h"
 #include "tree/treeElementProgram.h"
+#include "tree/treeElementLoopCondition.h"
 #include "tree/treeElementComment.h"
 #include "tree/treeElementUnknown.h"
 #include "tree/treeItem.h"
@@ -63,7 +64,11 @@ void TreeItem::init(TreeElement *treeElement)
 
     if(dynamic_cast<TreeElementComment*>(treeElement))
       icon = iconDisabled = QIcon(":/icons/scalable/element-comment.svg");
-    else if(dynamic_cast<TreeElementGlobal*>(treeElement->parentElement))
+    else if(dynamic_cast<TreeElementLoopCondition*>(treeElement) && (treeElement->type() == "loopType"))
+      icon = iconDisabled = QIcon(":/icons/scalable/loop-set.svg");
+    else if(dynamic_cast<TreeElementLoopCondition*>(treeElement) && (treeElement->type() == "conditionType"))
+      icon = iconDisabled = QIcon(":/icons/scalable/condition-set.svg");
+    else if(!treeElement->label().isEmpty())
     {
       icon         = QIcon(":/icons/scalable/link.svg");
       iconDisabled = QIcon(":/icons/scalable/link-disabled.svg");
@@ -158,15 +163,9 @@ void TreeItem::updateIcon()
 
 void TreeItem::updateName()
 {
-  QString loop      = treeElement()->loop();
-  QString condition = treeElement()->condition();
-  QString text      = treeElement()->name();
-
-  if(!loop.isEmpty())
-    text += " [loop=" + loop + "]";
-  if(!condition.isEmpty())
-    text += " [condition=" + condition + "]";
-
+  QString text = treeElement()->name();
+  if(treeElement()->loop)      text += " [loop]";
+  if(treeElement()->condition) text += " [condition]";
   setText(0, text);
 }
 
@@ -183,7 +182,9 @@ void TreeItem::updateValue()
     text += "   [="+result+"]";
   setText(1, text);
   QIcon icon;
-  if(treeElement()->isLinked())
+  if(treeElement()->isBrokenLinked())
+    icon = QIcon(":/icons/scalable/link-broken.svg");
+  else if(treeElement()->isLinked())
     icon = QIcon(":/icons/scalable/link.svg");
   else if(dynamic_cast<TreeElementChoice*>(treeElement()) && dynamic_cast<TreeElementChoice*>(treeElement())->isSelectionUnknown(treeElement()->selectedIndex()))
     icon = QIcon(":/icons/scalable/element-unknown.svg");

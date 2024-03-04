@@ -53,7 +53,7 @@ XmlNodePtr TreeElementSimple::createXmlTree(bool createRootEvenIfEmpty) const
 {
   try
   {
-    if(selectedValue().isEmpty() && !createRootEvenIfEmpty)
+    if(label().isEmpty() && selectedValue().isEmpty() && !createRootEvenIfEmpty)
        return XmlNodePtr(nullptr);
     XmlNodePtr xmlNode = TreeElement::createXmlBaseNode();
     if(!isLinked())
@@ -73,9 +73,8 @@ void TreeElementSimple::setSelectedIndex(int index)
   try
   {
     TreeElement::setSelectedIndex(index);
-
-    if(tree->elementGlobal && tree->rootElement)
-      updateParserResults(tree->elementGlobal->variableList(), false/*recursively*/);
+    if(parentElement)
+      parentElement->updateParserResultsInScope();
   }
   catch(std::exception &e)
   {
@@ -85,8 +84,14 @@ void TreeElementSimple::setSelectedIndex(int index)
 
 /***********************************************/
 
-void TreeElementSimple::updateParserResults(const VariableList &varList, bool /*recursively*/)
+void TreeElementSimple::updateParserResults(VariableList &varList)
 {
+  TreeElement::updateParserResults(varList);
+
+  // is variable? -> add to list
+  if(!label().isEmpty() && !disabled())
+    varList.setVariable(label().toStdString(), (isLinked() ? "{"+selectedValue()+"}" : selectedValue()).toStdString());
+
   QString resultNew = parseExpression((isLinked()) ? "{"+selectedValue()+"}" : selectedValue(), varList);
   if(resultNew == result)
     return;
@@ -127,7 +132,7 @@ bool TreeElementSimple::overwrite(const QString &type, XmlNodePtr xmlNode, bool 
       return false;
 
     tree->undoStack->beginMacro("overwrite "+name());
-    if(baseOverwrite(xmlNode), contentOnly)
+    if(baseOverwrite(xmlNode, contentOnly))
       changeSelectedValue(xmlNode->getText());
     tree->undoStack->endMacro();
     return true;

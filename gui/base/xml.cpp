@@ -71,6 +71,16 @@ XmlAttrPtr XmlNode::getAttribute(const QString &name)
 }
 
 /***********************************************/
+
+XmlAttrPtr XmlNode::findAttribute(const QString &name)
+{
+  auto iter = std::find_if(attribute.begin(), attribute.end(), [&name](auto attr) {return attr->name == name;});
+  if(iter == attribute.end())
+    return XmlAttrPtr();
+  return *iter;
+}
+
+/***********************************************/
 /***********************************************/
 
 XmlNodePtr XmlNode::parse(QXmlStreamReader &reader, QString &errorMessage)

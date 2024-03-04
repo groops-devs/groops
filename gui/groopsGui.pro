@@ -62,8 +62,7 @@ SOURCES += main.cpp \
            mainWindow/tabs.cpp \
            mainWindow/mainWindow.cpp \
            mainWindow/sideBar.cpp \
-           addGlobalDialog/addGlobalDialog.cpp \
-           setLoopConditionDialog/setLoopConditionDialog.cpp \
+           addVariableDialog/addVariableDialog.cpp \
            mainWindow/schemaSelector.cpp \
            $$GROOPS_DIR/source/parser/expressionParser.cpp \
            $$GROOPS_DIR/source/parser/stringParser.cpp \
@@ -87,6 +86,7 @@ HEADERS  += \
             tree/treeElementAdd.h \
             tree/treeElementGlobal.h \
             tree/treeElementProgram.h \
+            tree/treeElementLoopCondition.h \
             tree/treeElementComment.h \
             tree/treeElementUnknown.h \
             executeDialog/executeDialog.h \
@@ -97,8 +97,7 @@ HEADERS  += \
             mainWindow/tabs.h \
             mainWindow/mainWindow.h \
             mainWindow/sideBar.h \
-            addGlobalDialog/addGlobalDialog.h \
-            setLoopConditionDialog/setLoopConditionDialog.h \
+            addVariableDialog/addVariableDialog.h \
             mainWindow/schemaSelector.h \
             base/importGroops.h \
             $$GROOPS_DIR/source/parser/expressionParser.h \
@@ -116,8 +115,7 @@ FORMS += mainWindow/mainWindow.ui \
          findReplaceDock/findReplaceDock.ui \
          programDialog/programDialog.ui \
          settingsDialog/settingsPathDialog.ui \
-         addGlobalDialog/addGlobalDialog.ui \
-         setLoopConditionDialog/setLoopConditionDialog.ui \
+         addVariableDialog/addVariableDialog.ui \
          mainWindow/schemaSelector.ui \
 
 RESOURCES += resources/icons.qrc

@@ -126,7 +126,11 @@
 			<xs:element name="fileExist">
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="file" type="filename"/>
+						<xs:element name="file" type="filename">
+							<xs:annotation>
+								<xs:documentation>supports wildcards: * and ?</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -9055,7 +9059,7 @@
 					<xs:sequence>
 						<xs:element name="level" type="uint">
 							<xs:annotation>
-								<xs:documentation>DDK filter level (1, 2, 3, ...)</xs:documentation>
+								<xs:documentation>DDK filter level (1, 2, 3, ..., 8)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileNormalEquation" type="filename" default="{groopsDataDir}/sphericalHarmonicsFilter/DDK/normalsKuscheGfzBlock_n2-120_orderwiseNonAlternating.dat.gz"/>
@@ -23643,7 +23647,7 @@
 			</xs:element>
 			<xs:element name="Sp3Format2Orbit">
 				<xs:annotation>
-					<xs:documentation>read IGS orbits from SP3 format</xs:documentation>
+					<xs:documentation>read orbits from SP3 format</xs:documentation>
 					<xs:appinfo>tag: Conversion</xs:appinfo>
 					<xs:appinfo>tag: Orbit</xs:appinfo>
 					<xs:appinfo>tag: Covariance</xs:appinfo>
@@ -23660,7 +23664,7 @@
 						</xs:element>
 						<xs:element name="satelliteIdentifier" type="string" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>e.g. L09 for GRACE A, empty: take first satellite</xs:documentation>
+								<xs:documentation>e.g. L09 for GRACE A, empty: take first satellite, &lt;all&gt;: identifier is appended to each file</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
@@ -23814,30 +23818,6 @@
 					<xs:documentation>This program no longer works! See documentation for help.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="variableSVN" type="string" minOccurs="0" default="svn">
-							<xs:annotation>
-								<xs:documentation>name of the SVN variable</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="variableBlock" type="string" minOccurs="0" default="block">
-							<xs:annotation>
-								<xs:documentation>name of the satellites block variable</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileTransmitterInfo" type="filename" default="{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs14/transmitterInfo_igs14.{prn}.xml">
-							<xs:annotation>
-								<xs:documentation>used for GNSS PRN-to-SVN/model relation</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="time" type="time">
-							<xs:annotation>
-								<xs:documentation>used for GNSS PRN-to-SVN/model relation</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
 			</xs:element>
 			<xs:element name="GridRectangular2NetCdf">
 				<xs:annotation>

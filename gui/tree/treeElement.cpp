@@ -29,6 +29,7 @@
 #include "tree/treeElementGlobal.h"
 #include "tree/treeElementProgram.h"
 #include "tree/treeElementAdd.h"
+#include "tree/treeElementLoopCondition.h"
 #include "tree/treeElement.h"
 
 /***********************************************/
@@ -84,12 +85,15 @@ TreeElement::TreeElement(Tree *tree, TreeElementComplex *parentElement, XsdEleme
     this->parentElement    = parentElement;
     this->xsdElement       = xsdElement;
     if(xsdElement)
-      this->defaultValue  = QString (xsdElement->defaultValue);
+      this->defaultValue = QString (xsdElement->defaultValue);
     if(!defaultOverride.isEmpty())
-      this->defaultValue  = defaultOverride;
+      this->defaultValue   = defaultOverride;
     this->_selectedIndex   = -1;
+    this->_brokenLinkIndex = -1;
     this->_valueCount      = 0;
     this->_pushComment     = false;
+    this->loop             = nullptr;
+    this->condition        = nullptr;
     this->_disabled        = false;
     this->_elementAdd      = nullptr;
     this->_item            = nullptr;
@@ -104,26 +108,51 @@ TreeElement::TreeElement(Tree *tree, TreeElementComplex *parentElement, XsdEleme
     {
       _name = xmlNode->getName();
 
-      readAttribute(xmlNode, "label",     _label);
-      readAttribute(xmlNode, "loop",      _loop);
-      readAttribute(xmlNode, "condition", _condition);
-      readAttribute(xmlNode, "comment",   _comment);
+      QString loopLabel;
+      readAttribute(xmlNode, "loop", loopLabel);
+      if(!loopLabel.isEmpty())
+      {
+        XmlNodePtr xmlLoop;
+        if(loopLabel == "_localLoop_")
+          xmlLoop = xmlNode->getChild("loopType");
+        else
+        {
+          xmlLoop = XmlNode::create("loopType");
+          writeAttribute(xmlLoop, "link", loopLabel);
+        }
+        loop = new TreeElementLoopCondition(tree, this, tree->xsdElementLoop, xmlLoop);
+      }
 
+      QString conditionLabel;
+      readAttribute(xmlNode, "condition", conditionLabel);
+      if(!conditionLabel.isEmpty())
+      {
+        XmlNodePtr xmlCondition;
+        if(conditionLabel == "_localCondition_")
+          xmlCondition = xmlNode->getChild("conditionType");
+        else
+        {
+          xmlCondition = XmlNode::create("conditionType");
+          writeAttribute(xmlCondition, "link", conditionLabel);
+        }
+        condition = new TreeElementLoopCondition(tree, this, tree->xsdElementCondition, xmlCondition);
+      }
+
+      readAttribute(xmlNode, "label",   _label);
+      readAttribute(xmlNode, "comment", _comment);
       XmlAttrPtr attr = xmlNode->getAttribute("disabled");
       if(attr && (attr->text == "1"))
         _disabled = true;
 
       // is this a link?
-      attr = xmlNode->getAttribute("link");
-      if(attr)
+      QString link;
+      readAttribute(xmlNode, "link", link);
+      if(!link.isEmpty())
       {
-        _valueList.insert(_valueCount, attr->text);
+        _valueList.insert(_valueCount, link);
         _selectedIndex = _valueCount;
       }
     }
-
-    if(_name.isEmpty())
-      _name = "comment";
   }
   catch(std::exception &e)
   {
@@ -136,6 +165,8 @@ TreeElement::TreeElement(Tree *tree, TreeElementComplex *parentElement, XsdEleme
 TreeElement::~TreeElement()
 {
   removeItem();
+  delete loop;
+  delete condition;
   setElementAdd(nullptr);
 }
 
@@ -145,13 +176,37 @@ XmlNodePtr TreeElement::createXmlBaseNode() const
 {
   try
   {
-    XmlNodePtr xmlNode(new XmlNode(_name));
+    XmlNodePtr xmlNode = XmlNode::create(xmlName());
     if(!label().isEmpty())     writeAttribute(xmlNode, "label",     label());
-    if(!loop().isEmpty())      writeAttribute(xmlNode, "loop",      loop());
-    if(!condition().isEmpty()) writeAttribute(xmlNode, "condition", condition());
-    if(!comment().isEmpty())   writeAttribute(xmlNode, "comment",   comment());
-    if(isLinked())             writeAttribute(xmlNode, "link",      selectedValue());
     if(disabled())             writeAttribute(xmlNode, "disabled",  "1");
+    if(isLinked())             writeAttribute(xmlNode, "link",      selectedValue());
+
+    if(loop)
+    {
+      if(loop->isLinked())
+        writeAttribute(xmlNode, "loop", loop->selectedValue());
+      else
+      {
+        writeAttribute(xmlNode, "loop", "_localLoop_");
+        XmlNodePtr xmlLoop = loop->createXmlTree(true);
+        xmlNode->addChild(xmlLoop);
+      }
+    }
+
+    if(condition)
+    {
+      if(condition->isLinked())
+        writeAttribute(xmlNode, "condition", condition->selectedValue());
+      else
+      {
+        writeAttribute(xmlNode, "condition", "_localCondition_");
+        XmlNodePtr xmlCondition = condition->createXmlTree(true);
+        xmlNode->addChild(xmlCondition);
+      }
+    }
+
+    if(!comment().isEmpty())
+      writeAttribute(xmlNode, "comment",   comment());
     return xmlNode;
   }
   catch(std::exception &e)
@@ -253,6 +308,28 @@ void TreeElement::changeSelectedValue(const QString &value)
 }
 
 /***********************************************/
+
+void TreeElement::changeSelectedLink(const QString &link)
+{
+  try
+  {
+    int selectedIndex = findLinkIndex(link);
+    if(selectedIndex < 0)
+    {
+      selectedIndex = _valueList.size();
+      _valueList.push_back(link);
+      if(comboBox)
+        comboBox->insertItem(comboBox->count(), QIcon(":/icons/scalable/link.svg"), link);
+    }
+    changeSelectedIndex(selectedIndex);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
 /***********************************************/
 
 void TreeElement::setSelectedIndex(int index)
@@ -265,11 +342,6 @@ void TreeElement::setSelectedIndex(int index)
     if(index == _selectedIndex)
       return;
     _selectedIndex = index;
-
-    // change of global variable?
-    // not called during first initialization (rootElement is not set yet)
-    if(dynamic_cast<TreeElementGlobal*>(parentElement) && tree->rootElement)
-      dynamic_cast<TreeElementGlobal*>(parentElement)->updateVariableList();
 
     // send auto comment
     if(_pushComment && parentElement)
@@ -312,6 +384,8 @@ int TreeElement::insertNewValue(const QString &value, bool prepend)
     _valueCount++;
     if(_selectedIndex >= index)
       _selectedIndex++;
+    if(_brokenLinkIndex >= index)
+      _brokenLinkIndex++;
 
     // update comboBox
     if(comboBox)
@@ -323,6 +397,8 @@ int TreeElement::insertNewValue(const QString &value, bool prepend)
       {
         if(_selectedIndex >= i)
           _selectedIndex--;
+        if(_brokenLinkIndex >= i)
+          _brokenLinkIndex--;
         _valueList.removeAt(i);
         _valueCount--;
         if(comboBox)
@@ -342,63 +418,67 @@ int TreeElement::insertNewValue(const QString &value, bool prepend)
 }
 
 /***********************************************/
-/***********************************************/
 
-class TreeElement::UndoCommandAddRemoveLink : public TreeElement::UndoCommand
+void TreeElement::updateParserResults(VariableList &varList)
 {
-  bool    isAdd;
-  QString label;
-
-public:
-  UndoCommandAddRemoveLink(TreeElement *element, const QString &label, bool isAdd)
-  : UndoCommand(element, (isAdd ? "add" : "remove")), isAdd(isAdd), label(label)  {}
-  ~UndoCommandAddRemoveLink() {}
-
-  void redo();
-  void undo() {redo();}
-};
-
-/***********************************************/
-
-void TreeElement::UndoCommandAddRemoveLink::redo()
-{
-  if(isAdd)
-  {
-    isAdd = false;
-    treeElement->_valueList.push_back(label);
-    if(treeElement->comboBox)
-      treeElement->comboBox->insertItem(treeElement->comboBox->count(), QIcon(":/icons/scalable/link.svg"), label);
-  }
-  else
-  {
-    isAdd = true;
-    int index = treeElement->findLinkIndex(label);
-    if(index < treeElement->_selectedIndex)
-      treeElement->_selectedIndex--;
-    treeElement->_valueList.removeAt(index);
-    if(treeElement->comboBox)
-      treeElement->comboBox->removeItem(index);
-  }
-}
-
-/***********************************************/
-/***********************************************/
-
-void TreeElement::informAboutLink(TreeElement *element, bool /*recursively*/)
-{
-  if((element != this) && (element->type() == type()) && (findLinkIndex(element->label()) < 0))
-    _valueList.push_back(element->label());
+  if(loop)      {VariableList varListLocal = varList; loop->updateParserResults(varListLocal);}
+  if(condition) {VariableList varListLocal = varList; condition->updateParserResults(varListLocal);}
 }
 
 /***********************************************/
 
-void TreeElement::addedLink(TreeElement *element)
+void TreeElement::updateLinks(QMap<QString, QString> &labelTypes)
 {
   try
   {
-    // is this link already in the list?
-    if((element != this) && (element->type() == type()) && (findLinkIndex(element->label()) < 0))
-      tree->undoStack->push(new UndoCommandAddRemoveLink(this, element->label(), true/*add*/));
+    if(loop)      {auto labelTypesLocal = labelTypes; loop->updateLinks(labelTypesLocal);}
+    if(condition) {auto labelTypesLocal = labelTypes; condition->updateLinks(labelTypesLocal);}
+
+    if(!label().isEmpty() && !disabled())
+      labelTypes[label()] = type();
+
+    QString link;
+    if(isLinked())
+      link = selectedValue();
+
+    // remove all links
+    while(_valueList.size() > _valueCount)
+      _valueList.removeAt(_valueCount);
+    while(comboBox && (comboBox->count() > _valueCount))
+      comboBox->removeItem(_valueCount);
+
+    // refill links
+    for(auto iter = labelTypes.keyValueBegin(); iter != labelTypes.keyValueEnd(); iter++)
+      if((iter->first != label()) && (iter->second == type())) // should not linked to self
+      {
+        _valueList.push_back(iter->first);
+        if(comboBox)
+          comboBox->insertItem(comboBox->count(), QIcon(":/icons/scalable/link.svg"), iter->first);
+      }
+
+    // restore selected link
+    _brokenLinkIndex = -1;
+    if(!link.isEmpty())
+    {
+      int selectedIndex = findLinkIndex(link);
+      if(selectedIndex < 0)
+      {
+        selectedIndex = _valueList.size();
+        _brokenLinkIndex = selectedIndex;
+        _valueList.push_back(link);
+        if(comboBox)
+          comboBox->insertItem(comboBox->count(), QIcon(":/icons/scalable/link-broken.svg"), link);
+      }
+      setSelectedIndex(selectedIndex);
+      if(comboBox && (comboBox->currentIndex() != selectedIndex))
+      {
+        comboBox->setCurrentIndex(selectedIndex);
+        comboBoxSetToolTip();
+      }
+
+      if(item())
+        item()->updateValue();
+    }
   }
   catch(std::exception &e)
   {
@@ -406,72 +486,34 @@ void TreeElement::addedLink(TreeElement *element)
   }
 }
 
+
+/***********************************************/
 /***********************************************/
 
-void TreeElement::removedLink(TreeElement *element)
+bool TreeElement::renamedLink(const QString &oldLabel, const QString &newLabel)
 {
   try
   {
-    if(element==this)
-      return;
+    // Is this a new variable with same name (hide scope of renamed)
+    if(label() == oldLabel)
+      return false;
 
-    // remove loop
-    if(element->label() == _loop)
-      setLoop("");
-
-    // remove condition
-    if(element->label() == _condition)
-      setCondition("");
-
-    // is this link in the list?
-    int index = findLinkIndex(element->label());
-    if(index < 0)
-      return;
-
-    if(index == _selectedIndex)
-      overwrite(element->type(), element->createXmlTree(), true/*contentOnly*/);
-
-    tree->undoStack->push(new UndoCommandAddRemoveLink(this, element->label(), false/*add*/));
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-void TreeElement::renamedLink(const QString &oldLabel, const QString &newLabel)
-{
-  try
-  {
-    // is this link set as loop?
-    if(loop() == oldLabel)
-    {
-      _loop = newLabel;
-      if(item())
-        item()->updateName();
-    }
-
-    // is this link set as condition?
-    if(condition() == oldLabel)
-    {
-      _condition = newLabel;
-      if(item())
-        item()->updateName();
-    }
+    if(loop)      loop->renamedLink(oldLabel, newLabel);
+    if(condition) condition->renamedLink(oldLabel, newLabel);
 
     // is this link in the list?
     int index = findLinkIndex(oldLabel);
-    if(index<0)
-      return;
+    if(index < 0)
+      return true;
 
     // replace label
     _valueList.replace(index, newLabel);
     if(item())
       item()->updateValue();
-    if(comboBox && index < comboBox->count())
+    if(comboBox && (index < comboBox->count()))
       comboBox->setItemText(index, newLabel);
+
+    return true;
   }
   catch(std::exception &e)
   {
@@ -570,19 +612,45 @@ bool TreeElement::baseOverwrite(XmlNodePtr xmlNode, bool contentOnly)
 {
   if(!contentOnly)
   {
-    QString loop, condition, comment;
-    readAttribute(xmlNode, "loop",      loop);
-    readAttribute(xmlNode, "condition", condition);
+    QString loopLabel, conditionLabel, comment;
+    readAttribute(xmlNode, "loop",      loopLabel);
+    readAttribute(xmlNode, "condition", conditionLabel);
     readAttribute(xmlNode, "comment",   comment);
-    setLoop(loop);
-    setCondition(condition);
     setComment(comment);
+
+    if(!loopLabel.isEmpty())
+    {
+      XmlNodePtr xmlLoop;
+      if(loopLabel == "_localLoop_")
+        xmlLoop = xmlNode->getChild("loopType");
+      else
+      {
+        xmlLoop = XmlNode::create("loopType");
+        writeAttribute(xmlLoop, "link", loopLabel);
+      }
+      if(canSetLoop())
+        loop = new TreeElementLoopCondition(tree, this, tree->xsdElementLoop, xmlLoop);
+    }
+
+    if(!conditionLabel.isEmpty())
+    {
+      XmlNodePtr xmlCondition;
+      if(conditionLabel == "_localCondition_")
+        xmlCondition = xmlNode->getChild("conditionType");
+      else
+      {
+        xmlCondition = XmlNode::create("conditionType");
+        writeAttribute(xmlCondition, "link", conditionLabel);
+      }
+      if(canSetCondition())
+        condition = new TreeElementLoopCondition(tree, this, tree->xsdElementCondition, xmlCondition);
+    }
   }
 
   QString link;
   readAttribute(xmlNode, "link", link);
   if(!link.isEmpty())
-    changeSelectedIndex(findLinkIndex(link));
+    changeSelectedLink(link);
   return link.isEmpty();
 }
 
@@ -591,11 +659,11 @@ bool TreeElement::baseOverwrite(XmlNodePtr xmlNode, bool contentOnly)
 
 class TreeElement::UndoCommandSetLoop : public TreeElement::UndoCommand
 {
-  QString loop;
+  TreeElementLoopCondition *loop;
 
 public:
-  UndoCommandSetLoop(TreeElement *treeElement, QString loop)
-    : UndoCommand(treeElement, (loop.isEmpty() ? "remove loop "+treeElement->loop()+" from" : "set loop "+loop+" for")),
+  UndoCommandSetLoop(TreeElement *treeElement, TreeElementLoopCondition *loop)
+    : UndoCommand(treeElement, (loop ? "set loop for" : "remove loop from")),
       loop(loop) {}
 
   void redo();
@@ -611,11 +679,28 @@ void TreeElement::UndoCommandSetLoop::redo()
     if(treeElement->item())
       tree->setSelectedItem(treeElement->item());
 
-    QString oldLoop = treeElement->loop();
-    treeElement->_loop = loop;
-    loop = oldLoop;
+    std::swap(loop, treeElement->loop);
+
+    if(treeElement->loop && treeElement->parentElement)
+    {
+      treeElement->parentElement->updateParserResultsInScope();
+      treeElement->parentElement->updateLinksInScope();
+      tree->treeChanged();
+    }
+
     if(treeElement->item())
+    {
+      if(treeElement->loop)
+      {
+        treeElement->loop->createItem(treeElement->item(), nullptr/*after*/);
+        tree->setSelectedItem(treeElement->loop->item());
+      }
+      else
+        loop->removeItem();
+
+      treeElement->item()->updateIcon();
       treeElement->item()->updateName();
+    }
   }
   catch(std::exception &e)
   {
@@ -627,19 +712,19 @@ void TreeElement::UndoCommandSetLoop::redo()
 
 bool TreeElement::canSetLoop() const
 {
-  if(dynamic_cast<TreeElementGlobal*>(parentElement))
+  if(loop || !label().isEmpty())
     return false;
   return unbounded();
 }
 
 /***********************************************/
 
-void TreeElement::setLoop(const QString &loop)
+void TreeElement::setLoop()
 {
   try
   {
-    if((loop != _loop) && (canSetLoop() || loop.isEmpty()))
-      tree->undoStack->push(new UndoCommandSetLoop(this, loop));
+    if(canSetLoop())
+      tree->undoStack->push(new UndoCommandSetLoop(this, new TreeElementLoopCondition(tree, this, tree->xsdElementLoop, nullptr)));
   }
   catch(std::exception &e)
   {
@@ -652,11 +737,11 @@ void TreeElement::setLoop(const QString &loop)
 
 class TreeElement::UndoCommandSetCondition : public TreeElement::UndoCommand
 {
-  QString condition;
+  TreeElementLoopCondition *condition;
 
 public:
-  UndoCommandSetCondition(TreeElement *treeElement, QString condition)
-    : UndoCommand(treeElement, (condition.isEmpty() ? "remove condition "+treeElement->condition()+" from" : "set condition "+condition+" for")),
+  UndoCommandSetCondition(TreeElement *treeElement, TreeElementLoopCondition *condition)
+    : UndoCommand(treeElement, (condition ?  "set condition for" : "remove condition from")),
       condition(condition) {}
 
   void redo();
@@ -672,11 +757,28 @@ void TreeElement::UndoCommandSetCondition::redo()
     if(treeElement->item())
       tree->setSelectedItem(treeElement->item());
 
-    QString oldCondition = treeElement->condition();
-    treeElement->_condition = condition;
-    condition = oldCondition;
+    std::swap(condition, treeElement->condition);
+
+    if(treeElement->condition && treeElement->parentElement)
+    {
+      treeElement->parentElement->updateParserResultsInScope();
+      treeElement->parentElement->updateLinksInScope();
+      tree->treeChanged();
+    }
+
     if(treeElement->item())
+    {
+      if(treeElement->condition)
+      {
+        treeElement->condition->createItem(treeElement->item(), (treeElement->loop ? treeElement->loop->item() : nullptr)/*after*/);
+        tree->setSelectedItem(treeElement->condition->item());
+      }
+      else
+        condition->removeItem();
+
+      treeElement->item()->updateIcon();
       treeElement->item()->updateName();
+    }
   }
   catch(std::exception &e)
   {
@@ -688,19 +790,36 @@ void TreeElement::UndoCommandSetCondition::redo()
 
 bool TreeElement::canSetCondition() const
 {
-  if(dynamic_cast<TreeElementGlobal*>(parentElement))
+  if(condition || !label().isEmpty())
     return false;
   return optional() || unbounded();
 }
 
 /***********************************************/
 
-void TreeElement::setCondition(const QString &condition)
+void TreeElement::setCondition()
 {
   try
   {
-    if((condition != _condition) && (canSetCondition() || condition.isEmpty()))
-      tree->undoStack->push(new UndoCommandSetCondition(this, condition));
+    if(canSetCondition())
+      tree->undoStack->push(new UndoCommandSetCondition(this, new TreeElementLoopCondition(tree, this, tree->xsdElementCondition, nullptr)));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+void TreeElement::removeLoopOrCondition(TreeElement *element)
+{
+  try
+  {
+    if(element == loop)
+      tree->undoStack->push(new UndoCommandSetLoop(this, nullptr));
+    if(element == condition)
+      tree->undoStack->push(new UndoCommandSetCondition(this, nullptr));
   }
   catch(std::exception &e)
   {
@@ -734,8 +853,17 @@ void TreeElement::UndoCommandSetEnabled::redo()
       tree->setSelectedItem(treeElement->item());
 
     std::swap(disabled, treeElement->_disabled);
+
+    if(!treeElement->label().isEmpty() && treeElement->parentElement)
+    {
+      treeElement->parentElement->updateParserResultsInScope();
+      treeElement->parentElement->updateLinksInScope();
+    }
+
     if(treeElement->item())
       treeElement->item()->updateIcon();
+
+    tree->treeChanged();
   }
   catch(std::exception &e)
   {
@@ -760,6 +888,93 @@ void TreeElement::setDisabled(bool disabled)
   {
     if((disabled != _disabled) && canDisabled())
       tree->undoStack->push(new UndoCommandSetEnabled(this, disabled));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+class TreeElement::UndoCommandRename : public TreeElement::UndoCommand
+{
+  QString label;
+
+public:
+  UndoCommandRename(TreeElement *treeElement, QString label)
+  : UndoCommand(treeElement, "rename"), label(label)
+  {
+    setText("rename "+treeElement->name()+" to "+label);
+  }
+
+  void redo();
+  void undo() {redo();}
+};
+
+/***********************************************/
+
+void TreeElement::UndoCommandRename::redo()
+{
+  try
+  {
+    std::swap(label, treeElement->_label);
+
+    // renames links in other elements
+    auto parent = treeElement->parentElement;
+    if(parent)
+    {
+      const QVector<TreeElement*> &children = parent->children();
+      bool stopped = false;
+      for(int i=children.indexOf(treeElement)+1; i<children.size(); i++)
+        if(!children.at(i)->renamedLink(label, treeElement->_label))
+          {stopped = true; break;}
+
+      // variables in global section are globally valid -> repeat with parent of global
+      if(!stopped && dynamic_cast<TreeElementGlobal*>(parent) && parent->parentElement)
+      {
+        parent = parent->parentElement; // parent of global -> groops
+        const QVector<TreeElement*> &children = parent->children();
+        for(int i=children.indexOf(treeElement->parentElement)+1; i<children.size(); i++) // start after global
+          if(!children.at(i)->renamedLink(label, treeElement->_label))
+            break;
+      }
+
+      parent->updateParserResultsInScope();
+      parent->updateLinksInScope();
+      tree->treeChanged();
+    }
+
+    if(treeElement->item())
+    {
+      tree->setSelectedItem(treeElement->item());
+      treeElement->item()->updateName();
+    }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+bool TreeElement::canRename() const
+{
+  return !label().isEmpty();
+}
+
+/***********************************************/
+
+bool TreeElement::rename(const QString &label)
+{
+  try
+  {
+    if(!canRename() || label.isEmpty() || (label == this->label()))
+      return false;
+    tree->undoStack->push(new UndoCommandRename(this, label));
+    return true;
   }
   catch(std::exception &e)
   {
@@ -853,6 +1068,10 @@ TreeItem *TreeElement::createItem(TreeItem *parent, TreeItem *after)
       _item->updateValue();
       _item->updateComment();
     }
+
+    if(loop)      loop->createItem(_item, nullptr/*after*/);
+    if(condition) condition->createItem(_item, (loop ? loop->item() : nullptr)/*after*/);
+
     return _item;
   }
   catch(std::exception &e)
@@ -867,6 +1086,13 @@ void TreeElement::removeItem()
 {
   try
   {
+    if(!_item)
+      return;
+    if(loop)      loop->removeItem();
+    if(condition) condition->removeItem();
+    auto parentItem = dynamic_cast<QTreeWidgetItem*>(_item)->parent();
+    if(parentItem)
+      parentItem->removeChild(_item);
     delete _item;
     _item = nullptr;
   }
@@ -899,7 +1125,7 @@ QComboBox *TreeElement::createComboBox(bool isEditable)
     for(int i=0; i<_valueCount; i++)
       comboBox->insertItem(comboBox->count(), _valueList[i]);
     for(int i=_valueCount; i<_valueList.size(); i++)
-      comboBox->insertItem(comboBox->count(), QIcon(":/icons/scalable/link.svg"), _valueList[i]);
+      comboBox->insertItem(comboBox->count(), ((i == _brokenLinkIndex) ? QIcon(":/icons/scalable/link-broken.svg") : QIcon(":/icons/scalable/link.svg")), _valueList[i]);
     comboBox->setCurrentIndex(_selectedIndex);
 
     connect(comboBox, SIGNAL(activated(int)), this, SLOT(comboBoxActivated(int)));
@@ -962,6 +1188,7 @@ void TreeElement::UndoCommandEdit::redo()
     if(treeElement->item())
       tree->setSelectedItem(treeElement->item());
     treeElement->setSelectedIndex(treeElement->insertNewValue(newValue, true/*prepend*/));
+    tree->treeChanged();
   }
   catch(std::exception &e)
   {
@@ -982,6 +1209,7 @@ void TreeElement::UndoCommandEdit::undo()
       treeElement->setSelectedIndex(treeElement->findLinkIndex(oldValue));
     else
       treeElement->setSelectedIndex(treeElement->insertNewValue(oldValue, true/*prepend*/));
+    tree->treeChanged();
   }
   catch(std::exception &e)
   {
@@ -1009,6 +1237,8 @@ bool TreeElement::UndoCommandEdit::mergeWith(const QUndoCommand *command)
         treeElement->_valueCount--;
         if(treeElement->_selectedIndex >= index)
           treeElement->_selectedIndex--;
+        if(treeElement->_brokenLinkIndex >= index)
+          treeElement->_brokenLinkIndex--;
 
         // update comboBox
         auto comboBox = treeElement->comboBox;

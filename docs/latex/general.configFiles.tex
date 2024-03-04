@@ -40,31 +40,39 @@ The elements of a configuration file can be one of the following basic data type
 \item \verb|gnssType|: GNSS observation type according to the RINEX 3 definition
 \end{itemize}
 The first 5 data types also allow numerical expressions as input in addition to pure numbers.
-Next to these basic types there are a number of complex data types called classes,
+In addition to these basic types, there are a large number of complex data types called classes,
 which are described in section~\reference{Classes}{classes}.
 
-\subsection{Global section}\label{general.configFiles:globalSection}
-In addition to programs a config file can also include multiple global elements.
-These elements are comparable to read-only global variables in programming and can be referenced from any program.
-This can be done by either linking an element directly to a global element or
-by using the name of the global element as a variable in an input field (see section~\reference{Parsers and variables}{general.parser}).
-While elements can only be directly linked to global elements of the same type, this also supports complex data types
+\subsection{Variables}\label{general.configFiles:variables}
+In addition to programs a config file can also include elements called variables.
+These elements are comparable to read-only variables in programming and can be referenced from any program and config element.
+This can be done by either linking an element directly to a variable or
+by using the name as a variable in an expression of an input field (see section~\reference{Parsers and variables}{general.parser}).
+While elements can only be directly linked to variables of the same type, this also supports complex data types
 such as \configClass{gravityfield}{gravityfieldType}. Thus it is possible to, for example, define a reference gravity field once
 in the global section and use it multiple times in different programs.
 
-One special global element is \verb|groopsDataDir|, which is used as a variable in most default
-file paths throughout many GROOPS programs. Since this global element is going to be needed in
+Variables can be declared anywhere in the configuration file. Variables in locations other than the global section
+have a local scope and hide global variables or variables from a hierarchy level above. They are valid after
+declaration until the end of the hierarchy level is reached or a new variable with the same name is declared.
+
+Variables are not evaluated directly when they are declared, but only later when they are used in a config element.
+This means, for example, that a variable \verb|satelliteFile| with \verb|data/swarm_orbit_{loopTime:%D}.dat|
+can be declared in the global section without the variable \verb|loopTime| having to be known at this time.
+
+One special variable is \verb|groopsDataDir|, which is used as a variable in most default
+file paths throughout many GROOPS programs. Since this variable is going to be needed in
 most config files, it is recommended to define it in a template file that is used when creating
 new config files in the GUI. See section~\reference{Graphical User Interface (GUI)}{general.gui}
 for details on how to set up a template file.
 
-Global elements can be manipulated when running a config file by passing the argument \verb|--global <name>=<value>|.
+Global variables can be manipulated when running a config file by passing the argument \verb|--global <name>=<value>|.
 For example, running the command
 \begin{verbatim}
   groops --global timeStart=58849 --global satellite=swarm config.xml
 \end{verbatim}
-runs the config file \verb|config.xml| but replaces the values of the global elements \verb|timeStart|
-and \verb|satellite| with \verb|58849| and \verb|swarm|, respectively. If a global element passed as
+runs the config file \verb|config.xml| but replaces the values of the global variable \verb|timeStart|
+and \verb|satellite| with \verb|58849| and \verb|swarm|, respectively. If a global variable passed as
 an argument does not already exist in the config file, it will be added with the type \verb|string|.
 Only the basic data types listed above are supported. This feature can be useful when running GROOPS
 from the command line or from an external script file.

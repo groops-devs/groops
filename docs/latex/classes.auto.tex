@@ -170,6 +170,7 @@ Test for conditions. See \reference{Loop and conditions}{general.loopsAndConditi
 
 \subsection{FileExist}
 Check for a file or directory existing.
+Supports wildcards * for any number of characters and ? for exactly one character.
 
 
 \keepXColumns
@@ -177,7 +178,7 @@ Check for a file or directory existing.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~file & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~file & \hfuzz=500pt filename & \hfuzz=500pt supports wildcards: * and ?\\
 \hline
 \end{tabularx}
 
@@ -7879,7 +7880,7 @@ Orderwise filtering with the DDK filter by Kusche et al. 2009.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~level & \hfuzz=500pt uint & \hfuzz=500pt DDK filter level (1, 2, 3, ...)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~level & \hfuzz=500pt uint & \hfuzz=500pt DDK filter level (1, 2, 3, ..., 8)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileNormalEquation & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hline
 \end{tabularx}

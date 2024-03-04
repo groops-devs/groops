@@ -20,13 +20,14 @@
         <file>scalable/help-about.svg</file>
         <file>scalable/help-contents.svg</file>
         <file>scalable/link.svg</file>
+        <file>scalable/link-broken.svg</file>
+        <file>scalable/link-disabled.svg</file>
         <file>scalable/loop-remove.svg</file>
         <file>scalable/loop-set.svg</file>
         <file>scalable/run.svg</file>
         <file>scalable/settings.svg</file>
         <file>scalable/view-refresh.svg</file>
         <file>scalable/warning.svg</file>
-        <file>scalable/link-disabled.svg</file>
         <file>scalable/element-comment.svg</file>
         <file>scalable/element-unbounded.svg</file>
         <file>scalable/element.svg</file>
