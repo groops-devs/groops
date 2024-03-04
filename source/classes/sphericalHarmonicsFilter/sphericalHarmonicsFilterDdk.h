@@ -53,11 +53,14 @@ inline SphericalHarmonicsFilterDdk::SphericalHarmonicsFilterDdk(Config &config)
 
     renameDeprecatedConfig(config, "inputfileNormalequation", "inputfileNormalEquation", date2time(2020, 6, 3));
 
-    readConfig(config, "level",                   level,  Config::MUSTSET, "", "DDK filter level (1, 2, 3, ...)");
+    readConfig(config, "level",                   level,  Config::MUSTSET, "", "DDK filter level (1, 2, 3, ..., 8)");
     readConfig(config, "inputfileNormalEquation", inName, Config::MUSTSET, "{groopsDataDir}/sphericalHarmonicsFilter/DDK/normalsKuscheGfzBlock_n2-120_orderwiseNonAlternating.dat.gz", "");
     if(isCreateSchema(config)) return;
 
-    const Double factor = std::pow(10, 15-level);
+    const std::array<Double,9> factors = {0, 1e14, 1e13, 1e12, 5e11, 1e11, 5e10, 1e10, 5e9};
+    if(level >= factors.size())
+      throw(Exception("level higher than 8 not implemented."));
+    const Double factor = factors.at(level);
     const Double power  = 4.0;
 
     Matrix N, n;
