@@ -20,7 +20,7 @@
 static const char *docstringParserExpression = R"(
 \subsection{Mathematical expression parser}\label{general.parser:expression}
 In all input fields that accept numbers (int, uint, double, angle, time) numerical
-expressions are also allowed. Values from the global section can be used as variables. The following
+expressions are also allowed. Declared variables can be accessed via their name. The following
 operations and functions are defined:
 \begin{itemize}
 \item Constants:    \verb|pi()|, \verb|rho()=180/pi()|, \verb|nan()|, \verb|c()|: light velocity,

@@ -20,6 +20,8 @@
 
 class TreeElementBool : public TreeElement
 {
+  Q_OBJECT
+
 public:
   TreeElementBool(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
                   const QString &defaultOverride, XmlNodePtr xmlNode, bool fillWithDefaults);

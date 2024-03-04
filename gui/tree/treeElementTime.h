@@ -29,6 +29,8 @@ class TreeElementTime : public TreeElementSimple
 {
   Q_OBJECT
 
+  VariableList varList;
+
 public:
   TreeElementTime(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
                   const QString &defaultOverride, XmlNodePtr xmlNode, bool fillWithDefaults)
@@ -38,6 +40,10 @@ public:
    * calls TreeElementSimple::selectIndex
   * Updates the timeEditor. */
   void setSelectedIndex(int index) override;
+
+  /** @brief inform this element about changed variables.
+  * recursively called for all children. */
+  void updateParserResults(VariableList &varList) override {this->varList = varList; TreeElementSimple::updateParserResults(varList);}
 
   /** @brief creates an editable combo box + dateTimeEdit. */
   QWidget *createEditor() override;

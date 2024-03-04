@@ -9541,10 +9541,15 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{Sp3Format2Orbit}\label{Sp3Format2Orbit}
-Read IGS orbits from \href{https://files.igs.org/pub/data/format/sp3d.pdf}{SP3 format}
+Read orbits from \href{https://files.igs.org/pub/data/format/sp3d.pdf}{SP3 format}
 and write an \file{instrument file (ORBIT)}{instrument}.
 The additional \config{outputfileClock} is an \file{instrument file (MISCVALUE)}{instrument}
 and \config{outputfileCovariance} is an \file{instrument file (COVARIANCE3D)}{instrument}.
+
+With \config{satelliteIdentifier} a single satellite can be selected if the \config{inputfile}s
+contain more than one satellites. If \config{satelliteIdentifier} is empty the first satellite is taken.
+All satellites can be selected with \config{satelliteIdentifier}=\verb|<all>|.
+In this case the identifier is appended to each output file.
 
 If \configClass{earthRotation}{earthRotationType} is provided the data are transformed
 from terrestrial (TRF) to celestial reference frame (CRF).
@@ -9562,7 +9567,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileClock & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileCovariance & \hfuzz=500pt filename & \hfuzz=500pt 3x3 epoch covariance\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~satelliteIdentifier & \hfuzz=500pt string & \hfuzz=500pt e.g. L09 for GRACE A, empty: take first satellite\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~satelliteIdentifier & \hfuzz=500pt string & \hfuzz=500pt e.g. L09 for GRACE A, empty: take first satellite, \$<\$all\$>\$: identifier is appended to each file\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt rotation from TRF to CRF\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt orbits in SP3 format\\
@@ -9695,7 +9700,7 @@ Name & Type & Annotation\\
 %==================================
 \section{Programs: Deprecated}
 \subsection{GnssPrn2SvnBlockVariables}\label{GnssPrn2SvnBlockVariables}
-DEPRECATED. This program will no longer work from the next release!
+DEPRECATED. This program no longer works!
 
 Setup up a \configClass{loop:platformEquipment}{loopType:platformEquipment} instead with
 \begin{itemize}
@@ -9712,20 +9717,6 @@ Setup up a \configClass{loop:platformEquipment}{loopType:platformEquipment} inst
 \end{itemize}
 Attribute this loop to programs, which uses the variables.
 
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableSVN & \hfuzz=500pt string & \hfuzz=500pt name of the SVN variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableBlock & \hfuzz=500pt string & \hfuzz=500pt name of the satellites block variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt used for GNSS PRN-to-SVN/model relation\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~time & \hfuzz=500pt time & \hfuzz=500pt used for GNSS PRN-to-SVN/model relation\\
-\hline
-\end{tabularx}
-
-This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{GridRectangular2NetCdf}\label{GridRectangular2NetCdf}

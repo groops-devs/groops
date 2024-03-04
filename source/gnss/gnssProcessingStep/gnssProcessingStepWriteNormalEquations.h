@@ -127,9 +127,13 @@ inline void GnssProcessingStepWriteNormalEquations::process(GnssProcessingStep::
     {
       state.normals.reorder(indexVector, blockIndex);
       rhs = reorder(rhs, indexVector);
+
       if((eliminationCount > 0) && !constraintsOnly)
       {
-        state.regularizeNotUsedParameters(0, eliminationBlocks);
+        std::vector<ParameterName> parameterNames;
+        for(UInt i=0; i<eliminationCount; i++)
+          parameterNames.push_back((indexVector.at(i) != NULLINDEX) ? state.normalEquationInfo.parameterNames().at(indexVector.at(i)) : ParameterName());
+        state.regularizeNotUsedParameters(0, eliminationBlocks, parameterNames);
         state.normals.cholesky(TRUE, 0, eliminationBlocks, TRUE);
         state.normals.triangularTransSolve(rhs, 0, eliminationBlocks);
         state.obsCount -= eliminationCount;
