@@ -199,6 +199,8 @@ void SimulateStarCameraGnss::run(Config &config, Parallel::CommunicatorPtr /*com
 
     logStatus<<"read orbit file <"<<fileNameOrbit<<">"<<Log::endl;
     OrbitArc orbitArc = InstrumentFile::read(fileNameOrbit);
+    if(orbitArc.size()==0)
+      throw(Exception("empty orbit file"));
     if(orbitArc.size() && orbitArc.at(0).velocity.r()==0.)
       throw(Exception("orbit does not contain velocity data"));
 
