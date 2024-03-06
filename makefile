@@ -63,7 +63,7 @@ init:
 	if [ ! -d "$(GROOPS_bld)" ]; then mkdir -p $(GROOPS_bld); fi
 	
 groops_:
-	cd $(GROOPS_bld); cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(GROOPS); $(PMAKE); make install 
+	cd $(GROOPS_bld); cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../..; $(PMAKE); make install 
 
 groopsgui_:
 	cd $(GROOPS_gui); $(QMAKE); $(PMAKE)
