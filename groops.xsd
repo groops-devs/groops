@@ -21518,11 +21518,6 @@
 								<xs:documentation>used to check antennas</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfileSinex" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/igs_with_former.snx">
-							<xs:annotation>
-								<xs:documentation>used to cross-check station log with SINEX file</xs:documentation>
-							</xs:annotation>
-						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>

@@ -24,7 +24,7 @@ and \configFile{transmitterList}{stringList} files for the respective GNSS and f
 #include "programs/program.h"
 #include "base/string.h"
 #include "inputOutput/file.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 #include "files/fileStringTable.h"
 
 /***** CLASS ***********************************/
@@ -35,7 +35,7 @@ class GnssAntex2AntennaDefinition
 {
   Bool getLine(InFile &file, std::string &line, std::string &label, Bool throwException=FALSE) const;
   Bool testLabel(const std::string &labelInLine, const std::string &label, Bool optional=TRUE) const;
-  void addTransmitter(const GnssAntennaInfo &antennaInfo, const std::string &markerName, const std::string &markerNumber, std::vector<GnssStationInfo> &transmitterList);
+  void addTransmitter(const PlatformGnssAntenna &platformAntenna, const std::string &markerName, const std::string &markerNumber, std::vector<Platform> &transmitterList);
   void addAntenna(const GnssAntennaDefinitionPtr &antenna, std::vector<GnssAntennaDefinitionPtr> &antennaList);
 
   enum Type
@@ -84,7 +84,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
     // ==============================
 
     std::vector<GnssAntennaDefinitionPtr> antennaListStation, antennaListGps, antennaListGlonass, antennaListGalileo, antennaListBeiDou, antennaListQzss;
-    std::vector<GnssStationInfo>          transmitterListGps, transmitterListGlonass, transmitterListGalileo, transmitterListBeiDou, transmitterListQzss;
+    std::vector<Platform>                 transmitterListGps, transmitterListGlonass, transmitterListGalileo, transmitterListBeiDou, transmitterListQzss;
 
     // Open file
     // ---------
@@ -105,7 +105,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
     for(;;)
     {
       std::string atxSVN, atxCOSPAR;
-      GnssAntennaInfo antennaInfo;
+      PlatformGnssAntenna antennaInfo;
 
       if(!getLine(file, line, label, FALSE))
         break;
@@ -344,17 +344,17 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
     antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListQzss.begin(),    antennaListQzss.end());
     writeAntenna(outFileNameAntennaTransmitter, antennaListTransmitter);
 
-    auto writeTransmitterInfo = [] (const FileName &outFileNameTransmitterInfo, const std::vector<GnssStationInfo> &transmitterList)
+    auto writeTransmitterInfo = [] (const FileName &outFileNameTransmitterInfo, const std::vector<Platform> &transmitterList)
     {
       if(!outFileNameTransmitterInfo.empty() && transmitterList.size())
       {
         logStatus<<"save transmitter info to <"<<outFileNameTransmitterInfo<<">"<< Log::endl;
         for(const auto &transmitter : transmitterList)
-          writeFileGnssStationInfo(outFileNameTransmitterInfo.appendBaseName("."+transmitter.markerNumber), transmitter);
+          writeFilePlatform(outFileNameTransmitterInfo.appendBaseName("."+transmitter.markerNumber), transmitter);
       }
     };
 
-    std::vector<GnssStationInfo> transmitterList;
+    std::vector<Platform> transmitterList;
     transmitterList.insert(transmitterList.end(), transmitterListGps.begin(),     transmitterListGps.end());
     transmitterList.insert(transmitterList.end(), transmitterListGlonass.begin(), transmitterListGlonass.end());
     transmitterList.insert(transmitterList.end(), transmitterListGalileo.begin(), transmitterListGalileo.end());
@@ -381,7 +381,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
     writeSvnBlockTable(outFileNameSvnBlockTableBeiDou,  antennaListBeiDou);
     writeSvnBlockTable(outFileNameSvnBlockTableQzss,    antennaListQzss);
 
-    auto writeTransmitterList = [] (const FileName &outFileNameTransmitterList, const std::vector<GnssStationInfo> &transmitterList)
+    auto writeTransmitterList = [] (const FileName &outFileNameTransmitterList, const std::vector<Platform> &transmitterList)
     {
       if(!outFileNameTransmitterList.empty() && transmitterList.size())
       {
@@ -442,7 +442,7 @@ Bool GnssAntex2AntennaDefinition::testLabel(const std::string &labelInLine, cons
 
 /***********************************************/
 
-void GnssAntex2AntennaDefinition::addTransmitter(const GnssAntennaInfo &antennaInfo, const std::string &markerName, const std::string &markerNumber, std::vector<GnssStationInfo> &transmitterList)
+void GnssAntex2AntennaDefinition::addTransmitter(const PlatformGnssAntenna &antennaInfo, const std::string &markerName, const std::string &markerNumber, std::vector<Platform> &transmitterList)
 {
   try
   {
@@ -453,20 +453,20 @@ void GnssAntex2AntennaDefinition::addTransmitter(const GnssAntennaInfo &antennaI
 
     if(idSat>=transmitterList.size()) // new PRN?
     {
-      GnssStationInfo satelliteGps;
+      Platform satelliteGps;
       satelliteGps.markerName   = markerName;
       satelliteGps.markerNumber = markerNumber;
       transmitterList.push_back(satelliteGps);
     }
 
-    transmitterList.at(idSat).antenna.push_back(antennaInfo);
+    transmitterList.at(idSat).equipments.push_back(std::make_shared<PlatformGnssAntenna>(antennaInfo));
 
-    GnssReceiverInfo receiverInfo;
+    PlatformGnssReceiver receiverInfo;
     receiverInfo.name      = antennaInfo.name;
     receiverInfo.serial    = antennaInfo.serial;
     receiverInfo.timeStart = antennaInfo.timeStart;
     receiverInfo.timeEnd   = antennaInfo.timeEnd;
-    transmitterList.at(idSat).receiver.push_back(receiverInfo);
+    transmitterList.at(idSat).equipments.push_back(std::make_shared<PlatformGnssReceiver>(receiverInfo));
   }
   catch(std::exception &e)
   {
