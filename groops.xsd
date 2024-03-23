@@ -4523,6 +4523,21 @@
 											<xs:documentation>loop over receivers</xs:documentation>
 										</xs:annotation>
 									</xs:element>
+									<xs:element name="slrStation">
+										<xs:annotation>
+											<xs:documentation>loop over SLR stations</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="slrRetroReflector">
+										<xs:annotation>
+											<xs:documentation>loop over laser retroreflectors</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="satelliteIdentifier">
+										<xs:annotation>
+											<xs:documentation>loop over satellite identifiers</xs:documentation>
+										</xs:annotation>
+									</xs:element>
 									<xs:element name="other">
 										<xs:annotation>
 											<xs:documentation>loop over other types</xs:documentation>
@@ -15819,6 +15834,165 @@
 												<xs:element name="name" type="string"/>
 												<xs:element name="serial" type="string" minOccurs="0"/>
 												<xs:element name="version" type="string" minOccurs="0"/>
+												<xs:element name="comment" type="string" minOccurs="0"/>
+												<xs:element name="timeStart" type="time" minOccurs="0"/>
+												<xs:element name="timeEnd" type="time" minOccurs="0"/>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="laserRetroReflector">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string">
+													<xs:annotation>
+														<xs:documentation>e.g. GFZ, ITE, IPIE</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="serial" type="string" minOccurs="0"/>
+												<xs:element name="comment" type="string" minOccurs="0"/>
+												<xs:element name="timeStart" type="time" minOccurs="0"/>
+												<xs:element name="timeEnd" type="time" minOccurs="0"/>
+												<xs:element name="positionX" type="double" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] optial reference point RP in satellite system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="positionY" type="double" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] optial reference point RP in satellite system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="positionZ" type="double" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] optial reference point RP in satellite system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="rotationX" type="angle" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[degree] from local/vehicle to LRR system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="rotationY" type="angle" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[degree] from local/vehicle to LRR system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="rotationZ" type="angle" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[degree] from local/vehicle to LRR system</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="flipX" type="boolean" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>flip x-axis (after rotation)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="flipY" type="boolean" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>flip y-axis (after rotation)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="flipZ" type="boolean" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>flip z-axis (after rotation)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="range" type="double" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] range bias (only without range matrix)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="inputfileRangeMatrix" type="filename" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>[m] (azimuth(0..360) x zenith(0..dZenit*rows)</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="dZenit" type="angle" minOccurs="0" default="10">
+													<xs:annotation>
+														<xs:documentation>[degree] increment of range matrix</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="geodeticSatellite">
+										<xs:annotation>
+											<xs:documentation>e.g. LAGEOS</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string"/>
+												<xs:element name="serial" type="string" minOccurs="0"/>
+												<xs:element name="comment" type="string" minOccurs="0"/>
+												<xs:element name="timeStart" type="time" minOccurs="0"/>
+												<xs:element name="timeEnd" type="time" minOccurs="0"/>
+												<xs:element name="range" type="double">
+													<xs:annotation>
+														<xs:documentation>[m] standard center-of-mass correction</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="slrStation">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string">
+													<xs:annotation>
+														<xs:documentation>CDP SOD 8-digit No.</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="serial" type="string" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>IERS DOMES</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="comment" type="string" minOccurs="0"/>
+												<xs:element name="timeStart" type="time" minOccurs="0"/>
+												<xs:element name="timeEnd" type="time" minOccurs="0"/>
+												<xs:element name="positionX" type="double" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] exccentricity in north</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="positionY" type="double" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] exccentricity in east</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="positionZ" type="double" minOccurs="0" default="0">
+													<xs:annotation>
+														<xs:documentation>[m] exccentricity in up</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="satelliteIdentifier">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string"/>
+												<xs:element name="serial" type="string" minOccurs="0"/>
+												<xs:element name="cospar" type="string" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>Satellite COSPAR ID</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="norad" type="string" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>Satellite Catalog (NORAD) Number</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="sic" type="string" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>SIC Code</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="sp3" type="string" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>SP3</xs:documentation>
+													</xs:annotation>
+												</xs:element>
 												<xs:element name="comment" type="string" minOccurs="0"/>
 												<xs:element name="timeStart" type="time" minOccurs="0"/>
 												<xs:element name="timeEnd" type="time" minOccurs="0"/>
