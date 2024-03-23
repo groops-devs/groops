@@ -1906,6 +1906,11 @@
 								<xs:documentation>(0 = unconstrained) sigma [m] at Earth&apos;s surface for no-net rotation constraint on station coordinates</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="noNetScaleSigma" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>(0 = unconstrained) sigma [m] for no-net scale constraint on station coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="huber" type="double" minOccurs="0" default="2.5">
 							<xs:annotation>
 								<xs:documentation>stations &gt; huber*sigma0 are downweighted in no-net constraint</xs:documentation>

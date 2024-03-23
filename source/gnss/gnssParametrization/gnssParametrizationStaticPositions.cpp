@@ -7,6 +7,7 @@
 *
 * @author Torsten Mayer-Guerr
 * @author Sebastian Strasser
+* @author HongzhanZhao
 * @date 2021-01-23
 *
 */
@@ -27,7 +28,7 @@ GnssParametrizationStaticPositions::GnssParametrizationStaticPositions(Config &c
 {
   try
   {
-    sigmaNoNetTranslation = sigmaNoNetRotation = 0;
+    sigmaNoNetTranslation = sigmaNoNetRotation = sigmaNoNetScale = 0;
     huber = 1e99; huberPower = 0;
 
     readConfig(config, "name",                      name,                   Config::OPTIONAL, "parameter.staticPositions", "used for parameter selection");
@@ -39,6 +40,7 @@ GnssParametrizationStaticPositions::GnssParametrizationStaticPositions(Config &c
     readConfig(config, "inputfileNoNetPositions",   fileNameNoNetPositions, Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/position/igs/igs20/stationPosition.{station}.dat", "variable {station} available, precise coordinates used for no-net constraints (in TRF)");
     readConfig(config, "noNetTranslationSigma",     sigmaNoNetTranslation,  Config::OPTIONAL, "0.01",  "(0 = unconstrained) sigma [m] for no-net translation constraint on station coordinates");
     readConfig(config, "noNetRotationSigma",        sigmaNoNetRotation,     Config::OPTIONAL, "0.001", "(0 = unconstrained) sigma [m] at Earth's surface for no-net rotation constraint on station coordinates");
+    readConfig(config, "noNetScaleSigma",           sigmaNoNetScale,        Config::OPTIONAL, "0",     "(0 = unconstrained) sigma [m] for no-net scale constraint on station coordinates");
     readConfig(config, "huber",                     huber,                  Config::OPTIONAL, "2.5",   "stations > huber*sigma0 are downweighted in no-net constraint");
     readConfig(config, "huberPower",                huberPower,             Config::OPTIONAL, "1.5",   "stations > huber: sigma=(e/huber)^huberPower*sigma0");
     if(isCreateSchema(config)) return;
@@ -87,7 +89,7 @@ void GnssParametrizationStaticPositions::init(Gnss *gnss, Parallel::Communicator
 
     // no net-positions
     // ----------------
-    if(sigmaNoNetRotation || sigmaNoNetTranslation)
+    if(sigmaNoNetRotation || sigmaNoNetTranslation || sigmaNoNetScale)
     {
       std::vector<const Platform*> platforms(gnss->receivers.size(), nullptr);
       for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
@@ -122,9 +124,9 @@ void GnssParametrizationStaticPositions::init(Gnss *gnss, Parallel::Communicator
           throw(Exception(recv->name()+" for no-net constraints must be selected for position estimation too"));
 
       const UInt countStation = std::count(selectedNoNetReceivers.begin(), selectedNoNetReceivers.end(), TRUE);
-      logInfo<<"  "<<countStation<<" stations contribute to the computation of net translation/rotation"<<Log::endl;
+      logInfo<<"  "<<countStation<<" stations contribute to the computation of net translation/rotation/scale"<<Log::endl;
       if(!countStation)
-        throw(Exception("no stations contribute to the computation of net translation/rotation"));
+        throw(Exception("no stations contribute to the computation of net translation/rotation/scale"));
     }
   }
   catch(std::exception &e)
@@ -156,7 +158,7 @@ void GnssParametrizationStaticPositions::initParameter(GnssNormalEquationInfo &n
       logInfo<<countPara%"%9i receiver static position parameters"s<<Log::endl;
 
     applyConstraint = isEnabled(normalEquationInfo, nameConstraint) && !normalEquationInfo.isEachReceiverSeparately
-                    && (sigmaNoNetRotation || sigmaNoNetTranslation) && countPara;
+                    && (sigmaNoNetRotation || sigmaNoNetTranslation || sigmaNoNetScale) && countPara;
 
     // synchronize positions
     for(auto recv : gnss->receivers)
@@ -222,6 +224,7 @@ void GnssParametrizationStaticPositions::constraints(const GnssNormalEquationInf
     UInt noNetCount = 0;
     const UInt idxNNT = noNetCount; if(sigmaNoNetTranslation) noNetCount += 3;
     const UInt idxNNR = noNetCount; if(sigmaNoNetRotation)    noNetCount += 3;
+    const UInt idxNNS = noNetCount; if(sigmaNoNetScale)       noNetCount += 1;
 
     UInt stationCount = 0;
     for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
@@ -245,6 +248,13 @@ void GnssParametrizationStaticPositions::constraints(const GnssNormalEquationInf
           A(3*i+1, idxNNR+0) = -pos.z(); A(3*i+1, idxNNR+2) =  pos.x();
           A(3*i+2, idxNNR+0) =  pos.y(); A(3*i+2, idxNNR+1) = -pos.x();
         }
+        if(sigmaNoNetScale)
+        {
+          const Vector3d posForScale = noNetPos.at(idRecv)/DEFAULT_R;
+          A(3*i+0, idxNNS+0) = posForScale.x();
+          A(3*i+1, idxNNS+0) = posForScale.y();
+          A(3*i+2, idxNNS+0) = posForScale.z();
+        }
         i++;
       }
 
@@ -266,13 +276,16 @@ void GnssParametrizationStaticPositions::constraints(const GnssNormalEquationInf
 
     if(sigmaNoNetTranslation) logStatus<<"apply no-net translation to receiver positions, apriori ("<<1e3*x(idxNNT+0)%"%.1f, "s<<1e3*x(idxNNT+1)%"%.1f, "s<<1e3*x(idxNNT+2)%"%.1f) mm"s<<Log::endl;
     if(sigmaNoNetRotation)    logStatus<<"apply no-net rotation to receiver positions,    apriori ("<<1e3*x(idxNNR+0)%"%.1f, "s<<1e3*x(idxNNR+1)%"%.1f, "s<<1e3*x(idxNNR+2)%"%.1f) mm"s<<Log::endl;
+    if(sigmaNoNetScale)       logStatus<<"apply no-net scale to receiver positions,       apriori ("<<1e3*x(idxNNS+0)%"%.1f) mm"s<<Log::endl;
 
     // weighted no-net constraints
     GnssDesignMatrix Design(normalEquationInfo, x);
     if(sigmaNoNetTranslation) Design.l.row(idxNNT, 3)  *= 1./sigmaNoNetTranslation;
     if(sigmaNoNetRotation)    Design.l.row(idxNNR, 3)  *= 1./sigmaNoNetRotation;
+    if(sigmaNoNetScale)       Design.l.row(idxNNS, 1)  *= 1./sigmaNoNetScale;
     if(sigmaNoNetTranslation) A.trans().row(idxNNT, 3) *= 1./sigmaNoNetTranslation;
     if(sigmaNoNetRotation)    A.trans().row(idxNNR, 3) *= 1./sigmaNoNetRotation;
+    if(sigmaNoNetScale)       A.trans().row(idxNNS, 1) *= 1./sigmaNoNetScale;
     i = 0;
     for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
       if(selectedNoNetReceivers.at(idRecv) && index.at(idRecv))
@@ -302,6 +315,7 @@ Double GnssParametrizationStaticPositions::updateParameter(const GnssNormalEquat
       UInt noNetCount = 0;
       const UInt idxNNT = noNetCount; if(sigmaNoNetTranslation) noNetCount += 3;
       const UInt idxNNR = noNetCount; if(sigmaNoNetRotation)    noNetCount += 3;
+      const UInt idxNNS = noNetCount; if(sigmaNoNetScale)       noNetCount += 1;
       Vector noNetPara(noNetCount);
       UInt i=0;
       for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
@@ -313,6 +327,7 @@ Double GnssParametrizationStaticPositions::updateParameter(const GnssNormalEquat
         }
       if(sigmaNoNetTranslation) infoNoNet += ", netTranslation ("+1e3*noNetPara(idxNNT+0)%"%.1f, "s+1e3*noNetPara(idxNNT+1)%"%.1f, "s+1e3*noNetPara(idxNNT+2)%"%.1f) mm"s;
       if(sigmaNoNetRotation)    infoNoNet += ", netRotation ("   +1e3*noNetPara(idxNNR+0)%"%.1f, "s+1e3*noNetPara(idxNNR+1)%"%.1f, "s+1e3*noNetPara(idxNNR+2)%"%.1f) mm"s;
+      if(sigmaNoNetScale)       infoNoNet += ", netScale ("      +1e3*noNetPara(idxNNS+0)%"%.1f) mm"s;
     }
 
     // update positions
