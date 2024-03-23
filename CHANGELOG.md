@@ -6,6 +6,7 @@
 - New program:      orbit2EarhFixedOrbit: Rotate an orbit into a rotation earth fixed frame.
 - New program:      GriddedDataTimeSeries2PotentialCoefficients.
 - New program:      SinexMetadata2GlonassFrequencyNumber.
+- New class:        In PlatformSelector: Equipment.
 - New class:        In Gravityfield/Tides/MiscAccelerations: Group.
 - New option:       Sp3Fromat2Orbit: Write all satellites (identifier is appended to each file).
 - New option:       GriddedData2PotentialCoefficients: Handle multiple input data columns at once.

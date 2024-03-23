@@ -6927,6 +6927,35 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
+\subsection{Equipment}\label{platformSelectorType:equipment}
+Select all platforms which has the specified equipment in the processed time interval.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~equipmentType & \hfuzz=500pt choice & \hfuzz=500pt equipment type\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~all & \hfuzz=500pt  & \hfuzz=500pt all types\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~gnssAntenna & \hfuzz=500pt sequence & \hfuzz=500pt antennas\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~radome & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~gnssReceiver & \hfuzz=500pt sequence & \hfuzz=500pt receivers\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~version & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~slrStation & \hfuzz=500pt  & \hfuzz=500pt SLR station\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~slrRetroReflector & \hfuzz=500pt  & \hfuzz=500pt laser retroreflector\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~satelliteIdentifier & \hfuzz=500pt sequence & \hfuzz=500pt satellite identifier\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~cospar & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~norad & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sic & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sp3 & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~other & \hfuzz=500pt  & \hfuzz=500pt other types\\
+\hline
+\end{tabularx}
+
+
 \subsection{Exclude}\label{platformSelectorType:exclude}
 Select all receivers/transmitters except
 \configClass{selector}{platformSelectorType}.

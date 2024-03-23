@@ -7499,6 +7499,111 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="equipment">
+				<xs:annotation>
+					<xs:documentation>select by equipment</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="*">
+							<xs:annotation>
+								<xs:documentation>wildcards: * and ?</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="serial" type="string" minOccurs="0" default="*">
+							<xs:annotation>
+								<xs:documentation>wildcards: * and ?</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="equipmentType">
+							<xs:annotation>
+								<xs:documentation>equipment type</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="all">
+										<xs:annotation>
+											<xs:documentation>all types</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="gnssAntenna">
+										<xs:annotation>
+											<xs:documentation>antennas</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="radome" type="string" minOccurs="0" default="*">
+													<xs:annotation>
+														<xs:documentation>wildcards: * and ?</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="gnssReceiver">
+										<xs:annotation>
+											<xs:documentation>receivers</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="version" type="string" minOccurs="0" default="*">
+													<xs:annotation>
+														<xs:documentation>wildcards: * and ?</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="slrStation">
+										<xs:annotation>
+											<xs:documentation>SLR station</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="slrRetroReflector">
+										<xs:annotation>
+											<xs:documentation>laser retroreflector</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="satelliteIdentifier">
+										<xs:annotation>
+											<xs:documentation>satellite identifier</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="cospar" type="string" minOccurs="0" default="*">
+													<xs:annotation>
+														<xs:documentation>wildcards: * and ?</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="norad" type="string" minOccurs="0" default="*">
+													<xs:annotation>
+														<xs:documentation>wildcards: * and ?</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="sic" type="string" minOccurs="0" default="*">
+													<xs:annotation>
+														<xs:documentation>wildcards: * and ?</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+												<xs:element name="sp3" type="string" minOccurs="0" default="*">
+													<xs:annotation>
+														<xs:documentation>wildcards: * and ?</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="other">
+										<xs:annotation>
+											<xs:documentation>other types</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="exclude">
 				<xs:annotation>
 					<xs:documentation>exclude from selection</xs:documentation>
