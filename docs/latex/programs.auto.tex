@@ -836,27 +836,6 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
-\subsection{GnssPrn2SvnBlockVariables}\label{GnssPrn2SvnBlockVariables}
-Create \reference{variables}{general.parser} containing SVN and block based on an
-\configFile{inputfileTransmitterInfo}{platform} of a GNSS satellite/PRN and
-a specified \config{time}.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableSVN & \hfuzz=500pt string & \hfuzz=500pt name of the SVN variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableBlock & \hfuzz=500pt string & \hfuzz=500pt name of the satellites block variable\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt used for GNSS PRN-to-SVN/model relation\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~time & \hfuzz=500pt time & \hfuzz=500pt used for GNSS PRN-to-SVN/model relation\\
-\hline
-\end{tabularx}
-
-This program is \reference{parallelized}{general.parallelization}.
-\clearpage
-%==================================
 \subsection{GnssProcessing}\label{GnssProcessing}
 This program processes GNSS observations. It calculates the linearized observation equations,
 accumulates them into a system of normal equations and solves it.
@@ -4831,6 +4810,50 @@ Name & Type & Annotation\\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~laserRetroReflector & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt e.g. GFZ, ITE, IPIE\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionX & \hfuzz=500pt double & \hfuzz=500pt [m] optial reference point RP in satellite system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionY & \hfuzz=500pt double & \hfuzz=500pt [m] optial reference point RP in satellite system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionZ & \hfuzz=500pt double & \hfuzz=500pt [m] optial reference point RP in satellite system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationX & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to LRR system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationY & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to LRR system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationZ & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to LRR system\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipX & \hfuzz=500pt boolean & \hfuzz=500pt flip x-axis (after rotation)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipY & \hfuzz=500pt boolean & \hfuzz=500pt flip y-axis (after rotation)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipZ & \hfuzz=500pt boolean & \hfuzz=500pt flip z-axis (after rotation)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~range & \hfuzz=500pt double & \hfuzz=500pt [m] range bias (only without range matrix)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileRangeMatrix & \hfuzz=500pt filename & \hfuzz=500pt [m] (azimuth(0..360) x zenith(0..dZenit*rows)\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~dZenit & \hfuzz=500pt angle & \hfuzz=500pt [degree] increment of range matrix\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~geodeticSatellite & \hfuzz=500pt sequence & \hfuzz=500pt e.g. LAGEOS\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~range & \hfuzz=500pt double & \hfuzz=500pt [m] standard center-of-mass correction\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~slrStation & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt CDP SOD 8-digit No.\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt IERS DOMES\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionX & \hfuzz=500pt double & \hfuzz=500pt [m] exccentricity in north\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionY & \hfuzz=500pt double & \hfuzz=500pt [m] exccentricity in east\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionZ & \hfuzz=500pt double & \hfuzz=500pt [m] exccentricity in up\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~satelliteIdentifier & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~cospar & \hfuzz=500pt string & \hfuzz=500pt Satellite COSPAR ID\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~norad & \hfuzz=500pt string & \hfuzz=500pt Satellite Catalog (NORAD) Number\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sic & \hfuzz=500pt string & \hfuzz=500pt SIC Code\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sp3 & \hfuzz=500pt string & \hfuzz=500pt SP3\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~other & \hfuzz=500pt sequence & \hfuzz=500pt \\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
@@ -7972,8 +7995,8 @@ Name & Type & Annotation\\
 Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} to \configFile{outputfileStationPlatform}{platform}.
 
 If \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition} is provided, station log data is cross-checked with the given antenna definitions.
-Cross-checking station log data with a \href{https://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file} is also
-possible by providing \config{inputfileSinex}. Any failed checks result in warnings in the output log.
+Cross-checking station log data with a \href{https://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file} is
+possible with \program{CheckStationsPlatformsWithSinex}.
 
 
 \keepXColumns
@@ -7984,7 +8007,6 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStationPlatform & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStationLog & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAntennaDefinition & \hfuzz=500pt filename & \hfuzz=500pt used to check antennas\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSinex & \hfuzz=500pt filename & \hfuzz=500pt used to cross-check station log with SINEX file\\
 \hline
 \end{tabularx}
 
@@ -9460,7 +9482,7 @@ Name & Type & Annotation\\
 \subsection{Sinex2StationDiscontinuities}\label{Sinex2StationDiscontinuities}
 Convert station discontinuities from
 \href{http://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX format}
-(e.g. ITRF14) to \configFile{outputfileInstrument}{instrument} (MISCVALUE).
+(e.g. ITRF20) to \configFile{outputfileInstrument}{instrument} (MISCVALUE).
 A value of 1 means position discontinuity, a value of 2 means velocity discontinuity.
 Start and end epochs with value 0 are added in addition to the discontinuities from
 SINEX to define continuity interval borders.
@@ -9474,7 +9496,7 @@ See also \program{Sinex2StationPosition} and \program{Sinex2StationPostSeismicDe
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt loop variable is replaced with station name (e.g. wtzz)\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileDiscontinuities & \hfuzz=500pt filename & \hfuzz=500pt SINEX (e.g. ITRF14) station discontinuities\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileDiscontinuities & \hfuzz=500pt filename & \hfuzz=500pt SINEX (e.g. ITRF20) station discontinuities\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopStation & \hfuzz=500pt string & \hfuzz=500pt variable name for station loop\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~stationName & \hfuzz=500pt string & \hfuzz=500pt only export these stations\\
 \hline
@@ -9562,10 +9584,15 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{Sp3Format2Orbit}\label{Sp3Format2Orbit}
-Read IGS orbits from \href{https://files.igs.org/pub/data/format/sp3d.pdf}{SP3 format}
+Read orbits from \href{https://files.igs.org/pub/data/format/sp3d.pdf}{SP3 format}
 and write an \file{instrument file (ORBIT)}{instrument}.
 The additional \config{outputfileClock} is an \file{instrument file (MISCVALUE)}{instrument}
 and \config{outputfileCovariance} is an \file{instrument file (COVARIANCE3D)}{instrument}.
+
+With \config{satelliteIdentifier} a single satellite can be selected if the \config{inputfile}s
+contain more than one satellites. If \config{satelliteIdentifier} is empty the first satellite is taken.
+All satellites can be selected with \config{satelliteIdentifier}=\verb|<all>|.
+In this case the identifier is appended to each output file.
 
 If \configClass{earthRotation}{earthRotationType} is provided the data are transformed
 from terrestrial (TRF) to celestial reference frame (CRF).
@@ -9583,7 +9610,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileClock & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileCovariance & \hfuzz=500pt filename & \hfuzz=500pt 3x3 epoch covariance\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~satelliteIdentifier & \hfuzz=500pt string & \hfuzz=500pt e.g. L09 for GRACE A, empty: take first satellite\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~satelliteIdentifier & \hfuzz=500pt string & \hfuzz=500pt e.g. L09 for GRACE A, empty: take first satellite, \$<\$all\$>\$: identifier is appended to each file\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt rotation from TRF to CRF\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt orbits in SP3 format\\
@@ -9715,6 +9742,26 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \section{Programs: Deprecated}
+\subsection{GnssPrn2SvnBlockVariables}\label{GnssPrn2SvnBlockVariables}
+DEPRECATED. This program no longer works!
+
+Setup up a \configClass{loop:platformEquipment}{loopType:platformEquipment} instead with
+\begin{itemize}
+  \item \configFile{inputfilePlatform}{platform}: the old \config{inputfileTransmitterInfo}
+  \item \config{equipmentType}         = \verb|gnssAntenna|
+  \item \config{variableLoopName}      = \verb|block|
+  \item \config{variableLoopSerial}    = \verb|svn|
+  \item \config{variableLoopTimeStart} = \verb|svnTimeStart|
+  \item \config{variableLoopTimeEnd}   = \verb|svnTimeEnd|
+  \item \configClass{condition:expression}{conditionType:expression}
+  \begin{itemize}
+    \item \config{expression} = \verb|(svnTimeStart <= time) && (time < svnTimeEnd)|
+  \end{itemize}
+\end{itemize}
+Attribute this loop to programs, which uses the variables.
+
+\clearpage
+%==================================
 \subsection{GridRectangular2NetCdf}\label{GridRectangular2NetCdf}
 DEPRECATED. Please use \program{GriddedData2NetCdf} or \program{GriddedDataTimeSeries2NetCdf} instead.
 

@@ -26,9 +26,15 @@ class TreeElementFileName : public TreeElementSimple
 {
   Q_OBJECT
 
+  VariableList varList;
+
 public:
   TreeElementFileName(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
                       const QString &defaultOverride, XmlNodePtr xmlNode, bool fillWithDefaults);
+
+  /** @brief inform this element about changed variables.
+  * recursively called for all children. */
+  void updateParserResults(VariableList &varList) override {this->varList = varList; TreeElementSimple::updateParserResults(varList);}
 
   /** @brief creates an editable combo box with additional file selector. */
   QWidget *createEditor() override;

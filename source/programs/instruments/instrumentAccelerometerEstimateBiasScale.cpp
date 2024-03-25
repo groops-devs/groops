@@ -87,7 +87,7 @@ void InstrumentAccelerometerEstimateBiasScale::run(Config &config, Parallel::Com
     readConfig(config, "marginThruster",              margin,                 Config::DEFAULT,  "1e-5", "margin size (on both sides) [seconds]");
     readConfig(config, "inputfileOrbit",              orbitInName,            Config::OPTIONAL, "",     "");
     readConfig(config, "inputfileStarCamera",         starCameraInName,       Config::OPTIONAL, "",     "");
-    readConfig(config, "earthRotation",               earthRotation,          Config::OPTIONAL, "",     "");
+    readConfig(config, "earthRotation",               earthRotation,          Config::OPTIONAL, "file", "");
     readConfig(config, "ephemerides",                 ephemerides,            Config::OPTIONAL, "jpl",  "may be needed by parametrizationAcceleration");
     readConfig(config, "inputfileSatelliteModel",     satelliteModelInName,   Config::OPTIONAL, "{groopsDataDir}/satelliteModel/", "satellite macro model");
     readConfig(config, "parametrizationAcceleration", parameterAcceleration,  Config::MUSTSET,  "",     "");

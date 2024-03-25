@@ -30,6 +30,8 @@ public:
   bool optional()          const override {return true;}
   bool unbounded()         const override {return true;}
   bool isRenamedInSchema() const override {return false;}
+  bool canSetLoop()        const override {return false;}
+  bool canSetCondition()   const override {return false;}
 
   /** @brief Values can be edited. */
   bool isEditable() const override {return _isEditable;}

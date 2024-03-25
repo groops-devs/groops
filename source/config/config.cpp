@@ -30,8 +30,17 @@
 
 void Config::push(XmlNodePtr xmlNode, ComplexType type, const std::string &name)
 {
+  VariableList varList;
+  std::map<std::string, XmlNodePtr> links;
+  if(stack.size())
+  {
+    varList = stack.top().varList;
+    links   = stack.top().links;
+  }
   std::string name_ = (name.empty()) ? Config::currentNodeName()+"."+xmlNode->getName() : name;
   stack.emplace(xmlNode, type, name_);
+  stack.top().varList = varList;
+  stack.top().links   = links;
 }
 
 /***********************************************/
@@ -39,7 +48,7 @@ void Config::push(XmlNodePtr xmlNode, ComplexType type, const std::string &name)
 void Config::pop()
 {
   if(stack.top().loopPtr) // finish old loop
-    varList = stack.top().loopVarListOld; // restore old varList
+    throw(Exception("exit node with unfinished loop"));
   stack.pop();
 }
 
@@ -63,52 +72,51 @@ Config::Config(FileName &fileName, const std::map<std::string, std::string> &com
     InFile stream(fileName);
     XmlNodePtr root = XmlNode::read(stream);
 
+    push(root, SEQUENCE, "groops");
+
+    // local variables before global?
+    // ------------------------------
+    XmlNodePtr xmlNode;
+    while((xmlNode = root->findNextChild()))
+    {
+      XmlAttrPtr label = xmlNode->getAttribute("label");
+      if(!label)                           // is not local variable?
+        break;
+      xmlNode = root->getNextChild();      // remove
+      xmlNode->setName(label->getText());  // replace typename with label
+      stack.top().links[xmlNode->getName()] = xmlNode;
+    }
+
     // global: replace typename with label
     // -----------------------------------
-    global = root->getChild("global");
-    if(!global)
-      global = XmlNode::create("global");
-    XmlNodePtr globalFile = XmlNode::create("global");
-    while(global->hasChildren())
-    {
-      XmlNodePtr xmlNode = global->getNextChild();
-      XmlAttrPtr label = xmlNode->getAttribute("label");
-      if(label)
-        xmlNode->setName(label->getText());
-      globalFile->addChild(xmlNode);
-    }
+    XmlNodePtr global = root->getChild("global");
+    if(global)
+      for(XmlNodePtr &child : global->getChildren())
+      {
+        XmlAttrPtr label = child->getAttribute("label");
+        if(!label)
+          throw(Exception("elements in global must have attribute 'label'"));
+        child->setName(label->getText());
+        stack.top().links[child->getName()] = child;
+      }
 
     // add global elements from command line
     // -------------------------------------
     for(const auto &command : commandlineGlobals)
     {
-      // replace or add new global variable
-      XmlNodePtr xmlNode = globalFile->findChild(command.first);
-      if(xmlNode)
-      {
-        xmlNode->setText(command.second);
-        xmlNode->getAttribute("link"); // remove link
-      }
-      else
-        writeXml(globalFile, command.first, command.second);
+      XmlNodePtr xmlNode = XmlNode::create(command.first);
+      xmlNode->setText(command.second);
+      stack.top().links[command.first] = xmlNode;
     }
 
-    // search global variables
-    // -----------------------
-    while(globalFile->hasChildren())
-    {
-      XmlNodePtr xmlNode = globalFile->getNextChild();
-      global->addChild(xmlNode);
-      if(!xmlNode->hasChildren()) // not complex type?
+    // set global variables
+    // --------------------
+    for(auto &pair : stack.top().links)
+      if(!pair.second->getText().empty())  // not complex type?
       {
-        XmlAttrPtr link = xmlNode->findAttribute("link");
-        varList.setVariable(xmlNode->getName(), ((link) ? "{"+link->getText()+"}" : xmlNode->getText()));
+        XmlAttrPtr link = pair.second->findAttribute("link");
+        stack.top().varList.setVariable(pair.second->getName(), ((link) ? "{"+link->getText()+"}" : pair.second->getText()));
       }
-    }
-
-    global = resolveLink(global);
-    root = resolveLink(root);
-    push(root, SEQUENCE, "groops");
   }
   catch(std::exception &e)
   {
@@ -118,7 +126,7 @@ Config::Config(FileName &fileName, const std::map<std::string, std::string> &com
 
 /***********************************************/
 
-XmlNodePtr Config::resolveLink(XmlNodePtr xmlNode) const
+XmlNodePtr Config::resolveLink(XmlNodePtr xmlNode)
 {
   try
   {
@@ -128,14 +136,14 @@ XmlNodePtr Config::resolveLink(XmlNodePtr xmlNode) const
     XmlAttrPtr link = xmlNode->findAttribute("link");
     if(link)
     {
-      XmlNodePtr xmlNodeGlobal = global->findChild(link->getText());
-      if(!xmlNodeGlobal || xmlNodeGlobal->getAttribute("resolving"))
+      XmlNodePtr xmlNodeLink = stack.top().links[link->getText()];
+      if(!xmlNodeLink || xmlNodeLink->getAttribute("resolving"))
         throw(Exception(std::string("cannot resolve link: ")+xmlNode->getName()+" -> "+link->getText()+"'"));
 
-      XmlNodePtr xmlNodeNew = xmlNodeGlobal->clone();
+      XmlNodePtr xmlNodeNew = xmlNodeLink->clone();
 
       // add temporary resolving attribute to prevent link loops
-      writeAttribute(xmlNodeGlobal, "resolving", 1);
+      writeAttribute(xmlNodeLink, "resolving", 1);
 
       xmlNodeNew = resolveLink(xmlNodeNew);
       xmlNodeNew->setName(xmlNode->getName());
@@ -143,7 +151,7 @@ XmlNodePtr Config::resolveLink(XmlNodePtr xmlNode) const
         xmlNodeNew->addAttribute(xmlNode->getNextAttribute());
 
       // remove attributes as link was resolved successfully
-      xmlNodeGlobal->getAttribute("resolving");
+      xmlNodeLink->getAttribute("resolving");
       xmlNodeNew->getAttribute("link");
 
       xmlNode = xmlNodeNew;
@@ -174,45 +182,71 @@ Bool Config::hasName(const std::string &name)
       return TRUE;
     }
 
+    // local variables before?
+    // -----------------------
+    XmlNodePtr xmlNode;
+    while((xmlNode = stack.top().xmlNode->findNextChild()))
+    {
+      XmlAttrPtr label = xmlNode->getAttribute("label");
+      if(label) // xmlNode is local variable
+      {
+        stack.top().xmlNode->getNextChild(); // remove
+        xmlNode->setName(label->getText());  // replace typename with label
+        stack.top().links[xmlNode->getName()] = xmlNode;
+        if(!xmlNode->hasChildren())          // not complex type? -> variable
+        {
+          XmlAttrPtr link = xmlNode->findAttribute("link");
+          stack.top().varList.setVariable(xmlNode->getName(), ((link) ? "{"+link->getText()+"}" : xmlNode->getText()));
+        }
+        continue;
+      }
+      if(xmlNode->getName() == name)
+        break;
+      if(!stack.top().xmlNode->findChild(name))
+        return false;
+      // unkonwn element: move to end
+      stack.top().xmlNode->addChild(stack.top().xmlNode->getNextChild());
+    }
+
+    if(xmlNode == nullptr)
+      return FALSE;
+
+    xmlNode = resolveLink(xmlNode);
+
     // loop?
     // -----
     if(stack.top().loopPtr)
     {
-      if(!stack.top().loopPtr->iteration(varList)) // finish loop
+      if(!stack.top().loopPtr->iteration(stack.top().varList)) // finish loop
       {
-        varList = stack.top().loopVarListOld; // restore old varList
+        stack.top().varList = stack.top().loopVarListOld; // restore old varList
         stack.top().xmlNode->getChild(name);  // remove child as it is finished
         stack.top().loopPtr = nullptr;
+        continue;
       }
       else // next loop
-        stack.top().xmlLastChild = stack.top().xmlNode->findChild(name)->clone();
+        stack.top().xmlLastChild = xmlNode->clone();
     }
 
     // get new child
     // -------------
     if(!stack.top().xmlLastChild)
     {
-      // get new child
-      XmlNodePtr xmlNode = stack.top().xmlNode->findChild(name);
-      if(xmlNode == nullptr)
-        return FALSE;
-
       // expand loop
       XmlAttrPtr attr = xmlNode->getAttribute("loop");
       if(attr)
       {
-        XmlNodePtr xmlNodeLoop = global->findChild(attr->getText());
+        XmlNodePtr xmlNodeLoop = stack.top().links[attr->getText()];
         if(!xmlNodeLoop)
-          throw(Exception(std::string("cannot resolve loop link: ")+xmlNode->getName()+" -> "+attr->getText()+"'"));
+          throw(Exception(std::string("cannot resolve loop link: ")+xmlNode->getName()+" -> '"+attr->getText()+"'"));
         XmlNodePtr tmp = XmlNode::create("tmp");
-        tmp->addChild(xmlNodeLoop->clone()); // make copy
+        tmp->addChild(xmlNodeLoop->clone());  // make copy
         push(tmp, SEQUENCE, currentNodeName());
         LoopPtr loopPtr;
         readConfig(*this, xmlNodeLoop->getName(), loopPtr, Config::MUSTSET, "", "");
         pop();
-
         stack.top().loopPtr = loopPtr;
-        stack.top().loopVarListOld = varList;
+        stack.top().loopVarListOld = stack.top().varList;
         continue;  // start loop
       }
       else
@@ -225,7 +259,7 @@ Bool Config::hasName(const std::string &name)
       return TRUE;
 
     // expand condition
-    XmlNodePtr xmlNodeCondition = global->findChild(attr->getText());
+    XmlNodePtr xmlNodeCondition = stack.top().links[attr->getText()];
     if(!xmlNodeCondition)
       throw(Exception(std::string("cannot resolve condition link: '")+stack.top().xmlLastChild->getName()+"' -> '"+attr->getText()+"'"));
     attr = nullptr;
@@ -237,7 +271,7 @@ Bool Config::hasName(const std::string &name)
     pop();
 
     // check condition
-    if(condition->condition(varList))
+    if(condition->condition(stack.top().varList))
       return TRUE;
 
     // node disabled -> try next element
@@ -276,7 +310,7 @@ Bool Config::getConfigText(const std::string &name, const std::string &type, Con
   }
 
   XmlNodePtr child = getChild(name);
-  if(child != nullptr)
+  if(child)
   {
     if(child->hasChildren())
       throw(Exception(currentNodeName()+"."+child->getName()+" with unexpected children"));
@@ -291,7 +325,7 @@ Bool Config::getConfigText(const std::string &name, const std::string &type, Con
   if(parse)
   {
     Bool resolved = TRUE;
-    text = StringParser::parse(name, text, varList, resolved);
+    text = StringParser::parse(name, text, stack.top().varList, resolved);
     if(!resolved)
       throw(Exception("In readConfig("+currentNodeName()+"."+name+", type="+type+")='"+text+"': unresolved variables"));
   }
@@ -307,7 +341,7 @@ Bool Config::getConfigValue(const std::string &name, const std::string &type, Co
   {
     if(!getConfigText(name, type, mustSet, defaultValue, annotation, TRUE, text))
       return FALSE;
-    v = ExpressionVariable::parse(text, varList);
+    v = ExpressionVariable::parse(text, stack.top().varList);
     return TRUE;
   }
   catch(std::exception &e)
@@ -330,10 +364,10 @@ Bool Config::getConfig(const std::string &name, Config::Appearance mustSet, Conf
       throw(Exception("config element '"+currentNodeName()+"' must contain '"+name+"'"));
 
     // make copy
-    conf.push(xmlNode, Config::SEQUENCE, currentNodeName());
     conf.createSchema = FALSE;
-    conf.global       = global;
-    conf.varList      = varList;
+    conf.push(xmlNode, Config::SEQUENCE, currentNodeName());
+    conf.stack.top().links   = stack.top().links;
+    conf.stack.top().varList = stack.top().varList;
 
     return child != nullptr;
   }
@@ -353,19 +387,20 @@ Bool Config::getUnboundedConfig(const std::string &name, Config &conf)
       throw(Exception("last element not yet finished processed"));
 
     XmlNodePtr xmlNode = XmlNode::create(name);
-    for(;;)
+    XmlNodePtr child;
+    while((child = stack.top().xmlNode->findNextChild()))
     {
-      XmlNodePtr child = stack.top().xmlNode->getChild(name);
-      if(!child)
+      if((child->getName() == name) || child->findAttribute("label")) // child is element or local variable
+        xmlNode->addChild(stack.top().xmlNode->getNextChild());
+      else if(!stack.top().xmlNode->findChild(name))
         break;
-      xmlNode->addChild(child);
     }
 
     // make copy
-    conf.push(xmlNode, Config::SEQUENCE, currentNodeName());
     conf.createSchema = FALSE;
-    conf.global       = global;
-    conf.varList      = varList;
+    conf.push(xmlNode, Config::SEQUENCE, currentNodeName());
+    conf.stack.top().links   = stack.top().links;
+    conf.stack.top().varList = stack.top().varList;
 
     return TRUE;
   }
@@ -400,11 +435,11 @@ std::string Config::copy(Config &config, const VariableList &variableList) const
 {
   try
   {
-    config.push(stack.top().xmlNode->clone(), Config::SEQUENCE, currentNodeName());
     config.createSchema = FALSE;
-    config.global       = global;
-    config.varList      = varList;
-    config.varList     += variableList;
+    config.push(stack.top().xmlNode->clone(), Config::SEQUENCE, currentNodeName());
+    config.stack.top().links    = stack.top().links;
+    config.stack.top().varList  = stack.top().varList;
+    config.stack.top().varList += variableList;
     return stack.top().xmlNode->getName();
   }
   catch(std::exception &e)

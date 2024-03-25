@@ -126,6 +126,13 @@ Int String::toInt(const std::string &str)
 
 /***********************************************/
 
+Bool String::contains(const std::string &str, const std::string &test)
+{
+  return str.size() && (str.find(test) != std::string::npos);
+}
+
+/***********************************************/
+
 Bool String::startsWith(const std::string &str, const std::string &test)
 {
   return (str.rfind(test, 0) == 0);

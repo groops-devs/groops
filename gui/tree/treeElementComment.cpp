@@ -37,11 +37,11 @@ TreeElementComment::TreeElementComment(Tree *tree, TreeElementComplex *parentEle
 
 /***********************************************/
 
-XmlNodePtr TreeElementComment::createXmlTree(bool /*createRootEvenIfEmpty*/) const
+XmlNodePtr TreeElementComment::createXmlTree(bool createRootEvenIfEmpty) const
 {
   try
   {
-    if(selectedValue().isEmpty())
+    if(selectedValue().isEmpty() && !createRootEvenIfEmpty)
        return XmlNodePtr(nullptr);
     XmlNodePtr xmlNode = XmlNode::create("COMMENT");
     xmlNode->setText(selectedValue());

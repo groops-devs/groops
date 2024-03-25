@@ -414,7 +414,7 @@ a standard deviation of <strong class="groops-config-element">sigmaZeroMeanConst
 Estimates a static position for all
 <a class="groops-class" href="platformSelectorType.html">selectReceivers</a> in the terrestrial frame.</p><p>No-net constraints can be applied for a subset of stations,
 <a class="groops-class" href="platformSelectorType.html">selectNoNetReceivers</a>, with a
-standard deviation of <strong class="groops-config-element">noNetTranslationSigma</strong> and <strong class="groops-config-element">noNetRotationSigma</strong>.
+standard deviation of <strong class="groops-config-element">noNetTranslationSigma</strong> and <strong class="groops-config-element">noNetRotationSigma</strong> and <strong class="groops-config-element">noNetScaleSigma</strong>.
 If the template <a class="groops-class" href="fileFormat_stringList.html">inputfileNoNetPositions</a> is provided
 the constraints are applied relatively to these positions. Only stations with an existing position file
 are considered. Without <a class="groops-class" href="fileFormat_stringList.html">inputfileNoNetPositions</a>
@@ -447,8 +447,9 @@ generated with <a class="groops-program" href="Sinex2StationPositions.html">Sine
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileNoNetPositions</div></div></td><td>filename</td><td>variable {station} available, precise coordinates used for no-net constraints (in TRF)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">noNetTranslationSigma</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for no-net translation constraint on station coordinates</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">noNetRotationSigma</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] at Earth's surface for no-net rotation constraint on station coordinates</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huber</div></div></td><td>double</td><td>stations > huber*sigma0 are downweighted in no-net constraint</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huberPower</div></div></td><td>double</td><td>stations > huber: sigma=(e/huber)^huberPower*sigma0</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">noNetScaleSigma</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for no-net scale constraint on station coordinates</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huber</div></div></td><td>double</td><td>stations > huber*sigma0 are downweighted in no-net constraint</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huberPower</div></div></td><td>double</td><td>stations > huber: sigma=(e/huber)^huberPower*sigma0</td></tr>
 </table>
 
 <h2 id="kinematicPositions">KinematicPositions</h2><p>

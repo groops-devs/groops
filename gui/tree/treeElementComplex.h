@@ -66,30 +66,33 @@ public:
 
   // ========================================================
 
-  // Management of the content
-  // -------------------------
+  // Inform about changes in variables
+  // ---------------------------------
+private:
+  bool         initializedVariables;
+  VariableList varList;
+  QMap<QString, QString> labelTypes;
+
 public:
-  /** @brief inform this element about a link.
-  * @a recursively called for all children.  */
-  void informAboutLink(TreeElement *elementInGlobal, bool recursively) override;
+  /** @brief must be called if a variable is changed within this scope. */
+  virtual void updateParserResultsInScope();
+
+  /** @brief must be called if a variable is added/removed/renamed within this scope.
+   * recursively called for all children. */
+  virtual void updateLinksInScope();
 
   /** @brief inform this element about changed variables.
   * recursively called for all children. */
-  void updateParserResults(const VariableList &varList, bool recursively) override;
+  void updateParserResults(VariableList &varList) override;
 
-  /** @brief inform this element about an added link.
-  * recursively called for all children.
-  * Is undoable. */
-  void addedLink(TreeElement *elementInGlobal) override;
-
-  /** @brief inform this element about a removed link.
-  * recursively called for all children.
-  * Is undoable. */
-  void removedLink(TreeElement *elementInGlobal) override;
-
-  /** @brief Rename a link in this element.
+  /** @brief inform this element about changed variables.
   * recursively called for all children. */
-  void renamedLink(const QString &oldLabel, const QString &newLabel) override;
+  void updateLinks(QMap<QString, QString> &labelTypes) override;
+
+  /** @brief must be called if a variable is renamed.
+   * recursively called for all children.
+   * @return next element can also be renamed. */
+  bool renamedLink(const QString &oldLabel, const QString &newLabel) override;
 
   // ========================================================
 
@@ -132,7 +135,7 @@ protected:
 
 public:
   /** @brief Is it possible to insert an element with @a type before @a targetElement? */
-  virtual bool canAddChild(TreeElement *targetElement, const QString &type) const;
+  virtual bool canAddChild(TreeElement *targetElement, const QString &type, const QString &label) const;
 
   /** @brief Is it possible to remove this element from tree? */
   virtual bool canRemoveChild(TreeElement *element) const;
@@ -141,7 +144,7 @@ public:
   * Is undoable.
   * the new element is selected.
   * @return successfully created element */
-  virtual TreeElement *addChild(TreeElement *targetElement, const QString &type, XmlNodePtr xmlNode);
+  virtual TreeElement *addChild(TreeElement *targetElement, const QString &type, const QString &label, XmlNodePtr xmlNode);
 
   /** @brief remove child @a element.
   * Is undoable.

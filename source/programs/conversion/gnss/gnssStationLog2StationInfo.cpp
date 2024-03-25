@@ -62,7 +62,7 @@ void GnssStationLog2StationInfo::run(Config &config, Parallel::CommunicatorPtr /
 
     readConfig(config, "outputfileStationInfo",      fileNameStationInfo, Config::MUSTSET,   "", "");
     readConfig(config, "inputfileStationLog",        fileNameStationLog,  Config::MUSTSET,   "", "");
-    readConfig(config, "inputfileAntennaDefinition", fileNameAntenna,     Config::OPTIONAL,  "{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs14/antennaDefinition_igs14.dat", "used to check antennas");
+    readConfig(config, "inputfileAntennaDefinition", fileNameAntenna,     Config::OPTIONAL,  "{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat", "used to check antennas");
     readConfig(config, "inputfileSinex",             fileNameSinex,       Config::OPTIONAL,  "{groopsDataDir}/gnss/receiverStation/igs_with_former.snx", "used to cross-check station log with SINEX file");
     if(isCreateSchema(config)) return;
 

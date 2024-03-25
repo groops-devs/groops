@@ -266,7 +266,6 @@ programs/gnss/gnssAttitudeInfoCreate.cpp
 programs/gnss/gnssBiasClockAlignment.cpp
 programs/gnss/gnssEstimateClockShift.cpp
 programs/gnss/gnssGlonassFrequencyNumberUpdate.cpp
-programs/gnss/gnssPrn2SvnBlockVariables.cpp
 programs/gnss/gnssProcessing.cpp
 programs/gnss/gnssReceiverDefinitionCreate.cpp
 programs/gnss/gnssResiduals2AccuracyDefinition.cpp
@@ -555,6 +554,7 @@ programs/conversion/tle2Orbit.cpp
 programs/conversion/viennaMappingFunctionGrid2File.cpp
 programs/conversion/viennaMappingFunctionStation2File.cpp
 
+programs/deprecated/gnssPrn2SvnBlockVariables.cpp
 programs/deprecated/gridRectangular2NetCdf.cpp
 programs/deprecated/netCdf2GridRectangular.cpp
 programs/deprecated/sinex2StationPosition.cpp

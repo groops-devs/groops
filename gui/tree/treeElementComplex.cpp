@@ -22,6 +22,7 @@
 #include "tree/treeElement.h"
 #include "tree/treeElementGlobal.h"
 #include "tree/treeElementAdd.h"
+#include "tree/treeElementLoopCondition.h"
 #include "tree/treeElementComment.h"
 #include "tree/treeElementUnknown.h"
 #include "tree/treeElementComplex.h"
@@ -32,7 +33,8 @@ TreeElementComplex::TreeElementComplex(Tree *tree, TreeElementComplex *parentEle
                                        XsdElementPtr xsdElement, const QString &defaultOverride,
                                        XmlNodePtr xmlNode, bool recieveAutoComments)
                    : TreeElement(tree, parentElement, xsdElement, defaultOverride, xmlNode),
-                     recieveAutoComments(recieveAutoComments)
+                     recieveAutoComments(recieveAutoComments),
+                     initializedVariables(false)
 {
   // convert default string to QJsonObject
   if(!defaultValue.isEmpty())
@@ -64,7 +66,18 @@ void TreeElementComplex::createXmlChildren(XmlNodePtr xmlNode, bool createRootEv
     if(xmlNode && !isLinked())
       for(auto &child : children_[selectedIndex()])
         if((xmlChild = child->createXmlTree(createRootEvenIfEmpty)))
+        {
+          // write _local loops and conditions before element
+          XmlAttrPtr attr = xmlChild->findAttribute("loop");
+          if(attr && (attr->text == "_localLoop_"))
+            xmlNode->addChild(xmlChild->getChild("loopType"));
+
+          attr = xmlChild->findAttribute("condition");
+          if(attr && (attr->text == "_localCondition_"))
+            xmlNode->addChild(xmlChild->getChild("conditionType"));
+
           xmlNode->addChild(xmlChild);
+        }
   }
   catch(std::exception &e)
   {
@@ -107,6 +120,43 @@ void TreeElementComplex::createChildrenElements(int index, XmlNodePtr xmlNode)
       throw(Exception("cannot create"));
     if(!children_[index].size())
     {
+      // lambda function to add comments & variables inbetween
+      // -----------------------------------------------------
+      auto insertCommentsAndVariables = [&]()
+      {
+        if(!xmlNode)
+          return;
+        XmlNodePtr xmlChild;
+        XmlAttrPtr attrLabel;
+        std::list<XmlNodePtr> xmlLocals;
+        for(;;)
+        {
+          if(!(xmlChild = xmlNode->peekNextChild()))
+            break;
+          if(xmlChild->getName() == "COMMENT")
+            children_[index].push_back(new TreeElementComment(tree, this, xmlNode->getNextChild()->getText()));
+          else if((attrLabel = xmlChild->findAttribute("label")))
+          {
+            xmlChild = xmlNode->getNextChild(); // remove node
+            if(attrLabel->text.startsWith("_local"))
+              xmlLocals.push_front(xmlChild); // _local variables (loops/conditions) are added to next element
+            else
+            {
+              if(xmlLocals.size())
+                throw(Exception("variables cannot have loops or conditions"));
+              children_[index].push_back(TreeElement::newTreeElement(tree, this, tree->xsdElement(xmlChild->getName()), "", xmlChild, false/*fillWithDefaults*/));
+            }
+          }
+          else
+            break;
+        }
+        // add _local variables to next xml element
+        if(xmlChild && xmlLocals.size())
+          for(auto &xmlLocal : xmlLocals)
+            xmlChild->addChild(xmlLocal, true);
+      };
+      // -------------------------------------------------
+
       if(xsdElementList[index] && xsdElementList[index]->complex)
       {
         auto xsdComplex = xsdElementList[index]->complex;
@@ -123,14 +173,10 @@ void TreeElementComplex::createChildrenElements(int index, XmlNodePtr xmlNode)
           // -------------------------------------------------
           auto addNewChildElement = [&](TreeElementAdd *elementAdd, const QJsonValue &defaultValue, bool fillWithDefaults)
           {
+            insertCommentsAndVariables();
             XmlNodePtr xmlChild;
             if(xmlNode)
-            {
-              // insert possible comment elements
-              while(xmlNode->hasChildren() && (xmlNode->peekNextChild()->getName() == "COMMENT"))
-                children_[index].push_back(new TreeElementComment(tree, this, xmlNode->getNextChild()->getText()));
               xmlChild = xmlNode->getChild(xsdElement->names);
-            }
 
             QString defaultStr;
             switch(defaultValue.type())
@@ -186,10 +232,7 @@ void TreeElementComplex::createChildrenElements(int index, XmlNodePtr xmlNode)
         } // for(xsdElements)
       } // if(xsdComplex)
 
-      // insert possible comment elements
-      // --------------------------------
-      while(xmlNode && xmlNode->hasChildren() && (xmlNode->peekNextChild()->getName() == "COMMENT"))
-        children_[index].push_back(new TreeElementComment(tree, this, xmlNode->getNextChild()->getText()));
+      insertCommentsAndVariables();
 
       // are there unknown XML nodes?
       // ----------------------------
@@ -206,15 +249,11 @@ void TreeElementComplex::createChildrenElements(int index, XmlNodePtr xmlNode)
         children_[index].push_back(elementAdd);
       }
 
-      // inform the new elements about all links
-      // ---------------------------------------
-      if(tree->elementGlobal && tree->rootElement)
-      {
-        for(auto &child : children_[index])
-          tree->elementGlobal->informAboutGlobalElements(child, false/*recursively*/);
-        for(auto &child : children_[index])
-          child->updateParserResults(tree->elementGlobal->variableList(), false/*recursively*/);
-      }
+      // invisible add element to be able to remove links and comments and end of list
+      children_[index].push_back(new TreeElementAdd(tree, this, XsdElementPtr(nullptr), false/*visible*/));
+
+      updateParserResultsInScope();
+      updateLinksInScope();
     } // if(!hasChildren)
 
     childSetPushAutoComments(true, index); // set autocomment for the first element
@@ -255,15 +294,15 @@ void TreeElementComplex::setSelectedIndex(int index)
 /***********************************************/
 /***********************************************/
 
-void TreeElementComplex::informAboutLink(TreeElement *elementInGlobal, bool recursively)
+void TreeElementComplex::updateParserResultsInScope()
 {
   try
   {
-    TreeElement::informAboutLink(elementInGlobal, recursively);
-    if(recursively)
-      for(auto &childdrenAtIndex : children_)
-        for(auto &child : childdrenAtIndex)
-          child->informAboutLink(elementInGlobal, recursively);
+    if(!initializedVariables)
+      return;
+    VariableList varList = this->varList; // without added local variables
+    for(auto &child : children_[selectedIndex()])
+      child->updateParserResults(varList);
   }
   catch(std::exception &e)
   {
@@ -273,14 +312,19 @@ void TreeElementComplex::informAboutLink(TreeElement *elementInGlobal, bool recu
 
 /***********************************************/
 
-void TreeElementComplex::updateParserResults(const VariableList &varList, bool recursively)
+void TreeElementComplex::updateParserResults(VariableList &varList)
 {
   try
   {
-    if(recursively)
-      for(auto &childdrenAtIndex : children_)
-        for(auto &child : childdrenAtIndex)
-          child->updateParserResults(varList, recursively);
+    this->varList = varList;
+    initializedVariables = true;
+    TreeElement::updateParserResults(varList);
+    for(auto &childdrenAtIndex : children_)
+    {
+      VariableList varListLocal = this->varList; // without added local variables
+      for(auto &child : childdrenAtIndex)
+        child->updateParserResults(varListLocal);
+    }
   }
   catch(std::exception &e)
   {
@@ -290,48 +334,60 @@ void TreeElementComplex::updateParserResults(const VariableList &varList, bool r
 
 /***********************************************/
 
-void TreeElementComplex::addedLink(TreeElement *elementInGlobal)
+void TreeElementComplex::updateLinksInScope()
 {
   try
   {
-    TreeElement::addedLink(elementInGlobal);
+    if(!initializedVariables)
+      return;
+    auto labelTypesLocal = this->labelTypes; // without added local variables
+    for(auto &child : children_[selectedIndex()])
+      child->updateLinks(labelTypesLocal);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+void TreeElementComplex::updateLinks(QMap<QString, QString> &labelTypes)
+{
+  try
+  {
+    this->labelTypes = labelTypes;
+    initializedVariables = true;
+    TreeElement::updateLinks(labelTypes);
+    for(auto &childdrenAtIndex : children_)
+    {
+      auto labelTypesLocal = this->labelTypes; // without added local variables
+      for(auto &child : childdrenAtIndex)
+        child->updateLinks(labelTypesLocal);
+    }
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e);
+  }
+}
+
+/***********************************************/
+
+bool TreeElementComplex::renamedLink(const QString &oldLabel, const QString &newLabel)
+{
+  try
+  {
+    if(!TreeElement::renamedLink(oldLabel, newLabel))
+      return false;
+    labelTypes[newLabel] = labelTypes.value(oldLabel);
+    if(oldLabel != newLabel)
+      labelTypes.remove(oldLabel);
     for(auto &childdrenAtIndex : children_)
       for(auto &child : childdrenAtIndex)
-        child->addedLink(elementInGlobal);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-void TreeElementComplex::removedLink(TreeElement *elementInGlobal)
-{
-  try
-  {
-    TreeElement::removedLink(elementInGlobal);
-    for(auto &childdrenAtIndex : children_)
-      for(auto &child : childdrenAtIndex)
-        child->removedLink(elementInGlobal);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e);
-  }
-}
-
-/***********************************************/
-
-void TreeElementComplex::renamedLink(const QString &oldLabel, const QString &newLabel)
-{
-  try
-  {
-    TreeElement::renamedLink(oldLabel, newLabel);
-    for(auto &childdrenAtIndex : children_)
-      for(auto &child : childdrenAtIndex)
-        child->renamedLink(oldLabel, newLabel);
+        if(!child->renamedLink(oldLabel, newLabel))
+          break;
+    return true;
   }
   catch(std::exception &e)
   {
@@ -398,7 +454,7 @@ TreeElement *TreeElementComplex::skipCommentElements(TreeElement *targetElement,
     index = selectedIndex();
   auto end  = children_[index].end();
   auto iter = std::find(children_[index].begin(), end, targetElement);
-  while((iter != end) && ((*iter)->type() == "COMMENT")) // skip comment elements inbetween
+  while((iter != end) && (((*iter)->type() == "COMMENT") || !(*iter)->label().isEmpty())) // skip comment elements inbetween
     iter++;
   return (iter != end) ? *iter : nullptr;
 }
@@ -438,6 +494,8 @@ void TreeElementComplex::UndoCommandRemoveAddChild::redo()
       {
         // find precursor item
         TreeItem *afterItem = nullptr;
+        if(parent->loop      && parent->loop->item())      afterItem = parent->loop->item();
+        if(parent->condition && parent->condition->item()) afterItem = parent->condition->item();
         for(int i=0; (i<children.size()) && (children[i] != treeElement); i++)
           if(children[i]->item())
             afterItem = children[i]->item();
@@ -457,8 +515,8 @@ void TreeElementComplex::UndoCommandRemoveAddChild::redo()
         tree->setSelectedItem(targetElement->item());
     }
 
-    if(dynamic_cast<TreeElementGlobal*>(parent))
-      dynamic_cast<TreeElementGlobal*>(parent)->updateVariableList();
+    parent->updateParserResultsInScope();
+    parent->updateLinksInScope();
 
     // enable auto comment of the first element
     parent->childSetPushAutoComments(true);
@@ -475,7 +533,7 @@ void TreeElementComplex::UndoCommandRemoveAddChild::redo()
 
 /***********************************************/
 
-bool TreeElementComplex::canAddChild(TreeElement *targetElement, const QString &type) const
+bool TreeElementComplex::canAddChild(TreeElement *targetElement, const QString &type, const QString &label) const
 {
   try
   {
@@ -485,6 +543,8 @@ bool TreeElementComplex::canAddChild(TreeElement *targetElement, const QString &
       return false;
     if(type == "COMMENT")
       return true;
+    if(!label.isEmpty())
+      return (tree->xsdElement(type) != nullptr);
     targetElement = skipCommentElements(targetElement);
     return (targetElement->type() == type) && targetElement->unbounded();
   }
@@ -514,28 +574,32 @@ bool TreeElementComplex::canRemoveChild(TreeElement *element) const
 
 /***********************************************/
 
-TreeElement *TreeElementComplex::addChild(TreeElement *targetElement, const QString &type, XmlNodePtr xmlNode)
+TreeElement *TreeElementComplex::addChild(TreeElement *targetElement, const QString &type, const QString &label, XmlNodePtr xmlNode)
 {
   try
   {
-    if(!canAddChild(targetElement, type))
+    if(!canAddChild(targetElement, type, label))
       return nullptr;
 
+    TreeElement *newElement;
     if(type == "COMMENT")
     {
-      TreeElement *newElement = new TreeElementComment(tree, this, xmlNode ? xmlNode->getText() : QString());
-      tree->undoStack->push(new UndoCommandRemoveAddChild(newElement, targetElement, this, true/*isAdd*/));
-      return newElement;
+      newElement = new TreeElementComment(tree, this, xmlNode ? xmlNode->getText() : QString());
     }
-
-    // create & init new element
-    TreeElement *targetElement2 = skipCommentElements(targetElement);
-    TreeElement *newElement = TreeElement::newTreeElement(tree, this, targetElement2->xsdElement, targetElement2->defaultValue, xmlNode, false/*fillWithDefaults*/);
-    newElement->_name  = newElement->_schemaName;
-    newElement->_label = "";
-    newElement->setElementAdd(targetElement2->elementAdd());
-    tree->elementGlobal->informAboutGlobalElements(newElement, false/*recursively*/); // inform the new element about all links
-    newElement->updateParserResults(tree->elementGlobal->variableList(), false/*recursively*/);
+    else if(!label.isEmpty())
+    {
+      newElement = TreeElement::newTreeElement(tree, this, tree->xsdElement(type), "", xmlNode, !xmlNode/*fillWithDefaults*/);
+      newElement->_name  = newElement->_schemaName;
+      newElement->_label = label;
+    }
+    else
+    {
+      TreeElement *targetElement2 = skipCommentElements(targetElement);
+      newElement = TreeElement::newTreeElement(tree, this, targetElement2->xsdElement, targetElement2->defaultValue, xmlNode, !xmlNode/*fillWithDefaults*/);
+      newElement->_name  = newElement->_schemaName;
+      newElement->_label = "";
+      newElement->setElementAdd(targetElement2->elementAdd());
+    }
 
     tree->undoStack->push(new UndoCommandRemoveAddChild(newElement, targetElement, this, true/*isAdd*/));
     return newElement;
@@ -605,7 +669,10 @@ void TreeElementComplex::UndoCommandMoveChild::redo()
     children.insert(index, treeElement);
     targetElement = targetElementOld;
 
+    parent->updateParserResultsInScope();
+    parent->updateLinksInScope();
     parent->childSetPushAutoComments(true); // enable auto comment of the first element
+    tree->treeChanged();
 
     // set visible and get the focus
     // -----------------------------
@@ -664,7 +731,7 @@ void TreeElementComplex::createChildrenItems()
 {
   try
   {
-    TreeItem *after = nullptr;
+    TreeItem *after = (item()->childCount()) ? dynamic_cast<TreeItem*>(item()->child(item()->childCount()-1)) : nullptr;
     if(item() && !isLinked())
       for(auto &childElement : children_[selectedIndex()])
       {

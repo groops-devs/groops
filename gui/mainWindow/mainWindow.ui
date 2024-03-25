@@ -50,7 +50,6 @@
     <property name="title">
      <string>&amp;Edit</string>
     </property>
-    <addaction name="separator"/>
     <addaction name="editCutAction"/>
     <addaction name="editCopyAction"/>
     <addaction name="editPasteAction"/>
@@ -59,23 +58,19 @@
     <addaction name="editFindReplaceAction"/>
     <addaction name="editCollapseAllAction"/>
     <addaction name="separator"/>
-    <addaction name="editAddAction"/>
-    <addaction name="editRemoveAction"/>
-    <addaction name="separator"/>
-    <addaction name="editSetGlobalAction"/>
-    <addaction name="separator"/>
-    <addaction name="editSetLoopAction"/>
-    <addaction name="editRemoveLoopAction"/>
-    <addaction name="editSetConditionAction"/>
-    <addaction name="editRemoveConditionAction"/>
-    <addaction name="separator"/>
     <addaction name="editEnabledAction"/>
     <addaction name="editEnableAllAction"/>
     <addaction name="editDisableAllAction"/>
     <addaction name="separator"/>
+    <addaction name="editAddAction"/>
+    <addaction name="editRemoveAction"/>
+    <addaction name="editAddVariableAction"/>
+    <addaction name="editAddCommentAction"/>
+    <addaction name="editSetLoopAction"/>
+    <addaction name="editSetConditionAction"/>
+    <addaction name="separator"/>
     <addaction name="editRenameAction"/>
     <addaction name="editUpdateNameAction"/>
-    <addaction name="editAddCommentAction"/>
     <addaction name="editOpenExternallyAction"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
@@ -334,10 +329,10 @@
     <string>Delete ...</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+-</string>
+    <string>Del</string>
    </property>
   </action>
-  <action name="editSetGlobalAction">
+  <action name="editAddVariableAction">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -346,10 +341,10 @@
      <normaloff>:/icons/scalable/link.svg</normaloff>:/icons/scalable/link.svg</iconset>
    </property>
    <property name="text">
-    <string>Set Global ...</string>
+    <string>Add Variable ...</string>
    </property>
    <property name="toolTip">
-    <string>Set Global</string>
+    <string>Add Variable</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
@@ -489,31 +484,13 @@
      <normaloff>:/icons/scalable/loop-set.svg</normaloff>:/icons/scalable/loop-set.svg</iconset>
    </property>
    <property name="text">
-    <string>Set Loop ...</string>
+    <string>Set Loop</string>
    </property>
    <property name="toolTip">
     <string>Set Loop</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
-   </property>
-  </action>
-  <action name="editRemoveLoopAction">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../resources/icons.qrc">
-     <normaloff>:/icons/scalable/loop-remove.svg</normaloff>:/icons/scalable/loop-remove.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Remove Loop</string>
-   </property>
-   <property name="toolTip">
-    <string>Remove Loop</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+L</string>
    </property>
   </action>
   <action name="editEnableAllAction">
@@ -591,31 +568,13 @@
      <normaloff>:/icons/scalable/condition-set.svg</normaloff>:/icons/scalable/condition-set.svg</iconset>
    </property>
    <property name="text">
-    <string>Set Condition ...</string>
+    <string>Set Condition</string>
    </property>
    <property name="toolTip">
     <string>Set Condition</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+K</string>
-   </property>
-  </action>
-  <action name="editRemoveConditionAction">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../resources/icons.qrc">
-     <normaloff>:/icons/scalable/condition-remove.svg</normaloff>:/icons/scalable/condition-remove.svg</iconset>
-   </property>
-   <property name="text">
-    <string>Remove Condition</string>
-   </property>
-   <property name="toolTip">
-    <string>Remove Condition</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+K</string>
    </property>
   </action>
   <action name="fileCloseOtherAction">

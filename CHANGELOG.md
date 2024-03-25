@@ -1,16 +1,25 @@
 # main
+- Interface change: Variables can now declared at any place in the config file (not only in the global section).
+                    They have local scope within the hierarchy level.
+                    Loop and conditions attributed to elements no longer need to be declared in the global section.
 - New program:      eclipseFactor2GriddedData.cpp: returns a global grid with eclipse factors.
 - New program:      orbit2EarhFixedOrbit: Rotate an orbit into a rotation earth fixed frame.
 - New program:      GriddedDataTimeSeries2PotentialCoefficients.
 - New program:      SinexMetadata2GlonassFrequencyNumber.
+- New class:        In PlatformSelector: Equipment.
 - New class:        In Gravityfield/Tides/MiscAccelerations: Group.
+- New option:       Sp3Fromat2Orbit: Write all satellites (identifier is appended to each file).
 - New option:       GriddedData2PotentialCoefficients: Handle multiple input data columns at once.
 - New option:       GriddedDataReduceSampling: tesseroid volume conserving for digital elevation models.
 - New option:       Loop: optional condition for each loop step.
+- New option:       gnssParametrizationStaticPositions: no net scale constraint.
+- Removed program:  GnssPrn2SvnBlockVariables: This program will no longer work from the next release! See documentation for help.
 - Removed program:  NetCdf2PotentialCoefficients: Use NetCdf2GriddedDataTimeSeries and GriddedDataTimeSeries2PotentialCoefficients instead.
+- Bugfix:           SphericalHarmonicsFilter->DDK: corrected filter for level 4 onwards (Compatible with ICGEM definition).
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
 - Bugfix:           NetCdf: in some cases the data has been swapped.
+- Other:            GnssAntex2AntennaDefinition/GnssGlonassFrequencyNumberUpdate: write Platform files instead of deprecated GnssStationInfo files.
 - Other:            EarthRotation::rotaryAxis: if EOP time series is too short, use simplified equations.
 - Other:            Gravityfield2Deflections: Computation based now on normal gravity.
 - Other:            SimulateStarCamera: new optional nadir pointing mode.
@@ -19,6 +28,7 @@
 - Other:            Updated documentation to explain parameter names.
 - Other:            GriddedData: reworked area computations.
 - Other:            IersC04IAU2000EarthOrientationParameter: works also with new file format.
+- Other:            condition->fileExist: Supports now wildcards: * and ?.
 
 # Release 2023-08-25
 - New program:      FileMove.

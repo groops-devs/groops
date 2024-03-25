@@ -64,8 +64,8 @@ public:
   * Should be used after @a readConfigLater. */
   template<typename T> void read(T &var, VariableList &variableList) const;
 
-  /** @brief Get the current global variable list. */
-  VariableList &getVarList() {return varList;}
+  /** @brief Get the current variable list. */
+  VariableList &getVarList() {return stack.top().varList;}
 
   // --- Schema mode ----
 
@@ -99,13 +99,13 @@ protected:
     XmlNodePtr   xmlLastChild;   // last processed child
     LoopPtr      loopPtr;
     VariableList loopVarListOld; // varList without loop variables
+    VariableList varList;
+    std::map<std::string, XmlNodePtr> links;
 
     StackNode(XmlNodePtr _xmlNode, ComplexType _type, const std::string &_name) : name(_name), type(_type), xmlNode(_xmlNode) {}
   };
 
   std::stack<StackNode>  stack;
-  XmlNodePtr             global;
-  VariableList           varList;
   Bool                   createSchema;
 
   // stack management
@@ -113,7 +113,7 @@ protected:
   void         pop();
 
   // normal mode
-  XmlNodePtr   resolveLink(XmlNodePtr xmlNode) const;
+  XmlNodePtr   resolveLink(XmlNodePtr xmlNode);
   Bool         hasName(const std::string &name);
   XmlNodePtr   getChild(const std::string &name);
   void         notEmptyWarning();

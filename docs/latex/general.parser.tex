@@ -1,6 +1,7 @@
 \section{Parsers and variables}\label{general.parser}
-The XML configuration input is evaluated by two parsers. In a first step a text parser is applied.
-In the second step mathematical expressions are resolved to a number. Basic data types in the
-global section serve as input variables for the parsers.
+The XML configuration file is evaluated by two parsers. In a first step a text parser is applied.
+In the second step mathematical expressions are resolved to a number.
+Variables (see section~\reference{variables}{general.configFiles:variables}) can be referenced via their
+name directly for the expression parser or in the form \verb|{name}| for the text parser.
 
 \input{general.parser.auto}

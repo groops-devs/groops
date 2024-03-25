@@ -76,7 +76,7 @@ void InstrumentArcCalculate::run(Config &config, Parallel::CommunicatorPtr comm)
     readConfig(config, "leastSquares",            lsaExpr,     Config::OPTIONAL, "",      "try to minimize the expression by adjustment of the parameters");
     readConfig(config, "removalCriteria",         removeExpr,  Config::OPTIONAL, "",      "row is removed if one criterion evaluates true.");
     readConfig(config, "outType",                 type,        Config::OPTIONAL, "",      "");
-    readConfig(config, "outColumn",               outExpr,     Config::OPTIONAL, "data0", "expression of output columns, extra 'epoch' variable");
+    readConfig(config, "outColumn",               outExpr,     Config::OPTIONAL, R"(["data0"])", "expression of output columns, extra 'epoch' variable");
     if(readConfigSequence(config, "statistics", Config::OPTIONAL, "", ""))
     {
       readConfig(config, "outputfileInstrument", fileNameStatistics, Config::MUSTSET, "",         "instrument file with mid epoch per arc, data columns are user defined");

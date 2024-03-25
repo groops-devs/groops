@@ -48,7 +48,7 @@ void BerneseKinematic2Orbit::run(Config &config, Parallel::CommunicatorPtr /*com
 
     readConfig(config, "outputfileOrbit",      orbitName,      Config::MUSTSET,  "", "");
     readConfig(config, "outputfileCovariance", covarianceName, Config::MUSTSET,  "", "");
-    readConfig(config, "earthRotation",        earthRotation,  Config::OPTIONAL, "", "from TRF to CRF");
+    readConfig(config, "earthRotation",        earthRotation,  Config::OPTIONAL, "file", "from TRF to CRF");
     readConfig(config, "inputfile",            fileNamesIn,    Config::MUSTSET,  "", "");
     if(isCreateSchema(config)) return;
 

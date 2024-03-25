@@ -74,7 +74,7 @@ void Matrix2GriddedData::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       endChoice(config);
     }
     readConfig(config, "area",              exprArea,    Config::OPTIONAL, "", "expression (e.g. deltaL*2*sin(deltaB/2)*cos(data1/RHO))");
-    readConfig(config, "value",             exprValues,  Config::OPTIONAL, "data3", "expression");
+    readConfig(config, "value",             exprValues,  Config::OPTIONAL, R"(["data3"])", "expression");
     readConfig(config, "sortPoints",        sortPoints,  Config::DEFAULT,  "0", "sort from north/west to south east");
     readConfig(config, "computeArea",       computeArea, Config::DEFAULT,  "0", "the area can be computed automatically for rectangular grids");
     readConfig(config, "R",                 a,           Config::DEFAULT,  STRING_DEFAULT_GRS80_a, "reference radius for ellipsoidal coordinates");

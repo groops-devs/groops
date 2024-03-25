@@ -170,6 +170,7 @@ Test for conditions. See \reference{Loop and conditions}{general.loopsAndConditi
 
 \subsection{FileExist}
 Check for a file or directory existing.
+Supports wildcards * for any number of characters and ? for exactly one character.
 
 
 \keepXColumns
@@ -177,7 +178,7 @@ Check for a file or directory existing.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~file & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~file & \hfuzz=500pt filename & \hfuzz=500pt supports wildcards: * and ?\\
 \hline
 \end{tabularx}
 
@@ -197,7 +198,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{Expression}
+\subsection{Expression}\label{conditionType:expression}
 Evaluate expression.
 
 
@@ -1709,7 +1710,7 @@ Estimates a static position for all
 
 No-net constraints can be applied for a subset of stations,
 \configClass{selectNoNetReceivers}{platformSelectorType}, with a
-standard deviation of \config{noNetTranslationSigma} and \config{noNetRotationSigma}.
+standard deviation of \config{noNetTranslationSigma} and \config{noNetRotationSigma} and \config{noNetScaleSigma}.
 If the template \configFile{inputfileNoNetPositions}{stringList} is provided
 the constraints are applied relatively to these positions. Only stations with an existing position file
 are considered. Without \configFile{inputfileNoNetPositions}{stringList}
@@ -1746,6 +1747,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileNoNetPositions & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available, precise coordinates used for no-net constraints (in TRF)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~noNetTranslationSigma & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for no-net translation constraint on station coordinates\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~noNetRotationSigma & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] at Earth's surface for no-net rotation constraint on station coordinates\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~noNetScaleSigma & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for no-net scale constraint on station coordinates\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~huber & \hfuzz=500pt double & \hfuzz=500pt stations \$>\$ huber*sigma0 are downweighted in no-net constraint\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~huberPower & \hfuzz=500pt double & \hfuzz=500pt stations \$>\$ huber: sigma=(e/huber)\textasciicircum{}huberPower*sigma0\\
 \hline
@@ -4034,7 +4036,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{Loop}
+\subsection{Loop}\label{loopType:loop}
 Loop over nested loops. First \config{loop} is outermost loop, every subsequent \config{loop} is one level below the previous \config{loop}.
 
 
@@ -4050,7 +4052,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{PlatformEquipment}
+\subsection{PlatformEquipment}\label{loopType:platformEquipment}
 Loop over specific equipment of a \file{platform file}{platform}.
 
 
@@ -4064,6 +4066,9 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~all & \hfuzz=500pt  & \hfuzz=500pt loop over all types\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~gnssAntenna & \hfuzz=500pt  & \hfuzz=500pt loop over antennas\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~gnssReceiver & \hfuzz=500pt  & \hfuzz=500pt loop over receivers\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~slrStation & \hfuzz=500pt  & \hfuzz=500pt loop over SLR stations\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~slrRetroReflector & \hfuzz=500pt  & \hfuzz=500pt loop over laser retroreflectors\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~satelliteIdentifier & \hfuzz=500pt  & \hfuzz=500pt loop over satellite identifiers\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~other & \hfuzz=500pt  & \hfuzz=500pt loop over other types\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopName & \hfuzz=500pt string & \hfuzz=500pt variable with name\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopSerial & \hfuzz=500pt string & \hfuzz=500pt variable with serial\\
@@ -6923,6 +6928,35 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
+\subsection{Equipment}\label{platformSelectorType:equipment}
+Select all platforms which has the specified equipment in the processed time interval.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~equipmentType & \hfuzz=500pt choice & \hfuzz=500pt equipment type\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~all & \hfuzz=500pt  & \hfuzz=500pt all types\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~gnssAntenna & \hfuzz=500pt sequence & \hfuzz=500pt antennas\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~radome & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~gnssReceiver & \hfuzz=500pt sequence & \hfuzz=500pt receivers\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~version & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~slrStation & \hfuzz=500pt  & \hfuzz=500pt SLR station\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~slrRetroReflector & \hfuzz=500pt  & \hfuzz=500pt laser retroreflector\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~satelliteIdentifier & \hfuzz=500pt sequence & \hfuzz=500pt satellite identifier\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~cospar & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~norad & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sic & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sp3 & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~other & \hfuzz=500pt  & \hfuzz=500pt other types\\
+\hline
+\end{tabularx}
+
+
 \subsection{Exclude}\label{platformSelectorType:exclude}
 Select all receivers/transmitters except
 \configClass{selector}{platformSelectorType}.
@@ -7879,7 +7913,7 @@ Orderwise filtering with the DDK filter by Kusche et al. 2009.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~level & \hfuzz=500pt uint & \hfuzz=500pt DDK filter level (1, 2, 3, ...)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~level & \hfuzz=500pt uint & \hfuzz=500pt DDK filter level (1, 2, 3, ..., 8)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileNormalEquation & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hline
 \end{tabularx}

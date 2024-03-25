@@ -17,7 +17,7 @@
 #include "tree/treeElementGlobal.h"
 #include "tree/treeElementProgram.h"
 #include "tree/treeElementAdd.h"
-#include "addGlobalDialog/addGlobalDialog.h"
+#include "addVariableDialog/addVariableDialog.h"
 
 /***********************************************/
 
@@ -81,9 +81,9 @@ void TreeElementAdd::pushButtonClicked()
   try
   {
     if(dynamic_cast<TreeElementGlobal*>(parentElement))
-      dynamic_cast<TreeElementGlobal*>(parentElement)->addNewChild();
+      parentElement->addChild(this, "", "", XmlNodePtr(nullptr));
     else
-      parentElement->addChild(this, type(), XmlNodePtr(nullptr));
+      parentElement->addChild(this, type(), "", XmlNodePtr(nullptr));
   }
   catch(std::exception &e)
   {
