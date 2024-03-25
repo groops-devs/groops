@@ -113,11 +113,13 @@ PlatformEquipmentPtr PlatformEquipment::create(Type type)
   {
     switch(type)
     {
-      case OTHER:        return std::make_shared<PlatformEquipment>();
-      case GNSSANTENNA:  return std::make_shared<PlatformGnssAntenna>();
-      case GNSSRECEIVER: return std::make_shared<PlatformGnssReceiver>();
-      case SLRSTATION:   return std::make_shared<PlatformSlrStation>();
-      case UNDEFINED:    break;
+      case OTHER:               return std::make_shared<PlatformEquipment>();
+      case GNSSANTENNA:         return std::make_shared<PlatformGnssAntenna>();
+      case GNSSRECEIVER:        return std::make_shared<PlatformGnssReceiver>();
+      case SLRSTATION:          return std::make_shared<PlatformSlrStation>();
+      case LASERRETROREFLECTOR: return std::make_shared<PlatformLaserRetroReflector>();
+      case SATELLITEIDENTIFIER: return std::make_shared<PlatformSatelliteIdentifier>();
+      case UNDEFINED:           break;
     }
 
     throw(Exception("unknown equipment type ("+static_cast<Int>(type)%"%i)"s));
@@ -177,6 +179,46 @@ void PlatformSlrStation::save(OutArchive &/*ar*/) const
 
 void PlatformSlrStation::load(InArchive &/*ar*/)
 {
+}
+
+/***********************************************/
+/***********************************************/
+
+void PlatformLaserRetroReflector::save(OutArchive &ar) const
+{
+  ar<<nameValue("platform2reflectorFrame", platform2reflectorFrame);
+  ar<<nameValue("dZenit",                  dZenit);
+  ar<<nameValue("range",                   range);
+}
+
+/***********************************************/
+
+void PlatformLaserRetroReflector::load(InArchive &ar)
+{
+  ar>>nameValue("platform2reflectorFrame", platform2reflectorFrame);
+  ar>>nameValue("dZenit",                  dZenit);
+  ar>>nameValue("range",                   range);
+}
+
+/***********************************************/
+/***********************************************/
+
+void PlatformSatelliteIdentifier::save(OutArchive &ar) const
+{
+  ar<<nameValue("cospar", cospar);
+  ar<<nameValue("norad",  norad);
+  ar<<nameValue("sic",    sic);
+  ar<<nameValue("sp3",    sp3);
+}
+
+/***********************************************/
+
+void PlatformSatelliteIdentifier::load(InArchive &ar)
+{
+  ar>>nameValue("cospar", cospar);
+  ar>>nameValue("norad",  norad);
+  ar>>nameValue("sic",    sic);
+  ar>>nameValue("sp3",    sp3);
 }
 
 /***********************************************/

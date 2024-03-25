@@ -100,6 +100,29 @@ if previous names are not available (e.g. without observation file).
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStringTable</div></div></td><td>filename</td><td>list of names with alternatives</td></tr>
 </table>
 
+<h2 id="equipment">Equipment</h2><p>
+Select all platforms which has the specified equipment in the processed time interval.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">serial</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">equipmentType</div></div></td><td>choice</td><td>equipment type</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">all</div></div></td><td></td><td>all types</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">gnssAntenna</div></div></td><td>sequence</td><td>antennas</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">radome</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">gnssReceiver</div></div></td><td>sequence</td><td>receivers</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">version</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">slrStation</div></div></td><td></td><td>SLR station</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">slrRetroReflector</div></div></td><td></td><td>laser retroreflector</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">satelliteIdentifier</div></div></td><td>sequence</td><td>satellite identifier</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">cospar</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">norad</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sic</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sp3</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">other</div></div></td><td></td><td>other types</td></tr>
+</table>
+
 <h2 id="exclude">Exclude</h2><p>
 Select all receivers/transmitters except
 <a class="groops-class" href="platformSelectorType.html">selector</a>.
