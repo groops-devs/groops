@@ -23,7 +23,7 @@ See also \program{GnssAntex2AntennaDefinition}.
 
 #include "programs/program.h"
 #include "files/fileGnssReceiverDefinition.h"
-#include "files/fileGnssStationInfo.h"
+#include "files/filePlatform.h"
 #include "files/fileMatrix.h"
 
 /***** CLASS ***********************************/
@@ -55,20 +55,18 @@ void GnssGlonassFrequencyNumberUpdate::run(Config &config, Parallel::Communicato
     readConfig(config, "variableNamePrn",              variableNamePrn,                  Config::OPTIONAL, "prn", "variable name for PRN in transmitter info files");
     if(isCreateSchema(config)) return;
 
-    std::vector<GnssStationInfo> transmitterInfos(prnList.size());
+    std::vector<Platform> transmitterInfos(prnList.size());
     if(!fileNameInTransmitterInfo.empty())
     {
       VariableList varList;
       varList.setVariable(variableNamePrn, "R**");
       logStatus<<"read transmitter infos from <"<<fileNameInTransmitterInfo(varList)<<">"<< Log::endl;
-      for(UInt idPrn = 0; idPrn < prnList.size(); idPrn++)
+      for(UInt idPrn=0; idPrn<prnList.size(); idPrn++)
       {
         varList.setVariable(variableNamePrn, prnList.at(idPrn));
-        readFileGnssStationInfo(fileNameInTransmitterInfo(varList), transmitterInfos.at(idPrn));
+        readFilePlatform(fileNameInTransmitterInfo(varList), transmitterInfos.at(idPrn));
       }
     }
-
-    std::vector<GnssReceiverDefinitionPtr> receiverDefList;
 
     logStatus<<"read GLONASS PRN/SVN to frequency number matrix from <"<<fileNameInPrnSvn2FrequencyNumber<<">"<< Log::endl;
     Matrix prnSvn2FreqNo;
@@ -76,8 +74,7 @@ void GnssGlonassFrequencyNumberUpdate::run(Config &config, Parallel::Communicato
 
     //---------------------------------------------------------------
 
-    std::vector<std::vector<GnssReceiverInfo>> receiverInfos(prnList.size());
-    std::vector<GnssReceiverDefinitionPtr> receiverDefListNew;
+    std::vector<std::vector<std::shared_ptr<PlatformGnssReceiver>>> receiverInfos(prnList.size());
     for(UInt i=0; i<prnSvn2FreqNo.rows(); i++)
     {
       const std::string prn    = prnSvn2FreqNo(i,0)%"R%02i"s;
@@ -87,19 +84,19 @@ void GnssGlonassFrequencyNumberUpdate::run(Config &config, Parallel::Communicato
       const std::string freqNo = prnSvn2FreqNo(i,4)%"%i"s;
 
       Bool found = FALSE;
-      for(UInt idTrans = 0; idTrans < transmitterInfos.size(); idTrans++)
+      for(UInt idTrans=0; idTrans<transmitterInfos.size(); idTrans++)
         if(transmitterInfos.at(idTrans).markerNumber == prn)
         {
           // new receiver list entry
-          UInt idRecv = transmitterInfos.at(idTrans).findReceiver(0.5*(timeStart+timeEnd));
-          if(idRecv == NULLINDEX)
+          auto recv = transmitterInfos.at(idTrans).findEquipment<PlatformGnssReceiver>(0.5*(timeStart+timeEnd));
+          if(!recv)
             continue;
           found = TRUE;
 
-          GnssReceiverInfo info(transmitterInfos.at(idTrans).receiver.at(idRecv));
-          info.timeStart = timeStart;
-          info.timeEnd   = timeEnd;
-          info.version   = freqNo;
+          auto info = std::make_shared<PlatformGnssReceiver>(*recv);
+          info->timeStart = timeStart;
+          info->timeEnd   = timeEnd;
+          info->version   = freqNo;
           receiverInfos.at(idTrans).push_back(info);
         }
 
@@ -116,10 +113,15 @@ void GnssGlonassFrequencyNumberUpdate::run(Config &config, Parallel::Communicato
       logStatus<<"write transmitter infos to <"<<fileNameOutTransmitterInfo(varList)<<">"<< Log::endl;
       for(UInt idPrn=0; idPrn<prnList.size(); idPrn++)
       {
+        auto &eq = transmitterInfos.at(idPrn).equipments;
+        // remove old receivers
+        eq.erase(std::remove_if(eq.begin(), eq.end(), [](auto &x) {return std::dynamic_pointer_cast<PlatformGnssReceiver>(x);}), eq.end());
+        // insert new receivers
+        std::sort(receiverInfos.at(idPrn).begin(), receiverInfos.at(idPrn).end(), [](auto &info1, auto &info2){return info1->timeStart < info2->timeStart;});
+        eq.insert(eq.end(), receiverInfos.at(idPrn).begin(), receiverInfos.at(idPrn).end());
+
         varList.setVariable(variableNamePrn, prnList.at(idPrn));
-        std::sort(receiverInfos.at(idPrn).begin(), receiverInfos.at(idPrn).end(), [](GnssReceiverInfo &info1, GnssReceiverInfo &info2){ return info1.timeStart < info2.timeStart; });
-        transmitterInfos.at(idPrn).receiver = receiverInfos.at(idPrn);
-        writeFileGnssStationInfo(fileNameOutTransmitterInfo(varList), transmitterInfos.at(idPrn));
+        writeFilePlatform(fileNameOutTransmitterInfo(varList), transmitterInfos.at(idPrn));
       }
     }
   }

@@ -62,10 +62,13 @@ inline LoopPlatformEquipment::LoopPlatformEquipment(Config &config)
     readConfig(config, "inputfilePlatform", fileName, Config::MUSTSET, "", "platform info file");
     if(readConfigChoice(config, "equipmentType", choice, Config::MUSTSET, "", "equipment type to loop over"))
     {
-      if(readConfigChoiceElement(config, "all",          choice, "loop over all types"))    type = PlatformEquipment::UNDEFINED;
-      if(readConfigChoiceElement(config, "gnssAntenna",  choice, "loop over antennas"))     type = PlatformEquipment::GNSSANTENNA;
-      if(readConfigChoiceElement(config, "gnssReceiver", choice, "loop over receivers"))    type = PlatformEquipment::GNSSRECEIVER;
-      if(readConfigChoiceElement(config, "other",        choice, "loop over other types"))  type = PlatformEquipment::OTHER;
+      if(readConfigChoiceElement(config, "all",                 choice, "loop over all types"))             type = PlatformEquipment::UNDEFINED;
+      if(readConfigChoiceElement(config, "gnssAntenna",         choice, "loop over antennas"))              type = PlatformEquipment::GNSSANTENNA;
+      if(readConfigChoiceElement(config, "gnssReceiver",        choice, "loop over receivers"))             type = PlatformEquipment::GNSSRECEIVER;
+      if(readConfigChoiceElement(config, "slrStation",          choice, "loop over SLR stations"))          type = PlatformEquipment::SLRSTATION;
+      if(readConfigChoiceElement(config, "slrRetroReflector",   choice, "loop over laser retroreflectors")) type = PlatformEquipment::LASERRETROREFLECTOR;
+      if(readConfigChoiceElement(config, "satelliteIdentifier", choice, "loop over satellite identifiers")) type = PlatformEquipment::SATELLITEIDENTIFIER;
+      if(readConfigChoiceElement(config, "other",               choice, "loop over other types"))           type = PlatformEquipment::OTHER;
       endChoice(config);
     }
     readConfig(config, "variableLoopName",      nameName,            Config::OPTIONAL,  "loopName",      "variable with name");
@@ -115,9 +118,7 @@ inline Bool LoopPlatformEquipment::iteration(VariableList &varList)
         {
           case PlatformEquipment::GNSSANTENNA:  varList.setVariable(nameInfo, std::dynamic_pointer_cast<PlatformGnssAntenna>(eq)->radome); break;
           case PlatformEquipment::GNSSRECEIVER: varList.setVariable(nameInfo, std::dynamic_pointer_cast<PlatformGnssReceiver>(eq)->version); break;
-          case PlatformEquipment::OTHER:        break;
-          case PlatformEquipment::UNDEFINED:    break;
-          default:                              break;
+          default: break;
         }
       }
       break;

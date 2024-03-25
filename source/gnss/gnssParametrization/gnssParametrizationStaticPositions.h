@@ -7,6 +7,7 @@
 *
 * @author Torsten Mayer-Guerr
 * @author Sebastian Strasser
+* @author HongzhanZhao
 * @date 2021-01-23
 *
 */
@@ -24,7 +25,7 @@ Estimates a static position for all
 
 No-net constraints can be applied for a subset of stations,
 \configClass{selectNoNetReceivers}{platformSelectorType}, with a
-standard deviation of \config{noNetTranslationSigma} and \config{noNetRotationSigma}.
+standard deviation of \config{noNetTranslationSigma} and \config{noNetRotationSigma} and \config{noNetScaleSigma}.
 If the template \configFile{inputfileNoNetPositions}{stringList} is provided
 the constraints are applied relatively to these positions. Only stations with an existing position file
 are considered. Without \configFile{inputfileNoNetPositions}{stringList}
@@ -66,7 +67,7 @@ class GnssParametrizationStaticPositions : public GnssParametrizationBase
   std::vector<Byte>               selectedReceivers, selectedNoNetReceivers;
   FileName                        fileNameGrid, fileNamePosition, fileNameNoNetPositions;
   Bool                            applyConstraint;
-  Double                          sigmaNoNetTranslation, sigmaNoNetRotation;
+  Double                          sigmaNoNetTranslation, sigmaNoNetRotation, sigmaNoNetScale;
   Double                          huber, huberPower;
   std::vector<GnssParameterIndex> index; // for each receiver
   std::vector<Vector3d>           pos, pos0, noNetPos;
