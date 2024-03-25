@@ -15,6 +15,7 @@
 #include "base/import.h"
 #include "config/configRegister.h"
 #include "classes/platformSelector/platformSelectorAll.h"
+#include "classes/platformSelector/platformSelectorEquipment.h"
 #include "classes/platformSelector/platformSelectorExclude.h"
 #include "classes/platformSelector/platformSelectorFile.h"
 #include "classes/platformSelector/platformSelectorWildcard.h"
@@ -26,6 +27,7 @@ GROOPS_REGISTER_CLASS(PlatformSelector, "platformSelectorType",
                       PlatformSelectorAll,
                       PlatformSelectorWildcard,
                       PlatformSelectorFile,
+                      PlatformSelectorEquipment,
                       PlatformSelectorExclude)
 
 GROOPS_READCONFIG_UNBOUNDED_CLASS(PlatformSelector, "platformSelectorType")
@@ -45,6 +47,8 @@ PlatformSelector::PlatformSelector(Config &config, const std::string &name)
         bases.push_back(std::unique_ptr<PlatformSelectorBase>(new PlatformSelectorWildcard(config)));
       if(readConfigChoiceElement(config, "file",     choice, "select from file (with alternatives)"))
         bases.push_back(std::unique_ptr<PlatformSelectorBase>(new PlatformSelectorFile(config)));
+      if(readConfigChoiceElement(config, "equipment", choice, "select by equipment"))
+        bases.push_back(std::unique_ptr<PlatformSelectorBase>(new PlatformSelectorEquipment(config)));
       if(readConfigChoiceElement(config, "exclude",  choice, "exclude from selection"))
         bases.push_back(std::unique_ptr<PlatformSelectorBase>(new PlatformSelectorExclude(config)));
       endChoice(config);

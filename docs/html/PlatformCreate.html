@@ -108,6 +108,50 @@ Create a <a class="groops-file" href="fileFormat_platform.html">Platform file</a
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">comment</div></div></td><td>string</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">timeStart</div></div></td><td>time</td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">timeEnd</div></div></td><td>time</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">laserRetroReflector</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">name</div></div></td><td>string</td><td>e.g. GFZ, ITE, IPIE</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">serial</div></div></td><td>string</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">comment</div></div></td><td>string</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">timeStart</div></div></td><td>time</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">timeEnd</div></div></td><td>time</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">positionX</div></div></td><td>double</td><td>[m] optial reference point RP in satellite system</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">positionY</div></div></td><td>double</td><td>[m] optial reference point RP in satellite system</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">positionZ</div></div></td><td>double</td><td>[m] optial reference point RP in satellite system</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">rotationX</div></div></td><td>angle</td><td>[degree] from local/vehicle to LRR system</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">rotationY</div></div></td><td>angle</td><td>[degree] from local/vehicle to LRR system</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">rotationZ</div></div></td><td>angle</td><td>[degree] from local/vehicle to LRR system</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">flipX</div></div></td><td>boolean</td><td>flip x-axis (after rotation)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">flipY</div></div></td><td>boolean</td><td>flip y-axis (after rotation)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">flipZ</div></div></td><td>boolean</td><td>flip z-axis (after rotation)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">range</div></div></td><td>double</td><td>[m] range bias (only without range matrix)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">inputfileRangeMatrix</div></div></td><td>filename</td><td>[m] (azimuth(0..360) x zenith(0..dZenit*rows)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">dZenit</div></div></td><td>angle</td><td>[degree] increment of range matrix</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">geodeticSatellite</div></div></td><td>sequence</td><td>e.g. LAGEOS</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">name</div></div></td><td>string</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">serial</div></div></td><td>string</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">comment</div></div></td><td>string</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">timeStart</div></div></td><td>time</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">timeEnd</div></div></td><td>time</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">range</div></div></td><td>double</td><td>[m] standard center-of-mass correction</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">slrStation</div></div></td><td>sequence</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">name</div></div></td><td>string</td><td>CDP SOD 8-digit No.</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">serial</div></div></td><td>string</td><td>IERS DOMES</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">comment</div></div></td><td>string</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">timeStart</div></div></td><td>time</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">timeEnd</div></div></td><td>time</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">positionX</div></div></td><td>double</td><td>[m] exccentricity in north</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">positionY</div></div></td><td>double</td><td>[m] exccentricity in east</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">positionZ</div></div></td><td>double</td><td>[m] exccentricity in up</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">satelliteIdentifier</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">name</div></div></td><td>string</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">serial</div></div></td><td>string</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">cospar</div></div></td><td>string</td><td>Satellite COSPAR ID</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">norad</div></div></td><td>string</td><td>Satellite Catalog (NORAD) Number</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sic</div></div></td><td>string</td><td>SIC Code</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sp3</div></div></td><td>string</td><td>SP3</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">comment</div></div></td><td>string</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">timeStart</div></div></td><td>time</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">timeEnd</div></div></td><td>time</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">other</div></div></td><td>sequence</td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset">name</div></div></td><td>string</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">serial</div></div></td><td>string</td><td></td></tr>
