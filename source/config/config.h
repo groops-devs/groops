@@ -113,7 +113,6 @@ protected:
   void         pop();
 
   // normal mode
-  XmlNodePtr   resolveLink(XmlNodePtr xmlNode);
   Bool         hasName(const std::string &name);
   XmlNodePtr   getChild(const std::string &name);
   void         notEmptyWarning();
