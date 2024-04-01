@@ -137,6 +137,9 @@ Bool Config::hasName(const std::string &name)
       return TRUE;
     }
 
+    if(!stack.top().xmlNode->findChild(name))
+      return FALSE;
+
     // local variables before?
     // -----------------------
     XmlNodePtr xmlNode;
@@ -158,8 +161,6 @@ Bool Config::hasName(const std::string &name)
         break;
       // unknown element: move to end
       stack.top().xmlNode->addChild(xmlNode);
-      if(!stack.top().xmlNode->findChild(name))
-        return FALSE;
     }
 
     if(xmlNode == nullptr)
