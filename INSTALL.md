@@ -146,14 +146,15 @@ working with GROOPS easier.
     1.4. In the environment variable window, select `Path` and click `Edit...`. A pop-up window will appear
     where you can add the following directories to your system path:
     ```
-    "C:\groops\bin"
     "C:\msys64\mingw64\bin"
+    "C:\groops\bin"
     "C:\Program Files\Microsoft MPI\Bin"
     ```
     In case you manually compiled the GUI, additionally add the directory:
     ```
     "C:\Qt\5.15.1\mingw81_64\bin"
     ```
+    The `mingw64` path should be in the first line of the list.
 
 2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` or `OMP_NUM_THREADS` to the number of threads to use for matrix operations.
 
