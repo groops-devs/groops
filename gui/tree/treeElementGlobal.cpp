@@ -41,7 +41,7 @@ TreeElementGlobal::TreeElementGlobal(Tree *tree, TreeElementComplex *parentEleme
     if(xmlNode)
       createChildrenElements(0, xmlNode);     // add children
     // the add element
-    children_[0].push_back(new TreeElementAdd(tree, this, xsdElement, true/*visible*/));
+    children_[0].push_back(new TreeElementAdd(tree, this, xsdElement, "", true/*visible*/));
     setSelectedIndex(0);
   }
   catch(std::exception &e)

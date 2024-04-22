@@ -27,8 +27,8 @@ public:
   bool visible;
 
 public:
-  TreeElementAdd(Tree *tree, TreeElementComplex *parentElement,
-                 XsdElementPtr xsdElement, bool visible=true);
+  TreeElementAdd(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
+                 const QString &defaultOverride, bool visible=true);
 
   bool optional()          const override {return false;}
   bool unbounded()         const override {return true;}
