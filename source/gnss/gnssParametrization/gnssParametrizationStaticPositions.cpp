@@ -92,14 +92,14 @@ void GnssParametrizationStaticPositions::init(Gnss *gnss, Parallel::Communicator
     if(sigmaNoNetRotation || sigmaNoNetTranslation || sigmaNoNetScale)
     {
       std::vector<const Platform*> platforms(gnss->receivers.size(), nullptr);
-      for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
-        if(gnss->receivers.at(idRecv)->useable())
-          platforms.at(idRecv) = &gnss->receivers.at(idRecv)->platform;
+      for(auto recv : gnss->receivers)
+        if(selectedReceivers.at(recv->idRecv()) && recv->useable())
+          platforms.at(recv->idRecv()) = &recv->platform;
 
       // no net positions
       noNetPos = pos;
       if(!fileNameNoNetPositions.empty())
-        for(UInt idRecv=0; idRecv<selectedNoNetReceivers.size(); idRecv++)
+        for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
           if(platforms.at(idRecv))
           {
             try
@@ -119,10 +119,6 @@ void GnssParametrizationStaticPositions::init(Gnss *gnss, Parallel::Communicator
           }
 
       selectedNoNetReceivers = selectNoNetReceivers->select(gnss->times.front(), gnss->times.back(), platforms);
-      for(auto recv : gnss->receivers)
-        if(selectedNoNetReceivers.at(recv->idRecv()) && !selectedReceivers.at(recv->idRecv()))
-          throw(Exception(recv->name()+" for no-net constraints must be selected for position estimation too"));
-
       const UInt countStation = std::count(selectedNoNetReceivers.begin(), selectedNoNetReceivers.end(), TRUE);
       logInfo<<"  "<<countStation<<" stations contribute to the computation of net translation/rotation/scale"<<Log::endl;
       if(!countStation)
@@ -277,6 +273,19 @@ void GnssParametrizationStaticPositions::constraints(const GnssNormalEquationInf
     if(sigmaNoNetTranslation) logStatus<<"apply no-net translation to receiver positions, apriori ("<<1e3*x(idxNNT+0)%"%.1f, "s<<1e3*x(idxNNT+1)%"%.1f, "s<<1e3*x(idxNNT+2)%"%.1f) mm"s<<Log::endl;
     if(sigmaNoNetRotation)    logStatus<<"apply no-net rotation to receiver positions,    apriori ("<<1e3*x(idxNNR+0)%"%.1f, "s<<1e3*x(idxNNR+1)%"%.1f, "s<<1e3*x(idxNNR+2)%"%.1f) mm"s<<Log::endl;
     if(sigmaNoNetScale)       logStatus<<"apply no-net scale to receiver positions,       apriori ("<<1e3*x(idxNNS+0)%"%.1f) mm"s<<Log::endl;
+    if(sigmaNoNetRotation || sigmaNoNetTranslation || sigmaNoNetScale)
+    {
+      logWarning<<" no-net coordinate residuals rms = "<<1e3*rootMeanSquare(l-A*x)%"%.1f mm, "s<<Log::endl;
+      UInt i = 0;
+      if(sigma.size())
+        for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
+          if(selectedNoNetReceivers.at(idRecv) && index.at(idRecv))
+          {
+            if(sigma(i) > 1)
+              logWarning<<" "<<gnss->receivers.at(idRecv)->name()<<" outlier sigma = "<<sigma(i)%"%.2f"s<<Log::endl;
+            i++;
+          }
+    }
 
     // weighted no-net constraints
     GnssDesignMatrix Design(normalEquationInfo, x);
