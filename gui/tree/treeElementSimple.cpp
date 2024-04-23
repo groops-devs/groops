@@ -11,6 +11,8 @@
 /***********************************************/
 
 #include <QtDebug>
+#include <QJsonDocument>
+#include <QJsonArray>
 #include "base/importGroops.h"
 #include "tree/tree.h"
 #include "tree/treeElement.h"
@@ -37,7 +39,13 @@ TreeElementSimple::TreeElementSimple(Tree *tree, TreeElementComplex *parentEleme
         insertNewValue("", false);
     }
     if(!defaultValue.isEmpty())
+    {
+      // catch arrays in default
+      QJsonArray defaultArray = QJsonDocument::fromJson(defaultValue.toUtf8()).array();
+      if(!defaultArray.isEmpty())
+        defaultValue = defaultArray.last().toString();
       insertNewValue(defaultValue, false);
+    }
 
     setSelectedIndex(isLinked() ? selectedIndex() : 0);
   }

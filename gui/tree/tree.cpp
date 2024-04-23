@@ -244,7 +244,7 @@ Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *tabEnvironme
 
 Tree::~Tree()
 {
-  delete rootElement;
+  clearTree();
 }
 
 /***********************************************/
