@@ -115,147 +115,141 @@ void TreeElementComplex::createChildrenElements(int index, XmlNodePtr xmlNode)
     if((index < 0) || (index >= xsdElementList.size()))
       return;
 
-    // children not created yet?
-    if(xmlNode && children_[index].size())
-      throw(Exception("cannot create"));
-    if(!children_[index].size())
+    // children already created?
+    if(children_[index].size())
     {
-      // lambda function to add comments & variables inbetween
-      // -----------------------------------------------------
-      auto insertCommentsAndVariables = [&]()
+      if(xmlNode)
+        throw(Exception("cannot create"));
+      childSetPushAutoComments(true, index); // set autocomment for the first element
+      return;
+    }
+
+    auto defaultStr = [](const QJsonValue &defaultValue) -> QString
+    {
+      switch(defaultValue.type())
       {
-        if(!xmlNode)
-          return;
-        XmlNodePtr xmlChild;
-        XmlAttrPtr attrLabel;
-        std::list<XmlNodePtr> xmlLocals;
-        for(;;)
+        case QJsonValue::String: return defaultValue.toString();
+        case QJsonValue::Bool:   return (defaultValue.toBool() ? "1" : "0");
+        case QJsonValue::Double: return QString::number(defaultValue.toDouble());
+        case QJsonValue::Object: if(!defaultValue.toObject().isEmpty()) return QJsonDocument(defaultValue.toObject()).toJson(QJsonDocument::Compact); break;
+        case QJsonValue::Array:  if(!defaultValue.toArray().isEmpty())  return QJsonDocument(defaultValue.toArray()).toJson(QJsonDocument::Compact);  break;
+        default: break;
+      }
+      return QString();
+    };
+
+    // lambda function to add comments & variables inbetween
+    // -----------------------------------------------------
+    auto insertCommentsAndVariables = [&]()
+    {
+      if(!xmlNode)
+        return;
+      XmlNodePtr xmlChild;
+      XmlAttrPtr attrLabel;
+      std::list<XmlNodePtr> xmlLocals;
+      for(;;)
+      {
+        if(!(xmlChild = xmlNode->peekNextChild()))
+          break;
+        if(xmlChild->getName() == "COMMENT")
+          children_[index].push_back(new TreeElementComment(tree, this, xmlNode->getNextChild()->getText()));
+        else if((attrLabel = xmlChild->findAttribute("label")))
         {
-          if(!(xmlChild = xmlNode->peekNextChild()))
-            break;
-          if(xmlChild->getName() == "COMMENT")
-            children_[index].push_back(new TreeElementComment(tree, this, xmlNode->getNextChild()->getText()));
-          else if((attrLabel = xmlChild->findAttribute("label")))
+          xmlChild = xmlNode->getNextChild(); // remove node
+          if(attrLabel->text.startsWith("_local"))
+            xmlLocals.push_front(xmlChild); // _local variables (loops/conditions) are added to next element
+          else
           {
-            xmlChild = xmlNode->getNextChild(); // remove node
-            if(attrLabel->text.startsWith("_local"))
-              xmlLocals.push_front(xmlChild); // _local variables (loops/conditions) are added to next element
-            else
-            {
-              if(xmlLocals.size())
-                throw(Exception("variables cannot have loops or conditions"));
-              children_[index].push_back(TreeElement::newTreeElement(tree, this, tree->xsdElement(xmlChild->getName()), "", xmlChild, false/*fillWithDefaults*/));
-            }
+            if(xmlLocals.size())
+              throw(Exception("variables cannot have loops or conditions"));
+            children_[index].push_back(TreeElement::newTreeElement(tree, this, tree->xsdElement(xmlChild->getName()), "", xmlChild, false/*fillWithDefaults*/));
           }
-          else
-            break;
         }
-        // add _local variables to next xml element
-        if(xmlChild && xmlLocals.size())
-          for(auto &xmlLocal : xmlLocals)
-            xmlChild->addChild(xmlLocal, true);
-      };
-      // -------------------------------------------------
+        else
+          break;
+      }
+      // add _local variables to next xml element
+      if(xmlChild && xmlLocals.size())
+        for(auto &xmlLocal : xmlLocals)
+          xmlChild->addChild(xmlLocal, true);
+    };
+    // -------------------------------------------------
 
-      if(xsdElementList[index] && xsdElementList[index]->complex)
+    if(xsdElementList[index] && xsdElementList[index]->complex)
+    {
+      auto xsdComplex = xsdElementList[index]->complex;
+      if(xsdComplex->type != "sequence")
+        throw(Exception("complex must be sequence"));
+
+      for(auto &xsdElement : xsdComplex->elements)
       {
-        auto xsdComplex = xsdElementList[index]->complex;
-        if(xsdComplex->type != "sequence")
-          throw(Exception("complex must be sequence"));
+        QJsonValue overrideDefaultValue = overrideDefaultObjects[index].value(xsdElement->names.front());
 
-        for(auto &xsdElement : xsdComplex->elements)
+        // lambda function to add new tree element as child
+        // -------------------------------------------------
+        auto addNewChildElement = [&](TreeElementAdd *elementAdd, const QJsonValue &defaultValue)
         {
-          QJsonValue overrideDefaultValue = overrideDefaultObjects[index].value(xsdElement->names.front());
-          if((overrideDefaultValue.isUndefined() || overrideDefaultValue.isNull()) && xsdElement->unbounded && xsdElement->defaultValue.startsWith("["))
-            overrideDefaultValue = QJsonDocument::fromJson(xsdElement->defaultValue.toUtf8()).array(); // catch arrays in default
+          insertCommentsAndVariables();
+          XmlNodePtr xmlChild;
+          if(xmlNode)
+            xmlChild = xmlNode->getChild(xsdElement->names);
 
-          // lambda function to add new tree element as child
-          // -------------------------------------------------
-          auto addNewChildElement = [&](TreeElementAdd *elementAdd, const QJsonValue &defaultValue, bool fillWithDefaults)
+          TreeElement *treeElement;
+          try
           {
-            insertCommentsAndVariables();
-            XmlNodePtr xmlChild;
-            if(xmlNode)
-              xmlChild = xmlNode->getChild(xsdElement->names);
-
-            QString defaultStr;
-            switch(defaultValue.type())
-            {
-              case QJsonValue::String: defaultStr = defaultValue.toString();                  break;
-              case QJsonValue::Bool:   defaultStr = (defaultValue.toBool() ? "1" : "0");      break;
-              case QJsonValue::Double: defaultStr = QString::number(defaultValue.toDouble()); break;
-              case QJsonValue::Object: if(!defaultValue.toObject().isEmpty()) defaultStr = QJsonDocument(defaultValue.toObject()).toJson(QJsonDocument::Compact); break;
-              case QJsonValue::Array:  if(!defaultValue.toArray().isEmpty())  defaultStr = QJsonDocument(defaultValue.toArray()).toJson(QJsonDocument::Compact);  break;
-              default: break;
-            }
-
-            TreeElement *treeElement;
-            try
-            {
-              treeElement = TreeElement::newTreeElement(tree, this, xsdElement, defaultStr, xmlChild, fillWithDefaults);
-            }
-            catch(std::exception &/*e*/)
-            {
-              // add empty element from schema and add xmlNode as an unknown element afterwards
-              treeElement = TreeElement::newTreeElement(tree, this, xsdElement, "", XmlNodePtr(nullptr), fillWithDefaults);
-              xmlNode->addChild(xmlChild);
-            }
-            if(!treeElement)
-              throw(Exception("cannot add child element"));
-            treeElement->setElementAdd(elementAdd);
-            children_[index].push_back(treeElement);
-          };
-          // -------------------------------------------------
-
-          if(!xsdElement->unbounded)
-            addNewChildElement(nullptr, overrideDefaultValue, !xmlNode);
-          else
+            treeElement = TreeElement::newTreeElement(tree, this, xsdElement, defaultStr(defaultValue), xmlChild, !xmlNode/*fillWithDefaults*/);
+          }
+          catch(std::exception &/*e*/)
           {
-            // the add element
-            TreeElementAdd *elementAdd = new TreeElementAdd(tree, this, xsdElement);
-            if(xmlNode)
-            {
-              UInt childCount = xmlNode->getChildCount(xsdElement->names);
-              for(UInt i=0; i<childCount; i++)
-                addNewChildElement(elementAdd, overrideDefaultValue, false);
-            }
-            else if(overrideDefaultValue.isArray()) // create multiple elements from default array
-            {
-              for(const auto &arrayElement : overrideDefaultValue.toArray())
-                addNewChildElement(elementAdd, arrayElement, true);
-            }
-            else if(!xsdElement->optional) // not optional -> create at least one element
-              addNewChildElement(elementAdd, overrideDefaultValue, true);
-
-            children_[index].push_back(elementAdd);
-          } // if(unbounded)
-        } // for(xsdElements)
-      } // if(xsdComplex)
-
-      insertCommentsAndVariables();
-
-      // are there unknown XML nodes?
-      // ----------------------------
-      if(xmlNode && xmlNode->hasChildren())
-      {
-        // invisible add element
-        TreeElementAdd *elementAdd = new TreeElementAdd(tree, this, XsdElementPtr(nullptr), false/*visible*/);
-        while(xmlNode->hasChildren())
-        {
-          TreeElementUnknown *treeElement = new TreeElementUnknown(tree, this, xmlNode->getNextChild());
+            // add empty element from schema and add xmlNode as an unknown element afterwards
+            treeElement = TreeElement::newTreeElement(tree, this, xsdElement, "", nullptr, !xmlNode/*fillWithDefaults*/);
+            xmlNode->addChild(xmlChild);
+          }
           treeElement->setElementAdd(elementAdd);
           children_[index].push_back(treeElement);
-        }
-        children_[index].push_back(elementAdd);
-      }
+        };
+        // -------------------------------------------------
 
-      // invisible add element to be able to remove links and comments and end of list
-      children_[index].push_back(new TreeElementAdd(tree, this, XsdElementPtr(nullptr), false/*visible*/));
+        if(!xsdElement->unbounded)
+          addNewChildElement(nullptr, overrideDefaultValue);
+        else
+        {
+          if((overrideDefaultValue.isUndefined() || overrideDefaultValue.isNull()) && xsdElement->defaultValue.startsWith("["))
+            overrideDefaultValue = QJsonDocument::fromJson(xsdElement->defaultValue.toUtf8()).array(); // catch arrays in default
 
-      updateParserResultsInScope();
-      updateLinksInScope();
-    } // if(!hasChildren)
+          // the add element
+          TreeElementAdd *elementAdd = new TreeElementAdd(tree, this, xsdElement, defaultStr(defaultValue));
+          if(xmlNode)
+          {
+            UInt childCount = xmlNode->getChildCount(xsdElement->names);
+            for(UInt i=0; i<childCount; i++)
+              addNewChildElement(elementAdd, overrideDefaultValue);
+          }
+          else if(overrideDefaultValue.isArray()) // create multiple elements from default array
+          {
+            for(const auto &arrayElement : overrideDefaultValue.toArray())
+              addNewChildElement(elementAdd, arrayElement);
+          }
+          else if(!xsdElement->optional) // not optional -> create at least one element
+            addNewChildElement(elementAdd, overrideDefaultValue);
 
+          children_[index].push_back(elementAdd);
+        } // if(unbounded)
+      } // for(xsdElements)
+    } // if(xsdComplex)
+
+    insertCommentsAndVariables();
+
+    // are there unknown XML nodes?
+    if(xmlNode && xmlNode->hasChildren())
+      while(xmlNode->hasChildren())
+        children_[index].push_back(new TreeElementUnknown(tree, this, xmlNode->getNextChild()));
+
+    // invisible add element to be able to remove links and comments at end of list
+    children_[index].push_back(new TreeElementAdd(tree, this, nullptr, "", false/*visible*/));
+
+    updateParserResultsInScope();
+    updateLinksInScope();
     childSetPushAutoComments(true, index); // set autocomment for the first element
   }
   catch(std::exception &e)
@@ -564,6 +558,8 @@ bool TreeElementComplex::canRemoveChild(TreeElement *element) const
       return false;
     if(element->parentElement != this)
       throw(Exception("try to remove an external child"));
+    if(dynamic_cast<TreeElementAdd*>(element))
+      return false;
     return element->unbounded() && (element->optional() || (element->elementAdd() && element->elementAdd()->unboundedCount > 1));
   }
   catch(std::exception &e)
