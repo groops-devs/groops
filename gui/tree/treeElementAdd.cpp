@@ -21,9 +21,9 @@
 
 /***********************************************/
 
-TreeElementAdd::TreeElementAdd(Tree *tree, TreeElementComplex *parentElement,
-                               XsdElementPtr xsdElement, bool visible)
-  : TreeElement(tree, parentElement, xsdElement, "", XmlNodePtr(nullptr)), unboundedCount(0), visible(visible)
+TreeElementAdd::TreeElementAdd(Tree *tree, TreeElementComplex *parentElement, XsdElementPtr xsdElement,
+                               const QString &defaultOverride, bool visible)
+  : TreeElement(tree, parentElement, xsdElement, defaultOverride, XmlNodePtr(nullptr)), unboundedCount(0), visible(visible)
 {
   try
   {
