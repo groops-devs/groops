@@ -121,7 +121,7 @@ void GnssParametrizationIonosphereSTEC::observationCorrections(GnssObservationEq
     // Impact of higher-order ionospheric terms on GPS estimates,
     // Geophys. Res. Lett., 32, L23311, doi:10.1029/2005GL024342.
     // ----------------------------------------------------------
-    // second order magentic effect
+    // second order magnetic effect
     const Vector3d piercePoint = intersection(eqn.posRecv, eqn.posTrans);
     const Rotary3d rotEarth    = Planets::celestial2TerrestrialFrame(eqn.timeRecv);
     const Vector3d b           = rotEarth.inverseRotate(magnetosphere->magenticFieldVector(eqn.timeRecv, rotEarth.rotate(piercePoint))); // magentic field vector in CRF

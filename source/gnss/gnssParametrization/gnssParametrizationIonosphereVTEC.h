@@ -31,7 +31,7 @@ inserted into eq. \eqref{gnssParametrizationType:IonosphereSTEC:STEC}.
 The result is written as a \file{times series file}{instrument} at epochs with observations
 depending on \configClass{GnssProcessing:processingStep:selectEpochs}{gnssProcessingStepType:selectEpochs}.
 
-This class provides a simplifed model of the ionosphere for single receivers
+This class provides a simplified model of the ionosphere for single receivers
 and enables the separation of the TEC and signal biases, meaning
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases} becomes estimable.
 Local and short-term scintillations should be considered by adding loosely constrained

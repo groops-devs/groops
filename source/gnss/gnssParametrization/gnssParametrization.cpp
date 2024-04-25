@@ -73,9 +73,9 @@ GnssParametrization::GnssParametrization(Config &config, const std::string &name
     {
       if(readConfigChoiceElement(config, "ionosphereSTEC",           type, "ionospheric slant delays"))
         base.push_back(new GnssParametrizationIonosphereSTEC(config));
-      if(readConfigChoiceElement(config, "ionosphereVTEC",           type, "ionospheric verical delays"))
+      if(readConfigChoiceElement(config, "ionosphereVTEC",           type, "ionospheric vertical delays"))
         base.push_back(new GnssParametrizationIonosphereVTEC(config));
-      if(readConfigChoiceElement(config, "ionosphereMap",            type, "ionospheric verical delays"))
+      if(readConfigChoiceElement(config, "ionosphereMap",            type, "ionospheric vertical delays"))
         base.push_back(new GnssParametrizationIonosphereMap(config));
       if(readConfigChoiceElement(config, "clocks",                   type, "clock errors"))
         base.push_back(new GnssParametrizationClocks(config));
