@@ -82,6 +82,7 @@ void GnssParametrizationIonosphereMap::init(Gnss *gnss, Parallel::CommunicatorPt
 //         // update STEC in observations
 //         for(auto recv : gnss->receivers)
 //           if(recv->isMyRank() && recv->useable(idEpoch) && selectedReceivers.at(recv->idRecv()))
+//             NOTE: loop not executed, because recv->observations_ is still empty at this point !!!
 //             for(UInt idTrans=0; idTrans<recv->idTransmitterSize(idEpoch); idTrans++)
 //               if(recv->observation(idTrans, idEpoch))
 //               {
