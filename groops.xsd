@@ -1573,6 +1573,11 @@
 								<xs:documentation>constant of MSLM mapping function</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="VTEC0" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>VTEC [TECU] for a-priori (0 = not applied)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
