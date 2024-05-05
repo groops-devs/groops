@@ -88,28 +88,6 @@ void GnssParametrizationIonosphereSTEC::initParameter(GnssNormalEquationInfo &no
 
 /***********************************************/
 
-// intersection point in ionosphere height
-// classic approach is to use ~450/500 km, not applicable for satellites flying possibly higher
-// Hence, satellite position + 50 km, no evidence if true, but LEOs are in principle flying
-// IN the ionosphere and so pierce point is set slightly higher
-static inline Vector3d intersection(const Vector3d &posRecv, const Vector3d &posTrans)
-{
-  try
-  {
-    const Vector3d k  = normalize(posRecv - posTrans); // line of sight from transmitter to receiver
-    const Double   r  = posRecv.r();
-    const Double   H  = std::max(DEFAULT_R+450e3, r+50e3);  // single layer ionosphere in 450 km or 50 km above satellite
-    const Double   rk = inner(k, posRecv);
-    return posRecv - (rk + std::sqrt(rk*rk + 2*r*H + H*H)) * k;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
 void GnssParametrizationIonosphereSTEC::observationCorrections(GnssObservationEquation &eqn) const
 {
   try
@@ -122,11 +100,14 @@ void GnssParametrizationIonosphereSTEC::observationCorrections(GnssObservationEq
     // Geophys. Res. Lett., 32, L23311, doi:10.1029/2005GL024342.
     // ----------------------------------------------------------
     // second order magentic effect
-    const Vector3d piercePoint = intersection(eqn.posRecv, eqn.posTrans);
-    const Rotary3d rotEarth    = Planets::celestial2TerrestrialFrame(eqn.timeRecv);
-    const Vector3d b           = rotEarth.inverseRotate(magnetosphere->magenticFieldVector(eqn.timeRecv, rotEarth.rotate(piercePoint))); // magentic field vector in CRF
-    const Vector3d k           = normalize(eqn.posRecv - eqn.posTrans); // line of sight
-    const Double   s           = 1e16*7527.*LIGHT_VELOCITY*inner(b, k);
+    constexpr Double   radiusIono  = 6371e3+450e3;                          // single layer ionosphere in 450 km
+    const     Double   rRecv       = std::min(eqn.posRecv.r(), radiusIono); // LEO satellites flying possibly higher
+    const     Vector3d k           = normalize(eqn.posRecv-eqn.posTrans);   // direction from transmitter
+    const     Double   rk          = inner(eqn.posRecv, k);
+    const     Vector3d piercePoint = eqn.posRecv - (std::sqrt(rk*rk+radiusIono*radiusIono-rRecv*rRecv)+rk) * k;
+    const     Rotary3d rotEarth    = Planets::celestial2TerrestrialFrame(eqn.timeRecv);
+    const     Vector3d b           = rotEarth.inverseRotate(magnetosphere->magenticFieldVector(eqn.timeRecv, rotEarth.rotate(piercePoint))); // magentic field vector in CRF
+    const     Double   s           = 1e16*7527.*LIGHT_VELOCITY*inner(b, k);
     // third order
     constexpr Double r = 1e16*(2437 * 0.66 * (20.-6.)/(4.55-1.38)*1e-6) * 1e16;
     // bending

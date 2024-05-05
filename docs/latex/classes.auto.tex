@@ -1350,19 +1350,25 @@ Name & Type & Annotation\\
 
 
 \subsection{IonosphereMap}\label{gnssParametrizationType:ionosphereMap}
-TODO: reading and writing ionosphere maps not implemented yet.
-% A priori ionopshere model can be provided with \configFile{inputfileMap}{gnssIonosphereMaps}.
+Apriori VTEC maps can be removed from the observations with
+\configFile{inputfileGriddedDataTimeSeries}{griddedDataTimeSeries}
+(e.g. from \program{GnssIonex2GriddedDataTimeSeries}).
 
-The ionosphere is parametrized in terms of $[TECU]$ as a \configClass{temporal}{parametrizationTemporalType}ly
+The ionosphere is parametrized in terms of $[TECU]$ in a single layer sphere with
+\config{radiusIonosphericLayer} as a \configClass{temporal}{parametrizationTemporalType}ly
 changing (e.g. hourly linear splines) spherical harmonics expansion
 \begin{equation}
   VTEC(\lambda,\theta,t) = \sum_{n=0}^{n_{max}} \sum_{m=0}^n c_{nm}(t)C_{nm}(\lambda,\theta)+s_{nm}(t)S_{nm}(\lambda,\theta)
 \end{equation}
 up to \config{maxDegree}=\verb|15| in a solar-geomagentic frame defined
-by \configClass{magnetosphere}{magnetosphereType}.
-The VTEC values are mapped to STEC values via eq.~\eqref{gnssParametrizationType:IonosphereVTEC:STEC}.
+by \configClass{magnetosphere}{magnetosphereType}. The VTEC values are mapped to STEC values
+in the observation equations via eq.~\eqref{gnssParametrizationType:IonosphereVTEC:STEC}.
 
-Local and short-term scintillations can be considered by adding constrained
+The estimated VTEC inclusive the apriori \configFile{inputfileGriddedDataTimeSeries}{griddedDataTimeSeries}
+can be written to \configFile{outputfileGriddedDataTimeSeries}{griddedDataTimeSeries}
+evaluated at \configClass{outputGrid}{gridType} and \configClass{outputTimeSeries}{timeSeriesType}.
+
+Local and short-term scintillations should be considered by adding constrained
 \configClass{parametrization:ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}.
 To account for signal biases add
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases}.
@@ -1381,8 +1387,13 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt spherical harmonics\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~temporal & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt temporal evolution of TEC values\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileGriddedDataTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt single layer VTEC [TECU]\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~outputGrid & \hfuzz=500pt \hyperref[gridType]{grid} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~outputTimeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileGriddedDataTimeSeries & \hfuzz=500pt filename & \hfuzz=500pt single layer VTEC [TECU]\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt spherical harmonics parametrization\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~temporal & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt temporal evolution of VTEC values\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~radiusIonosphericLayer & \hfuzz=500pt double & \hfuzz=500pt [m] radius of ionospheric single layer\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~mapR & \hfuzz=500pt double & \hfuzz=500pt [m] constant of MSLM mapping function\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~mapH & \hfuzz=500pt double & \hfuzz=500pt [m] constant of MSLM mapping function\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~mapAlpha & \hfuzz=500pt double & \hfuzz=500pt constant of MSLM mapping function\\

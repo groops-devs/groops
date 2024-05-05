@@ -15,7 +15,9 @@
 #include "base/planets.h"
 #include "base/sphericalHarmonics.h"
 #include "config/config.h"
-// #include "files/fileGnssIonosphereMaps.h"
+#include "files/fileGriddedDataTimeSeries.h"
+#include "classes/grid/grid.h"
+#include "classes/timeSeries/timeSeries.h"
 #include "classes/magnetosphere/magnetosphere.h"
 #include "gnss/gnssParametrization/gnssParametrizationIonosphereMap.h"
 
@@ -25,18 +27,28 @@ GnssParametrizationIonosphereMap::GnssParametrizationIonosphereMap(Config &confi
 {
   try
   {
-    readConfig(config, "name",            name,            Config::OPTIONAL, "parameter.mapVTEC", "");
-    readConfig(config, "selectReceivers", selectReceivers, Config::MUSTSET,  R"(["all"])", "");
-//     readConfig(config, "outputfileMap",   fileNameOut,     Config::OPTIONAL, "",        "");
-//     readConfig(config, "inputfileMap",    fileNameIn,      Config::OPTIONAL, "",        "");
-    readConfig(config, "maxDegree",       maxDegree,       Config::MUSTSET,  "15",      "spherical harmonics");
-    readConfig(config, "temporal",        temporal,        Config::DEFAULT,  "",        "temporal evolution of TEC values");
-    readConfig(config, "mapR",            mapR,            Config::DEFAULT,  "6371e3",  "[m] constant of MSLM mapping function");
-    readConfig(config, "mapH",            mapH,            Config::DEFAULT,  "506.7e3", "[m] constant of MSLM mapping function");
-    readConfig(config, "mapAlpha",        mapAlpha,        Config::DEFAULT,  "0.9782",  "constant of MSLM mapping function");
-    readConfig(config, "magnetosphere",   magnetosphere,   Config::MUSTSET,  "",        "");
+    GridPtr       gridPtr;
+    TimeSeriesPtr timeSeriesPtr;
+
+    readConfig(config, "name",                            name,            Config::OPTIONAL, "parameter.mapVTEC", "");
+    readConfig(config, "selectReceivers",                 selectReceivers, Config::MUSTSET,  R"(["all"])",        "");
+    readConfig(config, "outputfileGriddedDataTimeSeries", fileNameOut,     Config::OPTIONAL, "",                  "single layer VTEC [TECU]");
+    readConfig(config, "outputGrid",                      gridPtr,         Config::DEFAULT,  R"({"geograph":{"deltaLambda":"5","deltaPhi":"2.5","height":"450e3","R":"6371e3","inverseFlattening":0}})", "");
+    readConfig(config, "outputTimeSeries",                timeSeriesPtr,   Config::DEFAULT,  R"({"uniformSampling":{"sampling":"2/24"}})", "");
+    readConfig(config, "inputfileGriddedDataTimeSeries",  fileNameIn,      Config::OPTIONAL, "",                  "single layer VTEC [TECU]");
+    readConfig(config, "maxDegree",                       maxDegree,       Config::MUSTSET,  "15",                "spherical harmonics parametrization");
+    readConfig(config, "temporal",                        temporal,        Config::DEFAULT,  "",                  "temporal evolution of VTEC values");
+    readConfig(config, "radiusIonosphericLayer",          radiusIono,      Config::DEFAULT,  "6371e3+450e3",      "[m] radius of ionospheric single layer");
+    readConfig(config, "mapR",                            mapR,            Config::DEFAULT,  "6371e3",            "[m] constant of MSLM mapping function");
+    readConfig(config, "mapH",                            mapH,            Config::DEFAULT,  "506.7e3",           "[m] constant of MSLM mapping function");
+    readConfig(config, "mapAlpha",                        mapAlpha,        Config::DEFAULT,  "0.9782",            "constant of MSLM mapping function");
+    readConfig(config, "magnetosphere",                   magnetosphere,   Config::MUSTSET,  "",                  "");
     if(isCreateSchema(config)) return;
 
+    gridOut  = GriddedData(Ellipsoid(mapR, 0), gridPtr->points(), gridPtr->areas(), {});
+    timesOut = timeSeriesPtr->times();
+    if(!fileNameOut.empty() && !(gridOut.points.size() && timesOut.size()))
+      throw(Exception("outputfileGriddedDataTimeSeries needs outputGrid and outputTimeSeries"));
   }
   catch(std::exception &e)
   {
@@ -46,7 +58,35 @@ GnssParametrizationIonosphereMap::GnssParametrizationIonosphereMap(Config &confi
 
 /***********************************************/
 
-void GnssParametrizationIonosphereMap::init(Gnss *gnss, Parallel::CommunicatorPtr /*comm*/)
+static Double interpolateGrid(const Vector3d &point, const GriddedDataRectangular &grid, const Vector &data)
+{
+  try
+  {
+    // latitude
+    Double tauLat  = Double(point.phi()-grid.latitudes.at(0))/Double(grid.latitudes.at(1)-grid.latitudes.at(0));
+    const UInt idxLat1 = std::min(static_cast<UInt>(std::max(std::floor(tauLat), 0.)), grid.latitudes.size()-1);
+    const UInt idxLat2 = std::min(idxLat1+1, grid.latitudes.size()-1);
+    tauLat -= std::floor(tauLat);
+    // longitude
+    Double tauLon  = Double(point.lambda()-grid.longitudes.at(0))/Double(grid.longitudes.at(1)-grid.longitudes.at(0));
+    const UInt idxLon1 = static_cast<UInt>(std::floor(tauLon)+grid.longitudes.size())%grid.longitudes.size();
+    const UInt idxLon2 = (idxLon1+1)%grid.longitudes.size();
+    tauLon -= std::floor(tauLon);
+
+    return (1-tauLon) * (1-tauLat) * data(idxLon1 + grid.longitudes.size() * idxLat1)
+         + (1-tauLon) *  (tauLat)  * data(idxLon1 + grid.longitudes.size() * idxLat2)
+         +  (tauLon)  * (1-tauLat) * data(idxLon2 + grid.longitudes.size() * idxLat1)
+         +  (tauLon)  *  (tauLat)  * data(idxLon2 + grid.longitudes.size() * idxLat2);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void GnssParametrizationIonosphereMap::init(Gnss *gnss, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -56,57 +96,39 @@ void GnssParametrizationIonosphereMap::init(Gnss *gnss, Parallel::CommunicatorPt
 
     // apriori model
     // -------------
-//     if(!fileNameIn.empty())
-//     {
-//       GnssIonosphereMapsFile file(fileNameIn, maxDegree);
-//
-//       // aprioriParameter by least squares adjustment
-//       Matrix A(gnss->times.size(), x.size());
-//       if(x.size())
-//       {
-//         for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
-//           copy(temporal->factors(gnss->times.at(idEpoch)).trans(), A.row(idEpoch));
-//         // A' := (A'A)^-1A'
-//         const Vector tau = QR_decomposition(A);
-//         const Matrix W = A.row(0, A.columns());
-//         generateQ(A, tau);
-//         triangularSolve(1., W, A.trans());
-//       }
-//
-//       for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
-//       {
-//         const Vector xt = file.sphericalHarmonics(gnss->times.at(idEpoch)).x();
-//         for(UInt i=0; i<A.columns(); i++)
-//           axpy(A(idEpoch, i), xt, x.at(i));
-//
-//         // update STEC in observations
-//         for(auto recv : gnss->receivers)
-//           if(recv->isMyRank() && recv->useable(idEpoch) && selectedReceivers.at(recv->idRecv()))
-//             for(UInt idTrans=0; idTrans<recv->idTransmitterSize(idEpoch); idTrans++)
-//               if(recv->observation(idTrans, idEpoch))
-//               {
-//                 GnssObservationEquation eqn(*recv->observation(idTrans, idEpoch), *recv, *gnss->transmitters.at(idTrans), gnss->funcRotationCrf2Trf,
-//                                             nullptr/*reduceModels*/, idEpoch, FALSE/*decorrelate*/, {}/*types*/);
-//                 // spatial representation
-//                 Matrix Cnm, Snm;
-//                 const Vector3d point = file.rotary(eqn.timeRecv).rotate(intersection(eqn.posRecv, eqn.posTrans, eqn.elevationRecvLocal));
-//                 SphericalHarmonics::CnmSnm(normalize(point), maxDegree, Cnm, Snm);
-//                 Double VTEC = 0;
-//                 UInt count = 0;
-//                 for(UInt n=0; n<=maxDegree; n++)
-//                 {
-//                   VTEC += Cnm(n,0) * xt(count++);
-//                   for(UInt m=1; m<=n; m++)
-//                   {
-//                     VTEC += Cnm(n,m) * xt(count++);
-//                     VTEC += Snm(n,m) * xt(count++);
-//                   }
-//                 }
-//                 // VTEC -> STEC
-//                 recv->observation(idTrans, idEpoch)->STEC += mapping(eqn.elevationRecvLocal) * VTEC;
-//               } // for(recv, trans)
-//       } // for(idEpoch)
-//     } // if(fileNameIn)
+    if(!fileNameIn.empty())
+    {
+      logStatus<<"read apriori ionosphere <"<<fileNameIn<<">"<<Log::endl;
+      InFileGriddedDataTimeSeries file(fileNameIn);
+      GriddedDataRectangular grid;
+      if(!grid.init(file.grid()))
+        throw(Exception(fileNameIn.str()+" must contain a rectangular grid"));
+
+      Log::Timer timer(gnss->times.size());
+      for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
+      {
+        timer.loopStep(idEpoch);
+
+        const Vector   griddedVTEC     = file.data(gnss->times.at(idEpoch)).column(0);
+        const Rotary3d rotationCrf2Trf = gnss->rotationCrf2Trf(gnss->times.at(idEpoch));
+
+        for(auto recv : gnss->receivers)
+          if(recv->isMyRank() && recv->useable(idEpoch) && selectedReceivers.at(recv->idRecv()))
+            for(UInt idTrans=0; idTrans<recv->idTransmitterSize(idEpoch); idTrans++)
+              if(recv->observation(idTrans, idEpoch))
+              {
+                GnssObservationEquation eqn(*recv->observation(idTrans, idEpoch), *recv, *gnss->transmitters.at(idTrans), gnss->funcRotationCrf2Trf,
+                                            nullptr/*reduceModels*/, idEpoch, FALSE/*decorrelate*/, {}/*types*/);
+                // pierce point
+                const Vector3d point = rotationCrf2Trf.rotate(intersection(radiusIono, eqn.posRecv, eqn.posTrans));
+                const Double VTEC = interpolateGrid(point, grid, griddedVTEC);
+                // mapping VTEC -> STEC
+                recv->observation(idTrans, idEpoch)->STEC += mapping(eqn.elevationRecvLocal) * VTEC;
+              } // for(recv, trans)
+      } // for(idEpoch)
+      Parallel::barrier(comm);
+      timer.loopEnd();
+    } // if(fileNameIn)
   }
   catch(std::exception &e)
   {
@@ -172,16 +194,14 @@ void GnssParametrizationIonosphereMap::aprioriParameter(const GnssNormalEquation
 /***********************************************/
 
 // intersection point in ionosphere height
-// classic approach is to use ~450/500 km, not applicable for satellites flying possibly higher
-// Hence, satellite position + 50 km, no evidence if true, but LEOs are in principle flying
-// IN the ionosphere and so pierce point is set slightly higher
-Vector3d GnssParametrizationIonosphereMap::intersection(const Vector3d &posRecv, const Vector3d &posTrans, Angle elevation) const
+Vector3d GnssParametrizationIonosphereMap::intersection(const Double radiusIono, const Vector3d &posRecv, const Vector3d &posTrans) const
 {
   try
   {
-    const Double r = posRecv.r();
-    const Double H = std::max(mapR+mapH, r + 50e3);  // single layer ionosphere in 450 km or 50 km above satellite
-    return posRecv - normalize(posRecv-posTrans) * ((H * std::sin(PI/2 - elevation - std::asin((r/H)*std::cos(elevation)))) / std::cos(elevation));
+    const Double   rRecv = std::min(posRecv.r(), radiusIono); // LEO satellites flying possibly higher
+    const Vector3d k     = normalize(posRecv-posTrans);       // direction from transmitter
+    const Double   rk    = inner(posRecv, k);
+    return posRecv - (std::sqrt(rk*rk+radiusIono*radiusIono-rRecv*rRecv)+rk) * k;
   }
   catch(std::exception &e)
   {
@@ -191,10 +211,36 @@ Vector3d GnssParametrizationIonosphereMap::intersection(const Vector3d &posRecv,
 
 /***********************************************/
 
-// Mapping function
 Double GnssParametrizationIonosphereMap::mapping(Angle elevation) const
 {
   return 1./std::cos(std::asin(mapR/(mapR+mapH) * std::sin(mapAlpha*(PI/2-elevation))));
+}
+
+/***********************************************/
+
+Double GnssParametrizationIonosphereMap::sphericalHarmonicSynthesis(const Vector3d &point, const Vector &x) const
+{
+  try
+  {
+    Matrix Cnm, Snm;
+    SphericalHarmonics::CnmSnm(normalize(point), maxDegree, Cnm, Snm);
+    Double VTEC  = 0;
+    UInt   count = 0;
+    for(UInt n=0; n<=maxDegree; n++)
+    {
+      VTEC += Cnm(n,0) * x(count++);
+      for(UInt m=1; m<=n; m++)
+      {
+        VTEC += Cnm(n,m) * x(count++);
+        VTEC += Snm(n,m) * x(count++);
+      }
+    }
+    return VTEC;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
 
 /***********************************************/
@@ -209,7 +255,7 @@ void GnssParametrizationIonosphereMap::designMatrix(const GnssNormalEquationInfo
     // spatial representation
     Matrix Cnm, Snm;
     const Rotary3d rot   = magnetosphere->rotaryCelestial2SolarGeomagneticFrame(eqn.timeRecv);
-    const Vector3d point = rot.rotate(intersection(eqn.posRecv, eqn.posTrans, eqn.elevationRecvLocal));
+    const Vector3d point = rot.rotate(intersection(radiusIono, eqn.posRecv, eqn.posTrans));
     SphericalHarmonics::CnmSnm(normalize(point), maxDegree, Cnm, Snm);
     Matrix Ynm(1, (maxDegree+1)*(maxDegree+1));
     UInt count = 0;
@@ -274,24 +320,9 @@ Double GnssParametrizationIonosphereMap::updateParameter(const GnssNormalEquatio
             {
               GnssObservationEquation eqn(*recv->observation(idTrans, idEpoch), *recv, *gnss->transmitters.at(idTrans), gnss->funcRotationCrf2Trf,
                                           nullptr/*reduceModels*/, idEpoch, FALSE/*decorrelate*/, {}/*types*/);
-
               // spatial representation
-              Matrix Cnm, Snm;
               const Rotary3d rot   = magnetosphere->rotaryCelestial2SolarGeomagneticFrame(eqn.timeRecv);
-              const Vector3d point = rot.rotate(intersection(eqn.posRecv, eqn.posTrans, eqn.elevationRecvLocal));
-              SphericalHarmonics::CnmSnm(normalize(point), maxDegree, Cnm, Snm);
-              Double dVTEC = 0;
-              UInt count = 0;
-              for(UInt n=0; n<=maxDegree; n++)
-              {
-                dVTEC += Cnm(n,0) * dx(count++);
-                for(UInt m=1; m<=n; m++)
-                {
-                   dVTEC += Cnm(n,m) * dx(count++);
-                   dVTEC += Snm(n,m) * dx(count++);
-                }
-              }
-
+              const Double   dVTEC = sphericalHarmonicSynthesis(rot.rotate(intersection(radiusIono, eqn.posRecv, eqn.posTrans)), dx);
               recv->observation(idTrans, idEpoch)->STEC += mapping(eqn.elevationRecvLocal) * dVTEC;
               if(info.update(dVTEC))
                 info.info = "VTEC map ("+recv->name()+", "+gnss->times.at(idEpoch).dateTimeStr()+")";
@@ -314,47 +345,47 @@ void GnssParametrizationIonosphereMap::writeResults(const GnssNormalEquationInfo
 {
   try
   {
-    if(!isEnabled(normalEquationInfo, name) || !Parallel::isMaster(normalEquationInfo.comm) || fileNameOut.empty() || !index.size())
+    if(!isEnabled(normalEquationInfo, name) || !Parallel::isMaster(normalEquationInfo.comm) || fileNameOut.empty())
       return;
 
-    logStatus<<"write ionosphere maps to files <"<<fileNameOut.appendBaseName(suffix)<<">"<<Log::endl;
+    logStatus<<"write ionosphere gridded time series to file <"<<fileNameOut.appendBaseName(suffix)<<">"<<Log::endl;
+    std::vector<Matrix> data(timesOut.size(), Vector(gridOut.points.size()));
 
-//     // determine sampling times
-//     const Time timeStart = gnss->times.front();
-//     const Time timeEnd   = gnss->times.back();
-//     std::vector<Time> times(temporal->parameterCount(), timeStart);
-//     for(UInt i=1; i<temporal->parameterCount(); i++)
-//       times.at(i) += i/(times.size()-1.) * (timeEnd-timeStart);
-//
-//     // interpolate temporal spherical harmonics
-//     std::vector<Vector3d> magneticNorthPoles(times.size());
-//     std::vector<Matrix>   cnm(times.size(), Matrix(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER));
-//     std::vector<Matrix>   snm(times.size(), Matrix(maxDegree+1, Matrix::TRIANGULAR, Matrix::LOWER));
-//     for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
-//     {
-//       magneticNorthPoles.at(idEpoch) = magnetosphere->geomagneticNorthPole(times.at(idEpoch));
-//       // temporal representation
-//       Vector xt((maxDegree+1)*(maxDegree+1));
-//       std::vector<UInt>   idx;
-//       std::vector<Double> factor;
-//       temporal->factors(std::min(times.at(idEpoch), times.back()-seconds2time(0.1)), idx, factor);
-//       for(UInt i=0; i<factor.size(); i++)
-//         axpy(factor.at(i), x.at(idx.at(i)), xt);
-//
-//       // sort into spherical harmonics
-//       UInt count = 0;
-//       for(UInt n=0; n<=maxDegree; n++)
-//       {
-//         cnm.at(idEpoch)(n,0) = xt(count++);
-//         for(UInt m=1; m<=n; m++)
-//         {
-//           cnm.at(idEpoch)(n,m) = xt(count++);
-//           snm.at(idEpoch)(n,m) = xt(count++);
-//         }
-//       }
-//     } // for(idEpoch)
-//
-//     writeFileGnssIonosphereMaps(fileNameOut.appendBaseName(suffix), times, magneticNorthPoles, cnm, snm);
+    // apriori model
+    // -------------
+    if(!fileNameIn.empty())
+    {
+      InFileGriddedDataTimeSeries file(fileNameIn);
+      GriddedDataRectangular gridFile;
+      if(!gridFile.init(file.grid()))
+        throw(Exception(fileNameIn.str()+" must contain a rectangular grid"));
+      for(UInt idEpoch=0; idEpoch<timesOut.size(); idEpoch++)
+      {
+        const Vector griddedVTEC = file.data(timesOut.at(idEpoch)).column(0);
+        for(UInt i=0; i<gridOut.points.size(); i++)
+          data.at(idEpoch)(i, 0) += interpolateGrid(gridOut.points.at(i), gridFile, griddedVTEC);
+      }
+    } // if(!fileNameIn.empty())
+
+    // estimated VTEC maps
+    // -------------------
+    if(x.size())
+      for(UInt idEpoch=0; idEpoch<timesOut.size(); idEpoch++)
+      {
+        // temporal representation
+        std::vector<UInt>   idx;
+        std::vector<Double> factor;
+        Vector xt((maxDegree+1)*(maxDegree+1));
+        temporal->factors(timesOut.at(idEpoch), idx, factor);
+        for(UInt i=0; i<factor.size(); i++)
+          axpy(factor.at(i), x.at(idx.at(i)), xt);
+        const Rotary3d rot = magnetosphere->rotaryCelestial2SolarGeomagneticFrame(timesOut.at(idEpoch))
+                           * inverse(gnss->rotationCrf2Trf(timesOut.at(idEpoch))); // mag frame -> TRF
+        for(UInt i=0; i<gridOut.points.size(); i++)
+          data.at(idEpoch)(i, 0) += sphericalHarmonicSynthesis(rot.rotate(gridOut.points.at(i)), xt);
+      } // for(idEpoch)
+
+    writeFileGriddedDataTimeSeries(fileNameOut.appendBaseName(suffix), 1, timesOut, gridOut, data);
   }
   catch(std::exception &e)
   {

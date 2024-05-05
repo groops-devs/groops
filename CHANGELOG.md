@@ -15,6 +15,7 @@
 - New option:       gnssParametrizationStaticPositions: no net scale constraint.
 - New option:       GnssProcessingStepResolveAmbiguities: partial ambiguity resolution with selectTransmitters/Receivers.
 - New option:       GnssParametrizationCodeBiases: option to define ionosphere-free clock datum.
+- New option:       GnssParametrizationIonosphereMap: option to read/write VTEC maps.
 - Removed program:  GnssPrn2SvnBlockVariables: This program will no longer work from the next release! See documentation for help.
 - Removed program:  NetCdf2PotentialCoefficients: Use NetCdf2GriddedDataTimeSeries and GriddedDataTimeSeries2PotentialCoefficients instead.
 - Bugfix:           GnssParametrizationStaticPositions: ignored inputfileNoNetPositions.
