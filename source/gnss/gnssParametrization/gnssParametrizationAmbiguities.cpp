@@ -469,7 +469,9 @@ void GnssParametrizationAmbiguities::designMatrix(const GnssNormalEquationInfo &
 
 /***********************************************/
 
-Double GnssParametrizationAmbiguities::ambiguityResolve(const GnssNormalEquationInfo &normalEquationInfo, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount,
+Double GnssParametrizationAmbiguities::ambiguityResolve(const GnssNormalEquationInfo &normalEquationInfo, MatrixDistributed &normals,
+                                                        std::vector<Matrix> &n, Double &lPl, UInt &obsCount,
+                                                        const std::vector<Byte> &selectedTransmitters, const std::vector<Byte> &selectedReceivers,
                                                         const std::function<Vector(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, Vector &isNotFixed, Double &sigma)> &searchInteger)
 {
   try
@@ -490,7 +492,9 @@ Double GnssParametrizationAmbiguities::ambiguityResolve(const GnssNormalEquation
       {
         const UInt index = normalEquationInfo.index(ambi->index) - index0;
         copy(ambi->value, x0.row(index, ambi->value.rows()));
-        if(ambi->isInteger)
+        if(ambi->isInteger &&
+           selectedTransmitters.at(ambi->track->transmitter->idTrans()) &&
+           selectedReceivers.at(ambi->track->receiver->idRecv()))
           isInteger.row(index, ambi->value.rows()).fill(1);
       }
     Parallel::reduceSum(x0,        0, normalEquationInfo.comm);
@@ -510,7 +514,7 @@ Double GnssParametrizationAmbiguities::ambiguityResolve(const GnssNormalEquation
         {
           Matrix &N = normals.N(i,i);
           for(UInt k=0; k<N.rows(); k++)
-            diagonal(normals.blockIndex(i)-index0+k) = N(k,k);
+            diagonal(normals.blockIndex(i)-index0+k) = isInteger(normals.blockIndex(i)-index0+k) ? N(k,k) : 0;
         }
       }
       Parallel::reduceSum(diagonal, 0, normalEquationInfo.comm);
@@ -526,13 +530,13 @@ Double GnssParametrizationAmbiguities::ambiguityResolve(const GnssNormalEquation
         {
           UInt idxMin = i;
           for(UInt k=i+1; k<dim; k++)
-            if(!isInteger(k) || (diagonal(k) < diagonal(idxMin)))
+            if(diagonal(k) < diagonal(idxMin))
               idxMin = k;
           if(i == idxMin)
             continue;
-          std::swap(diagonal.at(i), diagonal.at(idxMin));
-          std::swap(isInteger(i),   isInteger(idxMin));
-          std::swap(index.at(i),    index.at(idxMin));
+          std::swap(diagonal(i),  diagonal(idxMin));
+          std::swap(isInteger(i), isInteger(idxMin));
+          std::swap(index.at(i),  index.at(idxMin));
           Z.swap(i, idxMin);
         }
 
@@ -549,7 +553,7 @@ Double GnssParametrizationAmbiguities::ambiguityResolve(const GnssNormalEquation
       if(startInteger > 0)
         normalsAmbi.cholesky(FALSE/*timing*/, 0, 1, TRUE/*collect*/);
       if(normalsAmbi.isMyRank(1,1))
-        GnssLambda::choleskyReversePivot(normalsAmbi.N(1,1), Z, TRUE/*timing*/);  // Z is now only valid at master
+        GnssLambda::choleskyReversePivot(normalsAmbi.N(1,1), Z, startInteger, TRUE/*timing*/);  // Z is now only valid at master
 
       // float solution
       // --------------
@@ -641,8 +645,8 @@ Double GnssParametrizationAmbiguities::ambiguityResolve(const GnssNormalEquation
           n.at(i) -= dn.row(normals.blockIndex(i)-index0, normals.blockSize(i));
         }
 
-      // Integer ambiguities are estimated indepedently with high weight
-      // ---------------------------------------------------------------
+      // Integer ambiguities are estimated independently with high weight
+      // ----------------------------------------------------------------
       const Double weightInteger = std::pow(1./0.001, 2); // [1/cycles^2]
       for(UInt i=block0; i<normals.blockCount(); i++)
         for(UInt z=0; z<normals.blockSize(i); z++)

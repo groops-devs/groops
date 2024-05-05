@@ -62,7 +62,7 @@ Matrix GnssLambda::phaseDecorrelation(const std::vector<GnssType> &types, Double
 
 /***********************************************/
 
-void GnssLambda::choleskyReversePivot(Matrix &N, Transformation &Z, Bool timing)
+void GnssLambda::choleskyReversePivot(Matrix &N, Transformation &Z, UInt index0Z, Bool timing)
 {
   try
   {
@@ -84,7 +84,7 @@ void GnssLambda::choleskyReversePivot(Matrix &N, Transformation &Z, Bool timing)
       // swap
       if(i != k)
       {
-        Z.swap(i, k);
+        Z.swap(index0Z+i, index0Z+k);
         std::swap(tmp(i), tmp(k));
         std::swap(N(i,i), N(k,k));
         if(i>0)          swap(N.slice(0, i,i, 1),               N.slice(0,   k,   i,     1));

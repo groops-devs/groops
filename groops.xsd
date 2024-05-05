@@ -2300,6 +2300,16 @@
 								<xs:documentation>resolved ambiguities</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="selectTransmitters" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[{&quot;all&quot;:{}}]">
+							<xs:annotation>
+								<xs:documentation>only resolve ambiguities with these participating transmitters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectReceivers" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[{&quot;all&quot;:{}}]">
+							<xs:annotation>
+								<xs:documentation>only resolve ambiguities with these participating receivers</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="sigmaMaxResolve" type="double" minOccurs="0" default="0.2">
 							<xs:annotation>
 								<xs:documentation>max. allowed std. dev. of ambiguity to resolve [cycles]</xs:documentation>

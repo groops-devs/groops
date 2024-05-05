@@ -2147,6 +2147,7 @@ Name & Type & Annotation\\
 Performs a least squares adjustment like \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}
 but with additional integer phase ambiguity resolution.
 After this step all resolved ambiguities are removed from the normal equation system.
+Only ambiguites are resolved with involved \configClass{selectTransmitters/Receivers}{platformSelectorType}.
 
 Integer ambiguity resolution is performed based on the least squares ambiguity decorrelation adjustment
 (LAMBDA) method (Teunissen 1995, DOI \href{https://doi.org/10.1007/BF00863419}{10.1007/BF00863419}), specifically
@@ -2179,6 +2180,8 @@ This trade-off is necessary to cope with large numbers of ambiguities.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAmbiguities & \hfuzz=500pt filename & \hfuzz=500pt resolved ambiguities\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt only resolve ambiguities with these participating transmitters\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt only resolve ambiguities with these participating receivers\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaMaxResolve & \hfuzz=500pt double & \hfuzz=500pt max. allowed std. dev. of ambiguity to resolve [cycles]\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~searchBlockSize & \hfuzz=500pt uint & \hfuzz=500pt block size for blocked integer search\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxSearchSteps & \hfuzz=500pt uint & \hfuzz=500pt max. steps of integer search for each block\\

@@ -85,6 +85,7 @@ public:
     void collectNormalsBlocks       (UInt blockStart, UInt blockCount);
     void buildNormals               (Bool constraintsOnly, Bool solveEpochParameters);
     Double estimateSolution         (const std::function<Vector(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, Vector &xInt, Double &sigma)> &searchInteger,
+                                     const std::vector<Byte> &ambiguityTransmitters, const std::vector<Byte> &ambiguityReceivers,
                                      Bool computeResiduals,  Bool computeWeights, Bool adjustSigma0, Double huber, Double huberPower);
     void residualsStatistics        (UInt idRecv, UInt idTrans,
                                      std::vector<GnssType> &types, std::vector<Double> &ePe, std::vector<Double> &redundancy,
