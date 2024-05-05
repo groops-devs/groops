@@ -118,7 +118,7 @@ void GnssIonex2GriddedDataTimeSeries::run(Config &config, Parallel::Communicator
         gridRectangular.longitudes = longitudes;
         gridRectangular.latitudes  = latitudes;
         gridRectangular.heights.resize(latitudes.size(), height);
-        gridRectangular.ellipsoid = Ellipsoid(radius);
+        gridRectangular.ellipsoid  = Ellipsoid(radius,  0.); //  sphere
         grid.init(gridRectangular);
       }
 
@@ -133,7 +133,7 @@ void GnssIonex2GriddedDataTimeSeries::run(Config &config, Parallel::Communicator
 
           if(times.size() && time < times.back())
           {
-            logWarning << "skipping epoch " << time.dateTimeStr() << " (unsorted)" << Log::endl;
+            logWarning<<"skipping epoch "<<time.dateTimeStr()<<" (unsorted)"<<Log::endl;
             continue;
           }
 
@@ -148,15 +148,19 @@ void GnssIonex2GriddedDataTimeSeries::run(Config &config, Parallel::Communicator
           {
             if(testLabel(label, "END OF TEC MAP"))
               break;
-
             testLabel(label, "LAT/LON1/LON2/DLON/H", FALSE);
-            auto iter = std::find(latitudes.begin(), latitudes.end(), Angle(String::toDouble(line.substr(2,6))*DEG2RAD));
-            UInt index = std::distance(latitudes.begin(), iter);
-            for(UInt i = 0; i < std::ceil(longitudes.size()/16.); i++)
+            const Angle lat (String::toDouble(line.substr( 2,6))*DEG2RAD);
+            const Angle lon1(String::toDouble(line.substr( 8,6))*DEG2RAD);
+            const Angle lon2(String::toDouble(line.substr(14,6))*DEG2RAD);
+            const Angle dlon(String::toDouble(line.substr(20,6))*DEG2RAD);
+            const UInt count = static_cast<UInt>(std::round((lon2-lon1)/dlon))+1;
+            const UInt idxLat = std::distance(latitudes.begin(),  std::find(latitudes.begin(),  latitudes.end(),  lat));
+            const UInt idxLon = std::distance(longitudes.begin(), std::find(longitudes.begin(), longitudes.end(), lon1));
+            for(UInt i=0; i<(count+15)/16; i++)
             {
               getLine(file, line, label);
-              for(UInt j = 0; j < std::min(longitudes.size()-i*16, UInt(16)); j++)
-                epochData.at(index*longitudes.size() + i*16 + j) = String::toDouble(line.substr(j*5,5)) * factor;
+              for(UInt k=0; k<std::min(count-i*16, UInt(16)); k++)
+                epochData.at(idxLat*longitudes.size() + (idxLon+i*16+k)%longitudes.size()) = factor * String::toDouble(line.substr(k*5,5));
             }
           }
           data.push_back(epochData);
