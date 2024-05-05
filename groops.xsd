@@ -21283,14 +21283,19 @@
 								<xs:documentation>for rotation from TRF to CRF</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="usePrn" type="string" minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="useType" type="gnssType" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>only export these PRNs instead of all</xs:documentation>
+								<xs:documentation>(e.g. ***G12) only use satellites with PRN that match any of these patterns</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="messageType" type="string" minOccurs="0">
+						<xs:element name="ignoreType" type="gnssType" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>(RINEX4) only use this navigation message (LNAV, CNAV, ...)</xs:documentation>
+								<xs:documentation>(e.g. ***R**) ignore satellites PRN that match any of these patterns</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="removeUnhealthySatellites" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>Remove satellite ephemeris that have their sat flags set to unhealthy</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>

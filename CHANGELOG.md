@@ -20,6 +20,7 @@
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
 - Bugfix:           NetCdf: in some cases the data has been swapped.
+- Bugfix:           GnssRinexNavigation2OrbitClock: reimplementation of source code.
 - Other:            GnssAntex2AntennaDefinition/GnssGlonassFrequencyNumberUpdate: write Platform files instead of deprecated GnssStationInfo files.
 - Other:            EarthRotation::rotaryAxis: if EOP time series is too short, use simplified equations.
 - Other:            Gravityfield2Deflections: Computation based now on normal gravity.
