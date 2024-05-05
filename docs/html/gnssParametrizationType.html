@@ -337,7 +337,9 @@ is introduced:
 \[
   \bar{\M x} = \M Q^T \M x.
 \]The new parameters corresponding to eigen values $\lambda>0$ are estimable,
-the others are left out (set to zero). The missing linear combinations,
+the others are left out (set to zero). The behavior can be controlled by explicitly setting up to two bias types
+with <a class="groops-class" href="gnssType.html">typesClockDatum</a> for each transmitter to zero. These then define the ionosphere-free clock datum
+of the transmitter. The missing linear combinations,
 which depend on the STEC parameters, can be added with
 <a class="groops-class" href="gnssParametrizationType.html#tecBiases">parametrization:tecBiases</a>.</p><p>Additional rank deficiencies may also occur when biases of transmitters and receivers are estimated together.
 The minimum norm nullspace (also via eigen value decomposition)
@@ -353,8 +355,9 @@ which reduces the number of bias parameters.</p><p>The estimated biases can be w
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">selectTransmitters</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">selectReceivers</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">linearGlonassBias</div></div></td><td>boolean</td><td>bias depends linear on frequency channel number</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">nameConstraint</div></div></td><td>string</td><td>used for parameter selection</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for null space constraint</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">typesClockDatum</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>first two matching types define the ionosphere free transmitter clock (e.g. C1WG, C2WG)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">nameConstraint</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for null space constraint</td></tr>
 </table>
 
 <h2 id="tecBiases">TecBiases</h2><p>

@@ -1590,7 +1590,9 @@ is introduced:
   \bar{\M x} = \M Q^T \M x.
 \end{equation}
 The new parameters corresponding to eigen values $\lambda>0$ are estimable,
-the others are left out (set to zero). The missing linear combinations,
+the others are left out (set to zero). The behavior can be controlled by explicitly setting up to two bias types
+with \configClass{typesClockDatum}{gnssType} for each transmitter to zero. These then define the ionosphere-free clock datum
+of the transmitter. The missing linear combinations,
 which depend on the STEC parameters, can be added with
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases}.
 
@@ -1618,6 +1620,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectTransmitters & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~linearGlonassBias & \hfuzz=500pt boolean & \hfuzz=500pt bias depends linear on frequency channel number\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~typesClockDatum & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt first two matching types define the ionosphere free transmitter clock (e.g. C1WG, C2WG)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~nameConstraint & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaZeroMeanConstraint & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for null space constraint\\
 \hline

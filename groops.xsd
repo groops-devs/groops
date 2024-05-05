@@ -1782,6 +1782,11 @@
 								<xs:documentation>bias depends linear on frequency channel number</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="typesClockDatum" type="gnssType" minOccurs="0" default="[&quot;C1WG&quot;, &quot;C2WG&quot;, &quot;C1CE&quot;, &quot;C5QE&quot;, &quot;C1PR&quot;, &quot;C2PR&quot;]" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>first two matching types define the ionosphere free transmitter clock (e.g. C1WG, C2WG)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="nameConstraint" type="string" minOccurs="0" default="constraint.codeBiases">
 							<xs:annotation>
 								<xs:documentation>used for parameter selection</xs:documentation>

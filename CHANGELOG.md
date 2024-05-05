@@ -13,6 +13,7 @@
 - New option:       GriddedDataReduceSampling: tesseroid volume conserving for digital elevation models.
 - New option:       Loop: optional condition for each loop step.
 - New option:       gnssParametrizationStaticPositions: no net scale constraint.
+- New option:       GnssParametrizationCodeBiases: option to define ionosphere-free clock datum.
 - Removed program:  GnssPrn2SvnBlockVariables: This program will no longer work from the next release! See documentation for help.
 - Removed program:  NetCdf2PotentialCoefficients: Use NetCdf2GriddedDataTimeSeries and GriddedDataTimeSeries2PotentialCoefficients instead.
 - Bugfix:           GnssParametrizationStaticPositions: ignored inputfileNoNetPositions.
