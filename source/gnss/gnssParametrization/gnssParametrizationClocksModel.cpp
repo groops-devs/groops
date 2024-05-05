@@ -338,14 +338,14 @@ void GnssParametrizationClocksModel::constraintsEpoch(const GnssNormalEquationIn
 
     // regularize unused receiver clocks
     // ---------------------------------
-//     for(UInt idRecv=0; idRecv<indexRecv.size(); idRecv++)
-//       if(!gnss->receivers.at(idRecv)->useable(idEpoch))
-//         if(indexRecv.at(idRecv).size() && indexRecv.at(idRecv).at(idEpoch) && gnss->receivers.at(idRecv)->isMyRank())
-//         {
-//           GnssDesignMatrix A(normalEquationInfo, Vector(1));
-//           A.column(indexRecv.at(idRecv).at(idEpoch))(0,0) = 1./10.; // sigma = 10m
-//           A.accumulateNormals(normals, n, lPl, obsCount);
-//        }
+    for(UInt idRecv=0; idRecv<indexRecv.size(); idRecv++)
+      if(!gnss->receivers.at(idRecv)->useable(idEpoch))
+        if(indexRecv.at(idRecv).size() && indexRecv.at(idRecv).at(idEpoch) && gnss->receivers.at(idRecv)->isMyRank())
+        {
+          GnssDesignMatrix A(normalEquationInfo, Vector(1));
+          A.column(indexRecv.at(idRecv).at(idEpoch))(0,0) = 1./1e3; // sigma = 1000m
+          A.accumulateNormals(normals, n, lPl, obsCount);
+       }
 
     // find next epoch
     auto iter = std::upper_bound(normalEquationInfo.idEpochs.begin(), normalEquationInfo.idEpochs.end(), idEpoch);
@@ -445,16 +445,16 @@ Double GnssParametrizationClocksModel::updateParameter(const GnssNormalEquationI
           const Double dt = (gnss->times.at(idEpochNext)-gnss->times.at(idEpoch)).seconds();
           e(i) = std::fabs(LIGHT_VELOCITY * gnss->transmitters.at(idTrans)->clockError(idEpochNext)
                          - LIGHT_VELOCITY * gnss->transmitters.at(idTrans)->clockError(idEpoch)
-                        - driftTrans(idTrans)*dt);
+                         - driftTrans(idTrans)*dt);
 
           // redundancy
           const Double p  = 1./sigma0Trans(idTrans)/sigmaEpochTrans.at(idTrans).at(idEpoch);
           Matrix AWz(1, Wz.columns());
-          axpy(+p,   Wz.row(normalEquationInfo.index(indexTrans.at(idTrans).at(idEpochNext))), AWz);
-          axpy(-p,   Wz.row(normalEquationInfo.index(indexTrans.at(idTrans).at(idEpoch))),     AWz);
-          axpy(p*dt, Wz.row(normalEquationInfo.index(indexDriftTrans.at(idTrans))),            AWz);
+          axpy(-p,    Wz.row(normalEquationInfo.index(indexTrans.at(idTrans).at(idEpochNext))), AWz);
+          axpy(+p,    Wz.row(normalEquationInfo.index(indexTrans.at(idTrans).at(idEpoch))),     AWz);
+          axpy(+p*dt, Wz.row(normalEquationInfo.index(indexDriftTrans.at(idTrans))),            AWz);
           ePe  += std::pow(e(i)*p, 2);
-          r(i)  = std::max(1-quadsum(AWz), 0.001);
+          r(i)  = std::max(1-quadsum(AWz), 0.2);
           e(i) /= std::sqrt(r(i));
         }
 
@@ -467,7 +467,7 @@ Double GnssParametrizationClocksModel::updateParameter(const GnssNormalEquationI
         {
           const UInt idEpoch = normalEquationInfo.idEpochs.at(i);
           sigmaEpochTrans.at(idTrans).at(idEpoch) = 1.;
-          if((e(i) > sigma0Trans(idTrans)*huber) && (r(i) > 0.1))
+          if(e(i) > sigma0Trans(idTrans)*huber)
             sigmaEpochTrans.at(idTrans).at(idEpoch) *= std::pow(e(i)/sigma0Trans(idTrans)/huber, huberPower);
         }
         isFirstTrans.at(idTrans) = FALSE;
@@ -511,11 +511,11 @@ Double GnssParametrizationClocksModel::updateParameter(const GnssNormalEquationI
           // redundancy
           const Double p  = 1./sigma0Recv(idRecv)/sigmaEpochRecv.at(idRecv).at(idEpoch);
           Matrix AWz(1, Wz.columns());
-          axpy(+p,   Wz.row(normalEquationInfo.index(indexRecv.at(idRecv).at(idEpochNext))), AWz);
-          axpy(-p,   Wz.row(normalEquationInfo.index(indexRecv.at(idRecv).at(idEpoch))),     AWz);
-          axpy(p*dt, Wz.row(normalEquationInfo.index(indexDriftRecv.at(idRecv))),            AWz);
+          axpy(-p,    Wz.row(normalEquationInfo.index(indexRecv.at(idRecv).at(idEpochNext))), AWz);
+          axpy(+p,    Wz.row(normalEquationInfo.index(indexRecv.at(idRecv).at(idEpoch))),     AWz);
+          axpy(+p*dt, Wz.row(normalEquationInfo.index(indexDriftRecv.at(idRecv))),            AWz);
           ePe  += std::pow(e(i)*p, 2);
-          r(i)  = std::max(1-quadsum(AWz), 0.001);
+          r(i)  = std::max(1-quadsum(AWz), 0.2);
           e(i) /= std::sqrt(r(i));
         }
 
@@ -527,7 +527,7 @@ Double GnssParametrizationClocksModel::updateParameter(const GnssNormalEquationI
         {
           const UInt idEpoch = normalEquationInfo.idEpochs.at(i);
           sigmaEpochRecv.at(idRecv).at(idEpoch) = 1.;
-          if((e(i) > sigma0Recv(idRecv)*huber) && (r(i) > 0.1))
+          if(e(i) > sigma0Recv(idRecv)*huber)
             sigmaEpochRecv.at(idRecv).at(idEpoch) *= std::pow(e(i)/sigma0Recv(idRecv)/huber, huberPower);
         }
         isFirstRecv.at(idRecv) = FALSE;
