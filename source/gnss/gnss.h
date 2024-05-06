@@ -71,6 +71,7 @@ public:
   void   constraintsEpoch         (const GnssNormalEquationInfo &normalEquationInfo, UInt idEpoch, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount) const;
   void   constraints              (const GnssNormalEquationInfo &normalEquationInfo, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount) const;
   Double ambiguityResolve         (const GnssNormalEquationInfo &normalEquationInfo, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount,
+                                   const std::vector<Byte> &selectedTransmitters, const std::vector<Byte> &selectedReceivers,
                                    const std::function<Vector(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, Vector &xInt, Double &sigma)> &searchInteger);
   Double updateParameter          (const GnssNormalEquationInfo &normalEquationInfo, const_MatrixSliceRef x, const_MatrixSliceRef Wz);
   void   updateCovariance         (const GnssNormalEquationInfo &normalEquationInfo, const MatrixDistributed &covariance);

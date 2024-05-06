@@ -275,14 +275,14 @@ void GnssParametrizationStaticPositions::constraints(const GnssNormalEquationInf
     if(sigmaNoNetScale)       logStatus<<"apply no-net scale to receiver positions,       apriori ("<<1e3*x(idxNNS+0)%"%.1f) mm"s<<Log::endl;
     if(sigmaNoNetRotation || sigmaNoNetTranslation || sigmaNoNetScale)
     {
-      logWarning<<" no-net coordinate residuals rms = "<<1e3*rootMeanSquare(l-A*x)%"%.1f mm, "s<<Log::endl;
+      logStatus<<"  no-net coordinate residuals rms = "<<1e3*rootMeanSquare(l-A*x)%"%.1f mm, "s<<Log::endl;
       UInt i = 0;
       if(sigma.size())
         for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
           if(selectedNoNetReceivers.at(idRecv) && index.at(idRecv))
           {
-            if(sigma(i) > 1)
-              logWarning<<" "<<gnss->receivers.at(idRecv)->name()<<" outlier sigma = "<<sigma(i)%"%.2f"s<<Log::endl;
+            if(sigma(i) > std::pow(3./huber, huberPower))
+              logWarning<<"  "<<gnss->receivers.at(idRecv)->name()<<" outlier sigma = "<<sigma(i)%"%.2f"s<<Log::endl;
             i++;
           }
     }

@@ -51,6 +51,7 @@ public:
   void   constraintsEpoch(const GnssNormalEquationInfo &normalEquationInfo, UInt idEpoch, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount) const override;
   void   constraints(const GnssNormalEquationInfo &normalEquationInfo, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount) const override;
   Double ambiguityResolve(const GnssNormalEquationInfo &normalEquationInfo, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount,
+                          const std::vector<Byte> &selectedTransmitters, const std::vector<Byte> &selectedReceivers,
                           const std::function<Vector(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, Vector &xInt, Double &sigma)> &searchInteger) override;
   Double updateParameter(const GnssNormalEquationInfo &normalEquationInfo, const_MatrixSliceRef x, const_MatrixSliceRef Wz) override;
   void   updateCovariance(const GnssNormalEquationInfo &normalEquationInfo, const MatrixDistributed &covariance) override;
@@ -187,11 +188,13 @@ inline void GnssParametrizationGroup::constraints(const GnssNormalEquationInfo &
 /***********************************************/
 
 inline Double GnssParametrizationGroup::ambiguityResolve(const GnssNormalEquationInfo &normalEquationInfo, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount,
+                                                         const std::vector<Byte> &selectedTransmitters, const std::vector<Byte> &selectedReceivers,
                                                          const std::function<Vector(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, Vector &xInt, Double &sigma)> &searchInteger)
 {
   try
   {
-    return base->ambiguityResolve(normalEquationInfo, normals, n, lPl, obsCount, searchInteger);
+    return base->ambiguityResolve(normalEquationInfo, normals, n, lPl, obsCount,
+                                  selectedTransmitters, selectedReceivers, searchInteger);
   }
   catch(std::exception &e)
   {

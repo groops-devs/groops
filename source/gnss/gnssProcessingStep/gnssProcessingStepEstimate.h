@@ -115,7 +115,7 @@ inline void GnssProcessingStepEstimate::process(GnssProcessingStep::State &state
     for(UInt iter=0; iter<iterCount; iter++)
     {
       logStatus<<iter+1<<". iteration  --------------------------"<<Log::endl;
-      if(convergenceThreshold > state.estimateSolution(nullptr/*resolveAmbiguities*/, computeResiduals, computeWeights, adjustSigma0, huber, huberPower))
+      if(convergenceThreshold > state.estimateSolution(nullptr/*resolveAmbiguities*/, {}, {}, computeResiduals, computeWeights, adjustSigma0, huber, huberPower))
         break;
     }
   }

@@ -39,7 +39,9 @@ is introduced:
   \bar{\M x} = \M Q^T \M x.
 \end{equation}
 The new parameters corresponding to eigen values $\lambda>0$ are estimable,
-the others are left out (set to zero). The missing linear combinations,
+the others are left out (set to zero). The behavior can be controlled by explicitly setting up to two bias types
+with \configClass{typesClockDatum}{gnssType} for each transmitter to zero. These then define the ionosphere-free clock datum
+of the transmitter. The missing linear combinations,
 which depend on the STEC parameters, can be added with
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases}.
 
@@ -91,6 +93,7 @@ class GnssParametrizationCodeBiases : public GnssParametrizationBase
   Double                     sigmaZeroMean;
   std::vector<Parameter*>    paraTrans, paraRecv;
   std::vector<UInt>          idxBiasTrans, idxBiasRecv; // indices in zeroMean matrix
+  std::vector<GnssType>      typesClockDatum;
   Matrix                     zeroMeanDesign;            // zero mean observation equations
 
 public:

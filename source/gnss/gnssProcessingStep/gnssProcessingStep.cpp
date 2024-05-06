@@ -397,6 +397,7 @@ void GnssProcessingStep::State::buildNormals(Bool constraintsOnly, Bool solveEpo
 /***********************************************/
 
 Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, Vector &xInt, Double &sigma)> &searchInteger,
+                                                   const std::vector<Byte> &ambiguityTransmitters, const std::vector<Byte> &ambiguityReceivers,
                                                    Bool computeResiduals, Bool computeWeights, Bool adjustSigma0, Double huber, Double huberPower)
 {
   try
@@ -426,7 +427,8 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
     if(searchInteger)
     {
       logStatus<<"Resolve integer ambiguities (may take a while)"<<Log::endl;
-      Double sigmaFloat = gnss->ambiguityResolve(normalEquationInfo, normals, n, lPl(0), obsCount, searchInteger);
+      Double sigmaFloat = gnss->ambiguityResolve(normalEquationInfo, normals, n, lPl(0), obsCount,
+                                                 ambiguityTransmitters, ambiguityReceivers, searchInteger);
       logInfo<<"  sigma(float) = "<<sigmaFloat%"%.2f"s<<Log::endl;
       logInfo<<"  sigma(fixed) = "<<std::sqrt(lPl(0)/obsCount)%"%.2f"s<<Log::endl;
       Parallel::barrier(normalEquationInfo.comm);

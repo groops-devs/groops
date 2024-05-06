@@ -13,6 +13,9 @@
 - New option:       GriddedDataReduceSampling: tesseroid volume conserving for digital elevation models.
 - New option:       Loop: optional condition for each loop step.
 - New option:       gnssParametrizationStaticPositions: no net scale constraint.
+- New option:       GnssProcessingStepResolveAmbiguities: partial ambiguity resolution with selectTransmitters/Receivers.
+- New option:       GnssParametrizationCodeBiases: option to define ionosphere-free clock datum.
+- New option:       GnssParametrizationIonosphereMap: option to read/write VTEC maps.
 - Removed program:  GnssPrn2SvnBlockVariables: This program will no longer work from the next release! See documentation for help.
 - Removed program:  NetCdf2PotentialCoefficients: Use NetCdf2GriddedDataTimeSeries and GriddedDataTimeSeries2PotentialCoefficients instead.
 - Bugfix:           GnssParametrizationStaticPositions: ignored inputfileNoNetPositions.
@@ -20,6 +23,7 @@
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
 - Bugfix:           NetCdf: in some cases the data has been swapped.
+- Bugfix:           GnssRinexNavigation2OrbitClock: reimplementation of source code.
 - Other:            GnssAntex2AntennaDefinition/GnssGlonassFrequencyNumberUpdate: write Platform files instead of deprecated GnssStationInfo files.
 - Other:            EarthRotation::rotaryAxis: if EOP time series is too short, use simplified equations.
 - Other:            Gravityfield2Deflections: Computation based now on normal gravity.

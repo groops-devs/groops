@@ -74,8 +74,7 @@
 Evaluates orbit and clock parameters from <a href="https://files.igs.org/pub/data/format/rinex_4.00.pdf">RINEX</a> (version 2, 3, and 4)
 navigation file <strong class="groops-config-element">inputfileRinex</strong> at epochs given by <a class="groops-class" href="timeSeriesType.html">timeSeries</a> and writes them to
 <a class="groops-class" href="fileFormat_instrument.html">outputfileOrbit</a> and <a class="groops-class" href="fileFormat_instrument.html">outputfileClock</a>, respectively.</p><p>Orbits are rotated from TRF (as broadcasted) to CRF via <a class="groops-class" href="earthRotationType.html">earthRotation</a>,
-but system-specific TRFs (WGS84, PZ-90, etc.) are not aligned to a common TRF.</p><p>If <strong class="groops-config-element">messageType</strong> is set (e.g., to LNAV, CNAV, or other types defined in the RINEX 4 standard), only navigation records of this type are used.
-Otherwise, if multiple records are defined for the same epoch, the first one is used.</p><p>Also take note that all orbits are written out even satellites whose health flag would suggest otherwise.</p><p>See also <a class="groops-program" href="OrbitAddVelocityAndAcceleration.html">OrbitAddVelocityAndAcceleration</a>.
+but system-specific TRFs (WGS84, PZ-90, etc.) are not aligned to a common TRF.</p><p>Furthermore, option is available to remove any satellite ephemeris data that has their satellite flag set to unhealthy.</p><p>See also <a class="groops-program" href="OrbitAddVelocityAndAcceleration.html">OrbitAddVelocityAndAcceleration</a>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -84,8 +83,9 @@ Otherwise, if multiple records are defined for the same epoch, the first one is 
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileRinex</div></div></td><td>filename</td><td>RINEX navigation file</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">timeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>orbit and clock evaluation epochs</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">earthRotation</div></div></td><td><a href="earthRotationType.html">earthRotation</a></td><td>for rotation from TRF to CRF</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">usePrn</div></div></td><td>string</td><td>only export these PRNs instead of all</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">messageType</div></div></td><td>string</td><td>(RINEX4) only use this navigation message (LNAV, CNAV, ...)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">useType</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>(e.g. ***G12) only use satellites with PRN that match any of these patterns</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">ignoreType</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>(e.g. ***R**) ignore satellites PRN that match any of these patterns</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">removeUnhealthySatellites</div></div></td><td>boolean</td><td>Remove satellite ephemeris that have their sat flags set to unhealthy</td></tr>
 </table>
 
         </div>

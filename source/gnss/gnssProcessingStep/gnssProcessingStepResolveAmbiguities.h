@@ -20,6 +20,7 @@ static const char *docstringGnssProcessingStepResolveAmbiguities = R"(
 Performs a least squares adjustment like \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}
 but with additional integer phase ambiguity resolution.
 After this step all resolved ambiguities are removed from the normal equation system.
+Only ambiguites are resolved with involved \configClass{selectTransmitters/Receivers}{platformSelectorType}.
 
 Integer ambiguity resolution is performed based on the least squares ambiguity decorrelation adjustment
 (LAMBDA) method (Teunissen 1995, DOI \href{https://doi.org/10.1007/BF00863419}{10.1007/BF00863419}), specifically
@@ -51,6 +52,7 @@ This trade-off is necessary to cope with large numbers of ambiguities.
 
 #include "config/config.h"
 #include "files/fileMatrix.h"
+#include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnssLambda.h"
 #include "gnss/gnssProcessingStep/gnssProcessingStep.h"
 
@@ -62,6 +64,7 @@ This trade-off is necessary to cope with large numbers of ambiguities.
 class GnssProcessingStepResolveAmbiguities : public GnssProcessingStepBase
 {
   FileName                      fileNameAmbiguities;
+  PlatformSelectorPtr           selectTransmitters, selectReceivers;
   Double                        sigmaMaxResolve;
   UInt                          searchBlockSize, maxSearchSteps;
   GnssLambda::IncompleteAction  incompleteAction;
@@ -81,10 +84,12 @@ inline GnssProcessingStepResolveAmbiguities::GnssProcessingStepResolveAmbiguitie
   {
     std::string choice;
 
-    readConfig(config, "outputfileAmbiguities", fileNameAmbiguities, Config::OPTIONAL, "",    "resolved ambiguities");
-    readConfig(config, "sigmaMaxResolve",       sigmaMaxResolve,     Config::OPTIONAL, "0.2", "max. allowed std. dev. of ambiguity to resolve [cycles]");
-    readConfig(config, "searchBlockSize",       searchBlockSize,     Config::DEFAULT,  "200", "block size for blocked integer search");
-    readConfig(config, "maxSearchSteps",        maxSearchSteps,      Config::OPTIONAL, "200000000", "max. steps of integer search for each block");
+    readConfig(config, "outputfileAmbiguities", fileNameAmbiguities, Config::OPTIONAL, "",              "resolved ambiguities");
+    readConfig(config, "selectTransmitters" ,   selectTransmitters,  Config::OPTIONAL, R"([{"all":{}}])", "only resolve ambiguities with these participating transmitters");
+    readConfig(config, "selectReceivers",       selectReceivers,     Config::OPTIONAL, R"([{"all":{}}])", "only resolve ambiguities with these participating receivers");
+    readConfig(config, "sigmaMaxResolve",       sigmaMaxResolve,     Config::OPTIONAL, "0.2",           "max. allowed std. dev. of ambiguity to resolve [cycles]");
+    readConfig(config, "searchBlockSize",       searchBlockSize,     Config::DEFAULT,  "200",           "block size for blocked integer search");
+    readConfig(config, "maxSearchSteps",        maxSearchSteps,      Config::OPTIONAL, "200000000",     "max. steps of integer search for each block");
     if(readConfigChoice(config, "incompleteAction", choice, Config::MUSTSET, "shrinkBlockSize", "if not all solutions tested after maxSearchSteps"))
     {
       if(readConfigChoiceElement(config, "stop",            choice, "stop searching, ambiguities remain float in this block")) incompleteAction = GnssLambda::IncompleteAction::STOP;
@@ -112,10 +117,23 @@ inline void GnssProcessingStepResolveAmbiguities::process(GnssProcessingStep::St
   try
   {
     logStatus<<"=== resolve ambiguities  ===================================="<<Log::endl;
+    std::vector<Byte> selectedTransmitters(state.gnss->transmitters.size());
+    if(!selectTransmitters) // if no selector is given, assume all useable
+      std::transform(state.gnss->transmitters.begin(), state.gnss->transmitters.end(), selectedTransmitters.begin(), [](const auto t){return t->useable();});
+    else
+      selectedTransmitters = state.gnss->selectTransmitters(selectTransmitters);
+
+    std::vector<Byte> selectedReceivers(state.gnss->receivers.size());
+    if(!selectReceivers) // if no selector is given, assume all useable
+      std::transform(state.gnss->receivers.begin(), state.gnss->receivers.end(), selectedReceivers.begin(), [](const auto r){return r->useable();});
+    else
+      selectedReceivers = state.gnss->selectReceivers(selectReceivers);
+
     Matrix solutionSteps;
     state.estimateSolution(std::bind(&GnssLambda::searchIntegerBlocked, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
                                      sigmaMaxResolve, searchBlockSize, maxSearchSteps, incompleteAction, TRUE/*timing*/,
                                      std::placeholders::_4, std::placeholders::_5, std::ref(solutionSteps)),
+                           selectedTransmitters, selectedReceivers,
                            computeResiduals, computeWeights, adjustSigma0, huber, huberPower);
     state.changedNormalEquationInfo = TRUE;
 

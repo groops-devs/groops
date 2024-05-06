@@ -257,13 +257,15 @@ void GnssParametrization::constraints(const GnssNormalEquationInfo &normalEquati
 /***********************************************/
 
 Double GnssParametrization::ambiguityResolve(const GnssNormalEquationInfo &normalEquationInfo, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount,
+                                             const std::vector<Byte> &selectedTransmitters, const std::vector<Byte> &selectedReceivers,
                                              const std::function<Vector(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, Vector &xInt, Double &sigma)> &searchInteger)
 {
   try
   {
     Double sigmaFloat = 0;
     for(auto b : base)
-      sigmaFloat = std::max(sigmaFloat, b->ambiguityResolve(normalEquationInfo, normals, n, lPl, obsCount, searchInteger));
+      sigmaFloat = std::max(sigmaFloat, b->ambiguityResolve(normalEquationInfo, normals, n, lPl, obsCount,
+                                                            selectedTransmitters, selectedReceivers, searchInteger));
     return sigmaFloat;
   }
   catch(std::exception &e)
