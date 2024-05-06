@@ -183,9 +183,15 @@ void GnssParametrizationIonosphereSTEC::observationCorrections(GnssObservationEq
         copy(A0, A.row(0, A0.rows()));
       }
 
-      // constrain STEC;
-      eqn.l(eqn.l.rows()-1)    = -eqn.dSTEC/sigmaSTEC; // constrain towards zero (0-x0)
-      eqn.B(eqn.B.rows()-1, 0) =  1./sigmaSTEC;        // in TECU
+      // elevation-weighted sigma
+      Double a = 0.1;
+      Double b = 2.0;
+      Double sinE = sin(eqn.elevationRecvLocal>1*DEG2RAD? eqn.elevationRecvLocal : 1.0);
+      Double sigma = sigmaSTEC*(a+(1-a)/pow(sinE,b));
+
+      // constrain STEC
+      eqn.l(eqn.l.rows()-1)    = -eqn.dSTEC/sigma; // constrain towards zero (0-x0)
+      eqn.B(eqn.B.rows()-1, 0) =  1./sigma;        // in TECU
     }
   }
   catch(std::exception &e)
