@@ -7879,10 +7879,7 @@ navigation file \config{inputfileRinex} at epochs given by \configClass{timeSeri
 Orbits are rotated from TRF (as broadcasted) to CRF via \configClass{earthRotation}{earthRotationType},
 but system-specific TRFs (WGS84, PZ-90, etc.) are not aligned to a common TRF.
 
-If \config{messageType} is set (e.g., to LNAV, CNAV, or other types defined in the RINEX 4 standard), only navigation records of this type are used.
-Otherwise, if multiple records are defined for the same epoch, the first one is used.
-
-Also take note that all orbits are written out even satellites whose health flag would suggest otherwise.
+Furthermore, option is available to remove any satellite ephemeris data that has their satellite flag set to unhealthy.
 
 See also \program{OrbitAddVelocityAndAcceleration}.
 
@@ -7897,8 +7894,9 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileRinex & \hfuzz=500pt filename & \hfuzz=500pt RINEX navigation file\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt orbit and clock evaluation epochs\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt for rotation from TRF to CRF\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~usePrn & \hfuzz=500pt string & \hfuzz=500pt only export these PRNs instead of all\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~messageType & \hfuzz=500pt string & \hfuzz=500pt (RINEX4) only use this navigation message (LNAV, CNAV, ...)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~useType & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt (e.g. ***G12) only use satellites with PRN that match any of these patterns\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~ignoreType & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt (e.g. ***R**) ignore satellites PRN that match any of these patterns\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~removeUnhealthySatellites & \hfuzz=500pt boolean & \hfuzz=500pt Remove satellite ephemeris that have their sat flags set to unhealthy\\
 \hline
 \end{tabularx}
 

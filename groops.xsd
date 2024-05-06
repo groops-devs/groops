@@ -1584,14 +1584,31 @@
 					<xs:sequence>
 						<xs:element name="name" type="string" minOccurs="0" default="parameter.mapVTEC"/>
 						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="outputfileGriddedDataTimeSeries" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>single layer VTEC [TECU]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputGrid" type="gridType" minOccurs="0" maxOccurs="unbounded" default="{&quot;geograph&quot;:{&quot;deltaLambda&quot;:&quot;5&quot;,&quot;deltaPhi&quot;:&quot;2.5&quot;,&quot;height&quot;:&quot;450e3&quot;,&quot;R&quot;:&quot;6371e3&quot;,&quot;inverseFlattening&quot;:0}}"/>
+						<xs:element name="outputTimeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded" default="{&quot;uniformSampling&quot;:{&quot;sampling&quot;:&quot;2/24&quot;}}"/>
+						<xs:element name="inputfileGriddedDataTimeSeries" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>single layer VTEC [TECU]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="maxDegree" type="uint" default="15">
 							<xs:annotation>
-								<xs:documentation>spherical harmonics</xs:documentation>
+								<xs:documentation>spherical harmonics parametrization</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="temporal" type="parametrizationTemporalType" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>temporal evolution of TEC values</xs:documentation>
+								<xs:documentation>temporal evolution of VTEC values</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="radiusIonosphericLayer" type="double" minOccurs="0" default="6371e3+450e3">
+							<xs:annotation>
+								<xs:documentation>[m] radius of ionospheric single layer</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="mapR" type="double" minOccurs="0" default="6371e3">
@@ -1780,6 +1797,11 @@
 						<xs:element name="linearGlonassBias" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>bias depends linear on frequency channel number</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="typesClockDatum" type="gnssType" minOccurs="0" default="[&quot;C1WG&quot;, &quot;C2WG&quot;, &quot;C1CE&quot;, &quot;C5QE&quot;, &quot;C1PR&quot;, &quot;C2PR&quot;]" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>first two matching types define the ionosphere free transmitter clock (e.g. C1WG, C2WG)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="nameConstraint" type="string" minOccurs="0" default="constraint.codeBiases">
@@ -2293,6 +2315,16 @@
 						<xs:element name="outputfileAmbiguities" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>resolved ambiguities</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectTransmitters" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[{&quot;all&quot;:{}}]">
+							<xs:annotation>
+								<xs:documentation>only resolve ambiguities with these participating transmitters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectReceivers" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[{&quot;all&quot;:{}}]">
+							<xs:annotation>
+								<xs:documentation>only resolve ambiguities with these participating receivers</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="sigmaMaxResolve" type="double" minOccurs="0" default="0.2">
@@ -21366,14 +21398,19 @@
 								<xs:documentation>for rotation from TRF to CRF</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="usePrn" type="string" minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="useType" type="gnssType" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>only export these PRNs instead of all</xs:documentation>
+								<xs:documentation>(e.g. ***G12) only use satellites with PRN that match any of these patterns</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="messageType" type="string" minOccurs="0">
+						<xs:element name="ignoreType" type="gnssType" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>(RINEX4) only use this navigation message (LNAV, CNAV, ...)</xs:documentation>
+								<xs:documentation>(e.g. ***R**) ignore satellites PRN that match any of these patterns</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="removeUnhealthySatellites" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>Remove satellite ephemeris that have their sat flags set to unhealthy</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>

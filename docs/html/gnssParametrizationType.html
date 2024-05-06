@@ -160,14 +160,18 @@ Local and short-term scintillations should be considered by adding loosely const
 </table>
 
 <h2 id="ionosphereMap">IonosphereMap</h2><p>
-TODO: reading and writing ionosphere maps not implemented yet.
-</p><p>The ionosphere is parametrized in terms of $[TECU]$ as a <a class="groops-class" href="parametrizationTemporalType.html">temporal</a>ly
+Apriori VTEC maps can be removed from the observations with
+<a class="groops-class" href="fileFormat_griddedDataTimeSeries.html">inputfileGriddedDataTimeSeries</a>
+(e.g. from <a class="groops-program" href="GnssIonex2GriddedDataTimeSeries.html">GnssIonex2GriddedDataTimeSeries</a>).</p><p>The ionosphere is parametrized in terms of $[TECU]$ in a single layer sphere with
+<strong class="groops-config-element">radiusIonosphericLayer</strong> as a <a class="groops-class" href="parametrizationTemporalType.html">temporal</a>ly
 changing (e.g. hourly linear splines) spherical harmonics expansion
 \[
   VTEC(\lambda,\theta,t) = \sum_{n=0}^{n_{max}} \sum_{m=0}^n c_{nm}(t)C_{nm}(\lambda,\theta)+s_{nm}(t)S_{nm}(\lambda,\theta)
 \]up to <strong class="groops-config-element">maxDegree</strong>=<code>15</code> in a solar-geomagentic frame defined
-by <a class="groops-class" href="magnetosphereType.html">magnetosphere</a>.
-The VTEC values are mapped to STEC values via eq. \eqref{gnssParametrizationType:IonosphereVTEC:STEC}.</p><p>Local and short-term scintillations can be considered by adding constrained
+by <a class="groops-class" href="magnetosphereType.html">magnetosphere</a>. The VTEC values are mapped to STEC values
+in the observation equations via eq. \eqref{gnssParametrizationType:IonosphereVTEC:STEC}.</p><p>The estimated VTEC inclusive the apriori <a class="groops-class" href="fileFormat_griddedDataTimeSeries.html">inputfileGriddedDataTimeSeries</a>
+can be written to <a class="groops-class" href="fileFormat_griddedDataTimeSeries.html">outputfileGriddedDataTimeSeries</a>
+evaluated at <a class="groops-class" href="gridType.html">outputGrid</a> and <a class="groops-class" href="timeSeriesType.html">outputTimeSeries</a>.</p><p>Local and short-term scintillations should be considered by adding constrained
 <a class="groops-class" href="gnssParametrizationType.html#ionosphereSTEC">parametrization:ionosphereSTEC</a>.
 To account for signal biases add
 <a class="groops-class" href="gnssParametrizationType.html#tecBiases">parametrization:tecBiases</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
@@ -183,12 +187,17 @@ To account for signal biases add
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectReceivers</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">maxDegree</div></div></td><td>uint</td><td>spherical harmonics</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">temporal</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>temporal evolution of TEC values</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">mapR</div></div></td><td>double</td><td>[m] constant of MSLM mapping function</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">mapH</div></div></td><td>double</td><td>[m] constant of MSLM mapping function</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">mapAlpha</div></div></td><td>double</td><td>constant of MSLM mapping function</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">magnetosphere</div></div></td><td><a href="magnetosphereType.html">magnetosphere</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileGriddedDataTimeSeries</div></div></td><td>filename</td><td>single layer VTEC [TECU]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">outputGrid</div></div></td><td><a href="gridType.html">grid</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">outputTimeSeries</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileGriddedDataTimeSeries</div></div></td><td>filename</td><td>single layer VTEC [TECU]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">maxDegree</div></div></td><td>uint</td><td>spherical harmonics parametrization</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">temporal</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>temporal evolution of VTEC values</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">radiusIonosphericLayer</div></div></td><td>double</td><td>[m] radius of ionospheric single layer</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">mapR</div></div></td><td>double</td><td>[m] constant of MSLM mapping function</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">mapH</div></div></td><td>double</td><td>[m] constant of MSLM mapping function</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">mapAlpha</div></div></td><td>double</td><td>constant of MSLM mapping function</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">magnetosphere</div></div></td><td><a href="magnetosphereType.html">magnetosphere</a></td><td></td></tr>
 </table>
 
 <h2 id="clocks">Clocks</h2><p>
@@ -337,7 +346,9 @@ is introduced:
 \[
   \bar{\M x} = \M Q^T \M x.
 \]The new parameters corresponding to eigen values $\lambda>0$ are estimable,
-the others are left out (set to zero). The missing linear combinations,
+the others are left out (set to zero). The behavior can be controlled by explicitly setting up to two bias types
+with <a class="groops-class" href="gnssType.html">typesClockDatum</a> for each transmitter to zero. These then define the ionosphere-free clock datum
+of the transmitter. The missing linear combinations,
 which depend on the STEC parameters, can be added with
 <a class="groops-class" href="gnssParametrizationType.html#tecBiases">parametrization:tecBiases</a>.</p><p>Additional rank deficiencies may also occur when biases of transmitters and receivers are estimated together.
 The minimum norm nullspace (also via eigen value decomposition)
@@ -353,8 +364,9 @@ which reduces the number of bias parameters.</p><p>The estimated biases can be w
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">selectTransmitters</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">selectReceivers</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">linearGlonassBias</div></div></td><td>boolean</td><td>bias depends linear on frequency channel number</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">nameConstraint</div></div></td><td>string</td><td>used for parameter selection</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for null space constraint</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">typesClockDatum</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>first two matching types define the ionosphere free transmitter clock (e.g. C1WG, C2WG)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">nameConstraint</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaZeroMeanConstraint</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for null space constraint</td></tr>
 </table>
 
 <h2 id="tecBiases">TecBiases</h2><p>

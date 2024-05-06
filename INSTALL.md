@@ -60,7 +60,7 @@ This installation guide assumes that the GROOPS source code is located in `C:\gr
 
 3. Install compilers, cmake, expat, OpenBLAS, and LAPACK:
     ```
-    pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake expat mingw64/mingw-w64-x86_64-openblas
+    pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-gcc-fortran mingw-w64-x86_64-cmake expat mingw64/mingw-w64-x86_64-openblas
     ```
 
 4. *(Optional)* Install the NetCDF library:

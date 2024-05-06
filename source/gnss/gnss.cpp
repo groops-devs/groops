@@ -303,6 +303,10 @@ void Gnss::initParameter(GnssNormalEquationInfo &normalEquationInfo)
     if(disabledEpochsTrans) logWarningOnce<<disabledEpochsTrans<<" disabled transmitter epochs"<<Log::endl;
     if(disabledEpochsRecv)  logWarningOnce<<disabledEpochsRecv <<" disabled receiver epochs"<<Log::endl;
 
+    for(auto recv : receivers)
+      if(!recv->useable())
+        normalEquationInfo.estimateReceiver.at(recv->idRecv()) = FALSE;
+
     // distribute process id of receivers
     // ----------------------------------
     Vector recvProcess(receivers.size());
@@ -408,11 +412,13 @@ void Gnss::constraints(const GnssNormalEquationInfo &normalEquationInfo, MatrixD
 /***********************************************/
 
 Double Gnss::ambiguityResolve(const GnssNormalEquationInfo &normalEquationInfo, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount,
+                              const std::vector<Byte> &selectedTransmitters, const std::vector<Byte> &selectedReceivers,
                               const std::function<Vector(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, Vector &xInt, Double &sigma)> &searchInteger)
 {
   try
   {
-    return parametrization->ambiguityResolve(normalEquationInfo, normals, n, lPl, obsCount, searchInteger);
+    return parametrization->ambiguityResolve(normalEquationInfo, normals, n, lPl, obsCount,
+                                             selectedTransmitters, selectedReceivers, searchInteger);
   }
   catch(std::exception &e)
   {

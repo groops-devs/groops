@@ -23,13 +23,18 @@ GnssParametrizationCodeBiases::GnssParametrizationCodeBiases(Config &config)
 {
   try
   {
-    readConfig(config, "name",                            name,                Config::OPTIONAL, "parameter.codeBiases", "used for parameter selection");
-    readConfig(config, "selectTransmitters",              selectTransmitters,  Config::DEFAULT,  R"(["all"])", "");
-    readConfig(config, "selectReceivers",                 selectReceivers,     Config::DEFAULT,  R"(["all"])", "");
-    readConfig(config, "linearGlonassBias",               isLinearBias,        Config::DEFAULT,  "0", "bias depends linear on frequency channel number");
-    readConfig(config, "nameConstraint",                  nameConstraint,      Config::OPTIONAL, "constraint.codeBiases", "used for parameter selection");
-    readConfig(config, "sigmaZeroMeanConstraint",         sigmaZeroMean,       Config::DEFAULT,  "0.0001", "(0 = unconstrained) sigma [m] for null space constraint");
+    readConfig(config, "name",                    name,               Config::OPTIONAL, "parameter.codeBiases", "used for parameter selection");
+    readConfig(config, "selectTransmitters",      selectTransmitters, Config::DEFAULT,  R"(["all"])", "");
+    readConfig(config, "selectReceivers",         selectReceivers,    Config::DEFAULT,  R"(["all"])", "");
+    readConfig(config, "linearGlonassBias",       isLinearBias,       Config::DEFAULT,  "0", "bias depends linear on frequency channel number");
+    readConfig(config, "typesClockDatum",         typesClockDatum,    Config::OPTIONAL, R"(["C1WG", "C2WG", "C1CE", "C5QE", "C1PR", "C2PR"])", "first two matching types define the ionosphere free transmitter clock (e.g. C1WG, C2WG)");
+    readConfig(config, "nameConstraint",          nameConstraint,     Config::OPTIONAL, "constraint.codeBiases", "used for parameter selection");
+    readConfig(config, "sigmaZeroMeanConstraint", sigmaZeroMean,      Config::DEFAULT,  "0.0001", "(0 = unconstrained) sigma [m] for null space constraint");
     if(isCreateSchema(config)) return;
+
+    // mimic behaviour of old GROOPS version
+    if(!typesClockDatum.size())
+      typesClockDatum = {GnssType::C1WG, GnssType::C2WG};
   }
   catch(std::exception &e)
   {
@@ -97,6 +102,17 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
     if(!isEnabled(normalEquationInfo, name))
       return;
 
+
+    auto nullSpace = [](Matrix &N, Bool remove)
+    {
+      Vector eigen = eigenValueDecomposition(N, TRUE);
+      eigen *= (eigen(eigen.rows()-1) > 1e-4) ? 1./eigen(eigen.rows()-1) : 0.;
+      UInt countZeros = 0;
+      while((countZeros < eigen.rows()) && (eigen(countZeros) < 1e-8))
+        countZeros++;
+      return (remove) ? N.column(countZeros, N.columns()-countZeros) : N.column(0, countZeros);
+    };
+
     // transmitter parameters
     // ----------------------
     UInt countParaTrans = 0;
@@ -118,14 +134,17 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
               if(para->trans->signalBias.types.at(i) == biasTypes.at(k))
                 T(i, k) = 1.;
 
-          // special case: GPS clock/TEC is defined via C1WG/C2WG only
-          const UInt idxC1WG = GnssType::index(biasTypes, GnssType::C1WG);
-          const UInt idxC2WG = GnssType::index(biasTypes, GnssType::C2WG);
-          if((idxC1WG != NULLINDEX) && (idxC2WG != NULLINDEX))
-          {
-            T(GnssType::index(para->trans->signalBias.types, GnssType::C1WG), idxC1WG) = 0;
-            T(GnssType::index(para->trans->signalBias.types, GnssType::C2WG), idxC2WG) = 0;
-          }
+          // eliminate two biases which defines the clock
+          UInt idx;
+          GnssType firstFreq = GnssType::FREQUENCY;
+          for(UInt i=0; i<typesClockDatum.size(); i++)
+            if(typesClockDatum.at(i).isInList(biasTypes, idx) && (typesClockDatum.at(i) != firstFreq))
+            {
+              T(GnssType::index(para->trans->signalBias.types, typesClockDatum.at(i)), idx) = 0;
+              if(firstFreq != GnssType::FREQUENCY)
+                break; // found a second type
+              firstFreq = typesClockDatum.at(i) & GnssType::FREQUENCY;
+            }
 
           // determine nullspace
           Matrix N(1+T.columns(), Matrix::SYMMETRIC);
@@ -162,13 +181,7 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
           rankKUpdate(-1./N(0,0), N.slice(0, 1, 1, N.rows()-1), N.slice(1, 1, N.rows()-1, N.rows()-1));
           N = N.slice(1, 1, N.rows()-1, N.rows()-1); // without clock
 
-          // determine eigen values
-          Vector eigen = eigenValueDecomposition(N, TRUE);
-          eigen *= 1./eigen(eigen.rows()-1);
-          UInt countZeros = 0;
-          while((countZeros < eigen.rows()) && (eigen(countZeros) < 1e-8))
-            countZeros++;
-          para->Bias = T * N.column(countZeros, N.columns()-countZeros);
+          para->Bias = T * nullSpace(N, TRUE);
           if(!para->Bias.size())
             continue;
 
@@ -245,13 +258,7 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
         rankKUpdate(-1./N(0,0), N.slice(0, 1, 1, N.rows()-1), N.slice(1, 1, N.rows()-1, N.rows()-1));
         N = N.slice(1, 1, N.rows()-1, N.rows()-1); // without clock
 
-        // determine eigen values
-        Vector eigen = eigenValueDecomposition(N, TRUE);
-        eigen *= 1./eigen(eigen.rows()-1);
-        UInt countZeros = 0;
-        while((countZeros < eigen.rows()) && (eigen(countZeros) < 1e-8))
-          countZeros++;
-        para->Bias = T * N.column(countZeros, N.columns()-countZeros); // remove null space
+        para->Bias = T * nullSpace(N, TRUE);
         if(!para->Bias.size())
           continue;
 
@@ -390,13 +397,7 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
           rankKUpdate(-1., N.slice(0, idxClocks, idxClocks, N11.rows()).trans(), N.slice(0, 0, idxClocks, idxClocks));
           N = N.slice(0, 0, idxClocks, idxClocks);
 
-          // determine eigen values
-          Vector eigen = eigenValueDecomposition(N, TRUE);
-          eigen *= (eigen(eigen.rows()-1) > 1e-4) ? 1./eigen(eigen.rows()-1) : 0.;
-          UInt countZeros = 0;
-          while((countZeros < eigen.rows()) && (eigen(countZeros) < 1e-8))
-            countZeros++;
-          zeroMeanDesign = N.column(0, countZeros).trans(); // null space defines the constraint equations
+          zeroMeanDesign = nullSpace(N, FALSE).trans(); // null space defines the constraint equations
         }
       }
     }
