@@ -146,15 +146,6 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
               firstFreq = typesClockDatum.at(i) & GnssType::FREQUENCY;
             }
 
-          // special case: Galileo clock/TEC is defined via C1CE/C5QE only
-          const UInt idxC1CE = GnssType::index(biasTypes, GnssType::C1CE);
-          const UInt idxC5QE = GnssType::index(biasTypes, GnssType::C5QE);
-          if((idxC1CE != NULLINDEX) && (idxC5QE != NULLINDEX))
-          {
-            T(GnssType::index(para->trans->signalBias.types, GnssType::C1CE), idxC1CE) = 0;
-            T(GnssType::index(para->trans->signalBias.types, GnssType::C5QE), idxC5QE) = 0;
-          }
-
           // determine nullspace
           Matrix N(1+T.columns(), Matrix::SYMMETRIC);
           for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
