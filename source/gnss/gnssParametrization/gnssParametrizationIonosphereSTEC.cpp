@@ -99,7 +99,7 @@ void GnssParametrizationIonosphereSTEC::observationCorrections(GnssObservationEq
     // Impact of higher-order ionospheric terms on GPS estimates,
     // Geophys. Res. Lett., 32, L23311, doi:10.1029/2005GL024342.
     // ----------------------------------------------------------
-    // second order magentic effect
+    // second order magnetic effect
     constexpr Double   radiusIono  = 6371e3+450e3;                          // single layer ionosphere in 450 km
     const     Double   rRecv       = std::min(eqn.posRecv.r(), radiusIono); // LEO satellites flying possibly higher
     const     Vector3d k           = normalize(eqn.posRecv-eqn.posTrans);   // direction from transmitter
@@ -164,9 +164,15 @@ void GnssParametrizationIonosphereSTEC::observationCorrections(GnssObservationEq
         copy(A0, A.row(0, A0.rows()));
       }
 
-      // constrain STEC;
-      eqn.l(eqn.l.rows()-1)    = -eqn.dSTEC/sigmaSTEC; // constrain towards zero (0-x0)
-      eqn.B(eqn.B.rows()-1, 0) =  1./sigmaSTEC;        // in TECU
+      // elevation-weighted sigma
+      Double a = 0.1;
+      Double b = 2.0;
+      Double sinE = sin(eqn.elevationRecvLocal>1*DEG2RAD? eqn.elevationRecvLocal : 1.0);
+      Double sigma = sigmaSTEC*(a+(1-a)/pow(sinE,b));
+
+      // constrain STEC
+      eqn.l(eqn.l.rows()-1)    = -eqn.dSTEC/sigma; // constrain towards zero (0-x0)
+      eqn.B(eqn.B.rows()-1, 0) =  1./sigma;        // in TECU
     }
   }
   catch(std::exception &e)
