@@ -72,6 +72,6 @@ groopsgui_:
 
 clean:
 	if [ -d "$(GROOPS_bin)" ]; then cd $(GROOPS_bin); rm -f *; fi
-	cd $(GROOPS_bld); make clean
+	if [ -d "$(GROOPS_bld)" ]; then cd $(GROOPS_bld); make clean; fi
 	cd $(GROOPS_gui); make clean
 	
