@@ -1537,9 +1537,9 @@
 								<xs:documentation>used for parameter selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="sigmaSTEC" type="double" minOccurs="0" default="0">
+						<xs:element name="sigmaSTEC" type="expression" minOccurs="0" default="0">
 							<xs:annotation>
-								<xs:documentation>(0 = unconstrained) sigma [TECU] for STEC constraint</xs:documentation>
+								<xs:documentation>expr. for sigma [TECU] for STEC constraint, variable E (elevation) available</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>

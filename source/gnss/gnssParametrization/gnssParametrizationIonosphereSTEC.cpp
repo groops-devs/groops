@@ -30,10 +30,24 @@ GnssParametrizationIonosphereSTEC::GnssParametrizationIonosphereSTEC(Config &con
     readConfig(config, "applyBendingCorrection",  applyBending,      Config::DEFAULT,  "1", "apply ionospheric correction");
     readConfig(config, "magnetosphere",           magnetosphere,     Config::MUSTSET,  "",  "");
     readConfig(config, "nameConstraint",          nameConstraint,    Config::OPTIONAL, "constraint.STEC", "used for parameter selection");
-    readConfig(config, "sigmaSTEC",               sigmaSTEC,         Config::DEFAULT,  "0",  "(0 = unconstrained) sigma [TECU] for STEC constraint");
+    readConfig(config, "sigmaSTEC",               exprSigmaSTEC,     Config::DEFAULT,  "0",  "expr. for sigma [TECU] for STEC constraint, variable E (elevation) available");
     if(isCreateSchema(config)) return;
 
     apply1stOrder = TRUE;
+
+    // can exprSigmaSTEC be evaluated to a constant?
+    // ---------------------------------------------
+    VariableList varList;
+    varList.undefineVariable("E");
+    exprSigmaSTEC->simplify(varList);
+    try
+    {
+      sigmaSTEC = (exprSigmaSTEC->evaluate(varList) > 0);
+    }
+    catch(std::exception &/*e*/)
+    {
+      sigmaSTEC = -1;
+    }
   }
   catch(std::exception &e)
   {
@@ -43,13 +57,45 @@ GnssParametrizationIonosphereSTEC::GnssParametrizationIonosphereSTEC(Config &con
 
 /***********************************************/
 
-void GnssParametrizationIonosphereSTEC::init(Gnss *gnss, Parallel::CommunicatorPtr /*comm*/)
+void GnssParametrizationIonosphereSTEC::init(Gnss *gnss, Parallel::CommunicatorPtr comm)
 {
   try
   {
     this->gnss = gnss;
     estimateSTEC    = TRUE;
     applyConstraint = FALSE;
+
+    if(sigmaSTEC > 0) // sigmaSTEC is constant -> fast version
+    {
+      for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
+        for(auto recv : gnss->receivers)
+          if(recv->isMyRank() && recv->useable(idEpoch))
+            for(UInt idTrans=0; idTrans<recv->idTransmitterSize(idEpoch); idTrans++)
+              if(recv->observation(idTrans, idEpoch))
+                recv->observation(idTrans, idEpoch)->sigmaSTEC = sigmaSTEC;
+    }
+    else if(sigmaSTEC) // sigmaSTEC is expression
+    {
+      logStatus<<"compute STEC accuracy"<<Log::endl;
+      VariableList varList;
+      Log::Timer timer(gnss->times.size());
+      for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
+      {
+        timer.loopStep(idEpoch);
+        for(auto recv : gnss->receivers)
+          if(recv->isMyRank() && recv->useable(idEpoch))
+            for(UInt idTrans=0; idTrans<recv->idTransmitterSize(idEpoch); idTrans++)
+              if(recv->observation(idTrans, idEpoch))
+              {
+                GnssObservationEquation eqn(*recv->observation(idTrans, idEpoch), *recv, *gnss->transmitters.at(idTrans), gnss->funcRotationCrf2Trf,
+                                            nullptr/*reduceModels*/, idEpoch, FALSE/*decorrelate*/, {}/*types*/);
+                varList.setVariable("E", eqn.elevationRecvLocal);
+                recv->observation(idTrans, idEpoch)->sigmaSTEC = exprSigmaSTEC->evaluate(varList);
+              } // for(recv, trans)
+      } // for(idEpoch)
+      Parallel::barrier(comm);
+      timer.loopEnd();
+    } // if(isSigmaSTEC)
   }
   catch(std::exception &e)
   {
@@ -78,7 +124,6 @@ void GnssParametrizationIonosphereSTEC::initParameter(GnssNormalEquationInfo &no
               count++;
     Parallel::reduceSum(count, 0, normalEquationInfo.comm);
     logInfo<<count%"%9i "s<<(applyConstraint ? "constrained " : "")<<"STEC parameters (preeliminated)"s<<Log::endl;
-
   }
   catch(std::exception &e)
   {
@@ -154,7 +199,7 @@ void GnssParametrizationIonosphereSTEC::observationCorrections(GnssObservationEq
 
     // add additional constraining equation
     // ------------------------------------
-    if(applyConstraint)
+    if(applyConstraint && (eqn.sigmaSTEC > 0) && !std::isnan(eqn.sigmaSTEC))
     {
       // extend l, A, and B by one row
       for(Matrix &A : std::vector<std::reference_wrapper<Matrix>>{eqn.l, eqn.A, eqn.B})
@@ -165,8 +210,8 @@ void GnssParametrizationIonosphereSTEC::observationCorrections(GnssObservationEq
       }
 
       // constrain STEC;
-      eqn.l(eqn.l.rows()-1)    = -eqn.dSTEC/sigmaSTEC; // constrain towards zero (0-x0)
-      eqn.B(eqn.B.rows()-1, 0) =  1./sigmaSTEC;        // in TECU
+      eqn.l(eqn.l.rows()-1)    = -eqn.dSTEC/eqn.sigmaSTEC; // constrain towards zero (0-f(x0))
+      eqn.B(eqn.B.rows()-1, 0) =  1./eqn.sigmaSTEC;        // in TECU
     }
   }
   catch(std::exception &e)

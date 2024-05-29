@@ -270,22 +270,12 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
     track       = observation.track;
     STEC        = observation.STEC;
     dSTEC       = observation.dSTEC;
+    sigmaSTEC   = observation.sigmaSTEC;
     types       = types_;
     rankDeficit = 0;
     l           = Vector(obsCount);
     sigma       = Vector(obsCount);
     sigma0      = Vector(obsCount);
-
-    for(UInt i=0; i<obsCount; i++)
-    {
-      const UInt idx = observation.index(types.at(i));
-      if(idx == NULLINDEX)
-        continue;
-      types.at(i) = observation.at(idx).type;
-      l(i)        = observation.at(idx).observation;
-      sigma(i)    = observation.at(idx).sigma;
-      sigma0(i)   = observation.at(idx).sigma0;
-    }
 
     // position, time of transmitter & receiver
     // ----------------------------------------
@@ -303,6 +293,22 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
     azimutRecvLocal    = kRecvLocal.lambda();
     elevationRecvLocal = kRecvLocal.phi();
 
+    if(!obsCount)
+      return;
+
+    // observations
+    // ------------
+    for(UInt i=0; i<obsCount; i++)
+    {
+      const UInt idx = observation.index(types.at(i));
+      if(idx == NULLINDEX)
+        continue;
+      types.at(i) = observation.at(idx).type;
+      l(i)        = observation.at(idx).observation;
+      sigma(i)    = observation.at(idx).sigma;
+      sigma0(i)   = observation.at(idx).sigma0;
+    }
+
     // Corrected range
     // ---------------
     const Double r1  = posTrans.r();
@@ -313,8 +319,6 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
     r12 -= LIGHT_VELOCITY * transmitter->clockError(idEpoch);
     r12 += LIGHT_VELOCITY * receiver->clockError(idEpoch);
 
-    // approximate range
-    // -----------------
     for(UInt i=0; i<obsCount; i++)
       if((types.at(i) == GnssType::RANGE) || (types.at(i) == GnssType::PHASE))
         l(i) -= r12;
