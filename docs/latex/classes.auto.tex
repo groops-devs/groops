@@ -6903,6 +6903,9 @@ Name & Type & Annotation\\
 
 \section{PlatformSelector}\label{platformSelectorType}
 Select a list of platforms (stations, satellites, ...).
+In a first step all platforms are selected if first selector \config{exclude}s platforms
+otherwise all platforms excluded. When every selector from top to bottom selects or deselects
+(with \config{exclude}) the matching platforms.
 
 See also \program{GnssProcessing}.
 
@@ -6924,6 +6927,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerName & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?, from platform\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerNumber & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?, from platform\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~exclude & \hfuzz=500pt boolean & \hfuzz=500pt deselect matching platforms\\
 \hline
 \end{tabularx}
 
@@ -6941,6 +6945,7 @@ if previous names are not available (e.g. without observation file).
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStringTable & \hfuzz=500pt filename & \hfuzz=500pt list of names with alternatives\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~exclude & \hfuzz=500pt boolean & \hfuzz=500pt deselect first matching platforms\\
 \hline
 \end{tabularx}
 
@@ -6970,12 +6975,13 @@ Name & Type & Annotation\\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sic & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sp3 & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~other & \hfuzz=500pt  & \hfuzz=500pt other types\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~exclude & \hfuzz=500pt boolean & \hfuzz=500pt deselect matching platforms\\
 \hline
 \end{tabularx}
 
 
 \subsection{Exclude}\label{platformSelectorType:exclude}
-Select all receivers/transmitters except
+Deselects all selected receivers/transmitters of
 \configClass{selector}{platformSelectorType}.
 
 

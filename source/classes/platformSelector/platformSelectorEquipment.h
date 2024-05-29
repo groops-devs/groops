@@ -84,6 +84,7 @@ inline PlatformSelectorEquipment::PlatformSelectorEquipment(Config &config)
       if(readConfigChoiceElement(config, "other", choice, "other types")) type = PlatformEquipment::OTHER;
       endChoice(config);
     }
+    readConfig(config, "exclude", exclude, Config::DEFAULT, "0", "deselect matching platforms");
     if(isCreateSchema(config)) return;
 
     patternName     = String::wildcard2regex(name);
@@ -119,25 +120,25 @@ inline void PlatformSelectorEquipment::select(const Time &timeStart, const Time 
             {
               case PlatformEquipment::GNSSANTENNA:
                 if(std::regex_match(std::dynamic_pointer_cast<PlatformGnssAntenna>(eq)->radome, patternRadome))
-                  selected.at(i) = TRUE;
+                  selected.at(i) = !exclude;
                 break;
               case PlatformEquipment::GNSSRECEIVER:
                 if(std::regex_match(std::dynamic_pointer_cast<PlatformGnssReceiver>(eq)->version, patternVersion))
-                  selected.at(i) = TRUE;
+                  selected.at(i) = !exclude;
                 break;
               case PlatformEquipment::SATELLITEIDENTIFIER:
                 if(std::regex_match(std::dynamic_pointer_cast<PlatformSatelliteIdentifier>(eq)->cospar, patternCospar) &&
                    std::regex_match(std::dynamic_pointer_cast<PlatformSatelliteIdentifier>(eq)->norad,  patternNorad)  &&
                    std::regex_match(std::dynamic_pointer_cast<PlatformSatelliteIdentifier>(eq)->sic,    patternSic)    &&
                    std::regex_match(std::dynamic_pointer_cast<PlatformSatelliteIdentifier>(eq)->sp3,    patternSp3))
-                selected.at(i) = TRUE;
+                selected.at(i) = !exclude;
                 break;
               case PlatformEquipment::SLRSTATION:          [[fallthrough]];
               case PlatformEquipment::LASERRETROREFLECTOR: [[fallthrough]];
               case PlatformEquipment::OTHER:               [[fallthrough]];
               case PlatformEquipment::UNDEFINED:           [[fallthrough]];
               default:
-                selected.at(i) = TRUE;
+                selected.at(i) = !exclude;
             }
           }
   }

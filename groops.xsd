@@ -7519,6 +7519,11 @@
 								<xs:documentation>wildcards: * and ?, from platform</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="exclude" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>deselect matching platforms</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -7531,6 +7536,11 @@
 						<xs:element name="inputfileStringTable" type="filename">
 							<xs:annotation>
 								<xs:documentation>list of names with alternatives</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="exclude" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>deselect first matching platforms</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -7638,12 +7648,17 @@
 								</xs:choice>
 							</xs:complexType>
 						</xs:element>
+						<xs:element name="exclude" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>deselect matching platforms</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="exclude">
 				<xs:annotation>
-					<xs:documentation>exclude from selection</xs:documentation>
+					<xs:documentation>deselect from selection</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>

@@ -18,6 +18,9 @@
 static const char *docstringPlatformSelector = R"(
 \section{PlatformSelector}\label{platformSelectorType}
 Select a list of platforms (stations, satellites, ...).
+In a first step all platforms are selected if first selector \config{exclude}s platforms
+otherwise all platforms excluded. When every selector from top to bottom selects or deselects
+(with \config{exclude}) the matching platforms.
 
 See also \program{GnssProcessing}.
 )";
@@ -84,9 +87,10 @@ template<> Bool readConfig(Config &config, const std::string &name, PlatformSele
 class PlatformSelectorBase
 {
 public:
+  Bool exclude;
+
   virtual ~PlatformSelectorBase() {}
   virtual void select(const Time &timeStart, const Time &timeEnd, const std::vector<const Platform*> &platforms, std::vector<Byte> &selected) const = 0;
-  virtual Bool exclude() const {return FALSE;}
 };
 
 /***********************************************/
