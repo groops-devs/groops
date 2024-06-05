@@ -112,7 +112,7 @@ Config::Config(FileName &fileName, const std::map<std::string, std::string> &com
     // set global variables
     // --------------------
     for(auto &pair : stack.top().links)
-      if(!pair.second->getText().empty())  // not complex type?
+      if(!pair.second->hasChildren())  // not complex type?
       {
         XmlAttrPtr link = pair.second->findAttribute("link");
         stack.top().varList.setVariable(pair.second->getName(), ((link) ? "{"+link->getText()+"}" : pair.second->getText()));

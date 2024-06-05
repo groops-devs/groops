@@ -53,7 +53,8 @@ inline PlatformSelectorFile::PlatformSelectorFile(Config &config)
   try
   {
     FileName fileNameList;
-    readConfig(config, "inputfileStringTable", fileNameList, Config::MUSTSET, "", "list of names with alternatives");
+    readConfig(config, "inputfileStringTable", fileNameList, Config::MUSTSET,  "",  "list of names with alternatives");
+    readConfig(config, "exclude",              exclude,      Config::DEFAULT,  "0", "deselect first matching platforms");
     if(isCreateSchema(config)) return;
 
     readFileStringTable(fileNameList, names);
@@ -75,9 +76,9 @@ inline void PlatformSelectorFile::select(const Time &/*timeStart*/, const Time &
       {
         const UInt id = std::distance(platforms.begin(), std::find_if(platforms.begin(), platforms.end(),
                                                                       [&](auto &t){return t && (t->name == names.at(i).at(k));}));
-        if(id < platforms.size())
+        if((id < platforms.size()) && (selected.at(id) == exclude))
         {
-          selected.at(id) = TRUE;
+          selected.at(id) = !exclude;
           break; // skip alternative stations
         }
       }

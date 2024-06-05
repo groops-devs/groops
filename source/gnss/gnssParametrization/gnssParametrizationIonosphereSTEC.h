@@ -24,11 +24,11 @@ from the observation equations before accumulating the normal equations.
 This is similar to using the ionosphere-free linear combination as observations
 but only one STEC parameter is needed for an arbitrary number of observation types.
 
-The influcence to the code and phase observation is modelled as
+The influence on the code and phase observation is modeled as
 \begin{equation}\label{gnssParametrizationType:IonosphereSTEC:STEC}
 \begin{split}
-f_C(STEC) &= \frac{40.3}{f^2}STEC + \frac{7525\M b^T\M k}{f^3}STEC +  \frac{r}{f^4}STEC^2 \\
-f_L(STEC) &= -\frac{40.3}{f^2}STEC - \frac{7525\M b^T\M k}{2f^3}STEC - \frac{r}{3f^4}STEC^2 + \text{bending}(E)STEC^2
+\text{ionosphere}([C\nu], STEC) &=  \frac{40.3}{f_{\nu}^2}STEC + \frac{7525\M b^T\M k}{f_{\nu}^3}STEC +  \frac{r}{f_{\nu}^4}STEC^2 \\
+\text{ionosphere}([L\nu], STEC) &= -\frac{40.3}{f_{\nu}^2}STEC - \frac{7525\M b^T\M k}{2f_{\nu}^3}STEC - \frac{r}{3f_{\nu}^4}STEC^2 + \text{bending}(E)STEC^2
 \end{split}
 \end{equation}
 The second order term depends on the \configClass{magnetosphere}{magnetosphereType} $\M b$
@@ -59,12 +59,13 @@ with a standard deviation of \config{sigmaSTEC}.
 * @see GnssParametrization */
 class GnssParametrizationIonosphereSTEC : public GnssParametrizationBase
 {
-  Gnss            *gnss;
-  std::string      name, nameConstraint;
-  Bool             apply1stOrder, apply2ndOrder, apply3rdOrder, applyBending;
-  MagnetospherePtr magnetosphere;
-  Bool             estimateSTEC, applyConstraint;
-  Double           sigmaSTEC;
+  Gnss                 *gnss;
+  std::string           name, nameConstraint;
+  Bool                  apply1stOrder, apply2ndOrder, apply3rdOrder, applyBending;
+  MagnetospherePtr      magnetosphere;
+  Bool                  estimateSTEC, applyConstraint;
+  ExpressionVariablePtr exprSigmaSTEC;
+  Double                sigmaSTEC; // 0: unconstrained, <0: expression
 
 public:
   GnssParametrizationIonosphereSTEC(Config &config);
