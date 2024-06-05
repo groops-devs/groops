@@ -55,6 +55,7 @@ inline PlatformSelectorWildcard::PlatformSelectorWildcard(Config &config)
     readConfig(config, "name",         name,         Config::OPTIONAL, "*", "wildcards: * and ?");
     readConfig(config, "markerName",   markerName,   Config::OPTIONAL, "*", "wildcards: * and ?, from platform");
     readConfig(config, "markerNumber", markerNumber, Config::OPTIONAL, "*", "wildcards: * and ?, from platform");
+    readConfig(config, "exclude",      exclude,      Config::DEFAULT,  "0", "deselect matching platforms");
     if(isCreateSchema(config)) return;
 
     patternName         = String::wildcard2regex(name);
@@ -78,7 +79,7 @@ inline void PlatformSelectorWildcard::select(const Time &/*timeStart*/, const Ti
          std::regex_match(platforms.at(i)->name,         patternName) &&
          std::regex_match(platforms.at(i)->markerName,   patternMarkerName) &&
          std::regex_match(platforms.at(i)->markerNumber, pattermMarkerNumber))
-        selected.at(i) = TRUE;
+        selected.at(i) = !exclude;
   }
   catch(std::exception &e)
   {
