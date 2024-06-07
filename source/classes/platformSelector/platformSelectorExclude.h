@@ -18,7 +18,7 @@
 #ifdef DOCSTRING_PlatformSelector
 static const char *docstringPlatformSelectorExclude = R"(
 \subsection{Exclude}\label{platformSelectorType:exclude}
-Select all receivers/transmitters except
+Deselects all selected receivers/transmitters of
 \configClass{selector}{platformSelectorType}.
 )";
 #endif
@@ -41,7 +41,6 @@ class PlatformSelectorExclude : public PlatformSelectorBase
 public:
   PlatformSelectorExclude(Config &config);
   void select(const Time &timeStart, const Time &timeEnd, const std::vector<const Platform*> &platforms, std::vector<Byte> &selected) const override;
-  Bool exclude() const override {return TRUE;}
 };
 
 /***********************************************/
@@ -51,6 +50,7 @@ inline PlatformSelectorExclude::PlatformSelectorExclude(Config &config)
   try
   {
     readConfig(config, "selector", selector, Config::MUSTSET, "", "");
+    exclude = TRUE;
   }
   catch(std::exception &e)
   {

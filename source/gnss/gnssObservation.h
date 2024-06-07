@@ -60,8 +60,10 @@ public:
 
   GnssTrack *track; ///< phase ambiguities
   Double     STEC, dSTEC;  ///< total ionosphere slant TEC along the path and estimated part of STEC
+  Double     sigmaSTEC;
 
-  GnssObservation() : track(nullptr), STEC(0.), dSTEC(0.) {}
+
+  GnssObservation() : track(nullptr), STEC(0.), dSTEC(0.), sigmaSTEC(0.) {}
 
   UInt size() const                                      {return obs.size();}
   GnssSingleObservation       &at(UInt idType)           {return obs.at(idType);}
@@ -122,8 +124,9 @@ public:
   Angle    azimutRecvAnt,   elevationRecvAnt;
   Angle    azimutTrans,     elevationTrans;
   Double   STEC, dSTEC;
+  Double   sigmaSTEC;
 
-  GnssObservationEquation() : idEpoch(NULLINDEX), track(nullptr), receiver(nullptr), transmitter(nullptr), rankDeficit(0), STEC(0), dSTEC(0) {}
+  GnssObservationEquation() : idEpoch(NULLINDEX), track(nullptr), receiver(nullptr), transmitter(nullptr), rankDeficit(0), STEC(0), dSTEC(0), sigmaSTEC(0) {}
 
   GnssObservationEquation(const GnssObservation &observation, const GnssReceiver &receiver, const GnssTransmitter &transmitter,
                           const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, const std::function<void(GnssObservationEquation &eqn)> &reduceModels,

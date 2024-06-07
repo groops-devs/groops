@@ -36,16 +36,17 @@ Select all platforms.
 class PlatformSelectorAll : public PlatformSelectorBase
 {
 public:
-  PlatformSelectorAll(Config &/*config*/) {}
+  PlatformSelectorAll(Config &/*config*/) {exclude = FALSE;}
 
   void select(const Time &timeStart, const Time &timeEnd, const std::vector<const Platform*> &platforms, std::vector<Byte> &selected) const override;
 };
 
 /***********************************************/
 
-inline void PlatformSelectorAll::select(const Time &/*timeStart*/, const Time &/*timeEnd*/, const std::vector<const Platform*> &/*platforms*/, std::vector<Byte> &selected) const
+inline void PlatformSelectorAll::select(const Time &/*timeStart*/, const Time &/*timeEnd*/, const std::vector<const Platform*> &platforms, std::vector<Byte> &selected) const
 {
-  std::fill(selected.begin(), selected.end(), TRUE);
+  for(UInt i=0; i<platforms.size(); i++)
+    selected.at(i) = (platforms.at(i) != nullptr);
 }
 
 /***********************************************/

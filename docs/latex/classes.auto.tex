@@ -1254,10 +1254,10 @@ The model for the different observation types can be described as
 \begin{equation}\label{gnssParametrizationType:gnssFullModel}
 \begin{split}
   f[\tau\nu a]_r^s(\M x) &= \text{geometry}(\M r_r^s) + \text{clock}^s(t) + \text{clock}_r(t) \\
-               &+ \text{iono}([tn],t,\M r_r^s) + \text{tropo}(t,\M r_r^s) \\
-               &+ \text{ant}[\tau\nu a]^s  + \text{ant}[\tau\nu a]_r \\
+               &+ \text{ionosphere}([\tau\nu],t,\M r_r^s) + \text{troposphere}(t,\M r_r^s) \\
+               &+ \text{antenna}[\tau\nu a]^s  + \text{antenna}[\tau\nu a]_r \\
                &+ \text{bias}[\tau\nu a]^s + \text{bias}[\tau\nu a]_r
-               + \lambda[Ln] N[Lna]_r^s + \text{other}(\ldots) + \epsilon[\tau\nu a]_r^s
+               + \lambda[L\nu] N[L\nu a]_r^s + \text{other}(\ldots) + \epsilon[\tau\nu a]_r^s
 \end{split}
 \end{equation}
 The notation $[\tau\nu a]_r^s$ describes the
@@ -1276,11 +1276,11 @@ from the observation equations before accumulating the normal equations.
 This is similar to using the ionosphere-free linear combination as observations
 but only one STEC parameter is needed for an arbitrary number of observation types.
 
-The influcence to the code and phase observation is modelled as
+The influence on the code and phase observation is modeled as
 \begin{equation}\label{gnssParametrizationType:IonosphereSTEC:STEC}
 \begin{split}
-f_C(STEC) &= \frac{40.3}{f^2}STEC + \frac{7525\M b^T\M k}{f^3}STEC +  \frac{r}{f^4}STEC^2 \\
-f_L(STEC) &= -\frac{40.3}{f^2}STEC - \frac{7525\M b^T\M k}{2f^3}STEC - \frac{r}{3f^4}STEC^2 + \text{bending}(E)STEC^2
+\text{ionosphere}([C\nu], STEC) &=  \frac{40.3}{f_{\nu}^2}STEC + \frac{7525\M b^T\M k}{f_{\nu}^3}STEC +  \frac{r}{f_{\nu}^4}STEC^2 \\
+\text{ionosphere}([L\nu], STEC) &= -\frac{40.3}{f_{\nu}^2}STEC - \frac{7525\M b^T\M k}{2f_{\nu}^3}STEC - \frac{r}{3f_{\nu}^4}STEC^2 + \text{bending}(E)STEC^2
 \end{split}
 \end{equation}
 The second order term depends on the \configClass{magnetosphere}{magnetosphereType} $\M b$
@@ -1306,7 +1306,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~applyBendingCorrection & \hfuzz=500pt boolean & \hfuzz=500pt apply ionospheric correction\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~magnetosphere & \hfuzz=500pt \hyperref[magnetosphereType]{magnetosphere} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~nameConstraint & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaSTEC & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [TECU] for STEC constraint\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaSTEC & \hfuzz=500pt expression & \hfuzz=500pt expr. for sigma [TECU] for STEC constraint, variable E (elevation) available\\
 \hline
 \end{tabularx}
 
@@ -6903,6 +6903,9 @@ Name & Type & Annotation\\
 
 \section{PlatformSelector}\label{platformSelectorType}
 Select a list of platforms (stations, satellites, ...).
+In a first step all platforms are selected if first selector \config{exclude}s platforms
+otherwise all platforms excluded. When every selector from top to bottom selects or deselects
+(with \config{exclude}) the matching platforms.
 
 See also \program{GnssProcessing}.
 
@@ -6924,6 +6927,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerName & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?, from platform\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerNumber & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?, from platform\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~exclude & \hfuzz=500pt boolean & \hfuzz=500pt deselect matching platforms\\
 \hline
 \end{tabularx}
 
@@ -6941,6 +6945,7 @@ if previous names are not available (e.g. without observation file).
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStringTable & \hfuzz=500pt filename & \hfuzz=500pt list of names with alternatives\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~exclude & \hfuzz=500pt boolean & \hfuzz=500pt deselect first matching platforms\\
 \hline
 \end{tabularx}
 
@@ -6970,12 +6975,13 @@ Name & Type & Annotation\\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sic & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sp3 & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~other & \hfuzz=500pt  & \hfuzz=500pt other types\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~exclude & \hfuzz=500pt boolean & \hfuzz=500pt deselect matching platforms\\
 \hline
 \end{tabularx}
 
 
 \subsection{Exclude}\label{platformSelectorType:exclude}
-Select all receivers/transmitters except
+Deselects all selected receivers/transmitters of
 \configClass{selector}{platformSelectorType}.
 
 

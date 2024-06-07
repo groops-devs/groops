@@ -91,10 +91,10 @@ The a priori model $\M f(\M x_0)$ is unaffected and is always reduced.</p><p>The
 \[\label{gnssParametrizationType:gnssFullModel}
 \begin{split}
   f[\tau\nu a]_r^s(\M x) &= \text{geometry}(\M r_r^s) + \text{clock}^s(t) + \text{clock}_r(t) \\
-               &+ \text{iono}([tn],t,\M r_r^s) + \text{tropo}(t,\M r_r^s) \\
-               &+ \text{ant}[\tau\nu a]^s  + \text{ant}[\tau\nu a]_r \\
+               &+ \text{ionosphere}([\tau\nu],t,\M r_r^s) + \text{troposphere}(t,\M r_r^s) \\
+               &+ \text{antenna}[\tau\nu a]^s  + \text{antenna}[\tau\nu a]_r \\
                &+ \text{bias}[\tau\nu a]^s + \text{bias}[\tau\nu a]_r
-               + \lambda[Ln] N[Lna]_r^s + \text{other}(\ldots) + \epsilon[\tau\nu a]_r^s
+               + \lambda[L\nu] N[L\nu a]_r^s + \text{other}(\ldots) + \epsilon[\tau\nu a]_r^s
 \end{split}
 \]The notation $[\tau\nu a]_r^s$ describes the
 attribution to a signal type $\tau$ (i.e., C or L), frequency $\nu$,
@@ -108,11 +108,11 @@ The influence of the ionosphere is modelled by a STEC parameter (slant total ele
 in terms of $[TECU]$ between each transmitter and receiver at each epoch. These parameters are pre-eliminated
 from the observation equations before accumulating the normal equations.
 This is similar to using the ionosphere-free linear combination as observations
-but only one STEC parameter is needed for an arbitrary number of observation types.</p><p>The influcence to the code and phase observation is modelled as
+but only one STEC parameter is needed for an arbitrary number of observation types.</p><p>The influence on the code and phase observation is modeled as
 \[\label{gnssParametrizationType:IonosphereSTEC:STEC}
 \begin{split}
-f_C(STEC) &= \frac{40.3}{f^2}STEC + \frac{7525\M b^T\M k}{f^3}STEC +  \frac{r}{f^4}STEC^2 \\
-f_L(STEC) &= -\frac{40.3}{f^2}STEC - \frac{7525\M b^T\M k}{2f^3}STEC - \frac{r}{3f^4}STEC^2 + \text{bending}(E)STEC^2
+\text{ionosphere}([C\nu], STEC) &=  \frac{40.3}{f_{\nu}^2}STEC + \frac{7525\M b^T\M k}{f_{\nu}^3}STEC +  \frac{r}{f_{\nu}^4}STEC^2 \\
+\text{ionosphere}([L\nu], STEC) &= -\frac{40.3}{f_{\nu}^2}STEC - \frac{7525\M b^T\M k}{2f_{\nu}^3}STEC - \frac{r}{3f_{\nu}^4}STEC^2 + \text{bending}(E)STEC^2
 \end{split}
 \]The second order term depends on the <a class="groops-class" href="magnetosphereType.html">magnetosphere</a> $\M b$
 and the direction of the signal $\M k$.</p><p>If further information about the ionosphere is available
@@ -131,7 +131,7 @@ with a standard deviation of <strong class="groops-config-element">sigmaSTEC</st
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">applyBendingCorrection</div></div></td><td>boolean</td><td>apply ionospheric correction</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">magnetosphere</div></div></td><td><a href="magnetosphereType.html">magnetosphere</a></td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">nameConstraint</div></div></td><td>string</td><td>used for parameter selection</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaSTEC</div></div></td><td>double</td><td>(0 = unconstrained) sigma [TECU] for STEC constraint</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sigmaSTEC</div></div></td><td>expression</td><td>expr. for sigma [TECU] for STEC constraint, variable E (elevation) available</td></tr>
 </table>
 
 <h2 id="ionosphereVTEC">IonosphereVTEC</h2><p>
