@@ -9,6 +9,7 @@
 - New program:      SimulateStarCameraTerrasar.
 - New class:        In PlatformSelector: Equipment.
 - New class:        In Gravityfield/Tides/MiscAccelerations: Group.
+- New option:       GnssAntennaDefinitionCreate: setZero and removeCenterMean.
 - New option:       Sp3Fromat2Orbit: Write all satellites (identifier is appended to each file).
 - New option:       GriddedData2PotentialCoefficients: Handle multiple input data columns at once.
 - New option:       GriddedDataReduceSampling: tesseroid volume conserving for digital elevation models.

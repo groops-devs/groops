@@ -1498,6 +1498,49 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="setZero">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="antenna" type="gnssAntennaDefintionListType" maxOccurs="unbounded"/>
+						<xs:element name="patternTypes" type="gnssType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>only matching patterns, default: all</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="zeroOffset" type="boolean" minOccurs="0" default="1"/>
+						<xs:element name="zeroPattern" type="boolean" minOccurs="0" default="1"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="removeCenterMean">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="antenna" type="gnssAntennaDefintionListType" maxOccurs="unbounded"/>
+						<xs:element name="patternTypes" type="gnssType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>only matching patterns, default: all</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="removeMean" type="boolean" default="1"/>
+						<xs:element name="removeOffset" type="boolean" default="1"/>
+						<xs:element name="deltaAzimuth" type="angle" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>[degree] sampling of pattern to estimate center/constant</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="deltaZenith" type="angle" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>[degree] sampling of pattern to estimate center/constant</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="maxZenith" type="angle" minOccurs="0" default="90">
+							<xs:annotation>
+								<xs:documentation>[degree] sampling of pattern to estimate center/constant</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 		</xs:choice>
 	</xs:complexType>
 	<xs:complexType name="gnssParametrizationType">

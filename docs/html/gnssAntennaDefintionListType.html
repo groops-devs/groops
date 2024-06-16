@@ -171,6 +171,37 @@ The star "<code>*</code>" left this part untouched.
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">comment</div></div></td><td>string</td><td>*: left this part untouched</td></tr>
 </table>
 
+<h2>SetZero</h2><p>
+The antenna center variations (patterns) or offsets
+of all <strong class="groops-config-element">antenna</strong>s are set to zero.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">antenna</div></div></td><td><a href="gnssAntennaDefintionListType.html">gnssAntennaDefintionList</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">patternTypes</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>only matching patterns, default: all</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">zeroOffset</div></div></td><td>boolean</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">zeroPattern</div></div></td><td>boolean</td><td></td></tr>
+</table>
+
+<h2>RemoveCenterMean</h2><p>
+The antenna offset and antenna variations (patterns) are inseparable parts of the
+antenna model. With <strong class="groops-config-element">removeOffset</strong> an estimated offset is removed from
+all selected patterns and added to the offset. With <strong class="groops-config-element">removeMean</strong> an estimated
+constant is removed additionally as it cannot be seperated from signal biases.
+The mean and offset are defined as discretized (<strong class="groops-config-element">deltaAzimuth</strong>,
+<strong class="groops-config-element">dZenith</strong>) integral of the spherical cap from zenith down to <strong class="groops-config-element">maxZenith</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">antenna</div></div></td><td><a href="gnssAntennaDefintionListType.html">gnssAntennaDefintionList</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">patternTypes</div></div></td><td><a href="gnssType.html">gnssType</a></td><td>only matching patterns, default: all</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">removeMean</div></div></td><td>boolean</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">removeOffset</div></div></td><td>boolean</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">deltaAzimuth</div></div></td><td>angle</td><td>[degree] sampling of pattern to estimate center/constant</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">deltaZenith</div></div></td><td>angle</td><td>[degree] sampling of pattern to estimate center/constant</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxZenith</div></div></td><td>angle</td><td>[degree] sampling of pattern to estimate center/constant</td></tr>
+</table>
+
         </div>
     </main>
 </body>

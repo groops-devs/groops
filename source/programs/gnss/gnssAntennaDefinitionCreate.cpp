@@ -359,7 +359,7 @@ public:
           {
             Bool found = FALSE;
             for(auto &patternOld : patternsOld)
-              if(match(type, patternOld.type))
+              if(type == patternOld.type)
               {
                 antenna->patterns.push_back(patternOld);
                 antenna->patterns.back().type = type;
@@ -454,13 +454,153 @@ public:
 
 /***********************************************/
 
+static const char *docstringGnssAntennaDefintionListSetZero = R"(
+\subsection{SetZero}
+The antenna center variations (patterns) or offsets
+of all \config{antenna}s are set to zero.
+)";
+
+class GnssAntennaDefintionListSetZero : public GnssAntennaDefintionList
+{
+public:
+  GnssAntennaDefintionListSetZero(Config &config)
+  {
+    try
+    {
+      std::vector<GnssAntennaDefintionListPtr> antennaLists;
+      std::vector<GnssType> types;
+      Bool zeroPattern, zeroOffset;
+
+      readConfig(config, "antenna",      antennaLists, Config::MUSTSET,  "",  "");
+      readConfig(config, "patternTypes", types,        Config::OPTIONAL, "",  "only matching patterns, default: all");
+      readConfig(config, "zeroOffset",   zeroOffset,   Config::DEFAULT,  "1", "");
+      readConfig(config, "zeroPattern",  zeroPattern,  Config::DEFAULT,  "1", "");
+      if(isCreateSchema(config)) return;
+
+      for(auto &antennaList : antennaLists)
+        for(auto &antenna : antennaList->antennas)
+          for(auto &pattern : antenna->patterns)
+            if(!types.size() || pattern.type.isInList(types))
+            {
+              if(zeroOffset)  pattern.offset = Vector3d(0., 0., 0.);
+              if(zeroPattern) pattern.pattern.setNull();
+            }
+
+      for(auto &antennaList : antennaLists)
+        antennas.insert(antennas.end(), antennaList->antennas.begin(), antennaList->antennas.end());
+    }
+    catch(std::exception &e)
+    {
+      GROOPS_RETHROW(e)
+    }
+  }
+};
+
+/***********************************************/
+
+static const char *docstringGnssAntennaDefintionListRemoveCenterMean = R"(
+\subsection{RemoveCenterMean}
+The antenna offset and antenna variations (patterns) are inseparable parts of the
+antenna model. With \config{removeOffset} an estimated offset is removed from
+all selected patterns and added to the offset. With \config{removeMean} an estimated
+constant is removed additionally as it cannot be seperated from signal biases.
+The mean and offset are defined as discretized (\config{deltaAzimuth},
+\config{dZenith}) integral of the spherical cap from zenith down to \config{maxZenith}.
+)";
+
+class GnssAntennaDefintionListRemoveCenterMean : public GnssAntennaDefintionList
+{
+public:
+  GnssAntennaDefintionListRemoveCenterMean(Config &config)
+  {
+    try
+    {
+      std::vector<GnssAntennaDefintionListPtr> antennaLists;
+      std::vector<GnssType> types;
+      Bool  removeOffset, removeMean;
+      Angle dAzimuth, dZenith, maxZenith;
+
+      readConfig(config, "antenna",      antennaLists, Config::MUSTSET, "",   "");
+      readConfig(config, "patternTypes", types,        Config::OPTIONAL, "",  "only matching patterns, default: all");
+      readConfig(config, "removeMean",   removeMean,   Config::MUSTSET, "1",  "");
+      readConfig(config, "removeOffset", removeOffset, Config::MUSTSET, "1",  "");
+      readConfig(config, "deltaAzimuth", dAzimuth,     Config::DEFAULT, "1",  "[degree] sampling of pattern to estimate center/constant");
+      readConfig(config, "deltaZenith",  dZenith,      Config::DEFAULT, "1",  "[degree] sampling of pattern to estimate center/constant");
+      readConfig(config, "maxZenith",    maxZenith,    Config::DEFAULT, "90", "[degree] sampling of pattern to estimate center/constant");
+      if(isCreateSchema(config)) return;
+
+      const UInt rows = static_cast<UInt>(std::round(2*PI/dAzimuth));
+      const UInt cols = static_cast<UInt>(std::round(maxZenith/dZenith));
+      Matrix A(rows*cols, 3*removeOffset+removeMean);
+      UInt idx = 0;
+      for(UInt i=0; i<rows; i++)
+        for(UInt k=0; k<cols; k++)
+        {
+          const Angle azimuth  (i*2*PI/rows);
+          const Angle elevation(PI/2-(k+0.5)*Double(dZenith));
+          if(removeOffset) A(idx, 0) = -std::cos(elevation) * std::cos(azimuth); // x
+          if(removeOffset) A(idx, 1) = -std::cos(elevation) * std::sin(azimuth); // y
+          if(removeOffset) A(idx, 2) = -std::sin(elevation);                     // z
+          if(removeMean)   A(idx, 3*removeOffset) = 1;                           // mean
+          A.row(idx) *= std::sqrt(std::cos(elevation));                          // area weights
+          idx++;
+        }
+
+      Vector l(rows*cols);
+      for(auto &antennaList : antennaLists)
+        for(auto &antenna : antennaList->antennas)
+          for(auto &pattern : antenna->patterns)
+            if(!types.size() || pattern.type.isInList(types))
+            {
+              UInt idx = 0;
+              for(UInt i=0; i<rows; i++)
+                for(UInt k=0; k<cols; k++)
+                {
+                  const Angle azimuth  (i*2*PI/rows);
+                  const Angle elevation(PI/2-(k+0.5)*Double(dZenith));
+                  l(idx++) = pattern.antennaVariations(azimuth, elevation, FALSE/*applyOffset*/) * std::sqrt(std::cos(elevation));
+                }
+              Vector x = leastSquares(Matrix(A), l);
+              if(removeOffset)
+                pattern.offset += Vector3d(x(0), x(1), x(2));
+              // remove from pattern
+              for(UInt i=0; i<pattern.pattern.rows(); i++)
+                for(UInt k=0; k<pattern.pattern.columns(); k++)
+                {
+                  if(removeOffset)
+                  {
+                    const Angle azimuth  (i*2*PI/pattern.pattern.rows());
+                    const Angle elevation(PI/2-k*Double(pattern.dZenit));
+                    pattern.pattern(i, k) += std::cos(elevation) * std::cos(azimuth) * x(0)
+                                           + std::cos(elevation) * std::sin(azimuth) * x(1)
+                                           + std::sin(elevation)                     * x(2);
+                  }
+                  if(removeMean)
+                    pattern.pattern(i, k) -= x(3*removeOffset);
+                }
+            } // for(pattern)
+
+      for(auto &antennaList : antennaLists)
+        antennas.insert(antennas.end(), antennaList->antennas.begin(), antennaList->antennas.end());
+    }
+    catch(std::exception &e)
+    {
+      GROOPS_RETHROW(e)
+    }
+  }
+};
+
+/***********************************************/
+
 GROOPS_REGISTER_CLASS(GnssAntennaDefintionList, "gnssAntennaDefintionListType",
                       GnssAntennaDefintionListNew,
                       GnssAntennaDefintionListFromFile,
                       GnssAntennaDefintionListFromStationInfo,
                       GnssAntennaDefintionListResample,
                       GnssAntennaDefintionListTransform,
-                      GnssAntennaDefintionListRename)
+                      GnssAntennaDefintionListRename,
+                      GnssAntennaDefintionListSetZero,
+                      GnssAntennaDefintionListRemoveCenterMean)
 
 GROOPS_READCONFIG_CLASS(GnssAntennaDefintionList, "gnssAntennaDefintionListType")
 
@@ -473,18 +613,22 @@ GnssAntennaDefintionListPtr GnssAntennaDefintionList::create(Config &config, con
     GnssAntennaDefintionListPtr ptr;
     std::string           choice;
     readConfigChoice(config, name, choice, Config::MUSTSET, "", "");
-    if(readConfigChoiceElement(config, "new",             choice, ""))
+    if(readConfigChoiceElement(config, "new",              choice, ""))
       ptr = GnssAntennaDefintionListPtr(new GnssAntennaDefintionListNew(config));
-    if(readConfigChoiceElement(config, "fromFile",        choice, ""))
+    if(readConfigChoiceElement(config, "fromFile",         choice, ""))
       ptr = GnssAntennaDefintionListPtr(new GnssAntennaDefintionListFromFile(config));
-    if(readConfigChoiceElement(config, "fromStationInfo", choice, ""))
+    if(readConfigChoiceElement(config, "fromStationInfo",  choice, ""))
       ptr = GnssAntennaDefintionListPtr(new GnssAntennaDefintionListFromStationInfo(config));
-    if(readConfigChoiceElement(config, "resample",        choice, ""))
+    if(readConfigChoiceElement(config, "resample",         choice, ""))
       ptr = GnssAntennaDefintionListPtr(new GnssAntennaDefintionListResample(config));
-    if(readConfigChoiceElement(config, "transform",       choice, ""))
+    if(readConfigChoiceElement(config, "transform",        choice, ""))
       ptr = GnssAntennaDefintionListPtr(new GnssAntennaDefintionListTransform(config));
-    if(readConfigChoiceElement(config, "rename",          choice, ""))
+    if(readConfigChoiceElement(config, "rename",           choice, ""))
       ptr = GnssAntennaDefintionListPtr(new GnssAntennaDefintionListRename(config));
+    if(readConfigChoiceElement(config, "setZero",          choice, ""))
+      ptr = GnssAntennaDefintionListPtr(new GnssAntennaDefintionListSetZero(config));
+    if(readConfigChoiceElement(config, "removeCenterMean", choice, ""))
+      ptr = GnssAntennaDefintionListPtr(new GnssAntennaDefintionListRemoveCenterMean(config));
     endChoice(config);
     return ptr;
   }
@@ -523,10 +667,11 @@ void GnssAntennaDefinitionCreate::run(Config &config, Parallel::CommunicatorPtr 
 
     for(const auto &antenna : antennas)
     {
-      std::string str;
+      logInfo<<" "<<antenna->str()<<" "<<antenna->comment<<Log::endl;
       for(const auto &pattern : antenna->patterns)
-        str += " "+pattern.type.str();
-      logInfo<<" "<<antenna->str()<<str<<Log::endl;
+        logInfo<<"   "<<pattern.type.str()<<" offset("<<pattern.offset.x()*1e3%"%5.1f, "s<<pattern.offset.y()*1e3%"%5.1f, "s<<pattern.offset.z()*1e3%"%6.1f) mm,"s
+               <<" pattern("s<<360./pattern.pattern.rows()%"%4.1f° x "s<<RAD2DEG*pattern.dZenit%"%3.1f° ),"s
+               <<" maxZenith "s<<(pattern.pattern.columns()-1)*RAD2DEG*pattern.dZenit%"%4.1f°"s<<Log::endl;
     }
   }
   catch(std::exception &e)
