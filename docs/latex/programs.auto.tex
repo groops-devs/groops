@@ -7222,6 +7222,29 @@ Name & Type & Annotation\\
 This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
+\subsection{SimulateStarCameraTerrasar}\label{SimulateStarCameraTerrasar}
+This program simulates \configFile{outputfileStarCamera}{instrument} measurements at each satellite's position for the Terrasar satellite.
+The \configFile{inputfileOrbit}{instrument} must contain positions and velocities (see \program{OrbitAddVelocityAndAcceleration}).
+The resulting rotation matrices rotate from satellite frame to inertial frame.
+
+H. Fiedler, E. Boerner, J. Mittermayer and G. Krieger,
+Total zero Doppler Steering-a new method for minimizing the Doppler centroid,
+in IEEE Geoscience and Remote Sensing Letters, vol. 2, no. 2, pp. 141-145, April 2005, \url{https://www.doi.org/10.1109/LGRS.2005.844591}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt rotation from satellite to inertial frame (x: along, y: cross, z: nadir)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt position and velocity defines the orientation of the satellite at each epoch\\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
 \section{Programs: System}
 \subsection{FileConvert}\label{FileConvert}
 Converts GROOPS file between different file formats (ASCII, XML, binary),

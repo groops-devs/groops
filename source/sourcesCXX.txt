@@ -445,6 +445,7 @@ programs/simulation/simulateStarCamera.cpp
 programs/simulation/simulateStarCameraGnss.cpp
 programs/simulation/simulateStarCameraGrace.cpp
 programs/simulation/simulateStarCameraSentinel1.cpp
+programs/simulation/simulateStarCameraTerrasar.cpp
 programs/system/fileConvert.cpp
 programs/system/fileCreateDirectories.cpp
 programs/system/fileMove.cpp

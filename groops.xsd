@@ -20214,6 +20214,27 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="SimulateStarCameraTerrasar">
+				<xs:annotation>
+					<xs:documentation>simulate star camera data for Terrasar</xs:documentation>
+					<xs:appinfo>tag: Simulation</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileStarCamera" type="filename">
+							<xs:annotation>
+								<xs:documentation>rotation from satellite to inertial frame (x: along, y: cross, z: nadir)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit" type="filename">
+							<xs:annotation>
+								<xs:documentation>position and velocity defines the orientation of the satellite at each epoch</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="FileConvert">
 				<xs:annotation>
 					<xs:documentation>Converts GROOPS file between different file formats (ASCII, XML, binary).</xs:documentation>
