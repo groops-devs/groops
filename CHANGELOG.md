@@ -17,6 +17,7 @@
 - New option:       GnssParametrizationCodeBiases: option to define ionosphere-free clock datum.
 - New option:       GnssParametrizationIonosphereMap: option to read/write VTEC maps.
 - New option:       PlatformSelector: new selection algorithm with exclude option.
+- New option:       GoceXmlEggNom1b: write also linear common mode accelerations.
 - Removed program:  GnssPrn2SvnBlockVariables: This program will no longer work from the next release! See documentation for help.
 - Removed program:  NetCdf2PotentialCoefficients: Use NetCdf2GriddedDataTimeSeries and GriddedDataTimeSeries2PotentialCoefficients instead.
 - Removed program:  Metop2Starcamera: Use Champ2AccStar instead.
