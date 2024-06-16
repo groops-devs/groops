@@ -526,7 +526,6 @@ programs/conversion/satellites/champ2AccStar.cpp
 programs/conversion/satellites/champ2Orbit.cpp
 programs/conversion/satellites/cosmic2OrbitStar.cpp
 programs/conversion/satellites/jason2Starcamera.cpp
-programs/conversion/satellites/metop2Starcamera.cpp
 programs/conversion/satellites/sacc2Orbit.cpp
 programs/conversion/satellites/sentinel2Orbit.cpp
 programs/conversion/satellites/sentinel2StarCamera.cpp

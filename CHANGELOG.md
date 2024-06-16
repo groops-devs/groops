@@ -19,6 +19,7 @@
 - New option:       PlatformSelector: new selection algorithm with exclude option.
 - Removed program:  GnssPrn2SvnBlockVariables: This program will no longer work from the next release! See documentation for help.
 - Removed program:  NetCdf2PotentialCoefficients: Use NetCdf2GriddedDataTimeSeries and GriddedDataTimeSeries2PotentialCoefficients instead.
+- Removed program:  Metop2Starcamera: Use Champ2AccStar instead.
 - Bugfix:           GnssParametrizationStaticPositions: ignored inputfileNoNetPositions.
 - Bugfix:           SphericalHarmonicsFilter->DDK: corrected filter for level 4 onwards (Compatible with ICGEM definition).
 - Bugfix:           ObservationDeflections: fixed index bug.

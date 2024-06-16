@@ -23215,19 +23215,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="Metop2Starcamera">
-				<xs:annotation>
-					<xs:documentation>read MetOp star camera data</xs:documentation>
-					<xs:appinfo>tag: Conversion</xs:appinfo>
-					<xs:appinfo>tag: Instrument</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileStarCamera" type="filename"/>
-						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="NetCdf2GriddedData">
 				<xs:annotation>
 					<xs:documentation>Convert COARDS compliant grids to gridded data</xs:documentation>
