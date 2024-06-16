@@ -20454,19 +20454,8 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileOrbit" type="filename"/>
-						<xs:element name="earthRotation" type="earthRotationType"/>
-						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded"/>
-						<xs:element name="inputOrbit">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
-										<xs:annotation>
-											<xs:documentation>orbits in SP3 format</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file"/>
+						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
