@@ -72,7 +72,7 @@ void InstrumentArcCrossStatistics::run(Config &config, Parallel::CommunicatorPtr
     readConfig(config, "inputfileInstrumentReference",   fileNameInstrumentIn2, Config::MUSTSET, "",   "");
     if(readConfigChoice(config, "statistics", choice, Config::MUSTSET, "", ""))
     {
-      if(readConfigChoiceElement(config, "correlation",   choice, ""))                                func = [] (const_MatrixSliceRef A, const_MatrixSliceRef B) {return inner(A, B)/rootMeanSquare(A)/rootMeanSquare(B);};
+      if(readConfigChoiceElement(config, "correlation",   choice, ""))                                func = [] (const_MatrixSliceRef A, const_MatrixSliceRef B) {return inner(A, B)/rootMeanSquare(A)/rootMeanSquare(B)/A.rows();};
       if(readConfigChoiceElement(config, "errorRMS",      choice, "rms of differences"))              func = [] (const_MatrixSliceRef A, const_MatrixSliceRef B) {return rootMeanSquare(A-B);};
       if(readConfigChoiceElement(config, "nashSutcliffe", choice, "with respect to reference field")) func = [] (const_MatrixSliceRef A, const_MatrixSliceRef B) {return 1-quadsum(A-B)/quadsum(A-mean(A));};
       endChoice(config);
