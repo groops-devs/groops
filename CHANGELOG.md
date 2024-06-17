@@ -6,8 +6,10 @@
 - New program:      orbit2EarhFixedOrbit: Rotate an orbit into a rotation earth fixed frame.
 - New program:      GriddedDataTimeSeries2PotentialCoefficients.
 - New program:      SinexMetadata2GlonassFrequencyNumber.
+- New program:      SimulateStarCameraTerrasar.
 - New class:        In PlatformSelector: Equipment.
 - New class:        In Gravityfield/Tides/MiscAccelerations: Group.
+- New option:       GnssAntennaDefinitionCreate: setZero and removeCenterMean.
 - New option:       Sp3Fromat2Orbit: Write all satellites (identifier is appended to each file).
 - New option:       GriddedData2PotentialCoefficients: Handle multiple input data columns at once.
 - New option:       GriddedDataReduceSampling: tesseroid volume conserving for digital elevation models.
@@ -17,14 +19,17 @@
 - New option:       GnssParametrizationCodeBiases: option to define ionosphere-free clock datum.
 - New option:       GnssParametrizationIonosphereMap: option to read/write VTEC maps.
 - New option:       PlatformSelector: new selection algorithm with exclude option.
+- New option:       GoceXmlEggNom1b: write also linear common mode accelerations.
 - Removed program:  GnssPrn2SvnBlockVariables: This program will no longer work from the next release! See documentation for help.
 - Removed program:  NetCdf2PotentialCoefficients: Use NetCdf2GriddedDataTimeSeries and GriddedDataTimeSeries2PotentialCoefficients instead.
+- Removed program:  Metop2Starcamera: Use Champ2AccStar instead.
 - Bugfix:           GnssParametrizationStaticPositions: ignored inputfileNoNetPositions.
 - Bugfix:           SphericalHarmonicsFilter->DDK: corrected filter for level 4 onwards (Compatible with ICGEM definition).
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
 - Bugfix:           NetCdf: in some cases the data has been swapped.
 - Bugfix:           GnssRinexNavigation2OrbitClock: reimplementation of source code.
+- Other:            GnssAntennaDefinition2ParameterVector: with area weights.
 - Other:            GnssAntex2AntennaDefinition/GnssGlonassFrequencyNumberUpdate: write Platform files instead of deprecated GnssStationInfo files.
 - Other:            EarthRotation::rotaryAxis: if EOP time series is too short, use simplified equations.
 - Other:            Gravityfield2Deflections: Computation based now on normal gravity.
@@ -35,6 +40,7 @@
 - Other:            GriddedData: reworked area computations.
 - Other:            IersC04IAU2000EarthOrientationParameter: works also with new file format.
 - Other:            condition->fileExist: Supports now wildcards: * and ?.
+- Other:            Champ2Orbit: simplified interface.
 
 # Release 2023-08-25
 - New program:      FileMove.

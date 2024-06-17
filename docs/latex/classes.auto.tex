@@ -1224,6 +1224,49 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
+
+\subsection{SetZero}
+The antenna center variations (patterns) or offsets
+of all \config{antenna}s are set to zero.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~antenna & \hfuzz=500pt \hyperref[gnssAntennaDefintionListType]{gnssAntennaDefintionList} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~patternTypes & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt only matching patterns, default: all\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~zeroOffset & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~zeroPattern & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+
+\subsection{RemoveCenterMean}
+The antenna offset and antenna variations (patterns) are inseparable parts of the
+antenna model. With \config{removeOffset} an estimated offset is removed from
+all selected patterns and added to the offset. With \config{removeMean} an estimated
+constant is removed additionally as it cannot be seperated from signal biases.
+The mean and offset are defined as discretized (\config{deltaAzimuth},
+\config{dZenith}) integral of the spherical cap from zenith down to \config{maxZenith}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~antenna & \hfuzz=500pt \hyperref[gnssAntennaDefintionListType]{gnssAntennaDefintionList} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~patternTypes & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt only matching patterns, default: all\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~removeMean & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~removeOffset & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~deltaAzimuth & \hfuzz=500pt angle & \hfuzz=500pt [degree] sampling of pattern to estimate center/constant\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~deltaZenith & \hfuzz=500pt angle & \hfuzz=500pt [degree] sampling of pattern to estimate center/constant\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxZenith & \hfuzz=500pt angle & \hfuzz=500pt [degree] sampling of pattern to estimate center/constant\\
+\hline
+\end{tabularx}
+
 \clearpage
 %==================================
 

@@ -398,7 +398,7 @@ Estimates parameters of a parametrization of \configClass{antennaCenterVariation
 which represents all antennas from \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}
 matching the wildcard patterns of \config{name}, \config{serial}, \config{radome}.
 
-The provided values at the grid points of the pattern of each gnssType are used as pseudo-observations.
+The provided values at the area weighted grid points of the pattern of each gnssType are used as pseudo-observations.
 A subset of patterns can be selected with \configClass{types}{gnssType}.
 
 The \file{GnssAntennaDefinition file}{gnssAntennaDefinition} can be modified to the demands before with
@@ -7222,6 +7222,29 @@ Name & Type & Annotation\\
 This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
+\subsection{SimulateStarCameraTerrasar}\label{SimulateStarCameraTerrasar}
+This program simulates \configFile{outputfileStarCamera}{instrument} measurements at each satellite's position for the Terrasar satellite.
+The \configFile{inputfileOrbit}{instrument} must contain positions and velocities (see \program{OrbitAddVelocityAndAcceleration}).
+The resulting rotation matrices rotate from satellite frame to inertial frame.
+
+H. Fiedler, E. Boerner, J. Mittermayer and G. Krieger,
+Total zero Doppler Steering-a new method for minimizing the Doppler centroid,
+in IEEE Geoscience and Remote Sensing Letters, vol. 2, no. 2, pp. 141-145, April 2005, \url{https://www.doi.org/10.1109/LGRS.2005.844591}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt rotation from satellite to inertial frame (x: along, y: cross, z: nadir)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt position and velocity defines the orientation of the satellite at each epoch\\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
 \section{Programs: System}
 \subsection{FileConvert}\label{FileConvert}
 Converts GROOPS file between different file formats (ASCII, XML, binary),
@@ -7458,10 +7481,8 @@ A description of the format can be found under: \url{http://op.gfz-potsdam.de/ch
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputOrbit & \hfuzz=500pt sequence & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt orbits in SP3 format\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 
@@ -8157,6 +8178,7 @@ Read ESA XML GOCE Data.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileGradiometer & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAngularRate & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAngularAcc & \hfuzz=500pt filename & \hfuzz=500pt \\
@@ -9096,23 +9118,6 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileEphemerides & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileHeader & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileData & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hline
-\end{tabularx}
-
-\clearpage
-%==================================
-\subsection{Metop2Starcamera}\label{Metop2Starcamera}
-This program reads in star camera data from MetOp satellites given in the special CHAMP format.
-A description of the format can be found under: \url{http://op.gfz-potsdam.de/champ/docs_CHAMP/CH-GFZ-FD-001.pdf}
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 

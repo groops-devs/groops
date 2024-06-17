@@ -134,14 +134,14 @@ void ParameterVector2GnssAntennaDefinition::run(Config &config, Parallel::Commun
               for(UInt k=0; k<pattern.pattern.columns(); k++)
                 pattern.pattern(i,k) += inner(parametrization->designMatrix(Angle(2*PI*i/pattern.pattern.rows()), Angle(PI/2-k*Double(pattern.dZenit))).trans(), x);
 
-          // type cannot match further patterns (all wildcards in type are already catched)?
-          if((!type.hasWildcard(GnssType::PRN)       || pattern.type.hasWildcard(GnssType::PRN)      ) &&
-             (!type.hasWildcard(GnssType::SYSTEM)    || pattern.type.hasWildcard(GnssType::SYSTEM)   ) &&
-             (!type.hasWildcard(GnssType::FREQUENCY) || pattern.type.hasWildcard(GnssType::FREQUENCY)) &&
-             (!type.hasWildcard(GnssType::TYPE)      || pattern.type.hasWildcard(GnssType::TYPE)     ) &&
-             (!type.hasWildcard(GnssType::ATTRIBUTE) || pattern.type.hasWildcard(GnssType::ATTRIBUTE)) &&
-             (!type.hasWildcard(GnssType::FREQ_NO)   || pattern.type.hasWildcard(GnssType::FREQ_NO)  ))
-            break;
+            // type cannot match further patterns (all wildcards in type are already catched)?
+            if((!type.hasWildcard(GnssType::PRN)       || pattern.type.hasWildcard(GnssType::PRN)      ) &&
+               (!type.hasWildcard(GnssType::SYSTEM)    || pattern.type.hasWildcard(GnssType::SYSTEM)   ) &&
+               (!type.hasWildcard(GnssType::FREQUENCY) || pattern.type.hasWildcard(GnssType::FREQUENCY)) &&
+               (!type.hasWildcard(GnssType::TYPE)      || pattern.type.hasWildcard(GnssType::TYPE)     ) &&
+               (!type.hasWildcard(GnssType::ATTRIBUTE) || pattern.type.hasWildcard(GnssType::ATTRIBUTE)) &&
+               (!type.hasWildcard(GnssType::FREQ_NO)   || pattern.type.hasWildcard(GnssType::FREQ_NO)  ))
+              break;
           }
 
         if(!found)
