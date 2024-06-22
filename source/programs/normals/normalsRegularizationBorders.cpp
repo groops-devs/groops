@@ -61,14 +61,18 @@ void NormalsRegularizationBorders::run(Config &config, Parallel::CommunicatorPtr
     FileName  insideName, outsideName;
     GridPtr   grid;
     BorderPtr border;
+    Double    a, f;
 
     readConfig(config, "outputfileInside",  insideName,  Config::MUSTSET,  "", "");
     readConfig(config, "outputfileOutside", outsideName, Config::MUSTSET,  "", "");
     readConfig(config, "grid",              grid,        Config::MUSTSET, "", "nodal point distribution of parameters, e.g harmonics splines");
     readConfig(config, "border",            border,      Config::MUSTSET, "", "regularization areas, e.g land and ocean");
+    readConfig(config, "R",                 a,           Config::DEFAULT,  STRING_DEFAULT_GRS80_a, "reference radius for ellipsoidal coordinates for border");
+    readConfig(config, "inverseFlattening", f,           Config::DEFAULT,  STRING_DEFAULT_GRS80_f, "reference flattening for ellipsoidal coordinates for border, 0: spherical coordinates");
     if(isCreateSchema(config)) return;
 
 
+    Ellipsoid ellipsoid(a, f);
     std::vector<Vector3d> points = grid->points();
     logInfo<<"  nodal points: "<<points.size()<<Log::endl;
 
@@ -77,7 +81,7 @@ void NormalsRegularizationBorders::run(Config &config, Parallel::CommunicatorPtr
 
     for(UInt k=0; k<points.size(); k++)
     {
-      if(border->isInnerPoint(points.at(k)))
+      if(border->isInnerPoint(points.at(k), ellipsoid))
         diag1(k)=1;
       else
         diag2(k)=1;
