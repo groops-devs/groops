@@ -202,7 +202,7 @@ inline Vector3d MiscAccelerationsRadiationPressure::acceleration(SatelliteModelP
 
     // Thermal Radiation Pressure (TRP)
     // --------------------------------
-    if(factorThermal)
+    if(factorThermal && absorbedPressure.size() && quadsum(absorbedPressure))
     {
       constexpr Double sigma = 5.670374419e-8; // Stefan–Boltzmann constant [W/m^2/K^4]
 
@@ -288,77 +288,6 @@ inline Vector3d MiscAccelerationsRadiationPressure::force(SatelliteModelPtr sate
     {
       auto &surface = satellite->surfaces.at(i);
 
-      const Double cosPhi = -inner(direction, surface.normal);
-      if(cosPhi < 1e-10)
-        continue;
-
-      // hard-coded GRACE self-shadowing of bottom plate and inner sides
-      Double fraction = 1.;
-      if(surface.type == SatelliteModel::Surface::GRACESHADOW)
-      {
-        constexpr Double sin50 = 0.766044443119; // std::sin(DEG2RAD*50.);
-        constexpr Double cos50 = 0.642787609687; // std::cos(DEG2RAD*50.);
-        constexpr Double a     = 3122.5;         // length of bottom side in x-direction
-        constexpr Double b     = 1643.52084;     // width of the bottom side in y-direction
-        constexpr Double s     = 73.10281*2;     // length of inner plate = 73.1 mm
-        const Double alpha = DEG2RAD*50;
-        const Double c     = std::sqrt(std::pow(s,2)+std::pow(b,2)-2*s*b*std::cos(PI-alpha));
-
-        if(surface.normal.z() > 0.999) // bottom plate
-        {
-          // projected lower point of side plate into bottom side plane along light direction (scaled)
-          Double sx = s/a*sin50 * std::fabs(direction.x()/direction.z());
-          Double sy = s/b*sin50 * std::fabs(direction.y()/direction.z()) - s/b*cos50;
-          if(sx > 1) {sy /= sx; sx = 1.;}
-          if(sy > 1) {sx /= sy; sy = 1.;}
-          fraction = 1.-std::max(sy, 0.)*(1.-0.5*sx);
-        }
-        else // inner sides
-        {
-          Double sy1=0, sy2=1;
-          if(std::fabs(direction.z()) > 1e-10)
-          {
-            // -------------- sy1 --------------
-            const Double lambda1 = std::atan2(direction.z(),std::fabs(direction.y()));
-            if(lambda1 < 1e-10)             // direction is comming from underneath the satellite
-            {
-              const Double gamma1 = PI-alpha-std::fabs(lambda1);
-              sy1 = -(std::sin(std::fabs(lambda1))*b/std::sin(gamma1))/s;
-            }
-            else                            // direction is comming from above the satellite
-            {
-              const Double gamma1 = alpha-lambda1;
-              sy1 = (std::sin(lambda1)*b/std::sin(gamma1))/s;
-            }
-            // -------------- sy2 --------------
-            const Double lambda2 = std::atan2(-direction.z(),std::fabs(-direction.y()));
-            const Double epsilon = std::asin(sin50*s/c);
-            if(lambda2 <= epsilon)
-            {
-              const Double gamma2 = PI-(PI-epsilon-alpha)-(epsilon-lambda2);
-              sy2 = (c*std::sin(epsilon-lambda2)/std::sin(gamma2))/s;
-            }
-            else
-            {
-              const Double gamma2 = PI-(epsilon+alpha)-(lambda2-epsilon);
-              sy2 = -(c*std::sin(lambda2-epsilon)/std::sin(gamma2))/s;
-            }
-          }
-
-          const Double dx = std::fabs(direction.x()/(surface.normal.z()*direction.z()+surface.normal.y()*direction.y()));
-          constexpr Double h = b*sin50+s*0.984807753012;           //(sin80) height of outer point of other side above inner side
-          Double sx1 = b/a*sin50 * dx;                             // bottom
-          Double sx2 = h/a * dx;                                   // other inner side
-
-          if(sx1 > 1) {sy1 /= sx1; sx1 = 1.;}
-          if(sy1 > 1) {sx1 /= sy1; sy1 = 1.;}
-          if(sy1 < 0) {sx1 -= (sx2-sx1)/sy2*sy1; sy1 = 0.;} // final
-          if(sx2 > 1) {sy2 = sy1 + (sy2-sy1)*(1-sx1)/(sx2-sx1); sx2 = 1.;}
-          if(sy2 > 1) {sx2 = sx1 + (sx2-sx1)*(1-sy1)/(sy2-sy1); sy2 = 1.;}
-          fraction = 1. - std::max(sy1, 0.)*(1.-0.5*sx1)- std::max(sy2-sy1, 0.)*((1.-sx1) - 0.5*(sx2-sx1));
-        }
-      }
-
       // absorptionX + diffusionX + reflexionX = 1.
       const Double reflexion  = surface.reflexionVisible  * visible + surface.reflexionInfrared  * infrared;
       const Double diffusion  = surface.diffusionVisible  * visible + surface.diffusionInfrared  * infrared;
@@ -366,21 +295,98 @@ inline Vector3d MiscAccelerationsRadiationPressure::force(SatelliteModelPtr sate
 
       if((surface.type == SatelliteModel::Surface::PLATE) || (surface.type == SatelliteModel::Surface::GRACESHADOW))
       {
-        // Source: Montenbruck et al. (2015) Enhanced solar radiation pressure modeling for Galileo satellites. DOI 10.1007/s00190-014-0774-0
-        F += fraction*surface.area*cosPhi*(absorption+diffusion)*direction - fraction*surface.area*cosPhi*(2./3.*diffusion+2.*cosPhi*reflexion)*surface.normal;
+        const Double cosPhi = -inner(direction, surface.normal);
+        if(cosPhi < 1e-10)
+          continue;
 
+        // hard-coded GRACE self-shadowing of bottom plate and inner sides
+        Double fraction = 1.;
+        if(surface.type == SatelliteModel::Surface::GRACESHADOW)
+        {
+          constexpr Double sin50 = 0.766044443119; // std::sin(DEG2RAD*50.);
+          constexpr Double cos50 = 0.642787609687; // std::cos(DEG2RAD*50.);
+          constexpr Double a     = 3122.5;         // length of bottom side in x-direction
+          constexpr Double b     = 1643.52084;     // width of the bottom side in y-direction
+          constexpr Double s     = 73.10281*2;     // length of inner plate = 73.1 mm
+          const Double alpha = DEG2RAD*50;
+          const Double c     = std::sqrt(std::pow(s,2)+std::pow(b,2)-2*s*b*std::cos(PI-alpha));
+
+          if(surface.normal.z() > 0.999) // bottom plate
+          {
+            // projected lower point of side plate into bottom side plane along light direction (scaled)
+            Double sx = s/a*sin50 * std::fabs(direction.x()/direction.z());
+            Double sy = s/b*sin50 * std::fabs(direction.y()/direction.z()) - s/b*cos50;
+            if(sx > 1) {sy /= sx; sx = 1.;}
+            if(sy > 1) {sx /= sy; sy = 1.;}
+            fraction = 1.-std::max(sy, 0.)*(1.-0.5*sx);
+          }
+          else // inner sides
+          {
+            Double sy1=0, sy2=1;
+            if(std::fabs(direction.z()) > 1e-10)
+            {
+              // -------------- sy1 --------------
+              const Double lambda1 = std::atan2(direction.z(),std::fabs(direction.y()));
+              if(lambda1 < 1e-10)             // direction is comming from underneath the satellite
+              {
+                const Double gamma1 = PI-alpha-std::fabs(lambda1);
+                sy1 = -(std::sin(std::fabs(lambda1))*b/std::sin(gamma1))/s;
+              }
+              else                            // direction is comming from above the satellite
+              {
+                const Double gamma1 = alpha-lambda1;
+                sy1 = (std::sin(lambda1)*b/std::sin(gamma1))/s;
+              }
+              // -------------- sy2 --------------
+              const Double lambda2 = std::atan2(-direction.z(),std::fabs(-direction.y()));
+              const Double epsilon = std::asin(sin50*s/c);
+              if(lambda2 <= epsilon)
+              {
+                const Double gamma2 = PI-(PI-epsilon-alpha)-(epsilon-lambda2);
+                sy2 = (c*std::sin(epsilon-lambda2)/std::sin(gamma2))/s;
+              }
+              else
+              {
+                const Double gamma2 = PI-(epsilon+alpha)-(lambda2-epsilon);
+                sy2 = -(c*std::sin(lambda2-epsilon)/std::sin(gamma2))/s;
+              }
+            }
+
+            const Double dx = std::fabs(direction.x()/(surface.normal.z()*direction.z()+surface.normal.y()*direction.y()));
+            constexpr Double h = b*sin50+s*0.984807753012;           //(sin80) height of outer point of other side above inner side
+            Double sx1 = b/a*sin50 * dx;                             // bottom
+            Double sx2 = h/a * dx;                                   // other inner side
+
+            if(sx1 > 1) {sy1 /= sx1; sx1 = 1.;}
+            if(sy1 > 1) {sx1 /= sy1; sy1 = 1.;}
+            if(sy1 < 0) {sx1 -= (sx2-sx1)/sy2*sy1; sy1 = 0.;} // final
+            if(sx2 > 1) {sy2 = sy1 + (sy2-sy1)*(1-sx1)/(sx2-sx1); sx2 = 1.;}
+            if(sy2 > 1) {sx2 = sx1 + (sx2-sx1)*(1-sy1)/(sy2-sy1); sy2 = 1.;}
+            fraction = 1. - std::max(sy1, 0.)*(1.-0.5*sx1)- std::max(sy2-sy1, 0.)*((1.-sx1) - 0.5*(sx2-sx1));
+          }
+        }
+
+        // Source: Montenbruck et al. (2015) Enhanced solar radiation pressure modeling for Galileo satellites. (Equ.5) DOI 10.1007/s00190-014-0774-0
+        F += fraction*surface.area*cosPhi*(absorption+diffusion)*direction - fraction*surface.area*cosPhi*(2./3.*diffusion+2.*cosPhi*reflexion)*surface.normal;
         if(absorbedPressure.size())
           absorbedPressure(i) += fraction*cosPhi*absorption;
       }
       else if(surface.type == SatelliteModel::Surface::CYLINDER)
       {
         // Source: Rodriguez Solano (2014) Impact of non-conservative force modeling on GNSS satellite orbits and global solutions. PhD thesis
+        const Double cosPhi = -inner(direction, surface.normal);
+        if(cosPhi < 1e-10)
+          continue;
         F += surface.area*cosPhi*(absorption+diffusion)*direction - surface.area*cosPhi*(PI/6.*diffusion+4./3.*cosPhi*reflexion)*surface.normal;
         if(absorbedPressure.size())
           absorbedPressure(i) += cosPhi*absorption;
       }
-      else // if(surface.type == SatelliteModel::Surface::SPHERE)
-        throw(Exception("sphere not implemented yet"));
+      else if(surface.type == SatelliteModel::Surface::SPHERE)
+      {
+        // Source: Sosnica Krzysztof: Determination of Precise Satellite Orbits and Geodetic Parameters using Satellite Laser Ranging
+        const Double CR = (1.0+4./9.*surface.diffusionVisible);
+        F += CR * surface.area * direction * (visible + infrared);
+       }
     } // for(i=surface)
 
     return F;

@@ -36,7 +36,7 @@ TroposphereGpt::TroposphereGpt(Config &config)
 
 /***********************************************/
 
-void TroposphereGpt::init(const std::vector<Vector3d> &stationPositions)
+void TroposphereGpt::init(const std::vector<std::string> &/*stationNames*/, const std::vector<Vector3d> &stationPositions)
 {
   try
   {
@@ -50,7 +50,7 @@ void TroposphereGpt::init(const std::vector<Vector3d> &stationPositions)
 
 /***********************************************/
 
-Double TroposphereGpt::slantDelay(const Time &time, UInt stationId, Angle azimuth, Angle elevation) const
+Double TroposphereGpt::slantDelay(UInt stationId, const Time &time, Double /*frequency*/, Angle azimuth, Angle elevation) const
 {
   try
   {
@@ -75,7 +75,7 @@ Double TroposphereGpt::slantDelay(const Time &time, UInt stationId, Angle azimut
 
 /***********************************************/
 
-Double TroposphereGpt::mappingFunctionHydrostatic(const Time &time, UInt stationId, Angle /*azimuth*/, Angle elevation) const
+Double TroposphereGpt::mappingFunctionHydrostatic(UInt stationId, const Time &time, Double /*frequency*/, Angle /*azimuth*/, Angle elevation) const
 {
   try
   {
@@ -92,7 +92,7 @@ Double TroposphereGpt::mappingFunctionHydrostatic(const Time &time, UInt station
 
 /***********************************************/
 
-Double TroposphereGpt::mappingFunctionWet(const Time &time, UInt stationId, Angle /*azimuth*/, Angle elevation) const
+Double TroposphereGpt::mappingFunctionWet(UInt stationId, const Time &time, Double /*frequency*/, Angle /*azimuth*/, Angle elevation) const
 {
   try
   {
@@ -107,7 +107,7 @@ Double TroposphereGpt::mappingFunctionWet(const Time &time, UInt stationId, Angl
 
 /***********************************************/
 
-void TroposphereGpt::mappingFunctionGradient(const Time &/*time*/, UInt /*stationId*/, Angle azimuth, Angle elevation, Double &dx, Double &dy) const
+void TroposphereGpt::mappingFunctionGradient(UInt /*stationId*/, const Time &/*time*/, Double /*frequency*/, Angle azimuth, Angle elevation, Double &dx, Double &dy) const
 {
   try
   {
@@ -123,7 +123,7 @@ void TroposphereGpt::mappingFunctionGradient(const Time &/*time*/, UInt /*statio
 
 /***********************************************/
 
-void TroposphereGpt::getAprioriValues(const Time &time, UInt stationId, Double &zenithDryDelay, Double &zenithWetDelay, Double &gradientDryNorth,
+void TroposphereGpt::getAprioriValues(UInt stationId, const Time &time, Double /*frequency*/, Double &zenithDryDelay, Double &zenithWetDelay, Double &gradientDryNorth,
                                       Double &gradientWetNorth, Double &gradientDryEast, Double &gradientWetEast, Double &aDry, Double &aWet) const
 {
   try

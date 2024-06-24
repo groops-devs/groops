@@ -77,7 +77,7 @@ the variational equation approach. The variational equations are computed arc wi
 This means for each arc new initial state parameters are setup.</p><p>In a first step the <a class="groops-class" href="forcesType.html">forces</a> acting on the satellite are evaluated at the apriori positions given
 by <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>. Non-conservative forces like solar radiation pressure needs the orientation of the
 satellite (<a class="groops-class" href="fileFormat_instrument.html">inputfileStarCamera</a>) and additional a satellite macro model (<strong class="groops-config-element">satelliteModel</strong>)
-with the surface properties. Furthermore <a class="groops-class" href="fileFormat_instrument.html">inputfileAccelerometer</a> observations are also considered.</p><p>In a second step the accelerations are integrated twice to an dynamic orbit unsing a moving polynomial with the degree
+with the surface properties. Furthermore <a class="groops-class" href="fileFormat_instrument.html">inputfileAccelerometer</a> observations are also considered.</p><p>In a second step the accelerations are integrated twice to an dynamic orbit using a moving polynomial with the degree
 <strong class="groops-config-element">integrationDegree</strong>. The orbit is corrected to be self-consistent. This means the forces should be evaluated
 at the new integrated positions instead of the apriori ones. This correction is computed in a linear approximation
 using the gradient of the forces with respect to the positions (<strong class="groops-config-element">gradientfield</strong>). As this term is small generally
@@ -90,7 +90,7 @@ Mathematically the result is the same, but as the large central term is removed 
 afterwards more digits are available for the computation.</p><p>The integrated orbit should be fitted to observations afterwards by the programs
 <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a> and/or <a class="groops-program" href="PreprocessingVariationalEquationSstFit.html">PreprocessingVariationalEquationSstFit</a>.
 They apply a least squares adjustment by estimating some satellite parameters (e.g. an accelerometer bias).
-If the fitted orbit is to far away from the original <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a> the linearization may not be
+If the fitted orbit is too far away from the original <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a> the linearization may not be
 accurate enough. In this case <a class="groops-program" href="PreprocessingVariationalEquation.html">PreprocessingVariationalEquation</a> should be run again with the fitted orbit
 as <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a> and introducing the <strong class="groops-config-element">estimatedParameters</strong> as additional forces.
 </p>

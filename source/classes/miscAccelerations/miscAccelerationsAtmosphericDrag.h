@@ -153,8 +153,12 @@ inline Vector3d MiscAccelerationsAtmosphericDrag::force(SatelliteModelPtr satell
         else if(cosPhi > 0) // simple drag coefficient
           F += 0.5 * density * surface.area * cosPhi * velocity*velocity * satellite->coefficientDrag * direction;
       }
+      else if (surface.type == SatelliteModel::Surface::SPHERE)
+      {
+        F += 0.5 * density * surface.area * velocity*velocity * satellite->coefficientDrag * direction;
+      }
       else
-        throw(Exception("sphere or cylinder not implemented yet"));
+        throw(Exception("cylinder not implemented yet"));
     } // for(i=surface)
 
     return F;

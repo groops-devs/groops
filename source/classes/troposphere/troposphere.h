@@ -56,45 +56,50 @@ public:
   /** @brief Init the station list.
   * To speed up the computation and to reduce memory consumption the coordinates
   * of the station (given in TRF [m]) must be set before calling the other functions. */
-  virtual void init(const std::vector<Vector3d> &stationPositions) = 0;
+  virtual void init(const std::vector<std::string> &stationNames, const std::vector<Vector3d> &stationPositions) = 0;
 
   /** @brief Approx value of the slant delay.
-  * @param time Time of the measurement.
   * @param stationId Station number from the list given at init.
+  * @param time Time of the measurement.
+  * @param frequency of the electromagnetic signal [Hz].
   * @param azimuth  Azimuth.
   * @param elevation  Elevation.
   * @return delay [m] */
-  virtual Double slantDelay(const Time &time, UInt stationId, Angle azimuth, Angle elevation) const = 0;
+  virtual Double slantDelay(UInt stationId, const Time &time, Double frequency, Angle azimuth, Angle elevation) const = 0;
 
   /** @brief Mapping Function of the hydrostatic atmosphere.
-  * @param time Time of the measurement.
   * @param stationId Station number from the list given at init.
+  * @param time Time of the measurement.
+  * @param frequency of the electromagnetic signal [Hz].
   * @param azimuth  Azimuth.
   * @param elevation  Elevation.
   * @return function value [] */
-  virtual Double mappingFunctionHydrostatic(const Time &time, UInt stationId, Angle azimuth, Angle elevation) const = 0;
+  virtual Double mappingFunctionHydrostatic(UInt stationId, const Time &time, Double frequency, Angle azimuth, Angle elevation) const = 0;
 
   /** @brief Mapping Function of the wet atmosphere.
-  * @param time Time of the measurement.
   * @param stationId Station number from the list given at init.
+  * @param time Time of the measurement.
+  * @param frequency of the electromagnetic signal [Hz].
   * @param azimuth  Azimuth.
   * @param elevation  Elevation.
   * @return function value [] */
-  virtual Double mappingFunctionWet(const Time &time, UInt stationId, Angle azimuth, Angle elevation) const = 0;
+  virtual Double mappingFunctionWet(UInt stationId, const Time &time, Double frequency, Angle azimuth, Angle elevation) const = 0;
 
   /** @brief Gradient of the mapping function.
-  * @param time Time of the measurement.
   * @param stationId Station number from the list given at init.
+  * @param time Time of the measurement.
+  * @param frequency of the electromagnetic signal [Hz].
   * @param azimuth  Azimuth.
   * @param elevation  Elevation.
   * @param[out] dx  Gradient function value in North direction [].
   * @param[out] dy  Gradient function value in East direction []. */
-  virtual void mappingFunctionGradient(const Time &time, UInt stationId, Angle azimuth, Angle elevation, Double &dx, Double &dy) const = 0;
+  virtual void mappingFunctionGradient(UInt stationId, const Time &time, Double frequency, Angle azimuth, Angle elevation, Double &dx, Double &dy) const = 0;
 
 
   /** @brief Get tropospheric zenith dry/wet delay and dry/wet gradients in North and East directions at a specific time stamp.
-  * @param time Time of the measurement.
   * @param stationId Station number from the list given at init.
+  * @param time Time of the measurement.
+  * @param frequency of the electromagnetic signal [Hz].
   * @param[out] zenithDryDelay Zenith dry delay [m].
   * @param[out] zenithWetDelay Zenith wet delay [m].
   * @param[out] gradientDryNorth Dry gradient in North direction [m].
@@ -103,7 +108,7 @@ public:
   * @param[out] gradientWetEast Wet gradient in East direction [m].
   * @param[out] aDry Dry mapping function coefficient a [].
   * @param[out] aWet Wet mapping function coefficient a []. */
-  virtual void getAprioriValues(const Time &time, UInt stationId, Double &zenithDryDelay, Double &zenithWetDelay, Double &gradientDryNorth,
+  virtual void getAprioriValues(UInt stationId, const Time &time, Double frequency, Double &zenithDryDelay, Double &zenithWetDelay, Double &gradientDryNorth,
                                 Double &gradientWetNorth, Double &gradientDryEast, Double &gradientWetEast, Double &aDry, Double &aWet) const = 0;
 
   static Double mappingFunction(Double sinE, Double a, Double b, Double c) {return (1+(a/(1+(b/(1+c)))))/(sinE+(a/(sinE+(b/(sinE+c)))));}

@@ -55,13 +55,13 @@ public:
   TroposphereViennaMapping(Config &config);
  ~TroposphereViennaMapping() {}
 
-  void   init(const std::vector<Vector3d> &stationPositions) override;
-  Double slantDelay(const Time &time, UInt stationId, Angle azimuth, Angle elevation) const override;
-  Double mappingFunctionHydrostatic(const Time &time, UInt stationId, Angle azimuth, Angle elevation) const override;
-  Double mappingFunctionWet(const Time &time, UInt stationId, Angle azimuth, Angle elevation) const override;
-  void   mappingFunctionGradient(const Time &time, UInt stationId, Angle azimuth, Angle elevation, Double &dx, Double &dy) const override;
-  void   getAprioriValues(const Time&time, UInt stationId, Double &zenithDryDelay, Double &zenithWetDelay, Double &gradientDryNorth,
-                          Double &gradientWetNorth, Double &gradientDryEast, Double &gradientWetEast, Double &aDry, Double &aWet) const override;
+  void   init(const std::vector<std::string> &stationNames, const std::vector<Vector3d> &stationPositions) override;
+  Double slantDelay                (UInt stationId, const Time &time, Double frequency, Angle azimuth, Angle elevation) const override;
+  Double mappingFunctionHydrostatic(UInt stationId, const Time &time, Double frequency, Angle azimuth, Angle elevation) const override;
+  Double mappingFunctionWet        (UInt stationId, const Time &time, Double frequency, Angle azimuth, Angle elevation) const override;
+  void   mappingFunctionGradient   (UInt stationId, const Time &time, Double frequency, Angle azimuth, Angle elevation, Double &dx, Double &dy) const override;
+  void   getAprioriValues          (UInt stationId, const Time &time, Double frequency, Double &zenithDryDelay, Double &zenithWetDelay, Double &gradientDryNorth,
+                                    Double &gradientWetNorth, Double &gradientDryEast, Double &gradientWetEast, Double &aDry, Double &aWet) const override;
 };
 
 /***********************************************/

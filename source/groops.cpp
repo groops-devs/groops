@@ -57,6 +57,9 @@ GitHub repository: https://github.com/groops-devs/groops
 /** @defgroup gnssGroup GNSS
 * @brief Global Navigation Satellite Systems. */
 
+/** @defgroup slrGroup SLR
+* @brief Satellite Laser Ranging. */
+
 /** @defgroup plotGroup Plots
 * @brief Classes and functions for plotting. */
 

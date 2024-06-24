@@ -23,7 +23,7 @@ by \configFile{inputfileOrbit}{instrument}. Non-conservative forces like solar r
 satellite (\configFile{inputfileStarCamera}{instrument}) and additional a satellite macro model (\config{satelliteModel})
 with the surface properties. Furthermore \configFile{inputfileAccelerometer}{instrument} observations are also considered.
 
-In a second step the accelerations are integrated twice to an dynamic orbit unsing a moving polynomial with the degree
+In a second step the accelerations are integrated twice to an dynamic orbit using a moving polynomial with the degree
 \config{integrationDegree}. The orbit is corrected to be self-consistent. This means the forces should be evaluated
 at the new integrated positions instead of the apriori ones. This correction is computed in a linear approximation
 using the gradient of the forces with respect to the positions (\config{gradientfield}). As this term is small generally
@@ -40,7 +40,7 @@ afterwards more digits are available for the computation.
 The integrated orbit should be fitted to observations afterwards by the programs
 \program{PreprocessingVariationalEquationOrbitFit} and/or \program{PreprocessingVariationalEquationSstFit}.
 They apply a least squares adjustment by estimating some satellite parameters (e.g. an accelerometer bias).
-If the fitted orbit is to far away from the original \configFile{inputfileOrbit}{instrument} the linearization may not be
+If the fitted orbit is too far away from the original \configFile{inputfileOrbit}{instrument} the linearization may not be
 accurate enough. In this case \program{PreprocessingVariationalEquation} should be run again with the fitted orbit
 as \configFile{inputfileOrbit}{instrument} and introducing the \config{estimatedParameters} as additional forces.
 )";
@@ -540,7 +540,7 @@ Matrix PreprocessingVariationalEquation::solve(Double deltaT, const std::vector<
     Matrix x = approxInverse(deltaT, tensor, l);
     Matrix delta;
 
-    for(UInt iter2=0; iter2<10; iter2++)
+    for(UInt iter2=0; iter2<50; iter2++)
     {
       Matrix r  = l - refine(deltaT, tensor, x);
       Matrix r0 = r;
@@ -580,14 +580,14 @@ Matrix PreprocessingVariationalEquation::solve(Double deltaT, const std::vector<
           axpy(-omega(i), t.column(i), r.column(i));
         }
         delta = x-xOld;
-        if(maxabs(delta)<1e-8)
+        if(maxabs(delta) < 1e-7)
           break;
       }  // for(iter)
-      if(maxabs(delta)<1e-8)
+
+      if(maxabs(delta) < 1e-7)
         break;
-//       if(iter2>=9)
-//         logWarning<<"no convergence "<<maxabs(delta)<<Log::endl;
     } // for(iter2)
+
     return x;
   }
   catch(std::exception &e)
