@@ -1,4 +1,6 @@
 # main
+
+# Release 2024-06-24
 - Interface change: Variables can now declared at any place in the config file (not only in the global section).
                     They have local scope within the hierarchy level.
                     Loop and conditions attributed to elements no longer need to be declared in the global section.
