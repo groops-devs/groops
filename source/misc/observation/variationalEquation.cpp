@@ -25,13 +25,14 @@ VariationalEquation::VariationalEquation() : parameterCount_(0), gravityCount(0)
 
 /***********************************************/
 
-void VariationalEquation::init(SatelliteModelPtr satellite, ParametrizationGravityPtr parameterGravity, ParametrizationAccelerationPtr parameterAcceleration,
-                               const std::vector<Time> &stochasticPulse, EphemeridesPtr ephemerides, UInt integrationDegree)
+void VariationalEquation::init(SatelliteModelPtr satellite, const std::vector<ParametrizationGravityPtr> &parametersGravity,
+                               ParametrizationAccelerationPtr parameterAcceleration, const std::vector<Time> &stochasticPulse,
+                               EphemeridesPtr ephemerides, UInt integrationDegree)
 {
   try
   {
     this->satellite             = satellite;
-    this->parameterGravity      = parameterGravity;
+    this->parametersGravity     = parametersGravity;
     this->parameterAcceleration = parameterAcceleration;
     this->timePulse             = stochasticPulse;
     this->ephemerides           = ephemerides;
@@ -77,10 +78,13 @@ void VariationalEquation::computeIndices()
 {
   try
   {
-    parameterCount_  = 0;
+    parameterCount_ = 0;
 
-    idxGravity       = parameterCount_;
-    gravityCount     = (parameterGravity) ? parameterGravity->parameterCount() : 0;
+    idxGravity   = parameterCount_;
+    gravityCount = 0;
+    for(auto parameterGravity : parametersGravity)
+      if(parameterGravity)
+        gravityCount += parameterGravity->parameterCount();
     parameterCount_ += gravityCount;
 
     idxSat           = parameterCount_;
@@ -111,11 +115,8 @@ void VariationalEquation::setArc(VariationalEquationArc &arc)
     if(arc_.times.size() == 0)
       throw(Exception("empty arc"));
 
-    if(parameterAcceleration)
-    {
-      if(parameterAcceleration->setIntervalArc(arc_.times.at(0), arc_.times.back()+medianSampling(arc_.times)))
-        computeIndices();
-    }
+    if(parameterAcceleration && parameterAcceleration->setIntervalArc(arc_.times.at(0), arc_.times.back()+medianSampling(arc_.times)))
+      computeIndices();
 
     initIntegration();
 
@@ -157,8 +158,9 @@ void VariationalEquation::parameterName(std::vector<ParameterName> &name) const
 
 void VariationalEquation::parameterNameGravity(std::vector<ParameterName> &name) const
 {
-  if(parameterGravity)
-    parameterGravity->parameterName(name);
+  for(auto parameterGravity : parametersGravity)
+    if(parameterGravity)
+      parameterGravity->parameterName(name);
 }
 
 /***********************************************/
@@ -365,8 +367,13 @@ Matrix VariationalEquation::computeIntegrand(UInt idEpoch)
                              arc_.vel0(3*idEpoch+2,0));
 
     Matrix F(6, Alpha.columns());
-    if(gravityCount)
-      parameterGravity->gravity(arc_.times.at(idEpoch), arc_.rotEarth.at(idEpoch).rotate(pos), F.slice(3, idxGravity, 3, gravityCount));
+    UInt col = 0;
+    for(auto parameterGravity : parametersGravity)
+      if(parameterGravity)
+      {
+        parameterGravity->gravity(arc_.times.at(idEpoch), arc_.rotEarth.at(idEpoch).rotate(pos), F.slice(3, idxGravity+col, 3, parameterGravity->parameterCount()));
+        col += parameterGravity->parameterCount();
+      }
     if(satCount || satArcCount)
     {
       parameterAcceleration->compute(satellite, arc_.times.at(idEpoch), pos, vel, arc_.rotSat.at(idEpoch), arc_.rotEarth.at(idEpoch), ephemerides,

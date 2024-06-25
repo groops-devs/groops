@@ -1,7 +1,27 @@
 # main
+
+# Release 2024-06-24
 - Interface change: Variables can now declared at any place in the config file (not only in the global section).
                     They have local scope within the hierarchy level.
                     Loop and conditions attributed to elements no longer need to be declared in the global section.
+- SLR Processing:   New processing of SLR data with estimation of all relevant geodetic parameters.
+  - New program:      SlrProcessing
+  - New program:      conversion: Cpf2Orbit
+  - New program:      conversion: Crd2NormalPoints
+  - New program:      conversion: Cstg2NormalPoints
+  - New program:      conversion: Merit2FullRate
+  - New program:      conversion: Merit2NormalPoints
+  - New program:      conversion: Orbit2Cpf
+  - New program:      conversion: SinexEccentricties2SlrPlatform
+  - New program:      conversion: SlrComModel2RangeBiasStationSatellite
+  - New program:      conversion: SlrSinexDataHandling2Files
+  - New class:        slrParametrization
+  - New class:        slrProcessingStep
+  - New class:        slrSatelliteGenerator
+  - New class:        slrStationGenerator
+  - New class:        In Troposphere: MendesAndPavlis
+  - New instrument file format: SATELLITELASERRANGING
+  - New instrument file format: METEOROLOGICAL
 - New program:      eclipseFactor2GriddedData.cpp: returns a global grid with eclipse factors.
 - New program:      orbit2EarhFixedOrbit: Rotate an orbit into a rotation earth fixed frame.
 - New program:      GriddedDataTimeSeries2PotentialCoefficients.

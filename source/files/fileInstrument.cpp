@@ -40,27 +40,29 @@ Epoch *Epoch::create(Type type)
       return new MiscValuesEpoch(type);
     switch(type)
     {
-      case Epoch::INSTRUMENTTIME:       return new InstrumentTimeEpoch();
-      case Epoch::MISCVALUE:            return new MiscValueEpoch();
-      case Epoch::VECTOR3D:             return new Vector3dEpoch();
-      case Epoch::COVARIANCE3D:         return new Covariance3dEpoch();
-      case Epoch::ORBIT:                return new OrbitEpoch();
-      case Epoch::STARCAMERA:           return new StarCameraEpoch();
-      case Epoch::ACCELEROMETER:        return new AccelerometerEpoch();
-      case Epoch::SATELLITETRACKING:    return new SatelliteTrackingEpoch();
-      case Epoch::GRADIOMETER:          return new GradiometerEpoch();
-      case Epoch::GNSSRECEIVER:         return new GnssReceiverEpoch();
-      case Epoch::OBSERVATIONSIGMA:     return new ObservationSigmaEpoch();
-      case Epoch::MASS:                 return new MassEpoch();
-      case Epoch::THRUSTER:             return new ThrusterEpoch();
-      case Epoch::MAGNETOMETER:         return new MagnetometerEpoch();
-      case Epoch::ACCHOUSEKEEPING:      return new AccHousekeepingEpoch();
-      case Epoch::CLOCK:                return new ClockEpoch();
-      case Epoch::STARCAMERA1A:         return new StarCamera1AEpoch();
-      case Epoch::ACCELEROMETER1A:      return new Accelerometer1AEpoch();
-      case Epoch::MISCVALUESOLD:        return new MiscValuesOldEpoch();
-      case Epoch::MISCVALUES:           break;
-      case Epoch::EMPTY:                break;
+      case Epoch::INSTRUMENTTIME:        return new InstrumentTimeEpoch();
+      case Epoch::MISCVALUE:             return new MiscValueEpoch();
+      case Epoch::VECTOR3D:              return new Vector3dEpoch();
+      case Epoch::COVARIANCE3D:          return new Covariance3dEpoch();
+      case Epoch::ORBIT:                 return new OrbitEpoch();
+      case Epoch::STARCAMERA:            return new StarCameraEpoch();
+      case Epoch::ACCELEROMETER:         return new AccelerometerEpoch();
+      case Epoch::SATELLITETRACKING:     return new SatelliteTrackingEpoch();
+      case Epoch::GRADIOMETER:           return new GradiometerEpoch();
+      case Epoch::GNSSRECEIVER:          return new GnssReceiverEpoch();
+      case Epoch::OBSERVATIONSIGMA:      return new ObservationSigmaEpoch();
+      case Epoch::MASS:                  return new MassEpoch();
+      case Epoch::THRUSTER:              return new ThrusterEpoch();
+      case Epoch::MAGNETOMETER:          return new MagnetometerEpoch();
+      case Epoch::ACCHOUSEKEEPING:       return new AccHousekeepingEpoch();
+      case Epoch::CLOCK:                 return new ClockEpoch();
+      case Epoch::STARCAMERA1A:          return new StarCamera1AEpoch();
+      case Epoch::ACCELEROMETER1A:       return new Accelerometer1AEpoch();
+      case Epoch::SATELLITELASERRANGING: return new SatelliteLaserRangingEpoch();
+      case Epoch::METEOROLOGICAL:        return new MeteorologicalEpoch();
+      case Epoch::MISCVALUESOLD:         return new MiscValuesOldEpoch();
+      case Epoch::MISCVALUES:            break;
+      case Epoch::EMPTY:                 break;
     }
 
     throw(Exception("unknown instrument type ("+static_cast<Int>(type)%"%i)"s));
@@ -81,27 +83,29 @@ std::string Epoch::getTypeName(Type type)
       return "MISCVALUES("+static_cast<Double>(type)%"%i)"s;
     switch(type)
     {
-      case Epoch::MISCVALUE:            return "MISCVALUE";
-      case Epoch::INSTRUMENTTIME:       return "INSTRUMENTTIME";
-      case Epoch::VECTOR3D:             return "VECTOR3D";
-      case Epoch::COVARIANCE3D:         return "COVARIANCE3D";
-      case Epoch::ORBIT:                return "ORBIT";
-      case Epoch::STARCAMERA:           return "STARCAMERA";
-      case Epoch::ACCELEROMETER:        return "ACCELEROMETER";
-      case Epoch::SATELLITETRACKING:    return "SATELLITETRACKING";
-      case Epoch::GRADIOMETER:          return "GRADIOMETER";
-      case Epoch::GNSSRECEIVER:         return "GNSSRECEIVER";
-      case Epoch::OBSERVATIONSIGMA:     return "OBSERVATIONSIGMA";
-      case Epoch::MASS:                 return "MASS";
-      case Epoch::THRUSTER:             return "THRUSTER";
-      case Epoch::MAGNETOMETER:         return "MAGNETOMETER";
-      case Epoch::ACCHOUSEKEEPING:      return "ACCHOUSEKEEPING";
-      case Epoch::CLOCK:                return "CLOCK";
-      case Epoch::STARCAMERA1A:         return "STARCAMERA1A";
-      case Epoch::ACCELEROMETER1A:      return "ACCELEROMETER1A";
-      case Epoch::MISCVALUESOLD:        return "MISCVALUES";
-      case Epoch::MISCVALUES:           return "MISCVALUES(0)";
-      case Epoch::EMPTY:                return "EMPTY";
+      case Epoch::MISCVALUE:             return "MISCVALUE";
+      case Epoch::INSTRUMENTTIME:        return "INSTRUMENTTIME";
+      case Epoch::VECTOR3D:              return "VECTOR3D";
+      case Epoch::COVARIANCE3D:          return "COVARIANCE3D";
+      case Epoch::ORBIT:                 return "ORBIT";
+      case Epoch::STARCAMERA:            return "STARCAMERA";
+      case Epoch::ACCELEROMETER:         return "ACCELEROMETER";
+      case Epoch::SATELLITETRACKING:     return "SATELLITETRACKING";
+      case Epoch::GRADIOMETER:           return "GRADIOMETER";
+      case Epoch::GNSSRECEIVER:          return "GNSSRECEIVER";
+      case Epoch::OBSERVATIONSIGMA:      return "OBSERVATIONSIGMA";
+      case Epoch::MASS:                  return "MASS";
+      case Epoch::THRUSTER:              return "THRUSTER";
+      case Epoch::MAGNETOMETER:          return "MAGNETOMETER";
+      case Epoch::ACCHOUSEKEEPING:       return "ACCHOUSEKEEPING";
+      case Epoch::CLOCK:                 return "CLOCK";
+      case Epoch::STARCAMERA1A:          return "STARCAMERA1A";
+      case Epoch::ACCELEROMETER1A:       return "ACCELEROMETER1A";
+      case Epoch::SATELLITELASERRANGING: return "SATELLITELASERRANGING";
+      case Epoch::METEOROLOGICAL:        return "METEOROLOGICAL";
+      case Epoch::MISCVALUESOLD:         return "MISCVALUES";
+      case Epoch::MISCVALUES:            return "MISCVALUES(0)";
+      case Epoch::EMPTY:                 return "EMPTY";
     }
     return "unknown";
   }
@@ -130,18 +134,20 @@ std::string Epoch::fileFormatString(Type type)
 
     switch(type)
     {                                       // "Time [MJD]             |                         |                         |                         |                         |                         |                         |                         |                         |                         |
-      case Epoch::MISCVALUE:            return "Time [MJD]               data0                   ";
-      case Epoch::INSTRUMENTTIME:       return "Time [MJD]             ";
-      case Epoch::VECTOR3D:             return "Time [MJD]               data0: x                  data1: y                  data2: z                ";
-      case Epoch::COVARIANCE3D:         return "Time [MJD]               data0: xx                 data1: yy                 data2: zz                 data3: xy                 data4: xz                 data5: yz               ";
-      case Epoch::ORBIT:                return "Time [MJD]               data0: pos x [m]          data1: pos y [m]          data2: pos z [m]          data3: vel x [m/s]        data4: vel y [m/s]        data5: vel z [m/s]        data6: acc x [m/s^2]      data7: acc y [m/s^2]      data8: acc z [m/s^2]    ";
-      case Epoch::STARCAMERA:           return "Time [MJD]               data0: quaternion 0       data1: quaternion x       data2: quaternion y       data3: quaternion z     ";
-      case Epoch::ACCELEROMETER:        return "Time [MJD]               data0: x [m/s^2]          data1: y [m/s^2]          data2: z [m/s^2]        ";
-      case Epoch::SATELLITETRACKING:    return "Time [MJD]               data0: range [m]          data1: range-rate [m/s]   data2: range-acc [m/s^2]";
-      case Epoch::GRADIOMETER:          return "Time [MJD]               data0: xx [1/s^2]         data1: yy [1/s^2]         data2: zz [1/s^2]         data3: xy [1/s^2]         data4: xz [1/s^2]         data5: yz [1/s^2]       ";
-      case Epoch::GNSSRECEIVER:         return "";
-      case Epoch::OBSERVATIONSIGMA:     return "Time [MJD]               data0: sigma            ";
-      default:                          return "";
+      case Epoch::MISCVALUE:             return "Time [MJD]               data0                   ";
+      case Epoch::INSTRUMENTTIME:        return "Time [MJD]             ";
+      case Epoch::VECTOR3D:              return "Time [MJD]               data0: x                  data1: y                  data2: z                ";
+      case Epoch::COVARIANCE3D:          return "Time [MJD]               data0: xx                 data1: yy                 data2: zz                 data3: xy                 data4: xz                 data5: yz               ";
+      case Epoch::ORBIT:                 return "Time [MJD]               data0: pos x [m]          data1: pos y [m]          data2: pos z [m]          data3: vel x [m/s]        data4: vel y [m/s]        data5: vel z [m/s]        data6: acc x [m/s^2]      data7: acc y [m/s^2]      data8: acc z [m/s^2]    ";
+      case Epoch::STARCAMERA:            return "Time [MJD]               data0: quaternion 0       data1: quaternion x       data2: quaternion y       data3: quaternion z     ";
+      case Epoch::ACCELEROMETER:         return "Time [MJD]               data0: x [m/s^2]          data1: y [m/s^2]          data2: z [m/s^2]        ";
+      case Epoch::SATELLITETRACKING:     return "Time [MJD]               data0: range [m]          data1: range-rate [m/s]   data2: range-acc [m/s^2]";
+      case Epoch::GRADIOMETER:           return "Time [MJD]               data0: xx [1/s^2]         data1: yy [1/s^2]         data2: zz [1/s^2]         data3: xy [1/s^2]         data4: xz [1/s^2]         data5: yz [1/s^2]       ";
+      case Epoch::GNSSRECEIVER:          return "";
+      case Epoch::OBSERVATIONSIGMA:      return "Time [MJD]               data0: sigma            ";
+      case Epoch::SATELLITELASERRANGING: return "Time [MJD]               data0: range [m]          data1: accuracy [m]       data2: redundancy         data3: window [s]         data4: wavelength [m]     data5: azmiuth [rad]      data6: elevation [rad]  ";
+      case Epoch::METEOROLOGICAL:        return "Time [MJD]               data0: temperature [K]    data1: pressure [Pa]      data2: humidity [%]       data3: windSpeed [m/s]    data4: radiation [W/m^2]  data5: precip. [mm/d]   ";
+      default:                           return "";
 //       case Epoch::MASS:                 return "MASS";
 //       case Epoch::THRUSTER:             return "THRUSTER";
 //       case Epoch::MAGNETOMETER:         return "MAGNETOMETER";
@@ -169,27 +175,29 @@ UInt Epoch::dataCount(Type type, Bool mustDefined)
       return static_cast<UInt>(type);
     switch(type)
     {
-      case Epoch::INSTRUMENTTIME:    return 0;
-      case Epoch::MISCVALUE:         return 1;
-      case Epoch::VECTOR3D:          return 3;
-      case Epoch::COVARIANCE3D:      return 6;
-      case Epoch::ORBIT:             return 9;
-      case Epoch::STARCAMERA:        return 4;
-      case Epoch::ACCELEROMETER:     return 3;
-      case Epoch::SATELLITETRACKING: return 3;
-      case Epoch::GRADIOMETER:       return 6;
-      case Epoch::OBSERVATIONSIGMA:  return 1;
-      case Epoch::MASS:              return 2;
-      case Epoch::THRUSTER:          return 14;
-      case Epoch::MAGNETOMETER:      return 13;
-      case Epoch::ACCHOUSEKEEPING:   return 13;
-      case Epoch::CLOCK:             return 6;
-      case Epoch::STARCAMERA1A:      return 9;
-      case Epoch::ACCELEROMETER1A:   return 5;
-      case Epoch::GNSSRECEIVER:      if(mustDefined) throw(Exception("GNSSRECEIVER: Data columns not defined.")); return NULLINDEX;
-      case Epoch::MISCVALUESOLD:     if(mustDefined) throw(Exception("Cannot determine the number of data columns of old file format (use FileConvert)")); return NULLINDEX;
-      case Epoch::MISCVALUES:        if(mustDefined) throw(Exception("EMPTY: Cannot determine the number of data columns.")); return NULLINDEX;
-      case Epoch::EMPTY:             if(mustDefined) throw(Exception("EMPTY: Cannot determine the number of data columns.")); return NULLINDEX;
+      case Epoch::INSTRUMENTTIME:        return 0;
+      case Epoch::MISCVALUE:             return 1;
+      case Epoch::VECTOR3D:              return 3;
+      case Epoch::COVARIANCE3D:          return 6;
+      case Epoch::ORBIT:                 return 9;
+      case Epoch::STARCAMERA:            return 4;
+      case Epoch::ACCELEROMETER:         return 3;
+      case Epoch::SATELLITETRACKING:     return 3;
+      case Epoch::GRADIOMETER:           return 6;
+      case Epoch::OBSERVATIONSIGMA:      return 1;
+      case Epoch::MASS:                  return 2;
+      case Epoch::THRUSTER:              return 14;
+      case Epoch::MAGNETOMETER:          return 13;
+      case Epoch::ACCHOUSEKEEPING:       return 13;
+      case Epoch::CLOCK:                 return 6;
+      case Epoch::STARCAMERA1A:          return 9;
+      case Epoch::ACCELEROMETER1A:       return 5;
+      case Epoch::SATELLITELASERRANGING: return 7;
+      case Epoch::METEOROLOGICAL:        return 6;
+      case Epoch::GNSSRECEIVER:          if(mustDefined) throw(Exception("GNSSRECEIVER: Data columns not defined.")); return NULLINDEX;
+      case Epoch::MISCVALUESOLD:         if(mustDefined) throw(Exception("Cannot determine the number of data columns of old file format (use FileConvert)")); return NULLINDEX;
+      case Epoch::MISCVALUES:            if(mustDefined) throw(Exception("EMPTY: Cannot determine the number of data columns.")); return NULLINDEX;
+      case Epoch::EMPTY:                 if(mustDefined) throw(Exception("EMPTY: Cannot determine the number of data columns.")); return NULLINDEX;
     }
     throw(Exception("unknown instrument type ("+static_cast<Int>(type)%"%i)"s));
   }
@@ -1763,6 +1771,116 @@ void Accelerometer1AEpoch::setData(const Vector &x)
   acceleration.x() = x(2);
   acceleration.y() = x(3);
   acceleration.z() = x(4);
+}
+
+/***********************************************/
+/***********************************************/
+
+void SatelliteLaserRangingEpoch::save(OutArchive &oa) const
+{
+  oa << nameValue ("time",        time);
+  oa << nameValue ("range",       range);
+  oa << nameValue ("accuracy",    accuracy);
+  oa << nameValue ("redundancy",  redundancy);
+  oa << nameValue ("window",      window);
+  oa << nameValue ("wavelength",  wavelength);
+  oa << nameValue ("azmiuth",     azmiuth);
+  oa << nameValue ("elevation",   elevation);
+}
+
+/***********************************************/
+
+void SatelliteLaserRangingEpoch::load(InArchive &ia)
+{
+  ia >> nameValue ("time",       time);
+  ia >> nameValue ("range",      range);
+  ia >> nameValue ("accuracy",   accuracy);
+  ia >> nameValue ("redundancy", redundancy);
+  ia >> nameValue ("window",     window);
+  ia >> nameValue ("wavelength", wavelength);
+  ia >> nameValue ("azmiuth",    azmiuth);
+  ia >> nameValue ("elevation",  elevation);
+}
+
+/***********************************************/
+
+Vector SatelliteLaserRangingEpoch::data() const
+{
+  Vector x(7);
+  x(0) = range;
+  x(1) = accuracy;
+  x(2) = redundancy;
+  x(3) = window;
+  x(4) = wavelength;
+  x(5) = azmiuth;
+  x(6) = elevation;
+  return x;
+}
+
+/***********************************************/
+
+void SatelliteLaserRangingEpoch::setData(const Vector &x)
+{
+  range      = x(0);
+  accuracy   = x(1);
+  redundancy = x(2);
+  window     = x(3);
+  wavelength = x(4);
+  azmiuth    = x(5);
+  elevation  = x(6);
+}
+
+/***********************************************/
+/***********************************************/
+
+void MeteorologicalEpoch::save(OutArchive &oa) const
+{
+  oa << nameValue ("time",           time);
+  oa << nameValue ("temperature",    temperature);
+  oa << nameValue ("pressure",       pressure);
+  oa << nameValue ("humidity",       humidity);
+  oa << nameValue ("windSpeed",      windSpeed);
+  oa << nameValue ("solarRadiation", solarRadiation);
+  oa << nameValue ("precipitation",  precipitation);
+}
+
+/***********************************************/
+
+void MeteorologicalEpoch::load(InArchive &ia)
+{
+  ia >> nameValue ("time",           time);
+  ia >> nameValue ("temperature",    temperature);
+  ia >> nameValue ("pressure",       pressure);
+  ia >> nameValue ("humidity",       humidity);
+  ia >> nameValue ("windSpeed",      windSpeed);
+  ia >> nameValue ("solarRadiation", solarRadiation);
+  ia >> nameValue ("precipitation",  precipitation);
+}
+
+/***********************************************/
+
+Vector MeteorologicalEpoch::data() const
+{
+  Vector x(6);
+  x(0) = temperature;
+  x(1) = pressure;
+  x(2) = humidity;
+  x(3) = windSpeed;
+  x(4) = solarRadiation;
+  x(5) = precipitation;
+  return x;
+}
+
+/***********************************************/
+
+void MeteorologicalEpoch::setData(const Vector &x)
+{
+  temperature    = x(0);
+  pressure       = x(1);
+  humidity       = x(2);
+  windSpeed      = x(3);
+  solarRadiation = x(4);
+  precipitation  = x(5);
 }
 
 /***********************************************/

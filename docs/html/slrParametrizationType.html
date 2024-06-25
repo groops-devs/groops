@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - slrParametrizationType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="slrParametrizationType">SlrParametrization</h1><p>
+This class defines the models and parameters of the linearized observation equations
+for normal points (see <a class="groops-program" href="SlrProcessing.html">SlrProcessing</a>)
+\[\label{slrParametrizationType:model}
+  \M l - \M f(\M x_0) = \left.\frac{\partial \M f(\M x)}{\partial \M x}\right|_{\M x_0} \Delta\M x + \M\epsilon,
+\]where the left side is the observation vector minus the effects computed from the a priori models.
+After each least squares adjustment
+(see <a class="groops-class" href="slrProcessingStepType.html#estimate">SlrProcessing:processingStep:estimate</a>)
+the a priori parameters are updated
+\[\label{slrParametrizationType:update}
+  \M x_0 := \M x_0 + \Delta\hat{\M x}.
+\]The vector $\M x_0$ can be written with
+<a class="groops-class" href="slrProcessingStepType.html#writeAprioriSolution">SlrProcessing:processingStep:writeAprioriSolution</a>.
+Any <strong class="groops-config-element">outputfiles</strong> defined in the parametrizations are written with
+<a class="groops-class" href="slrProcessingStepType.html#writeResults">SlrProcessing:processingStep:writeResults</a>.</p><p>Each parametrization (and possible constraint equations) has a <strong class="groops-config-element">name</strong> which enables
+activating/deactivating the estimation of subsets of $\Delta\M x$ with
+<a class="groops-class" href="slrProcessingStepType.html#selectParametrizations">SlrProcessing:processingStep:selectParametrizations</a>.
+The a priori model $\M f(\M x_0)$ is unaffected and is always reduced.</p><p>The model for the one way range observations between station $s$ and reflector $r$
+can be described as
+\[\label{slrParametrizationType:slrFullModel}
+\begin{split}
+  f_s^r(\M x) &= \frac{1}{2}\left(\left\lVert \M r^r(t_{bounce})-\M r_s(t_{trans}) \right\rVert
+                          + \left\lVert \M r_s(t_{recv})-\M r^r(t_{bounce}) \right\rVert\right)  \\
+              &+ \text{troposphere}(t,\M r_{ss}^r)
+               + \text{bias}^r + \text{bias}_s + \text{bias}_s^r + \text{other}(\ldots) + \epsilon_r^s
+\end{split}
+\]
+See also <a class="groops-program" href="SlrProcessing.html">SlrProcessing</a>.
+</p>
+
+<h2 id="troposphere">Troposphere</h2><p>
+A priori tropospheric correction is handled by a <a class="groops-class" href="troposphereType.html">troposphere</a> model (e.g. Mendes and Pavlis).
+Additional parameters in $[m]$ for zenith delay can be set up via
+<a class="groops-class" href="parametrizationTemporalType.html">troposphereEstimation</a>.
+These parameters can be soft-constrained using
+<a class="groops-class" href="slrParametrizationType.html#constraints">parametrization:constraints</a>
+to avoid an unsolvable system of normal equations in case of data gaps.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station>:troposphere:&lt;temporal>:&lt;interval></code>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileTroposphere</div></div></td><td>filename</td><td>columns: MJD, ZHD, ZWD, dry north gradient, wet north gradient, dry east gradient, wet east gradient</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">troposphere</div></div></td><td><a href="troposphereType.html">troposphere</a></td><td>a priori troposphere model</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">troposphereEstimation</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>[m] parametrization of zenith delays</td></tr>
+</table>
+
+<h2 id="dynamicOrbits">DynamicOrbits</h2><p>
+The estimation of (reduced) dynamic orbits is formulated as variational equations.
+It is based on <a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational</a> calculated with <a class="groops-program" href="PreprocessingVariationalEquation.html">PreprocessingVariationalEquation</a>.
+Necessary integrations are performed by integrating a moving interpolation polynomial of degree <strong class="groops-config-element">integrationDegree</strong>.
+The <a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration</a> must include at least those
+parameters that were estimated in <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a>.
+Additional <a class="groops-class" href="timeSeriesType.html">stochasticPulse</a> parameters can be set up to reduce orbit mismodeling.</p><p>The parameters and <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are divided into global
+<ul>
+
+<li><code>&lt;satellite>:&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite>:stochasticPulse.x::&lt;time></code>,
+</li><li>
+<code>&lt;satellite>:stochasticPulse.y::&lt;time></code>,
+</li><li>
+<code>&lt;satellite>:stochasticPulse.z::&lt;time></code>,
+</li></ul>
+
+and arc related parameters
+<ul>
+
+<li><code>&lt;satellite>:arc&lt;no>.&lt;parametrizationAcceleration>:*:*</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.position0.x::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.position0.y::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.position0.z::</code>.
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.velocity0.x::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.velocity0.y::</code>,
+</li><li>
+<code>&lt;satellite>:arc&lt;no>.velocity0.z::</code>.
+</li></ul>
+
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectSatellites</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileOrbit</div></div></td><td>filename</td><td>variable {satellite} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileParameters</div></div></td><td>filename</td><td>variable {satellite} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileVariational</div></div></td><td>filename</td><td>variable {satellite} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">stochasticPulse</div></div></td><td><a href="timeSeriesType.html">timeSeries</a></td><td>[mu/s] parametrization of stochastic pulses</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">parametrizationAcceleration</div></div></td><td><a href="parametrizationAccelerationType.html">parametrizationAcceleration</a></td><td>orbit force parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">integrationDegree</div></div></td><td>uint</td><td>integration of forces by polynomial approximation of degree n</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>for orbit interpolation and velocity calculation</td></tr>
+</table>
+
+<h2 id="gravityField">GravityField</h2><p>
+Estimates a (time depending) gravity field together with at least one
+<a class="groops-class" href="slrParametrizationType.html#dynamicOrbits">parametrization:dynamicOrbits</a>.
+The parametrization of the gravity field can be set with
+<a class="groops-class" href="parametrizationGravityType.html">parametrization</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>gravityfield:&lt;parametrization>:*:*</code>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrization</div></div></td><td><a href="parametrizationGravityType.html">parametrizationGravity</a></td><td></td></tr>
+</table>
+
+<h2 id="staticPositions">StaticPositions</h2><p>
+Estimates a static position for all
+<a class="groops-class" href="platformSelectorType.html">selectReceivers</a> in the terrestrial frame.</p><p>No-net constraints can be applied for a subset of stations,
+<a class="groops-class" href="platformSelectorType.html">selectNoNetReceivers</a>, with a
+standard deviation of <strong class="groops-config-element">noNetTranslationSigma</strong> and <strong class="groops-config-element">noNetRotationSigma</strong> and <strong class="groops-config-element">noNetScaleSigma</strong> and <strong class="groops-config-element">noNetScaleSigma</strong>.
+If the template <a class="groops-class" href="fileFormat_stringList.html">inputfileNoNetPositions</a> is provided
+the constraints are applied relatively to these positions. Only stations with an existing position file
+are considered. Without <a class="groops-class" href="fileFormat_stringList.html">inputfileNoNetPositions</a>
+the constraints are applied towards the apriori values from
+<a class="groops-class" href="slrStationGeneratorType.html">SlrProcessing:station</a>.
+As a single corrupted station position can disturb the no-net conditions,
+the rotation/translation parameters are estimated in a
+<a class="groops-ref" href="fundamentals.robustLeastSquares.html">robust least squares adjustment</a>
+beforehand. The computed weight matrix is used to downweight corrupted stations
+in the constraint equations.</p><p>In case you want to align to an ITRF/ILRS reference frame, precise coordinates can be
+generated with <a class="groops-program" href="Sinex2StationPositions.html">Sinex2StationPositions</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>&lt;station>:position.x::</code>,
+</li><li>
+<code>&lt;station>:position.y::</code>,
+</li><li>
+<code>&lt;station>:position.z::</code>.
+</li></ul>
+
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileGriddedPosition</div></div></td><td>filename</td><td>delta north east up for all stations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfilePosition</div></div></td><td>filename</td><td>variable {station} available, full estimated coordinates (in TRF)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">nameConstraint</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">selectNoNetStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileNoNetPositions</div></div></td><td>filename</td><td>variable {station} available, precise coordinates used for no-net constraints (in TRF)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">noNetTranslationSigma</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for no-net translation constraint on station coordinates</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">noNetRotationSigma</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] at Earth's surface for no-net rotation constraint on station coordinates</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">noNetScaleSigma</div></div></td><td>double</td><td>(0 = unconstrained) sigma [m] for no-net scale constraint on station coordinates</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huber</div></div></td><td>double</td><td>stations > huber*sigma0 are downweighted in no-net constraint</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huberPower</div></div></td><td>double</td><td>stations > huber: sigma=(e/huber)^huberPower*sigma0</td></tr>
+</table>
+
+<h2 id="earthRotation">EarthRotation</h2><p>
+Earth rotation parameters (ERPs) can be estimated by defining
+<strong class="groops-config-element">estimatePole</strong> ($x_p$, $y_p$) and <strong class="groops-config-element">estimateUT1</strong> ($dUT1, LOD$).</p><p>Estimating length of day (LOD) with the sign according to IGS conventions requires a negative
+value in <a class="groops-class" href="parametrizationTemporalType.html#trend">parametrizationTemporal:trend:timeStep</a>.</p><p>Constraints on the defined parameters can be added via
+<a class="groops-class" href="slrParametrizationType.html#constraints">parametrization:constraints</a>.
+An example would be to set up <a class="groops-class" href="parametrizationTemporalType.html#constant">estimateUT1:constant</a>
+so the $dUT1$ parameter is included in the normal equation system . Since $dUT1$ cannot be
+determined by SLR, a hard constraint to its a priori value can then be added.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>earth:polarMotion.xp:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>earth:polarMotion.yp:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>earth:UT1:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>earth:nutation.X:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>earth:nutation.>:&lt;temporal>:&lt;interval></code>.
+</li></ul>
+
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileEOP</div></div></td><td>filename</td><td>EOP time series (mjd, xp, yp, sp, dUT1, LOD, X, Y, S)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">estimatePole</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>xp, yp [mas]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">estimateUT1</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>rotation angle [ms]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">estimateNutation</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>dX, dY [mas]</td></tr>
+</table>
+
+<h2 id="rangeBiasStationApriori">RangeBiasStationApriori</h2><p>
+A priori station range bias value for all <a class="groops-class" href="platformSelectorType.html">selectStations</a>.
+The <a href="https://ilrs.gsfc.nasa.gov/">ILRS</a> provides the mean range biases <a href="https://ilrs.gsfc.nasa.gov/network/site_information/data_correction.html">ILRS Data Handling File</a>,
+but these have been determined using the passive satellites LAGEOS and Etalon and are therefore only suitable for passive
+satellites and not for active ones.
+Use <a class="groops-program" href="SlrSinexDataHandling2Files.html">SlrSinexDataHandling2Files</a> to convert the range biases from
+<a href="https://ilrs.gsfc.nasa.gov/network/site_information/data_correction.html">ILRS Data Handling File</a> to <a class="groops-file" href="fileFormat_instrument.html">instrument file</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileRangeBias</div></div></td><td>filename</td><td>variable {station} available</td></tr>
+</table>
+
+<h2 id="rangeBiasStation">RangeBiasStation</h2><p>
+Estimates a constant station range bias in $[m]$ for
+<a class="groops-class" href="platformSelectorType.html">selectStations</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station>:rangeBias::</code>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileRangeBias</div></div></td><td>filename</td><td>variable {station} available</td></tr>
+</table>
+
+<h2 id="rangeBiasSatelliteApriori">RangeBiasSatelliteApriori</h2><p>
+A priori satellite range bias value for <a class="groops-class" href="platformSelectorType.html">selectSatellites</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectSatellites</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileRangeBias</div></div></td><td>filename</td><td>variable {satellite} available</td></tr>
+</table>
+
+<h2 id="rangeBiasSatellite">RangeBiasSatellite</h2><p>
+Estimates a constant satellite range bias in $[m]$ for
+<a class="groops-class" href="platformSelectorType.html">selectSatellites</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> a <code>&lt;satellite>:rangeBias::</code>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectSatellites</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileRangeBias</div></div></td><td>filename</td><td>variable {satellite} available</td></tr>
+</table>
+
+<h2 id="rangeBiasStationSatelliteApriori">RangeBiasStationSatelliteApriori</h2><p>
+A priori station-satellite range bias value between all <a class="groops-class" href="platformSelectorType.html">selectStations</a> -
+<a class="groops-class" href="platformSelectorType.html">selectSatellites</a> pairs.</p><p>For standard <a href="https://ilrs.gsfc.nasa.gov/">ILRS</a> processing this class should be setup twice.
+Once for the model from José Rodríguez (see <a class="groops-program" href="SlrComModel2RangeBiasStationSatellite.html">SlrComModel2RangeBiasStationSatellite</a>) and additionally for
+biases from the <a href="https://ilrs.gsfc.nasa.gov/network/site_information/data_correction.html">ILRS Data Handling File</a> converted with <a class="groops-program" href="SlrSinexDataHandling2Files.html">SlrSinexDataHandling2Files</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectSatellites</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileRangeBias</div></div></td><td>filename</td><td>variable {station} and {satellite} available</td></tr>
+</table>
+
+<h2 id="rangeBiasStationSatellite">RangeBiasStationSatellite</h2><p>
+Estimates the station-satellite range bias in $[m]$ between all
+<a class="groops-class" href="platformSelectorType.html">selectStations</a> -
+<a class="groops-class" href="platformSelectorType.html">selectSatellites</a> pairs.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station>.&lt;satellite>:rangeBias::</code>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectSatellites</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileRangeBias</div></div></td><td>filename</td><td>variable {station} and {satellite} available</td></tr>
+</table>
+
+<h2 id="timeBiasApriori">TimeBiasApriori</h2><p>
+A priori time bias value for all <a class="groops-class" href="platformSelectorType.html">selectStations</a>.
+The <a href="https://ilrs.gsfc.nasa.gov/">ILRS</a> provides the mean time biases <a href="https://ilrs.gsfc.nasa.gov/network/site_information/data_correction.html">ILRS Data Handling File</a>,
+but these have been determined using the passive satellites LAGEOS and Etalon and are therefore only suitable for passive
+satellites and not for active ones.
+Use <a class="groops-program" href="SlrSinexDataHandling2Files.html">SlrSinexDataHandling2Files</a> to convert the time biases from
+<a href="https://ilrs.gsfc.nasa.gov/network/site_information/data_correction.html">ILRS Data Handling File</a> to <a class="groops-file" href="fileFormat_instrument.html">instrument file</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileTimeBias</div></div></td><td>filename</td><td>variable {station} available</td></tr>
+</table>
+
+<h2 id="timeBias">TimeBias</h2><p>
+Estimates a <a class="groops-class" href="parametrizationTemporalType.html">temporal changing</a>
+time bias in $[ms]$ for <a class="groops-class" href="platformSelectorType.html">selectStations</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station>:timeBias:&lt;temporal>:&lt;interval></code>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td>used for parameter selection</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">estimateTimeBias</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>[ms]</td></tr>
+</table>
+
+<h2 id="constraints">Constraints</h2><p>
+Add a pseudo observation equation (constraint)
+for each selected <a class="groops-class" href="parameterSelectorType.html">parameters</a>
+\[
+  b-x_0 = 1 \cdot dx + \epsilon,
+\]where $b$ is the <strong class="groops-config-element">bias</strong> and $x_0$ is the a priori value of the parameter
+if <strong class="groops-config-element">relativeToApriori</strong> is not set.
+The standard deviation <strong class="groops-config-element">sigma</strong> is used to weight the observation equations.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parameters</div></div></td><td><a href="parameterSelectorType.html">parameterSelector</a></td><td>parameter to constrain</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">sigma</div></div></td><td>double</td><td>sigma of the constraint (same unit as parameter)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">bias</div></div></td><td>double</td><td>constrain all selected parameters towards this value</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">relativeToApriori</div></div></td><td>boolean</td><td>constrain only dx and not full x=dx+x0</td></tr>
+</table>
+
+<h2 id="group">Group</h2><p>
+Groups a set of parameters. This class can be used to structure complex parametrizations
+and has no further effect itself.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrization</div></div></td><td><a href="slrParametrizationType.html">slrParametrization</a></td><td></td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

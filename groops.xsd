@@ -3785,6 +3785,16 @@
 					<xs:documentation>accuracy</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="SATELLITELASERRANGING">
+				<xs:annotation>
+					<xs:documentation>range [m], accuracy [m], redundancy, window [s], wavelength [m], azimuth [rad], elevation [rad]</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="METEOROLOGICAL">
+				<xs:annotation>
+					<xs:documentation>temperature [K], pressure [Pa], humidity [%], windSpeed [m/s], radiation [W/m^2], precip. [mm/d]</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element name="MASS"/>
 			<xs:element name="THRUSTER"/>
 			<xs:element name="MAGNETOMETER"/>
@@ -9260,6 +9270,736 @@
 			<xs:element name="tides" type="tidesType" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="slrParametrizationType">
+		<xs:annotation>
+			<xs:documentation>parametrization of SLR observations</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="troposphere">
+				<xs:annotation>
+					<xs:documentation>tropospheric delays</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="parameter.troposphere">
+							<xs:annotation>
+								<xs:documentation>used for parameter selection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectStations" type="platformSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="outputfileTroposphere" type="filename" minOccurs="0" default="output/troposphere_{loopTime:%D}.{station}.txt">
+							<xs:annotation>
+								<xs:documentation>columns: MJD, ZHD, ZWD, dry north gradient, wet north gradient, dry east gradient, wet east gradient</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="troposphere" type="troposphereType" default="{&quot;mendesAndPavlis&quot;:{}}">
+							<xs:annotation>
+								<xs:documentation>a priori troposphere model</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="troposphereEstimation" type="parametrizationTemporalType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>[m] parametrization of zenith delays</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="dynamicOrbits">
+				<xs:annotation>
+					<xs:documentation>satellite orbits by variational equations</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="parameter.dynamicOrbits">
+							<xs:annotation>
+								<xs:documentation>used for parameter selection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectSatellites" type="platformSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="outputfileOrbit" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable {satellite} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileParameters" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable {satellite} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileVariational" type="filename" default="variational_{loopTime:%D}.{satellite}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {satellite} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="stochasticPulse" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>[mu/s] parametrization of stochastic pulses</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="parametrizationAcceleration" type="parametrizationAccelerationType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>orbit force parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ephemerides" type="ephemeridesType"/>
+						<xs:element name="integrationDegree" type="uint" minOccurs="0" default="7">
+							<xs:annotation>
+								<xs:documentation>integration of forces by polynomial approximation of degree n</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="7">
+							<xs:annotation>
+								<xs:documentation>for orbit interpolation and velocity calculation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="gravityField">
+				<xs:annotation>
+					<xs:documentation>gravity field of the Earth</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="parameter.gravityField">
+							<xs:annotation>
+								<xs:documentation>used for parameter selection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="parametrization" type="parametrizationGravityType" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="staticPositions">
+				<xs:annotation>
+					<xs:documentation>static positions with no-net constraints</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="parameter.staticPositions">
+							<xs:annotation>
+								<xs:documentation>used for parameter selection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectStations" type="platformSelectorType" maxOccurs="unbounded"/>
+						<xs:element name="outputfileGriddedPosition" type="filename" minOccurs="0" default="output/gridPosition_{loopTime:%D}.dat">
+							<xs:annotation>
+								<xs:documentation>delta north east up for all stations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfilePosition" type="filename" minOccurs="0" default="output/stationPosition_{loopTime:%D}.{station}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} available, full estimated coordinates (in TRF)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="nameConstraint" type="string" minOccurs="0" default="constraint.staticPositions">
+							<xs:annotation>
+								<xs:documentation>used for parameter selection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectNoNetStations" type="platformSelectorType" minOccurs="0" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="inputfileNoNetPositions" type="filename" minOccurs="0" default="{groopsDataDir}/slr/stations/position/slrf2020_CM/stationPosition.{station}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} available, precise coordinates used for no-net constraints (in TRF)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="noNetTranslationSigma" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>(0 = unconstrained) sigma [m] for no-net translation constraint on station coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="noNetRotationSigma" type="double" minOccurs="0" default="0.001">
+							<xs:annotation>
+								<xs:documentation>(0 = unconstrained) sigma [m] at Earth&apos;s surface for no-net rotation constraint on station coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="noNetScaleSigma" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>(0 = unconstrained) sigma [m] for no-net scale constraint on station coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="huber" type="double" minOccurs="0" default="2.5">
+							<xs:annotation>
+								<xs:documentation>stations &gt; huber*sigma0 are downweighted in no-net constraint</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="huberPower" type="double" minOccurs="0" default="1.5">
+							<xs:annotation>
+								<xs:documentation>stations &gt; huber: sigma=(e/huber)^huberPower*sigma0</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="earthRotation">
+				<xs:annotation>
+					<xs:documentation>Earth rotation</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="parameter.earthRotation">
+							<xs:annotation>
+								<xs:documentation>used for parameter selection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileEOP" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>EOP time series (mjd, xp, yp, sp, dUT1, LOD, X, Y, S)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="estimatePole" type="parametrizationTemporalType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>xp, yp [mas]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="estimateUT1" type="parametrizationTemporalType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>rotation angle [ms]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="estimateNutation" type="parametrizationTemporalType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>dX, dY [mas]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="rangeBiasStationApriori">
+				<xs:annotation>
+					<xs:documentation>apriori range bias from file</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="selectStations" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="inputfileRangeBias" type="filename" default="{groopsDataDir}/slr/stations/rangeBias/rangeBias.{station}.txt">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="rangeBiasStation">
+				<xs:annotation>
+					<xs:documentation>range bias</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="parameter.rangeBiasStation">
+							<xs:annotation>
+								<xs:documentation>used for parameter selection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectStations" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="outputfileRangeBias" type="filename" default="rangeBias_{station}.txt">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="rangeBiasSatelliteApriori">
+				<xs:annotation>
+					<xs:documentation>apriori range bias from file</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="selectSatellites" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="inputfileRangeBias" type="filename">
+							<xs:annotation>
+								<xs:documentation>variable {satellite} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="rangeBiasSatellite">
+				<xs:annotation>
+					<xs:documentation>range bias</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="parameter.rangeBiasSatellite">
+							<xs:annotation>
+								<xs:documentation>used for parameter selection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectSatellites" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="outputfileRangeBias" type="filename" default="rangeBias_{satellite}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {satellite} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="rangeBiasStationSatelliteApriori">
+				<xs:annotation>
+					<xs:documentation>apriori range bias from file</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="selectStations" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectSatellites" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="inputfileRangeBias" type="filename" default="{groopsDataDir}/slr/rangeBiasStationSatellite/modelRodriguez/rangeBias.{station}.{satellite}.txt">
+							<xs:annotation>
+								<xs:documentation>variable {station} and {satellite} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="rangeBiasStationSatellite">
+				<xs:annotation>
+					<xs:documentation>range bias</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="parameter.rangeBiasSatellite">
+							<xs:annotation>
+								<xs:documentation>used for parameter selection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectStations" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="selectSatellites" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="outputfileRangeBias" type="filename" default="rangeBias_{station}_{satellite}.txt">
+							<xs:annotation>
+								<xs:documentation>variable {station} and {satellite} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="timeBiasApriori">
+				<xs:annotation>
+					<xs:documentation>apriori time bias at station from file</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="selectStations" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="inputfileTimeBias" type="filename" default="{groopsDataDir}/slr/stations/timeBias/timeBias.{station}.txt">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="timeBias">
+				<xs:annotation>
+					<xs:documentation>time bias at station</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="parameter.timeBias">
+							<xs:annotation>
+								<xs:documentation>used for parameter selection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectStations" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
+						<xs:element name="estimateTimeBias" type="parametrizationTemporalType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>[ms]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="constraints">
+				<xs:annotation>
+					<xs:documentation>parameter constraints</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="name" type="string" minOccurs="0" default="constraint.name"/>
+						<xs:element name="parameters" type="parameterSelectorType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>parameter to constrain</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="sigma" type="double">
+							<xs:annotation>
+								<xs:documentation>sigma of the constraint (same unit as parameter)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="bias" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>constrain all selected parameters towards this value</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="relativeToApriori" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>constrain only dx and not full x=dx+x0</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="group">
+				<xs:annotation>
+					<xs:documentation>grouping parametrizations</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="parametrization" type="slrParametrizationType" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="slrProcessingStepType">
+		<xs:choice>
+			<xs:element name="estimate">
+				<xs:annotation>
+					<xs:documentation>least squares adjustment</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="computeResiduals" type="boolean" minOccurs="0" default="1"/>
+						<xs:element name="adjustSigma0" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>adjust sigma0 by scale factor (per station)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="computeWeights" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>downweight outliers</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="huber" type="double" minOccurs="0" default="2.5">
+							<xs:annotation>
+								<xs:documentation>residuals &gt; huber*sigma0 are downweighted</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="huberPower" type="double" minOccurs="0" default="1.5">
+							<xs:annotation>
+								<xs:documentation>residuals &gt; huber: sigma=(e/huber)^huberPower*sigma0</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="convergenceThreshold" type="double" minOccurs="0" default="0.01">
+							<xs:annotation>
+								<xs:documentation>[m] stop iteration once full convergence is reached</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="maxIterationCount" type="uint" minOccurs="0" default="3">
+							<xs:annotation>
+								<xs:documentation>maximum number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="writeResults">
+				<xs:annotation>
+					<xs:documentation>write all estimated parameters</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="suffix" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>appended to every output file name (e.g. orbit.G01.suffix.dat)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="writeNormalEquations">
+				<xs:annotation>
+					<xs:documentation>write unconstrained and constraint normal equations</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileNormalEquations" type="filename" default="output/normals_{loopTime:%D}.dat">
+							<xs:annotation>
+								<xs:documentation>normals</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="remainingParameters" type="parameterSelectorType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>parameter order/selection of output normal equations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="constraintsOnly" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>write only normals of constraints without observations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="defaultNormalsBlockSize" type="uint" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>block size for distributing the normal equations, 0: one block, empty: original block size</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="writeAprioriSolution">
+				<xs:annotation>
+					<xs:documentation>write apriori solution vector</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileAprioriSolution" type="filename" minOccurs="0" default="output/x0_{loopTime:%D}.txt">
+							<xs:annotation>
+								<xs:documentation>a priori parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileParameterNames" type="filename" minOccurs="0" default="output/parameterNames_{loopTime:%D}.txt">
+							<xs:annotation>
+								<xs:documentation>parameter names</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="remainingParameters" type="parameterSelectorType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>parameter order/selection of output normal equations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="writeResiduals">
+				<xs:annotation>
+					<xs:documentation>write observation residuals</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="selectStations" type="platformSelectorType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>subset of used stations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="selectSatellites" type="platformSelectorType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>subset of used satellites</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileResiduals" type="filename" default="output/residuals_{loopTime:%D}.{station}.{satellite}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="writeUsedStationList">
+				<xs:annotation>
+					<xs:documentation>write used stations</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="selectStations" type="platformSelectorType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>subset of used stations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileUsedStationList" type="filename" default="output/stationList.txt">
+							<xs:annotation>
+								<xs:documentation>ascii file with names of used stations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="writeUsedSatelliteList">
+				<xs:annotation>
+					<xs:documentation>write used satellites</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="selectSatellites" type="platformSelectorType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>subset of used satellites</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileUsedSatelliteList" type="filename" default="output/satelliteList.txt">
+							<xs:annotation>
+								<xs:documentation>ascii file with names</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="printResidualStatistics">
+				<xs:annotation>
+					<xs:documentation>print residual statistics</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="selectParametrizations">
+				<xs:annotation>
+					<xs:documentation>select parametrizations for all subsequent processing steps</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="parametrization" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="enable">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string" default="*" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>wildcards: * and ?</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="disable">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="name" type="string" default="*" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>wildcards: * and ?</xs:documentation>
+													</xs:annotation>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="selectSatellites">
+				<xs:annotation>
+					<xs:documentation>use this subset of satellites in all subsequent processing steps</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="selectSatellites" type="platformSelectorType" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="selectStations">
+				<xs:annotation>
+					<xs:documentation>use this subset of stations in all subsequent processing steps</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="selectStations" type="platformSelectorType" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="group">
+				<xs:annotation>
+					<xs:documentation>group processing steps</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="processingStep" type="slrProcessingStepType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>steps are processed consecutively</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="slrSatelliteGeneratorType">
+		<xs:choice>
+			<xs:element name="satellites">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfileSatelliteList" type="filename" default="{groopsDataDir}/slr/satellites/satelliteList.txt" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>ascii file with satellite names, used to loop variable {satellite}</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSatelliteInfo" type="filename" default="{groopsDataDir}/slr/satellites/satelliteInfo/satelliteInfo.{satellite}.xml">
+							<xs:annotation>
+								<xs:documentation>variable {satellite} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit" type="filename" default="{satellite}_orbit_{loopTime:%D}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {satellite} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAttitude" type="filename" minOccurs="0" default="{satellite}_attitude_{loopTime:%D}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {satellite} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="7">
+							<xs:annotation>
+								<xs:documentation>for orbit interpolation and velocity calculation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="slrStationGeneratorType">
+		<xs:choice>
+			<xs:element name="stations">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfileStationList" type="filename" default="{groopsDataDir}/slr/stations/stationList.txt">
+							<xs:annotation>
+								<xs:documentation>ascii file with station names</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileStationInfo" type="filename" default="{groopsDataDir}/slr/stations/stationInfo/stationInfo.{station}.xml">
+							<xs:annotation>
+								<xs:documentation>station metadata</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileStationPosition" type="filename" minOccurs="0" default="{groopsDataDir}/slr/stations/position/slrf2020_CM/stationPosition.{station}.dat">
+							<xs:annotation>
+								<xs:documentation>station position</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileObservations" type="filename" minOccurs="0" default="normalPoints_{satellite}_{station}_{loopTime:%D}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} {satellite} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="accuracy" type="expression" default="if(abs(residual)&gt;30, NAN, accuracy)">
+							<xs:annotation>
+								<xs:documentation>[m] used for weighting, variables: {residual}, {accuracy}, {redundancy}, {laserWavelength}, {azimut}, {elevation}</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="loadingDisplacement" type="gravityfieldType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>loading deformation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="tidalDisplacement" type="tidesType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>tidal deformation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ephemerides" type="ephemeridesType" minOccurs="0" default="jpl">
+							<xs:annotation>
+								<xs:documentation>for tidal deformation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileDeformationLoadLoveNumber" type="filename" default="{groopsDataDir}/loading/deformationLoveNumbers_CM_Gegout97.txt"/>
+						<xs:element name="inputfilePotentialLoadLoveNumber" type="filename" minOccurs="0" default="{groopsDataDir}/loading/loadLoveNumbers_Gegout97.txt">
+							<xs:annotation>
+								<xs:documentation>if full potential is given and not only loading potential</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="elevationCutOff" type="angle" minOccurs="0" default="5">
+							<xs:annotation>
+								<xs:documentation>[degree] ignore observations below cutoff</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="7">
+							<xs:annotation>
+								<xs:documentation>for position interpolation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
 	<xs:complexType name="sphericalHarmonicsFilterType">
 		<xs:annotation>
 			<xs:documentation>filtering of spherical harmonics</xs:documentation>
@@ -9966,6 +10706,16 @@
 								<xs:documentation>parameter c (height correction)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="mendesAndPavlis">
+				<xs:annotation>
+					<xs:documentation>SLR troposphere model by Mendes and Pavlis, 2004</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfileStationMeteorology" type="filename" default="meteorology_{loopTime:%y}.{station}.dat"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -16152,17 +16902,17 @@
 												<xs:element name="timeEnd" type="time" minOccurs="0"/>
 												<xs:element name="positionX" type="double" minOccurs="0" default="0">
 													<xs:annotation>
-														<xs:documentation>[m] exccentricity in north</xs:documentation>
+														<xs:documentation>[m] eccentricity in north</xs:documentation>
 													</xs:annotation>
 												</xs:element>
 												<xs:element name="positionY" type="double" minOccurs="0" default="0">
 													<xs:annotation>
-														<xs:documentation>[m] exccentricity in east</xs:documentation>
+														<xs:documentation>[m] eccentricity in east</xs:documentation>
 													</xs:annotation>
 												</xs:element>
 												<xs:element name="positionZ" type="double" minOccurs="0" default="0">
 													<xs:annotation>
-														<xs:documentation>[m] exccentricity in up</xs:documentation>
+														<xs:documentation>[m] eccentricity in up</xs:documentation>
 													</xs:annotation>
 												</xs:element>
 											</xs:sequence>
@@ -16922,6 +17672,16 @@
 						<xs:element name="border" type="borderType" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>regularization areas, e.g land and ocean</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="R" type="double" minOccurs="0" default="6378137.0">
+							<xs:annotation>
+								<xs:documentation>reference radius for ellipsoidal coordinates for border</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inverseFlattening" type="double" minOccurs="0" default="298.2572221010">
+							<xs:annotation>
+								<xs:documentation>reference flattening for ellipsoidal coordinates for border, 0: spherical coordinates</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -20278,6 +21038,46 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="SlrProcessing">
+				<xs:annotation>
+					<xs:documentation>Satellite Laser Ranging (SLR) processing</xs:documentation>
+					<xs:appinfo>tag: Slr</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="timeSeries" type="timeSeriesType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>defines station movements and earth rotation epochs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="satellite" type="slrSatelliteGeneratorType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>satellites</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="station" type="slrStationGeneratorType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>ground station network</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="earthRotation" type="earthRotationType">
+							<xs:annotation>
+								<xs:documentation>apriori earth rotation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="parametrization" type="slrParametrizationType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>models and parameters</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="processingStep" type="slrProcessingStepType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>steps are processed consecutively</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="FileConvert">
 				<xs:annotation>
 					<xs:documentation>Converts GROOPS file between different file formats (ASCII, XML, binary).</xs:documentation>
@@ -20535,6 +21335,79 @@
 						<xs:element name="outputfileOrbit" type="filename"/>
 						<xs:element name="outputfileStarCamera" type="filename"/>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Cpf2Orbit">
+				<xs:annotation>
+					<xs:documentation>Read orbit from SLR prediction (CPF) format</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Slr</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileOrbit" type="filename" default="output/orbit_{satellite}_{loopNumberEphVersion:%03i}{loopNumberVersion:%02i}_{loopSource}_{loopTime:%D}.dat"/>
+						<xs:element name="earthRotation" type="earthRotationType"/>
+						<xs:element name="inputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>SLR CPF file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Crd2NormalPoints">
+				<xs:annotation>
+					<xs:documentation>read SLR data from CRD format for a given satellite</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Slr</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileNormalPoints" type="filename" default="output/normalsPoints_{station}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileMeteorological" type="filename" default="output/meteorological_{station}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSlrData" type="filename">
+							<xs:annotation>
+								<xs:documentation>SLR CRD files</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Cstg2NormalPoints">
+				<xs:annotation>
+					<xs:documentation>read SLR data from CSTG format for a given satellite</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Slr</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileNormalPoints" type="filename" default="output/normalsPoints_{station}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileMeteorological" type="filename" default="output/meteorological_{station}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSlrData" type="filename">
+							<xs:annotation>
+								<xs:documentation>SLR CSTG file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -23269,6 +24142,60 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="Merit2FullRate">
+				<xs:annotation>
+					<xs:documentation>Read SLR data (full-rate) from merit format.</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Slr</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileNormalPoints" type="filename" default="output/normalsPoints_{station}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileMeteorological" type="filename" default="output/meteorological_{station}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSlrData" type="filename">
+							<xs:annotation>
+								<xs:documentation>SLR MERIT II file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Merit2NormalPoints">
+				<xs:annotation>
+					<xs:documentation>Read SLR data (normal points) from merit format.</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Slr</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileNormalPoints" type="filename" default="output/normalsPoints_{station}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileMeteorological" type="filename" default="output/meteorological_{station}.dat">
+							<xs:annotation>
+								<xs:documentation>variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSlrData" type="filename">
+							<xs:annotation>
+								<xs:documentation>SLR MERIT II file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="NetCdf2GriddedData">
 				<xs:annotation>
 					<xs:documentation>Convert COARDS compliant grids to gridded data</xs:documentation>
@@ -23489,6 +24416,36 @@
 									</xs:element>
 								</xs:sequence>
 							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Orbit2Cpf">
+				<xs:annotation>
+					<xs:documentation>write orbit positions to CPF</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Orbit</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename" default="{target}_cpf_{fileDate}_{ephVerNum}{ver}.tug"/>
+						<xs:element name="inputfileOrbit" type="filename"/>
+						<xs:element name="inputfileSatelliteInfo" type="filename" default="{groopsDataDir}/slr/satellite/satelliteInfo/satelliteInfo.{satellite}.xml">
+							<xs:annotation>
+								<xs:documentation>Platform File</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="earthRotation" type="earthRotationType"/>
+						<xs:element name="versionNumber" type="uint" minOccurs="0" default="01">
+							<xs:annotation>
+								<xs:documentation>Version number of production day with zero leading fill, e.g. 01</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="targetClass" type="uint" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>set 1 for passive retroreflector, set 0 for no retroreflector (includes debris)</xs:documentation>
+							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
@@ -23886,6 +24843,37 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="SinexEccentricties2SlrPlatform">
+				<xs:annotation>
+					<xs:documentation>Platform file from SINEX eccentricties.</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Slr</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileStationInfo" type="filename">
+							<xs:annotation>
+								<xs:documentation>loop variable is replaced with station name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopStation" type="string" minOccurs="0" default="station">
+							<xs:annotation>
+								<xs:documentation>variable name for station loop</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSinex" type="filename">
+							<xs:annotation>
+								<xs:documentation>SINEX file (.snx or .ssc)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="stationName" type="string" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>convert only these stations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="SinexMetadata2GlonassFrequencyNumber">
 				<xs:annotation>
 					<xs:documentation>Create glonassPrnSvn2FrequencyNumber matrix from IGS SINEX metadata file.</xs:documentation>
@@ -23929,6 +24917,89 @@
 						<xs:element name="svn" type="string">
 							<xs:annotation>
 								<xs:documentation>e.g. G040, R736, E204, C211</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SlrComModel2RangeBiasStationSatellite">
+				<xs:annotation>
+					<xs:documentation>read CoM model</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Slr</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileRangeBias" type="filename" default="rangeBias.{station}.{satellite}.txt">
+							<xs:annotation>
+								<xs:documentation>MISCVALUE, variable {station} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSatelliteInfo" type="filename" default="{groopsDataDir}/slr/satellites/satelliteInfo/satelliteInfo.{satellite}.xml"/>
+						<xs:element name="inputfile" type="filename" default="com/com_&lt;aji|et1|la2|las|lg1|lg2|str&gt;.dat">
+							<xs:annotation>
+								<xs:documentation>from Rodriguez model</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopStation" type="string" minOccurs="0" default="station">
+							<xs:annotation>
+								<xs:documentation>variable name for station loop</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="stationName" type="string" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>convert only these stations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SlrSinexDataHandling2Files">
+				<xs:annotation>
+					<xs:documentation>Convert SLR SINEX data handling file</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Slr</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileRangeBiasStation" type="filename" minOccurs="0" default="rangeBias.{station}.txt">
+							<xs:annotation>
+								<xs:documentation>MISCVALUE [m]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileRangeBiasStationSatellite" type="filename" minOccurs="0" default="rangeBias.{station}.{satellite}.txt">
+							<xs:annotation>
+								<xs:documentation>MISCVALUE [m]</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileTimeBias" type="filename" minOccurs="0" default="timeBias.{station}.txt">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(bias [s], drift [s/d])</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopStation" type="string" minOccurs="0" default="station">
+							<xs:annotation>
+								<xs:documentation>variable name for station loop</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopSatellite" type="string" minOccurs="0" default="satellite">
+							<xs:annotation>
+								<xs:documentation>variable name for satellite loop</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSinex" type="filename" default="ILRS_Data_Handling_File.snx">
+							<xs:annotation>
+								<xs:documentation>SINEX file (.snx)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSatelliteId" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>table SP3 and satellite name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="stationName" type="string" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>convert only these stations</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -24437,6 +25508,10 @@
 							<xs:element name="plotSymbolType" type="plotSymbolType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="podRightSideType" type="podRightSideType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="sggRightSideType" type="sggRightSideType" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="slrParametrizationType" type="slrParametrizationType" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="slrProcessingStepType" type="slrProcessingStepType" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="slrSatelliteGeneratorType" type="slrSatelliteGeneratorType" minOccurs="0" maxOccurs="unbounded"/>
+							<xs:element name="slrStationGeneratorType" type="slrStationGeneratorType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="sphericalHarmonicsFilterType" type="sphericalHarmonicsFilterType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="sphericalHarmonicsNumberingType" type="sphericalHarmonicsNumberingType" minOccurs="0" maxOccurs="unbounded"/>
 							<xs:element name="sstRightSideType" type="sstRightSideType" minOccurs="0" maxOccurs="unbounded"/>

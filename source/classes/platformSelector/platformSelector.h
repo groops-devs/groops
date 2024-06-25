@@ -22,7 +22,7 @@ In a first step all platforms are selected if first selector \config{exclude}s p
 otherwise all platforms excluded. When every selector from top to bottom selects or deselects
 (with \config{exclude}) the matching platforms.
 
-See also \program{GnssProcessing}.
+See also \program{GnssProcessing} or \program{SlrProcessing}.
 )";
 #endif
 

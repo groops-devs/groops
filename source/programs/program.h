@@ -49,6 +49,7 @@ namespace Program
               Preprocessing,
               Residuals,
               Simulation,
+              Slr,
               SpatialTimeSeries,
               Statistics,
               System,

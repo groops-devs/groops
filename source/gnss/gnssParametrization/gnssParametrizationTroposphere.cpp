@@ -58,7 +58,8 @@ void GnssParametrizationTroposphere::init(Gnss *gnss, Parallel::CommunicatorPtr 
     auto selectedReceivers = gnss->selectReceivers(selectReceivers);
     parameters.resize(gnss->receivers.size(), nullptr);
     UInt idTropo = 0;
-    std::vector<Vector3d> positions;
+    std::vector<std::string> names;
+    std::vector<Vector3d>    positions;
     for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
       if(selectedReceivers.at(idRecv) && gnss->receivers.at(idRecv)->useable())
       {
@@ -67,6 +68,7 @@ void GnssParametrizationTroposphere::init(Gnss *gnss, Parallel::CommunicatorPtr 
         para->idRecv = idRecv;
         if(gnss->receivers.at(idRecv)->isMyRank())
         {
+          names.push_back(gnss->receivers.at(idRecv)->name());
           positions.push_back(gnss->receivers.at(idRecv)->position(0));
           para->idTropo   = idTropo++;
           para->xWet      = Vector(parametrizationWet->parameterCount());
@@ -77,7 +79,7 @@ void GnssParametrizationTroposphere::init(Gnss *gnss, Parallel::CommunicatorPtr 
         }
       }
 
-    troposphere->init(positions);
+    troposphere->init(names, positions);
   }
   catch(std::exception &e)
   {
@@ -144,12 +146,12 @@ void GnssParametrizationTroposphere::observationCorrections(GnssObservationEquat
 
     const Time t = std::max(eqn.timeRecv, gnss->times.at(0));
     // apriori value
-    Double delay = troposphere->slantDelay(t, para->idTropo, eqn.azimutRecvLocal, eqn.elevationRecvLocal);
+    Double delay = troposphere->slantDelay(para->idTropo, t, GnssType::L2_G.frequency(), eqn.azimutRecvLocal, eqn.elevationRecvLocal);
     // estimated wet effect
-    delay += troposphere->mappingFunctionWet(t, para->idTropo, eqn.azimutRecvLocal, eqn.elevationRecvLocal) * para->zenitDelayWet.at(eqn.idEpoch);
+    delay += troposphere->mappingFunctionWet(para->idTropo, t, GnssType::L2_G.frequency(), eqn.azimutRecvLocal, eqn.elevationRecvLocal) * para->zenitDelayWet.at(eqn.idEpoch);
     // estimated gradient
     Double dx, dy;
-    troposphere->mappingFunctionGradient(t, para->idTropo, eqn.azimutRecvLocal, eqn.elevationRecvLocal, dx, dy);
+    troposphere->mappingFunctionGradient(para->idTropo, t, GnssType::L2_G.frequency(), eqn.azimutRecvLocal, eqn.elevationRecvLocal, dx, dy);
     delay += dx * para->gradientX.at(eqn.idEpoch) + dy * para->gradientY.at(eqn.idEpoch);
 
     for(UInt i=0; i<eqn.types.size(); i++)
@@ -208,7 +210,7 @@ void GnssParametrizationTroposphere::designMatrix(const GnssNormalEquationInfo &
     // troposphere wet
     if(para->indexWet)
     {
-      const Double mappingFunctionWet = troposphere->mappingFunctionWet(std::max(eqn.timeRecv, gnss->times.at(0)), para->idTropo, eqn.azimutRecvLocal, eqn.elevationRecvLocal);
+      const Double mappingFunctionWet = troposphere->mappingFunctionWet(para->idTropo, std::max(eqn.timeRecv, gnss->times.at(0)), GnssType::L2_G.frequency(), eqn.azimutRecvLocal, eqn.elevationRecvLocal);
       const Matrix B = mappingFunctionWet * eqn.A.column(GnssObservationEquation::idxRange,1);
       designMatrixTemporal(parametrizationWet, B, para->indexWet);
     }
@@ -217,7 +219,7 @@ void GnssParametrizationTroposphere::designMatrix(const GnssNormalEquationInfo &
     if(para->indexGradient)
     {
       Double dx, dy;
-      troposphere->mappingFunctionGradient(std::max(eqn.timeRecv, gnss->times.at(0)), para->idTropo, eqn.azimutRecvLocal, eqn.elevationRecvLocal, dx, dy);
+      troposphere->mappingFunctionGradient(para->idTropo, std::max(eqn.timeRecv, gnss->times.at(0)), GnssType::L2_G.frequency(), eqn.azimutRecvLocal, eqn.elevationRecvLocal, dx, dy);
       Matrix B(eqn.A.rows(), 2);
       axpy(dx, eqn.A.column(GnssObservationEquation::idxRange,1), B.column(0));
       axpy(dy, eqn.A.column(GnssObservationEquation::idxRange,1), B.column(1));
@@ -318,8 +320,8 @@ void GnssParametrizationTroposphere::writeResults(const GnssNormalEquationInfo &
         {
           const UInt idEpoch = normalEquationInfo.idEpochs.at(i);
           Double zenithWetDelay, zenithDryDelay, gradientWetNorth, gradientDryNorth, gradientWetEast, gradientDryEast, aDry, aWet;
-          troposphere->getAprioriValues(gnss->times.at(idEpoch), para->idTropo, zenithDryDelay, zenithWetDelay,
-                                        gradientDryNorth, gradientWetNorth, gradientDryEast, gradientWetEast, aDry, aWet);
+          troposphere->getAprioriValues(para->idTropo, gnss->times.at(idEpoch), GnssType::L2_G.frequency(),
+                                        zenithDryDelay, zenithWetDelay, gradientDryNorth, gradientWetNorth, gradientDryEast, gradientWetEast, aDry, aWet);
           times.push_back(gnss->times.at(idEpoch));
           A(i,  0) = gnss->times.at(idEpoch).mjd();
           A(i,  1) = zenithDryDelay;                                     // tropospheric zenith dry delay [m] (only from model)

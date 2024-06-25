@@ -16,6 +16,7 @@
 #include "config/configRegister.h"
 #include "files/fileGriddedData.h"
 #include "troposphereGpt.h"
+#include "troposphereMendesAndPavlis.h"
 #include "troposphereViennaMapping.h"
 #include "troposphere.h"
 
@@ -23,7 +24,8 @@
 
 GROOPS_REGISTER_CLASS(Troposphere, "troposphereType",
                       TroposphereViennaMapping,
-                      TroposphereGpt)
+                      TroposphereGpt,
+                      TroposphereMendesAndPavlis)
 
 GROOPS_READCONFIG_CLASS(Troposphere, "troposphereType")
 
@@ -37,10 +39,12 @@ TropospherePtr Troposphere::create(Config &config, const std::string &name)
     std::string type;
 
     readConfigChoice(config, name, type, Config::MUSTSET, "", "signal delay in the atmosphere");
-    if(readConfigChoiceElement(config, "viennaMapping", type, "Vienna Mapping Function"))
+    if(readConfigChoiceElement(config, "viennaMapping",   type, "Vienna Mapping Function"))
       troposphere = TropospherePtr(new TroposphereViennaMapping(config));
-    if(readConfigChoiceElement(config, "gpt",           type, "GPT empirical troposphere model"))
+    if(readConfigChoiceElement(config, "gpt",             type, "GPT empirical troposphere model"))
       troposphere = TropospherePtr(new TroposphereGpt(config));
+    if(readConfigChoiceElement(config, "mendesAndPavlis", type, "SLR troposphere model by Mendes and Pavlis, 2004"))
+      troposphere = TropospherePtr(new TroposphereMendesAndPavlis(config));
     endChoice(config);
 
     return troposphere;
