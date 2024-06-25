@@ -180,6 +180,8 @@ classes/tides/tidesSolidMoon.cpp
 classes/timeSeries/timeSeries.cpp
 classes/troposphere/troposphere.cpp
 classes/troposphere/troposphereGpt.cpp
+classes/troposphere/troposphereHopfield.cpp
+classes/troposphere/troposphereSaastamoinen.cpp
 classes/troposphere/troposphereViennaMapping.cpp
 
 gnss/gnssParametrization/gnssParametrization.cpp

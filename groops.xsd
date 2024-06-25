@@ -1590,7 +1590,7 @@
 			</xs:element>
 			<xs:element name="ionosphereVTEC">
 				<xs:annotation>
-					<xs:documentation>ionospheric verical delays</xs:documentation>
+					<xs:documentation>ionospheric vertical delays</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
@@ -1616,12 +1616,17 @@
 								<xs:documentation>constant of MSLM mapping function</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="VTEC0" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>VTEC [TECU] for a-priori (0 = not applied)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
 			<xs:element name="ionosphereMap">
 				<xs:annotation>
-					<xs:documentation>ionospheric verical delays</xs:documentation>
+					<xs:documentation>ionospheric vertical delays</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
@@ -3783,16 +3788,6 @@
 			<xs:element name="OBSERVATIONSIGMA">
 				<xs:annotation>
 					<xs:documentation>accuracy</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="SATELLITELASERRANGING">
-				<xs:annotation>
-					<xs:documentation>range [m], accuracy [m], redundancy, window [s], wavelength [m], azimuth [rad], elevation [rad]</xs:documentation>
-				</xs:annotation>
-			</xs:element>
-			<xs:element name="METEOROLOGICAL">
-				<xs:annotation>
-					<xs:documentation>temperature [K], pressure [Pa], humidity [%], windSpeed [m/s], radiation [W/m^2], precip. [mm/d]</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="MASS"/>
@@ -10716,6 +10711,64 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="inputfileStationMeteorology" type="filename" default="meteorology_{loopTime:%y}.{station}.dat"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="saastamoinen">
+				<xs:annotation>
+					<xs:documentation>Saastamoinen troposphere model</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfileGpt" type="filename" default="{groopsDataDir}/troposphere/gpt3_grid1deg.dat">
+							<xs:annotation>
+								<xs:documentation>gridded GPT data</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="aHeight" type="double" minOccurs="0" default="2.53e-5">
+							<xs:annotation>
+								<xs:documentation>parameter a (height correction)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="bHeight" type="double" minOccurs="0" default="5.49e-3">
+							<xs:annotation>
+								<xs:documentation>parameter b (height correction)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="cHeight" type="double" minOccurs="0" default="1.14e-3">
+							<xs:annotation>
+								<xs:documentation>parameter c (height correction)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="hopfield">
+				<xs:annotation>
+					<xs:documentation>Hopfield troposphere model (simplified)</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="inputfileGpt" type="filename" default="{groopsDataDir}/troposphere/gpt3_grid1deg.dat">
+							<xs:annotation>
+								<xs:documentation>gridded GPT data</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="aHeight" type="double" minOccurs="0" default="2.53e-5">
+							<xs:annotation>
+								<xs:documentation>parameter a (height correction)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="bHeight" type="double" minOccurs="0" default="5.49e-3">
+							<xs:annotation>
+								<xs:documentation>parameter b (height correction)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="cHeight" type="double" minOccurs="0" default="1.14e-3">
+							<xs:annotation>
+								<xs:documentation>parameter c (height correction)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
