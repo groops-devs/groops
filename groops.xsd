@@ -3790,6 +3790,16 @@
 					<xs:documentation>accuracy</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="SATELLITELASERRANGING">
+				<xs:annotation>
+					<xs:documentation>range [m], accuracy [m], redundancy, window [s], wavelength [m], azimuth [rad], elevation [rad]</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="METEOROLOGICAL">
+				<xs:annotation>
+					<xs:documentation>temperature [K], pressure [Pa], humidity [%], windSpeed [m/s], radiation [W/m^2], precip. [mm/d]</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element name="MASS"/>
 			<xs:element name="THRUSTER"/>
 			<xs:element name="MAGNETOMETER"/>
