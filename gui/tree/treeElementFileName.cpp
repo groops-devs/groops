@@ -164,7 +164,7 @@ void TreeElementFileName::openFolderClicked()
       for(int i=_valueCount; i<_valueList.size(); i++) // all possible links
       {
         QString parsed = parseExpression("{"+_valueList.at(i)+"}", varList);
-        if(path.startsWith(parsed) && parsed.count() > parsedVariable.count())
+        if(path.startsWith(parsed) && (parsed.size() > parsedVariable.size()))
         {
           variable = "{"+_valueList.at(i)+"}";
           parsedVariable = parsed;
@@ -193,7 +193,7 @@ void TreeElementFileName::openFolderClicked()
         xmlNode->setText(variable+tree->stripWorkingDirectory(files[i]).mid(parsedVariable.size()));
         parentElement->addChild(this, type(), "", xmlNode);
       }
-      changeSelectedValue(variable+lastFile.mid(parsedVariable.count()));
+      changeSelectedValue(variable+lastFile.mid(parsedVariable.size()));
     }
     else
     {

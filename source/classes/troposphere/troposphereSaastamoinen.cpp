@@ -35,7 +35,7 @@ TroposphereSaastamoinen::TroposphereSaastamoinen(Config &config)
 
 /***********************************************/
 
-void TroposphereSaastamoinen::init(const std::vector<Vector3d> &stationPositions)
+void TroposphereSaastamoinen::init(const std::vector<std::string> &/*stationNames*/, const std::vector<Vector3d> &stationPositions)
 {
   try
   {
@@ -49,13 +49,13 @@ void TroposphereSaastamoinen::init(const std::vector<Vector3d> &stationPositions
 
 /***********************************************/
 
-Double TroposphereSaastamoinen::slantDelay(const Time &time, UInt stationId, Angle azimuth, Angle elevation) const
+Double TroposphereSaastamoinen::slantDelay(UInt stationId, const Time &time, Double frequency, Angle azimuth, Angle elevation) const
 {
   try
   {
     computeEmpiricalCoefficients(time);
-    const Double nmfh = mappingFunctionHydrostatic(time,stationId,azimuth,elevation);
-    const Double nmfw = mappingFunctionWet        (time,stationId,azimuth,elevation);
+    const Double nmfh = mappingFunctionHydrostatic(stationId,time,frequency,azimuth,elevation);
+    const Double nmfw = mappingFunctionWet        (stationId,time,frequency,azimuth,elevation);
 
     return nmfh*zhd(stationId) + nmfw*zwd(stationId);
   }
@@ -67,7 +67,7 @@ Double TroposphereSaastamoinen::slantDelay(const Time &time, UInt stationId, Ang
 
 /***********************************************/
 
-Double TroposphereSaastamoinen::mappingFunctionHydrostatic(const Time &time, UInt stationId, Angle /*azimuth*/, Angle elevation) const
+Double TroposphereSaastamoinen::mappingFunctionHydrostatic(UInt stationId, const Time &time, Double /*frequency*/, Angle /*azimuth*/, Angle elevation) const
 {
   try
   {
@@ -84,7 +84,7 @@ Double TroposphereSaastamoinen::mappingFunctionHydrostatic(const Time &time, UIn
 
 /***********************************************/
 
-Double TroposphereSaastamoinen::mappingFunctionWet(const Time &time, UInt stationId, Angle /*azimuth*/, Angle elevation) const
+Double TroposphereSaastamoinen::mappingFunctionWet(UInt stationId, const Time &time, Double /*frequency*/, Angle /*azimuth*/, Angle elevation) const
 {
   try
   {
@@ -99,7 +99,7 @@ Double TroposphereSaastamoinen::mappingFunctionWet(const Time &time, UInt statio
 
 /***********************************************/
 
-void TroposphereSaastamoinen::mappingFunctionGradient(const Time &/*time*/, UInt /*stationId*/, Angle azimuth, Angle elevation, Double &dx, Double &dy) const
+void TroposphereSaastamoinen::mappingFunctionGradient(UInt /*stationId*/, const Time &/*time*/, Double /*frequency*/, Angle azimuth, Angle elevation, Double &dx, Double &dy) const
 {
   try
   {
@@ -115,7 +115,7 @@ void TroposphereSaastamoinen::mappingFunctionGradient(const Time &/*time*/, UInt
 
 /***********************************************/
 
-void TroposphereSaastamoinen::getAprioriValues(const Time &time, UInt stationId, Double &zenithDryDelay, Double &zenithWetDelay, Double &gradientDryNorth,
+void TroposphereSaastamoinen::getAprioriValues(UInt stationId, const Time &time, Double /*frequency*/, Double &zenithDryDelay, Double &zenithWetDelay, Double &gradientDryNorth,
                                                Double &gradientWetNorth, Double &gradientDryEast, Double &gradientWetEast, Double &aDry, Double &aWet) const
 {
   try

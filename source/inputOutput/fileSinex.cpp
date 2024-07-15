@@ -172,6 +172,8 @@ void readFileSinex(const FileName &fileName, Sinex &sinex)
         break;
       else if(line.at(0) == '+')              // start data block
       {
+        if(block && (block->label == "FILE/COMMENT"))
+          continue;
         if(block)
           throw(Exception("New SINEX block starts unexpectedly: '"+line+"' in block '"+block->label+"'"));
         block = sinex.addBlock(String::trim(line.substr(1)));

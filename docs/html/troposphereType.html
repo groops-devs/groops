@@ -105,6 +105,17 @@ additional mapping coefficients and zenith delay values.
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">cHeight</div></div></td><td>double</td><td>parameter c (height correction)</td></tr>
 </table>
 
+<h2 id="mendesAndPavlis">MendesAndPavlis</h2><p></p><p>Tropospheric delays based on the Mendes-Pavlis model that employs meteorological data.
+(Mendes et al. (2002), DOI: <a href="https://doi.org/10.1029/2001GL014394">10.1029/2001GL014394</a> and
+Mendes & Pavlis (2004), DOI:<a href="https://doi.org/10.1029/2004GL020308">110.1029/2004GL020308</a>)</p><p>The meteorological data have to be provided via <a class="groops-class" href="fileFormat_instrument.html">inputfileStationMeteorology</a>.
+This file contains the temperature, air pressure and humidity and must be first generated using the
+programs <a class="groops-program" href="Crd2NormalPoints.html">Crd2NormalPoints</a>, <a class="groops-program" href="Cstg2NormalPoints.html">Cstg2NormalPoints</a>, <a class="groops-program" href="Merit2NormalPoints.html">Merit2NormalPoints</a> or <a class="groops-program" href="Merit2FullRate.html">Merit2FullRate</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStationMeteorology</div></div></td><td>filename</td><td></td></tr>
+</table>
+
         </div>
     </main>
 </body>

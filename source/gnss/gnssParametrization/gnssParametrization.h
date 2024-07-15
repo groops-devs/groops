@@ -43,10 +43,10 @@ The model for the different observation types can be described as
 \begin{equation}\label{gnssParametrizationType:gnssFullModel}
 \begin{split}
   f[\tau\nu a]_r^s(\M x) &= \text{geometry}(\M r_r^s) + \text{clock}^s(t) + \text{clock}_r(t) \\
-               &+ \text{iono}([tn],t,\M r_r^s) + \text{tropo}(t,\M r_r^s) \\
-               &+ \text{ant}[\tau\nu a]^s  + \text{ant}[\tau\nu a]_r \\
+               &+ \text{ionosphere}([\tau\nu],t,\M r_r^s) + \text{troposphere}(t,\M r_r^s) \\
+               &+ \text{antenna}[\tau\nu a]^s  + \text{antenna}[\tau\nu a]_r \\
                &+ \text{bias}[\tau\nu a]^s + \text{bias}[\tau\nu a]_r
-               + \lambda[Ln] N[Lna]_r^s + \text{other}(\ldots) + \epsilon[\tau\nu a]_r^s
+               + \lambda[L\nu] N[L\nu a]_r^s + \text{other}(\ldots) + \epsilon[\tau\nu a]_r^s
 \end{split}
 \end{equation}
 The notation $[\tau\nu a]_r^s$ describes the

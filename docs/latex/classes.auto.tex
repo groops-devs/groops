@@ -1224,6 +1224,49 @@ Name & Type & Annotation\\
 \hline
 \end{tabularx}
 
+
+\subsection{SetZero}
+The antenna center variations (patterns) or offsets
+of all \config{antenna}s are set to zero.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~antenna & \hfuzz=500pt \hyperref[gnssAntennaDefintionListType]{gnssAntennaDefintionList} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~patternTypes & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt only matching patterns, default: all\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~zeroOffset & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~zeroPattern & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+
+\subsection{RemoveCenterMean}
+The antenna offset and antenna variations (patterns) are inseparable parts of the
+antenna model. With \config{removeOffset} an estimated offset is removed from
+all selected patterns and added to the offset. With \config{removeMean} an estimated
+constant is removed additionally as it cannot be seperated from signal biases.
+The mean and offset are defined as discretized (\config{deltaAzimuth},
+\config{dZenith}) integral of the spherical cap from zenith down to \config{maxZenith}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~antenna & \hfuzz=500pt \hyperref[gnssAntennaDefintionListType]{gnssAntennaDefintionList} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~patternTypes & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt only matching patterns, default: all\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~removeMean & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~removeOffset & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~deltaAzimuth & \hfuzz=500pt angle & \hfuzz=500pt [degree] sampling of pattern to estimate center/constant\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~deltaZenith & \hfuzz=500pt angle & \hfuzz=500pt [degree] sampling of pattern to estimate center/constant\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxZenith & \hfuzz=500pt angle & \hfuzz=500pt [degree] sampling of pattern to estimate center/constant\\
+\hline
+\end{tabularx}
+
 \clearpage
 %==================================
 
@@ -1254,10 +1297,10 @@ The model for the different observation types can be described as
 \begin{equation}\label{gnssParametrizationType:gnssFullModel}
 \begin{split}
   f[\tau\nu a]_r^s(\M x) &= \text{geometry}(\M r_r^s) + \text{clock}^s(t) + \text{clock}_r(t) \\
-               &+ \text{iono}([tn],t,\M r_r^s) + \text{tropo}(t,\M r_r^s) \\
-               &+ \text{ant}[\tau\nu a]^s  + \text{ant}[\tau\nu a]_r \\
+               &+ \text{ionosphere}([\tau\nu],t,\M r_r^s) + \text{troposphere}(t,\M r_r^s) \\
+               &+ \text{antenna}[\tau\nu a]^s  + \text{antenna}[\tau\nu a]_r \\
                &+ \text{bias}[\tau\nu a]^s + \text{bias}[\tau\nu a]_r
-               + \lambda[Ln] N[Lna]_r^s + \text{other}(\ldots) + \epsilon[\tau\nu a]_r^s
+               + \lambda[L\nu] N[L\nu a]_r^s + \text{other}(\ldots) + \epsilon[\tau\nu a]_r^s
 \end{split}
 \end{equation}
 The notation $[\tau\nu a]_r^s$ describes the
@@ -1276,11 +1319,11 @@ from the observation equations before accumulating the normal equations.
 This is similar to using the ionosphere-free linear combination as observations
 but only one STEC parameter is needed for an arbitrary number of observation types.
 
-The influcence to the code and phase observation is modelled as
+The influence on the code and phase observation is modeled as
 \begin{equation}\label{gnssParametrizationType:IonosphereSTEC:STEC}
 \begin{split}
-f_C(STEC) &= \frac{40.3}{f^2}STEC + \frac{7525\M b^T\M k}{f^3}STEC +  \frac{r}{f^4}STEC^2 \\
-f_L(STEC) &= -\frac{40.3}{f^2}STEC - \frac{7525\M b^T\M k}{2f^3}STEC - \frac{r}{3f^4}STEC^2 + \text{bending}(E)STEC^2
+\text{ionosphere}([C\nu], STEC) &=  \frac{40.3}{f_{\nu}^2}STEC + \frac{7525\M b^T\M k}{f_{\nu}^3}STEC +  \frac{r}{f_{\nu}^4}STEC^2 \\
+\text{ionosphere}([L\nu], STEC) &= -\frac{40.3}{f_{\nu}^2}STEC - \frac{7525\M b^T\M k}{2f_{\nu}^3}STEC - \frac{r}{3f_{\nu}^4}STEC^2 + \text{bending}(E)STEC^2
 \end{split}
 \end{equation}
 The second order term depends on the \configClass{magnetosphere}{magnetosphereType} $\M b$
@@ -1306,7 +1349,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~applyBendingCorrection & \hfuzz=500pt boolean & \hfuzz=500pt apply ionospheric correction\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~magnetosphere & \hfuzz=500pt \hyperref[magnetosphereType]{magnetosphere} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~nameConstraint & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaSTEC & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [TECU] for STEC constraint\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sigmaSTEC & \hfuzz=500pt expression & \hfuzz=500pt expr. for sigma [TECU] for STEC constraint, variable E (elevation) available\\
 \hline
 \end{tabularx}
 
@@ -3442,6 +3485,8 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~GRADIOMETER & \hfuzz=500pt  & \hfuzz=500pt xx, yy, zz, xy, xz, yz [1/s\textasciicircum{}2]\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~GNSSRECEIVER & \hfuzz=500pt  & \hfuzz=500pt GNSS phase/code observations [m]\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~OBSERVATIONSIGMA & \hfuzz=500pt  & \hfuzz=500pt accuracy\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~SATELLITELASERRANGING & \hfuzz=500pt  & \hfuzz=500pt range [m], accuracy [m], redundancy, window [s], wavelength [m], azimuth [rad], elevation [rad]\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~METEOROLOGICAL & \hfuzz=500pt  & \hfuzz=500pt temperature [K], pressure [Pa], humidity [\%], windSpeed [m/s], radiation [W/m\textasciicircum{}2], precip. [mm/d]\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~MASS & \hfuzz=500pt  & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~THRUSTER & \hfuzz=500pt  & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~MAGNETOMETER & \hfuzz=500pt  & \hfuzz=500pt \\
@@ -6903,8 +6948,11 @@ Name & Type & Annotation\\
 
 \section{PlatformSelector}\label{platformSelectorType}
 Select a list of platforms (stations, satellites, ...).
+In a first step all platforms are selected if first selector \config{exclude}s platforms
+otherwise all platforms excluded. When every selector from top to bottom selects or deselects
+(with \config{exclude}) the matching platforms.
 
-See also \program{GnssProcessing}.
+See also \program{GnssProcessing} or \program{SlrProcessing}.
 
 
 \subsection{All}\label{platformSelectorType:all}
@@ -6924,6 +6972,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerName & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?, from platform\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerNumber & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?, from platform\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~exclude & \hfuzz=500pt boolean & \hfuzz=500pt deselect matching platforms\\
 \hline
 \end{tabularx}
 
@@ -6941,6 +6990,7 @@ if previous names are not available (e.g. without observation file).
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStringTable & \hfuzz=500pt filename & \hfuzz=500pt list of names with alternatives\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~exclude & \hfuzz=500pt boolean & \hfuzz=500pt deselect first matching platforms\\
 \hline
 \end{tabularx}
 
@@ -6970,12 +7020,13 @@ Name & Type & Annotation\\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sic & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sp3 & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~other & \hfuzz=500pt  & \hfuzz=500pt other types\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~exclude & \hfuzz=500pt boolean & \hfuzz=500pt deselect matching platforms\\
 \hline
 \end{tabularx}
 
 
 \subsection{Exclude}\label{platformSelectorType:exclude}
-Select all receivers/transmitters except
+Deselects all selected receivers/transmitters of
 \configClass{selector}{platformSelectorType}.
 
 
@@ -7917,6 +7968,800 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 
+\section{SlrParametrization}\label{slrParametrizationType}
+This class defines the models and parameters of the linearized observation equations
+for normal points (see \program{SlrProcessing})
+\begin{equation}\label{slrParametrizationType:model}
+  \M l - \M f(\M x_0) = \left.\frac{\partial \M f(\M x)}{\partial \M x}\right|_{\M x_0} \Delta\M x + \M\epsilon,
+\end{equation}
+where the left side is the observation vector minus the effects computed from the a priori models.
+After each least squares adjustment
+(see \configClass{SlrProcessing:processingStep:estimate}{slrProcessingStepType:estimate})
+the a priori parameters are updated
+\begin{equation}\label{slrParametrizationType:update}
+  \M x_0 := \M x_0 + \Delta\hat{\M x}.
+\end{equation}
+The vector $\M x_0$ can be written with
+\configClass{SlrProcessing:processingStep:writeAprioriSolution}{slrProcessingStepType:writeAprioriSolution}.
+Any \config{outputfiles} defined in the parametrizations are written with
+\configClass{SlrProcessing:processingStep:writeResults}{slrProcessingStepType:writeResults}.
+
+Each parametrization (and possible constraint equations) has a \config{name} which enables
+activating/deactivating the estimation of subsets of $\Delta\M x$ with
+\configClass{SlrProcessing:processingStep:selectParametrizations}{slrProcessingStepType:selectParametrizations}.
+The a priori model $\M f(\M x_0)$ is unaffected and is always reduced.
+
+The model for the one way range observations between station $s$ and reflector $r$
+can be described as
+\begin{equation}\label{slrParametrizationType:slrFullModel}
+\begin{split}
+  f_s^r(\M x) &= \frac{1}{2}\left(\left\lVert \M r^r(t_{bounce})-\M r_s(t_{trans}) \right\rVert
+                          + \left\lVert \M r_s(t_{recv})-\M r^r(t_{bounce}) \right\rVert\right)  \\
+              &+ \text{troposphere}(t,\M r_{ss}^r)
+               + \text{bias}^r + \text{bias}_s + \text{bias}_s^r + \text{other}(\ldots) + \epsilon_r^s
+\end{split}
+\end{equation}
+
+See also \program{SlrProcessing}.
+
+
+\subsection{Troposphere}\label{slrParametrizationType:troposphere}
+A priori tropospheric correction is handled by a \configClass{troposphere}{troposphereType} model (e.g. Mendes and Pavlis).
+Additional parameters in $[m]$ for zenith delay can be set up via
+\configClass{troposphereEstimation}{parametrizationTemporalType}.
+These parameters can be soft-constrained using
+\configClass{parametrization:constraints}{slrParametrizationType:constraints}
+to avoid an unsolvable system of normal equations in case of data gaps.
+
+The \file{parameter names}{parameterName} are \verb|<station>:troposphere:<temporal>:<interval>|.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTroposphere & \hfuzz=500pt filename & \hfuzz=500pt columns: MJD, ZHD, ZWD, dry north gradient, wet north gradient, dry east gradient, wet east gradient\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~troposphere & \hfuzz=500pt \hyperref[troposphereType]{troposphere} & \hfuzz=500pt a priori troposphere model\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~troposphereEstimation & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt [m] parametrization of zenith delays\\
+\hline
+\end{tabularx}
+
+
+\subsection{DynamicOrbits}\label{slrParametrizationType:dynamicOrbits}
+The estimation of (reduced) dynamic orbits is formulated as variational equations.
+It is based on \configFile{inputfileVariational}{variationalEquation} calculated with \program{PreprocessingVariationalEquation}.
+Necessary integrations are performed by integrating a moving interpolation polynomial of degree \config{integrationDegree}.
+The \configClass{parametrizationAcceleration}{parametrizationAccelerationType} must include at least those
+parameters that were estimated in \program{PreprocessingVariationalEquationOrbitFit}.
+Additional \configClass{stochasticPulse}{timeSeriesType} parameters can be set up to reduce orbit mismodeling.
+
+The parameters and \file{parameter names}{parameterName} are divided into global
+\begin{itemize}
+\item \verb|<satellite>:<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite>:stochasticPulse.x::<time>|,
+\item \verb|<satellite>:stochasticPulse.y::<time>|,
+\item \verb|<satellite>:stochasticPulse.z::<time>|,
+\end{itemize}
+and arc related parameters
+\begin{itemize}
+\item \verb|<satellite>:arc<no>.<parametrizationAcceleration>:*:*|,
+\item \verb|<satellite>:arc<no>.position0.x::|,
+\item \verb|<satellite>:arc<no>.position0.y::|,
+\item \verb|<satellite>:arc<no>.position0.z::|.
+\item \verb|<satellite>:arc<no>.velocity0.x::|,
+\item \verb|<satellite>:arc<no>.velocity0.y::|,
+\item \verb|<satellite>:arc<no>.velocity0.z::|.
+\end{itemize}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectSatellites & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt variable \{satellite\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileParameters & \hfuzz=500pt filename & \hfuzz=500pt variable \{satellite\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileVariational & \hfuzz=500pt filename & \hfuzz=500pt variable \{satellite\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~stochasticPulse & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt [mu/s] parametrization of stochastic pulses\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~parametrizationAcceleration & \hfuzz=500pt \hyperref[parametrizationAccelerationType]{parametrizationAcceleration} & \hfuzz=500pt orbit force parameters\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~integrationDegree & \hfuzz=500pt uint & \hfuzz=500pt integration of forces by polynomial approximation of degree n\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt for orbit interpolation and velocity calculation\\
+\hline
+\end{tabularx}
+
+
+\subsection{GravityField}\label{slrParametrizationType:gravityField}
+Estimates a (time depending) gravity field together with at least one
+\configClass{parametrization:dynamicOrbits}{slrParametrizationType:dynamicOrbits}.
+The parametrization of the gravity field can be set with
+\configClass{parametrization}{parametrizationGravityType}.
+
+The \file{parameter names}{parameterName} are \verb|gravityfield:<parametrization>:*:*|.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrization & \hfuzz=500pt \hyperref[parametrizationGravityType]{parametrizationGravity} & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+
+\subsection{StaticPositions}\label{slrParametrizationType:staticPositions}
+Estimates a static position for all
+\configClass{selectReceivers}{platformSelectorType} in the terrestrial frame.
+
+No-net constraints can be applied for a subset of stations,
+\configClass{selectNoNetReceivers}{platformSelectorType}, with a
+standard deviation of \config{noNetTranslationSigma} and \config{noNetRotationSigma} and \config{noNetScaleSigma} and \config{noNetScaleSigma}.
+If the template \configFile{inputfileNoNetPositions}{stringList} is provided
+the constraints are applied relatively to these positions. Only stations with an existing position file
+are considered. Without \configFile{inputfileNoNetPositions}{stringList}
+the constraints are applied towards the apriori values from
+\configClass{SlrProcessing:station}{slrStationGeneratorType}.
+As a single corrupted station position can disturb the no-net conditions,
+the rotation/translation parameters are estimated in a
+\reference{robust least squares adjustment}{fundamentals.robustLeastSquares}
+beforehand. The computed weight matrix is used to downweight corrupted stations
+in the constraint equations.
+
+In case you want to align to an ITRF/ILRS reference frame, precise coordinates can be
+generated with \program{Sinex2StationPositions}.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|<station>:position.x::|,
+\item \verb|<station>:position.y::|,
+\item \verb|<station>:position.z::|.
+\end{itemize}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileGriddedPosition & \hfuzz=500pt filename & \hfuzz=500pt delta north east up for all stations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfilePosition & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available, full estimated coordinates (in TRF)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~nameConstraint & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~selectNoNetStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileNoNetPositions & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available, precise coordinates used for no-net constraints (in TRF)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~noNetTranslationSigma & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for no-net translation constraint on station coordinates\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~noNetRotationSigma & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] at Earth's surface for no-net rotation constraint on station coordinates\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~noNetScaleSigma & \hfuzz=500pt double & \hfuzz=500pt (0 = unconstrained) sigma [m] for no-net scale constraint on station coordinates\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~huber & \hfuzz=500pt double & \hfuzz=500pt stations \$>\$ huber*sigma0 are downweighted in no-net constraint\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~huberPower & \hfuzz=500pt double & \hfuzz=500pt stations \$>\$ huber: sigma=(e/huber)\textasciicircum{}huberPower*sigma0\\
+\hline
+\end{tabularx}
+
+
+\subsection{EarthRotation}\label{slrParametrizationType:earthRotation}
+Earth rotation parameters (ERPs) can be estimated by defining
+\config{estimatePole} ($x_p$, $y_p$) and \config{estimateUT1} ($dUT1, LOD$).
+
+Estimating length of day (LOD) with the sign according to IGS conventions requires a negative
+value in \configClass{parametrizationTemporal:trend:timeStep}{parametrizationTemporalType:trend}.
+
+Constraints on the defined parameters can be added via
+\configClass{parametrization:constraints}{slrParametrizationType:constraints}.
+An example would be to set up \configClass{estimateUT1:constant}{parametrizationTemporalType:constant}
+so the $dUT1$ parameter is included in the normal equation system . Since $dUT1$ cannot be
+determined by SLR, a hard constraint to its a priori value can then be added.
+
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|earth:polarMotion.xp:<temporal>:<interval>|,
+\item \verb|earth:polarMotion.yp:<temporal>:<interval>|,
+\item \verb|earth:UT1:<temporal>:<interval>|,
+\item \verb|earth:nutation.X:<temporal>:<interval>|,
+\item \verb|earth:nutation.>:<temporal>:<interval>|.
+\end{itemize}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileEOP & \hfuzz=500pt filename & \hfuzz=500pt EOP time series (mjd, xp, yp, sp, dUT1, LOD, X, Y, S)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~estimatePole & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt xp, yp [mas]\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~estimateUT1 & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt rotation angle [ms]\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~estimateNutation & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt dX, dY [mas]\\
+\hline
+\end{tabularx}
+
+
+\subsection{RangeBiasStationApriori}\label{slrParametrizationType:rangeBiasStationApriori}
+A priori station range bias value for all \configClass{selectStations}{platformSelectorType}.
+The \href{https://ilrs.gsfc.nasa.gov/}{ILRS} provides the mean range biases \href{https://ilrs.gsfc.nasa.gov/network/site_information/data_correction.html}{ILRS Data Handling File},
+but these have been determined using the passive satellites LAGEOS and Etalon and are therefore only suitable for passive
+satellites and not for active ones.
+Use \program{SlrSinexDataHandling2Files} to convert the range biases from
+\href{https://ilrs.gsfc.nasa.gov/network/site_information/data_correction.html}{ILRS Data Handling File} to \file{instrument file}{instrument}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileRangeBias & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hline
+\end{tabularx}
+
+
+\subsection{RangeBiasStation}\label{slrParametrizationType:rangeBiasStation}
+Estimates a constant station range bias in $[m]$ for
+\configClass{selectStations}{platformSelectorType}.
+
+The \file{parameter names}{parameterName} are \verb|<station>:rangeBias::|.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileRangeBias & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hline
+\end{tabularx}
+
+
+\subsection{RangeBiasSatelliteApriori}\label{slrParametrizationType:rangeBiasSatelliteApriori}
+A priori satellite range bias value for \configClass{selectSatellites}{platformSelectorType}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectSatellites & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileRangeBias & \hfuzz=500pt filename & \hfuzz=500pt variable \{satellite\} available\\
+\hline
+\end{tabularx}
+
+
+\subsection{RangeBiasSatellite}\label{slrParametrizationType:rangeBiasSatellite}
+Estimates a constant satellite range bias in $[m]$ for
+\configClass{selectSatellites}{platformSelectorType}.
+
+The \file{parameter names}{parameterName} a \verb|<satellite>:rangeBias::|.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectSatellites & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileRangeBias & \hfuzz=500pt filename & \hfuzz=500pt variable \{satellite\} available\\
+\hline
+\end{tabularx}
+
+
+\subsection{RangeBiasStationSatelliteApriori}\label{slrParametrizationType:rangeBiasStationSatelliteApriori}
+A priori station-satellite range bias value between all \configClass{selectStations}{platformSelectorType} -
+\configClass{selectSatellites}{platformSelectorType} pairs.
+
+For standard \href{https://ilrs.gsfc.nasa.gov/}{ILRS} processing this class should be setup twice.
+Once for the model from José Rodríguez (see \program{SlrComModel2RangeBiasStationSatellite}) and additionally for
+biases from the \href{https://ilrs.gsfc.nasa.gov/network/site_information/data_correction.html}{ILRS Data Handling File} converted with \program{SlrSinexDataHandling2Files}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectSatellites & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileRangeBias & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} and \{satellite\} available\\
+\hline
+\end{tabularx}
+
+
+\subsection{RangeBiasStationSatellite}\label{slrParametrizationType:rangeBiasStationSatellite}
+Estimates the station-satellite range bias in $[m]$ between all
+\configClass{selectStations}{platformSelectorType} -
+\configClass{selectSatellites}{platformSelectorType} pairs.
+
+The \file{parameter names}{parameterName} are \verb|<station>.<satellite>:rangeBias::|.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectSatellites & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileRangeBias & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} and \{satellite\} available\\
+\hline
+\end{tabularx}
+
+
+\subsection{TimeBiasApriori}\label{slrParametrizationType:timeBiasApriori}
+A priori time bias value for all \configClass{selectStations}{platformSelectorType}.
+The \href{https://ilrs.gsfc.nasa.gov/}{ILRS} provides the mean time biases \href{https://ilrs.gsfc.nasa.gov/network/site_information/data_correction.html}{ILRS Data Handling File},
+but these have been determined using the passive satellites LAGEOS and Etalon and are therefore only suitable for passive
+satellites and not for active ones.
+Use \program{SlrSinexDataHandling2Files} to convert the time biases from
+\href{https://ilrs.gsfc.nasa.gov/network/site_information/data_correction.html}{ILRS Data Handling File} to \file{instrument file}{instrument}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTimeBias & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hline
+\end{tabularx}
+
+
+\subsection{TimeBias}\label{slrParametrizationType:timeBias}
+Estimates a \configClass{temporal changing}{parametrizationTemporalType}
+time bias in $[ms]$ for \configClass{selectStations}{platformSelectorType}.
+
+The \file{parameter names}{parameterName} are \verb|<station>:timeBias:<temporal>:<interval>|.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt used for parameter selection\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~estimateTimeBias & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt [ms]\\
+\hline
+\end{tabularx}
+
+
+\subsection{Constraints}\label{slrParametrizationType:constraints}
+Add a pseudo observation equation (constraint)
+for each selected \configClass{parameters}{parameterSelectorType}
+\begin{equation}
+  b-x_0 = 1 \cdot dx + \epsilon,
+\end{equation}
+where $b$ is the \config{bias} and $x_0$ is the a priori value of the parameter
+if \config{relativeToApriori} is not set.
+The standard deviation \config{sigma} is used to weight the observation equations.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parameters & \hfuzz=500pt \hyperref[parameterSelectorType]{parameterSelector} & \hfuzz=500pt parameter to constrain\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~sigma & \hfuzz=500pt double & \hfuzz=500pt sigma of the constraint (same unit as parameter)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~bias & \hfuzz=500pt double & \hfuzz=500pt constrain all selected parameters towards this value\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~relativeToApriori & \hfuzz=500pt boolean & \hfuzz=500pt constrain only dx and not full x=dx+x0\\
+\hline
+\end{tabularx}
+
+
+\subsection{Group}\label{slrParametrizationType:group}
+Groups a set of parameters. This class can be used to structure complex parametrizations
+and has no further effect itself.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrization & \hfuzz=500pt \hyperref[slrParametrizationType]{slrParametrization} & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+
+\section{SlrProcessingStep}\label{slrProcessingStepType}
+Processing step in \program{SlrProcessing}.
+
+Processing steps enable a dynamic definition of the consecutive steps performed during any kind of SLR processing.
+The most common steps are \configClass{estimate}{slrProcessingStepType:estimate}, which performs an iterative least
+squares adjustment, and \configClass{writeResults}{slrProcessingStepType:writeResults}, which writes all output files
+defined in \program{SlrProcessing} and is usually the last step.
+Some steps such as \configClass{selectParametrizations}{slrProcessingStepType:selectParametrizations}
+and \configClass{selectStations}{slrProcessingStepType:selectStations} affect all subsequent steps.
+In case these steps are used within a \configClass{group}{slrProcessingStepType:group} step,
+they only affect the steps within this level.
+
+
+\subsection{Estimate}\label{slrProcessingStepType:estimate}
+Iterative non-linear least squares adjustment.
+In every iteration it accumulates the system of normal equations, solves the system and updates the estimated parameters.
+The estimated parameters serve as a priori values in the next iteration and the following processing steps.
+Iterates until either every single parameter update (converted to an influence in meter)
+is below a \config{convergenceThreshold} or \config{maxIterationCount} is reached.
+
+With \config{computeResiduals} the observation equations are computed
+again after each update to compute the observation residuals.
+
+The overall standard deviation of a single observation used for the weighting
+is composed of several factors
+\begin{equation}
+  \hat{\sigma}_i = \hat{\sigma}_i^{huber} \hat{\sigma}^{stat} \sigma_{apriori}^{stat},
+\end{equation} where the $\sigma_{apriori}^{stat}$ is given by \configClass{station}{slrStationGeneratorType}:accuracy.
+The other factors are estimated iteratively from the residuals.
+
+With \config{computeWeights} a standardized variance $\hat{s}_i^2$
+for each residual $\hat{\epsilon}_i$ is computed
+\begin{equation}
+  \hat{s}_i^2 = \frac{1}{\hat{\sigma}^{stat} \sigma_{apriori}^{stat}}\frac{\hat{\epsilon}_i^2}{r_i}
+  \qquad\text{with}\qquad
+  r_i = \left(\M A\left(\M A^T\M A\right)^{-1}\M A^T\right)_{ii}
+\end{equation}
+taking the redundancy $r_i$ into account. If $\hat{s}_i$ is above a threshold \config{huber}
+the observation gets a higher standard deviation used for weighting according to
+\begin{equation}
+  \hat{\sigma}_i^{huber} =
+  \left\{ \begin{array}{ll}
+    1                              & s < huber,\\
+    (\hat{s}_i/huber)^{huberPower} & s \ge huber
+  \end{array} \right.,
+\end{equation}
+similar to \reference{robust least squares adjustment}{fundamentals.robustLeastSquares}.
+
+With \config{adjustSigma0} an individual variance factor can be computed for each station separately
+\begin{equation}
+  \hat{\sigma}^{stat} = \sqrt{\frac{\hat{\M\epsilon}^T\M P\hat{\M\epsilon}}{r}}.
+\end{equation}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~computeResiduals & \hfuzz=500pt boolean & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~adjustSigma0 & \hfuzz=500pt boolean & \hfuzz=500pt adjust sigma0 by scale factor (per station)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~computeWeights & \hfuzz=500pt boolean & \hfuzz=500pt downweight outliers\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~huber & \hfuzz=500pt double & \hfuzz=500pt residuals \$>\$ huber*sigma0 are downweighted\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~huberPower & \hfuzz=500pt double & \hfuzz=500pt residuals \$>\$ huber: sigma=(e/huber)\textasciicircum{}huberPower*sigma0\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~convergenceThreshold & \hfuzz=500pt double & \hfuzz=500pt [m] stop iteration once full convergence is reached\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxIterationCount & \hfuzz=500pt uint & \hfuzz=500pt maximum number of iterations\\
+\hline
+\end{tabularx}
+
+
+\subsection{WriteResults}\label{slrProcessingStepType:writeResults}
+In this step all \config{outputfiles} defined in \configClass{parametrizations}{slrParametrizationType}
+are written. It considers the settings of
+\configClass{processingStep:selectParametrizations}{slrProcessingStepType:selectParametrizations}
+and \configClass{processingStep:selectStations}{slrProcessingStepType:selectStations}.
+
+It is usually the last processing step, but can also be used at other points in the
+processing in combination with \config{suffix} to write intermediate results.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~suffix & \hfuzz=500pt string & \hfuzz=500pt appended to every output file name (e.g. orbit.G01.suffix.dat)\\
+\hline
+\end{tabularx}
+
+
+\subsection{WriteNormalEquations}\label{slrProcessingStepType:writeNormalEquations}
+Accumulates the normal equations matrix and writes it.
+If \configClass{remainingParameters}{parameterSelectorType}
+is set only the selected parameters are written to the normal equations
+and all other parameters are eliminated beforehand (implicitly solved).
+
+The solution of the normals would results in $\Delta\M x$
+(see \configClass{parametrizations}{slrParametrizationType}). To write the
+appropriate apriori vector $\M x_0$ use
+\configClass{processingStep:writeAprioriSolution}{slrProcessingStepType:writeAprioriSolution}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileNormalEquations & \hfuzz=500pt filename & \hfuzz=500pt normals\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~remainingParameters & \hfuzz=500pt \hyperref[parameterSelectorType]{parameterSelector} & \hfuzz=500pt parameter order/selection of output normal equations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~constraintsOnly & \hfuzz=500pt boolean & \hfuzz=500pt write only normals of constraints without observations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~defaultNormalsBlockSize & \hfuzz=500pt uint & \hfuzz=500pt block size for distributing the normal equations, 0: one block, empty: original block size\\
+\hline
+\end{tabularx}
+
+
+\subsection{WriteAprioriSolution}\label{slrProcessingStepType:writeAprioriSolution}
+Writes the current apriori vector $\M x_0$
+(see \configClass{parametrizations}{slrParametrizationType}).
+If \configClass{remainingParameters}{parameterSelectorType}
+is set only the selected parameters are written.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAprioriSolution & \hfuzz=500pt filename & \hfuzz=500pt a priori parameters\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileParameterNames & \hfuzz=500pt filename & \hfuzz=500pt parameter names\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~remainingParameters & \hfuzz=500pt \hyperref[parameterSelectorType]{parameterSelector} & \hfuzz=500pt parameter order/selection of output normal equations\\
+\hline
+\end{tabularx}
+
+
+\subsection{WriteResiduals}\label{slrProcessingStepType:writeResiduals}
+Writes the \file{observation residuals}{instrument} for all
+\configClass{selectStations}{platformSelectorType}. For for each station-satellite
+pair a file is written. The file name is interpreted as a template with
+the variables \verb|{station}| and \verb|{satellite}| being replaced by the station name.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt subset of used stations\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectSatellites & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt subset of used satellites\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileResiduals & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hline
+\end{tabularx}
+
+
+\subsection{WriteUsedStationList}\label{slrProcessingStepType:writeUsedStationList}
+Writes a \file{list}{stringList} of stations (stations) which are used in the last step and
+selected by \configClass{selectStations}{platformSelectorType}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt subset of used stations\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileUsedStationList & \hfuzz=500pt filename & \hfuzz=500pt ascii file with names of used stations\\
+\hline
+\end{tabularx}
+
+
+\subsection{WriteUsedSatelliteList}\label{slrProcessingStepType:writeUsedSatelliteList}
+Writes a \file{list}{stringList} of satellites which are used in the last step and
+selected by \configClass{selectSatellites}{platformSelectorType}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectSatellites & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt subset of used satellites\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileUsedSatelliteList & \hfuzz=500pt filename & \hfuzz=500pt ascii file with names\\
+\hline
+\end{tabularx}
+
+
+\subsection{PrintResidualStatistics}\label{slrProcessingStepType:printResidualStatistics}
+Print residual statistics.
+\begin{verbatim}
+  station   sigma redundancy obsCount outlier
+  ----------------------------------------------
+  1874       0.52   0.86      22      1 (4.55 %)
+  1889       1.20   0.98     186      5 (2.69 %)
+  1890       0.63   0.77      14      1 (7.14 %)
+  1891       0.49   0.50       6      0 (0.00 %)
+  7237       1.08   0.95     236     14 (5.93 %)
+  7394       0.36   0.88      26      0 (0.00 %)
+  7811       0.38   0.41       5      0 (0.00 %)
+  7819       1.21   0.94     120      1 (0.83 %)
+  7821       0.69   0.95     202      3 (1.49 %)
+  7827       0.40   0.85      29      1 (3.45 %)
+  7839       0.52   0.93     143     10 (6.99 %)
+  7840       0.15   0.80      16      0 (0.00 %)
+  7841       0.26   0.90      56      1 (1.79 %)
+  7941       0.55   0.92     277      5 (1.81 %)
+  8834       0.66   0.88     101      1 (0.99 %)
+  ----------------------------------------------
+  satellite sigma redundancy obsCount outlier
+  ----------------------------------------------
+  lageos1    1.04   0.94     722     24 (3.32 %)
+  lageos2    0.91   0.95     590     11 (1.86 %)
+  etalon1    1.19   0.78      57      2 (3.51 %)
+  etalon2    1.10   0.81      70      6 (8.57 %)
+  ----------------------------------------------
+\end{verbatim}
+
+
+\subsection{SelectParametrizations}\label{slrProcessingStepType:selectParametrizations}
+Enable/disable parameter groups and constraint groups for subsequent steps,
+e.g. \configClass{processingStep:estimate}{slrProcessingStepType:estimate} or
+\configClass{processingStep:writeResults}{slrProcessingStepType:writeResults}.
+The \config{name} and \config{nameConstraint} of these groups
+are defined in \configClass{parametrizations}{slrParametrizationType}.
+Prior models or previously estimated parameters used as new apriori $\M x_0$ values are unaffected
+and they are always reduced from the observations. This means all unselected parameters are kept fixed
+to their last result.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrization & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~enable & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~disable & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt wildcards: * and ?\\
+\hline
+\end{tabularx}
+
+
+\subsection{SelectSatellites}\label{slrProcessingStepType:selectSatellites}
+This step can be used to process only a subset of satellites in subsequent processing steps.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectSatellites & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+
+\subsection{SelectStations}\label{slrProcessingStepType:selectStations}
+This step can be used to process only a subset of stations in subsequent processing steps.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectStations & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+
+\subsection{Group}\label{slrProcessingStepType:group}
+Perform these processing steps. This step can be used to structure complex processing flows.
+The \configClass{select..}{slrProcessingStepType:selectParametrizations} processing steps
+defined within a group only affect the steps within this group.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~processingStep & \hfuzz=500pt \hyperref[slrProcessingStepType]{slrProcessingStep} & \hfuzz=500pt steps are processed consecutively\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+
+\section{SlrSatelliteGenerator}\label{slrSatelliteGeneratorType}
+Definition and basic information of SLR satellites.
+
+See also \program{SlrProcessing}.
+
+
+\subsection{Satellites}\label{slrSatelliteGeneratorType:satellites}
+A list of satellite names must be provided via \configFile{inputfileSatelliteList}{stringList}.
+The other input files are read for each satellite, where the file name is interpreted as a template
+with the variable \verb|{satellite}| being replaced by the satellite name from list.
+The \configFile{inputfileSatelliteInfo}{platform} contains information about laser retro-reflector,
+optical reference point, retro-reflector orientation, range corrections and center of mass.
+It can be created via \program{PlatformCreate}.
+If \configFile{inputfileAttitude}{instrument} ist not provided an orbit reference frame
+(along, cross, nearly nadir) is assumed.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileSatelliteList & \hfuzz=500pt filename & \hfuzz=500pt ascii file with satellite names, used to loop variable \{satellite\}\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSatelliteInfo & \hfuzz=500pt filename & \hfuzz=500pt variable \{satellite\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt variable \{satellite\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAttitude & \hfuzz=500pt filename & \hfuzz=500pt variable \{satellite\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt for orbit interpolation and velocity calculation\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+
+\section{SlrStationGenerator}\label{slrStationGeneratorType}
+Definition and basic information of SLR ground stations.
+
+See also \program{SlrProcessing}.
+
+
+\subsection{Stations}\label{slrStationGeneratorType:stations}
+A list of station names must be provided via \configFile{inputfileStationList}{stringList}.
+It defines the variable \verb|{station}| for the station specific input files.
+The \configFile{inputfileStationInfo}{platform} contains metadata information like station number,
+station name and approximate station postion in terrestrial reference frame (TRF)
+considering the station eccentricities. They can be created via \program{SinexEccentricties2SlrPlatform}
+or \program{PlatformCreate}. The \configFile{inputfileObservations}{instrument} are separate files
+for each \verb|{station}|-\verb|{satellite}| pair. They can be converted from CRD
+format via \program{Crd2NormalPoints}, CSTG format via \program{Cstg2NormalPoints}
+and MERIT II format via \program{Merit2NormalPoints} and \program{Merit2FullRate}.
+
+The apriori observation weighting is defined by the expression \config{accuracy} in $[m]$.
+The following variables are defined for each observation from the
+\configFile{inputfileObservations}{instrument}: \verb|{residual}|, \verb|{accuracy}|,
+\verb|{redundancy}|, \verb|{laserWavelength}|, \verb|{azimut}|, \verb|{elevation}|.
+Observations with non-positive accuracies are removed.
+This can be used for a rough outlier removal by an expression such as
+\config{accuracy} = \verb|if(abs(residual)>30, NAN, accuracy)|.
+
+The effects of loading and tidal deformation on station positions can be corrected for
+via \configClass{loadingDisplacement}{gravityfieldType} and
+\configClass{tidalDisplacement}{tidesType}, respectively.
+Tidal deformations typically include:
+\begin{itemize}
+  \item \configClass{earthTide}{tidesType:earthTide}: Earth tidal deformations (IERS conventions)
+  \item \configClass{doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: ocean tidal deformations
+        (e.g. fes2014b\_n720, \config{minDegree}=\verb|1|)
+  \item \configClass{doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: atmospheric tidal deformation
+        (e.g. AOD1B RL06, \config{minDegree}=\verb|1|)
+  \item \configClass{poleTide}{tidesType:poleTide}: pole tidal deformations (IERS conventions)
+  \item \configClass{poleOceanTide}{tidesType:oceanPoleTide}: ocean pole tidal deformations (IERS conventions)
+\end{itemize}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStationList & \hfuzz=500pt filename & \hfuzz=500pt ascii file with station names\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStationInfo & \hfuzz=500pt filename & \hfuzz=500pt station metadata\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileStationPosition & \hfuzz=500pt filename & \hfuzz=500pt station position\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileObservations & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} \{satellite\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~accuracy & \hfuzz=500pt expression & \hfuzz=500pt [m] used for weighting, variables: \{residual\}, \{accuracy\}, \{redundancy\}, \{laserWavelength\}, \{azimut\}, \{elevation\}\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~loadingDisplacement & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt loading deformation\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~tidalDisplacement & \hfuzz=500pt \hyperref[tidesType]{tides} & \hfuzz=500pt tidal deformation\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt for tidal deformation\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileDeformationLoadLoveNumber & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfilePotentialLoadLoveNumber & \hfuzz=500pt filename & \hfuzz=500pt if full potential is given and not only loading potential\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~elevationCutOff & \hfuzz=500pt angle & \hfuzz=500pt [degree] ignore observations below cutoff\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt for position interpolation\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+
 \section{SphericalHarmonicsFilter}\label{sphericalHarmonicsFilterType}
 Filtering of a spherical harmonics expansion.
 
@@ -8631,6 +9476,27 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~aHeight & \hfuzz=500pt double & \hfuzz=500pt parameter a (height correction)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~bHeight & \hfuzz=500pt double & \hfuzz=500pt parameter b (height correction)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~cHeight & \hfuzz=500pt double & \hfuzz=500pt parameter c (height correction)\\
+\hline
+\end{tabularx}
+
+
+\subsection{MendesAndPavlis}\label{troposphereType:mendesAndPavlis}
+
+Tropospheric delays based on the Mendes-Pavlis model that employs meteorological data.
+(Mendes et al. (2002), DOI: \href{https://doi.org/10.1029/2001GL014394}{10.1029/2001GL014394} and
+Mendes & Pavlis (2004), DOI:\href{https://doi.org/10.1029/2004GL020308}{110.1029/2004GL020308})
+
+The meteorological data have to be provided via \configFile{inputfileStationMeteorology}{instrument}.
+This file contains the temperature, air pressure and humidity and must be first generated using the
+programs \program{Crd2NormalPoints}, \program{Cstg2NormalPoints}, \program{Merit2NormalPoints} or \program{Merit2FullRate}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStationMeteorology & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 

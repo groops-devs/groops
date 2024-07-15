@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - slrStationGeneratorType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="slrStationGeneratorType">SlrStationGenerator</h1><p>
+Definition and basic information of SLR ground stations.</p><p>See also <a class="groops-program" href="SlrProcessing.html">SlrProcessing</a>.
+</p>
+
+<h2 id="stations">Stations</h2><p>
+A list of station names must be provided via <a class="groops-class" href="fileFormat_stringList.html">inputfileStationList</a>.
+It defines the variable <code>{station}</code> for the station specific input files.
+The <a class="groops-class" href="fileFormat_platform.html">inputfileStationInfo</a> contains metadata information like station number,
+station name and approximate station postion in terrestrial reference frame (TRF)
+considering the station eccentricities. They can be created via <a class="groops-program" href="SinexEccentricties2SlrPlatform.html">SinexEccentricties2SlrPlatform</a>
+or <a class="groops-program" href="PlatformCreate.html">PlatformCreate</a>. The <a class="groops-class" href="fileFormat_instrument.html">inputfileObservations</a> are separate files
+for each <code>{station}</code>-<code>{satellite}</code> pair. They can be converted from CRD
+format via <a class="groops-program" href="Crd2NormalPoints.html">Crd2NormalPoints</a>, CSTG format via <a class="groops-program" href="Cstg2NormalPoints.html">Cstg2NormalPoints</a>
+and MERIT II format via <a class="groops-program" href="Merit2NormalPoints.html">Merit2NormalPoints</a> and <a class="groops-program" href="Merit2FullRate.html">Merit2FullRate</a>.</p><p>The apriori observation weighting is defined by the expression <strong class="groops-config-element">accuracy</strong> in $[m]$.
+The following variables are defined for each observation from the
+<a class="groops-class" href="fileFormat_instrument.html">inputfileObservations</a>: <code>{residual}</code>, <code>{accuracy}</code>,
+<code>{redundancy}</code>, <code>{laserWavelength}</code>, <code>{azimut}</code>, <code>{elevation}</code>.
+Observations with non-positive accuracies are removed.
+This can be used for a rough outlier removal by an expression such as
+<strong class="groops-config-element">accuracy</strong> = <code>if(abs(residual)>30, NAN, accuracy)</code>.</p><p>The effects of loading and tidal deformation on station positions can be corrected for
+via <a class="groops-class" href="gravityfieldType.html">loadingDisplacement</a> and
+<a class="groops-class" href="tidesType.html">tidalDisplacement</a>, respectively.
+Tidal deformations typically include:
+<ul>
+
+  <li><a class="groops-class" href="tidesType.html#earthTide">earthTide</a>: Earth tidal deformations (IERS conventions)
+  </li><li>
+<a class="groops-class" href="tidesType.html#doodsonHarmonicTide">doodsonHarmonicTide</a>: ocean tidal deformations
+        (e.g. fes2014b_n720, <strong class="groops-config-element">minDegree</strong>=<code>1</code>)
+  </li><li>
+<a class="groops-class" href="tidesType.html#doodsonHarmonicTide">doodsonHarmonicTide</a>: atmospheric tidal deformation
+        (e.g. AOD1B RL06, <strong class="groops-config-element">minDegree</strong>=<code>1</code>)
+  </li><li>
+<a class="groops-class" href="tidesType.html#poleTide">poleTide</a>: pole tidal deformations (IERS conventions)
+  </li><li>
+<a class="groops-class" href="tidesType.html#oceanPoleTide">poleOceanTide</a>: ocean pole tidal deformations (IERS conventions)
+</li></ul>
+
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStationList</div></div></td><td>filename</td><td>ascii file with station names</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStationInfo</div></div></td><td>filename</td><td>station metadata</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileStationPosition</div></div></td><td>filename</td><td>station position</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileObservations</div></div></td><td>filename</td><td>variable {station} {satellite} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">accuracy</div></div></td><td>expression</td><td>[m] used for weighting, variables: {residual}, {accuracy}, {redundancy}, {laserWavelength}, {azimut}, {elevation}</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">loadingDisplacement</div></div></td><td><a href="gravityfieldType.html">gravityfield</a></td><td>loading deformation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">tidalDisplacement</div></div></td><td><a href="tidesType.html">tides</a></td><td>tidal deformation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td>for tidal deformation</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileDeformationLoadLoveNumber</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfilePotentialLoadLoveNumber</div></div></td><td>filename</td><td>if full potential is given and not only loading potential</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">elevationCutOff</div></div></td><td>angle</td><td>[degree] ignore observations below cutoff</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>for position interpolation</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

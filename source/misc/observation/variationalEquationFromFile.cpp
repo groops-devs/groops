@@ -26,7 +26,7 @@ void VariationalEquationFromFile::open(const FileName &fileName, Parametrization
   {
     file.open(fileName);
 
-    variationalEquation.init(file.satellite(), parameterGravity, parameterAcceleration, stochasticPulse, ephemerides, integrationDegree);
+    variationalEquation.init(file.satellite(), {parameterGravity}, parameterAcceleration, stochasticPulse, ephemerides, integrationDegree);
     arcNo = 0;
     VariationalEquationArc arc = file.readArc(arcNo);
     variationalEquation.setArc(arc);

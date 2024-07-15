@@ -85,27 +85,29 @@ class Epoch
 {
 public:
   /// Instrument data type (type > 0: MISCVALUES where type is the number of data columns).
-  enum Type : Int  {EMPTY             =  0,
-                    MISCVALUESOLD     = -9999,
-                    MISCVALUES        = -1, // MISCVALUES with unknown or zero size
-                    INSTRUMENTTIME    = -2,
-                    MISCVALUE         = -3,
-                    VECTOR3D          = -4,
-                    COVARIANCE3D      = -5,
-                    ORBIT             = -6,
-                    STARCAMERA        = -7,
-                    ACCELEROMETER     = -8,
-                    SATELLITETRACKING = -9,
-                    GRADIOMETER       = -10,
-                    GNSSRECEIVER      = -11,
-                    OBSERVATIONSIGMA  = -12,
-                    MASS              = -16,
-                    THRUSTER          = -17,
-                    MAGNETOMETER      = -18,
-                    ACCHOUSEKEEPING   = -19,
-                    CLOCK             = -20,
-                    STARCAMERA1A      = -21,
-                    ACCELEROMETER1A   = -22};
+  enum Type : Int  {EMPTY                 =  0,
+                    MISCVALUESOLD         = -9999,
+                    MISCVALUES            = -1, // MISCVALUES with unknown or zero size
+                    INSTRUMENTTIME        = -2,
+                    MISCVALUE             = -3,
+                    VECTOR3D              = -4,
+                    COVARIANCE3D          = -5,
+                    ORBIT                 = -6,
+                    STARCAMERA            = -7,
+                    ACCELEROMETER         = -8,
+                    SATELLITETRACKING     = -9,
+                    GRADIOMETER           = -10,
+                    GNSSRECEIVER          = -11,
+                    OBSERVATIONSIGMA      = -12,
+                    MASS                  = -16,
+                    THRUSTER              = -17,
+                    MAGNETOMETER          = -18,
+                    ACCHOUSEKEEPING       = -19,
+                    CLOCK                 = -20,
+                    STARCAMERA1A          = -21,
+                    ACCELEROMETER1A       = -22,
+                    SATELLITELASERRANGING = -23,
+                    METEOROLOGICAL        = -24};
 
   Time time; //!< Time of Epoch.
 
@@ -921,6 +923,54 @@ public:
 };
 
 typedef ArcTemplate<Accelerometer1AEpoch> Accelerometer1AArc;
+
+/***********************************************/
+
+/** @brief Epoch with SLR normal point data. */
+class SatelliteLaserRangingEpoch : public Epoch
+{
+public:
+  Double range;              // One way range [m]
+  Double accuracy;           // Accuracy of one-way normal point [m]
+  Double redundancy;         // Number of raw ranges (after editing) compressed into the normal point
+  Double window;             // Normal point window length [s]
+  Double wavelength;         // Laser transmit wavelength [m]
+  Double azmiuth, elevation; // In local system towards satellite [rad]
+
+  static constexpr Type type = SATELLITELASERRANGING;
+  virtual Type   getType() const {return type;}
+  virtual Vector data()    const; // data without time
+  virtual void   setData(const Vector &x);
+  virtual Epoch *clone()   const {return new SatelliteLaserRangingEpoch(*this);}
+  virtual void   save(OutArchive &oa) const;
+  virtual void   load(InArchive  &ia);
+};
+
+typedef ArcTemplate<SatelliteLaserRangingEpoch> SatelliteLaserRangingArc;
+
+/***********************************************/
+
+/** @brief Epoch with meteorological data. */
+class MeteorologicalEpoch : public Epoch
+{
+public:
+  Double temperature;    // [K]
+  Double pressure;       // [Pa]
+  Double humidity;       // [%]
+  Double windSpeed;      // [m/s]
+  Double solarRadiation; // [W/m^2]
+  Double precipitation;  // [mm/d]
+
+  static constexpr Type type = METEOROLOGICAL;
+  virtual Type   getType() const {return type;}
+  virtual Vector data()    const; // data without time
+  virtual void   setData(const Vector &x);
+  virtual Epoch *clone()   const {return new MeteorologicalEpoch(*this);}
+  virtual void   save(OutArchive &oa) const;
+  virtual void   load(InArchive  &ia);
+};
+
+typedef ArcTemplate<MeteorologicalEpoch> MeteorologicalArc;
 
 /***********************************************/
 

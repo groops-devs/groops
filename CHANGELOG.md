@@ -1,13 +1,35 @@
 # main
+
+# Release 2024-06-24
 - Interface change: Variables can now declared at any place in the config file (not only in the global section).
                     They have local scope within the hierarchy level.
                     Loop and conditions attributed to elements no longer need to be declared in the global section.
+- SLR Processing:   New processing of SLR data with estimation of all relevant geodetic parameters.
+  - New program:      SlrProcessing
+  - New program:      conversion: Cpf2Orbit
+  - New program:      conversion: Crd2NormalPoints
+  - New program:      conversion: Cstg2NormalPoints
+  - New program:      conversion: Merit2FullRate
+  - New program:      conversion: Merit2NormalPoints
+  - New program:      conversion: Orbit2Cpf
+  - New program:      conversion: SinexEccentricties2SlrPlatform
+  - New program:      conversion: SlrComModel2RangeBiasStationSatellite
+  - New program:      conversion: SlrSinexDataHandling2Files
+  - New class:        slrParametrization
+  - New class:        slrProcessingStep
+  - New class:        slrSatelliteGenerator
+  - New class:        slrStationGenerator
+  - New class:        In Troposphere: MendesAndPavlis
+  - New instrument file format: SATELLITELASERRANGING
+  - New instrument file format: METEOROLOGICAL
 - New program:      eclipseFactor2GriddedData.cpp: returns a global grid with eclipse factors.
 - New program:      orbit2EarhFixedOrbit: Rotate an orbit into a rotation earth fixed frame.
 - New program:      GriddedDataTimeSeries2PotentialCoefficients.
 - New program:      SinexMetadata2GlonassFrequencyNumber.
+- New program:      SimulateStarCameraTerrasar.
 - New class:        In PlatformSelector: Equipment.
 - New class:        In Gravityfield/Tides/MiscAccelerations: Group.
+- New option:       GnssAntennaDefinitionCreate: setZero and removeCenterMean.
 - New option:       Sp3Fromat2Orbit: Write all satellites (identifier is appended to each file).
 - New option:       GriddedData2PotentialCoefficients: Handle multiple input data columns at once.
 - New option:       GriddedDataReduceSampling: tesseroid volume conserving for digital elevation models.
@@ -16,14 +38,18 @@
 - New option:       GnssProcessingStepResolveAmbiguities: partial ambiguity resolution with selectTransmitters/Receivers.
 - New option:       GnssParametrizationCodeBiases: option to define ionosphere-free clock datum.
 - New option:       GnssParametrizationIonosphereMap: option to read/write VTEC maps.
+- New option:       PlatformSelector: new selection algorithm with exclude option.
+- New option:       GoceXmlEggNom1b: write also linear common mode accelerations.
 - Removed program:  GnssPrn2SvnBlockVariables: This program will no longer work from the next release! See documentation for help.
 - Removed program:  NetCdf2PotentialCoefficients: Use NetCdf2GriddedDataTimeSeries and GriddedDataTimeSeries2PotentialCoefficients instead.
+- Removed program:  Metop2Starcamera: Use Champ2AccStar instead.
 - Bugfix:           GnssParametrizationStaticPositions: ignored inputfileNoNetPositions.
 - Bugfix:           SphericalHarmonicsFilter->DDK: corrected filter for level 4 onwards (Compatible with ICGEM definition).
 - Bugfix:           ObservationDeflections: fixed index bug.
 - Bugfix:           NormalEquationFile: corrected contribution computation.
 - Bugfix:           NetCdf: in some cases the data has been swapped.
 - Bugfix:           GnssRinexNavigation2OrbitClock: reimplementation of source code.
+- Other:            GnssAntennaDefinition2ParameterVector: with area weights.
 - Other:            GnssAntex2AntennaDefinition/GnssGlonassFrequencyNumberUpdate: write Platform files instead of deprecated GnssStationInfo files.
 - Other:            EarthRotation::rotaryAxis: if EOP time series is too short, use simplified equations.
 - Other:            Gravityfield2Deflections: Computation based now on normal gravity.
@@ -34,6 +60,7 @@
 - Other:            GriddedData: reworked area computations.
 - Other:            IersC04IAU2000EarthOrientationParameter: works also with new file format.
 - Other:            condition->fileExist: Supports now wildcards: * and ?.
+- Other:            Champ2Orbit: simplified interface.
 
 # Release 2023-08-25
 - New program:      FileMove.

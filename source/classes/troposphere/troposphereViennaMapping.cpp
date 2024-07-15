@@ -38,7 +38,7 @@ TroposphereViennaMapping::TroposphereViennaMapping(Config &config)
 
 /***********************************************/
 
-void TroposphereViennaMapping::init(const std::vector<Vector3d> &stationPositions)
+void TroposphereViennaMapping::init(const std::vector<std::string> &/*stationNames*/, const std::vector<Vector3d> &stationPositions)
 {
   try
   {
@@ -208,7 +208,7 @@ void TroposphereViennaMapping::findIndex(const Time &time, UInt &idx, Double &ta
 
 /***********************************************/
 
-Double TroposphereViennaMapping::slantDelay(const Time &time, UInt stationId, Angle azimuth, Angle elevation) const
+Double TroposphereViennaMapping::slantDelay(UInt stationId, const Time &time, Double /*frequency*/, Angle azimuth, Angle elevation) const
 {
   try
   {
@@ -243,7 +243,7 @@ Double TroposphereViennaMapping::slantDelay(const Time &time, UInt stationId, An
 
 /***********************************************/
 
-Double TroposphereViennaMapping::mappingFunctionHydrostatic(const Time &time, UInt stationId, Angle /*azimuth*/, Angle elevation) const
+Double TroposphereViennaMapping::mappingFunctionHydrostatic(UInt stationId, const Time &time, Double /*frequency*/, Angle /*azimuth*/, Angle elevation) const
 {
   try
   {
@@ -265,7 +265,7 @@ Double TroposphereViennaMapping::mappingFunctionHydrostatic(const Time &time, UI
 
 /***********************************************/
 
-Double TroposphereViennaMapping::mappingFunctionWet(const Time &time, UInt stationId, Angle /*azimuth*/, Angle elevation) const
+Double TroposphereViennaMapping::mappingFunctionWet(UInt stationId, const Time &time, Double /*frequency*/, Angle /*azimuth*/, Angle elevation) const
 {
   try
   {
@@ -284,7 +284,7 @@ Double TroposphereViennaMapping::mappingFunctionWet(const Time &time, UInt stati
 
 /***********************************************/
 
-void TroposphereViennaMapping::mappingFunctionGradient(const Time &/*time*/, UInt /*stationId*/, Angle azimuth, Angle elevation, Double &dx, Double &dy) const
+void TroposphereViennaMapping::mappingFunctionGradient(UInt /*stationId*/, const Time &/*time*/, Double /*frequency*/, Angle azimuth, Angle elevation, Double &dx, Double &dy) const
 {
   try
   {
@@ -300,7 +300,7 @@ void TroposphereViennaMapping::mappingFunctionGradient(const Time &/*time*/, UIn
 
 /***********************************************/
 
-void TroposphereViennaMapping::getAprioriValues(const Time &time, UInt stationId, Double &zenithDryDelay, Double &zenithWetDelay,
+void TroposphereViennaMapping::getAprioriValues(UInt stationId, const Time &time, Double /*frequency*/, Double &zenithDryDelay, Double &zenithWetDelay,
                                                 Double &gradientDryNorth, Double &gradientWetNorth, Double &gradientDryEast, Double &gradientWetEast,
                                                 Double &aDry, Double &aWet) const
 {

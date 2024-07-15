@@ -203,9 +203,9 @@ static PlatformEquipmentPtr createEquipmentSlrStation(Config &config)
     readConfig(config, "comment",   var->comment,      Config::OPTIONAL, "",  "");
     readConfig(config, "timeStart", var->timeStart,    Config::OPTIONAL, "",  "");
     readConfig(config, "timeEnd",   var->timeEnd,      Config::OPTIONAL, "",  "");
-    readConfig(config, "positionX", var->position.x(), Config::OPTIONAL, "0", "[m] exccentricity in north");
-    readConfig(config, "positionY", var->position.y(), Config::OPTIONAL, "0", "[m] exccentricity in east");
-    readConfig(config, "positionZ", var->position.z(), Config::OPTIONAL, "0", "[m] exccentricity in up");
+    readConfig(config, "positionX", var->position.x(), Config::OPTIONAL, "0", "[m] eccentricity in north");
+    readConfig(config, "positionY", var->position.y(), Config::OPTIONAL, "0", "[m] eccentricity in east");
+    readConfig(config, "positionZ", var->position.z(), Config::OPTIONAL, "0", "[m] eccentricity in up");
 
     if(var->timeEnd == Time())
       var->timeEnd = date2time(2500,1,1);

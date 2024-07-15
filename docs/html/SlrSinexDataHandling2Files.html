@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GROOPS - Metop2Starcamera</title>
+    <title>GROOPS - SlrSinexDataHandling2Files</title>
 
     <!-- JQuery and Popper -->
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
@@ -69,15 +69,23 @@
     </header>
     <main class="container px-0 pt-2 top-buffer">
         <div id="content" class="container">
-            <h1>Metop2Starcamera</h1><p>
+            <h1>SlrSinexDataHandling2Files</h1><p>
 
-This program reads in star camera data from MetOp satellites given in the special CHAMP format.
-A description of the format can be found under: <a href="http://op.gfz-potsdam.de/champ/docs_CHAMP/CH-GFZ-FD-001.pdf" target="_blank">http://op.gfz-potsdam.de/champ/docs_CHAMP/CH-GFZ-FD-001.pdf</a>
+Converts SLR range and time bias from <code>ILRS_Data_Handling_File_xxxx.xx.xx.snx</code> provided at
+<a href="https://cddis.nasa.gov/archive/slr/products/resource/" target="_blank">https://cddis.nasa.gov/archive/slr/products/resource/</a>. The range and time bias values can be used in
+<a class="groops-class" href="slrParametrizationType.html#rangeBiasStationApriori">parametrization:rangeBiasXxxApriori</a>
+in <a class="groops-program" href="SlrProcessing.html">SlrProcessing</a>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileStarCamera</div></div></td><td>filename</td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileRangeBiasStation</div></div></td><td>filename</td><td>MISCVALUE [m]</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileRangeBiasStationSatellite</div></div></td><td>filename</td><td>MISCVALUE [m]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileTimeBias</div></div></td><td>filename</td><td>MISCVALUES(bias [s], drift [s/d])</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopStation</div></div></td><td>string</td><td>variable name for station loop</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopSatellite</div></div></td><td>string</td><td>variable name for satellite loop</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileSinex</div></div></td><td>filename</td><td>SINEX file (.snx)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileSatelliteId</div></div></td><td>filename</td><td>table SP3 and satellite name</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">stationName</div></div></td><td>string</td><td>convert only these stations</td></tr>
 </table>
 
         </div>

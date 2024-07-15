@@ -196,6 +196,7 @@ public:
 
   friend class GnssProcessingStep;
   friend class GnssParametrizationAmbiguities;
+  friend class SlrProcessingStep;
 };
 
 //***********************************************/

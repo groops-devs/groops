@@ -71,7 +71,10 @@
         <div id="content" class="container">
             
 <h1 id="platformSelectorType">PlatformSelector</h1><p>
-Select a list of platforms (stations, satellites, ...).</p><p>See also <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>.
+Select a list of platforms (stations, satellites, ...).
+In a first step all platforms are selected if first selector <strong class="groops-config-element">exclude</strong>s platforms
+otherwise all platforms excluded. When every selector from top to bottom selects or deselects
+(with <strong class="groops-config-element">exclude</strong>) the matching platforms.</p><p>See also <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a> or <a class="groops-program" href="SlrProcessing.html">SlrProcessing</a>.
 </p>
 
 <h2 id="all">All</h2><p>
@@ -87,6 +90,7 @@ Select all receivers/transmitters which match the
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">markerName</div></div></td><td>string</td><td>wildcards: * and ?, from platform</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">markerNumber</div></div></td><td>string</td><td>wildcards: * and ?, from platform</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">exclude</div></div></td><td>boolean</td><td>deselect matching platforms</td></tr>
 </table>
 
 <h2 id="file">File</h2><p>
@@ -98,6 +102,7 @@ if previous names are not available (e.g. without observation file).
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileStringTable</div></div></td><td>filename</td><td>list of names with alternatives</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">exclude</div></div></td><td>boolean</td><td>deselect first matching platforms</td></tr>
 </table>
 
 <h2 id="equipment">Equipment</h2><p>
@@ -121,10 +126,11 @@ Select all platforms which has the specified equipment in the processed time int
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sic</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config optional">sp3</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">other</div></div></td><td></td><td>other types</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">exclude</div></div></td><td>boolean</td><td>deselect matching platforms</td></tr>
 </table>
 
 <h2 id="exclude">Exclude</h2><p>
-Select all receivers/transmitters except
+Deselects all selected receivers/transmitters of
 <a class="groops-class" href="platformSelectorType.html">selector</a>.
 </p>
 <table class="table table-hover">

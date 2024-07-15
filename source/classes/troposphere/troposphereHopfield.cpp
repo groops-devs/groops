@@ -35,7 +35,7 @@ TroposphereHopfield::TroposphereHopfield(Config &config)
 
 /***********************************************/
 
-void TroposphereHopfield::init(const std::vector<Vector3d> &stationPositions)
+void TroposphereHopfield::init(const std::vector<std::string> &/*stationNames*/, const std::vector<Vector3d> &stationPositions)
 {
   try
   {
@@ -49,13 +49,13 @@ void TroposphereHopfield::init(const std::vector<Vector3d> &stationPositions)
 
 /***********************************************/
 
-Double TroposphereHopfield::slantDelay(const Time &time, UInt stationId, Angle azimuth, Angle elevation) const
+Double TroposphereHopfield::slantDelay(UInt stationId, const Time &time, Double frequency, Angle azimuth, Angle elevation) const
 {
   try
   {
     /*computeEmpiricalCoefficients(time);*/
-    const Double nmfh = mappingFunctionHydrostatic(time,stationId,azimuth,elevation);
-    const Double nmfw = mappingFunctionWet        (time,stationId,azimuth,elevation);
+    const Double nmfh = mappingFunctionHydrostatic(stationId,time,frequency,azimuth,elevation);
+    const Double nmfw = mappingFunctionWet        (stationId,time,frequency,azimuth,elevation);
 
     const Double T =  291.1;
     const Double P = 1010.0;
@@ -83,7 +83,7 @@ Double TroposphereHopfield::slantDelay(const Time &time, UInt stationId, Angle a
 
 /***********************************************/
 
-Double TroposphereHopfield::mappingFunctionHydrostatic(const Time &/*time*/, UInt /*stationId*/, Angle /*azimuth*/, Angle elevation) const
+Double TroposphereHopfield::mappingFunctionHydrostatic(UInt stationId, const Time &time, Double /*frequency*/, Angle /*azimuth*/, Angle elevation) const
 {
   try
   {
@@ -98,7 +98,7 @@ Double TroposphereHopfield::mappingFunctionHydrostatic(const Time &/*time*/, UIn
 
 /***********************************************/
 
-Double TroposphereHopfield::mappingFunctionWet(const Time &/*time*/, UInt /*stationId*/, Angle /*azimuth*/, Angle elevation) const
+Double TroposphereHopfield::mappingFunctionWet(UInt stationId, const Time &time, Double /*frequency*/, Angle /*azimuth*/, Angle elevation) const
 {
   try
   {
@@ -113,7 +113,7 @@ Double TroposphereHopfield::mappingFunctionWet(const Time &/*time*/, UInt /*stat
 
 /***********************************************/
 
-void TroposphereHopfield::mappingFunctionGradient(const Time &/*time*/, UInt /*stationId*/, Angle azimuth, Angle elevation, Double &dx, Double &dy) const
+void TroposphereHopfield::mappingFunctionGradient(UInt /*stationId*/, const Time &/*time*/, Double /*frequency*/, Angle azimuth, Angle elevation, Double &dx, Double &dy) const
 {
   try
   {
@@ -129,7 +129,7 @@ void TroposphereHopfield::mappingFunctionGradient(const Time &/*time*/, UInt /*s
 
 /***********************************************/
 
-void TroposphereHopfield::getAprioriValues(const Time &time, UInt stationId, Double &zenithDryDelay, Double &zenithWetDelay, Double &gradientDryNorth,
+void TroposphereHopfield::getAprioriValues(UInt stationId, const Time &time, Double /*frequency*/, Double &zenithDryDelay, Double &zenithWetDelay, Double &gradientDryNorth,
                                            Double &gradientWetNorth, Double &gradientDryEast, Double &gradientWetEast, Double &aDry, Double &aWet) const
 {
   try

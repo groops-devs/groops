@@ -398,7 +398,7 @@ Estimates parameters of a parametrization of \configClass{antennaCenterVariation
 which represents all antennas from \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}
 matching the wildcard patterns of \config{name}, \config{serial}, \config{radome}.
 
-The provided values at the grid points of the pattern of each gnssType are used as pseudo-observations.
+The provided values at the area weighted grid points of the pattern of each gnssType are used as pseudo-observations.
 A subset of patterns can be selected with \configClass{types}{gnssType}.
 
 The \file{GnssAntennaDefinition file}{gnssAntennaDefinition} can be modified to the demands before with
@@ -4841,9 +4841,9 @@ Name & Type & Annotation\\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionX & \hfuzz=500pt double & \hfuzz=500pt [m] exccentricity in north\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionY & \hfuzz=500pt double & \hfuzz=500pt [m] exccentricity in east\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionZ & \hfuzz=500pt double & \hfuzz=500pt [m] exccentricity in up\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionX & \hfuzz=500pt double & \hfuzz=500pt [m] eccentricity in north\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionY & \hfuzz=500pt double & \hfuzz=500pt [m] eccentricity in east\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~positionZ & \hfuzz=500pt double & \hfuzz=500pt [m] eccentricity in up\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~satelliteIdentifier & \hfuzz=500pt sequence & \hfuzz=500pt \\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
@@ -5450,6 +5450,8 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOutside & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~grid & \hfuzz=500pt \hyperref[gridType]{grid} & \hfuzz=500pt nodal point distribution of parameters, e.g harmonics splines\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~border & \hfuzz=500pt \hyperref[borderType]{border} & \hfuzz=500pt regularization areas, e.g land and ocean\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates for border\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates for border, 0: spherical coordinates\\
 \hline
 \end{tabularx}
 
@@ -6530,7 +6532,7 @@ by \configFile{inputfileOrbit}{instrument}. Non-conservative forces like solar r
 satellite (\configFile{inputfileStarCamera}{instrument}) and additional a satellite macro model (\config{satelliteModel})
 with the surface properties. Furthermore \configFile{inputfileAccelerometer}{instrument} observations are also considered.
 
-In a second step the accelerations are integrated twice to an dynamic orbit unsing a moving polynomial with the degree
+In a second step the accelerations are integrated twice to an dynamic orbit using a moving polynomial with the degree
 \config{integrationDegree}. The orbit is corrected to be self-consistent. This means the forces should be evaluated
 at the new integrated positions instead of the apriori ones. This correction is computed in a linear approximation
 using the gradient of the forces with respect to the positions (\config{gradientfield}). As this term is small generally
@@ -6547,7 +6549,7 @@ afterwards more digits are available for the computation.
 The integrated orbit should be fitted to observations afterwards by the programs
 \program{PreprocessingVariationalEquationOrbitFit} and/or \program{PreprocessingVariationalEquationSstFit}.
 They apply a least squares adjustment by estimating some satellite parameters (e.g. an accelerometer bias).
-If the fitted orbit is to far away from the original \configFile{inputfileOrbit}{instrument} the linearization may not be
+If the fitted orbit is too far away from the original \configFile{inputfileOrbit}{instrument} the linearization may not be
 accurate enough. In this case \program{PreprocessingVariationalEquation} should be run again with the fitted orbit
 as \configFile{inputfileOrbit}{instrument} and introducing the \config{estimatedParameters} as additional forces.
 
@@ -7222,6 +7224,69 @@ Name & Type & Annotation\\
 This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
+\subsection{SimulateStarCameraTerrasar}\label{SimulateStarCameraTerrasar}
+This program simulates \configFile{outputfileStarCamera}{instrument} measurements at each satellite's position for the Terrasar satellite.
+The \configFile{inputfileOrbit}{instrument} must contain positions and velocities (see \program{OrbitAddVelocityAndAcceleration}).
+The resulting rotation matrices rotate from satellite frame to inertial frame.
+
+H. Fiedler, E. Boerner, J. Mittermayer and G. Krieger,
+Total zero Doppler Steering-a new method for minimizing the Doppler centroid,
+in IEEE Geoscience and Remote Sensing Letters, vol. 2, no. 2, pp. 141-145, April 2005, \url{https://www.doi.org/10.1109/LGRS.2005.844591}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt rotation from satellite to inertial frame (x: along, y: cross, z: nadir)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt position and velocity defines the orientation of the satellite at each epoch\\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
+\section{Programs: Slr}
+\subsection{SlrProcessing}\label{SlrProcessing}
+This program processes SLR normal point or full rate observations. It calculates the linearized observation equations,
+accumulates them into a system of normal equations and solves it.
+
+To calculate observation equations from the passes, the model parameters or unknown parameters need to be
+defined beforehand. These unknown parameters can be chosen arbitrarily by the user with an adequate list of defined
+\configClass{parametrization}{slrParametrizationType}.
+Some of the \configClass{parametrization}{slrParametrizationType} also include a priori models.
+
+Lastly it is required to define the process flow of the SLR processing. This is accomplished
+with a list of \configClass{processingSteps}{slrProcessingStepType}.
+Each step is processed consecutively. Some steps allow the selection of parameters, station, or satellites,
+which affects all subsequent steps.
+
+The \configClass{timeSeries}{timeSeriesType} is used to precompute Earth rotation and station displacements
+with a uniform sampling. In a second step these values are interpolated to the observation epochs.
+A sampling of about 10 minutes should be adequate.
+
+It should be noted that GROOPS uses GPS time format, but normal point/full rate data files and CPF files, provided by ILRS data centers
+are given in UTC time format.
+%See also \program{SlrSimulation}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt defines station movements and earth rotation epochs\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~satellite & \hfuzz=500pt \hyperref[slrSatelliteGeneratorType]{slrSatelliteGenerator} & \hfuzz=500pt satellites\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~station & \hfuzz=500pt \hyperref[slrStationGeneratorType]{slrStationGenerator} & \hfuzz=500pt ground station network\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt apriori earth rotation\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrization & \hfuzz=500pt \hyperref[slrParametrizationType]{slrParametrization} & \hfuzz=500pt models and parameters\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~processingStep & \hfuzz=500pt \hyperref[slrProcessingStepType]{slrProcessingStep} & \hfuzz=500pt steps are processed consecutively\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \section{Programs: System}
 \subsection{FileConvert}\label{FileConvert}
 Converts GROOPS file between different file formats (ASCII, XML, binary),
@@ -7458,10 +7523,8 @@ A description of the format can be found under: \url{http://op.gfz-potsdam.de/ch
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~timeSeries & \hfuzz=500pt \hyperref[timeSeriesType]{timeSeries} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputOrbit & \hfuzz=500pt sequence & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt orbits in SP3 format\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hline
 \end{tabularx}
 
@@ -7481,6 +7544,71 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{Cpf2Orbit}\label{Cpf2Orbit}
+Converts \href{https://ilrs.gsfc.nasa.gov/data_and_products/formats/cpf.html}{CPF file}
+and writes an \file{instrument file (ORBIT)}{instrument}.
+
+The time format of the CPF file is UTC.
+The coordinate system used in the CPF format is usually represented in TRF.
+If \configClass{earthRotation}{earthRotationType} is provided the data are transformed
+from terrestrial (TRF) to celestial reference frame (CRF).
+
+See also \program{Orbit2Cpf}
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt SLR CPF file\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{Crd2NormalPoints}\label{Crd2NormalPoints}
+Converts \href{https://ilrs.gsfc.nasa.gov/data_and_products/formats/crd.html}{CRD file}
+and writes an \file{instrument file (METEOROLOGICAL)}{instrument} including meteorological data like
+temperature, air pressure and humidity as well as an \file{instrument file (SATELLITELASERRANGING)}{instrument}
+including normal point data like range, accuracy, redundancy, wavelength and window size.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileNormalPoints & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMeteorological & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSlrData & \hfuzz=500pt filename & \hfuzz=500pt SLR CRD files\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{Cstg2NormalPoints}\label{Cstg2NormalPoints}
+Converts \href{https://ilrs.gsfc.nasa.gov/data_and_products/data/npt/npt_format.html}{CSTG file} provided by the \href{https://ilrs.gsfc.nasa.gov/}{ILRS}
+and writes an \file{instrument file (METEOROLOGICAL)}{instrument} including meteorological data like
+temperature, air pressure and humidity as well as an \file{instrument file (SATELLITELASERRANGING)}{instrument}
+including normal point data like range, accuracy, redundancy, wavelength and window size.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileNormalPoints & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMeteorological & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSlrData & \hfuzz=500pt filename & \hfuzz=500pt SLR CSTG file\\
 \hline
 \end{tabularx}
 
@@ -8157,6 +8285,7 @@ Read ESA XML GOCE Data.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileGradiometer & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAngularRate & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAngularAcc & \hfuzz=500pt filename & \hfuzz=500pt \\
@@ -9101,9 +9230,11 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
-\subsection{Metop2Starcamera}\label{Metop2Starcamera}
-This program reads in star camera data from MetOp satellites given in the special CHAMP format.
-A description of the format can be found under: \url{http://op.gfz-potsdam.de/champ/docs_CHAMP/CH-GFZ-FD-001.pdf}
+\subsection{Merit2FullRate}\label{Merit2FullRate}
+Converts \href{https://ilrs.gsfc.nasa.gov/data_and_products/data/npt/npt_format.html}{MERIT II file}
+and writes an \file{instrument file (METEOROLOGICAL)}{instrument} including meteorological data like
+temperature, air pressure and humidity as well as an \file{instrument file (SATELLITELASERRANGING)}{instrument}
+including full rate data like range, accuracy, wavelength, azimuth and elevation.
 
 
 \keepXColumns
@@ -9111,8 +9242,29 @@ A description of the format can be found under: \url{http://op.gfz-potsdam.de/ch
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileNormalPoints & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMeteorological & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSlrData & \hfuzz=500pt filename & \hfuzz=500pt SLR MERIT II file\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{Merit2NormalPoints}\label{Merit2NormalPoints}
+Converts \href{https://ilrs.gsfc.nasa.gov/data_and_products/data/npt/npt_format.html}{MERIT II file}
+and writes an \file{instrument file (METEOROLOGICAL)}{instrument} including meteorological data like
+temperature, air pressure and humidity as well as an \file{instrument file (SATELLITELASERRANGING)}{instrument}
+including normal point data like range, accuracy, redundancy, wavelength, window size, azimuth and elevation.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileNormalPoints & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileMeteorological & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSlrData & \hfuzz=500pt filename & \hfuzz=500pt SLR MERIT II file\\
 \hline
 \end{tabularx}
 
@@ -9227,6 +9379,32 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~hardware & \hfuzz=500pt string & \hfuzz=500pt Computer hardware on which above software was run\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileComment & \hfuzz=500pt filename & \hfuzz=500pt comments in the comment block from a file (truncated at 80 characters)\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-unbounded.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt comments in the comment block\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{Orbit2Cpf}\label{Orbit2Cpf}
+Writes groops orbits to \href{https://ilrs.gsfc.nasa.gov/data_and_products/formats/cpf.html}{CPF file}.
+
+The coordinate system used in the CPF format is usually presented in ITRF.
+The required time format for the input orbit file is GPS.
+The time format of the output CPF file is given in UTC.
+
+See also \program{Cpf2Orbit}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSatelliteInfo & \hfuzz=500pt filename & \hfuzz=500pt Platform File\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~versionNumber & \hfuzz=500pt uint & \hfuzz=500pt Version number of production day with zero leading fill, e.g. 01\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~targetClass & \hfuzz=500pt uint & \hfuzz=500pt set 1 for passive retroreflector, set 0 for no retroreflector (includes debris)\\
 \hline
 \end{tabularx}
 
@@ -9539,6 +9717,26 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{SinexEccentricties2SlrPlatform}\label{SinexEccentricties2SlrPlatform}
+Reads metadata like station name, station number, approximate station position and station eccentricities
+from \href{https://ilrs.gsfc.nasa.gov/network/site_procedures/eccentricity.html}{Station Eccentricities Sinex File}
+(une version) and write them to the \configFile{outputfileStationInfo}{platform} for each station.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStationInfo & \hfuzz=500pt filename & \hfuzz=500pt loop variable is replaced with station name\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopStation & \hfuzz=500pt string & \hfuzz=500pt variable name for station loop\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinex & \hfuzz=500pt filename & \hfuzz=500pt SINEX file (.snx or .ssc)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~stationName & \hfuzz=500pt string & \hfuzz=500pt convert only these stations\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{SinexMetadata2GlonassFrequencyNumber}\label{SinexMetadata2GlonassFrequencyNumber}
 Create \configFile{outputfileMatrixPrn2FrequencyNumber}{matrix} matrix
 from \href{https://www.igs.org/mgex/metadata/#metadata}{IGS SINEX metadata format}
@@ -9576,6 +9774,62 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinexMetadata & \hfuzz=500pt filename & \hfuzz=500pt IGS SINEX metadata file\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSatelliteModel & \hfuzz=500pt filename & \hfuzz=500pt base satellite model\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~svn & \hfuzz=500pt string & \hfuzz=500pt e.g. G040, R736, E204, C211\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{SlrComModel2RangeBiasStationSatellite}\label{SlrComModel2RangeBiasStationSatellite}
+Converts the tables of CoM corrections of José Rodríguez
+(\url{https://icts-yebes.oan.es/slr/com_models/models/}) into station/satellite
+specific \configFile{outputfileRangeBias}{instrument}. Only the deviations to the default value in
+\configFile{inputfileSatelliteInfo}{platform} are written. This program must be called for every
+provided satellite. The range bias values can be used in
+\configClass{parametrization:rangeBiasStationSatelliteApriori}{slrParametrizationType:rangeBiasStationSatelliteApriori}
+in \program {SlrProcessing}.
+
+Reference:
+Rodriguez J., Otsubo T., Appleby G. Upgraded Modelling for the
+Determination of Centre of Mass Corrections of Geodetic SLR
+Satellites: Impact on Key Parameters of the Terrestrial Reference
+Frame. Journal of Geodesy, 2019. doi: 10.1007/s00190-019-01315-0
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileRangeBias & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUE, variable \{station\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSatelliteInfo & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt from Rodriguez model\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopStation & \hfuzz=500pt string & \hfuzz=500pt variable name for station loop\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~stationName & \hfuzz=500pt string & \hfuzz=500pt convert only these stations\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{SlrSinexDataHandling2Files}\label{SlrSinexDataHandling2Files}
+Converts SLR range and time bias from \verb|ILRS_Data_Handling_File_xxxx.xx.xx.snx| provided at
+\url{https://cddis.nasa.gov/archive/slr/products/resource/}. The range and time bias values can be used in
+\configClass{parametrization:rangeBiasXxxApriori}{slrParametrizationType:rangeBiasStationApriori}
+in \program {SlrProcessing}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileRangeBiasStation & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUE [m]\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileRangeBiasStationSatellite & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUE [m]\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTimeBias & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES(bias [s], drift [s/d])\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopStation & \hfuzz=500pt string & \hfuzz=500pt variable name for station loop\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopSatellite & \hfuzz=500pt string & \hfuzz=500pt variable name for satellite loop\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinex & \hfuzz=500pt filename & \hfuzz=500pt SINEX file (.snx)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSatelliteId & \hfuzz=500pt filename & \hfuzz=500pt table SP3 and satellite name\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~stationName & \hfuzz=500pt string & \hfuzz=500pt convert only these stations\\
 \hline
 \end{tabularx}
 

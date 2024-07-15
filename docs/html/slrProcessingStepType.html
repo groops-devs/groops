@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GROOPS - slrProcessingStepType</title>
+
+    <!-- JQuery and Popper -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+    <!-- Bootstrap -->
+    <!-- https://getbootstrap.com/docs/4.1/examples/ -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Mathjax -->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [ ['$','$'] ],
+                                  displayMath: [ ["\\[","\\]"] ],
+                                  processEscapes: true},
+                        TeX:     {Macros: {M: ["{\\mathbf #1}",1]},
+                                  equationNumbers: {autoNumber: "all"}  }});
+    </script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@2.7.7/MathJax.js?config=TeX-AMS_CHTML" integrity="sha384-e/4/LvThKH1gwzXhdbY2AsjR3rm7LHWyhIG5C0jiRfn8AN2eTN5ILeztWw0H9jmN" crossorigin="anonymous"></script>
+
+    <!-- lunr -->
+    <script src="https://cdn.jsdelivr.net/npm/lunr@2.3.8/lunr.min.js" integrity="sha384-vRQ9bDyE0Wnu+lMfm57BlYLO0/XauFuKpVsZPs7KEDwYKktWi5+Kz3MP8++DFlRY" crossorigin="anonymous"></script>
+
+    <!-- Mustache -->
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.0.1/mustache.min.js" integrity="sha384-0PLEZVBpOQ+Kqw3anJWSNWvRxpEFt02tSpBvyRsA4WcvX/OTldWdXxGLVLvh954H" crossorigin="anonymous"></script>
+
+    <!-- GROOPS Stylesheet -->
+    <link rel="stylesheet" href="static/groops.css"/>
+
+    <!-- icon -->
+    <link rel="icon" href="static/groops_icon.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+              <a class="navbar-brand" href="index.html"><img class="logo" src="static/groops_white.svg"></a>
+              <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mr-auto">
+                  <li class="nav-item">
+                    <a class="nav-link" href="programType.html">Programs</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="classes.html">Classes</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.parser.html">Parser</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" href="general.fileFormat.html">File Formats</a>
+                  </li>
+                </ul>
+              </div>
+                <form class="form-inline my-2 my-lg-0" action="search.html" id="searchTools">
+                  <input class="form-control mr-sm-2" placeholder="Search" name="searchTerms" method="GET" value="" type="text" id="searchBox">
+                  <button class="btn btn-secondary my-2 my-sm-0" type="submit" id="searchButton">Search</button>
+                </form>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" style="">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+        </nav>
+    </header>
+    <main class="container px-0 pt-2 top-buffer">
+        <div id="content" class="container">
+            
+<h1 id="slrProcessingStepType">SlrProcessingStep</h1><p>
+Processing step in <a class="groops-program" href="SlrProcessing.html">SlrProcessing</a>.</p><p>Processing steps enable a dynamic definition of the consecutive steps performed during any kind of SLR processing.
+The most common steps are <a class="groops-class" href="slrProcessingStepType.html#estimate">estimate</a>, which performs an iterative least
+squares adjustment, and <a class="groops-class" href="slrProcessingStepType.html#writeResults">writeResults</a>, which writes all output files
+defined in <a class="groops-program" href="SlrProcessing.html">SlrProcessing</a> and is usually the last step.
+Some steps such as <a class="groops-class" href="slrProcessingStepType.html#selectParametrizations">selectParametrizations</a>
+and <a class="groops-class" href="slrProcessingStepType.html#selectStations">selectStations</a> affect all subsequent steps.
+In case these steps are used within a <a class="groops-class" href="slrProcessingStepType.html#group">group</a> step,
+they only affect the steps within this level.
+</p>
+
+<h2 id="estimate">Estimate</h2><p>
+Iterative non-linear least squares adjustment.
+In every iteration it accumulates the system of normal equations, solves the system and updates the estimated parameters.
+The estimated parameters serve as a priori values in the next iteration and the following processing steps.
+Iterates until either every single parameter update (converted to an influence in meter)
+is below a <strong class="groops-config-element">convergenceThreshold</strong> or <strong class="groops-config-element">maxIterationCount</strong> is reached.</p><p>With <strong class="groops-config-element">computeResiduals</strong> the observation equations are computed
+again after each update to compute the observation residuals.</p><p>The overall standard deviation of a single observation used for the weighting
+is composed of several factors
+\[
+  \hat{\sigma}_i = \hat{\sigma}_i^{huber} \hat{\sigma}^{stat} \sigma_{apriori}^{stat},
+\]where the $\sigma_{apriori}^{stat}$ is given by <a class="groops-class" href="slrStationGeneratorType.html">station</a>:accuracy.
+The other factors are estimated iteratively from the residuals.</p><p>With <strong class="groops-config-element">computeWeights</strong> a standardized variance $\hat{s}_i^2$
+for each residual $\hat{\epsilon}_i$ is computed
+\[
+  \hat{s}_i^2 = \frac{1}{\hat{\sigma}^{stat} \sigma_{apriori}^{stat}}\frac{\hat{\epsilon}_i^2}{r_i}
+  \qquad\text{with}\qquad
+  r_i = \left(\M A\left(\M A^T\M A\right)^{-1}\M A^T\right)_{ii}
+\]taking the redundancy $r_i$ into account. If $\hat{s}_i$ is above a threshold <strong class="groops-config-element">huber</strong>
+the observation gets a higher standard deviation used for weighting according to
+\[
+  \hat{\sigma}_i^{huber} =
+  \left\{ \begin{array}{ll}
+    1                              & s < huber,\\
+    (\hat{s}_i/huber)^{huberPower} & s \ge huber
+  \end{array} \right.,
+\]similar to <a class="groops-ref" href="fundamentals.robustLeastSquares.html">robust least squares adjustment</a>.</p><p>With <strong class="groops-config-element">adjustSigma0</strong> an individual variance factor can be computed for each station separately
+\[
+  \hat{\sigma}^{stat} = \sqrt{\frac{\hat{\M\epsilon}^T\M P\hat{\M\epsilon}}{r}}.
+\]</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeResiduals</div></div></td><td>boolean</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">adjustSigma0</div></div></td><td>boolean</td><td>adjust sigma0 by scale factor (per station)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">computeWeights</div></div></td><td>boolean</td><td>downweight outliers</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huber</div></div></td><td>double</td><td>residuals > huber*sigma0 are downweighted</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">huberPower</div></div></td><td>double</td><td>residuals > huber: sigma=(e/huber)^huberPower*sigma0</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">convergenceThreshold</div></div></td><td>double</td><td>[m] stop iteration once full convergence is reached</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">maxIterationCount</div></div></td><td>uint</td><td>maximum number of iterations</td></tr>
+</table>
+
+<h2 id="writeResults">WriteResults</h2><p>
+In this step all <strong class="groops-config-element">outputfiles</strong> defined in <a class="groops-class" href="slrParametrizationType.html">parametrizations</a>
+are written. It considers the settings of
+<a class="groops-class" href="slrProcessingStepType.html#selectParametrizations">processingStep:selectParametrizations</a>
+and <a class="groops-class" href="slrProcessingStepType.html#selectStations">processingStep:selectStations</a>.</p><p>It is usually the last processing step, but can also be used at other points in the
+processing in combination with <strong class="groops-config-element">suffix</strong> to write intermediate results.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">suffix</div></div></td><td>string</td><td>appended to every output file name (e.g. orbit.G01.suffix.dat)</td></tr>
+</table>
+
+<h2 id="writeNormalEquations">WriteNormalEquations</h2><p>
+Accumulates the normal equations matrix and writes it.
+If <a class="groops-class" href="parameterSelectorType.html">remainingParameters</a>
+is set only the selected parameters are written to the normal equations
+and all other parameters are eliminated beforehand (implicitly solved).</p><p>The solution of the normals would results in $\Delta\M x$
+(see <a class="groops-class" href="slrParametrizationType.html">parametrizations</a>). To write the
+appropriate apriori vector $\M x_0$ use
+<a class="groops-class" href="slrProcessingStepType.html#writeAprioriSolution">processingStep:writeAprioriSolution</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileNormalEquations</div></div></td><td>filename</td><td>normals</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">remainingParameters</div></div></td><td><a href="parameterSelectorType.html">parameterSelector</a></td><td>parameter order/selection of output normal equations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">constraintsOnly</div></div></td><td>boolean</td><td>write only normals of constraints without observations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">defaultNormalsBlockSize</div></div></td><td>uint</td><td>block size for distributing the normal equations, 0: one block, empty: original block size</td></tr>
+</table>
+
+<h2 id="writeAprioriSolution">WriteAprioriSolution</h2><p>
+Writes the current apriori vector $\M x_0$
+(see <a class="groops-class" href="slrParametrizationType.html">parametrizations</a>).
+If <a class="groops-class" href="parameterSelectorType.html">remainingParameters</a>
+is set only the selected parameters are written.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileAprioriSolution</div></div></td><td>filename</td><td>a priori parameters</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileParameterNames</div></div></td><td>filename</td><td>parameter names</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">remainingParameters</div></div></td><td><a href="parameterSelectorType.html">parameterSelector</a></td><td>parameter order/selection of output normal equations</td></tr>
+</table>
+
+<h2 id="writeResiduals">WriteResiduals</h2><p>
+Writes the <a class="groops-file" href="fileFormat_instrument.html">observation residuals</a> for all
+<a class="groops-class" href="platformSelectorType.html">selectStations</a>. For for each station-satellite
+pair a file is written. The file name is interpreted as a template with
+the variables <code>{station}</code> and <code>{satellite}</code> being replaced by the station name.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td>subset of used stations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectSatellites</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td>subset of used satellites</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileResiduals</div></div></td><td>filename</td><td>variable {station} available</td></tr>
+</table>
+
+<h2 id="writeUsedStationList">WriteUsedStationList</h2><p>
+Writes a <a class="groops-file" href="fileFormat_stringList.html">list</a> of stations (stations) which are used in the last step and
+selected by <a class="groops-class" href="platformSelectorType.html">selectStations</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td>subset of used stations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileUsedStationList</div></div></td><td>filename</td><td>ascii file with names of used stations</td></tr>
+</table>
+
+<h2 id="writeUsedSatelliteList">WriteUsedSatelliteList</h2><p>
+Writes a <a class="groops-file" href="fileFormat_stringList.html">list</a> of satellites which are used in the last step and
+selected by <a class="groops-class" href="platformSelectorType.html">selectSatellites</a>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectSatellites</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td>subset of used satellites</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileUsedSatelliteList</div></div></td><td>filename</td><td>ascii file with names</td></tr>
+</table>
+
+<h2 id="printResidualStatistics">PrintResidualStatistics</h2><p>
+Print residual statistics.
+<pre>
+  station   sigma redundancy obsCount outlier
+  ----------------------------------------------
+  1874       0.52   0.86      22      1 (4.55 
+  1889       1.20   0.98     186      5 (2.69 
+  1890       0.63   0.77      14      1 (7.14 
+  1891       0.49   0.50       6      0 (0.00 
+  7237       1.08   0.95     236     14 (5.93 
+  7394       0.36   0.88      26      0 (0.00 
+  7811       0.38   0.41       5      0 (0.00 
+  7819       1.21   0.94     120      1 (0.83 
+  7821       0.69   0.95     202      3 (1.49 
+  7827       0.40   0.85      29      1 (3.45 
+  7839       0.52   0.93     143     10 (6.99 
+  7840       0.15   0.80      16      0 (0.00 
+  7841       0.26   0.90      56      1 (1.79 
+  7941       0.55   0.92     277      5 (1.81 
+  8834       0.66   0.88     101      1 (0.99 
+  ----------------------------------------------
+  satellite sigma redundancy obsCount outlier
+  ----------------------------------------------
+  lageos1    1.04   0.94     722     24 (3.32 
+  lageos2    0.91   0.95     590     11 (1.86 
+  etalon1    1.19   0.78      57      2 (3.51 
+  etalon2    1.10   0.81      70      6 (8.57 
+  ----------------------------------------------
+</pre>
+</p>
+
+<h2 id="selectParametrizations">SelectParametrizations</h2><p>
+Enable/disable parameter groups and constraint groups for subsequent steps,
+e.g. <a class="groops-class" href="slrProcessingStepType.html#estimate">processingStep:estimate</a> or
+<a class="groops-class" href="slrProcessingStepType.html#writeResults">processingStep:writeResults</a>.
+The <strong class="groops-config-element">name</strong> and <strong class="groops-config-element">nameConstraint</strong> of these groups
+are defined in <a class="groops-class" href="slrParametrizationType.html">parametrizations</a>.
+Prior models or previously estimated parameters used as new apriori $\M x_0$ values are unaffected
+and they are always reduced from the observations. This means all unselected parameters are kept fixed
+to their last result.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrization</div></div></td><td>choice</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">enable</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset-unbounded">name</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">disable</div></div></td><td>sequence</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset-unbounded">name</div></div></td><td>string</td><td>wildcards: * and ?</td></tr>
+</table>
+
+<h2 id="selectSatellites">SelectSatellites</h2><p>
+This step can be used to process only a subset of satellites in subsequent processing steps.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectSatellites</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+</table>
+
+<h2 id="selectStations">SelectStations</h2><p>
+This step can be used to process only a subset of stations in subsequent processing steps.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectStations</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
+</table>
+
+<h2 id="group">Group</h2><p>
+Perform these processing steps. This step can be used to structure complex processing flows.
+The <a class="groops-class" href="slrProcessingStepType.html#selectParametrizations">select..</a> processing steps
+defined within a group only affect the steps within this group.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">processingStep</div></div></td><td><a href="slrProcessingStepType.html">slrProcessingStep</a></td><td>steps are processed consecutively</td></tr>
+</table>
+
+        </div>
+    </main>
+</body>
+</html>

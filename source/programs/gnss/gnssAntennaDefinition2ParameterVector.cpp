@@ -16,7 +16,7 @@ Estimates parameters of a parametrization of \configClass{antennaCenterVariation
 which represents all antennas from \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}
 matching the wildcard patterns of \config{name}, \config{serial}, \config{radome}.
 
-The provided values at the grid points of the pattern of each gnssType are used as pseudo-observations.
+The provided values at the area weighted grid points of the pattern of each gnssType are used as pseudo-observations.
 A subset of patterns can be selected with \configClass{types}{gnssType}.
 
 The \file{GnssAntennaDefinition file}{gnssAntennaDefinition} can be modified to the demands before with
@@ -105,8 +105,10 @@ void GnssAntennaDefinition2ParameterVector::run(Config &config, Parallel::Commun
           for(UInt i=0; i<pattern.pattern.rows(); i++)
             for(UInt k=0; k<pattern.pattern.columns(); k++)
             {
-              l(idx) = pattern.pattern(i,k);
-              copy(parametrization->designMatrix(Angle(i*2*PI/pattern.pattern.rows()), Angle(PI/2-k*Double(pattern.dZenit))), A.row(idx));
+              // area weight
+              const Double p = std::sqrt((k == 0) ? (1-std::cos(0.5*Double(pattern.dZenit))) : std::sin(k*Double(pattern.dZenit)));
+              l(idx) = p * pattern.pattern(i,k);
+              axpy(p, parametrization->designMatrix(Angle(i*2*PI/pattern.pattern.rows()), Angle(PI/2-k*Double(pattern.dZenit))), A.row(idx));
               idx++;
             }
           solutions.push_back(leastSquares(A, l));

@@ -28,8 +28,9 @@ class VariationalEquation
 public:
   VariationalEquation();
 
-  void init(SatelliteModelPtr satellite, ParametrizationGravityPtr parameterGravity, ParametrizationAccelerationPtr parameterAcceleration,
-            const std::vector<Time> &stochasticPulse, EphemeridesPtr ephemerides, UInt integrationDegree);
+  void init(SatelliteModelPtr satellite, const std::vector<ParametrizationGravityPtr> &parameterGravity,
+            ParametrizationAccelerationPtr parameterAcceleration, const std::vector<Time> &stochasticPulse,
+            EphemeridesPtr ephemerides, UInt integrationDegree);
 
   void setArc(VariationalEquationArc &arc);
 
@@ -92,13 +93,13 @@ public:
   void velocity(UInt idEpoch, MatrixSliceRef vel0, MatrixSliceRef VelDesign);
 
 private:
-  SatelliteModelPtr              satellite;
-  VariationalEquationArc         arc_;
-  EphemeridesPtr                 ephemerides;
-  ParametrizationGravityPtr      parameterGravity;
-  ParametrizationAccelerationPtr parameterAcceleration;
-  std::vector<Time>              timePulse;
-  std::vector<Matrix>            stochasticPulse;
+  SatelliteModelPtr                      satellite;
+  VariationalEquationArc                 arc_;
+  EphemeridesPtr                         ephemerides;
+  std::vector<ParametrizationGravityPtr> parametersGravity;
+  ParametrizationAccelerationPtr         parameterAcceleration;
+  std::vector<Time>                      timePulse;
+  std::vector<Matrix>                    stochasticPulse;
 
 
   UInt  parameterCount_;

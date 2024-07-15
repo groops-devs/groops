@@ -29,6 +29,7 @@ Read ESA XML GOCE Data.
 class GoceXmlEggNom1b
 {
   void readGradiometer   (XmlNodePtr &dataNode, GradiometerArc    &arc);
+  void readAccelerometer (XmlNodePtr &dataNode, AccelerometerArc  &arc);
   void readStarCamera    (XmlNodePtr &dataNode, StarCameraArc     &arc);
   void readAngularRate   (XmlNodePtr &dataNode, AccelerometerArc  &arc);
   void readAngularAcc    (XmlNodePtr &dataNode, AccelerometerArc  &arc);
@@ -45,10 +46,11 @@ void GoceXmlEggNom1b::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 {
   try
   {
-    FileName sggName, scaName, angRateName, angAccName;
+    FileName sggName, accName, scaName, angRateName, angAccName;
     std::vector<FileName> fileNames;
 
     readConfig(config, "outputfileGradiometer",    sggName,       Config::OPTIONAL, "", "");
+    readConfig(config, "outputfileAccelerometer",  accName,       Config::OPTIONAL, "", "");
     readConfig(config, "outputfileStarCamera",     scaName,       Config::OPTIONAL, "", "");
     readConfig(config, "outputfileAngularRate",    angRateName,   Config::OPTIONAL, "", "");
     readConfig(config, "outputfileAngularAcc",     angAccName,    Config::OPTIONAL, "", "");
@@ -57,6 +59,7 @@ void GoceXmlEggNom1b::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     logStatus<<"read input files"<<Log::endl;
     GradiometerArc     gradiometerArc;
+    AccelerometerArc   accelerometerArc;
     StarCameraArc      starCameraArc;
     AccelerometerArc   angRateArc;
     AccelerometerArc   angAccArc;
@@ -69,6 +72,7 @@ void GoceXmlEggNom1b::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       XmlNodePtr dataNode = getChild(rootNode, "Data_Block", TRUE);
 
       if(!sggName.empty())     readGradiometer   (dataNode, gradiometerArc);
+      if(!accName.empty())     readAccelerometer (dataNode, accelerometerArc);
       if(!scaName.empty())     readStarCamera    (dataNode, starCameraArc);
       if(!angRateName.empty()) readAngularRate   (dataNode, angRateArc);
       if(!angAccName.empty())  readAngularAcc    (dataNode, angAccArc);
@@ -81,6 +85,13 @@ void GoceXmlEggNom1b::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       logStatus<<"write gradiometer file <"<<sggName<<">"<<Log::endl;
       InstrumentFile::write(sggName, gradiometerArc);
       Arc::printStatistics(gradiometerArc);
+    }
+
+    if(!accName.empty())
+    {
+      logStatus<<"write accelerometer file <"<<accName<<">"<<Log::endl;
+      InstrumentFile::write(accName, accelerometerArc);
+      Arc::printStatistics(accelerometerArc);
     }
 
     if(!scaName.empty())
@@ -147,6 +158,47 @@ void GoceXmlEggNom1b::readGradiometer(XmlNodePtr &dataNode, GradiometerArc &arc)
   catch(std::exception &e)
   {
     logWarning<<"In GoceXmlEggNom1b::readGradiometer:\n"<<e.what()<<" continue..."<<Log::endl;
+  }
+}
+
+/***********************************************/
+
+void GoceXmlEggNom1b::readAccelerometer(XmlNodePtr &dataNode, AccelerometerArc &arc)
+{
+  try
+  {
+    AccelerometerEpoch epoch;
+
+    XmlNodePtr node  = getChild(dataNode, "EGG_CCD_DS", TRUE);
+
+    UInt epochCount = childCount(node, "EGG_CCD_1i", TRUE);
+    for(UInt i=0; i<epochCount; i++)
+    {
+      XmlNodePtr epochNode = getChild(node, "EGG_CCD_1i", TRUE);
+      Double t = 0;
+      readXml(epochNode, "Tt_GPS", t, TRUE);
+      epoch.time = seconds2time(t) + date2time(1980,1,6);
+
+      XmlNodePtr node2 = getChild(epochNode, "Acc_Ccm", TRUE);
+      std::string xStr, yStr, zStr;
+      readXml(node2, "X", xStr, TRUE);
+      readXml(node2, "Y", yStr, TRUE);
+      readXml(node2, "Z", zStr, TRUE);
+
+      Double tmp;
+      std::stringstream ssx(xStr);
+      std::stringstream ssy(yStr);
+      std::stringstream ssz(zStr);
+      ssx>>epoch.acceleration.x()>>tmp>>tmp;
+      ssy>>tmp>>epoch.acceleration.y()>>tmp;
+      ssz>>tmp>>tmp>>epoch.acceleration.z();
+
+      arc.push_back(epoch);
+    }
+  }
+  catch(std::exception &e)
+  {
+    logWarning<<"In GoceXmlEggNom1b::readAccelerometer:\n"<<e.what()<<" continue..."<<Log::endl;
   }
 }
 
