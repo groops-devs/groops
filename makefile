@@ -52,8 +52,10 @@ ifeq ($(OS),GNU/Linux)
   endif
 endif
 
-CMAKE=/usr/bin/cmake
-#CMAKE=cmake
+# Select cmake version
+#
+#CMAKE=/usr/bin/cmake
+CMAKE=cmake
 
 # Targets
 
