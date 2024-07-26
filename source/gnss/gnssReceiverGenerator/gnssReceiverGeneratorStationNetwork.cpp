@@ -121,8 +121,10 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
         try
         {
           fileNameVariableList.setVariable("station", stationName.at(i).at(k));
-          if(!fileNameObs.empty() && !System::exists(fileNameObs(fileNameVariableList)))
+          if(!fileNameObs.empty() && !System::exists(fileNameObs(fileNameVariableList))) {
+            logWarningOnce<<"Unable to read observation file <"<<fileNameObs(fileNameVariableList)<<">, disabling receiver "<<stationName.at(i).at(k)<<"."<<Log::endl;
             continue;
+          };
 
           Platform platform;
           readFilePlatform(fileNameStationInfo(fileNameVariableList), platform);
@@ -141,8 +143,9 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
               if(iter != arc.end())
                 platform.approxPosition = iter->vector3d;
             }
-            catch(std::exception &/*e*/)
+            catch(std::exception &e)
             {
+              logWarningOnce<<stationName.at(i).at(k)<<" disabled: "<<e.what()<<Log::endl;
             }
           }
 
@@ -226,8 +229,10 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
               return (countEpochs*recv->observationSampling >= minEstimableEpochsRatio*times.size()*medianSampling(times).seconds());
             };
 
-            if(!enoughEpochs())
+            if(!enoughEpochs()) {
+              logWarning<<"Not enough valid epochs with observations, disabling receiver "<<receiversWithAlternatives.at(i).at(k)->name()<<Log::endl;
               continue;
+            };
 
             // clock file
             // ----------
