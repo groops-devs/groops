@@ -1,4 +1,5 @@
 # main
+- New option:       GnssAntennaNormalsConstraint: gnssType selection for TEC constraint.
 - Bugfix:           slrParametrizationRangeBiasStationSatellite: Fix station index.
 - Bugfix:           parameterNames: fixed wrong order.
 - Bugfix:           GraceAod2DoodsonHarmonics: fixed phase error.

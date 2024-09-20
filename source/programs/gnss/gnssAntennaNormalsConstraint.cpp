@@ -107,8 +107,9 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssAntennaN
   if(readConfigChoiceElement(config, "TEC", choice, "zero TEC computed as (weighetd) least squares from all types"))
   {
     var.type = GnssAntennaNormalsConstraint::Constraint::TEC;
+    readConfig(config, "type",         var.gnssType,    Config::DEFAULT,  "*",    "applied for combination of matching types");
     readConfig(config, "applyWeight",  var.applyWeight, Config::DEFAULT,  "1",    "from normal equations");
-    readConfig(config, "sigma",        var.sigma,       Config::DEFAULT,  "1e-5", "[TECU]");
+    readConfig(config, "sigma",        var.sigma,       Config::DEFAULT,  "1e-4", "[TECU]");
   }
   endChoice(config);
   return TRUE;
@@ -265,11 +266,13 @@ void GnssAntennaNormalsConstraint::run(Config &config, Parallel::CommunicatorPtr
       {
         // accumulate constraint normals
         for(UInt idType1=0; idType1<types.at(idAnt).size(); idType1++)
-        {
-          rankKUpdate(weight, A.at(idType1).trans(), normals.slice(index.at(idAnt).at(idType1), index.at(idAnt).at(idType1), parameterCount, parameterCount));
-          for(UInt idType2=idType1+1; idType2<types.at(idAnt).size(); idType2++)
-            matMult(weight, A.at(idType1).trans(), A.at(idType2), normals.slice(index.at(idAnt).at(idType1), index.at(idAnt).at(idType2), parameterCount, parameterCount));
-        }
+          if(A.at(idType1).size())
+          {
+            rankKUpdate(weight, A.at(idType1), normals.slice(index.at(idAnt).at(idType1), index.at(idAnt).at(idType1), parameterCount, parameterCount));
+            for(UInt idType2=idType1+1; idType2<types.at(idAnt).size(); idType2++)
+              if(A.at(idType2).size())
+                matMult(weight, A.at(idType1).trans(), A.at(idType2), normals.slice(index.at(idAnt).at(idType1), index.at(idAnt).at(idType2), parameterCount, parameterCount));
+          }
         info.observationCount += A.at(0).rows();
       };
       // --------------------------------
@@ -344,20 +347,26 @@ void GnssAntennaNormalsConstraint::run(Config &config, Parallel::CommunicatorPtr
           }
           case Constraint::TEC:
           {
-            logInfo<<"  - zero mean TEC"<<Log::endl;
+            std::string str;
+            for(GnssType type : types.at(idAnt))
+              if(type == constraint.gnssType)
+                str += " "+type.str();
+            logInfo<<"  - zero mean TEC"<<str<<Log::endl;
             Matrix N(parametrization->parameterCount(), Matrix::SYMMETRIC);
             for(UInt idType=0; idType<types.at(idAnt).size(); idType++)
-              axpy(std::pow(types.at(idAnt).at(idType).ionosphericFactor(), 2), (constraint.applyWeight ? P.at(idType) : I), N);
+              if(types.at(idAnt).at(idType) == constraint.gnssType)
+                axpy(std::pow(types.at(idAnt).at(idType).ionosphericFactor(), 2), (constraint.applyWeight ? P.at(idType) : I), N);
             cholesky(N);
 
             // constraint as pseudo observation equations
             std::vector<Matrix> A(types.at(idAnt).size());
             for(UInt idType=0; idType<types.at(idAnt).size(); idType++)
-            {
-              A.at(idType) = types.at(idAnt).at(idType).ionosphericFactor() * (constraint.applyWeight ? P.at(idType) : I);
-              triangularSolve(1., N.trans(), A.at(idType));
-              triangularSolve(1., N,         A.at(idType));
-            }
+              if(types.at(idAnt).at(idType) == constraint.gnssType)
+              {
+                A.at(idType) = types.at(idAnt).at(idType).ionosphericFactor() * (constraint.applyWeight ? P.at(idType) : I);
+                triangularSolve(1., N.trans(), A.at(idType));
+                triangularSolve(1., N,         A.at(idType));
+              }
 
             accumulateNormals(1./std::pow(constraint.sigma, 2), A);
             break;
