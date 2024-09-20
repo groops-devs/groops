@@ -2,6 +2,7 @@
 - Bugfix:           slrParametrizationRangeBiasStationSatellite: Fix station index.
 - Bugfix:           parameterNames: fixed wrong order.
 - Bugfix:           GraceAod2DoodsonHarmonics: fixed phase error.
+- Other:            gnss: set margin for polynomial orbit interpolation to 1e-7 seconds.
 
 # Release 2024-06-24
 - Interface change: Variables can now declared at any place in the config file (not only in the global section).
