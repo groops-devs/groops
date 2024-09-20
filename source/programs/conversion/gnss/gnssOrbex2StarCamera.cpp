@@ -87,9 +87,11 @@ void GnssOrbex2StarCamera::run(Config &config, Parallel::CommunicatorPtr /*comm*
         std::string id = line.substr(5,3);
         if(identifiers.size() && std::find(identifiers.begin(), identifiers.end(), id) == identifiers.end())
           continue;
+        Vector q(4);
+        std::stringstream ss(line.substr(23));
+        ss>>q(0)>>q(1)>>q(2)>>q(3);
+        Rotary3d trf2sat(q);
 
-        Rotary3d trf2sat(Vector({String::toDouble(line.substr(24,19)), String::toDouble(line.substr(44,19)),
-                             String::toDouble(line.substr(64,19)), String::toDouble(line.substr(84,19))}));
         StarCameraEpoch epoch;
         epoch.time = time;
         epoch.rotary = inverse(trf2sat * crf2trf); // (trf/crf2sat --> sat2trf/crf)
