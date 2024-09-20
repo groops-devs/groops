@@ -1,4 +1,5 @@
 # main
+- Bugfix:           parameterNames: fixed wrong order.
 
 # Release 2024-06-24
 - Interface change: Variables can now declared at any place in the config file (not only in the global section).
