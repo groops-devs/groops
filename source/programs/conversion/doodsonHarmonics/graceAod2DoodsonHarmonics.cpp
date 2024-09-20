@@ -162,10 +162,10 @@ void GraceAod2DoodsonHarmonics::run(Config &config, Parallel::CommunicatorPtr /*
     for(UInt i=0; i<doodson.size(); i++)
     {
       const Double xi = tgp.xi(doodson.at(i));
-      cnmCos.at(i)  = cnmCosOld.at(i) * cos(xi) - cnmSinOld.at(i) * sin(xi);
-      snmCos.at(i)  = snmCosOld.at(i) * cos(xi) - snmSinOld.at(i) * sin(xi);
-      cnmSin.at(i)  = cnmCosOld.at(i) * sin(xi) + cnmSinOld.at(i) * cos(xi);
-      snmSin.at(i)  = snmCosOld.at(i) * sin(xi) + snmSinOld.at(i) * cos(xi);
+      cnmCos.at(i)  =  cnmCosOld.at(i) * cos(xi) + cnmSinOld.at(i) * sin(xi);
+      snmCos.at(i)  =  snmCosOld.at(i) * cos(xi) + snmSinOld.at(i) * sin(xi);
+      cnmSin.at(i)  = -cnmCosOld.at(i) * sin(xi) + cnmSinOld.at(i) * cos(xi);
+      snmSin.at(i)  = -snmCosOld.at(i) * sin(xi) + snmSinOld.at(i) * cos(xi);
     }
 
     // ======================================================
