@@ -62,7 +62,6 @@ void GnssParametrizationStaticPositions::init(Gnss *gnss, Parallel::Communicator
     selectedReceivers = gnss->selectReceivers(selectReceivers);
 
     // apriori positions
-    pos.resize(gnss->receivers.size());
     pos0.resize(gnss->receivers.size());
     for(auto recv : gnss->receivers)
       if(selectedReceivers.at(recv->idRecv()) && recv->useable())
@@ -83,7 +82,6 @@ void GnssParametrizationStaticPositions::init(Gnss *gnss, Parallel::Communicator
         }
         Parallel::reduceSum(p, 0, comm);
         Parallel::broadCast(p, 0, comm);
-        pos.at(recv->idRecv())  = Vector3d(p);
         pos0.at(recv->idRecv()) = Vector3d(p);
       }
 
@@ -97,7 +95,7 @@ void GnssParametrizationStaticPositions::init(Gnss *gnss, Parallel::Communicator
           platforms.at(recv->idRecv()) = &recv->platform;
 
       // no net positions
-      noNetPos = pos;
+      noNetPos = pos0;
       if(!fileNameNoNetPositions.empty())
         for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
           if(platforms.at(idRecv))
@@ -157,12 +155,22 @@ void GnssParametrizationStaticPositions::initParameter(GnssNormalEquationInfo &n
                     && (sigmaNoNetRotation || sigmaNoNetTranslation || sigmaNoNetScale) && countPara;
 
     // synchronize positions
+    pos.resize(gnss->receivers.size());
     for(auto recv : gnss->receivers)
       if(index.at(recv->idRecv()))
       {
         Vector p(3);
         if(recv->isMyRank())
-          p = pos.at(recv->idRecv()).vector();
+        {
+          UInt count = 0;
+          for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
+            if(recv->useable(idEpoch))
+            {
+              p += recv->pos.at(idEpoch).vector();
+              count++;
+            }
+          p *= 1./count;
+        }
         Parallel::reduceSum(p, 0, normalEquationInfo.comm);
         Parallel::broadCast(p, 0, normalEquationInfo.comm);
         pos.at(recv->idRecv()) = Vector3d(p);
