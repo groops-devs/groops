@@ -111,8 +111,8 @@ inline void SlrParametrizationRangeBiasStationSatellite::init(Slr *slr, const st
           if(selectedSatellites.at(idSat))
           {
             auto para = new Parameter();
-            parameters.at(idSat).resize(slr->satellites.size(), nullptr);
-            parameters.at(idSat).at(idSat) = para;
+            parameters.at(idStat).resize(slr->satellites.size(), nullptr);
+            parameters.at(idStat).at(idSat) = para;
             para->station   = slr->stations.at(idStat);
             para->satellite = slr->satellites.at(idSat);
             para->range     = 0.;

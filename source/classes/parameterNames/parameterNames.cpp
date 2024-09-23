@@ -80,7 +80,7 @@ ParameterNames::ParameterNames(Config &config, const std::string &name)
       if(isCreateSchema(config))
         return;
 
-      names.insert(names.begin(), ptr->names.begin(), ptr->names.end());
+      names.insert(names.end(), ptr->names.begin(), ptr->names.end());
     }
   }
   catch(std::exception &e)
