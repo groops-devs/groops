@@ -67,6 +67,7 @@ void GroupPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
 
     // -------------------------------
 
+    Parallel::barrier(comm);
     groupPtr = Log::group(Parallel::isMaster(comm), silently);
     Log::setLogFile(fileNameLog);
     Log::currentLogFileOnly(TRUE);
@@ -75,6 +76,7 @@ void GroupPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     else
       logStatus<<"=== Starting GROOPS subgroup ==="<<Log::endl;
     Log::currentLogFileOnly(FALSE);
+    Parallel::barrier(comm);
 
     try
     {

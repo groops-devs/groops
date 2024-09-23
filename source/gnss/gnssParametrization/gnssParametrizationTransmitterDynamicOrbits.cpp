@@ -98,7 +98,7 @@ void GnssParametrizationTransmitterDynamicOrbits::init(Gnss *gnss, Parallel::Com
         para->PosDesign = variationalEquation.PosDesign;
         para->VelDesign = variationalEquation.VelDesign;
         para->x         = Vector(para->PosDesign.columns());
-        para->polynomial.init(para->times, interpolationDegree);
+        para->polynomial.init(para->times, interpolationDegree, TRUE/*throwException*/, FALSE/*leastSquares*/, -(interpolationDegree+1.1), -1.1, 1e-7);
 
         // parameter names
         file.parameterNameSatellite(para->parameterNames);

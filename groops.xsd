@@ -11410,12 +11410,17 @@
 										</xs:annotation>
 										<xs:complexType>
 											<xs:sequence>
+												<xs:element name="type" type="gnssType" minOccurs="0" default="*">
+													<xs:annotation>
+														<xs:documentation>applied for combination of matching types</xs:documentation>
+													</xs:annotation>
+												</xs:element>
 												<xs:element name="applyWeight" type="boolean" minOccurs="0" default="1">
 													<xs:annotation>
 														<xs:documentation>from normal equations</xs:documentation>
 													</xs:annotation>
 												</xs:element>
-												<xs:element name="sigma" type="double" minOccurs="0" default="1e-5">
+												<xs:element name="sigma" type="double" minOccurs="0" default="1e-4">
 													<xs:annotation>
 														<xs:documentation>[TECU]</xs:documentation>
 													</xs:annotation>

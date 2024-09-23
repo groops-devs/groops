@@ -48,7 +48,8 @@ public:
                   const std::vector<Transform3d> &crf2srf, const std::vector<Transform3d> &srf2arf,
                   const std::vector<Time> &timesPosVel, const_MatrixSliceRef position, const_MatrixSliceRef velocity, UInt interpolationDegree)
   : GnssTransceiver(platform, noPatternFoundAction, useableEpochs),
-    type(prn), polynomial(timesPosVel, interpolationDegree), clk(clock), offset(offset), crf2srf(crf2srf), srf2arf(srf2arf), timesPosVel(timesPosVel), pos(position), vel(velocity) {}
+    type(prn), polynomial(timesPosVel, interpolationDegree, TRUE/*throwException*/, FALSE/*leastSquares*/, -(interpolationDegree+1.1), -1.1, 1e-7),
+    clk(clock), offset(offset), crf2srf(crf2srf), srf2arf(srf2arf), timesPosVel(timesPosVel), pos(position), vel(velocity) {}
 
   /// Destructor.
   virtual ~GnssTransmitter() {}

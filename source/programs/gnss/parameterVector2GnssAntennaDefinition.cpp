@@ -97,25 +97,42 @@ void ParameterVector2GnssAntennaDefinition::run(Config &config, Parallel::Commun
 
     // ============================
 
+    // sort parameters into antenna, gnssType
+    // --------------------------------------
+    std::map<std::string, std::map<std::string, Vector>> solutions; // antenna, gnsType, solution
     for(UInt i=0; i<parameterNames.size(); i++)
-      if(String::startsWith(parameterNames.at(i).type, parametrizationNames.at(0).type))
+    {
+      UInt idx = std::distance(parametrizationNames.begin(),
+                               std::find_if(parametrizationNames.begin(), parametrizationNames.end(), [&](const auto &name)
+                                            {return String::startsWith(parameterNames.at(i).type, name.type);}));
+      if(idx >= parametrization->parameterCount())
+        continue;
+
+      // extract GnssType
+      auto pos = parameterNames.at(i).type.rfind('.');
+      if((pos == std::string::npos) || (pos+1 == parameterNames.at(i).type.size()))
+        throw(Exception(parameterNames.at(i).str() + ": GnssType not found in parameter name"));
+      std::string typeName = parameterNames.at(i).type.substr(pos+1);
+
+      if(!solutions[parameterNames.at(i).object][typeName].size())
+        solutions[parameterNames.at(i).object][typeName] = Vector(parametrization->parameterCount());
+      solutions[parameterNames.at(i).object][typeName](idx) = solution(i);
+    }
+
+    // add parametrization to all machting patterns
+    // -------------------------------------------
+    for(auto &solutionsAntenna : solutions)
+    {
+      // check antenna name
+      // ------------------
+      std::vector<std::string> parts = String::split(solutionsAntenna.first, GnssAntennaDefinition::sep);
+      auto antenna = GnssAntennaDefinition::find(antennas, parts.at(0), parts.at(1), parts.at(2));
+      if(!antenna)
+        throw(Exception("antenna not found in list: "+solutionsAntenna.first));
+
+      for(auto &solutionsAntennaType : solutionsAntenna.second)
       {
-        // check antenna name
-        // ------------------
-        std::vector<std::string> parts = String::split(parameterNames.at(i).object, GnssAntennaDefinition::sep);
-        auto antenna = GnssAntennaDefinition::find(antennas, parts.at(0), parts.at(1), parts.at(2));
-        if(!antenna)
-          throw(Exception("antenna not found in list: "+parameterNames.at(i).object));
-
-        // extract GnssType
-        // ----------------
-        auto pos = parameterNames.at(i).type.rfind('.');
-        if((pos == std::string::npos) || (pos+1 == parameterNames.at(i).type.size()))
-          throw(Exception(parameterNames.at(i).str() + ": GnssType not found in parameter name"));
-        GnssType type(parameterNames.at(i).type.substr(pos+1));
-
-        // add parametrization to all machting patterns
-        // -------------------------------------------
+        GnssType type(solutionsAntennaType.first);
         Bool found = FALSE;
         for(auto &pattern : antenna->patterns)
           if(type == pattern.type)
@@ -123,16 +140,17 @@ void ParameterVector2GnssAntennaDefinition::run(Config &config, Parallel::Commun
             logInfo<<antenna->str()<<": add parametrization of "<<type.str()<<" to "<<pattern.type.str()<<Log::endl;
             found = TRUE;
 
-            Vector x = solution.row(i, parametrization->parameterCount());
+            Vector x = solutionsAntennaType.second;
             for(UInt k=0; k<x.rows(); k++)
             {
-              if(parameterNames.at(i+k).type.find("antennaCenter.x") == 0) {pattern.offset.x() += x(k); x(k) = 0;}
-              if(parameterNames.at(i+k).type.find("antennaCenter.y") == 0) {pattern.offset.y() += x(k); x(k) = 0;}
-              if(parameterNames.at(i+k).type.find("antennaCenter.z") == 0) {pattern.offset.z() += x(k); x(k) = 0;}
+              if(String::startsWith(parametrizationNames.at(k).type, "antennaCenter.x")) {pattern.offset.x() += x(k); x(k) = 0;}
+              if(String::startsWith(parametrizationNames.at(k).type, "antennaCenter.y")) {pattern.offset.y() += x(k); x(k) = 0;}
+              if(String::startsWith(parametrizationNames.at(k).type, "antennaCenter.z")) {pattern.offset.z() += x(k); x(k) = 0;}
             }
-            for(UInt i=0; i<pattern.pattern.rows(); i++)
-              for(UInt k=0; k<pattern.pattern.columns(); k++)
-                pattern.pattern(i,k) += inner(parametrization->designMatrix(Angle(2*PI*i/pattern.pattern.rows()), Angle(PI/2-k*Double(pattern.dZenit))).trans(), x);
+            if(!isStrictlyZero(x))
+              for(UInt i=0; i<pattern.pattern.rows(); i++)
+                for(UInt k=0; k<pattern.pattern.columns(); k++)
+                  pattern.pattern(i,k) += inner(parametrization->designMatrix(Angle(2*PI*i/pattern.pattern.rows()), Angle(PI/2-k*Double(pattern.dZenit))).trans(), x);
 
             // type cannot match further patterns (all wildcards in type are already catched)?
             if((!type.hasWildcard(GnssType::PRN)       || pattern.type.hasWildcard(GnssType::PRN)      ) &&
@@ -147,6 +165,7 @@ void ParameterVector2GnssAntennaDefinition::run(Config &config, Parallel::Commun
         if(!found)
           logWarning<<antenna->str()<<" has no pattern for "<<type.str()<<Log::endl;
       }
+    }
 
     // ============================
 

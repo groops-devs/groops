@@ -40,6 +40,11 @@ public:
   * @see init(const std::vector<Time> &, UInt, Bool). */
   Polynomial(const std::vector<Time> &times, UInt degree, Bool throwException=TRUE) {init(times, degree, throwException);}
 
+  /** @brief Constructor.
+  * @see init(const std::vector<Time> &, UInt, Bool, Bool, Double, Double, Double). */
+  Polynomial(const std::vector<Time> &times, UInt degree, Bool throwException, Bool leastSquares,
+             Double range, Double extrapolation, Double margin=1e-5) {init(times, degree, throwException, leastSquares, range, extrapolation, margin);}
+
   /** @brief Initialize the interpolator.
   * @param times epochs of the input data.
   * @param degree of the polynomial.

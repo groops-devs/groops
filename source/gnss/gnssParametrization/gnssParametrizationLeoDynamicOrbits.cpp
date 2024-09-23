@@ -134,7 +134,7 @@ void GnssParametrizationLeoDynamicOrbits::init(Gnss *gnss, Parallel::Communicato
             para->VelDesign.emplace_back(variationalEquation.VelDesign);
             para->pos.emplace_back(variationalEquation.pos0);
             para->vel.emplace_back(variationalEquation.vel0);
-            para->polynomial.emplace_back(para->times.back(), interpolationDegree);
+            para->polynomial.emplace_back(para->times.back(), interpolationDegree, TRUE/*throwException*/, FALSE/*leastSquares*/, -(interpolationDegree+1.1), -1.1, 1e-7);
 
             std::vector<Time> times;
             for(UInt idEpoch=para->startEpoch.back(); idEpoch<=para->endEpoch.back(); idEpoch++)
