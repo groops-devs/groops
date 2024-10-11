@@ -677,6 +677,8 @@ void TreeElementComplex::UndoCommandMoveChild::redo()
     {
       // find precursor item
       TreeItem *after = nullptr;
+      if(parent->loop      && parent->loop->item())      after = parent->loop->item();
+      if(parent->condition && parent->condition->item()) after = parent->condition->item();
       for(int i=0; i<children.size(); i++)
       {
         if(children[i] == treeElement)
@@ -702,6 +704,8 @@ bool TreeElementComplex::canMoveChild(TreeElement *targetElement, TreeElement *e
   if(dynamic_cast<TreeElementAdd*>(element))
     return false;
   if(dynamic_cast<TreeElementComment*>(element))
+    return true;
+  if(!element->label().isEmpty())
     return true;
   return element->elementAdd() && (element->elementAdd() == skipCommentElements(targetElement)->elementAdd());
 }
