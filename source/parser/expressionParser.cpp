@@ -1763,27 +1763,6 @@ std::shared_ptr<const ExpressionVariable> VariableList::find(const std::string &
 
 /***********************************************/
 
-std::shared_ptr<ExpressionVariable> VariableList::find(const std::string &name)
-{
-  try
-  {
-    auto iter = map.find(name);
-    if(iter != map.end())
-    {
-      if(iter->second.use_count() > 1) // not threat save
-        iter->second = std::make_shared<ExpressionVariable>(*(iter->second)); // copy
-      return iter->second;
-    }
-    return ExpressionVariablePtr(nullptr);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
 void VariableList::addVariable(ExpressionVariablePtr var)
 {
   try
@@ -1802,12 +1781,16 @@ ExpressionVariablePtr VariableList::getVariable(const std::string &name)
 {
   try
   {
-    ExpressionVariablePtr var = find(name);
-    if(!var) // new variable
+    auto iter = map.find(name);
+    if(iter != map.end())
     {
-      var = std::make_shared<ExpressionVariable>(name);
-      map[name] = var;
+      if(iter->second.use_count() > 1) // not threat save
+        iter->second = std::make_shared<ExpressionVariable>(*(iter->second)); // copy
+      return iter->second;
     }
+    // new variable
+    ExpressionVariablePtr var = std::make_shared<ExpressionVariable>(name);
+    map[name] = var;
     return var;
   }
   catch(std::exception &e)
