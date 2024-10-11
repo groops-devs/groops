@@ -43,8 +43,9 @@ public:
   void setSelectedIndex(int index) override;
 
   /** @brief inform this element about changed variables.
-  * recursively called for all children. */
-  void updateParserResults(VariableList &varList) override;
+  * recursively called for all children.
+  * If this element is a variable and @a addVariableInReturn an updated varList is returned. */
+  VariableListPtr updateParserResults(VariableListPtr varList, Bool addVariableInReturn) override;
 
 protected:
   virtual QString parseExpression(const QString &text, const VariableList &varList) const;

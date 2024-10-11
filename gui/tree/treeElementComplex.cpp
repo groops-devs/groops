@@ -294,9 +294,9 @@ void TreeElementComplex::updateParserResultsInScope()
   {
     if(!initializedVariables)
       return;
-    VariableList varList = this->varList; // without added local variables
+    auto varList = this->varList; // without added local variables
     for(auto &child : children_[selectedIndex()])
-      child->updateParserResults(varList);
+      varList = child->updateParserResults(varList, true);
   }
   catch(std::exception &e)
   {
@@ -306,19 +306,20 @@ void TreeElementComplex::updateParserResultsInScope()
 
 /***********************************************/
 
-void TreeElementComplex::updateParserResults(VariableList &varList)
+VariableListPtr TreeElementComplex::updateParserResults(VariableListPtr varList, Bool /*addVariableInReturn*/)
 {
   try
   {
     this->varList = varList;
     initializedVariables = true;
-    TreeElement::updateParserResults(varList);
+    TreeElement::updateParserResults(varList, false);
     for(auto &childdrenAtIndex : children_)
     {
-      VariableList varListLocal = this->varList; // without added local variables
+      auto varListLocal = this->varList; // without added local variables
       for(auto &child : childdrenAtIndex)
-        child->updateParserResults(varListLocal);
+        varListLocal = child->updateParserResults(varListLocal, true);
     }
+    return varList;
   }
   catch(std::exception &e)
   {

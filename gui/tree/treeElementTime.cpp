@@ -101,9 +101,9 @@ void TreeElementTime::comboBoxEditTextChanged(const QString &text)
         try
         {
           bool resolved = true;
-          auto result = StringParser::parse(name().toStdString(), text.toStdString(), varList, resolved);
+          auto result = StringParser::parse(name().toStdString(), text.toStdString(), *varList, resolved);
           if(resolved)
-            mjd = ExpressionVariable::parse(result, varList);
+            mjd = ExpressionVariable::parse(result, *varList);
         }
         catch(std::exception &/*e*/)
         {} // if not a number use mjd = 0

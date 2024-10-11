@@ -92,20 +92,25 @@ void TreeElementSimple::setSelectedIndex(int index)
 
 /***********************************************/
 
-void TreeElementSimple::updateParserResults(VariableList &varList)
+VariableListPtr TreeElementSimple::updateParserResults(VariableListPtr varList, Bool addVariableInReturn)
 {
-  TreeElement::updateParserResults(varList);
+  TreeElement::updateParserResults(varList, false);
 
-  // is variable? -> add to list
-  if(!label().isEmpty() && !disabled())
-    varList.setVariable(label().toStdString(), (isLinked() ? "{"+selectedValue()+"}" : selectedValue()).toStdString());
+  QString resultNew = parseExpression((isLinked()) ? "{"+selectedValue()+"}" : selectedValue(), *varList);
+  if(resultNew != result)
+  {
+    result = resultNew;
+    if(item())
+      item()->updateValue();
+  }
 
-  QString resultNew = parseExpression((isLinked()) ? "{"+selectedValue()+"}" : selectedValue(), varList);
-  if(resultNew == result)
-    return;
-  result = resultNew;
-  if(item())
-    item()->updateValue();
+  if(!addVariableInReturn || label().isEmpty() || disabled()) // is not variable?
+    return varList;
+
+  // variable -> add to list
+  auto varListNew = std::make_shared<VariableList>(*varList); // make copy
+  varListNew->setVariable(label().toStdString(), (isLinked() ? "{"+selectedValue()+"}" : selectedValue()).toStdString());
+  return std::const_pointer_cast<const VariableList>(varListNew);
 }
 
 /***********************************************/

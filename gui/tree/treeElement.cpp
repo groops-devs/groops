@@ -419,10 +419,11 @@ int TreeElement::insertNewValue(const QString &value, bool prepend)
 
 /***********************************************/
 
-void TreeElement::updateParserResults(VariableList &varList)
+VariableListPtr TreeElement::updateParserResults(VariableListPtr varList, Bool /*addVariableInReturn*/)
 {
-  if(loop)      {VariableList varListLocal = varList; loop->updateParserResults(varListLocal);}
-  if(condition) {VariableList varListLocal = varList; condition->updateParserResults(varListLocal);}
+  if(loop)      loop->updateParserResults(varList, false);
+  if(condition) condition->updateParserResults(varList, false);
+  return varList;
 }
 
 /***********************************************/
