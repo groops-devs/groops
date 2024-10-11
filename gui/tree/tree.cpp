@@ -505,9 +505,9 @@ bool Tree::fileOpen(QString fileName)
     clearTree();
     TreeElement *element = TreeElement::newTreeElement(this, nullptr, _schema.rootElement, "", xmlNode, false/*fillWithDefaults*/);
     rootElement = dynamic_cast<TreeElementComplex*>(element); // set rootElement after complete initialization
-    VariableList           varList;
+    VariableListPtr varList = std::make_shared<const VariableList>();
     QMap<QString, QString> labelTypes;
-    rootElement->updateParserResults(varList);
+    rootElement->updateParserResults(varList, false);
     rootElement->updateLinks(labelTypes);
     rootElement->createItem(nullptr, nullptr)->setExpanded(true);
     treeChanged();

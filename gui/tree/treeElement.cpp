@@ -419,10 +419,11 @@ int TreeElement::insertNewValue(const QString &value, bool prepend)
 
 /***********************************************/
 
-void TreeElement::updateParserResults(VariableList &varList)
+VariableListPtr TreeElement::updateParserResults(VariableListPtr varList, Bool /*addVariableInReturn*/)
 {
-  if(loop)      {VariableList varListLocal = varList; loop->updateParserResults(varListLocal);}
-  if(condition) {VariableList varListLocal = varList; condition->updateParserResults(varListLocal);}
+  if(loop)      loop->updateParserResults(varList, false);
+  if(condition) condition->updateParserResults(varList, false);
+  return varList;
 }
 
 /***********************************************/
@@ -434,40 +435,51 @@ void TreeElement::updateLinks(QMap<QString, QString> &labelTypes)
     if(loop)      {auto labelTypesLocal = labelTypes; loop->updateLinks(labelTypesLocal);}
     if(condition) {auto labelTypesLocal = labelTypes; condition->updateLinks(labelTypesLocal);}
 
+    // treat numbers and strings of different types as same
+    static const QStringList numberList({"int", "uint", "double", "angle", "boolean", "time", "expression"});
+    static const QStringList stringList({"string", "filename", "gnssType", "doodson"});
+    QString linkType = type();
+    if(numberList.contains(linkType)) linkType = "number_";
+    if(stringList.contains(linkType)) linkType = "string_";
+
     if(!label().isEmpty() && !disabled())
-      labelTypes[label()] = type();
+      labelTypes[label()] = linkType;
 
-    QString link;
+    // find all links
+    QStringList linkList;
+    for(auto iter = labelTypes.keyValueBegin(); iter != labelTypes.keyValueEnd(); iter++)
+      if((iter->first != label()) && (iter->second == linkType)) // should not linked to self
+        linkList.push_back(iter->first);
+    linkList.sort();
+
+    QString selectedLink;
     if(isLinked())
-      link = selectedValue();
+      selectedLink = selectedValue();
 
-    // remove all links
+    // remove all links and refill
     while(_valueList.size() > _valueCount)
       _valueList.removeAt(_valueCount);
-    while(comboBox && (comboBox->count() > _valueCount))
-      comboBox->removeItem(_valueCount);
-
-    // refill links
-    for(auto iter = labelTypes.keyValueBegin(); iter != labelTypes.keyValueEnd(); iter++)
-      if((iter->first != label()) && (iter->second == type())) // should not linked to self
-      {
-        _valueList.push_back(iter->first);
-        if(comboBox)
-          comboBox->insertItem(comboBox->count(), QIcon(":/icons/scalable/link.svg"), iter->first);
-      }
+    _valueList<<linkList;
+    if(comboBox)
+    {
+      while(comboBox->count() > _valueCount)
+        comboBox->removeItem(_valueCount);
+      for(const QString &link : linkList)
+        comboBox->insertItem(comboBox->count(), QIcon(":/icons/scalable/link.svg"), link);
+    }
 
     // restore selected link
     _brokenLinkIndex = -1;
-    if(!link.isEmpty())
+    if(!selectedLink.isEmpty())
     {
-      int selectedIndex = findLinkIndex(link);
-      if(selectedIndex < 0)
+      int selectedIndex = findLinkIndex(selectedLink);
+      if(selectedIndex < 0) // broken link
       {
         selectedIndex = _valueList.size();
         _brokenLinkIndex = selectedIndex;
-        _valueList.push_back(link);
+        _valueList.push_back(selectedLink);
         if(comboBox)
-          comboBox->insertItem(comboBox->count(), QIcon(":/icons/scalable/link-broken.svg"), link);
+          comboBox->insertItem(comboBox->count(), QIcon(":/icons/scalable/link-broken.svg"), selectedLink);
       }
       setSelectedIndex(selectedIndex);
       if(comboBox && (comboBox->currentIndex() != selectedIndex))

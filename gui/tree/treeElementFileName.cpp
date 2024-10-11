@@ -91,7 +91,7 @@ void TreeElementFileName::openFileClicked()
     {
       for(int i=_valueCount; i<_valueList.size(); i++) // all possible links
       {
-        QString parsed = parseExpression("{"+_valueList.at(i)+"}", varList);
+        QString parsed = parseExpression("{"+_valueList.at(i)+"}", *varList);
         if(path.startsWith(parsed) && (parsed.size() > parsedVariable.size()))
         {
           variable = "{"+_valueList.at(i)+"}";
@@ -148,9 +148,8 @@ void TreeElementFileName::openFolderClicked()
 {
   try
   {
-    QFileInfo startFile(tree->addWorkingDirectory(selectedResult()));
-
     // if directory doesn't exist, repeatedly go up one directory until it exists
+    QFileInfo startFile(tree->addWorkingDirectory(selectedResult()));
     while(!startFile.isFile() && !startFile.absoluteDir().exists() && !startFile.absoluteDir().isRoot())
     {
       QString dir = startFile.absolutePath();
@@ -163,7 +162,7 @@ void TreeElementFileName::openFolderClicked()
     {
       for(int i=_valueCount; i<_valueList.size(); i++) // all possible links
       {
-        QString parsed = parseExpression("{"+_valueList.at(i)+"}", varList);
+        QString parsed = parseExpression("{"+_valueList.at(i)+"}", *varList);
         if(path.startsWith(parsed) && (parsed.size() > parsedVariable.size()))
         {
           variable = "{"+_valueList.at(i)+"}";
