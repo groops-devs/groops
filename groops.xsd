@@ -25178,6 +25178,79 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="starCamera2Orbex">
+				<xs:annotation>
+					<xs:documentation>Convert satellite attitude from star camera instrument file to ORBEX file format (quaternions).</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileOrbex" type="filename">
+							<xs:annotation>
+								<xs:documentation>ORBEX file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="satellite" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="inputfileStarCamera" type="filename" default="starcamera.{satellite}.dat">
+										<xs:annotation>
+											<xs:documentation>instrument file containing star camera data</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="identifier" type="string">
+										<xs:annotation>
+											<xs:documentation>string identifier (e.g. GNSS PRN: G01)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>resample to these epochs (otherwise input file epochs are used)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
+							<xs:annotation>
+								<xs:documentation>rotate data into Earth-fixed frame</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="interpolationDegree" type="uint" default="7">
+							<xs:annotation>
+								<xs:documentation>for attitude and Earth rotation interpolation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="description" type="string">
+							<xs:annotation>
+								<xs:documentation>description of file contents</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="createdBy" type="string">
+							<xs:annotation>
+								<xs:documentation>name of agency</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputData" type="string" default="p">
+							<xs:annotation>
+								<xs:documentation>description of input data (see ORBEX description)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="contact" type="string">
+							<xs:annotation>
+								<xs:documentation>email address</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="referenceFrame" type="string" default="IGb14">
+							<xs:annotation>
+								<xs:documentation>reference frame used in file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="comment" type="string" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GnssPrn2SvnBlockVariables">
 				<xs:annotation>
 					<xs:documentation>This program no longer works! See documentation for help.</xs:documentation>
