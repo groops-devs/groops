@@ -245,8 +245,8 @@ void InArchiveXml::load(Matrix &x)
   UInt  count = childCount(xmlNode, "cell");
   for(UInt i=0; i<count; i++)
   {
-    Double a;
-    UInt n, m = 0;
+    Double a = 0;
+    UInt n = 0, m = 0;
     XmlNodePtr xmlNode2 = readXml(xmlNode, "cell", a, TRUE);
     readAttribute(xmlNode2, "row", n, TRUE);
     readAttribute(xmlNode2, "col", m, FALSE);

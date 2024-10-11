@@ -63,7 +63,6 @@ class VariableList
 {
   mutable std::map<std::string, ExpressionVariablePtr> map;
 
-  std::shared_ptr<ExpressionVariable> find(const std::string &name);
   ExpressionVariablePtr getVariable(const std::string &name);
 
 public:
@@ -93,7 +92,6 @@ public:
   std::shared_ptr<const ExpressionVariable> find(const std::string &name) const;
 
   friend class ExpressionVariable;
-  friend class ExpressionVar;
 };
 
 /***** CLASS ***********************************/
