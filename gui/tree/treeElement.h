@@ -34,6 +34,8 @@ class  TreeElementLoopCondition;
 class  TreeItem;
 class  QComboBox;
 
+typedef std::shared_ptr<const VariableList> VariableListPtr;
+
 /***** CLASS ***********************************/
 
 class TreeElement : public QObject
@@ -174,8 +176,9 @@ public:
 
 protected:
   /** @brief inform this element about changed variables.
-  * recursively called for all children. */
-  virtual void updateParserResults(VariableList &varList);
+  * recursively called for all children.
+  * If this element is a variable and @a addVariableInReturn an updated varList is returned. */
+  virtual VariableListPtr updateParserResults(VariableListPtr varList, Bool addVariableInReturn);
 
   /** @brief inform this element about changed variables.
   * recursively called for all children. */

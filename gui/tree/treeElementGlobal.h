@@ -42,8 +42,9 @@ public:
   void updateLinksInScope() override;
 
   /** @brief inform this element about changed variables.
-   * recursively called for all children. */
-  void updateParserResults(VariableList &varList) override;
+  * recursively called for all children.
+  * Returns a new varList containing the global variables. */
+  VariableListPtr updateParserResults(VariableListPtr varList, Bool /*addVariableInReturn*/) override;
 
   /** @brief inform this element about changed variables.
    * recursively called for all children. */

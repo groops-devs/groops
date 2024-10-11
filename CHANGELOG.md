@@ -1,9 +1,11 @@
 # main
 - New option:       GnssAntennaNormalsConstraint: gnssType selection for TEC constraint.
+- Bugfix:           GUI: fixed Ctrl+Shift+Up/Down for variables.
 - Bugfix:           slrParametrizationRangeBiasStationSatellite: Fix station index.
 - Bugfix:           parameterNames: fixed wrong order.
 - Bugfix:           GraceAod2DoodsonHarmonics: fixed phase error.
 - Bugfix:           GnssOrbex2StarCamera: reads now free format.
+- Other:            GUI: offer links for numbers and strings of different types.
 - Other:            gnss: set margin for polynomial orbit interpolation to 1e-7 seconds.
 
 # Release 2024-06-24

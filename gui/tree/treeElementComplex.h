@@ -69,8 +69,8 @@ public:
   // Inform about changes in variables
   // ---------------------------------
 private:
-  bool         initializedVariables;
-  VariableList varList;
+  bool                   initializedVariables;
+  VariableListPtr        varList;
   QMap<QString, QString> labelTypes;
 
 public:
@@ -82,8 +82,8 @@ public:
   virtual void updateLinksInScope();
 
   /** @brief inform this element about changed variables.
-  * recursively called for all children. */
-  void updateParserResults(VariableList &varList) override;
+  * recursively called for all children. Returns the input @a varList. */
+  VariableListPtr updateParserResults(VariableListPtr varList, Bool /*addVariableInReturn*/) override;
 
   /** @brief inform this element about changed variables.
   * recursively called for all children. */
