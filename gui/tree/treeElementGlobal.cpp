@@ -135,7 +135,7 @@ void TreeElementGlobal::updateLinks(QMap<QString, QString> &labelTypes)
     // as the order is irrelevant -> add all links before
     for(auto child : children())
       if(!child->label().isEmpty() && !child->disabled())
-        labelTypes[child->label()] = child->type();
+        labelTypes[child->label()] = getLinkType(child->type());
     this->labelTypes = labelTypes;
     for(auto child : children_[selectedIndex()])
       child->updateLinks(labelTypes);
