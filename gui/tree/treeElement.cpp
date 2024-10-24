@@ -428,6 +428,17 @@ VariableListPtr TreeElement::updateParserResults(VariableListPtr varList, Bool /
 
 /***********************************************/
 
+QString TreeElement::getLinkType(const QString &type)
+{
+  static const QStringList numberList({"int", "uint", "double", "angle", "boolean", "time", "expression"});
+  static const QStringList stringList({"string", "filename", "gnssType", "doodson"});
+  if(numberList.contains(type)) return QString("number_");
+  if(stringList.contains(type)) return QString("string_");
+  return type;
+}
+
+/***********************************************/
+
 void TreeElement::updateLinks(QMap<QString, QString> &labelTypes)
 {
   try
@@ -435,13 +446,7 @@ void TreeElement::updateLinks(QMap<QString, QString> &labelTypes)
     if(loop)      {auto labelTypesLocal = labelTypes; loop->updateLinks(labelTypesLocal);}
     if(condition) {auto labelTypesLocal = labelTypes; condition->updateLinks(labelTypesLocal);}
 
-    // treat numbers and strings of different types as same
-    static const QStringList numberList({"int", "uint", "double", "angle", "boolean", "time", "expression"});
-    static const QStringList stringList({"string", "filename", "gnssType", "doodson"});
-    QString linkType = type();
-    if(numberList.contains(linkType)) linkType = "number_";
-    if(stringList.contains(linkType)) linkType = "string_";
-
+    QString linkType = getLinkType(type());
     if(!label().isEmpty() && !disabled())
       labelTypes[label()] = linkType;
 
