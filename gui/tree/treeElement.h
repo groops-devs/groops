@@ -180,6 +180,8 @@ protected:
   * If this element is a variable and @a addVariableInReturn an updated varList is returned. */
   virtual VariableListPtr updateParserResults(VariableListPtr varList, Bool addVariableInReturn);
 
+  static QString getLinkType(const QString &type);
+
   /** @brief inform this element about changed variables.
   * recursively called for all children. */
   virtual void updateLinks(QMap<QString, QString> &labelTypes);
