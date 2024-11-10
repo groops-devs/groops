@@ -184,8 +184,14 @@ void GraceAod2TimeSplines::run(Config &config, Parallel::CommunicatorPtr /*comm*
       }
     }
 
-    if(!isRegular(timeList) || !isRegular(timeAtmosList) || !isRegular(timeOceanList) || !isRegular(timeObaList) || !isRegular(timeList))
+    if(!isRegular(timeList) || !isRegular(timeAtmosList) || !isRegular(timeOceanList) || !isRegular(timeObaList) || !isRegular(timeMiscList))
+    {
+      const Time sampling = medianSampling(timeList);
+      for(UInt i=0; i<timeList.size()-1; i++)
+        if((timeList.at(i+1)-timeList.at(i)) > sampling)
+          logWarning<<"gap between "<<timeList.at(i).dateTimeStr()<<" and "<<timeList.at(i+1).dateTimeStr()<<Log::endl;
       throw(Exception("Spline time series is not regular."));
+    }
 
     // write data
     // ----------
