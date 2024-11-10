@@ -33,7 +33,8 @@ See also \program{Iers2OceanPoleTide}.
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_OCEANPOLETIDE_TYPE = "oceanPoleTide";
+const char *const FILE_OCEANPOLETIDE_TYPE    = "oceanPoleTide";
+constexpr UInt    FILE_OCEANPOLETIDE_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** FUNCTIONS *******************************/
 

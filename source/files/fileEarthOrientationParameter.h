@@ -50,7 +50,8 @@ groops earthOrientationParameter version=20200123
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_EARTHORIENTATIONPARAMETER_TYPE = "earthOrientationParameter";
+const char *const FILE_EARTHORIENTATIONPARAMETER_TYPE    = "earthOrientationParameter";
+constexpr UInt    FILE_EARTHORIENTATIONPARAMETER_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** FUNCTIONS *******************************/
 

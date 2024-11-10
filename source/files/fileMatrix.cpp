@@ -26,7 +26,7 @@ void writeFileMatrix(const FileName &fileName, const const_MatrixSlice &x)
 {
   try
   {
-    OutFileArchive file(fileName, FILE_MATRIX_TYPE);
+    OutFileArchive file(fileName, FILE_MATRIX_TYPE, FILE_MATRIX_VERSION);
     file<<nameValue("matrix", x);
   }
   catch(std::exception &e)
@@ -41,7 +41,7 @@ void readFileMatrix(const FileName &fileName, Matrix &x)
 {
   try
   {
-    InFileArchive file(fileName, ""/*arbitrary type*/);
+    InFileArchive file(fileName, ""/*arbitrary type*/, std::max(FILE_MATRIX_VERSION, FILE_INSTRUMENT_VERSION));
     if(file.type().empty() || (file.type() == FILE_MATRIX_TYPE))
       file>>nameValue("matrix", x);
     else if(file.type() == FILE_INSTRUMENT_TYPE)

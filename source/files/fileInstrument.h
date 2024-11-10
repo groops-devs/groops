@@ -75,6 +75,7 @@ groops instrument version=20200123
 /***** CONSTANTS ********************************/
 
 const char *const FILE_INSTRUMENT_TYPE = "instrument";
+constexpr UInt    FILE_INSTRUMENT_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** CLASS ***********************************/
 
@@ -476,7 +477,7 @@ public:
   {
     try
     {
-      OutFileArchive file(name, FILE_INSTRUMENT_TYPE);
+      OutFileArchive file(name, FILE_INSTRUMENT_TYPE, FILE_INSTRUMENT_VERSION);
       Epoch::Type type = Arc::getType(arcList);
       file.comment(Epoch::getTypeName(type));
       file<<nameValue("satelliteType", static_cast<Int>(type));

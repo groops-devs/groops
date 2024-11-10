@@ -25,7 +25,7 @@ void writeFileEarthOrientationParameter(const FileName &fileName, const const_Ma
 {
   try
   {
-    OutFileArchive file(fileName, FILE_EARTHORIENTATIONPARAMETER_TYPE);
+    OutFileArchive file(fileName, FILE_EARTHORIENTATIONPARAMETER_TYPE, FILE_EARTHORIENTATIONPARAMETER_VERSION);
     file<<nameValue("count", EOP.rows());
     file.comment("UTC [MJD]                 xp [arcsec]               yp [arcsec]               deltUT [sec]              LOD [sec]                 dX [arcsec]               dY [arcsec]             ");
     file.comment("====================================================================================================================================================================================");
@@ -54,7 +54,7 @@ void readFileEarthOrientationParameter(const FileName &fileName, Matrix &EOP)
 {
   try
   {
-    InFileArchive file(fileName, FILE_EARTHORIENTATIONPARAMETER_TYPE);
+    InFileArchive file(fileName, FILE_EARTHORIENTATIONPARAMETER_TYPE, FILE_EARTHORIENTATIONPARAMETER_VERSION);
     UInt count;
     file>>nameValue("count", count);
     EOP = Matrix(count, 7);

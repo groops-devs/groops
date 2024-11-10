@@ -90,7 +90,7 @@ void writeFileGnssSignalBias(const FileName &fileName, const GnssSignalBias &x)
 {
   try
   {
-    OutFileArchive file(fileName, FILE_GNSSSIGNALBIAS_TYPE);
+    OutFileArchive file(fileName, FILE_GNSSSIGNALBIAS_TYPE, FILE_GNSSSIGNALBIAS_VERSION);
     file<<nameValue("signalBias", x);
   }
   catch(std::exception &e)
@@ -105,7 +105,7 @@ void readFileGnssSignalBias(const FileName &fileName, GnssSignalBias &x)
 {
   try
   {
-    InFileArchive file(fileName, FILE_GNSSSIGNALBIAS_TYPE);
+    InFileArchive file(fileName, FILE_GNSSSIGNALBIAS_TYPE, FILE_GNSSSIGNALBIAS_VERSION);
     file>>nameValue("signalBias", x);
   }
   catch(std::exception &e)

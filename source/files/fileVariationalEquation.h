@@ -42,7 +42,8 @@ See also: \program{PreprocessingVariationalEquation}.
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_VARIATIONALEQUATION_TYPE = "variationalEquation";
+const char *const FILE_VARIATIONALEQUATION_TYPE    = "variationalEquation";
+constexpr UInt    FILE_VARIATIONALEQUATION_VERSION = std::max(std::max(UInt(20200123), FILE_SATELLITEMODEL_VERSION), FILE_BASE_VERSION);
 
 /***** CLASS ***********************************/
 

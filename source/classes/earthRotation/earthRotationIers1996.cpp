@@ -39,7 +39,7 @@ EarthRotationIers1996::EarthRotationIers1996(Config &config)
     // --------------------------------------
     if(!eopName.empty())
     {
-      InFileArchive eopFile(eopName, "");
+      InFileArchive eopFile(eopName, "", FILE_BASE_VERSION);
       UInt eopCount;
       eopFile>>nameValue("count", eopCount);
       std::vector<Time> times(eopCount);
@@ -73,7 +73,7 @@ EarthRotationIers1996::EarthRotationIers1996(Config &config)
 
     // Nutationsserie einlesen
     // -----------------------
-    InFileArchive nutationFile(nutationName, "");
+    InFileArchive nutationFile(nutationName, "", FILE_BASE_VERSION);
     UInt nutationCount;
     nutationFile>>nameValue("count", nutationCount);
     argument  = Matrix(nutationCount, 5);

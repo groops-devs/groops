@@ -78,7 +78,7 @@ void writeFilePolygon(const FileName &fileName, const std::vector<Polygon> &x)
 {
   try
   {
-    OutFileArchive file(fileName, FILE_POLYGON_TYPE);
+    OutFileArchive file(fileName, FILE_POLYGON_TYPE, FILE_POLYGON_VERSION);
     file<<nameValue("polygonList", x);
   }
   catch(std::exception &e)
@@ -93,7 +93,7 @@ void readFilePolygon(const FileName &fileName, std::vector<Polygon> &x)
 {
   try
   {
-    InFileArchive file(fileName, FILE_POLYGON_TYPE);
+    InFileArchive file(fileName, FILE_POLYGON_TYPE, FILE_POLYGON_VERSION);
     file>>nameValue("polygonList", x);
   }
   catch(std::exception &e)

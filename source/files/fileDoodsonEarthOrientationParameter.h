@@ -50,7 +50,8 @@ groops doodsonEarthOrientationParameter version=20200123
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_DOODSONEARTHORIENTATIONPARAMETER_TYPE = "doodsonEarthOrientationParameter";
+const char *const FILE_DOODSONEARTHORIENTATIONPARAMETER_TYPE    = "doodsonEarthOrientationParameter";
+constexpr UInt    FILE_DOODSONEARTHORIENTATIONPARAMETER_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** CLASS ***********************************/
 

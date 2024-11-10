@@ -86,7 +86,7 @@ See \program{SatelliteModelCreate} and \program{SinexMetadata2SatelliteModel}.
 /***********************************************/
 
 #include "inputOutput/fileName.h"
-#include "inputOutput/archive.h"
+#include "inputOutput/fileArchive.h"
 #include "inputOutput/logging.h"
 
 /** @addtogroup filesGroup */
@@ -94,7 +94,8 @@ See \program{SatelliteModelCreate} and \program{SinexMetadata2SatelliteModel}.
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_SATELLITEMODEL_TYPE = "satelliteModel";
+const char *const FILE_SATELLITEMODEL_TYPE    = "satelliteModel";
+constexpr UInt    FILE_SATELLITEMODEL_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** TYPES ***********************************/
 

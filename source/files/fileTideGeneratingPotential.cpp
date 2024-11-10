@@ -68,7 +68,7 @@ void writeFileTideGeneratingPotential(const FileName &fileName, const TideGenera
 {
   try
   {
-    OutFileArchive file(fileName, FILE_TIDEGENERATINGPOTENTIAL_TYPE);
+    OutFileArchive file(fileName, FILE_TIDEGENERATINGPOTENTIAL_TYPE, FILE_TIDEGENERATINGPOTENTIAL_VERSION);
     file<<nameValue("tideGeneratingPotential", x);
   }
   catch(std::exception &e)
@@ -83,7 +83,7 @@ void readFileTideGeneratingPotential(const FileName &fileName, TideGeneratingPot
 {
   try
   {
-    InFileArchive file(fileName, FILE_TIDEGENERATINGPOTENTIAL_TYPE);
+    InFileArchive file(fileName, FILE_TIDEGENERATINGPOTENTIAL_TYPE, FILE_TIDEGENERATINGPOTENTIAL_VERSION);
     file>>nameValue("tideGeneratingPotential", x);
   }
   catch(std::exception &e)

@@ -22,7 +22,7 @@ The file format consists of a \file{griddedData}{griddedData}, a time series, an
 for each spatial point and spline node pair multiple values called \verb|data0|, \verb|data1|, \ldots.
 
 A GriddedDataTimeSeries can be generated from individual \file{griddedData}{griddedData} with the program
-\program{GriddedData2GriddedDataTimeSeries}. Vice-versa, a GriddedDataTimeSeries can be evaluated at a 
+\program{GriddedData2GriddedDataTimeSeries}. Vice-versa, a GriddedDataTimeSeries can be evaluated at a
 specific time stamp to obtain a \file{griddedData}{griddedData} with \program{GriddedDataTimeSeries2GriddedData}.
 )";
 #endif
@@ -39,7 +39,8 @@ specific time stamp to obtain a \file{griddedData}{griddedData} with \program{Gr
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_GRIDDEDDATATIMESERIES_TYPE = "griddedDataTimeSeries";
+const char *const FILE_GRIDDEDDATATIMESERIES_TYPE    = "griddedDataTimeSeries";
+constexpr UInt    FILE_GRIDDEDDATATIMESERIES_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** CLASS ***********************************/
 

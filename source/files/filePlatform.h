@@ -48,7 +48,7 @@ See also \program{PlatformCreate}.
 
 #include "base/import.h"
 #include "inputOutput/fileName.h"
-#include "inputOutput/archive.h"
+#include "inputOutput/fileArchive.h"
 #include "files/fileGnssAntennaDefinition.h"
 #include "files/fileGnssReceiverDefinition.h"
 
@@ -57,7 +57,8 @@ See also \program{PlatformCreate}.
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_PLATFORM_TYPE = "platform";
+const char *const FILE_PLATFORM_TYPE    = "platform";
+constexpr UInt    FILE_PLATFORM_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** TYPES ***********************************/
 

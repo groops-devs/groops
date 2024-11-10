@@ -38,14 +38,15 @@ See also \program{GnssProcessing}, \program{GnssSimulateReceiver}, \program{Gnss
 
 #include "base/gnssType.h"
 #include "inputOutput/fileName.h"
-#include "inputOutput/archive.h"
+#include "inputOutput/fileArchive.h"
 
 /** @addtogroup filesGroup */
 /// @{
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_GNSSSIGNALBIAS_TYPE = "gnssSignalBias";
+const char *const FILE_GNSSSIGNALBIAS_TYPE    = "gnssSignalBias";
+constexpr UInt    FILE_GNSSSIGNALBIAS_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** TYPES ***********************************/
 

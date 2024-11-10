@@ -49,7 +49,8 @@ groops tideGeneratingPotential version=20200123
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_TIDEGENERATINGPOTENTIAL_TYPE = "tideGeneratingPotential";
+const char *const FILE_TIDEGENERATINGPOTENTIAL_TYPE    = "tideGeneratingPotential";
+constexpr UInt    FILE_TIDEGENERATINGPOTENTIAL_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** FUNCTIONS *******************************/
 

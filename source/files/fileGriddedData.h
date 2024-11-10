@@ -54,14 +54,15 @@ groops griddedData version=20200123
 #include "base/exception.h"
 #include "base/griddedData.h"
 #include "inputOutput/fileName.h"
-#include "inputOutput/archive.h"
+#include "inputOutput/fileArchive.h"
 
 /** @addtogroup filesGroup */
 /// @{
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_GRIDDEDDATA_TYPE = "griddedData";
+const char *const FILE_GRIDDEDDATA_TYPE    = "griddedData";
+constexpr UInt    FILE_GRIDDEDDATA_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** FUNCTIONS *******************************/
 

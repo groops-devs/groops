@@ -712,7 +712,7 @@ void InstrumentFile::open(const FileName &name)
     close();
     if(!name.empty())
     {
-      file.open(name, ""/*arbitrary type*/);
+      file.open(name, ""/*arbitrary type*/, std::max(FILE_INSTRUMENT_VERSION, FILE_MATRIX_VERSION));
       fileName = name;
       index = 0;
       if(file.type() == FILE_INSTRUMENT_TYPE)

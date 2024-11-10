@@ -293,7 +293,7 @@ void writeFileGriddedData(const FileName &fileName, const GriddedData &x)
   {
     if(!x.isValid())
       throw(Exception("GriddedData is not valid"));
-    OutFileArchive file(fileName, FILE_GRIDDEDDATA_TYPE);
+    OutFileArchive file(fileName, FILE_GRIDDEDDATA_TYPE, FILE_GRIDDEDDATA_VERSION);
     file<<nameValue("grid", x);
   }
   catch(std::exception &e)
@@ -310,7 +310,7 @@ void writeFileGriddedData(const FileName &fileName, const GriddedDataRectangular
   {
     if(!x.isValid())
       throw(Exception("GriddedData is not valid"));
-    OutFileArchive file(fileName, FILE_GRIDDEDDATA_TYPE);
+    OutFileArchive file(fileName, FILE_GRIDDEDDATA_TYPE, FILE_GRIDDEDDATA_VERSION);
     file<<nameValue("grid", x);
   }
   catch(std::exception &e)
@@ -342,7 +342,7 @@ void readFileGriddedData(const FileName &fileName, GriddedData &x)
 {
   try
   {
-    InFileArchive file(fileName, "");
+    InFileArchive file(fileName, "", FILE_GRIDDEDDATA_VERSION);
 
     // Contain file an old rectangular grid?
     if(file.type() == FILE_GRIDRECTANGULAR_TYPE)
@@ -373,7 +373,7 @@ void readFileGriddedData(const FileName &fileName, GriddedDataRectangular &x)
 {
   try
   {
-    InFileArchive file(fileName, "");
+    InFileArchive file(fileName, "", FILE_GRIDDEDDATA_VERSION);
 
     // Contain file an old rectangular grid?
     if(file.type() == FILE_GRIDRECTANGULAR_TYPE)

@@ -34,7 +34,8 @@ See also \program{JplAscii2Ephemerides}.
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_EPHEMERIDES_TYPE = "ephemerides";
+const char *const FILE_EPHEMERIDES_TYPE    = "ephemerides";
+constexpr UInt    FILE_EPHEMERIDES_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** CLASS ***********************************/
 
