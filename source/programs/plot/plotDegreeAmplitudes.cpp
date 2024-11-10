@@ -72,7 +72,7 @@ void PlotDegreeAmplitudes::run(Config &config, Parallel::CommunicatorPtr /*comm*
 
     readConfig(config, "outputfile",             fileNamePlot, Config::MUSTSET,  "",     "*.png, *.jpg, *.eps, ...");
     readConfig(config, "title",                  title,        Config::OPTIONAL, "",     "");
-    readConfig(config, "layer",                  layer,        Config::MUSTSET,  "degreeAmplitudes", "");
+    readConfig(config, "layer",                  layer,        Config::MUSTSET,  "degreeAmplitudesSimple", "");
     readConfig(config, "minDegree",              minX,         Config::OPTIONAL, "0",    "");
     readConfig(config, "maxDegree",              maxX,         Config::OPTIONAL, "",     "");
     readConfig(config, "majorTickSpacingDegree", annotationX,  Config::OPTIONAL, "",     "boundary annotation");

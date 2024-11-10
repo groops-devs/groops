@@ -7384,7 +7384,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{DegreeAmplitudes}
+\subsection{DegreeAmplitudes}\label{plotGraphLayerType:degreeAmplitudes}
 Plot degree amplitudes of potential coefficients computed by \program{Gravityfield2DegreeAmplitudes}
 or \program{PotentialCoefficients2DegreeAmplitudes}.
 The standard \reference{dataVariables}{general.parser:dataVariables} are available to select
@@ -7401,6 +7401,39 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~valueDegree & \hfuzz=500pt expression & \hfuzz=500pt expression for x-values (degrees) (input columns are named data0, data1, ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~valueSignal & \hfuzz=500pt expression & \hfuzz=500pt expression for y-values (signal) (input columns are named data0, data1, ...)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~valueErrors & \hfuzz=500pt expression & \hfuzz=500pt expression for y-values (formal errors)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~description & \hfuzz=500pt string & \hfuzz=500pt text of the legend\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~lineSignal & \hfuzz=500pt \hyperref[plotLineType]{plotLine} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~lineErrors & \hfuzz=500pt \hyperref[plotLineType]{plotLine} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~plotOnSecondAxis & \hfuzz=500pt boolean & \hfuzz=500pt draw dataset on a second Y-axis (if available).\\
+\hline
+\end{tabularx}
+
+
+\subsection{DegreeAmplitudesSimple}\label{plotGraphLayerType:degreeAmplitudesSimple}
+Plot degree amplitudes from a \configClass{gravityfield}{gravityfieldType}.
+The coefficients can be converted to different functionals with \configClass{kernel}{kernelType}.
+If set the expansion is limited in the range between \config{minDegree}
+and \config{maxDegree} inclusivly. It plots a solid line for the degree amplitude (signal)
+and a dotted line for the formal errors per default.
+
+This is a simplified version of
+\configClass{layer:degreeAmplitudes}{plotGraphLayerType:degreeAmplitudes}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~kernel & \hfuzz=500pt \hyperref[kernelType]{kernel} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~type & \hfuzz=500pt choice & \hfuzz=500pt type of variances\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~rms & \hfuzz=500pt  & \hfuzz=500pt degree amplitudes (square root of degree variances)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~accumulation & \hfuzz=500pt  & \hfuzz=500pt cumulate variances over degrees\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~median & \hfuzz=500pt  & \hfuzz=500pt median of absolute values per degree\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~time & \hfuzz=500pt time & \hfuzz=500pt at this time the gravity field will be evaluated\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~description & \hfuzz=500pt string & \hfuzz=500pt text of the legend\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~lineSignal & \hfuzz=500pt \hyperref[plotLineType]{plotLine} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~lineErrors & \hfuzz=500pt \hyperref[plotLineType]{plotLine} & \hfuzz=500pt \\

@@ -69,7 +69,7 @@ void Gravityfield2DegreeAmplitudes::run(Config &config, Parallel::CommunicatorPt
     {
       if(readConfigChoiceElement(config, "rms",          choice, "degree amplitudes (square root of degree variances)")) degreeType = RMS;
       if(readConfigChoiceElement(config, "accumulation", choice, "cumulate variances over degrees"))                     degreeType = CUMMULATE;
-      if(readConfigChoiceElement(config, "median",       choice, "meadian of absolute values per degree"))               degreeType = MEDIAN;
+      if(readConfigChoiceElement(config, "median",       choice, "median of absolute values per degree"))                degreeType = MEDIAN;
       endChoice(config);
     }
     readConfig(config, "time",             time,         Config::OPTIONAL, "", "at this time the gravity field will be evaluated");
