@@ -14,12 +14,14 @@
 #define DOCSTRING_PlotGraphLayer
 
 #include "base/import.h"
+#include "parser/stringParser.h"
 #include "parser/dataVariables.h"
 #include "config/configRegister.h"
 #include "inputOutput/logging.h"
 #include "inputOutput/file.h"
 #include "inputOutput/system.h"
 #include "files/fileMatrix.h"
+#include "classes/gravityfield/gravityfield.h"
 #include "plot/plotMisc.h"
 #include "plotGraphLayer.h"
 
@@ -42,7 +44,7 @@ See \program{Gravityfield2AreaMeanTimeSeries} for an example plot.
 class PlotGraphLayerLinesAndPoints : public PlotGraphLayer
 {
 protected:
-  std::string   description;
+  std::pair<std::string, VariableList> description;
   PlotLinePtr   line;
   PlotSymbolPtr symbol;
   Bool          hasZValues, hasErrors;
@@ -89,9 +91,9 @@ PlotGraphLayerLinesAndPoints::PlotGraphLayerLinesAndPoints(Config &config)
     // --------------------
     if(!System::exists(fileName))
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (file not found)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (file not found)";
       logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
@@ -103,9 +105,9 @@ PlotGraphLayerLinesAndPoints::PlotGraphLayerLinesAndPoints(Config &config)
 
     if(!A.size())
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (empty file)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (empty file)";
       logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
       return;
     }
@@ -114,6 +116,7 @@ PlotGraphLayerLinesAndPoints::PlotGraphLayerLinesAndPoints(Config &config)
     // ---------------------
     VariableList varList;
     addDataVariables(A, varList);
+    try {description.second += varList; description.first = StringParser::parse(description.first, description.second);} catch(std::exception &) {}
     for(ExpressionVariablePtr expr : {exprX, exprY, exprZ, exprError})
       if(expr) expr->simplify(varList);
 
@@ -168,7 +171,7 @@ std::string PlotGraphLayerLinesAndPoints::legendEntry() const
   try
   {
     std::stringstream ss;
-    if(description.empty() || (!line && !symbol))
+    if(description.first.empty() || (!line && !symbol))
       return ss.str();
     if(line)
       ss<<"S 0.3c - 0.5c - "<<line->str()<<" 0.7c " ;
@@ -178,7 +181,7 @@ std::string PlotGraphLayerLinesAndPoints::legendEntry() const
         ss<<std::endl<<"G -1l"<<std::endl;
       ss<<"S 0.3c "<<symbol->legendStr()<<"\t0.7c\t";
     }
-    ss<<description<<std::endl;
+    ss<<description.first<<std::endl;
     return ss.str();
   }
   catch(std::exception &e)
@@ -203,7 +206,7 @@ The data line itself is not plotted but must be added as extra
 class PlotGraphLayerErrorEnvelope : public PlotGraphLayer
 {
 protected:
-  std::string  description;
+  std::pair<std::string, VariableList> description;
   PlotColorPtr fillColor;
   PlotLinePtr  edgeLine;
 
@@ -239,9 +242,9 @@ PlotGraphLayerErrorEnvelope::PlotGraphLayerErrorEnvelope(Config &config)
     // --------------------
     if(!System::exists(fileName))
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (file not found)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (file not found)";
       logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
@@ -253,9 +256,9 @@ PlotGraphLayerErrorEnvelope::PlotGraphLayerErrorEnvelope(Config &config)
 
     if(!A.size())
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (empty file)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (empty file)";
       logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
       return;
     }
@@ -264,6 +267,7 @@ PlotGraphLayerErrorEnvelope::PlotGraphLayerErrorEnvelope(Config &config)
     // ---------------------
     VariableList varList;
     addDataVariables(A, varList);
+    try {description.second += varList; description.first = StringParser::parse(description.first, description.second);} catch(std::exception &) {}
 
     std::vector<ExpressionVariablePtr> expressions = {exprX, exprY, exprErrors};
     for(ExpressionVariablePtr expr : expressions)
@@ -317,7 +321,7 @@ std::string PlotGraphLayerErrorEnvelope::legendEntry() const
 {
   try
   {
-    if(description.empty())
+    if(description.first.empty())
       return std::string();
 
     std::stringstream ss;
@@ -326,7 +330,7 @@ std::string PlotGraphLayerErrorEnvelope::legendEntry() const
       ss<<edgeLine->str();
     else
       ss<<"0p,"<<fillColor->str();
-    ss<<"\t0.7c\t"<<description<<std::endl;
+    ss<<"\t0.7c\t"<<description.first<<std::endl;
     return ss.str();
   }
   catch(std::exception &e)
@@ -357,7 +361,7 @@ private:
   Bool         horizontal;
   PlotColorPtr color;
   PlotLinePtr  edgeLine;
-  std::string  description;
+  std::pair<std::string, VariableList> description;
 
 public:
   PlotGraphLayerBars(Config &config);
@@ -393,9 +397,9 @@ PlotGraphLayerBars::PlotGraphLayerBars(Config &config)
     // --------------------
     if(!System::exists(fileName))
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (file not found)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (file not found)";
       logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
@@ -407,9 +411,9 @@ PlotGraphLayerBars::PlotGraphLayerBars(Config &config)
 
     if(!A.size())
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (empty file)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (empty file)";
       logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
       return;
     }
@@ -418,6 +422,7 @@ PlotGraphLayerBars::PlotGraphLayerBars(Config &config)
     // ---------------------
     VariableList varList;
     addDataVariables(A, varList);
+    try {description.second += varList; description.first = StringParser::parse(description.first, description.second);} catch(std::exception &) {}
     for(ExpressionVariablePtr expr : {exprX, exprY, exprZ, exprBase, exprBase, exprWidth})
       if(expr) expr->simplify(varList);
 
@@ -493,7 +498,7 @@ std::string PlotGraphLayerBars::legendEntry() const
 {
   try
   {
-    if(description.empty())
+    if(description.first.empty())
       return std::string();
 
     if(!color)
@@ -506,7 +511,7 @@ std::string PlotGraphLayerBars::legendEntry() const
     ss<<"S 0.3c r 5p "<<color->str()<<" ";
     if(edgeLine) ss<<edgeLine->str();
     else ss<<"-";
-    ss<<"\t0.7c\t"<<description<<std::endl;
+    ss<<"\t0.7c\t"<<description.first<<std::endl;
     return ss.str();
   }
   catch(std::exception &e)
@@ -864,7 +869,7 @@ the data columns of \configFile{inputfileMatrix}{matrix}. It plots a solid line 
 
 class PlotGraphLayerDegreeAmplitudes : public PlotGraphLayer
 {
-  std::string description;
+  std::pair<std::string, VariableList> description;
   PlotLinePtr lineSignal, lineErrors;
 
 public:
@@ -896,9 +901,9 @@ PlotGraphLayerDegreeAmplitudes::PlotGraphLayerDegreeAmplitudes(Config &config)
     // --------------------
     if(!System::exists(fileName))
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (file not found)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (file not found)";
       logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
@@ -910,9 +915,9 @@ PlotGraphLayerDegreeAmplitudes::PlotGraphLayerDegreeAmplitudes(Config &config)
 
     if(!A.size())
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (empty file)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (empty file)";
       logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
       return;
     }
@@ -921,6 +926,7 @@ PlotGraphLayerDegreeAmplitudes::PlotGraphLayerDegreeAmplitudes(Config &config)
     // ---------------------
     VariableList varList;
     addDataVariables(A, varList);
+    try {description.second += varList; description.first = StringParser::parse(description.first, description.second);} catch(std::exception &) {}
 
     std::vector<ExpressionVariablePtr> expressions = {exprDegree, exprSignal, exprErrors};
     for(ExpressionVariablePtr expr : expressions)
