@@ -26,7 +26,7 @@ void writeFileAdmittance(const FileName &fileName, const Admittance &admittance)
 {
   try
   {
-    OutFileArchive file(fileName, FILE_ADMITTANCE_TYPE);
+    OutFileArchive file(fileName, FILE_ADMITTANCE_TYPE, FILE_ADMITTANCE_VERSION);
     file<<nameValue("major",      admittance.doodsonMajor);
     file<<nameValue("minor",      admittance.doodsonMinor);
     file<<nameValue("admittance", admittance.admittance);
@@ -43,7 +43,7 @@ void readFileAdmittance(const FileName &fileName, Admittance &admittance)
 {
   try
   {
-    InFileArchive file(fileName, FILE_ADMITTANCE_TYPE);
+    InFileArchive file(fileName, FILE_ADMITTANCE_TYPE, FILE_ADMITTANCE_VERSION);
     file>>nameValue("major",      admittance.doodsonMajor);
     file>>nameValue("minor",      admittance.doodsonMinor);
     file>>nameValue("admittance", admittance.admittance);

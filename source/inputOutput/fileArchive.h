@@ -22,11 +22,11 @@
 
 /***** CONSTANTS ********************************/
 
-const UInt FILE_VERSION = 20200123;    // date of last change (ArcList, InstrumentFile restructured)
-// const UInt FILE_VERSION = 20190429; // date of last change (SatelliteModel Surface hasThermalReemission)
-// const UInt FILE_VERSION = 20190304; // date of last change (GnssStationInfo)
-// const UInt FILE_VERSION = 20170920; // date of last change
-// const UInt FILE_VERSION = 20150524; // date of last change
+constexpr UInt FILE_BASE_VERSION = 20200123;    // date of last change (ArcList, InstrumentFile restructured)
+// constexpr UInt FILE_BASE_VERSION = 20190429; // date of last change (SatelliteModel Surface hasThermalReemission)
+// constexpr UInt FILE_BASE_VERSION = 20190304; // date of last change (GnssStationInfo)
+// constexpr UInt FILE_BASE_VERSION = 20170920; // date of last change
+// constexpr UInt FILE_BASE_VERSION = 20150524; // date of last change
 
 /***** CLASS ***********************************/
 
@@ -37,13 +37,13 @@ class OutFileArchive
 
 public:
   OutFileArchive() : archive(nullptr)  {}
-  OutFileArchive(const FileName &fileName, const std::string &type);
+  OutFileArchive(const FileName &fileName, const std::string &type, UInt version);
  ~OutFileArchive();
 
   OutFileArchive(const InFile &) = delete;
   OutFileArchive &operator=(const InFile &) = delete;
 
-  void open(const FileName &fileName, const std::string &type);
+  void open(const FileName &fileName, const std::string &type, UInt version);
   void close();
 
   FileName fileName() const {return file.fileName();}
@@ -63,13 +63,13 @@ class InFileArchive
 
 public:
   InFileArchive() : archive(nullptr) {}
-  InFileArchive(const FileName &fileName, const std::string &type);
+  InFileArchive(const FileName &fileName, const std::string &type, UInt version);
  ~InFileArchive();
 
   InFileArchive(const InFile &) = delete;
   InFileArchive &operator=(const InFile &) = delete;
 
-  void open(const FileName &fileName, const std::string &type);
+  void open(const FileName &fileName, const std::string &type, UInt version);
   void close();
 
   FileName    fileName() const {return file.fileName();}

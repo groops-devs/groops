@@ -25,7 +25,7 @@ void writeFileArcList(const FileName &fileName, const std::vector<UInt> &arcsInt
 {
   try
   {
-    OutFileArchive file(fileName, FILE_ARCLIST_TYPE);
+    OutFileArchive file(fileName, FILE_ARCLIST_TYPE, FILE_ARCLIST_VERSION);
     file<<nameValue("intervalCount", arcsInterval.size());
     file.comment("time [MJD]               first arc");
     file.comment("==================================");
@@ -49,7 +49,7 @@ void readFileArcList(const FileName &fileName, std::vector<UInt> &arcsInterval, 
 {
   try
   {
-    InFileArchive file(fileName, FILE_ARCLIST_TYPE);
+    InFileArchive file(fileName, FILE_ARCLIST_TYPE, FILE_ARCLIST_VERSION);
     if(file.version() < 20200123)
     {
       file>>nameValue("arcList", arcsInterval);

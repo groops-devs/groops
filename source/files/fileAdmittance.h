@@ -35,7 +35,8 @@ See \program{DoodsonHarmonicsCalculateAdmittance}.
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_ADMITTANCE_TYPE = "admittance";
+const char *const FILE_ADMITTANCE_TYPE    = "admittance";
+constexpr UInt    FILE_ADMITTANCE_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** CLASS ***********************************/
 

@@ -116,7 +116,7 @@ void writeFileMeanPolarMotion(const FileName &fileName, const MeanPolarMotion &x
 {
   try
   {
-    OutFileArchive file(fileName, FILE_MEANPOLARMOTION_TYPE);
+    OutFileArchive file(fileName, FILE_MEANPOLARMOTION_TYPE, FILE_MEANPOLARMOTION_VERSION);
     file<<nameValue("meanPolarMotion", x);
   }
   catch(std::exception &e)
@@ -131,7 +131,7 @@ void readFileMeanPolarMotion(const FileName &fileName, MeanPolarMotion &x)
 {
   try
   {
-    InFileArchive file(fileName, FILE_MEANPOLARMOTION_TYPE);
+    InFileArchive file(fileName, FILE_MEANPOLARMOTION_TYPE, FILE_MEANPOLARMOTION_VERSION);
     file>>nameValue("meanPolarMotion", x);
   }
   catch(std::exception &e)

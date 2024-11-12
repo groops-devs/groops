@@ -965,6 +965,25 @@ template<> Bool readConfig(Config &config, const std::string &name, std::string 
 
 /***********************************************/
 
+// read std::string
+template<> Bool readConfig(Config &config, const std::string &name, std::pair<std::string, VariableList> &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
+{
+  std::string text;
+  Bool found = config.getConfigText(name, "string", mustSet, defaultValue, annotation, FALSE, text);
+  if(found)
+  {
+    Bool resolved = TRUE;
+    std::string textResolved = StringParser::parse(name, text, VariableList(), resolved);
+    if(resolved)
+      var = std::pair<std::string, VariableList>(textResolved, VariableList());
+    else
+      var = std::pair<std::string, VariableList>(text, config.getVarList());
+  }
+  return found;
+}
+
+/***********************************************/
+
 // read Bool
 template<> Bool readConfig(Config &config, const std::string &name, Bool &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation)
 {

@@ -37,7 +37,7 @@ void InFileTimeSplinesGravityfield::open(const FileName &name, UInt maxDegree, U
     if(!name.empty())
     {
       UInt epochCount;
-      file.open(name, FILE_TIMESPLINESGRAVITYFIELD_TYPE);
+      file.open(name, FILE_TIMESPLINESGRAVITYFIELD_TYPE, FILE_TIMESPLINESGRAVITYFIELD_VERSION);
       file>>nameValue("GM",        GM);
       file>>nameValue("R",         R);
       file>>nameValue("degree",    splineDegree_);
@@ -166,7 +166,7 @@ void writeFileTimeSplinesGravityfield(const FileName &fileName,
     if((nodeCount != cnm.size()) || (nodeCount != snm.size()))
       throw(Exception("size of series of cnm,snm does not mach to number of times."));
 
-    OutFileArchive file(fileName, FILE_TIMESPLINESGRAVITYFIELD_TYPE);
+    OutFileArchive file(fileName, FILE_TIMESPLINESGRAVITYFIELD_TYPE, FILE_TIMESPLINESGRAVITYFIELD_VERSION);
     file<<nameValue("GM",        GM);
     file<<nameValue("R",         R);
     file<<nameValue("degree",    splineDegree);
@@ -197,7 +197,7 @@ void readFileTimeSplinesGravityfield(const FileName &fileName,
 {
   try
   {
-    InFileArchive file(fileName, FILE_TIMESPLINESGRAVITYFIELD_TYPE);
+    InFileArchive file(fileName, FILE_TIMESPLINESGRAVITYFIELD_TYPE, FILE_TIMESPLINESGRAVITYFIELD_VERSION);
     file>>nameValue("GM",        GM);
     file>>nameValue("R",         R);
     file>>nameValue("degree",    splineDegree);
@@ -234,7 +234,7 @@ void InFileTimeSplinesCovariance::open(const FileName &name, UInt maxDegree, UIn
     if(!name.empty())
     {
       UInt epochCount;
-      file.open(name, FILE_TIMESPLINESCOVARIANCE_TYPE);
+      file.open(name, FILE_TIMESPLINESCOVARIANCE_TYPE, FILE_TIMESPLINESCOVARIANCE_VERSION);
       file>>nameValue("GM",        GM_);
       file>>nameValue("R",         R_);
       file>>nameValue("minDegree", minDegree_);
@@ -453,7 +453,7 @@ void writeFileTimeSplinesCovariance(const FileName &fileName,
     if(nodeCount != sigma2.size())
       throw(Exception("size of series of sigma2 does not mach to number of times."));
 
-    OutFileArchive file(fileName, FILE_TIMESPLINESCOVARIANCE_TYPE);
+    OutFileArchive file(fileName, FILE_TIMESPLINESCOVARIANCE_TYPE, FILE_TIMESPLINESCOVARIANCE_VERSION);
     file<<nameValue("GM",        GM);
     file<<nameValue("R",         R);
     file<<nameValue("minDegree", minDegree);
@@ -480,7 +480,7 @@ void readFileTimeSplinesCovariance(const FileName &fileName,
 {
   try
   {
-    InFileArchive file(fileName, FILE_TIMESPLINESCOVARIANCE_TYPE);
+    InFileArchive file(fileName, FILE_TIMESPLINESCOVARIANCE_TYPE, FILE_TIMESPLINESCOVARIANCE_VERSION);
     file>>nameValue("GM",        GM);
     file>>nameValue("R",         R);
     file>>nameValue("minDegree", minDegree);

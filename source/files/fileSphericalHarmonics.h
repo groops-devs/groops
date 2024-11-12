@@ -33,7 +33,8 @@ To write additional information and temporal variations use \program{PotentialCo
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_POTENTIALCOEFFICIENTS_TYPE = "potentialCoefficients";
+const char *const FILE_POTENTIALCOEFFICIENTS_TYPE    = "potentialCoefficients";
+constexpr UInt    FILE_POTENTIALCOEFFICIENTS_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** FUNCTIONS *******************************/
 

@@ -47,7 +47,8 @@ See also \program{PotentialCoefficients2DoodsonHarmonics}.
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_DOODSONHARMONIC_TYPE = "doodsonHarmonic";
+const char *const FILE_DOODSONHARMONIC_TYPE    = "doodsonHarmonic";
+constexpr UInt    FILE_DOODSONHARMONIC_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** CLASS ***********************************/
 

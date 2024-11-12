@@ -53,7 +53,8 @@ groops polygon version=20200123
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_POLYGON_TYPE = "polygon";
+const char *const FILE_POLYGON_TYPE    = "polygon";
+constexpr UInt    FILE_POLYGON_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** CLASS ***********************************/
 

@@ -35,7 +35,7 @@ static void writeInfoFile(const FileName &name, const NormalEquationInfo &info, 
       throw(Exception("no used blocks defined"));
 
     FileName nameInfo(name.replaceFullExtension(".info.xml"));
-    OutFileArchive file(nameInfo, FILE_NORMALEQUATION_TYPE);
+    OutFileArchive file(nameInfo, FILE_NORMALEQUATION_TYPE, FILE_NORMALEQUATION_VERSION);
     file<<nameValue("observationCount",   info.observationCount);
     file<<nameValue("parameterCount",     info.blockIndex.back());
     file<<nameValue("rightHandSideCount", info.lPl.rows());
@@ -168,7 +168,7 @@ static void readInfoFile(const FileName &name, NormalEquationInfo &info, Matrix 
     info.blockIndex.push_back(0);
 
     FileName nameInfo(name.replaceFullExtension(".info.xml"));
-    InFileArchive file(nameInfo, FILE_NORMALEQUATION_TYPE);
+    InFileArchive file(nameInfo, FILE_NORMALEQUATION_TYPE, FILE_NORMALEQUATION_VERSION);
     UInt paramCount, rhsCount, blockCount;
     file>>nameValue("observationCount",   info.observationCount);
     file>>nameValue("parameterCount",     paramCount);

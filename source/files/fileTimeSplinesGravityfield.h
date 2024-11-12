@@ -44,8 +44,10 @@ temporal nodal point.
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_TIMESPLINESGRAVITYFIELD_TYPE = "timeSplinesGravityField";
-const char *const FILE_TIMESPLINESCOVARIANCE_TYPE   = "timeSplinesCovariance";
+const char *const FILE_TIMESPLINESGRAVITYFIELD_TYPE    = "timeSplinesGravityField";
+const char *const FILE_TIMESPLINESCOVARIANCE_TYPE      = "timeSplinesCovariance";
+constexpr UInt    FILE_TIMESPLINESGRAVITYFIELD_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
+constexpr UInt    FILE_TIMESPLINESCOVARIANCE_VERSION   = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** CLASS ***********************************/
 
