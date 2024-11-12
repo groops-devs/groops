@@ -240,7 +240,7 @@ void writeFileGnssAntennaDefinition(const FileName &fileName, const GnssAntennaD
 {
   try
   {
-    OutFileArchive file(fileName, FILE_GNSSANTENNADEFINITION_TYPE);
+    OutFileArchive file(fileName, FILE_GNSSANTENNADEFINITION_TYPE, FILE_GNSSANTENNADEFINITION_VERSION);
     file<<nameValue("antennaCount", 1);
     file<<nameValue("antenna", x);
   }
@@ -256,7 +256,7 @@ void writeFileGnssAntennaDefinition(const FileName &fileName, const std::vector<
 {
   try
   {
-    OutFileArchive file(fileName, FILE_GNSSANTENNADEFINITION_TYPE);
+    OutFileArchive file(fileName, FILE_GNSSANTENNADEFINITION_TYPE, FILE_GNSSANTENNADEFINITION_VERSION);
     file<<nameValue("antennaCount", x.size());
     for(UInt i=0; i<x.size(); i++)
       file<<nameValue("antenna", x.at(i));
@@ -273,7 +273,7 @@ void readFileGnssAntennaDefinition(const FileName &fileName, GnssAntennaDefiniti
 {
   try
   {
-    InFileArchive file(fileName, FILE_GNSSANTENNADEFINITION_TYPE);
+    InFileArchive file(fileName, FILE_GNSSANTENNADEFINITION_TYPE, FILE_GNSSANTENNADEFINITION_VERSION);
     if(file.version() < 20190304)
       throw(Exception(fileName.str()+": old GnssAntennaDefinition file, definition of reference frames changed"));
 
@@ -295,7 +295,7 @@ void readFileGnssAntennaDefinition(const FileName &fileName, std::vector<GnssAnt
 {
   try
   {
-    InFileArchive file(fileName, FILE_GNSSANTENNADEFINITION_TYPE);
+    InFileArchive file(fileName, FILE_GNSSANTENNADEFINITION_TYPE, FILE_GNSSANTENNADEFINITION_VERSION);
     if(file.version() < 20190304)
       throw(Exception(fileName.str()+": old GnssAntennaDefinition file, definition of reference frames changed"));
 

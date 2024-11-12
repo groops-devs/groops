@@ -74,7 +74,8 @@ groops arclist version=20200123
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_ARCLIST_TYPE = "arclist";
+const char *const FILE_ARCLIST_TYPE    = "arclist";
+constexpr UInt    FILE_ARCLIST_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** FUNCTIONS *******************************/
 

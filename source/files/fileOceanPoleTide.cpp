@@ -26,7 +26,7 @@ void writeFileOceanPoleTide(const FileName &fileName, const SphericalHarmonics &
 {
   try
   {
-    OutFileArchive file(fileName, FILE_OCEANPOLETIDE_TYPE);
+    OutFileArchive file(fileName, FILE_OCEANPOLETIDE_TYPE, FILE_OCEANPOLETIDE_VERSION);
     file<<nameValue("harmonicsReal",      harmReal);
     file<<nameValue("harmonicsImaginary", harmImag);
   }
@@ -42,7 +42,7 @@ void readFileOceanPoleTide(const FileName &fileName, SphericalHarmonics &harmRea
 {
   try
   {
-    InFileArchive file(fileName, FILE_OCEANPOLETIDE_TYPE);
+    InFileArchive file(fileName, FILE_OCEANPOLETIDE_TYPE, FILE_OCEANPOLETIDE_VERSION);
     file>>nameValue("harmonicsReal",      harmReal);
     file>>nameValue("harmonicsImaginary", harmImag);
   }

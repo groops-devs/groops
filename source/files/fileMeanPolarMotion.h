@@ -58,7 +58,8 @@ The mean pole of the Earth rotation is represented by a polynomial in a time int
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_MEANPOLARMOTION_TYPE = "meanPolarMotion";
+const char *const FILE_MEANPOLARMOTION_TYPE    = "meanPolarMotion";
+constexpr UInt    FILE_MEANPOLARMOTION_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** CLASS ***********************************/
 

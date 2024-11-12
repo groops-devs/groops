@@ -32,7 +32,8 @@ It is used by \configClass{tides}{tidesType}.
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_EARTHTIDE_TYPE = "earthTide";
+const char *const FILE_EARTHTIDE_TYPE    = "earthTide";
+constexpr UInt    FILE_EARTHTIDE_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** FUNCTIONS *******************************/
 

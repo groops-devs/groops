@@ -8391,6 +8391,60 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="degreeAmplitudesSimple">
+				<xs:annotation>
+					<xs:documentation>degree amplitudes of a gravity field</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="gravityfield" type="gravityfieldType" maxOccurs="unbounded"/>
+						<xs:element name="kernel" type="kernelType"/>
+						<xs:element name="type">
+							<xs:annotation>
+								<xs:documentation>type of variances</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="rms">
+										<xs:annotation>
+											<xs:documentation>degree amplitudes (square root of degree variances)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="accumulation">
+										<xs:annotation>
+											<xs:documentation>cumulate variances over degrees</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="median">
+										<xs:annotation>
+											<xs:documentation>median of absolute values per degree</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="time" type="time" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>at this time the gravity field will be evaluated</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="minDegree" type="uint" minOccurs="0" default="0"/>
+						<xs:element name="maxDegree" type="uint" minOccurs="0"/>
+						<xs:element name="description" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>text of the legend</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="lineSignal" type="plotLineType" minOccurs="0" default="solid"/>
+						<xs:element name="lineErrors" type="plotLineType" minOccurs="0" default="{&quot;custom&quot;: {&quot;style&quot;:&quot;5_2:0&quot;}}"/>
+						<xs:element name="plotOnSecondAxis" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>draw dataset on a second Y-axis (if available).</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 		</xs:choice>
 	</xs:complexType>
 	<xs:complexType name="plotLegendType">
@@ -12980,7 +13034,7 @@
 									</xs:element>
 									<xs:element name="median">
 										<xs:annotation>
-											<xs:documentation>meadian of absolute values per degree</xs:documentation>
+											<xs:documentation>median of absolute values per degree</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 								</xs:choice>
@@ -18252,7 +18306,7 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="title" type="string" minOccurs="0"/>
-						<xs:element name="layer" type="plotGraphLayerType" default="degreeAmplitudes" maxOccurs="unbounded"/>
+						<xs:element name="layer" type="plotGraphLayerType" default="degreeAmplitudesSimple" maxOccurs="unbounded"/>
 						<xs:element name="minDegree" type="uint" minOccurs="0" default="0"/>
 						<xs:element name="maxDegree" type="uint" minOccurs="0"/>
 						<xs:element name="majorTickSpacingDegree" type="double" minOccurs="0">

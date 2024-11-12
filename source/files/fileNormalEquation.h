@@ -43,13 +43,16 @@ Matrix in blocks can be distributed on muliple nodes in parallel mode to efficie
 
 #include "base/parameterName.h"
 #include "inputOutput/fileName.h"
+#include "inputOutput/fileArchive.h"
+#include "files/fileMatrix.h"
 
 /** @addtogroup filesGroup */
 /// @{
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_NORMALEQUATION_TYPE = "normalEquation";
+const char *const FILE_NORMALEQUATION_TYPE    = "normalEquation";
+constexpr UInt    FILE_NORMALEQUATION_VERSION = std::max(std::max(UInt(20200123), FILE_MATRIX_VERSION), FILE_BASE_VERSION);
 
 /***** CLASSES **********************************/
 

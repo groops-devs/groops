@@ -74,7 +74,7 @@ void writeFileDoodsonHarmonic(const FileName &fileName, const DoodsonHarmonic &x
 {
   try
   {
-    OutFileArchive file(fileName, FILE_DOODSONHARMONIC_TYPE);
+    OutFileArchive file(fileName, FILE_DOODSONHARMONIC_TYPE, FILE_DOODSONHARMONIC_VERSION);
     file<<nameValue("doodsonHarmonic", x);
   }
   catch(std::exception &e)
@@ -89,7 +89,7 @@ void readFileDoodsonHarmonic(const FileName &fileName, DoodsonHarmonic &x)
 {
   try
   {
-    InFileArchive file(fileName, FILE_DOODSONHARMONIC_TYPE);
+    InFileArchive file(fileName, FILE_DOODSONHARMONIC_TYPE, FILE_DOODSONHARMONIC_VERSION);
     file>>nameValue("doodsonHarmonic", x);
   }
   catch(std::exception &e)

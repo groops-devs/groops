@@ -115,7 +115,7 @@ void writeFileGnssReceiverDefinition(const FileName &fileName, const GnssReceive
 {
   try
   {
-    OutFileArchive file(fileName, FILE_GNSSRECEIVERDEFINITION_TYPE);
+    OutFileArchive file(fileName, FILE_GNSSRECEIVERDEFINITION_TYPE, FILE_GNSSRECEIVERDEFINITION_VERSION);
     file<<nameValue("receiverCount", 1);
     file<<nameValue("receiver", x);
   }
@@ -131,7 +131,7 @@ void writeFileGnssReceiverDefinition(const FileName &fileName, const std::vector
 {
   try
   {
-    OutFileArchive file(fileName, FILE_GNSSRECEIVERDEFINITION_TYPE);
+    OutFileArchive file(fileName, FILE_GNSSRECEIVERDEFINITION_TYPE, FILE_GNSSRECEIVERDEFINITION_VERSION);
     file<<nameValue("receiverCount", x.size());
     for(UInt i=0; i<x.size(); i++)
       file<<nameValue("receiver", x.at(i));
@@ -148,7 +148,7 @@ void readFileGnssReceiverDefinition(const FileName &fileName, GnssReceiverDefini
 {
   try
   {
-    InFileArchive file(fileName, FILE_GNSSRECEIVERDEFINITION_TYPE);
+    InFileArchive file(fileName, FILE_GNSSRECEIVERDEFINITION_TYPE, FILE_GNSSRECEIVERDEFINITION_VERSION);
 
     UInt count;
     file>>nameValue("receiverCount", count);
@@ -168,7 +168,7 @@ void readFileGnssReceiverDefinition(const FileName &fileName, std::vector<GnssRe
 {
   try
   {
-    InFileArchive file(fileName, FILE_GNSSRECEIVERDEFINITION_TYPE);
+    InFileArchive file(fileName, FILE_GNSSRECEIVERDEFINITION_TYPE, FILE_GNSSRECEIVERDEFINITION_VERSION);
 
     UInt count;
     file>>nameValue("receiverCount", count);

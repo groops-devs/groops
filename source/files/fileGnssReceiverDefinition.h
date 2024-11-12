@@ -70,14 +70,16 @@ See \program{GnssReceiverDefinitionCreate}.
 
 #include "base/gnssType.h"
 #include "inputOutput/fileName.h"
-#include "inputOutput/archive.h"
+#include "inputOutput/fileArchive.h"
+
 
 /** @addtogroup filesGroup */
 /// @{
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_GNSSRECEIVERDEFINITION_TYPE = "receiverDefinition";
+const char *const FILE_GNSSRECEIVERDEFINITION_TYPE    = "receiverDefinition";
+constexpr UInt    FILE_GNSSRECEIVERDEFINITION_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** TYPES ***********************************/
 

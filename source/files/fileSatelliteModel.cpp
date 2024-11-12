@@ -428,7 +428,7 @@ void writeFileSatelliteModel(const FileName &fileName, const SatelliteModelPtr &
 {
   try
   {
-    OutFileArchive file(fileName, FILE_SATELLITEMODEL_TYPE);
+    OutFileArchive file(fileName, FILE_SATELLITEMODEL_TYPE, FILE_SATELLITEMODEL_VERSION);
     file<<nameValue("satelliteCount", 1);
     file<<nameValue("satellite", x);
   }
@@ -444,7 +444,7 @@ void writeFileSatelliteModel(const FileName &fileName, const std::vector<Satelli
 {
   try
   {
-    OutFileArchive file(fileName, FILE_SATELLITEMODEL_TYPE);
+    OutFileArchive file(fileName, FILE_SATELLITEMODEL_TYPE, FILE_SATELLITEMODEL_VERSION);
     file<<nameValue("satelliteCount", x.size());
     for(UInt i=0; i<x.size(); i++)
       file<<nameValue("satellite", x.at(i));
@@ -461,7 +461,7 @@ void readFileSatelliteModel(const FileName &fileName, SatelliteModelPtr &x)
 {
   try
   {
-    InFileArchive file(fileName, FILE_SATELLITEMODEL_TYPE);
+    InFileArchive file(fileName, FILE_SATELLITEMODEL_TYPE, FILE_SATELLITEMODEL_VERSION);
     UInt count;
     file>>nameValue("satelliteCount", count);
     if(count>1)
@@ -480,7 +480,7 @@ void readFileSatelliteModel(const FileName &fileName, std::vector<SatelliteModel
 {
   try
   {
-    InFileArchive file(fileName, FILE_SATELLITEMODEL_TYPE);
+    InFileArchive file(fileName, FILE_SATELLITEMODEL_TYPE, FILE_SATELLITEMODEL_VERSION);
     UInt count;
     file>>nameValue("satelliteCount", count);
     x.resize(count);

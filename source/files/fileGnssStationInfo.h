@@ -26,7 +26,8 @@ DEPRECATED. Use \file{Platform}{platform} instead.
 #include "base/import.h"
 #include "base/gnssType.h"
 #include "inputOutput/fileName.h"
-#include "inputOutput/archive.h"
+#include "inputOutput/fileArchive.h"
+
 #include "files/fileGnssAntennaDefinition.h"
 #include "files/fileGnssReceiverDefinition.h"
 
@@ -35,7 +36,8 @@ DEPRECATED. Use \file{Platform}{platform} instead.
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_GNSSSTATIONINFO_TYPE = "stationInfo";
+const char *const FILE_GNSSSTATIONINFO_TYPE    = "stationInfo";
+constexpr UInt    FILE_GNSSSTATIONINFO_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** TYPES ***********************************/
 
