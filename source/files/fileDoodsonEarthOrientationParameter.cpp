@@ -76,7 +76,7 @@ void writeFileDoodsonEarthOrientationParameter(const FileName &fileName, const D
 {
   try
   {
-    OutFileArchive file(fileName, FILE_DOODSONEARTHORIENTATIONPARAMETER_TYPE);
+    OutFileArchive file(fileName, FILE_DOODSONEARTHORIENTATIONPARAMETER_TYPE, FILE_DOODSONEARTHORIENTATIONPARAMETER_VERSION);
     file<<nameValue("doodsonEarthOrientationParameter", x);
   }
   catch(std::exception &e)
@@ -91,7 +91,7 @@ void readFileDoodsonEarthOrientationParameter(const FileName &fileName, DoodsonE
 {
   try
   {
-    InFileArchive file(fileName, FILE_DOODSONEARTHORIENTATIONPARAMETER_TYPE);
+    InFileArchive file(fileName, FILE_DOODSONEARTHORIENTATIONPARAMETER_TYPE, FILE_DOODSONEARTHORIENTATIONPARAMETER_VERSION);
     file>>nameValue("doodsonEarthOrientationParameter", x);
   }
   catch(std::exception &e)

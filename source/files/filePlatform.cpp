@@ -322,7 +322,7 @@ void writeFilePlatform(const FileName &fileName, const Platform &x)
 {
   try
   {
-    OutFileArchive file(fileName, FILE_PLATFORM_TYPE);
+    OutFileArchive file(fileName, FILE_PLATFORM_TYPE, FILE_PLATFORM_VERSION);
     file<<nameValue("platform", x);
   }
   catch(std::exception &e)
@@ -337,7 +337,7 @@ void readFilePlatform(const FileName &fileName, Platform &x)
 {
   try
   {
-    InFileArchive file(fileName, ""/*arbitrary type*/);
+    InFileArchive file(fileName, ""/*arbitrary type*/, FILE_PLATFORM_VERSION);
     if(file.type() == FILE_PLATFORM_TYPE)
       file>>nameValue("platform", x);
     else if(file.type() == FILE_GNSSSTATIONINFO_TYPE)

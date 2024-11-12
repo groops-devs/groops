@@ -31,7 +31,7 @@ void InFileEphemerides::open(const FileName &name)
 
     UInt intervalsCount, bodyCount;
 
-    file.open(name, FILE_EPHEMERIDES_TYPE);
+    file.open(name, FILE_EPHEMERIDES_TYPE, FILE_EPHEMERIDES_VERSION);
     file>>nameValue("bodyCount",      bodyCount);
     file>>nameValue("intervalsCount", intervalsCount);
     file>>nameValue("earthMoonRatio", earthMoonRatio);
@@ -234,7 +234,7 @@ void writeFileEphemerides(const FileName &fileName, Double earthMoonRatio, const
 {
   try
   {
-    OutFileArchive file(fileName, FILE_EPHEMERIDES_TYPE);
+    OutFileArchive file(fileName, FILE_EPHEMERIDES_TYPE, FILE_EPHEMERIDES_VERSION);
     file<<nameValue("bodyCount",      components.size());
     file<<nameValue("intervalsCount", times.size()-1);
     file<<nameValue("earthMoonRatio", earthMoonRatio);

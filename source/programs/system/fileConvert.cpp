@@ -83,7 +83,7 @@ void FileConvert::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     logStatus<<"Converting from <"<<fileNameInput<<"> to <"<< fileNameOutput<<">"<<Log::endl;
     std::string type;
     {
-      InFileArchive infile(fileNameInput, ""/*arbitrary type*/);
+      InFileArchive infile(fileNameInput, ""/*arbitrary type*/, 25000101);
       logInfo<<"  type    = "<<infile.type()<<Log::endl;
       logInfo<<"  version = "<<infile.version()<<Log::endl;
       type = infile.type();

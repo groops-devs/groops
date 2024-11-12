@@ -52,7 +52,7 @@ void FileVariationalEquation::open(const FileName &fileName)
     close();
     if(!fileName.empty())
     {
-      _file.open(fileName, FILE_VARIATIONALEQUATION_TYPE);
+      _file.open(fileName, FILE_VARIATIONALEQUATION_TYPE, FILE_VARIATIONALEQUATION_VERSION);
       // check for old version
       if(_file.version() < 20150524)
         throw(Exception("version of <"+fileName.str()+"> is not supported anymore. Please recompute."));
@@ -122,7 +122,7 @@ void writeFileVariationalEquation(const FileName &fileName, SatelliteModelPtr sa
 {
   try
   {
-    OutFileArchive file(fileName, FILE_VARIATIONALEQUATION_TYPE);
+    OutFileArchive file(fileName, FILE_VARIATIONALEQUATION_TYPE, FILE_VARIATIONALEQUATION_VERSION);
     file<<nameValue("satellite", satellite);
     file<<nameValue("arcCount", arcList.size());
     for(auto iter=arcList.begin(); iter!=arcList.end(); iter++)

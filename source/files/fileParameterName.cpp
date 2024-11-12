@@ -42,7 +42,7 @@ void writeFileParameterName(const FileName &fileName, const std::vector<Paramete
 {
   try
   {
-    OutFileArchive file(fileName, FILE_PARAMETERNAME_TYPE);
+    OutFileArchive file(fileName, FILE_PARAMETERNAME_TYPE, FILE_PARAMETERNAME_VERSION);
     file.comment("object:type:temporal:interval");
     file.comment("=============================");
     file<<nameValue("parameterName", x);
@@ -59,7 +59,7 @@ void readFileParameterName(const FileName &fileName, std::vector<ParameterName> 
 {
   try
   {
-    InFileArchive file(fileName, FILE_PARAMETERNAME_TYPE);
+    InFileArchive file(fileName, FILE_PARAMETERNAME_TYPE, FILE_PARAMETERNAME_VERSION);
     file>>nameValue("parameterName", x);
   }
   catch(std::exception &e)

@@ -32,7 +32,7 @@ void InFileGriddedDataTimeSeries::open(const FileName &name)
     {
       UInt epochCount;
 
-      file.open(name, FILE_GRIDDEDDATATIMESERIES_TYPE);
+      file.open(name, FILE_GRIDDEDDATATIMESERIES_TYPE, FILE_GRIDDEDDATATIMESERIES_VERSION);
       file>>nameValue("splineDegree", splineDegree_);
       file>>nameValue("timeCount",    epochCount);
       file>>nameValue("dataCount",    dataCount_);
@@ -167,7 +167,7 @@ void writeFileGriddedDataTimeSeries(const FileName &fileName, UInt splineDegree,
       throw(Exception("spline degree, times.size(), and data.size() not fit"));
     const UInt dataCount = (data.size() ? data.front().columns() : 0);
 
-    OutFileArchive file(fileName, FILE_GRIDDEDDATATIMESERIES_TYPE);
+    OutFileArchive file(fileName, FILE_GRIDDEDDATATIMESERIES_TYPE, FILE_GRIDDEDDATATIMESERIES_VERSION);
     file<<nameValue("splineDegree", splineDegree);
     file<<nameValue("timeCount",    times.size());
     file<<nameValue("dataCount",    dataCount);

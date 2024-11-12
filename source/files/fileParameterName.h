@@ -92,7 +92,8 @@ groops parameterName version=20200123
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_PARAMETERNAME_TYPE = "parameterName";
+const char *const FILE_PARAMETERNAME_TYPE    = "parameterName";
+constexpr UInt    FILE_PARAMETERNAME_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** FUNCTIONS *******************************/
 

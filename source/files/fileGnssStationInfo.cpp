@@ -332,7 +332,7 @@ void writeFileGnssStationInfo(const FileName &fileName, const GnssStationInfo &x
 {
   try
   {
-    OutFileArchive file(fileName, FILE_GNSSSTATIONINFO_TYPE);
+    OutFileArchive file(fileName, FILE_GNSSSTATIONINFO_TYPE, FILE_GNSSSTATIONINFO_VERSION);
     file<<nameValue("stationCount", 1);
     file<<nameValue("station", x);
   }
@@ -348,7 +348,7 @@ void writeFileGnssStationInfo(const FileName &fileName, const std::vector<GnssSt
 {
   try
   {
-    OutFileArchive file(fileName, FILE_GNSSSTATIONINFO_TYPE);
+    OutFileArchive file(fileName, FILE_GNSSSTATIONINFO_TYPE, FILE_GNSSSTATIONINFO_VERSION);
     file<<nameValue("stationCount", x.size());
     for(UInt i=0; i<x.size(); i++)
       file<<nameValue("station", x.at(i));
@@ -365,7 +365,7 @@ void readFileGnssStationInfo(const FileName &fileName, GnssStationInfo &x)
 {
   try
   {
-    InFileArchive file(fileName, FILE_GNSSSTATIONINFO_TYPE);
+    InFileArchive file(fileName, FILE_GNSSSTATIONINFO_TYPE, FILE_GNSSSTATIONINFO_VERSION);
     if(file.version() < 20190304)
       throw(Exception(fileName.str()+": old GnssStationInfo file, definition of reference frames changed"));
 
@@ -387,7 +387,7 @@ void readFileGnssStationInfo(const FileName &fileName, std::vector<GnssStationIn
 {
   try
   {
-    InFileArchive file(fileName, FILE_GNSSSTATIONINFO_TYPE);
+    InFileArchive file(fileName, FILE_GNSSSTATIONINFO_TYPE, FILE_GNSSSTATIONINFO_VERSION);
     if(file.version() < 20190304)
       throw(Exception(fileName.str()+": old GnssStationInfo file, definition of reference frames changed"));
 

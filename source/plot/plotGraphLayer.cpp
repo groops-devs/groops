@@ -14,12 +14,14 @@
 #define DOCSTRING_PlotGraphLayer
 
 #include "base/import.h"
+#include "parser/stringParser.h"
 #include "parser/dataVariables.h"
 #include "config/configRegister.h"
 #include "inputOutput/logging.h"
 #include "inputOutput/file.h"
 #include "inputOutput/system.h"
 #include "files/fileMatrix.h"
+#include "classes/gravityfield/gravityfield.h"
 #include "plot/plotMisc.h"
 #include "plotGraphLayer.h"
 
@@ -42,7 +44,7 @@ See \program{Gravityfield2AreaMeanTimeSeries} for an example plot.
 class PlotGraphLayerLinesAndPoints : public PlotGraphLayer
 {
 protected:
-  std::string   description;
+  std::pair<std::string, VariableList> description;
   PlotLinePtr   line;
   PlotSymbolPtr symbol;
   Bool          hasZValues, hasErrors;
@@ -89,9 +91,9 @@ PlotGraphLayerLinesAndPoints::PlotGraphLayerLinesAndPoints(Config &config)
     // --------------------
     if(!System::exists(fileName))
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (file not found)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (file not found)";
       logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
@@ -103,9 +105,9 @@ PlotGraphLayerLinesAndPoints::PlotGraphLayerLinesAndPoints(Config &config)
 
     if(!A.size())
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (empty file)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (empty file)";
       logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
       return;
     }
@@ -114,6 +116,7 @@ PlotGraphLayerLinesAndPoints::PlotGraphLayerLinesAndPoints(Config &config)
     // ---------------------
     VariableList varList;
     addDataVariables(A, varList);
+    try {description.second += varList; description.first = StringParser::parse(description.first, description.second);} catch(std::exception &) {}
     for(ExpressionVariablePtr expr : {exprX, exprY, exprZ, exprError})
       if(expr) expr->simplify(varList);
 
@@ -168,7 +171,7 @@ std::string PlotGraphLayerLinesAndPoints::legendEntry() const
   try
   {
     std::stringstream ss;
-    if(description.empty() || (!line && !symbol))
+    if(description.first.empty() || (!line && !symbol))
       return ss.str();
     if(line)
       ss<<"S 0.3c - 0.5c - "<<line->str()<<" 0.7c " ;
@@ -178,7 +181,7 @@ std::string PlotGraphLayerLinesAndPoints::legendEntry() const
         ss<<std::endl<<"G -1l"<<std::endl;
       ss<<"S 0.3c "<<symbol->legendStr()<<"\t0.7c\t";
     }
-    ss<<description<<std::endl;
+    ss<<description.first<<std::endl;
     return ss.str();
   }
   catch(std::exception &e)
@@ -203,7 +206,7 @@ The data line itself is not plotted but must be added as extra
 class PlotGraphLayerErrorEnvelope : public PlotGraphLayer
 {
 protected:
-  std::string  description;
+  std::pair<std::string, VariableList> description;
   PlotColorPtr fillColor;
   PlotLinePtr  edgeLine;
 
@@ -239,9 +242,9 @@ PlotGraphLayerErrorEnvelope::PlotGraphLayerErrorEnvelope(Config &config)
     // --------------------
     if(!System::exists(fileName))
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (file not found)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (file not found)";
       logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
@@ -253,9 +256,9 @@ PlotGraphLayerErrorEnvelope::PlotGraphLayerErrorEnvelope(Config &config)
 
     if(!A.size())
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (empty file)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (empty file)";
       logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
       return;
     }
@@ -264,6 +267,7 @@ PlotGraphLayerErrorEnvelope::PlotGraphLayerErrorEnvelope(Config &config)
     // ---------------------
     VariableList varList;
     addDataVariables(A, varList);
+    try {description.second += varList; description.first = StringParser::parse(description.first, description.second);} catch(std::exception &) {}
 
     std::vector<ExpressionVariablePtr> expressions = {exprX, exprY, exprErrors};
     for(ExpressionVariablePtr expr : expressions)
@@ -317,7 +321,7 @@ std::string PlotGraphLayerErrorEnvelope::legendEntry() const
 {
   try
   {
-    if(description.empty())
+    if(description.first.empty())
       return std::string();
 
     std::stringstream ss;
@@ -326,7 +330,7 @@ std::string PlotGraphLayerErrorEnvelope::legendEntry() const
       ss<<edgeLine->str();
     else
       ss<<"0p,"<<fillColor->str();
-    ss<<"\t0.7c\t"<<description<<std::endl;
+    ss<<"\t0.7c\t"<<description.first<<std::endl;
     return ss.str();
   }
   catch(std::exception &e)
@@ -357,7 +361,7 @@ private:
   Bool         horizontal;
   PlotColorPtr color;
   PlotLinePtr  edgeLine;
-  std::string  description;
+  std::pair<std::string, VariableList> description;
 
 public:
   PlotGraphLayerBars(Config &config);
@@ -393,9 +397,9 @@ PlotGraphLayerBars::PlotGraphLayerBars(Config &config)
     // --------------------
     if(!System::exists(fileName))
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (file not found)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (file not found)";
       logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
@@ -407,9 +411,9 @@ PlotGraphLayerBars::PlotGraphLayerBars(Config &config)
 
     if(!A.size())
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (empty file)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (empty file)";
       logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
       return;
     }
@@ -418,6 +422,7 @@ PlotGraphLayerBars::PlotGraphLayerBars(Config &config)
     // ---------------------
     VariableList varList;
     addDataVariables(A, varList);
+    try {description.second += varList; description.first = StringParser::parse(description.first, description.second);} catch(std::exception &) {}
     for(ExpressionVariablePtr expr : {exprX, exprY, exprZ, exprBase, exprBase, exprWidth})
       if(expr) expr->simplify(varList);
 
@@ -493,7 +498,7 @@ std::string PlotGraphLayerBars::legendEntry() const
 {
   try
   {
-    if(description.empty())
+    if(description.first.empty())
       return std::string();
 
     if(!color)
@@ -506,7 +511,7 @@ std::string PlotGraphLayerBars::legendEntry() const
     ss<<"S 0.3c r 5p "<<color->str()<<" ";
     if(edgeLine) ss<<edgeLine->str();
     else ss<<"-";
-    ss<<"\t0.7c\t"<<description<<std::endl;
+    ss<<"\t0.7c\t"<<description.first<<std::endl;
     return ss.str();
   }
   catch(std::exception &e)
@@ -854,7 +859,7 @@ std::string PlotGraphLayerText::scriptEntry() const
 /***********************************************/
 
 static const char *docstringPlotGraphLayerDegreeAmplitudes = R"(
-\subsection{DegreeAmplitudes}
+\subsection{DegreeAmplitudes}\label{plotGraphLayerType:degreeAmplitudes}
 Plot degree amplitudes of potential coefficients computed by \program{Gravityfield2DegreeAmplitudes}
 or \program{PotentialCoefficients2DegreeAmplitudes}.
 The standard \reference{dataVariables}{general.parser:dataVariables} are available to select
@@ -864,7 +869,7 @@ the data columns of \configFile{inputfileMatrix}{matrix}. It plots a solid line 
 
 class PlotGraphLayerDegreeAmplitudes : public PlotGraphLayer
 {
-  std::string description;
+  std::pair<std::string, VariableList> description;
   PlotLinePtr lineSignal, lineErrors;
 
 public:
@@ -896,9 +901,9 @@ PlotGraphLayerDegreeAmplitudes::PlotGraphLayerDegreeAmplitudes(Config &config)
     // --------------------
     if(!System::exists(fileName))
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (file not found)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (file not found)";
       logWarning<<"file <"<<fileName<<"> not found!"<<Log::endl;
       return;
     }
@@ -910,9 +915,9 @@ PlotGraphLayerDegreeAmplitudes::PlotGraphLayerDegreeAmplitudes(Config &config)
 
     if(!A.size())
     {
-      if(description.empty())
-        description = fileName.str();
-      description += " (empty file)";
+      if(description.first.empty())
+        description.first = fileName.str();
+      description.first += " (empty file)";
       logWarning<<"file <"<<fileName<<"> is empty!"<<Log::endl;
       return;
     }
@@ -921,6 +926,7 @@ PlotGraphLayerDegreeAmplitudes::PlotGraphLayerDegreeAmplitudes(Config &config)
     // ---------------------
     VariableList varList;
     addDataVariables(A, varList);
+    try {description.second += varList; description.first = StringParser::parse(description.first, description.second);} catch(std::exception &) {}
 
     std::vector<ExpressionVariablePtr> expressions = {exprDegree, exprSignal, exprErrors};
     for(ExpressionVariablePtr expr : expressions)
@@ -972,6 +978,173 @@ std::string PlotGraphLayerDegreeAmplitudes::legendEntry() const
 {
   try
   {
+    if(description.first.empty() || (!lineErrors && !lineSignal))
+      return std::string();
+
+    std::stringstream ss;
+    ss<<"S 0.3c - 0.5c - "<<(lineSignal ? lineSignal->str() : lineErrors->str())<<" 0.7c "<<description.first<<std::endl;
+    return ss.str();
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+/***********************************************/
+
+static const char *docstringPlotGraphLayerDegreeAmplitudesSimple = R"(
+\subsection{DegreeAmplitudesSimple}\label{plotGraphLayerType:degreeAmplitudesSimple}
+Plot degree amplitudes from a \configClass{gravityfield}{gravityfieldType}.
+The coefficients can be converted to different functionals with \configClass{kernel}{kernelType}.
+If set the expansion is limited in the range between \config{minDegree}
+and \config{maxDegree} inclusivly. It plots a solid line for the degree amplitude (signal)
+and a dotted line for the formal errors per default.
+
+This is a simplified version of
+\configClass{layer:degreeAmplitudes}{plotGraphLayerType:degreeAmplitudes}.
+)";
+
+class PlotGraphLayerDegreeAmplitudesSimple : public PlotGraphLayer
+{
+  std::string description;
+  PlotLinePtr lineSignal, lineErrors;
+
+public:
+  PlotGraphLayerDegreeAmplitudesSimple(Config &config);
+  std::string scriptEntry() const override;
+  std::string legendEntry() const override;
+};
+
+/***********************************************/
+
+PlotGraphLayerDegreeAmplitudesSimple::PlotGraphLayerDegreeAmplitudesSimple(Config &config)
+{
+  try
+  {
+    enum DegreeType {RMS, CUMMULATE, MEDIAN};
+    DegreeType      degreeType = RMS;
+    UInt            minDegree, maxDegree = INFINITYDEGREE;
+    Time            time;
+    GravityfieldPtr gravityfield;
+    KernelPtr       kernel;
+
+    readConfig(config, "gravityfield",     gravityfield,  Config::MUSTSET,  "", "");
+    readConfig(config, "kernel",           kernel,        Config::MUSTSET,  "", "");
+    std::string choice;
+    if(readConfigChoice(config, "type", choice, Config::MUSTSET, "", "type of variances"))
+    {
+      if(readConfigChoiceElement(config, "rms",          choice, "degree amplitudes (square root of degree variances)")) degreeType = RMS;
+      if(readConfigChoiceElement(config, "accumulation", choice, "cumulate variances over degrees"))                     degreeType = CUMMULATE;
+      if(readConfigChoiceElement(config, "median",       choice, "median of absolute values per degree"))                degreeType = MEDIAN;
+      endChoice(config);
+    }
+    readConfig(config, "time",             time,         Config::OPTIONAL, "", "at this time the gravity field will be evaluated");
+    readConfig(config, "minDegree",        minDegree,    Config::DEFAULT,  "0", "");
+    readConfig(config, "maxDegree",        maxDegree,    Config::OPTIONAL, "",  "");
+    readConfig(config, "description",      description,  Config::OPTIONAL, "",  "text of the legend");
+    readConfig(config, "lineSignal",       lineSignal,   Config::OPTIONAL, "solid", "");
+    readConfig(config, "lineErrors",       lineErrors,   Config::OPTIONAL, R"({"custom": {"style":"5_2:0"}})", "");
+    readConfig(config, "plotOnSecondAxis", onSecondAxis, Config::DEFAULT,  "0",     "draw dataset on a second Y-axis (if available).");
+    if(isCreateSchema(config)) return;
+
+    // Create potential coefficients
+    // -----------------------------
+    SphericalHarmonics harm = gravityfield->sphericalHarmonics(time, maxDegree, minDegree);
+    maxDegree = harm.maxDegree();
+    const Vector kn     = kernel->inverseCoefficients(Vector3d(0, 0, harm.R()), maxDegree, harm.isInterior());
+    const Bool hasSigma = harm.sigma2cnm().size() || harm.sigma2snm().size();
+
+    std::vector<Double> x, y, sigma;
+    for(UInt n=0; n<=maxDegree; n++)
+    {
+      const Double factor = std::pow(harm.GM()/harm.R() * kn(n), 2);
+      std::vector<Double> coefficients, formalErrors;
+      for(UInt m=0; m<=n; m++)
+      {
+        coefficients.push_back(factor * std::pow(harm.cnm()(n, m),2));
+        coefficients.push_back(factor * std::pow(harm.snm()(n, m),2));
+        if(hasSigma) formalErrors.push_back(factor * harm.sigma2cnm()(n, m));
+        if(hasSigma) formalErrors.push_back(factor * harm.sigma2snm()(n, m));
+      }
+
+      // degree variances
+      // ----------------
+      x.push_back(n);
+      if((degreeType == RMS) || (degreeType == CUMMULATE))
+      {
+        y.push_back(std::sqrt(std::accumulate(coefficients.begin(), coefficients.end(), 0.)));
+        if(hasSigma)
+          sigma.push_back(std::sqrt(std::accumulate(formalErrors.begin(), formalErrors.end(), 0.)));
+      }
+      else if(degreeType == MEDIAN)
+      {
+        auto vectorMedian = [](std::vector<Double> &data)
+        {
+          std::partial_sort(data.begin(), data.begin()+data.size()/2+1, data.end());
+          return (data.size()%2) ? data.at(data.size()/2) : (0.5*(data.at(data.size()/2-1)+data.at(data.size()/2)));
+        };
+        y.push_back(std::sqrt((2*n+1)*vectorMedian(coefficients)));
+        if(hasSigma)
+          sigma.push_back(std::sqrt((2*n+1)*vectorMedian(formalErrors)));
+      }
+    } // for(n)
+
+    if(degreeType == CUMMULATE)
+    {
+      auto vectorAccumulate = [](std::vector<Double> &data)
+      {
+        std::for_each(data.begin(), data.end(), [](Double &v) {v = v*v;});
+        std::partial_sum(data.begin(), data.end(), data.begin());
+        std::for_each(data.begin(), data.end(), [](Double &v) {v = std::sqrt(v);});
+      };
+      vectorAccumulate(y);
+      if(hasSigma)
+        vectorAccumulate(sigma);
+    }
+
+    // evaluate expressions
+    // --------------------
+    data = Matrix(x.size(), 3, NAN_EXPR);
+    copy(Vector(x), data.column(0));
+    copy(Vector(y), data.column(1));
+    if(hasSigma) copy(Vector(sigma), data.column(2));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+std::string PlotGraphLayerDegreeAmplitudesSimple::scriptEntry() const
+{
+  try
+  {
+    if(!data.size())
+      return std::string();
+
+    std::stringstream ss;
+    if(lineSignal)
+      ss<<"gmt psxy "<<dataFileName<<" -bi"<<data.columns()<<"d -J -R -i0,1 -W"<<lineSignal->str()<<" -O -K >> groopsPlot.ps"<<std::endl;
+    if(lineErrors)
+      ss<<"gmt psxy "<<dataFileName<<" -bi"<<data.columns()<<"d -J -R -i0,2 -W"<<lineErrors->str()<<" -O -K >> groopsPlot.ps"<<std::endl;
+    return ss.str();
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+std::string PlotGraphLayerDegreeAmplitudesSimple::legendEntry() const
+{
+  try
+  {
     if(description.empty() || (!lineErrors && !lineSignal))
       return std::string();
 
@@ -995,7 +1168,8 @@ GROOPS_REGISTER_CLASS(PlotGraphLayer, "plotGraphLayerType",
                       PlotGraphLayerGridded,
                       PlotGraphLayerRectangle,
                       PlotGraphLayerText,
-                      PlotGraphLayerDegreeAmplitudes)
+                      PlotGraphLayerDegreeAmplitudes,
+                      PlotGraphLayerDegreeAmplitudesSimple)
 
 GROOPS_READCONFIG_CLASS(PlotGraphLayer, "plotGraphLayerType")
 
@@ -1023,6 +1197,8 @@ PlotGraphLayerPtr PlotGraphLayer::create(Config &config, const std::string &name
       plotGraphLayer = PlotGraphLayerPtr(new PlotGraphLayerText(config));
     if(readConfigChoiceElement(config, "degreeAmplitudes", type, "degree amplitudes of a gravity field"))
       plotGraphLayer = PlotGraphLayerPtr(new PlotGraphLayerDegreeAmplitudes(config));
+    if(readConfigChoiceElement(config, "degreeAmplitudesSimple", type, "degree amplitudes of a gravity field"))
+      plotGraphLayer = PlotGraphLayerPtr(new PlotGraphLayerDegreeAmplitudesSimple(config));
     endChoice(config);
 
     return plotGraphLayer;

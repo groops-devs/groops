@@ -41,13 +41,15 @@ LowerSymmetricMatrix( 4 x 4 )
 
 #include "base/matrix.h"
 #include "inputOutput/fileName.h"
+#include "inputOutput/fileArchive.h"
 
 /** @addtogroup filesGroup */
 /// @{
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_MATRIX_TYPE = "matrix";
+const char *const FILE_MATRIX_TYPE    = "matrix";
+constexpr UInt    FILE_MATRIX_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** FUNCTIONS *******************************/
 

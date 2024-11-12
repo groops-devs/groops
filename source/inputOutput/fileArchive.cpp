@@ -22,9 +22,9 @@
 
 /***** FUNCTIONS *******************************/
 
-OutFileArchive::OutFileArchive(const FileName &fileName, const std::string &type) : archive(nullptr)
+OutFileArchive::OutFileArchive(const FileName &fileName, const std::string &type, UInt version) : archive(nullptr)
 {
-  open(fileName, type);
+  open(fileName, type, version);
 }
 
 /***********************************************/
@@ -36,7 +36,7 @@ OutFileArchive::~OutFileArchive()
 
 /***********************************************/
 
-void OutFileArchive::open(const FileName &fileName, const std::string &type)
+void OutFileArchive::open(const FileName &fileName, const std::string &type, UInt version)
 {
   try
   {
@@ -50,19 +50,19 @@ void OutFileArchive::open(const FileName &fileName, const std::string &type)
     {
       file.open(fileName);
       file.exceptions(std::ios::badbit | std::ios::failbit);
-      archive = new OutArchiveXml(file, type, FILE_VERSION);
+      archive = new OutArchiveXml(file, type, version);
     }
     else if(extension == "DAT")
     {
       file.open(fileName, std::ios::binary | std::ios::out);
       file.exceptions(std::ios::badbit | std::ios::failbit);
-      archive = new OutArchiveBinary(file, type, FILE_VERSION);
+      archive = new OutArchiveBinary(file, type, version);
     }
     else
     {
       file.open(fileName);
       file.exceptions(std::ios::badbit | std::ios::failbit);
-      archive = new OutArchiveAscii(file, type, FILE_VERSION);
+      archive = new OutArchiveAscii(file, type, version);
     }
   }
   catch(std::exception &e)
@@ -94,9 +94,9 @@ void OutFileArchive::comment(const std::string &text)
 /***********************************************/
 /***********************************************/
 
-InFileArchive::InFileArchive(const FileName &fileName, const std::string &type) : archive(nullptr)
+InFileArchive::InFileArchive(const FileName &fileName, const std::string &type, UInt version) : archive(nullptr)
 {
-  open(fileName, type);
+  open(fileName, type, version);
 }
 
 /***********************************************/
@@ -108,7 +108,7 @@ InFileArchive::~InFileArchive()
 
 /***********************************************/
 
-void InFileArchive::open(const FileName &fileName, const std::string &typeStr)
+void InFileArchive::open(const FileName &fileName, const std::string &typeStr, UInt version)
 {
   try
   {
@@ -154,8 +154,8 @@ void InFileArchive::open(const FileName &fileName, const std::string &typeStr)
       throw(Exception("file type is '"+type()+"' but must be '"+typeStr+"'"));
 
     // check version
-    if(version() > FILE_VERSION)
-      logWarning<<"File <"<<fileName<<"> is created with a newer version ("<<version()<<") of GROOPS ("<<FILE_VERSION<<"). "
+    if(this->version() > version)
+      logWarning<<"File <"<<fileName<<"> is created with a newer version ("<<this->version()<<") of GROOPS ("<<version<<"). "
                 <<"This may causes problems. You should update your GROOPS software."<<Log::endl;
   }
   catch(std::exception &e)

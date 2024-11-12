@@ -38,7 +38,7 @@ void readFileEarthTide(const FileName &fileName,
     UInt count;
     std::vector<Doodson> doodson;
 
-    InFileArchive file(fileName, FILE_EARTHTIDE_TYPE);
+    InFileArchive file(fileName, FILE_EARTHTIDE_TYPE, FILE_EARTHTIDE_VERSION);
 
     file>>beginGroup("loveNumber");
     file>>nameValue("kReal", kReal);
@@ -171,7 +171,7 @@ void writeFileEarthTide(const FileName &fileName,
 {
   try
   {
-    OutFileArchive file(fileName, FILE_EARTHTIDE_TYPE);
+    OutFileArchive file(fileName, FILE_EARTHTIDE_TYPE, FILE_EARTHTIDE_VERSION);
 
     file<<beginGroup("loveNumber");
     file<<nameValue("kReal", kReal);

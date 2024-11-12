@@ -26,7 +26,7 @@ void writeFileSphericalHarmonics(const FileName &fileName, const SphericalHarmon
 {
   try
   {
-    OutFileArchive file(fileName, FILE_POTENTIALCOEFFICIENTS_TYPE);
+    OutFileArchive file(fileName, FILE_POTENTIALCOEFFICIENTS_TYPE, FILE_POTENTIALCOEFFICIENTS_VERSION);
     file<<nameValue("potentialCoefficients", x);
   }
   catch(std::exception &e)
@@ -41,7 +41,7 @@ void readFileSphericalHarmonics(const FileName &fileName, SphericalHarmonics &x)
 {
   try
   {
-    InFileArchive file(fileName, FILE_POTENTIALCOEFFICIENTS_TYPE);
+    InFileArchive file(fileName, FILE_POTENTIALCOEFFICIENTS_TYPE, FILE_POTENTIALCOEFFICIENTS_VERSION);
     file>>nameValue("potentialCoefficients", x);
   }
   catch(std::exception &e)

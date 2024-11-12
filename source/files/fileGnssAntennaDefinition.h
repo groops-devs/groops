@@ -87,14 +87,16 @@ See also \program{GnssAntennaDefinitionCreate}, \program{GnssAntex2AntennaDefini
 
 #include "base/gnssType.h"
 #include "inputOutput/fileName.h"
-#include "inputOutput/archive.h"
+#include "inputOutput/fileArchive.h"
+
 
 /** @addtogroup filesGroup */
 /// @{
 
 /***** CONSTANTS ********************************/
 
-const char *const FILE_GNSSANTENNADEFINITION_TYPE = "antennaDefinition";
+const char *const FILE_GNSSANTENNADEFINITION_TYPE    = "antennaDefinition";
+constexpr UInt    FILE_GNSSANTENNADEFINITION_VERSION = std::max(UInt(20200123), FILE_BASE_VERSION);
 
 /***** TYPES ***********************************/
 
