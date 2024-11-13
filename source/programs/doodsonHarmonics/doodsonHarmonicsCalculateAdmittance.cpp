@@ -32,7 +32,7 @@ using \configFile{inputfileTideGeneratingPotential}{tideGeneratingPotential}.
 * @ingroup programsGroup */
 class DoodsonHarmonicsCalculateAdmittance
 {
-  void admitMatrix(UInt degreeInterpolation, UInt degreeExtrapolation, Int idBand,
+  void admitMatrix(UInt degreeInterpolation, UInt degreeExtrapolation, UInt degree, Int order,
                    const TideGeneratingPotential &tgpMajor, const std::vector<UInt> &majorIdx,
                    const TideGeneratingPotential &tgp, MatrixSliceRef A) const;
 
@@ -59,7 +59,7 @@ void DoodsonHarmonicsCalculateAdmittance::run(Config &config, Parallel::Communic
     readConfig(config, "threshold",                        threshold,           Config::DEFAULT,  "1e-4", "[m^2/s^2] only interpolate tides with TGP greater than threshold");
     readConfig(config, "degreeInterpolation",              degreeInterpolation, Config::DEFAULT,  "1",    "polynomial degree for interpolation");
     readConfig(config, "degreeExtrapolation",              degreeExtrapolation, Config::OPTIONAL, "1",    "polynomial degree for extrapolation");
-    readConfig(config, "excludeDoodsonForInterpolation",   doodsonExclude,      Config::OPTIONAL, R"(["S1", "S2"])", "major tides not used for interpolation");
+    readConfig(config, "excludeDoodsonForInterpolation",   doodsonExclude,      Config::OPTIONAL, R"(["164.555", "164.556"])", "major tides not used for interpolation");
     if(isCreateSchema(config)) return;
 
     // =====================================================
@@ -69,6 +69,8 @@ void DoodsonHarmonicsCalculateAdmittance::run(Config &config, Parallel::Communic
     logStatus<<"read doodson harmonics file <"<<fileNameDoodson<<">"<<Log::endl;
     DoodsonHarmonic d;
     readFileDoodsonHarmonic(fileNameDoodson, d);
+    if(!std::is_sorted(d.doodson.begin(), d.doodson.end()))
+      throw(Exception("must be sorted"));
 
     logStatus<<"read tide generating potential <"<<fileNameTGP<<">"<<Log::endl;
     TideGeneratingPotential tgp;
@@ -76,62 +78,83 @@ void DoodsonHarmonicsCalculateAdmittance::run(Config &config, Parallel::Communic
 
     // =====================================================
 
+    auto isInList = [](const std::vector<Doodson> &list, const Doodson &doodson)
+    {
+      return std::find(list.begin(), list.end(), doodson) != list.end();
+    };
+
     // eliminate small amplitudes (except all major tides)
-    tgp.erase(std::remove_if(tgp.begin(), tgp.end(), [&](const TideGeneratingConstituent &x)
-                             {
-                               if(std::find(d.doodson.begin(), d.doodson.end(), x) != d.doodson.end())
-                                 return FALSE; // major tides must be included
-                               return (x.amplitude() < threshold);
-                             }), tgp.end());
+    tgp.erase(std::remove_if(tgp.begin(), tgp.end(), [&](auto &t)
+                             {return (t.amplitude() < threshold) && !isInList(d.doodson, t);}), tgp.end());
 
     // add missing tides with zero admittance
     for(auto &dood: d.doodson)
     {
-      auto iter = std::lower_bound(tgp.begin(), tgp.end(), dood);
-      if((iter == tgp.end()) || (*iter != dood))
-        tgp.insert(iter, TideGeneratingConstituent(dood, 0., 0.));
+      auto iter = std::lower_bound(tgp.begin(), tgp.end(), dood, [](const Doodson &tgp, const Doodson &dood){return tgp < dood;});
+      if((iter == tgp.end()) || (dynamic_cast<const Doodson&>(*iter) != dood))
+        tgp.insert(iter, TideGeneratingConstituent(dood, 0, 0., 0.));
     }
 
     // set tgp to zero for exluding doodson
-    for(auto &dood: doodsonExclude)
-    {
-      auto iter = std::lower_bound(tgp.begin(), tgp.end(), dood);
-      if((iter != tgp.end()) && (*iter == dood))
-        iter->c = iter->s = 0.;
-    }
+    for(auto &t : tgp)
+      if(isInList(doodsonExclude, t))
+        t.c = t.s = 0.;
 
     TideGeneratingPotential tgpMajor;
-    std::copy_if(tgp.begin(), tgp.end(), std::back_inserter(tgpMajor), [&](const auto &x) {return std::find(d.doodson.begin(), d.doodson.end(), x) != d.doodson.end();});
+    std::vector<UInt>       idxMajor;
+    for(UInt i=0; i<tgp.size(); i++)
+      if(isInList(d.doodson, tgp.at(i)))
+      {
+        tgpMajor.push_back(tgp.at(i));
+        idxMajor.push_back(i);
+      }
+    if(tgpMajor.size() != d.doodson.size())
+      throw(Exception("major tides not unique"));
 
     // =====================================================
 
-    // interpolate band by band (long, diurnal, semi diurnal)
-    // ------------------------------------------------------
+    // interpolate each dgeree and order
+    // ---------------------------------
     Matrix A(d.doodson.size(), tgp.size());
     logStatus<<"Interpolation  from "<<A.rows()<<" major tides to "<<A.columns()<<" tidal frequencies"<<Log::endl;
-    for(Int idBand=0; idBand<3; idBand++)
-    {
-      TideGeneratingPotential tgpMajorBand;
-      std::vector<UInt>       idxMajorBand;
-      for(UInt i=0; i<tgpMajor.size(); i++)
-        if((tgpMajor.at(i).d[0] == idBand) && tgpMajor.at(i).admit())
-        {
-          tgpMajorBand.push_back(tgpMajor.at(i));
-          idxMajorBand.push_back(i);
-        }
+    for(UInt degree=2; degree<=3; degree++)
+      for(UInt order=0; order<=degree; order++)
+      {
+        TideGeneratingPotential tgpMajorBand;
+        std::vector<UInt>       idxMajorBand;
+        for(UInt i=0; i<tgpMajor.size(); i++)
+          if((tgpMajor.at(i).degree == degree) && (tgpMajor.at(i).d[0] == Int(order)) && tgpMajor.at(i).admit())
+          {
+            tgpMajorBand.push_back(tgpMajor.at(i));
+            idxMajorBand.push_back(i);
+          }
 
-      if(tgpMajorBand.size())
-        admitMatrix(degreeInterpolation, degreeExtrapolation, idBand, tgpMajorBand, idxMajorBand, tgp, A);
-    }
+        if(tgpMajorBand.size())
+          admitMatrix(degreeInterpolation, degreeExtrapolation, degree, order, tgpMajorBand, idxMajorBand, tgp, A);
+      }
 
     // use major tides directly
     // ------------------------
-    for(UInt i=0; i<d.doodson.size(); i++)
+    for(UInt k=0; k<d.doodson.size(); k++)
     {
-      const UInt k = std::distance(tgp.begin(), std::lower_bound(tgp.begin(), tgp.end(), d.doodson.at(i)));
-      A.column(k).setNull();
-      A(i, k) = 1.0;
+      A.column(idxMajor.at(k)).setNull();
+      A(k, idxMajor.at(k)) = 1.0;
     }
+
+    // delete unused minor tides
+    // -------------------------
+    UInt countUnused = 0;
+    for(UInt i=0; i<A.columns(); i++)
+      if(isStrictlyZero(A.column(i)))
+       countUnused++;
+    Matrix Afull(A);
+    A = Matrix(d.doodson.size(), Afull.columns()-countUnused);
+    UInt idx = 0;
+    for(UInt i=0; i<Afull.columns(); i++)
+      if(isStrictlyZero(Afull.column(i)))
+        tgp.erase(tgp.begin()+idx);
+      else
+        copy(Afull.column(i), A.column(idx++));
 
     // =====================================================
 
@@ -152,7 +175,7 @@ void DoodsonHarmonicsCalculateAdmittance::run(Config &config, Parallel::Communic
 
 /************************************************/
 
-void DoodsonHarmonicsCalculateAdmittance::admitMatrix(UInt degreeInterpolation, UInt degreeExtrapolation, Int idBand,
+void DoodsonHarmonicsCalculateAdmittance::admitMatrix(UInt degreeInterpolation, UInt degreeExtrapolation, UInt degree, Int order,
                                                       const TideGeneratingPotential &tgpMajor, const std::vector<UInt> &majorIdx,
                                                       const TideGeneratingPotential &tgp, MatrixSliceRef A) const
 {
@@ -162,6 +185,7 @@ void DoodsonHarmonicsCalculateAdmittance::admitMatrix(UInt degreeInterpolation, 
     Matrix B;
     if(degreeExtrapolation != MAX_UINT)
     {
+      degreeExtrapolation = std::min(degreeExtrapolation, tgpMajor.size()-1);
       B = Matrix(tgpMajor.size(), degreeExtrapolation+1);
       for(UInt i=0; i<tgpMajor.size(); i++)
         for(UInt n=0; n<=degreeExtrapolation; n++)
@@ -173,30 +197,29 @@ void DoodsonHarmonicsCalculateAdmittance::admitMatrix(UInt degreeInterpolation, 
     }
 
     // interpolation polynomial
+    degreeInterpolation = std::min(degreeInterpolation, tgpMajor.size()-1);
     std::vector<Matrix> P(tgpMajor.size()-degreeInterpolation);
-    UInt idx = 0;
     for(UInt i=0; i<P.size(); i++)
     {
       P.at(i) = Matrix(degreeInterpolation+1, degreeInterpolation+1);
       for(UInt k=0; k<=degreeInterpolation; k++)
         for(UInt n=0; n<=degreeInterpolation; n++)
-          P.at(i)(k, n) =  std::pow(tgpMajor.at(k+idx).frequency(), n);
+          P.at(i)(k, n) = std::pow(tgpMajor.at(k+i).frequency(), n);
       inverse(P.at(i));
-      for(UInt n=0; n<=degreeInterpolation; n++)
-        for(UInt k=0; k<=degreeInterpolation; k++)
-          P.at(i)(n, k) /= tgpMajor.at(k+idx).admit();
-      idx++;
+      for(UInt k=0; k<=degreeInterpolation; k++)
+        P.at(i).column(k) *= 1./tgpMajor.at(k+i).admit();
     }
 
-    idx = 0;
+    UInt idx = 0;
     for(UInt i=0; i<tgp.size(); i++)
-      if((tgp.at(i).d[0] == idBand) && tgp.at(i).admit())
+      if((tgp.at(i).degree == degree) && (tgp.at(i).d[0] == order) && tgp.at(i).admit())
       {
         const Double freq = tgp.at(i).frequency();
-        if((idx < P.size()-1) && (freq > tgpMajor.at(idx+degreeInterpolation).frequency()))
+        if((idx < P.size()-1) && (freq > tgpMajor.at(idx+(degreeInterpolation+1)/2).frequency()))
           idx++;
 
-        if(((tgpMajor.at(0).frequency() <= freq) && (freq <= tgpMajor.back().frequency())) || (degreeExtrapolation == MAX_UINT))
+        const Double dfreq = PI/27.3216; // [rad/day] half tidal group
+        if(((tgpMajor.at(0).frequency()-dfreq <= freq) && (freq <= tgpMajor.back().frequency()+dfreq)) || (degreeExtrapolation == MAX_UINT))
         {
           // interpolation
           for(UInt n=0; n<=degreeInterpolation; n++)
@@ -206,7 +229,7 @@ void DoodsonHarmonicsCalculateAdmittance::admitMatrix(UInt degreeInterpolation, 
         else
         {
           // extrapolation
-          for(UInt n=0; n<=degreeExtrapolation; n++)
+          for(UInt n=0; n<B.rows(); n++)
             for(UInt k=0; k<tgpMajor.size(); k++)
               A(majorIdx.at(k), i) += tgp.at(i).admit() * std::pow(freq, n) * B(n, k);
         }

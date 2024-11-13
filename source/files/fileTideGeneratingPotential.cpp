@@ -26,12 +26,13 @@ template<> void save(OutArchive &ar, const TideGeneratingPotential &x)
 {
   const UInt constituentsCount = x.size();
   ar<<nameValue("constituentsCount", constituentsCount);
-  ar.comment("Dood.   cos                       sin                      name");
-  ar.comment("===============================================================");
+  ar.comment("Degree    Dood.    cos                       sin                      name");
+  ar.comment("==========================================================================");
   for(UInt i=0; i<constituentsCount; i++)
   {
     std::string name = (x.at(i).name() != x.at(i).code()) ? x.at(i).name() : "";
     ar<<beginGroup("constituent");
+    ar<<nameValue("degree",  x.at(i).degree);
     ar<<nameValue("doodson", *dynamic_cast<const Doodson*>(&x.at(i)));
     ar<<nameValue("c",       x.at(i).c);
     ar<<nameValue("s",       x.at(i).s);
@@ -50,14 +51,17 @@ template<> void load(InArchive &ar, TideGeneratingPotential &x)
   for(UInt i=0; i<constituentsCount; i++)
   {
     ar>>beginGroup("constituent");
+    UInt        degree = 2;
     Doodson     dood;
     Double      c, s;
     std::string name;
+    if(ar.version() >= 20241108)
+      ar>>nameValue("degree",  degree);
     ar>>nameValue("doodson", dood);
     ar>>nameValue("c",       c);
     ar>>nameValue("s",       s);
     ar>>nameValue("name",    name);
-    x.at(i) = TideGeneratingConstituent(dood, c, s);
+    x.at(i) = TideGeneratingConstituent(dood, degree, c, s);
     ar>>endGroup("constituent");
   }
 }

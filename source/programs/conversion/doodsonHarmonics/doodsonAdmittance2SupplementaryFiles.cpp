@@ -33,7 +33,6 @@ See also \program{DoodsonHarmonics2PotentialCoefficients}.
 #include "inputOutput/file.h"
 #include "files/fileMatrix.h"
 #include "files/fileAdmittance.h"
-#include "files/fileTideGeneratingPotential.h"
 #include "programs/program.h"
 
 /***** CLASS ***********************************/

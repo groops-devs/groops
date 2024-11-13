@@ -65,7 +65,7 @@ void DoodsonHarmonics2PotentialCoefficients::run(Config &config, Parallel::Commu
     Double      GM, R;
     Bool        applyXi;
 
-    readConfig(config, "outputfilePotentialCoefficients",  fileNameOut, Config::MUSTSET,  "coeff.{name}.{doodson}.{cossin}.gfc", "");
+    readConfig(config, "outputfilePotentialCoefficients",  fileNameOut, Config::MUSTSET,  "coeff_{doodson}_{name}_{cossin}.gfc", "");
     readConfig(config, "variableLoopName",                 nameName,    Config::OPTIONAL, "name",    "variable with darwins's name of each constituent");
     readConfig(config, "variableLoopDoodson",              nameDoodson, Config::OPTIONAL, "doodson", "variable with doodson code of each constituent");
     readConfig(config, "variableLoopCosSin",               nameCosSin,  Config::OPTIONAL, "cossin",  "variable with 'cos' or 'sin' of each constituent");

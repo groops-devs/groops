@@ -272,6 +272,7 @@ programs/doodsonHarmonics/doodsonArguments2TimeSeries.cpp
 programs/doodsonHarmonics/doodsonHarmonics2GriddedAmplitudeAndPhase.cpp
 programs/doodsonHarmonics/doodsonHarmonics2PotentialCoefficients.cpp
 programs/doodsonHarmonics/doodsonHarmonicsCalculateAdmittance.cpp
+programs/doodsonHarmonics/doodsonHarmonicsChangePartialTides.cpp
 programs/doodsonHarmonics/modelEquilibriumTide.cpp
 programs/doodsonHarmonics/potentialCoefficients2DoodsonHarmonics.cpp
 programs/gnss/gnssAntennaDefinition2ParameterVector.cpp
@@ -542,6 +543,7 @@ programs/conversion/grid/griddedDataTimeSeries2NetCdf.cpp
 programs/conversion/grid/netCdf2GriddedData.cpp
 programs/conversion/grid/netCdf2GriddedDataTimeSeries.cpp
 programs/conversion/grid/netCdfInfo.cpp
+programs/conversion/grid/oceanTidesDTU2GriddedData.cpp
 programs/conversion/satellites/champ2AccStar.cpp
 programs/conversion/satellites/champ2Orbit.cpp
 programs/conversion/satellites/cosmic2OrbitStar.cpp

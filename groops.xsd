@@ -10313,8 +10313,8 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="inputfileTides" type="filename" default="{groopsDataDir}/tides/oceanTide_fes2014b_n180_version20170520.dat"/>
-						<xs:element name="inputfileAdmittance" type="filename" minOccurs="0" default="{groopsDataDir}/tides/oceanTide_fes2014b_admittance_linear_linear.txt">
+						<xs:element name="inputfileTides" type="filename" default="{groopsDataDir}/tides/oceanTide_fes2022_n180_version20241110.datt"/>
+						<xs:element name="inputfileAdmittance" type="filename" minOccurs="0" default="{groopsDataDir}/tides/oceanTide_fes2022_admittance_linear_linear.txt">
 							<xs:annotation>
 								<xs:documentation>interpolation of minor constituents</xs:documentation>
 							</xs:annotation>
@@ -11092,7 +11092,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="outputfilePotentialCoefficients" type="filename" default="coeff.{name}.{doodson}.{cossin}.gfc"/>
+						<xs:element name="outputfilePotentialCoefficients" type="filename" default="coeff_{doodson}_{name}_{cossin}.gfc"/>
 						<xs:element name="variableLoopName" type="string" minOccurs="0" default="name">
 							<xs:annotation>
 								<xs:documentation>variable with darwins&apos;s name of each constituent</xs:documentation>
@@ -11173,9 +11173,48 @@
 								<xs:documentation>polynomial degree for extrapolation</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="excludeDoodsonForInterpolation" type="doodson" minOccurs="0" default="[&quot;S1&quot;, &quot;S2&quot;]" maxOccurs="unbounded">
+						<xs:element name="excludeDoodsonForInterpolation" type="doodson" minOccurs="0" default="[&quot;164.555&quot;, &quot;164.556&quot;]" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>major tides not used for interpolation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="DoodsonHarmonicsChangePartialTides">
+				<xs:annotation>
+					<xs:documentation>change partial tides in doodsonHarmonics file</xs:documentation>
+					<xs:appinfo>tag: DoodsonHarmonics</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileDoodsonHarmonics" type="filename"/>
+						<xs:element name="inputfileDoodsonHarmonics" type="filename"/>
+						<xs:element name="inputfileAdmittance" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>interpolation of minor constituents</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="useDoodson" type="doodson" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>use only these partial tides (additional tides will be interpolated)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ignoreDoodson" type="doodson" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>ignore these partial tides</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="minDegree" type="uint" minOccurs="0" default="0"/>
+						<xs:element name="maxDegree" type="uint" minOccurs="0"/>
+						<xs:element name="GM" type="double" minOccurs="0" default="3.986004415e+14">
+							<xs:annotation>
+								<xs:documentation>Geocentric gravitational constant</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="R" type="double" minOccurs="0" default="6378136.3">
+							<xs:annotation>
+								<xs:documentation>reference radius</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -24475,6 +24514,32 @@
 									</xs:element>
 								</xs:sequence>
 							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="OceanTidesDTU2GriddedData">
+				<xs:annotation>
+					<xs:documentation>Convert DTU ocean tide grids to griddedData (amplitude, phase)</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileGriddedData" type="filename">
+							<xs:annotation>
+								<xs:documentation>data0=amplitude, data1=phase</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfile" type="filename"/>
+						<xs:element name="R" type="double" minOccurs="0" default="6378136.3">
+							<xs:annotation>
+								<xs:documentation>reference radius for ellipsoidal coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inverseFlattening" type="double" minOccurs="0" default="298.257">
+							<xs:annotation>
+								<xs:documentation>reference flattening for ellipsoidal coordinates</xs:documentation>
+							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
