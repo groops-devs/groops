@@ -32,17 +32,17 @@
 class TideGeneratingConstituent : public Doodson
 {
 public:
-  Double c;         //!< cos part of potential [m^2/s^2].
-  Double s;         //!< sin part of potential [m^2/s^2].
+  UInt   degree; //!< spherical harmonics degree.
+  Double c, s;   //!< potential [m^2/s^2].
 
   /// Default Constructor.
-  TideGeneratingConstituent() : c(0), s(0) {}
+  TideGeneratingConstituent() : degree(0), c(0), s(0) {}
 
   /// Constructor.
-  TideGeneratingConstituent(const Doodson &doodson, Double _c=0, Double _s=0) : Doodson(doodson), c(_c), s(_s) {}
+  TideGeneratingConstituent(const Doodson &doodson, UInt degree, Double c, Double s) : Doodson(doodson), degree(degree), c(c), s(s) {}
 
   /// Amplitude [m^2/s^2].
-  Double amplitude() const {return sqrt(c*c+s*s);}
+  Double amplitude() const {return std::sqrt(c*c+s*s);}
 
   /// Admitance factor [m^2/s^2].
   Double admit() const {return c+s;}
@@ -51,6 +51,13 @@ public:
   * Possible values: 0, PI, +-PI/2.
   * see IERS conventions 2003, table 6.4. */
   Double xi() const;
+
+  /** @brief Implementation of Comparable (comparison of frequency). */
+  Bool operator== (const TideGeneratingConstituent &x) const {return (d == x.d) && (degree == x.degree);}
+  /** @brief Implementation of Comparable (comparison of frequency). */
+  Bool operator!= (const TideGeneratingConstituent &x) const {return (d != x.d) || (degree != x.degree);}
+  /** @brief Implementation of Comparable (comparison of frequency). */
+  Bool operator<  (const TideGeneratingConstituent &x) const {return (d == x.d) ? (degree < x.degree) : (frequency() < x.frequency());}
 };
 
 /***** CLASS ***********************************/
@@ -62,23 +69,38 @@ public:
 class TideGeneratingPotential : public std::vector<TideGeneratingConstituent>
 {
 public:
-/** @brief Doodson-Wartburg phase correction.
-* Possible values: 0, PI, +-PI/2.
-* see IERS conventions 2003, table 6.4. */
-Double xi(const Doodson &doodson) const;
+  /** @brief Doodson-Wartburg phase correction.
+  * Possible values: 0, PI, +-PI/2.
+  * see IERS conventions 2003, table 6.4. */
+  Double xi(const Doodson &doodson) const;
 };
 
 /***********************************************/
 
 inline Double TideGeneratingConstituent::xi() const
 {
-  if(d[0]==0)
-    return ((admit()>0) ? PI : 0);
-  else if(d[0]==1)
-    return ((admit()>0) ? -PI/2 : PI/2);
-  else if(d[0]==2)
-    return ((admit()>0) ? 0 : PI);
-  return 0;
+  try
+  {
+    Double phase = std::atan2(s, c);
+    if(degree == 2)
+    {
+      if(d[0] == 0) return std::fmod(phase + PI, 2*PI); // c
+      if(d[0] == 1) return std::fmod(phase + PI, 2*PI); // s
+      if(d[0] == 2) return phase;                       // c
+    }
+    if(degree == 3)
+    {
+      if(d[0] == 0) return phase;                        // s
+      if(d[0] == 1) return std::fmod(phase + PI, 2*PI);  // c
+      if(d[0] == 2) return std::fmod(phase + PI, 2*PI);  // s
+      if(d[0] == 3) return phase;                        // c
+    }
+    throw(Exception("xi not (yet) defined for "+code()));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
 
 /***********************************************/
@@ -87,13 +109,15 @@ inline Double TideGeneratingPotential::xi(const Doodson &doodson) const
 {
   try
   {
-    if((doodson.d[0] == 0) && doodson == Doodson(std::vector<Int>{0, 0, 1, 0, 0, 0})) // special case: SA
+    if(doodson == Doodson(std::vector<Int>{0, 0, 1, 0, 0, 0})) // special case: SA
       return 0;
-    if((doodson.d[0] == 1) && doodson == Doodson(std::vector<Int>{1, 1,-1, 0, 0, 0})) // special case: S1
+    if(doodson == Doodson(std::vector<Int>{1, 1,-1, 0, 0, 0})) // special case: S1
       return PI;
-    if((doodson.d[0] == 3) && doodson == Doodson(std::vector<Int>{3, 0, 0, 0, 0, 0})) // special case: M3
-      return PI;
-    if(doodson.d[0] > 2)  // non-linear tides
+    if(doodson == Doodson(std::vector<Int>{3, 3,-4, 0, 0, 0})) // non-linear T3
+      return 0;
+    if(doodson == Doodson(std::vector<Int>{3, 3,-2, 0, 0, 0})) // non-linear R3
+      return 0;
+    if(doodson.d[0] > 3)  // non-linear tides
       return 0;
     for(UInt i=0; i<size(); i++)
       if(doodson == at(i))

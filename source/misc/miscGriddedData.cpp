@@ -390,6 +390,15 @@ std::vector<SphericalHarmonics> analysisSphericalHarmonics(const GriddedData &gr
     if(timing) logStatus<<"least squares adjustment (order by order)"<<Log::endl;
     if(!isRectangle)
       throw(Exception("GriddedData must be a rectangle grid"));
+    // check assumption: same area for all longitudes
+    Bool failed = FALSE;
+    for(UInt i=0; i<phi.size(); i++)
+      for(UInt k=1; k<lambda.size(); k++)
+        if(!failed && (std::fabs(grid.areas.at(i*lambda.size()+k-1)-grid.areas.at(i*lambda.size()+k)) > 1e-3*std::fabs(grid.areas.at(i*lambda.size()+k))))
+        {
+          logWarningOnce<<"assumption of the same area/weight for all longitudes not fulfilled"<<Log::endl;
+          failed = TRUE;
+        }
 
     // system of normal equations (order by order)
     std::vector<Matrix> N, n;
