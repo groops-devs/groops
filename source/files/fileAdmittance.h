@@ -44,15 +44,15 @@ constexpr UInt    FILE_ADMITTANCE_VERSION = std::max(UInt(20200123), FILE_BASE_V
 class Admittance
 {
 public:
-/// List of major tides.
-std::vector<Doodson> doodsonMajor;
+  /// List of major tides.
+  std::vector<Doodson> doodsonMajor;
 
-/// List of minor tides (inclusive major tides).
-std::vector<Doodson> doodsonMinor;
+  /// List of minor tides (inclusive major tides).
+  std::vector<Doodson> doodsonMinor;
 
-/** @brief Interpolation matrix.
-Dimension: major count times minor count. */
-Matrix admittance;
+  /** @brief Interpolation matrix.
+  Dimension: major count times minor count. */
+  Matrix admittance;
 };
 
 /***** FUNCTIONS *******************************/

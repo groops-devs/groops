@@ -35,8 +35,8 @@ TidesDoodsonHarmonic::TidesDoodsonHarmonic(Config &config)
 
     renameDeprecatedConfig(config, "inputfileOcean", "inputfileTides", date2time(2020, 10, 2));
 
-    readConfig(config, "inputfileTides",      tidesName, Config::MUSTSET,  "{groopsDataDir}/tides/oceanTide_fes2014b_n180_version20170520.dat", "");
-    readConfig(config, "inputfileAdmittance", admittanceName, Config::OPTIONAL, "{groopsDataDir}/tides/oceanTide_fes2014b_admittance_linear_linear.txt", "interpolation of minor constituents");
+    readConfig(config, "inputfileTides",      tidesName,      Config::MUSTSET,  "{groopsDataDir}/tides/oceanTide_fes2022_n180_version20241110.datt", "");
+    readConfig(config, "inputfileAdmittance", admittanceName, Config::OPTIONAL, "{groopsDataDir}/tides/oceanTide_fes2022_admittance_linear_linear.txt", "interpolation of minor constituents");
     readConfig(config, "selectDoodson",       selectDoodson,  Config::OPTIONAL, "",    "consider only these constituents, code number (e.g. 255.555) or darwin name (e.g. M2)");
     readConfig(config, "minDegree",           minDegree,      Config::DEFAULT,  "2",   "");
     readConfig(config, "maxDegree",           maxDegree,      Config::OPTIONAL, "",    "");
@@ -66,6 +66,8 @@ TidesDoodsonHarmonic::TidesDoodsonHarmonic(Config &config)
 
     // read admittace file
     // -------------------
+    doodson    = d.doodson;
+    admittance = identityMatrix(d.doodson.size());
     if(!admittanceName.empty())
     {
       Admittance admit;
@@ -76,14 +78,6 @@ TidesDoodsonHarmonic::TidesDoodsonHarmonic(Config &config)
       for(UInt i=0; i<d.doodson.size(); i++)
         if(admit.doodsonMajor.at(i) != d.doodson.at(i))
           throw(Exception("different MajorTides in <"+tidesName.str()+"> and <"+admittanceName.str()+">"));
-    }
-    else
-    {
-      // unity matrix
-      doodson    = d.doodson;
-      admittance = Matrix(doodson.size(), doodson.size());
-      for(UInt i=0; i<admittance.rows(); i++)
-        admittance(i,i) = 1.0;
     }
 
     // Matrix with Doodson multiplicators
@@ -128,7 +122,7 @@ Matrix TidesDoodsonHarmonic::interpolationFactors(const Time &time) const
   try
   {
     Vector thetaf = doodsonMatrix * Doodson::arguments(time);
-    Matrix csMinor(thetaf.rows(),2);
+    Matrix csMinor(thetaf.rows(), 2);
 
     if(nCorr!=0) //apply nodal corrections here
     {

@@ -24,7 +24,6 @@ cf. \url{ftp://tai.bipm.org/iers/conv2010/chapter6/tidemodels/fes2004.dat}.
 #include "base/doodson.h"
 #include "inputOutput/file.h"
 #include "files/fileDoodsonHarmonic.h"
-#include "files/fileTideGeneratingPotential.h"
 #include "classes/kernel/kernel.h"
 
 /***** CLASS ***********************************/

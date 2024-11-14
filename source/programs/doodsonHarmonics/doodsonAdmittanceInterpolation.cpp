@@ -74,10 +74,10 @@ void DoodsonAdmittanceInterpolation::run(Config &config, Parallel::CommunicatorP
       for(UInt i=0; i<tgp.size(); i++)
       {
         for(UInt k=0; k<admit.doodsonMajor.size(); k++)
-          if(tgp.at(i) == admit.doodsonMajor.at(k))
+          if(dynamic_cast<Doodson&>(tgp.at(i)) == admit.doodsonMajor.at(k))
             majorAmpl.at(k) = tgp.at(i).admit();
         for(UInt k=0; k<admit.doodsonMinor.size(); k++)
-          if(tgp.at(i) == admit.doodsonMinor.at(k))
+          if(dynamic_cast<Doodson&>(tgp.at(i)) == admit.doodsonMinor.at(k))
             ampl.at(k) = tgp.at(i).admit();
       }
     }

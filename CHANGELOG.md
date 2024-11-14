@@ -1,6 +1,9 @@
 # main
+- New program:      DoodsonHarmonicsChangePartialTides.
+- New program:      Conversion: OceanTidesDTU2GriddedData.
 - New class:        PlotDegreeAmplitudes: degreeAmplitudesSimple.
 - New option:       GnssAntennaNormalsConstraint: gnssType selection for TEC constraint.
+- File format:      TideGeneratingPotential includes now degree 3 tides.
 - Bugfix:           GUI: fixed Ctrl+Shift+Up/Down for variables.
 - Bugfix:           slrParametrizationRangeBiasStationSatellite: Fix station index.
 - Bugfix:           parameterNames: fixed wrong order.

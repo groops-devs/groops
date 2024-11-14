@@ -320,6 +320,34 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{DoodsonHarmonicsChangePartialTides}\label{DoodsonHarmonicsChangePartialTides}
+Reads a file \configFile{inputfileDoodsonHarmonic}{doodsonHarmonic} and write it to
+\configFile{outputfileDoodsonHarmonics}{doodsonHarmonic}. If set the spherical harmonics
+expansion is limited in the range between \config{minDegree} and \config{maxDegree} inclusivly.
+The \configClass{useDoodson}{doodson} and \configClass{ignoreDoodson}{doodson} can be used
+to filter the partial types that will be exported.
+Additional partial tides can be interpolated using the file \configFile{inputfileAdmittance}{admittance}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileDoodsonHarmonics & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileDoodsonHarmonics & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAdmittance & \hfuzz=500pt filename & \hfuzz=500pt interpolation of minor constituents\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~useDoodson & \hfuzz=500pt \hyperref[doodson]{doodson} & \hfuzz=500pt use only these partial tides (additional tides will be interpolated)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~ignoreDoodson & \hfuzz=500pt \hyperref[doodson]{doodson} & \hfuzz=500pt ignore these partial tides\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{ModelEquilibriumTide}\label{ModelEquilibriumTide}
 Computes the equilibrium ocean tide of the long periodic \config{tideGeneratingPotential}.
 
@@ -9380,6 +9408,24 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~hardware & \hfuzz=500pt string & \hfuzz=500pt Computer hardware on which above software was run\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileComment & \hfuzz=500pt filename & \hfuzz=500pt comments in the comment block from a file (truncated at 80 characters)\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-unbounded.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt comments in the comment block\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{OceanTidesDTU2GriddedData}\label{OceanTidesDTU2GriddedData}
+Convert DTU ocean tide grids to griddedData (amplitude, phase).
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt data0=amplitude, data1=phase\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates\\
 \hline
 \end{tabularx}
 
