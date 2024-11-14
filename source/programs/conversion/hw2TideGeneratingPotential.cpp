@@ -60,15 +60,13 @@ void Hw2TideGeneratingPotential::run(Config &config, Parallel::CommunicatorPtr /
     TideGeneratingPotential tgp;
     tgp.reserve(13000);
 
-    UInt countPermanent = 0;
-    UInt countNDegree   = 0;
-    UInt countNDoodson  = 0;
-    UInt countNSunMoon  = 0;
-    Double maxAmp1      = 0.;
-    Double maxAmp2      = 0.;
-    Double maxAmp3      = 0.;
-
     Double T = timeGPS2JC(time0); // julian centuries
+
+    UInt countPermanent = 0;
+    UInt countDegree1  = 0; Double ampDegree1  = 0.;
+    UInt countDegree4  = 0; Double ampDegree4  = 0.;
+    UInt countPlanet   = 0; Double ampPlanet   = 0.;
+    UInt countNDoodson = 0; Double ampNDoodson = 0.;
 
     // =====================================================
 
@@ -92,7 +90,7 @@ void Hw2TideGeneratingPotential::run(Config &config, Parallel::CommunicatorPtr /
         break;
 
       std::string generatingBody = line.substr(7, 2);
-      const UInt n = String::toInt(line.substr(9, 2));
+      const UInt degree = String::toInt(line.substr(9, 2));
 
       // doodson multipliers
       std::vector<Int> kn(11);
@@ -100,51 +98,53 @@ void Hw2TideGeneratingPotential::run(Config &config, Parallel::CommunicatorPtr /
         kn.at(i) = String::toInt(line.substr(11+3*i, 3));
 
       // frequency
-      const Double frequency = DEG2RAD/3600*String::toDouble(line.substr(44, 12)); // degree/hour -> rad/s
+      const Double frequency = 86400/3600*DEG2RAD*String::toDouble(line.substr(44, 12)); // degree/hour -> rad/day
 
       // amplitudes
       Double c0 = 1e-10 * String::toDouble(line.substr(56, 12));
       Double s0 = 1e-10 * String::toDouble(line.substr(68, 12));
-      c0 += 1e-10 * T * String::toDouble(line.substr(80, 10));
-      s0 += 1e-10 * T * String::toDouble(line.substr(90, 10));
+      Double ct = 1e-10 * String::toDouble(line.substr(80, 10));
+      Double st = 1e-10 * String::toDouble(line.substr(90, 10));
 
-      // name
-      const std::string name = String::trim(line.substr(101,4));
+      // =======================================================
 
-      // find permanent tides
-      // --------------------
+      c0 += ct * T;
+      s0 += st * T;
+      Double ampl = std::sqrt(c0*c0+s0*s0);
+
+      // ignore permanent tides
+      // ----------------------
+      if(std::all_of(kn.begin(), kn.end(), [](Int n){return n==0;}))
       {
-        Int sum = 0;
-        for(UInt i=0; i<kn.size(); i++)
-          sum += static_cast<Int>(std::fabs(kn.at(i)));
-        if(sum==0)
-        {
-          countPermanent++;
-          continue;
-        }
+        countPermanent++;
+        continue;
       }
 
-      // use only degree n=2
-      // -------------------
-      if(n != 2)
+      // ignore degree 1
+      // ---------------
+      if(degree == 1)
       {
-        countNDegree++;
-        maxAmp1 = std::max(maxAmp1, std::sqrt(c0*c0+s0*s0));
+        countDegree1++;
+        ampDegree1 = std::max(ampDegree1, ampl);
         continue;
       }
 
       // use only tides from sun & moon
       // ------------------------------
+      if(std::any_of(kn.begin()+6, kn.end(), [](Int n){return n!=0;}) || ((generatingBody != "SU") && (generatingBody != "MO")))
       {
-        Int sum = 0;
-        for(UInt i=6; i<kn.size(); i++)
-          sum += static_cast<Int>(std::fabs(kn.at(i)));
-        if(sum || ((generatingBody != "SU") && (generatingBody != "MO")))
-        {
-          countNSunMoon++;
-          maxAmp2 = std::max(maxAmp2, std::sqrt(c0*c0+s0*s0));
-          continue;
-        }
+        countPlanet++;
+        ampPlanet = std::max(ampPlanet, ampl);
+        continue;
+      }
+
+      // use only degree n=2, n=3
+      // -------------------
+      if(degree > 3)
+      {
+        countDegree4++;
+        ampDegree4 = std::max(ampDegree4, ampl);
+        continue;
       }
 
       // skip all frequencies which cannot be doodson coded
@@ -156,24 +156,24 @@ void Hw2TideGeneratingPotential::run(Config &config, Parallel::CommunicatorPtr /
         if(flag)
         {
           countNDoodson++;
-          maxAmp3 = std::max(maxAmp3, std::sqrt(c0*c0+s0*s0));
+          ampNDoodson = std::max(ampNDoodson, ampl);
           continue;
         }
       }
 
       // test frequency
-      if(std::fabs(Doodson(kn).frequency()-frequency*86400) > 1e-8)
-        logWarning<<Doodson(kn).name()<<" frequency difference: "<<Doodson(kn).frequency()<<" - "<<frequency*86400<<" = "<<Doodson(kn).frequency()-frequency*86400<<Log::endl;
+      if(std::fabs(Doodson(kn).frequency()-frequency) > 1e-8)
+        logWarning<<Doodson(kn).name()<<" frequency difference: "<<Doodson(kn).frequency()<<" - "<<frequency<<" = "<<Doodson(kn).frequency()-frequency<<Log::endl;
 
-      tgp.push_back(TideGeneratingConstituent(Doodson(kn), c0, s0));
+      tgp.push_back(TideGeneratingConstituent(Doodson(kn), degree, c0, s0));
     } // while(file.good())
 
     // find duplicates
     // ---------------
+    std::stable_sort(tgp.begin(), tgp.end());
     UInt countDuplicate = 0;
     for(UInt i=1; i<tgp.size(); i++)
-    {
-      if(tgp.at(i-1)==tgp.at(i))
+      if(tgp.at(i-1) == tgp.at(i))
       {
         tgp.at(i-1).c += tgp.at(i).c;
         tgp.at(i-1).s += tgp.at(i).s;
@@ -181,19 +181,20 @@ void Hw2TideGeneratingPotential::run(Config &config, Parallel::CommunicatorPtr /
         i--;
         countDuplicate++;
       }
-    }
 
     logInfo<<"constituents used:     "<<tgp.size()<<Log::endl;
     logInfo<<"constituents skipped:"<<Log::endl;
     logInfo<<"  permanent:           "<<countPermanent<<Log::endl;
-    logInfo<<"  not degree 2:        "<<countNDegree<<Log::endl;
+    logInfo<<"  degree 1:            "<<countDegree1<<Log::endl;
+    logInfo<<"  degree >3:           "<<countDegree4<<Log::endl;
     logInfo<<"  not doodson codable: "<<countNDoodson<<Log::endl;
-    logInfo<<"  not sun or moon:     "<<countNSunMoon<<Log::endl;
+    logInfo<<"  not sun or moon:     "<<countPlanet<<Log::endl;
     logInfo<<"  duplicates:          "<<countDuplicate<<Log::endl;
-    logInfo<<"constituents total:    "<<tgp.size()+countNDegree+countNDoodson+countNSunMoon+countPermanent+countDuplicate<<Log::endl;
-    logInfo<<"  max. amplitude (degree>2):            "<<maxAmp1<<" m**2/s**2"<<Log::endl;
-    logInfo<<"  max. amplitude (not sun or moon):     "<<maxAmp2<<" m**2/s**2"<<Log::endl;
-    logInfo<<"  max. amplitude (not doodson codable): "<<maxAmp3<<" m**2/s**2"<<Log::endl;
+    logInfo<<"constituents total:    "<<tgp.size()+countDegree1+countDegree4+countNDoodson+countPlanet+countPermanent+countDuplicate<<Log::endl;
+    logInfo<<"  max. amplitude (degree 1):            "<<ampDegree1 <<" m^2/s^2"<<Log::endl;
+    logInfo<<"  max. amplitude (degree >3):           "<<ampDegree4 <<" m^2/s^2"<<Log::endl;
+    logInfo<<"  max. amplitude (not sun or moon):     "<<ampPlanet  <<" m^2/s^2"<<Log::endl;
+    logInfo<<"  max. amplitude (not doodson codable): "<<ampNDoodson<<" m^2/s^2"<<Log::endl;
 
     logStatus<<"save TGP <"<<outName<<">"<<Log::endl;
     writeFileTideGeneratingPotential(outName, tgp);
