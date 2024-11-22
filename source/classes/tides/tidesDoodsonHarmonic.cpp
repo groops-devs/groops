@@ -35,7 +35,7 @@ TidesDoodsonHarmonic::TidesDoodsonHarmonic(Config &config)
 
     renameDeprecatedConfig(config, "inputfileOcean", "inputfileTides", date2time(2020, 10, 2));
 
-    readConfig(config, "inputfileTides",      tidesName,      Config::MUSTSET,  "{groopsDataDir}/tides/oceanTide_fes2022_n180_version20241110.datt", "");
+    readConfig(config, "inputfileTides",      tidesName,      Config::MUSTSET,  "{groopsDataDir}/tides/oceanTide_fes2022_n180_version20241110.dat", "");
     readConfig(config, "inputfileAdmittance", admittanceName, Config::OPTIONAL, "{groopsDataDir}/tides/oceanTide_fes2022_admittance_linear_linear.txt", "interpolation of minor constituents");
     readConfig(config, "selectDoodson",       selectDoodson,  Config::OPTIONAL, "",    "consider only these constituents, code number (e.g. 255.555) or darwin name (e.g. M2)");
     readConfig(config, "minDegree",           minDegree,      Config::DEFAULT,  "2",   "");
