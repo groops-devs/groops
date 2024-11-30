@@ -59,7 +59,7 @@ void DoodsonHarmonicsCalculateAdmittance::run(Config &config, Parallel::Communic
     readConfig(config, "threshold",                        threshold,           Config::DEFAULT,  "1e-4", "[m^2/s^2] only interpolate tides with TGP greater than threshold");
     readConfig(config, "degreeInterpolation",              degreeInterpolation, Config::DEFAULT,  "1",    "polynomial degree for interpolation");
     readConfig(config, "degreeExtrapolation",              degreeExtrapolation, Config::OPTIONAL, "1",    "polynomial degree for extrapolation");
-    readConfig(config, "excludeDoodsonForInterpolation",   doodsonExclude,      Config::OPTIONAL, R"(["164.555", "164.556"])", "major tides not used for interpolation");
+    readConfig(config, "excludeDoodsonForInterpolation",   doodsonExclude,      Config::OPTIONAL, R"(["164.554", "164.555", "164.556", "164.566"])", "major tides not used for interpolation");
     if(isCreateSchema(config)) return;
 
     // =====================================================
