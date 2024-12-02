@@ -10318,7 +10318,7 @@
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="inputfileTides" type="filename" default="{groopsDataDir}/tides/oceanTide_fes2022_n180_version20241110.datt"/>
+						<xs:element name="inputfileTides" type="filename" default="{groopsDataDir}/tides/oceanTide_fes2022_n180_version20241110.dat"/>
 						<xs:element name="inputfileAdmittance" type="filename" minOccurs="0" default="{groopsDataDir}/tides/oceanTide_fes2022_admittance_linear_linear.txt">
 							<xs:annotation>
 								<xs:documentation>interpolation of minor constituents</xs:documentation>
@@ -11236,7 +11236,7 @@
 								<xs:documentation>polynomial degree for extrapolation</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="excludeDoodsonForInterpolation" type="doodson" minOccurs="0" default="[&quot;164.555&quot;, &quot;164.556&quot;]" maxOccurs="unbounded">
+						<xs:element name="excludeDoodsonForInterpolation" type="doodson" minOccurs="0" default="[&quot;164.554&quot;, &quot;164.555&quot;, &quot;164.556&quot;, &quot;164.566&quot;]" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>major tides not used for interpolation</xs:documentation>
 							</xs:annotation>
