@@ -7898,9 +7898,19 @@
 								<xs:documentation>maximum values of the axis</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="orthogonalLabels" type="boolean" minOccurs="0" default="0">
+						<xs:element name="majorTickSpacing" type="expression" minOccurs="0" default="1">
 							<xs:annotation>
-								<xs:documentation>labels are oriented orthogonal to axis</xs:documentation>
+								<xs:documentation>The boundary annotation.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="minorTickSpacing" type="expression" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>The spacing of the frame tick intervals.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="gridLineSpacing" type="expression" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>The spacing of the grid line intervals</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="gridLine" type="plotLineType" minOccurs="0" default="{&quot;solid&quot;: {&quot;width&quot;:&quot;0.25&quot;, &quot;color&quot;:&quot;gray&quot;}}">
@@ -7911,6 +7921,11 @@
 						<xs:element name="color" type="plotColorType">
 							<xs:annotation>
 								<xs:documentation>set the color of the axis and labels</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="orthogonalLabels" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>labels are oriented orthogonal to axis</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="changeDirection" type="boolean" minOccurs="0" default="0">

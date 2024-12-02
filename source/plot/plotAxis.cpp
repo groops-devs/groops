@@ -315,12 +315,13 @@ Axis with string labels. The coordinate system is based on the label indices (e.
 class PlotAxisLabeled : public PlotAxis
 {
   std::vector<std::string> labels;
+  Double   annotation, frame, grid;
   Bool     orthoLabels;
   FileName dataFileName;
 
 public:
   PlotAxisLabeled(Config &config);
-  void        setAutoInterval(Double /*minAuto*/, Double /*maxAuto*/) {}
+  void        setAutoInterval(Double minAuto, Double maxAuto);
   void        writeDataFile(const FileName &workingDirectory, const std::string &axis);
   std::string axisModifier() const {return "";}
   std::string scriptEntry(const std::string &axis, Bool withGrid) const;
@@ -332,24 +333,49 @@ PlotAxisLabeled::PlotAxisLabeled(Config &config)
 {
   try
   {
-    ExpressionVariablePtr exprMin, exprMax;
+    ExpressionVariablePtr exprMin, exprMax, exprAnnotation, exprFrame, exprGrid;
+    vMin = vMax = NAN_EXPR;
+    annotation = 1;
+    frame      = 1;
+    grid       = 1;
 
     readConfig(config, "labels",           labels,          Config::MUSTSET,  "",             "tick labels (ticks are placed at their index. e.g. 0, 1, ..., 5)");
-    readConfig(config, "min",              exprMin,         Config::DEFAULT,  "0",            "minimum value of the axis");
-    readConfig(config, "max",              exprMax,         Config::DEFAULT,  "labelCount-1", "maximum values of the axis");
-    readConfig(config, "orthogonalLabels", orthoLabels,     Config::DEFAULT,  "0",            "labels are oriented orthogonal to axis");
+    readConfig(config, "min",              exprMin,         Config::OPTIONAL, "0",            "minimum value of the axis");
+    readConfig(config, "max",              exprMax,         Config::OPTIONAL, "labelCount-1", "maximum values of the axis");
+    readConfig(config, "majorTickSpacing", exprAnnotation,  Config::OPTIONAL, "1",            "The boundary annotation.");
+    readConfig(config, "minorTickSpacing", exprFrame,       Config::OPTIONAL, "1",            "The spacing of the frame tick intervals.");
+    readConfig(config, "gridLineSpacing",  exprGrid,        Config::OPTIONAL, "1",            "The spacing of the grid line intervals");
     readConfig(config, "gridLine",         gridLine,        Config::OPTIONAL, R"({"solid": {"width":"0.25", "color":"gray"}})", "The style of the grid lines.");
     readConfig(config, "color",            color,           Config::MUSTSET,  "",             "set the color of the axis and labels");
+    readConfig(config, "orthogonalLabels", orthoLabels,     Config::DEFAULT,  "0",            "labels are oriented orthogonal to axis");
     readConfig(config, "changeDirection",  changeDirection, Config::DEFAULT,  "0",            "If set to 'yes', the directions right/up are changed to left/down.");
     if(isCreateSchema(config)) return;
 
     margin = 0.5;
 
-    VariableList fileNameVariableList;
-    fileNameVariableList.setVariable("labelCount", static_cast<Double>(labels.size()));
+    VariableList variableList;
+    variableList.setVariable("labelCount", static_cast<Double>(labels.size()));
+    if(exprMin)        vMin       = exprMin->evaluate(variableList) - 0.5;
+    if(exprMax)        vMax       = exprMax->evaluate(variableList) + 0.5;
+    if(exprAnnotation) annotation = exprAnnotation->evaluate(variableList);
+    if(exprFrame)      frame      = exprFrame->evaluate(variableList);
+    if(exprGrid)       grid       = exprGrid->evaluate(variableList);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
 
-    vMin = exprMin->evaluate(fileNameVariableList) - 0.5;
-    vMax = exprMax->evaluate(fileNameVariableList) + 0.5;
+/***********************************************/
+
+void PlotAxisLabeled::setAutoInterval(Double minAuto, Double maxAuto)
+{
+  try
+  {
+    if(minAuto > maxAuto) std::swap(minAuto, maxAuto);
+    if(std::isnan(vMin)) vMin = minAuto;
+    if(std::isnan(vMax)) vMax = maxAuto;
   }
   catch(std::exception &e)
   {
@@ -363,14 +389,24 @@ void PlotAxisLabeled::writeDataFile(const FileName &workingDirectory, const std:
 {
   try
   {
+    std::vector<std::pair<Double, std::string>> lines;
+    for(UInt k=0; k<labels.size(); k++)
+      if((vMin <= k) && (k <= vMax) && (std::fmod(k, annotation) == 0))
+        lines.push_back(std::pair<Double, std::string>(k, " a "s+labels.at(k)));
+
+    if(frame > 0)
+      for(Double k=vMin-std::fmod(vMin, frame); k<=vMax; k+=frame)
+        lines.push_back(std::pair<Double, std::string>(k, " f"));
+
+    if(gridLine && (grid > 0))
+      for(Double k=vMin-std::fmod(vMin, grid); k<=vMax; k+=grid)
+        lines.push_back(std::pair<Double, std::string>(k, " g"));
+
+    std::sort(lines.begin(), lines.end(), [](auto &a, auto &b){return a.first < b.first;});
     dataFileName = "labels."+axis+".txt";
     OutFile file(workingDirectory.append(dataFileName));
-    for(UInt k=0; k<labels.size(); k++)
-      if((k >= vMin) && (k <= vMax))
-      {
-        file<<k<<" a "<<labels.at(k)<<std::endl;
-        if(gridLine) file<<k<<" g"<<std::endl;
-      }
+    for(auto &line : lines)
+      file<<line.first<<line.second<<std::endl;
   }
   catch(std::exception &e)
   {
