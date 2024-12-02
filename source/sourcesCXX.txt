@@ -487,7 +487,6 @@ programs/conversion/eop/iersHighFrequentEop2DoodsonEop.cpp
 programs/conversion/eop/iersRapidIAU2000EarthOrientationParameter.cpp
 programs/conversion/eop/igs2EarthOrientationParameter.cpp
 programs/conversion/gnss/gnssAntex2AntennaDefinition.cpp
-programs/conversion/gnss/gnssAttitude2Orbex.cpp
 programs/conversion/gnss/gnssClock2ClockRinex.cpp
 programs/conversion/gnss/gnssClockRinex2InstrumentClock.cpp
 programs/conversion/gnss/gnssEop2IgsErp.cpp
@@ -582,6 +581,7 @@ programs/conversion/tle2Orbit.cpp
 programs/conversion/viennaMappingFunctionGrid2File.cpp
 programs/conversion/viennaMappingFunctionStation2File.cpp
 
+programs/deprecated/gnssAttitude2Orbex.cpp
 programs/deprecated/gnssPrn2SvnBlockVariables.cpp
 programs/deprecated/gridRectangular2NetCdf.cpp
 programs/deprecated/netCdf2GridRectangular.cpp

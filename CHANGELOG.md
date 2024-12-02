@@ -1,4 +1,5 @@
 # main
+- New program:      StarCamera2Orbex (replaces GnssAttitude2Orbex).
 - New program:      DoodsonHarmonicsChangePartialTides.
 - New program:      Conversion: OceanTidesDTU2GriddedData.
 - New class:        PlotDegreeAmplitudes: degreeAmplitudesSimple.
