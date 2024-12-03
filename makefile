@@ -52,6 +52,11 @@ ifeq ($(OS),GNU/Linux)
   endif
 endif
 
+# Select cmake version
+#
+#CMAKE=/usr/bin/cmake
+CMAKE=cmake
+
 # Targets
 
 all: init \
@@ -63,7 +68,7 @@ init:
 	if [ ! -d "$(GROOPS_bld)" ]; then mkdir -p $(GROOPS_bld); fi
 	
 groops_:
-	cd $(GROOPS_bld); cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../..; $(PMAKE); make install 
+	cd $(GROOPS_bld); $(CMAKE) .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../..; $(PMAKE); $(PMAKE) install 
 
 groopsgui_:
 	cd $(GROOPS_gui); $(QMAKE); $(PMAKE)
@@ -72,6 +77,7 @@ groopsgui_:
 
 clean:
 	if [ -d "$(GROOPS_bin)" ]; then cd $(GROOPS_bin); rm -f *; fi
-	if [ -d "$(GROOPS_bld)" ]; then cd $(GROOPS_bld); make clean; fi
-	cd $(GROOPS_gui); make clean
+	#if [ -d "$(GROOPS_bld)" ]; then cd $(GROOPS_bld); $(PMAKE) clean; fi
+	if [ -d "$(GROOPS_bld)" ]; then rm -rf $(GROOPS_bld); fi
+	cd $(GROOPS_gui); $(PMAKE) clean
 	

@@ -30,6 +30,7 @@ GnssParametrizationIonosphereVTEC::GnssParametrizationIonosphereVTEC(Config &con
     readConfig(config, "mapR",              mapR,              Config::DEFAULT,  "6371e3",     "constant of MSLM mapping function");
     readConfig(config, "mapH",              mapH,              Config::DEFAULT,  "506.7e3",    "constant of MSLM mapping function");
     readConfig(config, "mapAlpha",          mapAlpha,          Config::DEFAULT,  "0.9782",     "constant of MSLM mapping function");
+    readConfig(config, "VTEC0",             VTEC0,             Config::DEFAULT,  "0",  "VTEC [TECU] for a-priori (0 = not applied)");
     if(isCreateSchema(config)) return;
   }
   catch(std::exception &e)
@@ -74,7 +75,7 @@ void GnssParametrizationIonosphereVTEC::initParameter(GnssNormalEquationInfo &no
       {
         index.at(idRecv).resize(gnss->times.size());
         if(recv->isMyRank())
-          VTEC.at(idRecv).resize(gnss->times.size(), 0);
+          VTEC.at(idRecv).resize(gnss->times.size(), VTEC0);
         for(UInt idEpoch : normalEquationInfo.idEpochs)
           if(recv->useable(idEpoch))
           {
@@ -119,6 +120,20 @@ void GnssParametrizationIonosphereVTEC::aprioriParameter(const GnssNormalEquatio
 Double GnssParametrizationIonosphereVTEC::mapping(Angle elevation) const
 {
   return 1./std::cos(std::asin(mapR/(mapR+mapH) * std::sin(mapAlpha*(PI/2-elevation))));
+}
+
+/***********************************************/
+
+void GnssParametrizationIonosphereVTEC::observationCorrections(GnssObservationEquation &eqn) const
+{
+  try
+  {
+    eqn.STEC += mapping(eqn.elevationRecvLocal) * VTEC0;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
 }
 
 /***********************************************/
