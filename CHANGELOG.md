@@ -1,8 +1,10 @@
 # main
+- New program:      StarCamera2Orbex (replaces GnssAttitude2Orbex).
 - New program:      DoodsonHarmonicsChangePartialTides.
 - New program:      Conversion: OceanTidesDTU2GriddedData.
 - New class:        PlotDegreeAmplitudes: degreeAmplitudesSimple.
 - New option:       GnssAntennaNormalsConstraint: gnssType selection for TEC constraint.
+- New option:       PlotAxisLabeled: majorTickSpacing, minorTickSpacing, gridLineSpacing.
 - File format:      TideGeneratingPotential includes now degree 3 tides.
 - Bugfix:           GUI: fixed Ctrl+Shift+Up/Down for variables.
 - Bugfix:           slrParametrizationRangeBiasStationSatellite: Fix station index.

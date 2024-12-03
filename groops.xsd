@@ -7898,9 +7898,19 @@
 								<xs:documentation>maximum values of the axis</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="orthogonalLabels" type="boolean" minOccurs="0" default="0">
+						<xs:element name="majorTickSpacing" type="expression" minOccurs="0" default="1">
 							<xs:annotation>
-								<xs:documentation>labels are oriented orthogonal to axis</xs:documentation>
+								<xs:documentation>The boundary annotation.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="minorTickSpacing" type="expression" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>The spacing of the frame tick intervals.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="gridLineSpacing" type="expression" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>The spacing of the grid line intervals</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="gridLine" type="plotLineType" minOccurs="0" default="{&quot;solid&quot;: {&quot;width&quot;:&quot;0.25&quot;, &quot;color&quot;:&quot;gray&quot;}}">
@@ -7911,6 +7921,11 @@
 						<xs:element name="color" type="plotColorType">
 							<xs:annotation>
 								<xs:documentation>set the color of the axis and labels</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="orthogonalLabels" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>labels are oriented orthogonal to axis</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="changeDirection" type="boolean" minOccurs="0" default="0">
@@ -21684,78 +21699,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GnssAttitude2Orbex">
-				<xs:annotation>
-					<xs:documentation>Convert attitude of GNSS satellites to ORBEX file format (quaternions).</xs:documentation>
-					<xs:appinfo>tag: Conversion</xs:appinfo>
-					<xs:appinfo>tag: Gnss</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileOrbex" type="filename">
-							<xs:annotation>
-								<xs:documentation>ORBEX file</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileTransmitterList" type="filename" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>ASCII list with transmitter PRNs</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileAttitude" type="filename" default="attitude.{prn}.dat">
-							<xs:annotation>
-								<xs:documentation>instrument file containing attitude</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="variablePrn" type="string" minOccurs="0" default="prn">
-							<xs:annotation>
-								<xs:documentation>loop variable for PRNs from transmitter list</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>resample to these epochs (otherwise input file epochs are used)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
-							<xs:annotation>
-								<xs:documentation>rotate data into Earth-fixed frame</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="interpolationDegree" type="uint" default="7">
-							<xs:annotation>
-								<xs:documentation>for attitude and Earth rotation interpolation</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="description" type="string">
-							<xs:annotation>
-								<xs:documentation>description of file contents</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="createdBy" type="string">
-							<xs:annotation>
-								<xs:documentation>name of agency</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputData" type="string" default="p">
-							<xs:annotation>
-								<xs:documentation>description of input data (see ORBEX description)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="contact" type="string">
-							<xs:annotation>
-								<xs:documentation>email address</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="referenceFrame" type="string" default="IGb14">
-							<xs:annotation>
-								<xs:documentation>reference frame used in file</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="comment" type="string" minOccurs="0" maxOccurs="unbounded"/>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="GnssClock2ClockRinex">
 				<xs:annotation>
 					<xs:documentation>Converts GNSS clocks from GROOPS format to IGS clock RINEX format.</xs:documentation>
@@ -25169,6 +25112,80 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="StarCamera2Orbex">
+				<xs:annotation>
+					<xs:documentation>Converts satellite attitude from StarCamera to ORBEX format.</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileOrbex" type="filename">
+							<xs:annotation>
+								<xs:documentation>ORBEX file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="satellite" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="inputfileStarCamera" type="filename"/>
+									<xs:element name="identifier" type="string">
+										<xs:annotation>
+											<xs:documentation>string identifier (e.g. GNSS PRN: G01)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="description" type="string" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>e.g. BLOCK IIR-B, GRACE</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
+							<xs:annotation>
+								<xs:documentation>rotate data into Earth-fixed frame</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>resample to these epochs (otherwise input file epochs are used)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="interpolationDegree" type="uint" default="7">
+							<xs:annotation>
+								<xs:documentation>for attitude and Earth rotation interpolation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="description" type="string">
+							<xs:annotation>
+								<xs:documentation>description of file contents</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="createdBy" type="string">
+							<xs:annotation>
+								<xs:documentation>name of agency</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputData" type="string" default="p">
+							<xs:annotation>
+								<xs:documentation>description of input data (see ORBEX description)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="contact" type="string">
+							<xs:annotation>
+								<xs:documentation>email address</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="referenceFrame" type="string" default="IGS20">
+							<xs:annotation>
+								<xs:documentation>reference frame used in file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="comment" type="string" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="Swarm2Starcamera">
 				<xs:annotation>
 					<xs:documentation>read SWARM star camera data</xs:documentation>
@@ -25294,6 +25311,77 @@
 						<xs:element name="inputfileStationInfo" type="filename" default="{groopsDataDir}/gnss/receiverStation/stationInfo/igs/stationInfo.{station}.xml"/>
 						<xs:element name="inputfileStation" type="filename"/>
 						<xs:element name="inputfileVmf" type="filename"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GnssAttitude2Orbex">
+				<xs:annotation>
+					<xs:documentation>DEPRECATED. Please use StarCamera2Orbex instead.</xs:documentation>
+					<xs:appinfo>tag: Deprecated</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileOrbex" type="filename">
+							<xs:annotation>
+								<xs:documentation>ORBEX file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileTransmitterList" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>ASCII list with transmitter PRNs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAttitude" type="filename" default="attitude.{prn}.dat">
+							<xs:annotation>
+								<xs:documentation>instrument file containing attitude</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variablePrn" type="string" minOccurs="0" default="prn">
+							<xs:annotation>
+								<xs:documentation>loop variable for PRNs from transmitter list</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="timeSeries" type="timeSeriesType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>resample to these epochs (otherwise input file epochs are used)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
+							<xs:annotation>
+								<xs:documentation>rotate data into Earth-fixed frame</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="interpolationDegree" type="uint" default="7">
+							<xs:annotation>
+								<xs:documentation>for attitude and Earth rotation interpolation</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="description" type="string">
+							<xs:annotation>
+								<xs:documentation>description of file contents</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="createdBy" type="string">
+							<xs:annotation>
+								<xs:documentation>name of agency</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputData" type="string" default="p">
+							<xs:annotation>
+								<xs:documentation>description of input data (see ORBEX description)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="contact" type="string">
+							<xs:annotation>
+								<xs:documentation>email address</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="referenceFrame" type="string" default="IGb14">
+							<xs:annotation>
+								<xs:documentation>reference frame used in file</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="comment" type="string" minOccurs="0" maxOccurs="unbounded"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
