@@ -97,8 +97,8 @@ inline void ThermosphereNRLMSIS2::state(const Time &time, const Vector3d &positi
     // get data
     const Time     timeUt      =  timeGPS2UTC(time);
     const Vector   index       =  getIndices(msisData, time, FALSE);
-    const F77Float dailyF107   =  static_cast<F77Float>(index(0));
-    const F77Float averageF107 =  static_cast<F77Float>(index(1));
+    const F77Float dailyF107   =  static_cast<F77Float>(getIndices(msisData, time-mjd2time(1), FALSE)(1));
+    const F77Float averageF107 =  static_cast<F77Float>(index(0));
     const F77Float aps[7]      = {static_cast<F77Float>(index(2)),
                                   static_cast<F77Float>(index(3)),
                                   static_cast<F77Float>(index(4)),
