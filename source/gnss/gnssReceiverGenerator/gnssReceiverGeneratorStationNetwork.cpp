@@ -208,17 +208,6 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
 
             recv->preprocessingInfo("init()");
 
-            // simulation case
-            if(fileNameObs.empty())
-            {
-              receiverAlternative(i) = 1;
-              break;
-            }
-
-            auto rotationCrf2Trf = std::bind(&EarthRotation::rotaryMatrix, earthRotation, std::placeholders::_1);
-            recv->readObservations(fileNameObs(fileNameVariableList), transmitters, rotationCrf2Trf, timeMargin, elevationCutOff,
-                                  useType, ignoreType, GnssObservation::RANGE | GnssObservation::PHASE);
-
             auto enoughEpochs = [&]()
             {
               // count epochs with observations
@@ -229,10 +218,17 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
               return (countEpochs*recv->observationSampling >= minEstimableEpochsRatio*times.size()*medianSampling(times).seconds());
             };
 
-            if(!enoughEpochs()) {
-              logWarning<<"Not enough valid epochs with observations, disabling receiver "<<receiversWithAlternatives.at(i).at(k)->name()<<Log::endl;
-              continue;
-            };
+            if(!fileNameObs.empty())
+            {
+              auto rotationCrf2Trf = std::bind(&EarthRotation::rotaryMatrix, earthRotation, std::placeholders::_1);
+              recv->readObservations(fileNameObs(fileNameVariableList), transmitters, rotationCrf2Trf, timeMargin, elevationCutOff,
+                  useType, ignoreType, GnssObservation::RANGE | GnssObservation::PHASE);
+
+              if(!enoughEpochs()) {
+                logWarning<<"Not enough valid epochs with observations, disabling receiver "<<receiversWithAlternatives.at(i).at(k)->name()<<Log::endl;
+                continue;
+              }
+            }
 
             // clock file
             // ----------
@@ -256,7 +252,7 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
                   recv->disable(idEpoch, "missing clock data in file");
 
                 recv->preprocessingInfo("readClockFile()");
-                if(!enoughEpochs())
+                if(!fileNameObs.empty() && !enoughEpochs())
                 {
                   logWarning<<"Not enough valid epochs in clock file <"<<fileNameClock(fileNameVariableList)<<">, disabling receiver."<<Log::endl;
                   continue;
