@@ -11357,6 +11357,11 @@
 								<xs:documentation>if not set, all types in the file are used</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="zeroNaN" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>treat NaN values as zero, otherwise values are ignored</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
