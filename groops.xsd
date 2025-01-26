@@ -12073,6 +12073,51 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="GnssResiduals2TransmitterAccuracyDefinition">
+				<xs:annotation>
+					<xs:documentation>Compute accuracy definition from observation residuals</xs:documentation>
+					<xs:appinfo>tag: Gnss</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileAccuracyDefinition" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>elevation and azimuth dependent accuracy</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileAntennaMean" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>weighted mean of the residuals</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileAntennaRedundancy" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>redundancy of adjustment</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAccuracyDefinition" type="filename">
+							<xs:annotation>
+								<xs:documentation>apriori accuracies</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileTransmitterInfo" type="filename">
+							<xs:annotation>
+								<xs:documentation>to assign residuals to antennas</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="minRedundancy" type="double" minOccurs="0" default="3">
+							<xs:annotation>
+								<xs:documentation>min number of residuals. to estimate sigma</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileResiduals" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>GNSS receiver residuals</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GnssSignalBias2Matrix">
 				<xs:annotation>
 					<xs:documentation>Computes signal biases for a given type list</xs:documentation>

@@ -44,6 +44,8 @@ and azimuth dependent for L2W. A nearly zero mean indicates the use of adequate 
 center variations in the processing.
 
 \fig{!hb}{0.8}{gnssResiduals2AccuracyDefinition}{fig:gnssResiduals2AccuracyDefinition}{L2W accuracies of TerraSAR-X determined from residuals of one month}
+
+See also \program{GnssResiduals2TransmitterAccuracyDefinition}.
 )";
 
 /***********************************************/
