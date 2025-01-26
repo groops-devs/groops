@@ -70,37 +70,36 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     if(isCreateSchema(config)) return;
 
     VariableList varList;
+    if(!loopPtr->iteration(varList))
+      return;
 
     // Every process executes every iteration
     // --------------------------------------
     if((processCount == 0) || (processCount+1 >= Parallel::size(comm)) || (Parallel::size(comm) < 3))
     {
-      if(loopPtr->iteration(varList))
+      Log::Timer timer(loopPtr->count());
+      do
       {
-        Log::Timer timer(loopPtr->count());
-        do
+        logStatus<<"=== "<<loopPtr->index()<<". loop ==="<<Log::endl;
+        timer.loopStep(loopPtr->index()-1);
+        try
         {
-          logStatus<<"=== "<<loopPtr->index()<<". loop ==="<<Log::endl;
-          timer.loopStep(loopPtr->index()-1);
-          try
+          Parallel::broadCastExceptions(comm, [&](Parallel::CommunicatorPtr comm)
           {
-            Parallel::broadCastExceptions(comm, [&](Parallel::CommunicatorPtr comm)
-            {
-              auto varListTmp = varList;
-              programs.run(varListTmp, comm);
-            });
-          }
-          catch(std::exception &e)
-          {
-            if(!continueAfterError || Parallel::isExternal(e))
-              throw;
-            if(Parallel::isMaster(comm))
-              logError<<e.what()<<"  continue..."<<Log::endl;
-          }
+            auto varListTmp = varList;
+            programs.run(varListTmp, comm);
+          });
         }
-        while(loopPtr->iteration(varList));
-        timer.loopEnd();
+        catch(std::exception &e)
+        {
+          if(!continueAfterError || Parallel::isExternal(e))
+            throw;
+          if(Parallel::isMaster(comm))
+            logError<<e.what()<<"  continue..."<<Log::endl;
+        }
       }
+      while(loopPtr->iteration(varList));
+      timer.loopEnd();
       return;
     }
 
@@ -116,27 +115,24 @@ void LoopPrograms::run(Config &config, Parallel::CommunicatorPtr comm)
     {
       // parallel version: main node
       // ---------------------------
-      if(loopPtr->iteration(varList))
+      Log::Timer timer(loopPtr->count(), Parallel::size(commLoop)-1, TRUE);
+      do
       {
-        Log::Timer timer(loopPtr->count(), Parallel::size(commLoop)-1, TRUE);
-        do
-        {
-          timer.loopStep(loopPtr->index()-1);
-          UInt process;
-          Parallel::receive(process, NULLINDEX, commLoop);  // which process needs work?
-          Parallel::send(loopPtr->index(), process, commLoop); // send new loop number to be computed at process
-        }
-        while(loopPtr->iteration(varList));
-        // send to all processes the end signal (NULLINDEX)
-        for(UInt i=1; i<Parallel::size(commLoop); i++)
-        {
-          UInt process;
-          Parallel::receive(process, NULLINDEX, commLoop); // which process needs work?
-          Parallel::send(NULLINDEX, process, commLoop);    // end signal
-        }
-        Parallel::barrier(comm);
-        timer.loopEnd();
+        timer.loopStep(loopPtr->index()-1);
+        UInt process;
+        Parallel::receive(process, NULLINDEX, commLoop);     // which process needs work?
+        Parallel::send(loopPtr->index(), process, commLoop); // send new loop number to be computed at process
       }
+      while(loopPtr->iteration(varList));
+      // send to all processes the end signal (NULLINDEX)
+      for(UInt i=1; i<Parallel::size(commLoop); i++)
+      {
+        UInt process;
+        Parallel::receive(process, NULLINDEX, commLoop); // which process needs work?
+        Parallel::send(NULLINDEX, process, commLoop);    // end signal
+      }
+      Parallel::barrier(comm);
+      timer.loopEnd();
     }
     else
     {
