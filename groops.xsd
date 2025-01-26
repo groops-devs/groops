@@ -22040,7 +22040,7 @@
 											<xs:documentation>transmitter info file template</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs20/transmitterInfo_igs20.dat">
+									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
 										<xs:annotation>
 											<xs:documentation>transmitter phase centers and variations (ANTEX)</xs:documentation>
 										</xs:annotation>

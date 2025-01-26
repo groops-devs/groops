@@ -61,7 +61,7 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssNormals2
     return FALSE;
   readConfig(config, "inputfileTransmitterList",   var.fileNameTransmitterList, Config::MUSTSET,  "",    "transmitter PRNs used in solution");
   readConfig(config, "inputfileTransmitterInfo",   var.fileNameTransmitterInfo, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/transmitterInfo/igs/igs20/transmitterInfo_igs20.{prn}.xml", "transmitter info file template");
-  readConfig(config, "inputfileAntennaDefinition", var.fileNameAntennaDef,      Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs20/transmitterInfo_igs20.dat",     "transmitter phase centers and variations (ANTEX)");
+  readConfig(config, "inputfileAntennaDefinition", var.fileNameAntennaDef,      Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat",   "transmitter phase centers and variations (ANTEX)");
   readConfig(config, "variablePrn",                var.variablePrn,             Config::DEFAULT,  "prn", "loop variable for PRNs from transmitter list");
   endSequence(config);
   return TRUE;
@@ -168,9 +168,10 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     std::vector<GnssAntennaDefinitionPtr> antennaDefinitionList;
     readFileGnssAntennaDefinition(fileNameAntennaDef, antennaDefinitionList);
 
-    logStatus<<"reading station infos from <"<<fileNameStationInfo<<">"<<Log::endl;
-    std::vector<Platform> stationInfos;
     VariableList fileNameVariableList;
+    fileNameVariableList.setVariable(variableStationName, "****");
+    logStatus<<"reading station infos from <"<<fileNameStationInfo(fileNameVariableList)<<">"<<Log::endl;
+    std::vector<Platform> stationInfos;
     for(const auto &station : stationList)
     {
       fileNameVariableList.setVariable(variableStationName, station);
@@ -191,7 +192,8 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       std::vector<GnssAntennaDefinitionPtr> antennaDefinitionList;
       readFileGnssAntennaDefinition(constellation.fileNameAntennaDef, antennaDefinitionList);
 
-      logStatus<<"reading transmitter infos from <"<<constellation.fileNameTransmitterInfo<<">"<<Log::endl;
+      fileNameVariableList.setVariable(constellation.variablePrn, "***");
+      logStatus<<"reading transmitter infos from <"<<constellation.fileNameTransmitterInfo(fileNameVariableList)<<">"<<Log::endl;
       for(const auto &prn : transmitterList)
       {
         fileNameVariableList.setVariable(constellation.variablePrn, prn);
