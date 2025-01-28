@@ -552,15 +552,22 @@ public:
           for(auto &pattern : antenna->patterns)
             if(!types.size() || pattern.type.isInList(types))
             {
+              Matrix PA = A;
               UInt idx = 0;
               for(UInt i=0; i<rows; i++)
                 for(UInt k=0; k<cols; k++)
                 {
                   const Angle azimuth  (i*2*PI/rows);
                   const Angle elevation(PI/2-(k+0.5)*Double(dZenith));
-                  l(idx++) = pattern.antennaVariations(azimuth, elevation, FALSE/*applyOffset*/) * std::sqrt(std::cos(elevation));
+                  l(idx) = pattern.antennaVariations(azimuth, elevation, FALSE/*applyOffset*/) * std::sqrt(std::cos(elevation));
+                  if(std::isnan(l(idx)))
+                  {
+                    l(idx) = 0.;
+                    PA.row(idx).setNull();
+                  }
+                  idx++;
                 }
-              Vector x = leastSquares(Matrix(A), l);
+              Vector x = leastSquares(PA, l);
               if(removeOffset)
                 pattern.offset += Vector3d(x(0), x(1), x(2));
               // remove from pattern

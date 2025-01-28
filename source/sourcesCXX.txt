@@ -288,6 +288,7 @@ programs/gnss/gnssGlonassFrequencyNumberUpdate.cpp
 programs/gnss/gnssProcessing.cpp
 programs/gnss/gnssReceiverDefinitionCreate.cpp
 programs/gnss/gnssResiduals2AccuracyDefinition.cpp
+programs/gnss/gnssResiduals2TransmitterAccuracyDefinition.cpp
 programs/gnss/gnssResiduals2Skyplot.cpp
 programs/gnss/gnssSignalBias2Matrix.cpp
 programs/gnss/gnssSimulateReceiver.cpp

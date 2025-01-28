@@ -2,6 +2,7 @@
 - New program:      StarCamera2Orbex (replaces GnssAttitude2Orbex).
 - New program:      DoodsonHarmonicsChangePartialTides.
 - New program:      Conversion: OceanTidesDTU2GriddedData.
+- New program:      GnssResiduals2TransmitterAccuracyDefinition.
 - New class:        PlotDegreeAmplitudes: degreeAmplitudesSimple.
 - New option:       GnssAntennaNormalsConstraint: gnssType selection for TEC constraint.
 - New option:       PlotAxisLabeled: majorTickSpacing, minorTickSpacing, gridLineSpacing.
@@ -11,6 +12,7 @@
 - Bugfix:           parameterNames: fixed wrong order.
 - Bugfix:           GraceAod2DoodsonHarmonics: fixed phase error.
 - Bugfix:           GnssOrbex2StarCamera: reads now free format.
+- Bugfix:           GnssNormals2Sinex: fixed parser error.
 - Other:            GUI: offer links for numbers and strings of different types.
 - Other:            gnss: set margin for polynomial orbit interpolation to 1e-7 seconds.
 

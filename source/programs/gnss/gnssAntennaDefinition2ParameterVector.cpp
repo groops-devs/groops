@@ -58,6 +58,7 @@ void GnssAntennaDefinition2ParameterVector::run(Config &config, Parallel::Commun
     FileName                      fileNameAntenna;
     std::string                   name, serial, radome;
     std::vector<GnssType>         types;
+    Bool                          zeroNaN;
 
     readConfig(config, "outputfileSolution",         fileNameSolution,       Config::MUSTSET,  "",  "");
     readConfig(config, "outputfileParameterNames",   fileNameParameterNames, Config::OPTIONAL, "",  "");
@@ -67,6 +68,7 @@ void GnssAntennaDefinition2ParameterVector::run(Config &config, Parallel::Commun
     readConfig(config, "serial",                     serial,                 Config::OPTIONAL, "*", "");
     readConfig(config, "radome",                     radome,                 Config::OPTIONAL, "*", "");
     readConfig(config, "types",                      types,                  Config::OPTIONAL, "",  "if not set, all types in the file are used");
+    readConfig(config, "zeroNaN",                    zeroNaN,                Config::DEFAULT,  "1", "treat NaN values as zero, otherwise values are ignored");
     if(isCreateSchema(config)) return;
 
     // ============================
@@ -95,9 +97,11 @@ void GnssAntennaDefinition2ParameterVector::run(Config &config, Parallel::Commun
         Vector x(typesAnt.size()*parametrization->parameterCount());
         for(UInt idType=0; idType<typesAnt.size(); idType++)
         {
-          logInfo<<typesAnt.at(idType).str()<<Log::endl;
-          const UInt idPattern = antenna->findAntennaPattern(typesAnt.at(idType), GnssAntennaDefinition::THROW_EXCEPTION);
+          const UInt idPattern = antenna->findAntennaPattern(typesAnt.at(idType), GnssAntennaDefinition::IGNORE_OBSERVATION);
+          if(idPattern == NULLINDEX)
+            continue;
           GnssAntennaPattern &pattern = antenna->patterns.at(idPattern);
+          logInfo<<typesAnt.at(idType).str()<<Log::endl;
 
           Matrix A(pattern.pattern.rows()*pattern.pattern.columns(), parametrization->parameterCount());
           Vector l(pattern.pattern.rows()*pattern.pattern.columns());
@@ -109,6 +113,12 @@ void GnssAntennaDefinition2ParameterVector::run(Config &config, Parallel::Commun
               const Double p = std::sqrt((k == 0) ? (1-std::cos(0.5*Double(pattern.dZenit))) : std::sin(k*Double(pattern.dZenit)));
               l(idx) = p * pattern.pattern(i,k);
               axpy(p, parametrization->designMatrix(Angle(i*2*PI/pattern.pattern.rows()), Angle(PI/2-k*Double(pattern.dZenit))), A.row(idx));
+              if(std::isnan(l(idx)))
+              {
+                l(idx) = 0;
+                if(!zeroNaN)
+                  A.row(idx).setNull();
+              }
               idx++;
             }
           solutions.push_back(leastSquares(A, l));

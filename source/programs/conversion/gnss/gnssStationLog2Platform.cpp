@@ -73,8 +73,8 @@ void GnssStationLog2Platform::run(Config &config, Parallel::CommunicatorPtr /*co
 
     // some tests
     // ----------
-    if(platform.markerName.size()!=4)
-      throw(Exception(platform.markerName+"."+platform.markerNumber+": marker name should have 4 letters"));
+    if((platform.markerName.size() != 4) && (platform.markerName.size() != 9))
+      throw(Exception(platform.markerName+"."+platform.markerNumber+": marker name should have 4 or 9 letters"));
     if(platform.approxPosition.r() < 6300e3)
       throw(Exception(platform.markerName+"."+platform.markerNumber+": No approx. position given"));
     if(!std::any_of(platform.equipments.begin(), platform.equipments.end(), [](const auto &p) {return std::dynamic_pointer_cast<PlatformGnssReceiver>(p);}))
@@ -209,17 +209,12 @@ Platform GnssStationLog2Platform::readFile(const FileName &fileName)
         if(String::contains(line, "Site Identification of the GNSS Monument"))
         {
         }
-        else if(String::contains(line, "Four Character ID"))
+        else if(String::contains(line, "Four Character ID") || String::contains(line, "Nine Character ID"))
         {
           if(platform.markerName.empty())
           {
             readString(line, platform.markerName);
             std::transform(platform.markerName.begin(), platform.markerName.end(), platform.markerName.begin(), ::toupper);
-            if(platform.markerName.length() > 4)
-            {
-              logWarning<<platform.markerName<<": marker name has more than 4 letters, shortened to: "<<platform.markerName.substr(0,4)<<Log::endl;
-              platform.markerName = platform.markerName.substr(0,4);
-            }
           }
         }
         else if(String::contains(line, "IERS DOMES Number"))

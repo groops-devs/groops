@@ -448,6 +448,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~radome & \hfuzz=500pt string & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~types & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt if not set, all types in the file are used\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~zeroNaN & \hfuzz=500pt boolean & \hfuzz=500pt treat NaN values as zero, otherwise values are ignored\\
 \hline
 \end{tabularx}
 
@@ -977,6 +978,8 @@ center variations in the processing.
 
 \fig{!hb}{0.8}{gnssResiduals2AccuracyDefinition}{fig:gnssResiduals2AccuracyDefinition}{L2W accuracies of TerraSAR-X determined from residuals of one month}
 
+See also \program{GnssResiduals2TransmitterAccuracyDefinition}.
+
 
 \keepXColumns
 \begin{tabularx}{\textwidth}{N T A}
@@ -1034,6 +1037,51 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileResiduals & \hfuzz=500pt filename & \hfuzz=500pt GNSS receiver residuals\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{GnssResiduals2TransmitterAccuracyDefinition}\label{GnssResiduals2TransmitterAccuracyDefinition}
+Compute antenna accuracies from observation \configFile{inputfileResiduals}{instrument}.
+The \configFile{inputfileTransmitterInfo}{platform} is needed to assign
+the residuals to the equipped antenna at observation times.
+
+The \configFile{outputfileAccuracyDefinition}{gnssAntennaDefinition} contains
+at first step the same accuracy information for all antennas as the input file.
+Only the azimuth~$A$ and elevation~$E$ dependent grid points of the patterns
+where enough residuals are available ($>$ \config{minRedundancy})
+are replaced by estimated accuracy
+\begin{equation}
+ \sigma(A,E) = \sqrt{\frac{\sum_i e_i^2(A,E)}{\sum_i r_i(A,E)}},
+\end{equation}
+where $e_i$ are the azimuth and elevation dependent residuals and $r_i$ the
+corresponding redundancies (number of observations minus the contribution to
+the estimated parameters).
+
+The \configFile{inputfileAccuracyDefinition}{gnssAntennaDefinition} can be modified
+to the demands before with \program{GnssAntennaDefinitionCreate}
+(e.g. with \config{antenna:resample}).
+
+To verify the results the \configFile{outputfileAntennaMean}{gnssAntennaDefinition}
+and the accumulated \configFile{outputfileAntennaRedundancy}{gnssAntennaDefinition}
+of the computed pattern grid points can be written.
+
+See also \program{GnssResiduals2AccuracyDefinition}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAccuracyDefinition & \hfuzz=500pt filename & \hfuzz=500pt elevation and azimuth dependent accuracy\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntennaMean & \hfuzz=500pt filename & \hfuzz=500pt weighted mean of the residuals\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntennaRedundancy & \hfuzz=500pt filename & \hfuzz=500pt redundancy of adjustment\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAccuracyDefinition & \hfuzz=500pt filename & \hfuzz=500pt apriori accuracies\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt to assign residuals to antennas\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minRedundancy & \hfuzz=500pt double & \hfuzz=500pt min number of residuals. to estimate sigma\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileResiduals & \hfuzz=500pt filename & \hfuzz=500pt GNSS receiver residuals\\
 \hline
 \end{tabularx}
 

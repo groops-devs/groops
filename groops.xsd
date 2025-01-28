@@ -11420,6 +11420,11 @@
 								<xs:documentation>if not set, all types in the file are used</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="zeroNaN" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>treat NaN values as zero, otherwise values are ignored</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -12126,6 +12131,51 @@
 						<xs:element name="inverseFlattening" type="double" minOccurs="0" default="298.2572221010">
 							<xs:annotation>
 								<xs:documentation>reference flattening for ellipsoidal coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="GnssResiduals2TransmitterAccuracyDefinition">
+				<xs:annotation>
+					<xs:documentation>Compute accuracy definition from observation residuals</xs:documentation>
+					<xs:appinfo>tag: Gnss</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileAccuracyDefinition" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>elevation and azimuth dependent accuracy</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileAntennaMean" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>weighted mean of the residuals</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileAntennaRedundancy" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>redundancy of adjustment</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAccuracyDefinition" type="filename">
+							<xs:annotation>
+								<xs:documentation>apriori accuracies</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileTransmitterInfo" type="filename">
+							<xs:annotation>
+								<xs:documentation>to assign residuals to antennas</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="minRedundancy" type="double" minOccurs="0" default="3">
+							<xs:annotation>
+								<xs:documentation>min number of residuals. to estimate sigma</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileResiduals" type="filename" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>GNSS receiver residuals</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -22103,7 +22153,7 @@
 											<xs:documentation>transmitter info file template</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs20/transmitterInfo_igs20.dat">
+									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/transmitter/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
 										<xs:annotation>
 											<xs:documentation>transmitter phase centers and variations (ANTEX)</xs:documentation>
 										</xs:annotation>
