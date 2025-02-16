@@ -34,20 +34,6 @@ GnssParametrizationIonosphereSTEC::GnssParametrizationIonosphereSTEC(Config &con
     if(isCreateSchema(config)) return;
 
     apply1stOrder = TRUE;
-
-    // can exprSigmaSTEC be evaluated to a constant?
-    // ---------------------------------------------
-    VariableList varList;
-    varList.undefineVariable("E");
-    exprSigmaSTEC->simplify(varList);
-    try
-    {
-      sigmaSTEC = (exprSigmaSTEC->evaluate(varList) > 0);
-    }
-    catch(std::exception &/*e*/)
-    {
-      sigmaSTEC = -1;
-    }
   }
   catch(std::exception &e)
   {
@@ -65,8 +51,19 @@ void GnssParametrizationIonosphereSTEC::init(Gnss *gnss, Parallel::CommunicatorP
     estimateSTEC    = TRUE;
     applyConstraint = FALSE;
 
-    if(sigmaSTEC > 0) // sigmaSTEC is constant -> fast version
+    // can exprSigmaSTEC be evaluated to a constant?
+    // ---------------------------------------------
+    isSigmaSTEC = FALSE;
+    VariableList varList;
+    varList.undefineVariable("E");
+    exprSigmaSTEC->simplify(varList);
+    try
     {
+      // can evaluate? -> sigmaSTEC is constant -> fast version
+      const Double sigmaSTEC = exprSigmaSTEC->evaluate(varList);
+      isSigmaSTEC = (sigmaSTEC > 0);
+      exprSigmaSTEC = nullptr;
+
       for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
         for(auto recv : gnss->receivers)
           if(recv->isMyRank() && recv->useable(idEpoch))
@@ -74,9 +71,15 @@ void GnssParametrizationIonosphereSTEC::init(Gnss *gnss, Parallel::CommunicatorP
               if(recv->observation(idTrans, idEpoch))
                 recv->observation(idTrans, idEpoch)->sigmaSTEC = sigmaSTEC;
     }
-    else if(sigmaSTEC) // sigmaSTEC is expression
+    catch(std::exception &/*e*/)
+    {
+    }
+
+    // sigmaSTEC is still an expression
+    if(exprSigmaSTEC)
     {
       logStatus<<"compute STEC accuracy"<<Log::endl;
+      isSigmaSTEC = TRUE;
       VariableList varList;
       Log::Timer timer(gnss->times.size());
       for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
@@ -113,7 +116,7 @@ void GnssParametrizationIonosphereSTEC::initParameter(GnssNormalEquationInfo &no
     applyConstraint = FALSE;
     if(!estimateSTEC)
       return;
-    applyConstraint = isEnabled(normalEquationInfo, nameConstraint) && sigmaSTEC;
+    applyConstraint = isEnabled(normalEquationInfo, nameConstraint) && isSigmaSTEC;
 
     UInt count = 0;
     for(auto recv : gnss->receivers)

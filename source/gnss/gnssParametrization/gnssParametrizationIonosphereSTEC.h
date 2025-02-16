@@ -63,9 +63,8 @@ class GnssParametrizationIonosphereSTEC : public GnssParametrizationBase
   std::string           name, nameConstraint;
   Bool                  apply1stOrder, apply2ndOrder, apply3rdOrder, applyBending;
   MagnetospherePtr      magnetosphere;
-  Bool                  estimateSTEC, applyConstraint;
+  Bool                  estimateSTEC, applyConstraint, isSigmaSTEC;
   ExpressionVariablePtr exprSigmaSTEC;
-  Double                sigmaSTEC; // 0: unconstrained, <0: expression
 
 public:
   GnssParametrizationIonosphereSTEC(Config &config);

@@ -13,6 +13,7 @@
 - Bugfix:           GraceAod2DoodsonHarmonics: fixed phase error.
 - Bugfix:           GnssOrbex2StarCamera: reads now free format.
 - Bugfix:           GnssNormals2Sinex: fixed parser error.
+- Bugfix:           GnssParametrizationIonosphereSTEC: constant sigmaSTEC>0 was evaluated always to one.
 - Other:            GUI: offer links for numbers and strings of different types.
 - Other:            gnss: set margin for polynomial orbit interpolation to 1e-7 seconds.
 
