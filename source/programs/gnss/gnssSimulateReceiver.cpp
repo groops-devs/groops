@@ -95,8 +95,8 @@ void GnssSimulateReceiver::run(Config &config, Parallel::CommunicatorPtr comm)
     std::sort(obsTypes.begin(), obsTypes.end());
     std::vector<Time> times = timeSeries->times();
     Gnss gnss;
-    gnss.init(times, seconds2time(marginSeconds), transmitterGenerator, receiverGenerator, earthRotation, gnssParametrization, comm);
-    receiverGenerator->simulation(obsTypes, noiseClock, noiseObs, &gnss, comm);
+    gnss.init(obsTypes, times, seconds2time(marginSeconds), transmitterGenerator, receiverGenerator, earthRotation, gnssParametrization, comm);
+    receiverGenerator->simulation(noiseClock, noiseObs, &gnss, comm);
     gnss.synchronizeTransceivers(comm);
     logInfo<<"  transmitter: "<<std::count_if(gnss.transmitters.begin(), gnss.transmitters.end(), [](auto t) {return t->useable();})<<Log::endl;
     logInfo<<"  receiver:    "<<std::count_if(gnss.receivers.begin(),    gnss.receivers.end(),    [](auto r) {return r->useable();})<<Log::endl;

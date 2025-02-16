@@ -92,12 +92,16 @@ GnssReceiverGeneratorStationNetwork::GnssReceiverGeneratorStationNetwork(Config 
 
 /***********************************************/
 
-void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, const Time &timeMargin, const std::vector<GnssTransmitterPtr> &transmitters,
-                                               EarthRotationPtr earthRotation, Parallel::CommunicatorPtr comm, std::vector<GnssReceiverPtr> &receiversAll)
+void GnssReceiverGeneratorStationNetwork::init(std::vector<GnssType> simulationTypes, const std::vector<Time> &times, const Time &timeMargin,
+                                               const std::vector<GnssTransmitterPtr> &transmitters, EarthRotationPtr earthRotation,
+                                               Parallel::CommunicatorPtr comm, std::vector<GnssReceiverPtr> &receiversAll)
 {
   try
   {
     logStatus<<"init station network"<<Log::endl;
+    Bool isSimulation = simulationTypes.size();
+    if(isSimulation && !fileNameObs.empty())
+      logWarningOnce<<"ignoring inputfileObservations"<<Log::endl;
 
     std::vector<GnssAntennaDefinitionPtr> antennaDefList;
     if(!fileNameAntennaDef.empty())
@@ -121,7 +125,7 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
         try
         {
           fileNameVariableList.setVariable("station", stationName.at(i).at(k));
-          if(!fileNameObs.empty() && !System::exists(fileNameObs(fileNameVariableList)))
+          if(!isSimulation && !System::exists(fileNameObs(fileNameVariableList)))
             continue;
 
           Platform platform;
@@ -205,16 +209,17 @@ void GnssReceiverGeneratorStationNetwork::init(const std::vector<Time> &times, c
 
             recv->preprocessingInfo("init()");
 
-            // simulation case
-            if(fileNameObs.empty())
-            {
-              receiverAlternative(i) = 1;
-              break;
-            }
-
             auto rotationCrf2Trf = std::bind(&EarthRotation::rotaryMatrix, earthRotation, std::placeholders::_1);
-            recv->readObservations(fileNameObs(fileNameVariableList), transmitters, rotationCrf2Trf, timeMargin, elevationCutOff,
-                                  useType, ignoreType, GnssObservation::RANGE | GnssObservation::PHASE);
+            if(isSimulation)
+            {
+              recv->simulateZeroObservations(simulationTypes, transmitters, rotationCrf2Trf, elevationCutOff,
+                                             useType, ignoreType, GnssObservation::RANGE | GnssObservation::PHASE);
+            }
+            else
+            {
+              recv->readObservations(fileNameObs(fileNameVariableList), transmitters, rotationCrf2Trf, timeMargin, elevationCutOff,
+                                     useType, ignoreType, GnssObservation::RANGE | GnssObservation::PHASE);
+            }
 
             auto enoughEpochs = [&]()
             {
@@ -407,8 +412,7 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
 
 /***********************************************/
 
-void GnssReceiverGeneratorStationNetwork::simulation(const std::vector<GnssType> &types,
-                                                     NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
+void GnssReceiverGeneratorStationNetwork::simulation(NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                                                      Gnss *gnss, Parallel::CommunicatorPtr comm)
 {
   try
@@ -421,9 +425,9 @@ void GnssReceiverGeneratorStationNetwork::simulation(const std::vector<GnssType>
       {
         try
         {
-          receivers.at(idRecv)->simulateObservations(types, noiseClock, noiseObs, gnss->transmitters,
+          receivers.at(idRecv)->simulateObservations(noiseClock, noiseObs, gnss->transmitters,
                                                      gnss->funcRotationCrf2Trf, gnss->funcReduceModels,
-                                                     minObsCountPerTrack, elevationCutOff, elevationTrackMinimum, useType, ignoreType,
+                                                     minObsCountPerTrack, elevationTrackMinimum,
                                                      GnssObservation::RANGE | GnssObservation::PHASE);
         }
         catch(std::exception &e)

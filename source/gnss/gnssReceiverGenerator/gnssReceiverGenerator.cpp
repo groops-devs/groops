@@ -67,14 +67,15 @@ GnssReceiverGenerator::~GnssReceiverGenerator()
 
 /***********************************************/
 
-std::vector<GnssReceiverPtr> GnssReceiverGenerator::receivers(const std::vector<Time> &times, const Time &timeMargin, const std::vector<GnssTransmitterPtr> &transmitters,
+std::vector<GnssReceiverPtr> GnssReceiverGenerator::receivers(std::vector<GnssType> simulationTypes, const std::vector<Time> &times, const Time &timeMargin,
+                                                              const std::vector<GnssTransmitterPtr> &transmitters,
                                                               EarthRotationPtr earthRotation, Parallel::CommunicatorPtr comm)
 {
   try
   {
     std::vector<GnssReceiverPtr> receivers;
     for(UInt i=0; i<base.size(); i++)
-      base.at(i)->init(times, timeMargin, transmitters, earthRotation, comm, receivers);
+      base.at(i)->init(simulationTypes, times, timeMargin, transmitters, earthRotation, comm, receivers);
     return receivers;
   }
   catch(std::exception &e)
@@ -100,13 +101,13 @@ void GnssReceiverGenerator::preprocessing(Gnss *gnss, Parallel::CommunicatorPtr 
 
 /***********************************************/
 
-void GnssReceiverGenerator::simulation(const std::vector<GnssType> &types, NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
+void GnssReceiverGenerator::simulation(NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                                        Gnss *gnss, Parallel::CommunicatorPtr comm)
 {
   try
   {
     for(UInt i=0; i<base.size(); i++)
-      base.at(i)->simulation(types, noiseClock, noiseObs, gnss, comm);
+      base.at(i)->simulation(noiseClock, noiseObs, gnss, comm);
   }
   catch(std::exception &e)
   {

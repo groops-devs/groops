@@ -85,12 +85,13 @@ class GnssReceiverGeneratorStationNetwork : public GnssReceiverGeneratorBase
 public:
   GnssReceiverGeneratorStationNetwork(Config &config);
 
-  void init(const std::vector<Time> &times, const Time &timeMargin, const std::vector<GnssTransmitterPtr> &transmitters,
-            EarthRotationPtr earthRotation, Parallel::CommunicatorPtr comm, std::vector<GnssReceiverPtr> &receivers) override;
+  void init(std::vector<GnssType> simulationTypes, const std::vector<Time> &times, const Time &timeMargin,
+            const std::vector<GnssTransmitterPtr> &transmitters, EarthRotationPtr earthRotation,
+            Parallel::CommunicatorPtr comm, std::vector<GnssReceiverPtr> &receivers) override;
 
   void preprocessing(Gnss *gnss, Parallel::CommunicatorPtr comm) override;
 
-  void simulation(const std::vector<GnssType> &types, NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
+  void simulation(NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                   Gnss *gnss, Parallel::CommunicatorPtr comm) override;
 };
 

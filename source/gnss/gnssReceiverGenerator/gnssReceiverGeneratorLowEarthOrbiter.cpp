@@ -80,12 +80,16 @@ GnssReceiverGeneratorLowEarthOrbiter::GnssReceiverGeneratorLowEarthOrbiter(Confi
 
 /***********************************************/
 
-void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, const Time &timeMargin, const std::vector<GnssTransmitterPtr> &transmitters,
-                                                EarthRotationPtr earthRotation, Parallel::CommunicatorPtr comm, std::vector<GnssReceiverPtr> &receivers)
+void GnssReceiverGeneratorLowEarthOrbiter::init(std::vector<GnssType> simulationTypes, const std::vector<Time> &times, const Time &timeMargin,
+                                                const std::vector<GnssTransmitterPtr> &transmitters, EarthRotationPtr earthRotation,
+                                                Parallel::CommunicatorPtr comm, std::vector<GnssReceiverPtr> &receivers)
 {
   try
   {
     logStatus<<"init Low Earth Orbiter"<<Log::endl;
+    Bool isSimulation = simulationTypes.size();
+    if(isSimulation && !fileNameObs.empty())
+      logWarningOnce<<"ignoring observation file <"<<fileNameObs<<">"<<Log::endl;
 
     std::vector<GnssAntennaDefinitionPtr> antennaDefList;
     if(!fileNameAntennaDef.empty())
@@ -135,14 +139,12 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
         StarCameraArc starCamera = InstrumentFile::read(fileNameStarCamera);
         Arc::checkSynchronized({orbit, starCamera});
 
-        UInt idEpoch = 0;
-        for(UInt i=0; i<orbit.size(); i++)
+        UInt i=0;
+        for(UInt idEpoch=0; idEpoch<times.size(); i++)
         {
-          while((idEpoch < times.size()) && (times.at(idEpoch) < orbit.at(i).time-timeMargin))
-            recv->disable(idEpoch++, "due to missing orbit/attitude data");
-          if(idEpoch >= times.size())
-            break;
-          if(times.at(idEpoch) > orbit.at(i).time+timeMargin)
+          while((i < orbit.size()) && (orbit.at(i).time < times.at(idEpoch)-timeMargin))
+            i++;
+          if((i >= orbit.size()) || (orbit.at(i).time > times.at(idEpoch)+timeMargin))
           {
             recv->disable(idEpoch, "due to missing orbit/attitude data");
             continue;
@@ -160,14 +162,18 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(const std::vector<Time> &times, 
           recv->global2local.at(idEpoch)   = inverse(localNorthEastUp(recv->pos.at(idEpoch), Ellipsoid()));
           recv->global2antenna.at(idEpoch) = antenna->local2antennaFrame * inverse(starCamera.at(i).rotary);
           recv->offset.at(idEpoch)         = recv->global2local.at(idEpoch).transform(starCamera.at(i).rotary.rotate(antenna->position - platform.referencePoint(times.at(idEpoch))));
-          idEpoch++;
         }
         recv->preprocessingInfo("init()");
 
-        if(!fileNameObs.empty())
+        logStatus<<"read observations"<<Log::endl;
+        auto rotationCrf2Trf = std::bind(&EarthRotation::rotaryMatrix, earthRotation, std::placeholders::_1);
+        if(isSimulation)
         {
-          logStatus<<"read observations"<<Log::endl;
-          auto rotationCrf2Trf = std::bind(&EarthRotation::rotaryMatrix, earthRotation, std::placeholders::_1);
+          recv->simulateZeroObservations(simulationTypes, transmitters, rotationCrf2Trf, elevationCutOff,
+                                         useType, ignoreType, GnssObservation::RANGE | GnssObservation::PHASE);
+        }
+        else
+        {
           recv->readObservations(fileNameObs, transmitters,  rotationCrf2Trf, timeMargin, elevationCutOff,
                                  useType, ignoreType, GnssObservation::RANGE | GnssObservation::PHASE);
         }
@@ -270,8 +276,7 @@ void GnssReceiverGeneratorLowEarthOrbiter::preprocessing(Gnss *gnss, Parallel::C
 
 /***********************************************/
 
-void GnssReceiverGeneratorLowEarthOrbiter::simulation(const std::vector<GnssType> &types,
-                                                      NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
+void GnssReceiverGeneratorLowEarthOrbiter::simulation(NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                                                       Gnss *gnss, Parallel::CommunicatorPtr comm)
 {
   try
@@ -281,10 +286,9 @@ void GnssReceiverGeneratorLowEarthOrbiter::simulation(const std::vector<GnssType
     {
       try
       {
-        recv->simulateObservations(types, noiseClock, noiseObs, gnss->transmitters,
+        recv->simulateObservations(noiseClock, noiseObs, gnss->transmitters,
                                    gnss->funcRotationCrf2Trf, gnss->funcReduceModels,
-                                   minObsCountPerTrack, elevationCutOff, Angle(0), useType, ignoreType,
-                                   GnssObservation::RANGE | GnssObservation::PHASE);
+                                   minObsCountPerTrack, Angle(0), GnssObservation::RANGE | GnssObservation::PHASE);
       }
       catch(std::exception &e)
       {

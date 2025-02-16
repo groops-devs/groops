@@ -96,7 +96,7 @@ public:
  ~GnssReceiverGenerator();
 
   /** @brief Iniatialize and returns a vector of receivers. */
-  std::vector<GnssReceiverPtr> receivers(const std::vector<Time> &times, const Time &timeMargin,
+  std::vector<GnssReceiverPtr> receivers(std::vector<GnssType> simulationTypes, const std::vector<Time> &times, const Time &timeMargin,
                                          const std::vector<GnssTransmitterPtr> &transmitters, EarthRotationPtr earthRotation,
                                          Parallel::CommunicatorPtr comm);
 
@@ -104,7 +104,7 @@ public:
   void preprocessing(Gnss *gnss, Parallel::CommunicatorPtr comm);
 
   /** @brief simulate the observations of receivers. */
-  void simulation(const std::vector<GnssType> &types, NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
+  void simulation(NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                   Gnss *gnss, Parallel::CommunicatorPtr comm);
 
   /** @brief creates an derived instance of this class. */
@@ -135,12 +135,13 @@ class GnssReceiverGeneratorBase
 public:
   virtual ~GnssReceiverGeneratorBase() {}
 
-  virtual void init(const std::vector<Time> &times, const Time &timeMargin, const std::vector<GnssTransmitterPtr> &transmitters,
-                    EarthRotationPtr earthRotation, Parallel::CommunicatorPtr comm, std::vector<GnssReceiverPtr> &receivers) = 0;
+  virtual void init(std::vector<GnssType> simulationTypes, const std::vector<Time> &times, const Time &timeMargin,
+                    const std::vector<GnssTransmitterPtr> &transmitters, EarthRotationPtr earthRotation,
+                    Parallel::CommunicatorPtr comm, std::vector<GnssReceiverPtr> &receivers) = 0;
 
   virtual void preprocessing(Gnss *gnss, Parallel::CommunicatorPtr comm) = 0;
 
-  virtual void simulation(const std::vector<GnssType> &types, NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
+  virtual void simulation(NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
                           Gnss *gnss, Parallel::CommunicatorPtr comm) = 0;
 
   static void printPreprocessingInfos(const std::string &header, const std::vector<GnssReceiverPtr> &receivers,

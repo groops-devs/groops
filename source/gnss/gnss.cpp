@@ -27,7 +27,7 @@
 
 /***********************************************/
 
-void Gnss::init(const std::vector<Time> &times, const Time &timeMargin,
+void Gnss::init(std::vector<GnssType> simulationTypes, const std::vector<Time> &times, const Time &timeMargin,
                 GnssTransmitterGeneratorPtr transmitterGenerator, GnssReceiverGeneratorPtr receiverGenerator,
                 EarthRotationPtr earthRotation, GnssParametrizationPtr parametrization, Parallel::CommunicatorPtr comm)
 {
@@ -54,7 +54,7 @@ void Gnss::init(const std::vector<Time> &times, const Time &timeMargin,
 
     // init receivers
     // --------------
-    receivers = receiverGenerator->receivers(times, timeMargin, transmitters, earthRotation, comm);
+    receivers = receiverGenerator->receivers(simulationTypes, times, timeMargin, transmitters, earthRotation, comm);
     for(UInt idRecv=0; idRecv<receivers.size(); idRecv++)
       receivers.at(idRecv)->id_ = idRecv;
     synchronizeTransceivers(comm);

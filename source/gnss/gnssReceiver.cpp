@@ -447,27 +447,14 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
 
 /***********************************************/
 
-void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
-                                        NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
-                                        const std::vector<GnssTransmitterPtr> &transmitters,
-                                        const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
-                                        const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
-                                        UInt minObsCountPerTrack, Angle elevationCutOff, Angle elevationTrackMinimum,
-                                        const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group)
+void GnssReceiver::simulateZeroObservations(const std::vector<GnssType> &types,
+                                            const std::vector<GnssTransmitterPtr> &transmitters,
+                                            const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, Angle elevationCutOff,
+                                            const std::vector<GnssType> &useType, const std::vector<GnssType> &ignoreType, GnssObservation::Group group)
 {
   try
   {
-    // Simulate clock error
-    // --------------------
-    Vector clock = noiseClock->noise(times.size());
-    for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
-      if(useable(idEpoch))
-        updateClockError(idEpoch, clock(idEpoch)/LIGHT_VELOCITY);
-
-    // Simulate zero observations
-    // --------------------------
     Vector phaseWindup(transmitters.size());
-    std::vector<std::vector<GnssType>> typesTrans(transmitters.size());
     for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
     {
       const std::vector<GnssType> receiverTypes = definedTypes(times.at(idEpoch));
@@ -534,8 +521,6 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
               continue;
 
             obs->push_back(GnssSingleObservation(type, 0.0));
-            if(!type.isInList(typesTrans.at(idTrans)))
-              typesTrans.at(idTrans).push_back(type);
           }
 
         std::vector<GnssType> types;
@@ -564,6 +549,29 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
     observationSampling = medianSampling(times).seconds();
     copyObservations2ContinuousMemoryBlock();
     preprocessingInfo("simulateObservations()");
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void GnssReceiver::simulateObservations(NoiseGeneratorPtr noiseClock, NoiseGeneratorPtr noiseObs,
+                                        const std::vector<GnssTransmitterPtr> &transmitters,
+                                        const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
+                                        const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
+                                        UInt minObsCountPerTrack, Angle elevationTrackMinimum, GnssObservation::Group group)
+{
+  try
+  {
+    // Simulate clock error
+    // --------------------
+    Vector clock = noiseClock->noise(times.size());
+    for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
+      if(useable(idEpoch))
+        updateClockError(idEpoch, clock(idEpoch)/LIGHT_VELOCITY);
 
     // ambiguities
     // -----------
@@ -607,20 +615,31 @@ void GnssReceiver::simulateObservations(const std::vector<GnssType> &types,
     removeLowElevationTracks(eqnList, elevationTrackMinimum);
 
     for(UInt idTrans=0; idTrans<transmitters.size(); idTrans++)
-      if(typesTrans.at(idTrans).size())
+    {
+      std::vector<GnssType> typesTrans;
+      for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
       {
-        const Matrix eps = noiseObs->noise(times.size(), typesTrans.at(idTrans).size()); // obs noise
-        UInt idx;
-        for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
-          if(observation(idTrans, idEpoch))
-          {
-            const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
-            GnssObservation *obs = observation(idTrans, idEpoch);
-            for(UInt idType=0; idType<obs->size(); idType++)
-              if(obs->at(idType).type.isInList(eqn.types, idx))
-                obs->at(idType).observation = -eqn.l(idx) + eqn.sigma(idx) * eps(idEpoch, GnssType::index(typesTrans.at(idTrans), obs->at(idType).type));
-          }
+        auto obs = observation(idTrans, idEpoch);
+        if(obs)
+          for(UInt idType=0; idType<obs->size(); idType++)
+            if(!obs->at(idType).type.isInList(typesTrans))
+              typesTrans.push_back(obs->at(idType).type);
       }
+      if(!typesTrans.size())
+        continue;
+
+      const Matrix eps = noiseObs->noise(times.size(), typesTrans.size()); // obs noise
+      UInt idx;
+      for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
+        if(observation(idTrans, idEpoch))
+        {
+          const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
+          GnssObservation *obs = observation(idTrans, idEpoch);
+          for(UInt idType=0; idType<obs->size(); idType++)
+            if(obs->at(idType).type.isInList(eqn.types, idx))
+              obs->at(idType).observation = -eqn.l(idx) + eqn.sigma(idx) * eps(idEpoch, GnssType::index(typesTrans, obs->at(idType).type));
+        }
+    }
   }
   catch(std::exception &e)
   {

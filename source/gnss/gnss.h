@@ -57,7 +57,7 @@ public:
   Matrix                          eop;             // Matrix eop columns: xp, yp, sp, deltaUT, LOD, X, Y, S
   std::vector<std::vector<std::vector<GnssType>>> typesRecvTrans; // for each receiver and transmitter: used types (receiver types)
 
-  void init(const std::vector<Time> &times, const Time &timeMargin,
+  void init(std::vector<GnssType> simulationTypes, const std::vector<Time> &times, const Time &timeMargin,
             GnssTransmitterGeneratorPtr transmitterGenerator, GnssReceiverGeneratorPtr receiverGenerator,
             EarthRotationPtr earthRotation, GnssParametrizationPtr parametrization, Parallel::CommunicatorPtr comm);
 

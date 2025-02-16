@@ -16,6 +16,7 @@
 - Bugfix:           GnssParametrizationIonosphereSTEC: constant sigmaSTEC>0 was evaluated always to one.
 - Other:            GUI: offer links for numbers and strings of different types.
 - Other:            gnss: set margin for polynomial orbit interpolation to 1e-7 seconds.
+- Other:            gnss: simulation considers more apriori models (e.g. TEC maps).
 
 # Release 2024-06-24
 - Interface change: Variables can now declared at any place in the config file (not only in the global section).
