@@ -644,7 +644,7 @@ std::vector<Vector3d> GnssReceiver::estimateInitialClockErrorFromCodeObservation
         if(useable(idEpoch) && observation(idTrans, idEpoch) && observation(idTrans, idEpoch)->observationList(GnssObservation::RANGE, types))
         {
           if(!types.at(0).isInList(systems))
-          systems.push_back(types.at(0) & GnssType::SYSTEM);
+            systems.push_back(types.at(0) & GnssType::SYSTEM);
           break;
         }
 
@@ -1506,10 +1506,10 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
       for(UInt idEpoch=idEpochStart; idEpoch<=idEpochEnd; idEpoch++)
         if(observation(idTrans, idEpoch))
           for(const GnssType &type : eqnList(idTrans, idEpoch)->types)
-            if(!type.isInList(types) && !type.isInList(ignoreTypes))
+            if(!type.isInList(types))
               types.push_back(type);
 
-      // determine biases (reduced by range and TEC)
+      // determine estimable biases (reduced by range and TEC)
       Matrix Bias = identityMatrix(types.size());
       Matrix B(types.size(), 2);
       for(UInt idType=0; idType<types.size(); idType++)
@@ -1525,7 +1525,7 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
       // setup observation equations: range, TEC, ambiguities
       // ----------------------------------------------------
       std::vector<Matrix> listl, listA;
-      std::vector<UInt>   listEpoch, listObsCount;
+      std::vector<UInt>   listEpoch;
       for(UInt idEpoch=idEpochStart; idEpoch<=idEpochEnd; idEpoch++)
         if(observation(idTrans, idEpoch))
         {
@@ -1554,28 +1554,39 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
             B.row(i) *= 1./eqn.sigma(i);
           }
 
-          // remove ignored types
-          UInt obsCount = l.rows();
+          // downweight ignored types
           for(UInt idType=0; idType<eqn.types.size(); idType++)
             if(eqn.types.at(idType).isInList(ignoreTypes))
             {
-              l.row(idType).setNull();
-              A.row(idType).setNull();
-              B.row(idType).setNull();
-              obsCount--;
+              l(idType)     *= 1e-3;
+              A.row(idType) *= 1e-3;
+              B.row(idType) *= 1e-3;
             }
 
           eliminationParameter(B, A, l);
           listEpoch.push_back(idEpoch);
           listl.push_back(l);
           listA.push_back(A);
-          listObsCount.push_back(obsCount-B.columns());
         } // for(idEpoch)
+
+      // copy equations in one system
+      // ----------------------------
+      const UInt count = std::accumulate(listl.begin(), listl.end(), UInt(0), [](UInt sum, const auto &x) {return sum+x.size();});
+      Vector l(count);
+      Matrix A(count, Bias.columns());
+      std::vector<UInt> index({0});
+      for(UInt i=0; i<listl.size(); i++)
+      {
+        const UInt idx = index.back();
+        copy(listl.at(i), l.row(idx, listl.at(i).rows()));
+        copy(listA.at(i), A.row(idx, listA.at(i).rows()));
+        index.push_back(idx+listA.at(i).rows());
+      }
 
       // estimate solution
       // -----------------
       Vector sigma;
-      Vector x = robustLeastSquares(listA, listl, listObsCount, huber, huberPower, 30, sigma);
+      Vector x = Vce::robustLeastSquares(A, l, index, huber, huberPower, 30, sigma);
 
       // downweight outliers
       // -------------------
@@ -1601,7 +1612,7 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
             observation(idTrans, listEpoch.at(i))->at(types.at(idType)).observation -= b(idType);
           }
         }
-    }
+    } // for(track)
   }
   catch(std::exception &e)
   {
@@ -1610,90 +1621,6 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
 }
 
 /***********************************************/
-/***********************************************/
-
-Matrix GnssReceiver::robustLeastSquares(const std::vector<Matrix> &A, const std::vector<Matrix> &l, const std::vector<UInt> &obsCount,
-                                        Double huber, Double huberPower, UInt maxIter, Vector &sigma)
-{
-  try
-  {
-    const UInt countEpoch = l.size();
-    if(!countEpoch)
-      return Matrix();
-    UInt countObsTotal = 0;
-    for(UInt idEpoch=0; idEpoch<countEpoch; idEpoch++)
-      countObsTotal += l.at(idEpoch).rows();
-
-    Matrix x;
-    UInt   countOutlier = 0;
-    Double sigma0 = 0;
-    sigma = Vector(countEpoch, 1.);
-    for(UInt iter=0; iter<maxIter; iter++)
-    {
-      // Sort into one system
-      // --------------------
-      Vector Wl(countObsTotal);
-      Matrix WA(countObsTotal, A.at(0).columns());
-      UInt index = 0;
-      for(UInt idEpoch=0; idEpoch<countEpoch; idEpoch++)
-      {
-        axpy(1/sigma(idEpoch), l.at(idEpoch), Wl.row(index, l.at(idEpoch).rows()));
-        axpy(1/sigma(idEpoch), A.at(idEpoch), WA.row(index, A.at(idEpoch).rows()));
-        index += l.at(idEpoch).rows();
-      }
-
-      // QR decomposition
-      Vector tau = QR_decomposition(WA);
-      QTransMult(WA, tau, Wl); // transform observations: l:= Q'l
-      x = Wl.row(0, WA.columns());
-      triangularSolve(1., WA.row(0, WA.columns()), x);
-      Wl.row(0, WA.columns()).setNull(); // residuals: remove WB*x
-      QMult(WA, tau, Wl); // back transformation
-      generateQ(WA, tau); // for redundancies
-
-      if(sigma0 == 0.)
-        sigma0 = std::sqrt(quadsum(Wl)/(Wl.size()-x.size()));
-
-      // outlier detection
-      UInt   countOutlierNew = 0;
-      Double ePeSum = 0.;
-      Double rSum   = 0.;
-      index = 0;
-      for(UInt i=0; i<sigma.rows(); i++)
-      {
-        const UInt   count = l.at(i).rows();
-        const Double ePe   = quadsum(Wl.row(index, count))/Wl.columns();
-        const Double r     = obsCount.at(i) - quadsum(WA.row(index, count));
-        const Double s     = std::sqrt(ePe/r)*sigma(i)/sigma0;
-        ePeSum += ePe;
-        rSum   += r;
-        sigma(i) = 1.;
-        if((s > huber) && (r > 1e-4)) // redundancy: it is possible to estimate sigma?
-        {
-          sigma(i) = std::pow(s/huber, huberPower);
-          countOutlierNew++;
-        }
-        index += count;
-      }
-
-      const Double sigma0New = Vce::standardDeviation(ePeSum, rSum, huber, huberPower);
-      if((countOutlierNew == 0) || ((countOutlier == countOutlierNew) && (std::fabs(sigma0New-sigma0)/sigma0 < 0.001)))
-        break;
-      sigma0       = sigma0New;
-      countOutlier = countOutlierNew;
-
-//       if(iter >= maxIter-1)
-//         logWarning<<"GnssReceiver::robustLeastSquares: no convergence, sigma="<<sigma0<<", outlier="<<countOutlier<<" of "<<countEpoch<<Log::endl;
-    } // for(iter)
-
-    return x;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
 /***********************************************/
 
 // Total variation denoising algorithm source:

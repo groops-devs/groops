@@ -213,10 +213,6 @@ public:
   * Downweights outliers and prereduces observations by estimated integer ambiguities. */
   void trackOutlierDetection(const ObservationEquationList &eqn, const std::vector<GnssType> &ignoreTypes, Double huber, Double huberPower);
 
-  /** @brief Robust least squares estimation for multiple epochs in a single system of equations. */
-  static Matrix robustLeastSquares(const std::vector<Matrix> &A, const std::vector<Matrix> &l, const std::vector<UInt> &obsCount,
-                                   Double huber, Double huberPower, UInt maxIter, Vector &sigma);
-
   /** @brief Total variation denoising.
   * Solves the total variation regularized least-squares problem.
   * Laurent Condat. A Direct Algorithm for 1D Total Variation Denoising. IEEE Signal Processing Letters,
