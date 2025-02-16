@@ -15,6 +15,7 @@
 #include "inputOutput/logging.h"
 #include "inputOutput/archive.h"
 #include "inputOutput/archiveXml.h"
+#include "inputOutput/archiveJson.h"
 #include "inputOutput/archiveBinary.h"
 #include "inputOutput/archiveAscii.h"
 #include "inputOutput/file.h"
@@ -51,6 +52,12 @@ void OutFileArchive::open(const FileName &fileName, const std::string &type, UIn
       file.open(fileName);
       file.exceptions(std::ios::badbit | std::ios::failbit);
       archive = new OutArchiveXml(file, type, version);
+    }
+    else if(extension == "JSON")
+    {
+      file.open(fileName);
+      file.exceptions(std::ios::badbit | std::ios::failbit);
+      archive = new OutArchiveJson(file, type, version);
     }
     else if(extension == "DAT")
     {
@@ -128,6 +135,17 @@ void InFileArchive::open(const FileName &fileName, const std::string &typeStr, U
       if(c!='<')
         throw(Exception("Seems not to be a valid XML file."));
       archive = new InArchiveXml(file);
+    }
+    else if(extension=="JSON")
+    {
+      file.open(fileName);
+      file.exceptions(std::ios::badbit | std::ios::failbit);
+      char c;
+      file>>c;
+      file.putback(c);
+      if(c!='{')
+        throw(Exception("Seems not to be a valid JSON file."));
+      archive = new InArchiveJson(file);
     }
     else if(extension=="DAT")
     {

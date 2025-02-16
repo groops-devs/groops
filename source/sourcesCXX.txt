@@ -31,6 +31,7 @@ parser/xml.cpp
 inputOutput/archive.cpp
 inputOutput/archiveAscii.cpp
 inputOutput/archiveBinary.cpp
+inputOutput/archiveJson.cpp
 inputOutput/archiveXml.cpp
 inputOutput/file.cpp
 inputOutput/fileArchive.cpp

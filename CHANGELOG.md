@@ -7,6 +7,7 @@
 - New option:       GnssAntennaNormalsConstraint: gnssType selection for TEC constraint.
 - New option:       PlotAxisLabeled: majorTickSpacing, minorTickSpacing, gridLineSpacing.
 - File format:      TideGeneratingPotential includes now degree 3 tides.
+- File format:      Each file is now readable/writable in JSON format as well.
 - Bugfix:           GUI: fixed Ctrl+Shift+Up/Down for variables.
 - Bugfix:           slrParametrizationRangeBiasStationSatellite: Fix station index.
 - Bugfix:           parameterNames: fixed wrong order.

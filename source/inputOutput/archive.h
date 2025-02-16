@@ -112,7 +112,7 @@ class OutArchive
 public:
   virtual ~OutArchive() {}
 
-  enum ArchiveType {ASCII, XML, BINARY};
+  enum ArchiveType {ASCII, XML, JSON, BINARY};
   virtual ArchiveType archiveType() const = 0;
 
   template<typename T> OutArchive &operator<<(const NameValue<T> &nv);
@@ -155,7 +155,7 @@ public:
   InArchive &operator>>(const BeginGroup   &gr);
   InArchive &operator>>(const EndGroup     &gr);
 
-  enum ArchiveType {ASCII, XML, BINARY};
+  enum ArchiveType {ASCII, XML, JSON, BINARY};
   virtual ArchiveType archiveType() const = 0;
   virtual std::string type()        const = 0;
   virtual UInt        version()     const = 0;
