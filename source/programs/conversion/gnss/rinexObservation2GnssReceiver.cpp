@@ -734,7 +734,10 @@ void RinexObservation2GnssReceiver::checkStationInfo()
       {
         if((!antennaRinex.name.empty()) && (antenna->name != antennaRinex.name))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna name differs '"<<antenna->name<<"' != '"<<antennaRinex.name<<"'"<<Log::endl;
+        /*
         if((!antennaRinex.serial.empty()) && (antenna->serial != antennaRinex.serial))
+         */
+        if((!antennaRinex.serial.empty()) && (antennaRinex.serial.compare(0,antenna->serial.length(),antenna->serial)))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna serial differs '"<<antenna->serial<<"' != '"<<antennaRinex.serial<<"'"<<Log::endl;
         if((!antennaRinex.radome.empty()) && (antenna->radome != antennaRinex.radome))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna radome differs '"<<antenna->radome<<"' != '"<<antennaRinex.radome<<"'"<<Log::endl;

@@ -539,10 +539,10 @@ std::vector<GnssType> GnssType::replaceCompositeSignals(const std::vector<GnssTy
     std::vector<GnssType> types;
 
     for(GnssType t : typesIn)
-      if((t == GnssType::PHASE) || (t == GnssType::RANGE)) // only phase and code signals are transmitted (what about doppler?)
+      if((t == GnssType::PHASE) || (t == GnssType::RANGE) || (t == GnssType::SNR)) // only phase and code signals are transmitted (what about doppler?)
       {
         GnssType prn = t & GnssType::PRN;
-        if(t == GnssType::PHASE)
+        if(t == GnssType::PHASE || t == GnssType::SNR)
           types.push_back( t & ~GnssType::ATTRIBUTE );
         else if(t == GnssType::C2DG) {types.push_back(GnssType::C1CG + prn); types.push_back(GnssType::C1WG + prn); types.push_back(GnssType::C2WG + prn);}
         else if(t == GnssType::C1XG) {types.push_back(GnssType::C1SG + prn); types.push_back(GnssType::C1LG + prn);}

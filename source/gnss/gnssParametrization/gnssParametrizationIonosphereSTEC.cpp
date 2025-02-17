@@ -147,7 +147,7 @@ void GnssParametrizationIonosphereSTEC::observationCorrections(GnssObservationEq
     // Impact of higher-order ionospheric terms on GPS estimates,
     // Geophys. Res. Lett., 32, L23311, doi:10.1029/2005GL024342.
     // ----------------------------------------------------------
-    // second order magentic effect
+    // second order magnetic effect
     constexpr Double   radiusIono  = 6371e3+450e3;                          // single layer ionosphere in 450 km
     const     Double   rRecv       = std::min(eqn.posRecv.r(), radiusIono); // LEO satellites flying possibly higher
     const     Vector3d k           = normalize(eqn.posRecv-eqn.posTrans);   // direction from transmitter

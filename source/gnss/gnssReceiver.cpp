@@ -221,7 +221,6 @@ void GnssReceiver::signalComposition(UInt /*idEpoch*/, const std::vector<GnssTyp
 }
 
 /***********************************************/
-/***********************************************/
 
 GnssReceiver::ObservationEquationList::ObservationEquationList(const GnssReceiver &receiver, const std::vector<GnssTransmitterPtr> &transmitters,
                                                                const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
@@ -513,6 +512,8 @@ void GnssReceiver::simulateZeroObservations(const std::vector<GnssType> &types,
               GnssType typeComposed = type;
               if(typeComposed == GnssType::PHASE) // phase can only be measured, if RANGE with is available
                 typeComposed = (typeComposed & ~GnssType::TYPE) + GnssType::RANGE; // replace PHASE by RANGE (to preserve ATTRIBUTE)
+              if(typeComposed == GnssType::SNR) // SNR can only be measured, if RANGE with is available
+                typeComposed = (typeComposed & ~GnssType::TYPE) + GnssType::RANGE; // replace SNR by RANGE (to preserve ATTRIBUTE)
               for(const GnssType &typeTrans : GnssType::replaceCompositeSignals({typeComposed}))
                 if(!typeTrans.isInList(transmitterTypes))
                   use = FALSE;
@@ -604,8 +605,10 @@ void GnssReceiver::simulateObservations(NoiseGeneratorPtr noiseClock, NoiseGener
     for(auto &track : tracks)
     {
       Vector value(track->types.size());
-      for(UInt i=0; i<value.size(); i++)
-        value(i) = wavelengthFactor*track->types.at(i).wavelength() * ambiguityRandom(generator); // cycles to meter
+      for(UInt i=0; i<value.size(); i++) {
+      //value(i) = wavelengthFactor*track->types.at(i).wavelength() * ambiguityRandom(generator); // cycles to meter
+        value(i) = 0.0;
+      };
       new Ambiguity(track.get(), value); // track is owner of ambiguity
     }
 
@@ -637,7 +640,23 @@ void GnssReceiver::simulateObservations(NoiseGeneratorPtr noiseClock, NoiseGener
           GnssObservation *obs = observation(idTrans, idEpoch);
           for(UInt idType=0; idType<obs->size(); idType++)
             if(obs->at(idType).type.isInList(eqn.types, idx))
-              obs->at(idType).observation = -eqn.l(idx) + eqn.sigma(idx) * eps(idEpoch, GnssType::index(typesTrans, obs->at(idType).type));
+              if(obs->at(idType).type == GnssType::SNR)
+              {
+                // Simple C/N0 model
+                // Zenith-angle dependent quadratic model
+                // --------------------------------------
+                const Double zen_min = 80.0*DEG2RAD;  // [rad]
+                const Double cn0_min = 30.0;          // [dB-Hz]
+                const Double cn0_max = 45.0;          // [dB-Hz]
+
+                Double cn0 = cn0_max + pow((PI/2-eqn.elevationRecvAnt)/zen_min,2)*(cn0_min-cn0_max);
+
+                // Reduce C/N0 for GPS P(Y) signal
+                // --------------------------------------
+                obs->at(idType).observation = cn0 - (obs->at(idType).type == GnssType::W? 10.0 : 0);
+              }
+              else
+                obs->at(idType).observation = -eqn.l(idx) + eqn.sigma(idx) * eps(idEpoch, GnssType::index(typesTrans, obs->at(idType).type));
         }
     }
   }
