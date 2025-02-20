@@ -140,7 +140,7 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(std::vector<GnssType> simulation
         Arc::checkSynchronized({orbit, starCamera});
 
         UInt i=0;
-        for(UInt idEpoch=0; idEpoch<times.size(); i++)
+        for(UInt idEpoch=0; idEpoch<times.size(); idEpoch++)
         {
           while((i < orbit.size()) && (orbit.at(i).time < times.at(idEpoch)-timeMargin))
             i++;
