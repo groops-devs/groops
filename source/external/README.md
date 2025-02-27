@@ -27,7 +27,7 @@ We list external source code contained in the GROOPS repository with references 
 
 * Reference: Thébault, E., Finlay, C.C., Beggan, C.D. et al. International Geomagnetic Reference Field:
   the 12th generation. Earth Planet Sp 67, 79 (2015). https://doi.org/10.1186/s40623-015-0228-9
-* Files: `igrf/igrf13.f`
+* Files: `igrf/igrf14.f`
 * License: none (included with permission of the authors)
 
 ### International Earth Rotation and Reference Systems Service (IERS) Conventions software collection
