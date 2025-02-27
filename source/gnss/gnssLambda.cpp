@@ -66,42 +66,48 @@ void GnssLambda::choleskyReversePivot(Matrix &N, Transformation &Z, UInt index0Z
 {
   try
   {
-    Vector tmp(N.rows());
+    const UInt blockSize = 64;
     Log::Timer timer(N.rows(), 1, timing);
-    for(UInt i=0; i<N.rows(); i++)
+    for(UInt block=0; block<N.rows(); block+=blockSize)
     {
-      timer.loopStep(i);
+      const UInt blockEnd = std::min(block+blockSize, N.rows());
+      Vector tmp(N.rows());
+      for(UInt i=block; i<blockEnd; i++)
+      {
+        timer.loopStep(i);
 
-      // find minimium
-      UInt   k    = i;
-      Double minN = N(i,i)-tmp(i);
-      for(UInt j=i+1; j<N.rows(); j++)
-        if(N(j,j)-tmp(j) < minN)
+        // find minimium
+        UInt   k    = i;
+        Double minN = N(i, i)-tmp(i);
+        for(UInt j=i+1; j<N.rows(); j++)
+          if(N(j, j)-tmp(j) < minN)
+          {
+            k    = j;
+            minN = N(k, k)-tmp(k);
+          }
+        // swap
+        if(i != k)
         {
-          k    = j;
-          minN = N(k,k)-tmp(k);
+          Z.swap(index0Z+i, index0Z+k);
+          std::swap(tmp(i), tmp(k));
+          std::swap(N(i,i), N(k,k));
+          if(i>0)          swap(N.slice(0, i,i, 1),               N.slice(0,   k,   i,     1));
+          if(k<N.rows()-1) swap(N.slice(i, k+1, 1, N.rows()-k-1), N.slice(k,   k+1, 1,     N.rows()-k-1));
+          if(k>i+1)        swap(N.slice(i, i+1, 1, k-i-1),        N.slice(i+1, k,   k-i-1, 1).trans());
         }
-      // swap
-      if(i != k)
-      {
-        Z.swap(index0Z+i, index0Z+k);
-        std::swap(tmp(i), tmp(k));
-        std::swap(N(i,i), N(k,k));
-        if(i>0)          swap(N.slice(0, i,i, 1),               N.slice(0,   k,   i,     1));
-        if(k<N.rows()-1) swap(N.slice(i, k+1, 1, N.rows()-k-1), N.slice(k,   k+1, 1,     N.rows()-k-1));
-        if(k>i+1)        swap(N.slice(i, i+1, 1, k-i-1),        N.slice(i+1, k,   k-i-1, 1).trans());
-      }
-      // cholesky
-      N(i,i) -= tmp(i);
-      N(i,i)  = std::sqrt(N(i,i));
-      if(i+1<N.rows())
-      {
-        if(i > 0)
-          matMult(-1., N.slice(0, i, i, 1).trans(), N.slice(0, i+1, i, N.rows()-1-i), N.slice(i, i+1, 1, N.rows()-1-i));
-        N.slice(i,i+1,1,N.rows()-1-i) *= 1./N(i,i);
+        // cholesky
+        N(i, i) -= tmp(i);
+        N(i, i)  = std::sqrt(N(i, i));
+        if(i > block)
+          matMult(-1., N.slice(block, i, i-block, 1).trans(), N.slice(block, i+1, i-block, N.rows()-1-i),
+                  N.slice(i, i+1, 1, N.rows()-1-i));
+        N.slice(i, i+1, 1, N.rows()-1-i) *= 1./N(i, i);
         for(UInt k=i+1; k<N.rows(); k++)
-          tmp(k) += std::pow(N(i,k), 2);
+          tmp(k) += std::pow(N(i, k), 2);
       }
+      if(blockEnd < N.rows())
+        rankKUpdate(-1., N.slice(block, blockEnd, blockEnd-block, N.rows()-blockEnd),
+                    N.slice(blockEnd, blockEnd, N.rows()-blockEnd, N.rows()-blockEnd));
     }
     timer.loopEnd();
     N.setType(Matrix::TRIANGULAR);
