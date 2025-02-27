@@ -15,7 +15,7 @@
 
 #include "external/fortran.h"
 
-#define igrfSynthesis FORTRANCALL(igrf13syn, IGRF13SYN)
+#define igrfSynthesis FORTRANCALL(igrf14syn, IGRF14SYN)
 
 extern "C" void igrfSynthesis(const F77Int &isv, const F77Double &date, const F77Int &itype, const F77Double &alt, const F77Double &colat, const F77Double &elong, F77Double &x, F77Double &y, F77Double &z, F77Double &f);
 

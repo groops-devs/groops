@@ -1,15 +1,58 @@
-      subroutine igrf13syn (isv,date,itype,alt,colat,elong,x,y,z,f)
+C
+C     This is a program for synthesising geomagnetic field values from the
+C     International Geomagnetic Reference Field series of models as agreed
+c     in November 2024 by IAGA Working Group V-MOD.
+C     It is the 14th generation IGRF, ie the 13th revision.
+C     The main-field models for 1900.0, 1905.0,..1940.0 and 2025.0 are
+C     non-definitive, those for 1945.0, 1950.0,...2020.0 are definitive and
+C     the secular-variation model for 2025.0 to 2030.0 is non-definitive.
+C
+C     Main-field models are to degree and order 10 (ie 120 coefficients)
+C     for 1900.0-1995.0 and to 13 (ie 195 coefficients) for 2000.0 onwards.
+C     The predictive secular-variation model is to degree and order 8 (ie 80
+C     coefficients).
+C
+C     Options include values at different locations at different
+C     times (spot), values at same location at one year intervals
+C     (time series), grid of values at one time (grid); geodetic or
+C     geocentric coordinates, latitude & longitude entered as decimal
+C     degrees or degrees & minutes (not in grid), choice of main field
+C     or secular variation or both (grid only).
+C Recent history of code:
+c     Aug 2003:
+c     Adapted from 8th generation version to include new maximum degree for
+c     main-field models for 2000.0 and onwards and use WGS84 spheroid instead
+c     of International Astronomical Union 1966 spheroid as recommended by IAGA
+c     in July 2003. Reference radius remains as 6371.2 km - it is NOT the mean
+c     radius (= 6371.0 km) but 6371.2 km is what is used in determining the
+c     coefficients.
+c     Dec 2004:
+c     Adapted for 10th generation
+c     Jul 2005:
+c     1995.0 coefficients as published in igrf9coeffs.xls and igrf10coeffs.xls
+c     now used in code - (Kimmo Korhonen spotted 1 nT difference in 11 coefficients)
+c     Dec 2009:
+c     Adapted for 11th generation
+c     Dec 2014:
+c     Adapted for 12th generation
+c     Dec 2019 (W. Brown, BGS):
+c     Adapted for 13th generation
+c     Feb 2020 (W. Brown, BGS):
+c     Correction of coefficient rounding for 2020 and 2020 SV values
+c     Nov 2024 (C. Beggan, BGS)
 c
-c     This is a synthesis routine for the 13th generation IGRF as agreed
-c     in December 2019 by IAGA Working Group V-MOD. It is valid 1900.0 to
-c     2025.0 inclusive. Values for dates from 1945.0 to 2015.0 inclusive are
+      subroutine igrf14syn (isv,date,itype,alt,colat,elong,x,y,z,f)
+c
+c     This is a synthesis routine for the 14th generation IGRF as agreed
+c     in December 2024 by IAGA Working Group V-MOD. It is valid 1900.0 to
+c     2030.0 inclusive. Values for dates from 1945.0 to 2020.0 inclusive are
 c     definitive, otherwise they are non-definitive.
 c   INPUT
 c     isv   = 0 if main-field values are required
 c     isv   = 1 if secular variation values are required
 c     date  = year A.D. Must be greater than or equal to 1900.0 and
-c             less than or equal to 2030.0. Warning message is given
-c             for dates greater than 2025.0. Must be double precision.
+c             less than or equal to 2035.0. Warning message is given
+c             for dates greater than 2030.0. Must be double precision.
 c     itype = 1 if geodetic (spheroid)
 c     itype = 2 if geocentric (sphere)
 c     alt   = height in km above sea level if itype = 1
@@ -33,18 +76,19 @@ c     in July 2003. Reference radius remains as 6371.2 km - it is NOT the mean
 c     radius (= 6371.0 km) but 6371.2 km is what is used in determining the
 c     coefficients. Adaptation by Susan Macmillan, August 2003 (for
 c     9th generation), December 2004, December 2009 & December 2014;
-c     by William Brown, December 2019, February 2020.
+c     by William Brown, December 2019, February 2020. Updated by
+c     Ciaran Beggan, November 2024
 c
 c     Coefficients at 1995.0 incorrectly rounded (rounded up instead of
 c     to even) included as these are the coefficients published in Excel
 c     spreadsheet July 2005.
 c
       implicit double precision (a-h,o-z)
-      dimension gh(3645),g0(120),g1(120),g2(120),g3(120),g4(120),
+      dimension gh(3840),g0(120),g1(120),g2(120),g3(120),g4(120),
      1          g5(120),g6(120),g7(120),g8(120),g9(120),ga(120),
      2          gb(120),gc(120),gd(120),ge(120),gf(120),gg(120),
      3          gi(120),gj(120),gk(195),gl(195),gm(195),gp(195),
-     4          gq(195),gr(195),gs(195),
+     4          gq(195),gr(195),gs(195),gt(195),
      5          p(105),q(105),cl(13),sl(13)
       equivalence (g0,gh(1)),(g1,gh(121)),(g2,gh(241)),(g3,gh(361)),
      1            (g4,gh(481)),(g5,gh(601)),(g6,gh(721)),(g7,gh(841)),
@@ -53,7 +97,8 @@ c
      4            (ge,gh(1681)),(gf,gh(1801)),(gg,gh(1921)),
      5            (gi,gh(2041)),(gj,gh(2161)),(gk,gh(2281)),
      6            (gl,gh(2476)),(gm,gh(2671)),(gp,gh(2866)),
-     7            (gq,gh(3061)),(gr,gh(3256)),(gs,gh(3451))
+     7            (gq,gh(3061)),(gr,gh(3256)),(gs,gh(3451)),
+     8            (gt,gh(3646))
 c
       data g0/ -31543.,-2298., 5922., -677., 2905.,-1061.,  924., 1121., 1900
      1           1022.,-1469., -330., 1256.,    3.,  572.,  523.,  876., 1900
@@ -483,65 +528,98 @@ c
      u            -0.10,    0.81,    0.42,   -0.13,   -0.04,    0.38,    2015
      v             0.48,    0.08,    0.48,    0.46,   -0.30,   -0.35,    2015
      w            -0.43,   -0.36,   -0.71/                               2015
-      data gr/ -29404.8, -1450.9,  4652.5, -2499.6,  2982.0, -2991.6,    2020
-     1           1677.0,  -734.6,  1363.2, -2381.2,   -82.1,  1236.2,    2020
-     2            241.9,   525.7,  -543.4,   903.0,   809.5,   281.9,    2020
-     3             86.3,  -158.4,  -309.4,   199.7,    48.0,  -349.7,    2020
-     4           -234.3,   363.2,    47.7,   187.8,   208.3,  -140.7,    2020
-     5           -121.2,  -151.2,    32.3,    13.5,    98.9,    66.0,    2020
-     6             65.5,   -19.1,    72.9,    25.1,  -121.5,    52.8,    2020
-     7            -36.2,   -64.5,    13.5,     8.9,   -64.7,    68.1,    2020
-     8             80.6,   -76.7,   -51.5,    -8.2,   -16.9,    56.5,    2020
-     9              2.2,    15.8,    23.5,     6.4,    -2.2,    -7.2,    2020
-     a            -27.2,     9.8,    -1.8,    23.7,     9.7,     8.4,    2020
-     b            -17.6,   -15.3,    -0.5,    12.8,   -21.1,   -11.7,    2020
-     c             15.3,    14.9,    13.7,     3.6,   -16.5,    -6.9,    2020
-     d             -0.3,     2.8,     5.0,     8.4,   -23.4,     2.9,    2020
-     e             11.0,    -1.5,     9.8,    -1.1,    -5.1,   -13.2,    2020
-     f             -6.3,     1.1,     7.8,     8.8,     0.4,    -9.3,    2020
-     g             -1.4,   -11.9,     9.6,    -1.9,    -6.2,     3.4,    2020
-     h             -0.1,    -0.2,     1.7,     3.6,    -0.9,     4.8,    2020
-     i              0.7,    -8.6,    -0.9,    -0.1,     1.9,    -4.3,    2020
-     j              1.4,    -3.4,    -2.4,    -0.1,    -3.8,    -8.8,    2020
-     k              3.0,    -1.4,     0.0,    -2.5,     2.5,     2.3,    2020
-     l             -0.6,    -0.9,    -0.4,     0.3,     0.6,    -0.7,    2020
-     m             -0.2,    -0.1,    -1.7,     1.4,    -1.6,    -0.6,    2020
-     n             -3.0,     0.2,    -2.0,     3.1,    -2.6,    -2.0,    2020
-     o             -0.1,    -1.2,     0.5,     0.5,     1.3,     1.4,    2020
-     p             -1.2,    -1.8,     0.7,     0.1,     0.3,     0.8,    2020
-     q              0.5,    -0.2,    -0.3,     0.6,    -0.5,     0.2,    2020
-     r              0.1,    -0.9,    -1.1,     0.0,    -0.3,     0.5,    2020
-     s              0.1,    -0.9,    -0.9,     0.5,     0.6,     0.7,    2020
-     t              1.4,    -0.3,    -0.4,     0.8,    -1.3,     0.0,    2020
-     u             -0.1,     0.8,     0.3,     0.0,    -0.1,     0.4,    2020
-     v              0.5,     0.1,     0.5,     0.5,    -0.4,    -0.5,    2020
-     w             -0.4,    -0.4,    -0.6/                               2020
-      data gs/      5.7,     7.4,   -25.9,   -11.0,    -7.0,   -30.2,    2022
-     1             -2.1,   -22.4,     2.2,    -5.9,     6.0,     3.1,    2022
-     2             -1.1,   -12.0,     0.5,    -1.2,    -1.6,    -0.1,    2022
-     3             -5.9,     6.5,     5.2,     3.6,    -5.1,    -5.0,    2022
-     4             -0.3,     0.5,     0.0,    -0.6,     2.5,     0.2,    2022
-     5             -0.6,     1.3,     3.0,     0.9,     0.3,    -0.5,    2022
-     6             -0.3,     0.0,     0.4,    -1.6,     1.3,    -1.3,    2022
-     7             -1.4,     0.8,     0.0,     0.0,     0.9,     1.0,    2022
-     8             -0.1,    -0.2,     0.6,     0.0,     0.6,     0.7,    2022
-     9             -0.8,     0.1,    -0.2,    -0.5,    -1.1,    -0.8,    2022
-     a              0.1,     0.8,     0.3,     0.0,     0.1,    -0.2,    2022
-     b             -0.1,     0.6,     0.4,    -0.2,    -0.1,     0.5,    2022
-     c              0.4,    -0.3,     0.3,    -0.4,    -0.1,     0.5,    2022
-     d              0.4,     0.0, 115*0.0/                               2022
+      data gr/-29403.41,-1451.37, 4653.35,-2499.78, 2981.96,-2991.72,    2020
+     1          1676.85, -734.62, 1363.00,-2380.80,  -81.96, 1236.06,    2020
+     2           241.80,  525.60, -542.52,  902.82,  809.47,  282.10,    2020
+     3            86.18, -158.50, -309.47,  199.75,   47.44, -350.30,    2020
+     4          -234.42,  363.26,   47.52,  187.86,  208.36, -140.73,    2020
+     5          -121.43, -151.16,   32.09,   13.98,   99.14,   65.97,    2020
+     6            65.56,  -19.22,   72.96,   25.02, -121.57,   52.76,    2020
+     7           -36.06,  -64.40,   13.60,    8.96,  -64.80,   68.04,    2020
+     8            80.54,  -76.63,  -51.50,   -8.23,  -16.85,   56.45,    2020
+     9             2.36,   15.80,   23.56,    6.30,   -2.19,   -7.21,    2020
+     a           -27.19,    9.77,   -1.90,   23.66,    9.74,    8.43,    2020
+     b           -17.49,  -15.23,   -0.49,   12.83,  -21.07,  -11.76,    2020
+     c            15.28,   14.94,   13.65,    3.62,  -16.59,   -6.90,    2020
+     d            -0.34,    2.90,    5.03,    8.36,  -23.44,    2.84,    2020
+     e            11.04,   -1.48,    9.86,   -1.14,   -5.13,  -13.22,    2020
+     f            -6.20,    1.08,    7.79,    8.82,    0.40,   -9.23,    2020
+     g            -1.44,  -11.86,    9.60,   -1.84,   -6.25,    3.38,    2020
+     h            -0.11,   -0.18,    1.66,    3.50,   -0.86,    4.86,    2020
+     i             0.65,   -8.62,   -0.88,   -0.11,    1.88,   -4.26,    2020
+     j             1.44,   -3.43,   -2.38,   -0.10,   -3.84,   -8.84,    2020
+     k             2.96,   -1.36,   -0.02,   -2.51,    2.50,    2.31,    2020
+     l            -0.55,   -0.85,   -0.39,    0.28,    0.62,   -0.66,    2020
+     m            -0.21,   -0.07,   -1.66,    1.44,   -1.60,   -0.59,    2020
+     n            -2.98,    0.18,   -1.97,    3.09,   -2.51,   -2.00,    2020
+     o            -0.13,   -1.15,    0.43,    0.52,    1.28,    1.37,    2020
+     p            -1.14,   -1.81,    0.71,    0.08,    0.31,    0.71,    2020
+     q             0.49,   -0.15,   -0.26,    0.55,   -0.47,    0.16,    2020
+     r             0.09,   -0.93,   -1.13,   -0.04,   -0.33,    0.52,    2020
+     s             0.08,   -0.93,   -0.88,    0.53,    0.64,    0.72,    2020
+     t             1.40,   -0.30,   -0.38,    0.75,   -1.31,   -0.01,    2020
+     u            -0.09,    0.76,    0.29,   -0.05,   -0.11,    0.37,    2020
+     v             0.47,    0.13,    0.54,    0.45,   -0.41,   -0.46,    2020
+     w            -0.36,   -0.40,   -0.60/                               2020
+      data gs/ -29350.0, -1410.3,  4545.5, -2556.2,  2950.9, -3133.6,    2025
+     1           1648.7,  -814.2,  1360.9, -2404.2,   -56.9,  1243.8,    2025
+     2            237.6,   453.4,  -549.6,   894.7,   799.6,   278.6,    2025
+     3             55.8,  -134.0,  -281.1,   212.0,    12.0,  -375.4,    2025
+     4           -232.9,   369.0,    45.3,   187.2,   220.0,  -138.7,    2025
+     5           -122.9,  -141.9,    42.9,    20.9,   106.2,    64.3,    2025
+     6             63.8,   -18.4,    76.7,    16.8,  -115.7,    48.9,    2025
+     7            -40.9,   -59.8,    14.9,    10.9,   -60.8,    72.8,    2025
+     8             79.6,   -76.9,   -48.9,    -8.8,   -14.4,    59.3,    2025
+     9             -1.0,    15.8,    23.5,     2.5,    -7.4,   -11.2,    2025
+     a            -25.1,    14.3,    -2.2,    23.1,    10.9,     7.2,    2025
+     b            -17.5,   -12.6,     2.0,    11.5,   -21.8,    -9.7,    2025
+     c             16.9,    12.7,    14.9,     0.7,   -16.8,    -5.2,    2025
+     d              1.0,     3.9,     4.7,     8.0,   -24.8,     3.0,    2025
+     e             12.1,    -0.2,     8.3,    -2.5,    -3.4,   -13.1,    2025
+     f             -5.3,     2.4,     7.2,     8.6,    -0.6,    -8.7,    2025
+     g              0.8,   -12.8,     9.8,    -1.3,    -6.4,     3.3,    2025
+     h              0.2,     0.1,     2.0,     2.5,    -1.0,     5.4,    2025
+     i             -0.5,    -9.0,    -0.9,     0.4,     1.5,    -4.2,    2025
+     j              0.9,    -3.8,    -2.6,     0.9,    -3.9,    -9.0,    2025
+     k              3.0,    -1.4,     0.0,    -2.5,     2.8,     2.4,    2025
+     l             -0.6,    -0.6,     0.1,     0.0,     0.5,    -0.6,    2025
+     m             -0.3,    -0.1,    -1.2,     1.1,    -1.7,    -1.0,    2025
+     n             -2.9,    -0.1,    -1.8,     2.6,    -2.3,    -2.0,    2025
+     o             -0.1,    -1.2,     0.4,     0.6,     1.2,     1.0,    2025
+     p             -1.2,    -1.5,     0.6,     0.0,     0.5,     0.6,    2025
+     q              0.5,    -0.2,    -0.1,     0.8,    -0.5,     0.1,    2025
+     r             -0.2,    -0.9,    -1.2,     0.1,    -0.7,     0.2,    2025
+     s              0.2,    -0.9,    -0.9,     0.6,     0.7,     0.7,    2025
+     t              1.2,    -0.2,    -0.3,     0.5,    -1.3,     0.1,    2025
+     u             -0.1,     0.7,     0.2,     0.0,    -0.2,     0.3,    2025
+     v              0.5,     0.2,     0.6,     0.4,    -0.6,    -0.5,    2025
+     w             -0.3,    -0.4,    -0.5/                               2025
+      data gt/     12.6,    10.0,   -21.5,   -11.2,    -5.3,   -27.3,    2027
+     1             -8.3,   -11.1,    -1.5,    -4.4,     3.8,     0.4,    2027
+     2             -0.2,   -15.6,    -3.9,    -1.7,    -2.3,    -1.3,    2027
+     3             -5.8,     4.1,     5.4,     1.6,    -6.8,    -4.1,    2027
+     4              0.6,     1.3,    -0.5,     0.0,     2.1,     0.7,    2027
+     5              0.5,     2.3,     1.7,     1.0,     1.9,    -0.2,    2027
+     6             -0.3,     0.3,     0.8,    -1.6,     1.2,    -0.4,    2027
+     7             -0.8,     0.8,     0.4,     0.7,     0.9,     0.9,    2027
+     8             -0.1,    -0.1,     0.6,    -0.1,     0.5,     0.5,    2027
+     9             -0.7,    -0.1,     0.0,    -0.8,    -0.9,    -0.8,    2027
+     a              0.5,     0.9,    -0.3,    -0.1,     0.2,    -0.3,    2027
+     b              0.0,     0.4,     0.4,    -0.3,    -0.1,     0.4,    2027
+     c              0.3,    -0.5,     0.1,    -0.6,     0.0,     0.3,    2027
+     d              0.3,     0.2, 115*0.0/                               2027
 c
 c     set initial values
 c
       x     = 0.0
       y     = 0.0
       z     = 0.0
-      if (date.lt.1900.0.or.date.gt.2030.0) go to 11
-      if (date.gt.2025.0) write (6,960) date
+      if (date.lt.1900.0.or.date.gt.2035.0) go to 11
+      if (date.gt.2030.0) write (6,960) date
   960 format (/' This version of the IGRF is intended for use up',
-     1        ' to 2025.0.'/' values for',f9.3,' will be computed',
+     1        ' to 2030.0.'/' values for',f9.3,' will be computed',
      2        ' but may be of reduced accuracy'/)
-      if (date.ge.2020.0) go to 1
+      if (date.ge.2025.0) go to 1
       t     = 0.2*(date - 1900.0)
       ll    = t
       one   = ll
@@ -571,7 +649,7 @@ c
       end if
       go to 2
 c
-    1 t     = date - 2020.0
+    1 t     = date - 2025.0
       tc    = 1.0
       if (isv.eq.1) then
        t = 1.0
@@ -580,7 +658,7 @@ c
 c
 c     pointer for last coefficient in pen-ultimate set of MF coefficients...
 c
-      ll    = 3255
+      ll    = 3450
       nmx   = 13
       nc    = nmx*(nmx+2)
       kmx   = (nmx+1)*(nmx+2)/2
@@ -684,6 +762,6 @@ c
       write (6,961) date
   961 format (/' This subroutine will not work with a date of',
      1        f9.3,'.  Date must be in the range 1900.0.ge.date',
-     2        '.le.2030.0. On return f = 1.0d8., x = y = z = 0.')
+     2        '.le.2035.0. On return f = 1.0d8., x = y = z = 0.')
       return
       end
