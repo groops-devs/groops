@@ -407,6 +407,7 @@ programs/misc/potentialCoefficients2BlockMeanTimeSplines.cpp
 programs/misc/potentialCoefficients2DegreeAmplitudes.cpp
 programs/misc/radialBasisSplines2KernelCoefficients.cpp
 programs/misc/satelliteModelCreate.cpp
+programs/misc/synthesisSphericalHarmonicsMatrix.cpp
 programs/misc/temporalRepresentation2TimeSeries.cpp
 programs/misc/thermosphericState2GriddedData.cpp
 programs/misc/timeSeries2PotentialCoefficients.cpp

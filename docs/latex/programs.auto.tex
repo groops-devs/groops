@@ -5139,6 +5139,56 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{SynthesisSphericalHarmonicsMatrix}\label{SynthesisSphericalHarmonicsMatrix}
+This program builds a linear operator matrix for spherical harmonic analysis or synthesis based on
+the points defined in \configClass{grid}{gridType}. Depending on the chosen
+\config{type} (synthesis, quadrature, or leastSquares), the resulting matrix can be used to:
+\begin{itemize}
+  \item \textbf{synthesis}: Map spherical harmonic coefficients to values on a grid,
+  \item \textbf{quadrature}: Integrate grid-based functionals into spherical harmonic coefficients by
+        a simple quadrature formula,
+  \item \textbf{leastSquares}: Estimate coefficients from grid data via a least squares approach.
+\end{itemize}
+
+he spherical harmonic degree range is constrained by
+\config{minDegree} and \config{maxDegree}, and the ordering of the coefficients is given by
+\configClass{numbering}{sphericalHarmonicsNumberingType}. The reference gravitational
+constant is \config{GM}, and the reference radius is \config{R}.
+
+The computed matrix is written to \configFile{outputfileMatrix}{matrix} with dimensions
+(number of grid points)~$\times$~(number of spherical harmonic coefficients). For
+\config{type} = \emph{leastSquares}, the program applies a QR-based pseudo-inverse so that the
+output matrix can directly form the normal-equation building blocks for a blockwise
+least-squares solution in spherical harmonic space.
+
+See also \program{Gravityfield2GriddedData}, \program{GriddedData2PotentialCoefficients},
+\program{Gravityfield2SphericalHarmonicsVector}, and \program{MatrixCalculate} for additional
+tools to convert between grids and spherical harmonics.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileMatrix & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~grid & \hfuzz=500pt \hyperref[gridType]{grid} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~kernel & \hfuzz=500pt \hyperref[kernelType]{kernel} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~maxDegree & \hfuzz=500pt uint & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~GM & \hfuzz=500pt double & \hfuzz=500pt Geocentric gravitational constant\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~numbering & \hfuzz=500pt \hyperref[sphericalHarmonicsNumberingType]{sphericalHarmonicsNumbering} & \hfuzz=500pt numbering scheme of sh coefficients\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~type & \hfuzz=500pt choice & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~synthesis & \hfuzz=500pt  & \hfuzz=500pt synthesize spherical harmonics on a grid\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~quadrature & \hfuzz=500pt  & \hfuzz=500pt calculate spherical harmonics from grid\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~leastSquares & \hfuzz=500pt  & \hfuzz=500pt estimated spherical harmonics from grid\\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
 \subsection{TemporalRepresentation2TimeSeries}\label{TemporalRepresentation2TimeSeries}
 This program computes the design matrix of temporal representation at a given time series.
 The output matrix contains the time steps in MJD in the first column, the other columns contain the design matrix.

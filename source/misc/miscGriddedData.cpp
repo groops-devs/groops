@@ -340,7 +340,7 @@ std::vector<SphericalHarmonics> analysisSphericalHarmonics(const GriddedData &gr
           Matrix Pnm = SphericalHarmonics::Pnm(Angle(0.5*PI-phi.at(i)), radius.at(i)/R, maxDegree, TRUE);
           Vector kn  = kernel->coefficients(polar(Angle(0.), phi.at(i), radius.at(i)), maxDegree);
           for(UInt n=0; n<=maxDegree; n++)
-            Pnm.slice(n, 0, 1, n+1) *= kn(n) * R/(4*PI*GM);
+            Pnm.slice(n, 0, 1, n+1) *= kn(n) * radius.at(i)/(4*PI*GM);
 
           for(UInt idx=0; idx<grid.values.size(); idx++)
             for(UInt k=0; k<lambda.size(); k++)
@@ -359,18 +359,15 @@ std::vector<SphericalHarmonics> analysisSphericalHarmonics(const GriddedData &gr
         Parallel::forEach(grid.points.size(), [&](UInt i)
         {
           const Vector kn = kernel->coefficients(grid.points.at(i), maxDegree);
+          const Double f = grid.points.at(i).r()/(4*PI*GM) * grid.areas.at(i);
           Matrix Cnm, Snm;
-          SphericalHarmonics::CnmSnm(normalize(grid.points.at(i)), maxDegree, Cnm, Snm);
+          SphericalHarmonics::CnmSnm((1./R) * grid.points.at(i), maxDegree, Cnm, Snm, TRUE);
           for(UInt idx=0; idx<grid.values.size(); idx++)
-          {
-            Double rR = std::pow(grid.points.at(i).r()/R, minDegree+1);
             for(UInt n=minDegree; n<=maxDegree; n++)
             {
-              axpy((kn(n)* R/(4*PI*GM) * rR * grid.values.at(idx).at(i) * grid.areas.at(i)), Cnm.row(n), cnm.at(idx).row(n));
-              axpy((kn(n)* R/(4*PI*GM) * rR * grid.values.at(idx).at(i) * grid.areas.at(i)), Snm.row(n), snm.at(idx).row(n));
-              rR *= grid.points.at(i).r()/R;
+              axpy(f*kn(n)*grid.values.at(idx).at(i), Cnm.row(n), cnm.at(idx).row(n));
+              axpy(f*kn(n)*grid.values.at(idx).at(i), Snm.row(n), snm.at(idx).row(n));
             }
-          }
         }, comm, timing);
       }
 

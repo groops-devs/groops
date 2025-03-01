@@ -3,6 +3,7 @@
 - New program:      DoodsonHarmonicsChangePartialTides.
 - New program:      Conversion: OceanTidesDTU2GriddedData.
 - New program:      GnssResiduals2TransmitterAccuracyDefinition.
+- New program:      SynthesisSphericalHarmonicsMatrix.
 - New class:        PlotDegreeAmplitudes: degreeAmplitudesSimple.
 - New option:       GnssAntennaNormalsConstraint: gnssType selection for TEC constraint.
 - New option:       PlotAxisLabeled: majorTickSpacing, minorTickSpacing, gridLineSpacing.
