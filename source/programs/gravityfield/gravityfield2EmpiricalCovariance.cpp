@@ -61,11 +61,11 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(Gravityfield2EmpiricalCovariance, SINGLEPROCESS, "Estimate a empircal covariance function from time series", Gravityfield, Covariance)
+GROOPS_REGISTER_PROGRAM(Gravityfield2EmpiricalCovariance, PARALLEL, "Estimate a empircal covariance function from time series", Gravityfield, Covariance)
 
 /***********************************************/
 
-void Gravityfield2EmpiricalCovariance::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
+void Gravityfield2EmpiricalCovariance::run(Config &config, Parallel::CommunicatorPtr comm)
 {
   try
   {
@@ -117,11 +117,11 @@ void Gravityfield2EmpiricalCovariance::run(Config &config, Parallel::Communicato
     std::vector< std::vector<UInt> > idxC, idxS;
     numbering->numbering(maxDegree, minDegree, idxC, idxS);
     const UInt dim = numbering->parameterCount(maxDegree, minDegree);
-    Matrix CovFull(dim, dim);
 
     logStatus<<"estimate covariance covariance function in each interval"<<Log::endl;
-    UInt countTotal = 0;
-    Single::forEach(timesInterval.size()-1, [&](UInt idInterval)
+    UInt   countTotal = 0;
+    Matrix CovFull(dim, dim);
+    Parallel::forEach(timesInterval.size()-1, [&](UInt idInterval)
     {
       // init time series
       // ----------------
@@ -182,7 +182,12 @@ void Gravityfield2EmpiricalCovariance::run(Config &config, Parallel::Communicato
       countTotal += count;
       if(removeMean)
         countTotal -= 1;
-    });
+    }, comm);
+
+    Parallel::reduceSum(CovFull,    0, comm);
+    Parallel::reduceSum(countTotal, 0, comm);
+    if(!Parallel::isMaster(comm))
+       return;
 
     // ============================
 
@@ -227,9 +232,9 @@ void Gravityfield2EmpiricalCovariance::run(Config &config, Parallel::Communicato
     logInfo<<"  number of fields     : "<<countTotal<<Log::endl;
     logInfo<<"  minDegree            : "<<minDegree<< Log::endl;
     logInfo<<"  maxDegree            : "<<maxDegree<< Log::endl;
-    logInfo<<"  size of state vector : "<<dim<< Log::endl;
-    logInfo<<"  number of unknowns   : "<<dim*dim<< Log::endl;
-    logInfo<<"  redundancy           : "<<countTotal/static_cast<Double>(dim) << Log::endl;
+    logInfo<<"  size of state vector : "<<dim<<Log::endl;
+    logInfo<<"  number of unknowns   : "<<dim*(dim+1)/2<<Log::endl;
+    logInfo<<"  redundancy           : "<<countTotal*2./(dim+1)<<Log::endl;
 
     // Spherical Harmonics
     // -------------------
