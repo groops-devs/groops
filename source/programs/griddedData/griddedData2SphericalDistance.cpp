@@ -61,7 +61,7 @@ void GriddedData2SphericalDistance::run(Config &config, Parallel::CommunicatorPt
     Matrix S(points1.size(), points2.size());
     for(UInt i=0; i<points1.size(); i++)
       for(UInt k=0; k<points2.size(); k++)
-        S(i,k) = std::acos(inner(points1.at(i), points2.at(k)));
+        S(i,k) = std::acos(std::min(std::max(inner(points1.at(i), points2.at(k)), -1.), 1.));
 
     logStatus<<"writing matrix to file <"<<fileNameDistance<<">"<<Log::endl;
     writeFileMatrix(fileNameDistance, S);
