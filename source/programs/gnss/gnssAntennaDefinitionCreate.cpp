@@ -76,13 +76,13 @@ static Bool readConfig(Config &config, const std::string &name, GnssAntennaPatte
     {
       VariableList varList;
       varList.undefineVariable("zenith");
-      varList.undefineVariable("azmiuth");
+      varList.undefineVariable("azimuth");
       valueExpr->simplify(varList);
 
       for(UInt i=0; i<var.pattern.rows(); i++)
         for(UInt k=0; k<var.pattern.columns(); k++)
         {
-          varList.setVariable("azmiuth", i * 360./var.pattern.rows());
+          varList.setVariable("azimuth", i * 360./var.pattern.rows());
           varList.setVariable("zenith",  k * RAD2DEG * Double(var.dZenit));
           var.pattern(i, k) = valueExpr->evaluate(varList);
         }

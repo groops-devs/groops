@@ -113,6 +113,7 @@ void GriddedDataTimeSeries2PotentialCoefficients::run(Config &config, Parallel::
       grid.values.resize(data.columns());
       for(UInt k=0; k<data.columns(); k++)
         grid.values.at(k) = Vector(data.column(k));
+      VariableList varList;
       addDataVariables(grid, varList);
       std::for_each(exprValue.begin(), exprValue.end(), [&](auto expr) {expr->simplify(varList);});
       for(UInt i=0; i<grid.points.size(); i++)
@@ -122,8 +123,8 @@ void GriddedDataTimeSeries2PotentialCoefficients::run(Config &config, Parallel::
           values.at(idEpoch*exprValue.size()+k).at(i) = exprValue.at(k)->evaluate(varList);
       }
     });
-    grid.areas  = areas;
-    grid.values = values;
+    grid.areas  = std::move(areas);
+    grid.values = std::move(values);
 
     // spherical harmonic analysis
     // ---------------------------
