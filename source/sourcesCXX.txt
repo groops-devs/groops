@@ -313,6 +313,7 @@ programs/gravityfield/gravityfield2DegreeAmplitudesPlotGrid.cpp
 programs/gravityfield/gravityfield2DisplacementTimeSeries.cpp
 programs/gravityfield/gravityfield2EmpiricalCovariance.cpp
 programs/gravityfield/gravityfield2Gradients.cpp
+programs/gravityfield/gravityfield2GravityVector.cpp
 programs/gravityfield/gravityfield2GridCovarianceMatrix.cpp
 programs/gravityfield/gravityfield2GriddedData.cpp
 programs/gravityfield/gravityfield2GriddedDataTimeSeries.cpp

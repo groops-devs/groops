@@ -1974,6 +1974,33 @@ Name & Type & Annotation\\
 This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
+\subsection{Gravityfield2GravityVector}\label{Gravityfield2GravityVector}
+This program computes gravity vectors from \configClass{gravityfield}{gravityfieldType}
+on a \configClass{grid}{gridType} in a global terrestrial reference frame
+or alternatively in a local elliposidal frame (north, east, up) if \config{localReferenceFrame} is set.
+In \configFile{outputfileGriddedData}{griddedData} the values $[gx, gy, gz]$
+will be saved together with points expressed as ellipsoidal coordinates
+(longitude, latitude, height) based on a reference ellipsoid with parameters \config{R} and \config{inverseFlattening}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGriddedData & \hfuzz=500pt filename & \hfuzz=500pt gx, gy, gz\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~grid & \hfuzz=500pt \hyperref[gridType]{grid} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~localReferenceFrame & \hfuzz=500pt boolean & \hfuzz=500pt local left handed reference frame (north, east, up)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~time & \hfuzz=500pt time & \hfuzz=500pt at this time the gravity field will be evaluated\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~R & \hfuzz=500pt double & \hfuzz=500pt reference radius for ellipsoidal coordinates on output\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inverseFlattening & \hfuzz=500pt double & \hfuzz=500pt reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates\\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
 \subsection{Gravityfield2GridCovarianceMatrix}\label{Gravityfield2GridCovarianceMatrix}
 This program propagates the covariance matrix of a \configClass{gravityfield}{gravityfieldType}
 evaluated at \config{time} to a \configClass{grid}{gridType}. The full variance-covariance matrix is computed

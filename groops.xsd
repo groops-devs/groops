@@ -13347,6 +13347,43 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="Gravityfield2GravityVector">
+				<xs:annotation>
+					<xs:documentation>Gravity vector from gravity field</xs:documentation>
+					<xs:appinfo>tag: Gravityfield</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileGriddedData" type="filename">
+							<xs:annotation>
+								<xs:documentation>gx, gy, gz</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="grid" type="gridType" maxOccurs="unbounded"/>
+						<xs:element name="gravityfield" type="gravityfieldType" maxOccurs="unbounded"/>
+						<xs:element name="localReferenceFrame" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>local left handed reference frame (north, east, up)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="time" type="time" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>at this time the gravity field will be evaluated</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="R" type="double" minOccurs="0" default="6378137.0">
+							<xs:annotation>
+								<xs:documentation>reference radius for ellipsoidal coordinates on output</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inverseFlattening" type="double" minOccurs="0" default="298.2572221010">
+							<xs:annotation>
+								<xs:documentation>reference flattening for ellipsoidal coordinates on output, 0: spherical coordinates</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="Gravityfield2GridCovarianceMatrix">
 				<xs:annotation>
 					<xs:documentation>Covariance matrix of values of a gravity field on a grid.</xs:documentation>
