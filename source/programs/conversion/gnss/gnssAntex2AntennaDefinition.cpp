@@ -34,7 +34,7 @@ and \configFile{transmitterList}{stringList} files for the respective GNSS and f
 class GnssAntex2AntennaDefinition
 {
   Bool getLine(InFile &file, std::string &line, std::string &label, Bool throwException=FALSE) const;
-  Bool testLabel(const std::string &labelInLine, const std::string &label, Bool optional=TRUE) const;
+  Bool testLabel(const std::string &labelInLine, const std::string &label, Bool optional=FALSE) const;
   void addTransmitter(const PlatformGnssAntenna &platformAntenna, const std::string &markerName, const std::string &markerNumber, std::vector<Platform> &transmitterList);
   void addAntenna(const GnssAntennaDefinitionPtr &antenna, std::vector<GnssAntennaDefinitionPtr> &antennaList);
 
@@ -179,6 +179,13 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
       if(testLabel(label, "SINEX CODE", TRUE))
       {
         getLine(file, line, label);
+        while (testLabel(label, "SINEX CODE", TRUE))
+        {
+          logWarning<<"Multiple lines with <SINEX CODE> detected for antenna "
+                    <<antennaInfo.name<<" "<<antennaInfo.serial<<" "<<atxSVN
+                    <<Log::endl;
+          getLine(file, line, label);
+        }
       }
 
       while(testLabel(label, "COMMENT", TRUE))
@@ -245,7 +252,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         for(UInt s=0; s<zenCount; s++)
           if(!setZero) antenna->patterns.at(i).pattern(0,s) = 1e-3 * String::toDouble(line.substr(8+8*s, 8));
 
-        // Azimut dependent values
+        // Azimuth dependent values
         getLine(file, line, label);
         if(azimutCount)
           for(UInt z=0; z<azimutCount+1; z++)
