@@ -147,6 +147,8 @@ void GnssReceiverGeneratorStationNetwork::init(std::vector<GnssType> simulationT
               auto iter = (arc.size() == 1) ? arc.begin() : std::find_if(arc.begin(), arc.end(), [&](const Epoch &e){return e.time.isInInterval(times.front(), times.back());});
               if(iter != arc.end())
                 platform.approxPosition = iter->vector3d;
+              else
+                logWarning<<platform.markerName<<"."<<platform.markerNumber<<": No precise position found for interval "<<times.front().dateTimeStr()<<" - "<<times.back().dateTimeStr()<<Log::endl;
             }
             catch(std::exception &e)
             {
