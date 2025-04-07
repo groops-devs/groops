@@ -120,9 +120,9 @@ void Troposphere::computeEmpiricalCoefficients(const Time &time) const
     if(timeRef.mjdInt() == time.mjdInt())
       return; // computing empirical coefficients once per day is sufficient, since they only have annual and semiannual variations
 
-    timeRef = time;
+    timeRef = Time(time.mjdInt(),0.0);
 
-    const Double t = (time.mjd()-J2000)/365.25;
+    const Double t = (timeRef.mjd()-J2000)/365.25;
     Vector fourier(5);
     fourier(0) = 1.;               // constant
     fourier(1) = std::cos(2*PI*t); // cos annual
