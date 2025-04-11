@@ -176,6 +176,21 @@ void GnssReceiverGeneratorLowEarthOrbiter::init(std::vector<GnssType> simulation
         {
           recv->readObservations(fileNameObs, transmitters,  rotationCrf2Trf, timeMargin, elevationCutOff,
                                  useType, ignoreType, GnssObservation::RANGE | GnssObservation::PHASE);
+          // =================================
+          if(recv->name() == "SENTINEL6A") //HACK: replace L2LG -> L2WG
+          {
+            logWarning<<recv->name()<<": replace L2LG -> L2WG"<<Log::endl;
+            for(UInt idEpoch=0; idEpoch<recv->idEpochSize(); idEpoch++)
+              for(UInt idTrans=0; idTrans<recv->idTransmitterSize(idEpoch); idTrans++)
+              {
+                GnssObservation *obs = recv->observation(idTrans, idEpoch);
+                if(obs)
+                  for(UInt idType=0; idType<obs->size(); idType++)
+                    if(obs->at(idType).type == GnssType::L2_G+GnssType::L)
+                      obs->at(idType).type = GnssType::L2_G + GnssType::W + (obs->at(idType).type & GnssType::PRN);
+              }
+          }
+          // =================================
         }
       }
       catch(std::exception &e)
