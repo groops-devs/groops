@@ -29,6 +29,7 @@ and write it as \configFile{outputfileEOP}{earthOrientationParameter}.
 * @ingroup programsConversionGroup */
 class IersRapidIAU2000EarthOrientationParameter
 {
+  Double getDouble(std::string s, const std::vector<Double>& vals, double f=1.0) const;
 public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
@@ -72,12 +73,12 @@ void IersRapidIAU2000EarthOrientationParameter::run(Config &config, Parallel::Co
       if((time<timeStart)||(time>timeEnd))
         continue;
 
-      if(!(std::stringstream(line.substr( 18,  9))>>_xp)) _xp = xp.back();
-      if(!(std::stringstream(line.substr( 37,  9))>>_yp)) _yp = yp.back();
-      if(!(std::stringstream(line.substr( 58, 10))>>_du)) _du = du.back();
-      if(!(std::stringstream(line.substr( 79,  7))>>_ld)) _ld = ld.back()*1e3;
-      if(!(std::stringstream(line.substr( 97,  9))>>_dX)) _dX = dX.back()*1e3;
-      if(!(std::stringstream(line.substr(116,  9))>>_dY)) _dY = dY.back()*1e3;
+      _xp = getDouble(line.substr( 18,  9),xp);
+      _yp = getDouble(line.substr( 37,  9),yp);
+      _du = getDouble(line.substr( 58, 10),du);
+      _ld = getDouble(line.substr( 79,  7),ld,1e3);
+      _dX = getDouble(line.substr( 97,  9),dX,1e3);
+      _dY = getDouble(line.substr(116,  9),dY,1e3);
 
       mjd.push_back(_mjd);
       xp.push_back(_xp);
@@ -116,3 +117,14 @@ void IersRapidIAU2000EarthOrientationParameter::run(Config &config, Parallel::Co
 }
 
 /***********************************************/
+
+Double IersRapidIAU2000EarthOrientationParameter::getDouble(std::string s, const std::vector<Double>& vals, double f) const
+{
+  Double val;
+  if(std::stringstream(s)>>val)
+    return val;
+  else if(vals.size())
+      return vals.back()*f;
+  else
+    throw(Exception("Error reading value from EOP file."));
+}
