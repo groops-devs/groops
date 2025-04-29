@@ -141,12 +141,22 @@ void GnssReceiverGeneratorStationNetwork::init(std::vector<GnssType> simulationT
             try
             {
               Vector3dArc arc = InstrumentFile::read(fileNameStationPosition(fileNameVariableList));
-              auto iter = (arc.size() == 1) ? arc.begin() : std::find_if(arc.begin(), arc.end(), [&](const Epoch &e){return e.time.isInInterval(times.front(), times.back());});
-              if(iter != arc.end())
-                platform.approxPosition = iter->vector3d;
+              if(arc.size()==1)
+                platform.approxPosition = arc.begin()->vector3d;
+              else
+              {
+                std::vector<Time> arcTimes = arc.times();
+                auto iter = std::upper_bound(arcTimes.begin(), arcTimes.end(), Time(times.front().mjdInt(),0));
+                if(iter != arcTimes.end())
+                  platform.approxPosition = arc.at(std::distance(arcTimes.begin(), iter) - 1).vector3d;
+                else
+                  logWarningOnce<<platform.markerName<<"."<<platform.markerNumber<<": No a-priori position found in station position file!"<<Log::endl;
+              }
             }
             catch(std::exception &/*e*/)
             {
+              logWarningOnce<<platform.markerName<<"."<<platform.markerNumber<<": cannot read station position file "
+                            <<fileNameStationPosition(fileNameVariableList)<<Log::endl;
             }
           }
 
