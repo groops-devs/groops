@@ -89,7 +89,7 @@ void NormalsTemporalCombination::run(Config &config, Parallel::CommunicatorPtr c
       }
       catch(std::exception &e)
       {
-        logWarning<<e.what()<<" continue..."<<Log::endl;
+        logWarningOnce<<e.what()<<" continue..."<<Log::endl;
         return;
       }
 
