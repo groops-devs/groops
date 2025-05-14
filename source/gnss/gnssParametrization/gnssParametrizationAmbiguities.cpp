@@ -118,8 +118,9 @@ public:
   UInt                  idEpochStart, idEpochEnd;
   UInt                  parameterCount;
   std::vector<GnssType> typesAmbiguity, typesTrack;
-  std::vector<GnssType> typesNew;
-  Bool                  processed;
+  std::vector<GnssType> typesFreqSys, typesNew;
+  UInt                  idxTrans, idxAmbi;
+  std::vector<UInt>     idxRecv;
 
   AmbiguityInfo() : ambi(nullptr) {}
 
@@ -204,6 +205,12 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
       ambiguityInfos.insert(ambiguityInfos.end(), ambiguityInfosLocal.begin(), ambiguityInfosLocal.end());
     }
 
+    // sort with decreasing track length
+    std::stable_sort(ambiguityInfos.begin(), ambiguityInfos.end(), [](const AmbiguityInfo &a, const AmbiguityInfo &b)
+                    {return (a.idEpochEnd-a.idEpochStart) > (b.idEpochEnd-b.idEpochStart);});
+
+    // =================================
+
     // float biases at receivers
     // -------------------------
     for(auto &info : ambiguityInfos)
@@ -272,58 +279,183 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
         countParaRecv += parameterNames.size();
       } // for(paraRecv)
 
-    // determine integer ambiguities (skip zero/single diff float ambiguities)
-    // -----------------------------------------------------------------------
-    // sort with decreasing track length
-    std::stable_sort(ambiguityInfos.begin(), ambiguityInfos.end(), [](const AmbiguityInfo &a, const AmbiguityInfo &b)
-                    {return (a.idEpochEnd-a.idEpochStart) > (b.idEpochEnd-b.idEpochStart);});
-    // remove attributes
-    for(auto &info : ambiguityInfos)
-      info.typesTrack = GnssType::replaceCompositeSignals(info.typesTrack);
+    // =================================
 
-    std::vector<GnssType> types;
+    // determine estimable transmitter bias and integer ambiguities
+    // setup simpified normal matrix and determine rank deficit via piviot cholesky
+    // ----------------------------------------------------------------------------
+    std::vector<GnssType> typesFreqSys; // for each system & frequency
     for(auto &info : ambiguityInfos)
       for(GnssType &type : info.typesTrack)
-        if(!type.isInList(types))
-          types.push_back(type & ~GnssType::PRN);
+        if(!type.isInList(typesFreqSys))
+          typesFreqSys.push_back(type & (GnssType::TYPE + GnssType::FREQUENCY + GnssType::SYSTEM));
 
-    std::vector<GnssType> typesZero; // float ambiguity at receiver and transmitter
-    for(GnssType type : types)
+    for(GnssType typeFreqSys : typesFreqSys)
     {
-      std::vector<Bool> floatTrans(paraTrans.size(), FALSE);
-      std::vector<Bool> floatRecv(paraRecv.size(), FALSE);
-      Bool              floatBoth = FALSE;
+      // setup parameter indices
+      // -----------------------
+      std::vector<std::pair<UInt, std::vector<GnssType>>> idTypeAmbi;  // idRecv,   GnssTypes
+      std::vector<std::pair<UInt, GnssType>>              idTypeRecv;  // idRecv,   GnssType w/o PRN
+      std::vector<std::pair<UInt, GnssType>>              idTypeTrans; // idRTrand, GnssType w/o ATTRIBUTE
       for(auto &info : ambiguityInfos)
-        info.processed = !type.isInList(info.typesTrack);
-      for(;;)
       {
-        Bool restart = FALSE;
-        UInt idx;
-        for(auto &info : ambiguityInfos)
-          if(!info.processed && type.isInList(info.typesTrack, idx))
-          {
-            const Bool isFloatRecv  = !floatRecv.at(info.idRecv)   && type.isInList(typesRecv.at(info.idRecv));
-            const Bool isFloatTrans = !floatTrans.at(info.idTrans) && paraTrans.at(info.idTrans) && !normalEquationInfo.isEachReceiverSeparately;
-            if(isFloatTrans && isFloatRecv && floatBoth)                                        // only one zero difference ambiguity is allowed for each type
-              continue;                                                                         // try again later when new single float ambiguities are set up
-            if(!isFloatTrans && !isFloatRecv) info.typesNew.push_back(info.typesTrack.at(idx)); // integer double difference
-            if(isFloatRecv)                   floatRecv.at(info.idRecv)   = TRUE;               // float receiver single difference
-            if(isFloatTrans)                  floatTrans.at(info.idTrans) = TRUE;               // float transmitter single difference
-            if(isFloatTrans && isFloatRecv)   floatBoth = TRUE;                                 // zero difference
-            if(isFloatTrans && isFloatRecv)   typesZero.push_back(info.typesTrack.at(idx));     // zero difference
-            info.processed = TRUE;
-            restart = (isFloatTrans || isFloatRecv);                                            // new float ambiguity -> restart searching
-            if(restart)
-              break;
-          }
-        if(!restart)
-          break;
-      }
+        // reset indices
+        info.typesFreqSys.clear();
+        for(GnssType &type : info.typesTrack)
+          if((type == typeFreqSys) && !type.isInList(info.typesFreqSys))
+            info.typesFreqSys.push_back(type);
+        info.idxTrans = info.idxAmbi = NULLINDEX;
+        info.idxRecv = std::vector<UInt>(info.typesFreqSys.size(), NULLINDEX);
+        if(!info.typesFreqSys.size())
+          continue;
 
+        // integer ambiguities
+        const std::pair<UInt, std::vector<GnssType>> idType(info.idRecv, info.typesFreqSys);
+        if(std::find(idTypeAmbi.begin(), idTypeAmbi.end(), idType) == idTypeAmbi.end())
+        {
+          info.idxAmbi = idTypeAmbi.size();
+          idTypeAmbi.push_back(idType);
+        }
+        else
+        {
+          // following tracks with same types can directly setup as integer ambiguities
+          info.typesNew.push_back(info.typesFreqSys.front() & ~GnssType::ATTRIBUTE);
+          info.typesFreqSys.clear();
+          continue;
+        }
+
+        // float biases at receivers
+        if(paraRecv.at(info.idRecv))
+         for(UInt i=0; i<info.typesFreqSys.size(); i++)
+           if(info.typesFreqSys.at(i).isInList(typesRecv.at(info.idRecv)))
+           {
+             const std::pair<UInt, GnssType> idType(info.idRecv, info.typesFreqSys.at(i) & ~GnssType::PRN);
+             info.idxRecv.at(i) = std::distance(idTypeRecv.begin(), std::find(idTypeRecv.begin(), idTypeRecv.end(), idType));
+             if(info.idxRecv.at(i) == idTypeRecv.size())
+               idTypeRecv.push_back(idType);
+           }
+
+        // float biases at transmitters
+        if(!normalEquationInfo.isEachReceiverSeparately && paraTrans.at(info.idTrans))
+        {
+          const std::pair<UInt, GnssType> idType(info.idTrans, info.typesFreqSys.front() & ~GnssType::ATTRIBUTE);
+          info.idxTrans = std::distance(idTypeTrans.begin(), std::find(idTypeTrans.begin(), idTypeTrans.end(), idType));
+          if(info.idxTrans == idTypeTrans.size())
+            idTypeTrans.push_back(idType);
+        }
+      } // for(ambiguityInfos)
+
+      // system of normal equations
+      // --------------------------
+      std::vector<UInt> pivTrans, pivAmbi;
+      if(Parallel::isMaster(normalEquationInfo.comm))
+      {
+        // block normal matrix (upper triangle)
+        Vector Nrr(idTypeRecv.size());                      // recv  x recv (diagonal)
+        Matrix Nrt(idTypeRecv.size(),  idTypeTrans.size()); // recv  x trans
+        Matrix Nra(idTypeRecv.size(),  idTypeAmbi.size());  // recv  x ambiguities
+        Matrix Ntt(idTypeTrans.size(), Matrix::SYMMETRIC);  // trans x trans
+        Matrix Nta(idTypeTrans.size(), idTypeAmbi.size());  // trans x ambiguities
+        Matrix Naa(idTypeAmbi.size(),  Matrix::SYMMETRIC);  // ambiguities x ambiguities
+
+        // pseudo obsevration equations n = bias_r + bias^t + N_r^t
+        for(auto &info : ambiguityInfos)
+        {
+          const Double w = info.idEpochEnd-info.idEpochStart+1;
+          for(UInt i=0; i<info.typesFreqSys.size(); i++)
+          {
+            if(info.idxRecv.at(i) != NULLINDEX)
+            {
+              Nrr(info.idxRecv.at(i)) += w;
+              if(info.idxTrans != NULLINDEX) Nrt(info.idxRecv.at(i), info.idxTrans) += w;
+              if(info.idxAmbi  != NULLINDEX) Nra(info.idxRecv.at(i), info.idxAmbi)  += w;
+            }
+            if(info.idxTrans != NULLINDEX)
+            {
+              Ntt(info.idxTrans, info.idxTrans) += w;
+              if(info.idxAmbi != NULLINDEX) Nta(info.idxTrans, info.idxAmbi) += w;
+            }
+            if(info.idxAmbi != NULLINDEX) Naa(info.idxAmbi, info.idxAmbi) += w;
+          }
+        }
+
+        // block wise cholesky
+        // -------------------
+        if(Nrr.size()) // receiver bias
+        {
+          if(Ntt.size())
+          {
+            for(UInt i=0; i<Nrr.rows(); i++)
+              Nrt.row(i) *= 1/std::sqrt(Nrr(i));
+            rankKUpdate(-1, Nrt, Ntt);
+          }
+          if(Naa.size())
+          {
+            for(UInt i=0; i<Nrr.rows(); i++)
+              Nra.row(i) *= 1/std::sqrt(Nrr(i));
+            rankKUpdate(-1, Nra, Naa);
+          }
+          if(Ntt.size() && Naa.size())
+            matMult(-1, Nrt.trans(), Nra, Nta);
+        }
+        if(Ntt.size()) // transmitter bias
+        {
+          Double tolerance = 0;
+          for(UInt i=0; i<Ntt.rows(); i++)
+            tolerance = std::max(tolerance, std::fabs(Ntt(i,i)));
+          UInt rank = 0;
+          pivTrans = choleskyPivoting(Ntt, rank, 1e-8*Ntt.rows()*tolerance);
+          pivTrans.resize(rank);
+          if(Naa.size())
+          {
+            Matrix Nta_piv(rank, Nta.columns());
+            for(UInt i=0; i<rank; i++)
+              copy(Nta.row(pivTrans.at(i)), Nta_piv.row(i));
+            triangularSolve(1., Ntt.slice(0, 0, rank, rank).trans(), Nta_piv);
+            rankKUpdate(-1, Nta_piv, Naa);
+          }
+        }
+        if(Naa.size()) // ambiguites
+        {
+          Double tolerance = 0;
+          for(UInt i=0; i<Naa.rows(); i++)
+            tolerance = std::max(tolerance, std::fabs(Naa(i,i)));
+          UInt rank = 0;
+          pivAmbi = choleskyPivoting(Naa, rank, 1e-8*Naa.rows()*tolerance);
+          pivAmbi.resize(rank);
+        }
+      } // if(isMaster)
+      Parallel::broadCast(pivTrans, 0, normalEquationInfo.comm);
+      Parallel::broadCast(pivAmbi,  0, normalEquationInfo.comm);
+
+      // store estimable float biases at transmitters
+      // --------------------------------------------
+      for(UInt i=0; i<pivTrans.size(); i++)
+        paraTrans.at(idTypeTrans.at(pivTrans.at(i)).first)->types.push_back(idTypeTrans.at(pivTrans.at(i)).second);
+
+      // store estimable ambiguities
+      // ---------------------------
+      std::vector<Bool> isAmbi(idTypeAmbi.size(), FALSE);
+      for(UInt i=0; i<pivAmbi.size(); i++)
+        isAmbi.at(pivAmbi.at(i)) = TRUE;
       for(auto &info : ambiguityInfos)
-        if(!info.processed)
-          throw(Exception("Cannot setup ambiguities. Network is separated into independent parts!?"));
-    } // for(type)
+        if((info.idxAmbi != NULLINDEX) && isAmbi.at(info.idxAmbi))
+          info.typesNew.push_back(info.typesFreqSys.front() & ~GnssType::ATTRIBUTE);
+    } // for(typeFreqSys)
+
+    // parameters names of float biases at transmitters
+    // ------------------------------------------------
+    UInt countParaTrans = 0;
+    for(auto para : paraTrans)
+      if(para && para->types.size())
+      {
+        std::sort(para->types.begin(), para->types.end());
+        std::vector<ParameterName> parameterNames(para->types.size());
+        for(UInt i=0; i<para->types.size(); i++)
+          parameterNames.at(i) = ParameterName(para->trans->name(), "phaseBias("+para->types.at(i).str()+")");
+        para->index = normalEquationInfo.parameterNamesTransmitter(para->trans->idTrans(), parameterNames);
+        countParaTrans += parameterNames.size();
+      }
 
     // ambiguity parameters names
     // --------------------------
@@ -360,26 +492,6 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
         }
       }
     }
-
-    // float biases at transmitters
-    // ----------------------------
-    if(!normalEquationInfo.isEachReceiverSeparately)
-      for(auto &info : ambiguityInfos)
-        for(GnssType &type : info.typesTrack)
-          if(paraTrans.at(info.idTrans) && !type.isInList(paraTrans.at(info.idTrans)->types) && !type.isInList(typesZero))
-            paraTrans.at(info.idTrans)->types.push_back(type);
-
-    UInt countParaTrans = 0;
-    for(auto para : paraTrans)
-      if(para && para->types.size())
-      {
-        std::sort(para->types.begin(), para->types.end());
-        std::vector<ParameterName> parameterNames(para->types.size());
-        for(UInt i=0; i<para->types.size(); i++)
-          parameterNames.at(i) = ParameterName(para->trans->name(), "phaseBias("+para->types.at(i).str()+")");
-        para->index = normalEquationInfo.parameterNamesTransmitter(para->trans->idTrans(), parameterNames);
-        countParaTrans += parameterNames.size();
-      }
 
     if(countParaTrans) logInfo<<countParaTrans%"%9i transmitter phase bias parameters"s<<Log::endl;
     if(countParaRecv)  logInfo<<countParaRecv% "%9i receiver phase bias parameters"s<<Log::endl;
@@ -545,7 +657,7 @@ Double GnssParametrizationAmbiguities::ambiguityResolve(const GnssNormalEquation
       const UInt startInteger = dim - countInteger;
       MatrixDistributed normalsAmbi = normals;
       normalsAmbi.eraseBlocks(0, block0);
-      normalsAmbi.reorder(index, {0, startInteger, dim}, [](UInt, UInt, UInt){return 0;});
+      normalsAmbi.reorder(index, {0, startInteger, dim}, /*rank*/[](UInt, UInt, UInt){return 0;});
 
       // perform cholesky for float part of the normals
       // ----------------------------------------------
