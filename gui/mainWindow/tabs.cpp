@@ -155,56 +155,39 @@ bool TabEnvironment::newTab(const QString &fileName)
 
 /***********************************************/
 
-bool TabEnvironment::fileOpen(const QString &fileNameConst)
+bool TabEnvironment::fileOpen(const QString &fileName)
 {
   try
   {
-    QStringList fileNames;
-    QString     fileName = fileNameConst;
-
     // no file name -> open file selector
     if(fileName.isEmpty())
     {
+      QString defaultName;
       if(currentTree())
-        fileName = QFileInfo(currentTree()->fileName()).absolutePath();
-      if(fileName.isEmpty())
-        fileName = settings.value("files/workingDirectory", QString("../scenario")).toString();
-      fileNames = QFileDialog::getOpenFileNames(this, tr("Open File - GROOPS"), fileName, tr("XML files (*.xml)"));
-      if(fileNames.isEmpty())
-        return false;
-    }
-    else
-      fileNames << fileName;
-
-    for(auto fileName : fileNames)
-    {
-      // file is already opened? -> select tab and reOpen
-      bool found = false;
-      for(int i=0; i<count(); i++)
-      {
-        if(treeAt(i)->fileName() == QFileInfo(fileName).absoluteFilePath())
-        {
-          found = true;
-          setCurrentIndex(i);
-          if(!fileReOpen())
-            return false;
-          break;
-        }
-      }
-      if(found)
-        continue;
-
-      // current tab is new and unchanged -> overwrite
-      if(currentTree() && currentTree()->fileName().isEmpty() && currentTree()->isClean())
-      {
-        if(!currentTree()->fileOpen(fileName))
+        defaultName = QFileInfo(currentTree()->fileName()).absolutePath();
+      if(defaultName.isEmpty())
+        defaultName = settings.value("files/workingDirectory", QString("../scenario")).toString();
+      QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open File - GROOPS"), defaultName, tr("XML files (*.xml)"));
+      for(auto fileName : fileNames)
+        if(!fileName.isEmpty() && !fileOpen(fileName))
           return false;
-      }
-      else if(!newTab(fileName))
-          return false;
-
+      return !fileNames.isEmpty();
     }
-    return true;
+
+    // file is already opened? -> select tab and reOpen
+    for(int i=0; i<count(); i++)
+      if(treeAt(i)->fileName() == QFileInfo(fileName).absoluteFilePath())
+      {
+        setCurrentIndex(i);
+        return fileReOpen();
+      }
+
+    // current tab is new and unchanged -> overwrite
+    if(currentTree() && currentTree()->fileName().isEmpty() && currentTree()->isClean())
+      return currentTree()->fileOpen(fileName);
+
+    // new tab
+    return newTab(fileName);
   }
   catch(std::exception &e)
   {
