@@ -103,7 +103,7 @@ void SinexEccentricties2SlrPlatform::run(Config &config, Parallel::CommunicatorP
         const Double longitude   = String::toDouble(line.substr(44, 3)) + String::toDouble(line.substr(48, 2))/60 + String::toDouble(line.substr(51, 4))/3600;
         const Double latitude    = String::toDouble(line.substr(56, 3)) + (String::startsWith(String::trim(line.substr(56, 3)), "-") ? -1 : 1) * std::fabs(String::toDouble(line.substr(60, 2))/60 + String::toDouble(line.substr(62, 5))/3600);
         const Double height      = String::toDouble(line.substr(68, 7));
-        platform.approxPosition = Ellipsoid()(Angle(longitude), Angle(latitude), height);
+        platform.approxPosition = Ellipsoid()(Angle(DEG2RAD*longitude), Angle(DEG2RAD*latitude), height);
       }
       if(line.size() >= 88)
       {
