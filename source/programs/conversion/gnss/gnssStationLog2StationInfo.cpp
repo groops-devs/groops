@@ -6,6 +6,7 @@
 *
 * @author Torsten Mayer-Guerr
 * @author Sebastian Strasser
+* @author Andreas Kvas
 * @date 2012-04-28
 */
 /***********************************************/
@@ -13,7 +14,8 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} to \configFile{outputfileStationInfo}{gnssStationInfo}.
+Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} or
+\href{https://files.igs.org/pub/station/general/blank_v2.0.log}{IGS station log format v2.0} to \configFile{outputfileStationInfo}{gnssStationInfo}.
 
 If \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition} is provided, station log data is cross-checked with the given antenna definitions.
 Cross-checking station log data with a \href{https://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file} is also
@@ -75,10 +77,10 @@ void GnssStationLog2StationInfo::run(Config &config, Parallel::CommunicatorPtr /
 
     // some tests
     // ----------
-    if(station.markerName.size()!=4)
+    if(station.markerName.size() != 4 && station.markerName.size() != 9)
     {
-      logWarning<<station.markerName<<"."<<station.markerNumber<<": marker name should have 4 letters"<<Log::endl;
-      throw(Exception("marker name should have 4 letters"));
+      logWarning<<station.markerName<<"."<<station.markerNumber<<": marker name should have 4 or 9 letters"<<Log::endl;
+      throw(Exception("marker name should have 4 or 9 letters"));
     }
     if(station.receiver.size()==0)
     {
@@ -358,6 +360,19 @@ GnssStationInfo GnssStationLog2StationInfo::readFile(const FileName &fileName)
             {
               logWarning<<station.markerName<<": marker name has more than 4 letters, shortened to: "<<station.markerName.substr(0,4)<<Log::endl;
               station.markerName = station.markerName.substr(0,4);
+            }
+          }
+        }
+        else if (line.find("Nine Character ID") != std::string::npos)
+        {
+          if(station.markerName.empty())
+          {
+            readString(line, station.markerName);
+            std::transform(station.markerName.begin(), station.markerName.end(), station.markerName.begin(), ::toupper);
+            if(station.markerName.length() > 9)
+            {
+              logWarning<<station.markerName<<": marker name has more than 9 letters, shortened to: "<<station.markerName.substr(0, 9)<<Log::endl;
+              station.markerName = station.markerName.substr(0, 9);
             }
           }
         }
