@@ -104,7 +104,10 @@ void ParameterVector2GnssAntennaDefinition::run(Config &config, Parallel::Commun
     {
       UInt idx = std::distance(parametrizationNames.begin(),
                                std::find_if(parametrizationNames.begin(), parametrizationNames.end(), [&](const auto &name)
-                                            {return String::startsWith(parameterNames.at(i).type, name.type);}));
+                               {
+                                 auto pos = parameterNames.at(i).type.rfind('.');
+                                 return parameterNames.at(i).type.substr(0, pos) == name.type;
+                               }));
       if(idx >= parametrization->parameterCount())
         continue;
 
