@@ -54,7 +54,6 @@ files/fileEphemerides.cpp
 files/fileGnssAntennaDefinition.cpp
 files/fileGnssReceiverDefinition.cpp
 files/fileGnssSignalBias.cpp
-files/fileGnssStationInfo.cpp
 files/fileGriddedData.cpp
 files/fileGriddedDataTimeSeries.cpp
 files/fileInstrument.cpp
@@ -291,7 +290,6 @@ programs/gnss/gnssResiduals2TransmitterAccuracyDefinition.cpp
 programs/gnss/gnssResiduals2Skyplot.cpp
 programs/gnss/gnssSignalBias2Matrix.cpp
 programs/gnss/gnssSimulateReceiver.cpp
-programs/gnss/gnssStationInfoCreate.cpp
 programs/gnss/instrumentGnssReceiver2TimeSeries.cpp
 programs/gnss/parameterVector2GnssAntennaDefinition.cpp
 programs/grace/ensembleAveragingScaleModel.cpp
@@ -503,7 +501,6 @@ programs/conversion/gnss/gnssRinexNavigation2OrbitClock.cpp
 programs/conversion/gnss/gnssSignalBias2SinexBias.cpp
 programs/conversion/gnss/gnssSinexBias2SignalBias.cpp
 programs/conversion/gnss/gnssStationLog2Platform.cpp
-programs/conversion/gnss/gnssStationLog2StationInfo.cpp
 programs/conversion/gnss/gnssTroposphere2TropoSinex.cpp
 programs/conversion/gnss/rinexObservation2GnssReceiver.cpp
 programs/conversion/gnss/sinex2StationDiscontinuities.cpp
@@ -587,6 +584,7 @@ programs/conversion/viennaMappingFunctionStation2File.cpp
 
 programs/deprecated/gnssAttitude2Orbex.cpp
 programs/deprecated/gnssPrn2SvnBlockVariables.cpp
+programs/deprecated/gnssStationInfoCreate.cpp
 programs/deprecated/gridRectangular2NetCdf.cpp
 programs/deprecated/netCdf2GridRectangular.cpp
 programs/deprecated/sinex2StationPosition.cpp

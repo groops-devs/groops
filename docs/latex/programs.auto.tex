@@ -1151,64 +1151,6 @@ Name & Type & Annotation\\
 This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
-\subsection{GnssStationInfoCreate}\label{GnssStationInfoCreate}
-Create a \file{GnssStationInfo file}{gnssStationInfo} from scratch by defining attributes such as
-\config{markerName}, \config{markerNumber}, \config{comment}, \config{approxPosition},
-\config{antenna} and \config{receiver}.
-
-See also \program{GnssAntex2AntennaDefinition} and \program{GnssStationLog2Platform}.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStationInfo & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~markerName & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerNumber & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~approxPositionX & \hfuzz=500pt double & \hfuzz=500pt [m] in TRF\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~approxPositionY & \hfuzz=500pt double & \hfuzz=500pt [m] in TRF\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~approxPositionZ & \hfuzz=500pt double & \hfuzz=500pt [m] in TRF\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~antenna & \hfuzz=500pt sequence & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~radome & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionX & \hfuzz=500pt double & \hfuzz=500pt [m] ARP in north, east, up or vehicle system\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionY & \hfuzz=500pt double & \hfuzz=500pt [m] ARP in north, east, up or vehicle system\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionZ & \hfuzz=500pt double & \hfuzz=500pt [m] ARP in north, east, up or vehicle system\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationX & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to left-handed antenna system\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationY & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to left-handed antenna system\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationZ & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to left-handed antenna system\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipX & \hfuzz=500pt boolean & \hfuzz=500pt flip x-axis (after rotation)\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipY & \hfuzz=500pt boolean & \hfuzz=500pt flip y-axis (after rotation)\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipZ & \hfuzz=500pt boolean & \hfuzz=500pt flip z-axis (after rotation)\\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~receiver & \hfuzz=500pt sequence & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~version & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~referencePoint & \hfuzz=500pt sequence & \hfuzz=500pt e.g. center of mass in satellite frame\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~xStart & \hfuzz=500pt double & \hfuzz=500pt [m] in north, east, up or vehicle system\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~yStart & \hfuzz=500pt double & \hfuzz=500pt linear motion between start and end\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~zStart & \hfuzz=500pt double & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~xEnd & \hfuzz=500pt double & \hfuzz=500pt [m] in north, east, up or vehicle system\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~yEnd & \hfuzz=500pt double & \hfuzz=500pt linear motion between start and end\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~zEnd & \hfuzz=500pt double & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
-\hline
-\end{tabularx}
-
-\clearpage
-%==================================
 \subsection{InstrumentGnssReceiver2TimeSeries}\label{InstrumentGnssReceiver2TimeSeries}
 Convert selected GNSS observations or residuals into a simpler time series format.
 The \config{outputfileTimeSeries} is an \file{instrument file}{instrument} (MISCVALUES).
@@ -8241,7 +8183,8 @@ Name & Type & Annotation\\
 \clearpage
 %==================================
 \subsection{GnssStationLog2Platform}\label{GnssStationLog2Platform}
-Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} to \configFile{outputfileStationPlatform}{platform}.
+Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} or
+\href{https://files.igs.org/pub/station/general/blank_v2.0.log}{IGS station log format v2.0} to \configFile{outputfileStationPlatform}{platform}.
 
 If \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition} is provided, station log data is cross-checked with the given antenna definitions.
 Cross-checking station log data with a \href{https://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file} is
@@ -8256,28 +8199,6 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStationPlatform & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStationLog & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAntennaDefinition & \hfuzz=500pt filename & \hfuzz=500pt used to check antennas\\
-\hline
-\end{tabularx}
-
-\clearpage
-%==================================
-\subsection{GnssStationLog2StationInfo}\label{GnssStationLog2StationInfo}
-Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} to \configFile{outputfileStationInfo}{gnssStationInfo}.
-
-If \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition} is provided, station log data is cross-checked with the given antenna definitions.
-Cross-checking station log data with a \href{https://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file} is also
-possible by providing \config{inputfileSinex}. Any failed checks result in warnings in the output log.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStationInfo & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStationLog & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAntennaDefinition & \hfuzz=500pt filename & \hfuzz=500pt used to check antennas\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSinex & \hfuzz=500pt filename & \hfuzz=500pt used to cross-check station log with SINEX file\\
 \hline
 \end{tabularx}
 
@@ -10214,6 +10135,60 @@ Setup up a \configClass{loop:platformEquipment}{loopType:platformEquipment} inst
   \end{itemize}
 \end{itemize}
 Attribute this loop to programs, which uses the variables.
+
+\clearpage
+%==================================
+\subsection{GnssStationInfoCreate}\label{GnssStationInfoCreate}
+DEPRECATED. Please use \program{PlatformCreate} instead.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileStationInfo & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~markerName & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~markerNumber & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~approxPositionX & \hfuzz=500pt double & \hfuzz=500pt [m] in TRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~approxPositionY & \hfuzz=500pt double & \hfuzz=500pt [m] in TRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~approxPositionZ & \hfuzz=500pt double & \hfuzz=500pt [m] in TRF\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~antenna & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~radome & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionX & \hfuzz=500pt double & \hfuzz=500pt [m] ARP in north, east, up or vehicle system\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionY & \hfuzz=500pt double & \hfuzz=500pt [m] ARP in north, east, up or vehicle system\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~positionZ & \hfuzz=500pt double & \hfuzz=500pt [m] ARP in north, east, up or vehicle system\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationX & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to left-handed antenna system\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationY & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to left-handed antenna system\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~rotationZ & \hfuzz=500pt angle & \hfuzz=500pt [degree] from local/vehicle to left-handed antenna system\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipX & \hfuzz=500pt boolean & \hfuzz=500pt flip x-axis (after rotation)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipY & \hfuzz=500pt boolean & \hfuzz=500pt flip y-axis (after rotation)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~flipZ & \hfuzz=500pt boolean & \hfuzz=500pt flip z-axis (after rotation)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~receiver & \hfuzz=500pt sequence & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~serial & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~version & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~referencePoint & \hfuzz=500pt sequence & \hfuzz=500pt e.g. center of mass in satellite frame\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~comment & \hfuzz=500pt string & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~xStart & \hfuzz=500pt double & \hfuzz=500pt [m] in north, east, up or vehicle system\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~yStart & \hfuzz=500pt double & \hfuzz=500pt linear motion between start and end\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~zStart & \hfuzz=500pt double & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~xEnd & \hfuzz=500pt double & \hfuzz=500pt [m] in north, east, up or vehicle system\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~yEnd & \hfuzz=500pt double & \hfuzz=500pt linear motion between start and end\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~zEnd & \hfuzz=500pt double & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt \\
+\hline
+\end{tabularx}
 
 \clearpage
 %==================================

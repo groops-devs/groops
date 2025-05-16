@@ -48,7 +48,7 @@ public:
 };
 
 GROOPS_REGISTER_PROGRAM(GnssStationLog2Platform, SINGLEPROCESS, "GNSS analysis", Conversion, Gnss)
-// GROOPS_RENAMED_PROGRAM(GnssStationLog2StationInfo, GnssStationLog2Platform, date2time(2023, 1, 4))
+GROOPS_RENAMED_PROGRAM(GnssStationLog2StationInfo, GnssStationLog2Platform, date2time(2025, 5, 15))
 
 /***********************************************/
 

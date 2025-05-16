@@ -31,7 +31,6 @@ Therefore it can be used to get an idea about the content of binary files.
 #include "files/fileGnssAntennaDefinition.h"
 #include "files/fileGnssReceiverDefinition.h"
 #include "files/fileGnssSignalBias.h"
-#include "files/fileGnssStationInfo.h"
 #include "files/filePlatform.h"
 #include "files/fileGriddedData.h"
 #include "files/fileGriddedDataTimeSeries.h"
@@ -304,7 +303,7 @@ void FileConvert::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       readFileGnssSignalBias (fileNameInput,  x);
       writeFileGnssSignalBias(fileNameOutput, x);
     }
-    else if((type == FILE_PLATFORM_TYPE) || (type == FILE_GNSSSTATIONINFO_TYPE))
+    else if((type == FILE_PLATFORM_TYPE) || (type == "stationInfo"))
     {
       Platform x;
       readFilePlatform (fileNameInput,  x);

@@ -10799,7 +10799,6 @@
 			<xs:appinfo>rename: GnssAntennaRepresentationConstraint = GnssAntennaNormalsConstraint</xs:appinfo>
 			<xs:appinfo>rename: GnssResiduals2AntennaDefinition = GnssResiduals2AccuracyDefinition</xs:appinfo>
 			<xs:appinfo>rename: GnssResiduals2GriddedData = GnssResiduals2Skyplot</xs:appinfo>
-			<xs:appinfo>rename: GnssCreateStationInfo = GnssStationInfoCreate</xs:appinfo>
 			<xs:appinfo>rename: GnssRepresentation2AntennaDefinition = ParameterVector2GnssAntennaDefinition</xs:appinfo>
 			<xs:appinfo>rename: Gravityfield2DegreeAmplitudeTimeSeries = Gravityfield2DegreeAmplitudesPlotGrid</xs:appinfo>
 			<xs:appinfo>rename: DisplacementTimeSeries = Gravityfield2DisplacementTimeSeries</xs:appinfo>
@@ -10843,6 +10842,7 @@
 			<xs:appinfo>rename: IersRapidEop2Earthrotation = IersRapidIAU2000EarthOrientationParameter</xs:appinfo>
 			<xs:appinfo>rename: IGS2EarthRotation = Igs2EarthOrientationParameter</xs:appinfo>
 			<xs:appinfo>rename: Igs2InstrumentClock = GnssClockRinex2InstrumentClock</xs:appinfo>
+			<xs:appinfo>rename: GnssStationLog2StationInfo = GnssStationLog2Platform</xs:appinfo>
 			<xs:appinfo>rename: Tsxtdx2Orbit = Tsxtdx2Starcamera</xs:appinfo>
 			<xs:appinfo>rename: Tsxtdx2Starcamera = TerraSarTandem2StarCamera</xs:appinfo>
 			<xs:appinfo>rename: Kinematic2Orbit = BerneseKinematic2Orbit</xs:appinfo>
@@ -10853,6 +10853,7 @@
 			<xs:appinfo>rename: ReadOceanBottomPressurePSMSL = PsmslOceanBottomPressure2TimeSeries</xs:appinfo>
 			<xs:appinfo>rename: Sp3file2Orbit = Sp3Format2Orbit</xs:appinfo>
 			<xs:appinfo>rename: Igs2Orbit = Sp3Format2Orbit</xs:appinfo>
+			<xs:appinfo>rename: GnssCreateStationInfo = GnssStationInfoCreate</xs:appinfo>
 			<xs:appinfo>rename: GnssSinex2StationPosition = Sinex2StationPosition</xs:appinfo>
 		</xs:annotation>
 		<xs:choice>
@@ -12202,138 +12203,6 @@
 							<xs:annotation>
 								<xs:documentation>[m] noise added to the simulated receiver clock</xs:documentation>
 							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="GnssStationInfoCreate">
-				<xs:annotation>
-					<xs:documentation>create station information file for GNSS receivers</xs:documentation>
-					<xs:appinfo>tag: Gnss</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileStationInfo" type="filename"/>
-						<xs:element name="markerName" type="string"/>
-						<xs:element name="markerNumber" type="string" minOccurs="0"/>
-						<xs:element name="comment" type="string" minOccurs="0"/>
-						<xs:element name="approxPositionX" type="double" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>[m] in TRF</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="approxPositionY" type="double" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>[m] in TRF</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="approxPositionZ" type="double" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>[m] in TRF</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="antenna" maxOccurs="unbounded">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="name" type="string"/>
-									<xs:element name="serial" type="string" minOccurs="0"/>
-									<xs:element name="radome" type="string" minOccurs="0"/>
-									<xs:element name="comment" type="string" minOccurs="0"/>
-									<xs:element name="timeStart" type="time" minOccurs="0"/>
-									<xs:element name="timeEnd" type="time" minOccurs="0"/>
-									<xs:element name="positionX" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="positionY" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="positionZ" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="rotationX" type="angle" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="rotationY" type="angle" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="rotationZ" type="angle" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="flipX" type="boolean" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>flip x-axis (after rotation)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="flipY" type="boolean" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>flip y-axis (after rotation)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="flipZ" type="boolean" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>flip z-axis (after rotation)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
-						<xs:element name="receiver" minOccurs="0" maxOccurs="unbounded">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="name" type="string"/>
-									<xs:element name="serial" type="string" minOccurs="0"/>
-									<xs:element name="version" type="string" minOccurs="0"/>
-									<xs:element name="comment" type="string" minOccurs="0"/>
-									<xs:element name="timeStart" type="time" minOccurs="0"/>
-									<xs:element name="timeEnd" type="time" minOccurs="0"/>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
-						<xs:element name="referencePoint" minOccurs="0" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>e.g. center of mass in satellite frame</xs:documentation>
-							</xs:annotation>
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="comment" type="string" minOccurs="0"/>
-									<xs:element name="xStart" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="yStart" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>linear motion between start and end</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="zStart" type="double" default="0"/>
-									<xs:element name="xEnd" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="yEnd" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>linear motion between start and end</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="zEnd" type="double" default="0"/>
-									<xs:element name="timeStart" type="time" minOccurs="0"/>
-									<xs:element name="timeEnd" type="time" minOccurs="0"/>
-								</xs:sequence>
-							</xs:complexType>
 						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
@@ -22685,29 +22554,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GnssStationLog2StationInfo">
-				<xs:annotation>
-					<xs:documentation>GNSS analysis</xs:documentation>
-					<xs:appinfo>tag: Conversion</xs:appinfo>
-					<xs:appinfo>tag: Gnss</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileStationInfo" type="filename"/>
-						<xs:element name="inputfileStationLog" type="filename"/>
-						<xs:element name="inputfileAntennaDefinition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
-							<xs:annotation>
-								<xs:documentation>used to check antennas</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileSinex" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/igs_with_former.snx">
-							<xs:annotation>
-								<xs:documentation>used to cross-check station log with SINEX file</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="GnssTroposphere2TropoSinex">
 				<xs:annotation>
 					<xs:documentation>Convert GNSS troposphere data from GROOPS format to SINEX_TRO format.</xs:documentation>
@@ -25530,6 +25376,138 @@
 					<xs:documentation>This program no longer works! See documentation for help.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
+			</xs:element>
+			<xs:element name="GnssStationInfoCreate">
+				<xs:annotation>
+					<xs:documentation>DEPRECATED. Please use PlatformCreate instead.</xs:documentation>
+					<xs:appinfo>tag: Deprecated</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileStationInfo" type="filename"/>
+						<xs:element name="markerName" type="string"/>
+						<xs:element name="markerNumber" type="string" minOccurs="0"/>
+						<xs:element name="comment" type="string" minOccurs="0"/>
+						<xs:element name="approxPositionX" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>[m] in TRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="approxPositionY" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>[m] in TRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="approxPositionZ" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>[m] in TRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="antenna" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="name" type="string"/>
+									<xs:element name="serial" type="string" minOccurs="0"/>
+									<xs:element name="radome" type="string" minOccurs="0"/>
+									<xs:element name="comment" type="string" minOccurs="0"/>
+									<xs:element name="timeStart" type="time" minOccurs="0"/>
+									<xs:element name="timeEnd" type="time" minOccurs="0"/>
+									<xs:element name="positionX" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="positionY" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="positionZ" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="rotationX" type="angle" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="rotationY" type="angle" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="rotationZ" type="angle" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="flipX" type="boolean" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>flip x-axis (after rotation)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="flipY" type="boolean" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>flip y-axis (after rotation)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="flipZ" type="boolean" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>flip z-axis (after rotation)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="receiver" minOccurs="0" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="name" type="string"/>
+									<xs:element name="serial" type="string" minOccurs="0"/>
+									<xs:element name="version" type="string" minOccurs="0"/>
+									<xs:element name="comment" type="string" minOccurs="0"/>
+									<xs:element name="timeStart" type="time" minOccurs="0"/>
+									<xs:element name="timeEnd" type="time" minOccurs="0"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="referencePoint" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>e.g. center of mass in satellite frame</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="comment" type="string" minOccurs="0"/>
+									<xs:element name="xStart" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="yStart" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>linear motion between start and end</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="zStart" type="double" default="0"/>
+									<xs:element name="xEnd" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="yEnd" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>linear motion between start and end</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="zEnd" type="double" default="0"/>
+									<xs:element name="timeStart" type="time" minOccurs="0"/>
+									<xs:element name="timeEnd" type="time" minOccurs="0"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
 			</xs:element>
 			<xs:element name="GridRectangular2NetCdf">
 				<xs:annotation>
