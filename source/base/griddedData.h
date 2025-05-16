@@ -48,7 +48,7 @@ public:
   /** @brief Sort points geographically (North/West->South/East). */
   void sort();
 
-  /** @brief Define points a rectangular grid?.
+  /** @brief Define points a rectangular grid?
   * if function returns FALSE, @a lambda, @a phi, @a radius contain garbage.
   * if function returns TRUE, points are in same order as:
   @code
@@ -62,7 +62,7 @@ public:
   /** @brief Automatically area computation of rectangular grids (overwrite areas). */
   Bool computeArea();
 
-  /** @brief Is GriddedData valid?.
+  /** @brief Is GriddedData valid?
   * Test dimensions of vectors. */
   Bool isValid() const;
 };
@@ -93,7 +93,7 @@ public:
   * @return total area (4pi for global grids). */
   Double areaElements(std::vector<Double> &dLambda, std::vector<Double> &dPhi) const;
 
-  /** @brief Is GriddedDataRectangular valid?.
+  /** @brief Is GriddedDataRectangular valid?
   * Test dimensions of vectors. */
   Bool isValid() const;
 };

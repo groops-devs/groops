@@ -71,7 +71,7 @@ public:
   /** @brief Interpret coefficients as inner/outer space harmonics. */
   void setInterior(Bool interior=TRUE) {_interior = interior;}
 
-  /** @brief Interpret coefficients as inner space harmonics?. */
+  /** @brief Interpret coefficients as inner space harmonics? */
   Bool isInterior() const {return _interior;}
 
   /** @brief Convert spherical harmonics.

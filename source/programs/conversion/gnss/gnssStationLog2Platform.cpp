@@ -13,7 +13,8 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} to \configFile{outputfileStationPlatform}{platform}.
+Converts \href{https://files.igs.org/pub/station/general/blank.log}{IGS station log format} or
+\href{https://files.igs.org/pub/station/general/blank_v2.0.log}{IGS station log format v2.0} to \configFile{outputfileStationPlatform}{platform}.
 
 If \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition} is provided, station log data is cross-checked with the given antenna definitions.
 Cross-checking station log data with a \href{https://www.iers.org/IERS/EN/Organization/AnalysisCoordinator/SinexFormat/sinex.html}{SINEX file} is
