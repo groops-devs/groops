@@ -13,6 +13,7 @@
 
 #include "base/import.h"
 #include "config/config.h"
+#include "inputOutput/system.h"
 #include "files/fileInstrument.h"
 #include "files/fileGriddedData.h"
 #include "misc/varianceComponentEstimation.h"
@@ -78,24 +79,40 @@ void SlrParametrizationStaticPositions::init(Slr *slr, const std::vector<const S
       // no net positions
       noNetPos = pos;
       if(!fileNameNoNetPositions.empty())
-        for(UInt idStat=0; idStat<slr->stations.size(); idStat++)
-          if(platforms.at(idStat))
-          {
-            try
+      {
+        noNetPos = std::vector<Vector3d>(pos0.size(), Vector3d(NAN_EXPR, NAN_EXPR, NAN_EXPR));
+        Bool someDisabled = FALSE;
+        do
+        {
+          someDisabled = FALSE;
+          selectedNoNetStations = selectorNoNetStations->select(slr->times.front(), slr->times.back(), platforms);
+          for(UInt idStat=0; idStat<slr->stations.size(); idStat++)
+            if(selectedNoNetStations.at(idStat) && std::isnan(noNetPos.at(idStat).r()))
             {
-              VariableList varList;
-              varList.setVariable("station", slr->stations.at(idStat)->name());
-              Vector3dArc arc = InstrumentFile::read(fileNameNoNetPositions(varList));
-              auto iter = (arc.size() == 1) ? arc.begin() : std::find_if(arc.begin(), arc.end(), [&](const Epoch &e){return e.time.isInInterval(slr->stations.at(idStat)->times.front(), slr->stations.at(idStat)->times.back());});
-              if(iter == arc.end())
-                throw(Exception("no position found"));
-              noNetPos.at(idStat) = iter->vector3d;
+              try
+              {
+                VariableList fileNameVariableList;
+                fileNameVariableList.setVariable("station", slr->stations.at(idStat)->name());
+                if(!System::exists(fileNameNoNetPositions(fileNameVariableList)))
+                  throw(Exception("file <"+fileNameNoNetPositions(fileNameVariableList).str()+"> not exist"));
+                const Time timesMid = 0.5*(slr->times.front()+slr->times.back());
+                Vector3dArc arc = InstrumentFile::read(fileNameNoNetPositions(fileNameVariableList));
+                auto iter = std::min_element(arc.begin(), arc.end(), [&](const Epoch &e1, const Epoch &e2)
+                                            {return std::fabs((e1.time-timesMid).mjd()) < std::fabs((e2.time-timesMid).mjd());});
+                if(!arc.size() || ((arc.size() > 1) && (std::fabs((iter->time-timesMid).mjd()) > 0.5*medianSampling(arc.times()).mjd())))
+                  throw(Exception("No a-priori position found"));
+                noNetPos.at(idStat) = iter->vector3d;
+              }
+              catch(std::exception &e)
+              {
+                logWarningOnce<<slr->stations.at(idStat)->name()<<": "<<e.what()<<" -> not used for computation of net translation/rotation/scale"<<Log::endl;
+                platforms.at(idStat) = nullptr;
+                someDisabled = TRUE;
+              }
             }
-            catch(std::exception &/*e*/)
-            {
-              platforms.at(idStat) = nullptr;
-            }
-          }
+        }
+        while(someDisabled);
+      } // if(!fileNameNoNetPositions.empty())
 
       selectedNoNetStations = selectorNoNetStations->select(slr->times.front(), slr->times.back(), platforms);
       const UInt countStation = std::count(selectedNoNetStations.begin(), selectedNoNetStations.end(), TRUE);

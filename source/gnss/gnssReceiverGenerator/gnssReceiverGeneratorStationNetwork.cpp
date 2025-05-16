@@ -56,6 +56,7 @@ GnssReceiverGeneratorStationNetwork::GnssReceiverGeneratorStationNetwork(Config 
     readConfig(config, "inputfileReceiverDefinition",        fileNameReceiverDef,     Config::OPTIONAL, "", "observed signal types");
     readConfig(config, "inputfileAccuracyDefinition",        fileNameAccuracyDef,     Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/accuracyDefinition/accuracyDefinition.xml", "elevation and azimuth dependent accuracy");
     readConfig(config, "inputfileStationPosition",           fileNameStationPosition, Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/position/igs/igs20/stationPosition.{station}.dat", "variable {station} available.");
+    readConfig(config, "disableStationWithoutPosition",      disableWithoutPosition,  Config::DEFAULT,  "0",    "drop stations without apriori position");
     readConfig(config, "inputfileClock",                     fileNameClock,           Config::OPTIONAL, "",     "variable {station} available");
     readConfig(config, "inputfileObservations",              fileNameObs,             Config::OPTIONAL, "gnssReceiver_{loopTime:%D}.{station}.dat", "variable {station} available");
     readConfig(config, "loadingDisplacement",                gravityfield,            Config::DEFAULT,  "",     "loading deformation");
@@ -140,23 +141,20 @@ void GnssReceiverGeneratorStationNetwork::init(std::vector<GnssType> simulationT
           {
             try
             {
+              if(!System::exists(fileNameStationPosition(fileNameVariableList)))
+                throw(Exception("file <"+fileNameStationPosition(fileNameVariableList).str()+"> not exist"));
+              const Time timesMid = 0.5*(times.front()+times.back());
               Vector3dArc arc = InstrumentFile::read(fileNameStationPosition(fileNameVariableList));
-              if(arc.size()==1)
-                platform.approxPosition = arc.begin()->vector3d;
-              else
-              {
-                std::vector<Time> arcTimes = arc.times();
-                auto iter = std::upper_bound(arcTimes.begin(), arcTimes.end(), Time(times.front().mjdInt(),0));
-                if(iter != arcTimes.end())
-                  platform.approxPosition = arc.at(std::distance(arcTimes.begin(), iter) - 1).vector3d;
-                else
-                  logWarningOnce<<platform.markerName<<"."<<platform.markerNumber<<": No a-priori position found in station position file!"<<Log::endl;
-              }
+              auto iter = std::min_element(arc.begin(), arc.end(), [&](const Epoch &e1, const Epoch &e2)
+                                          {return std::fabs((e1.time-timesMid).mjd()) < std::fabs((e2.time-timesMid).mjd());});
+              if(!arc.size() || ((arc.size() > 1) && (std::fabs((iter->time-timesMid).mjd()) > 0.5*medianSampling(arc.times()).mjd())))
+                throw(Exception("No a-priori position found"));
+              platform.approxPosition = iter->vector3d;
             }
-            catch(std::exception &/*e*/)
+            catch(std::exception &e)
             {
-              logWarningOnce<<platform.markerName<<"."<<platform.markerNumber<<": cannot read station position file "
-                            <<fileNameStationPosition(fileNameVariableList)<<Log::endl;
+              if(disableWithoutPosition)
+                throw;
             }
           }
 

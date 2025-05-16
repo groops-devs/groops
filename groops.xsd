@@ -2803,6 +2803,11 @@
 								<xs:documentation>variable {station} available.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="disableStationWithoutPosition" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>drop stations without apriori position</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="inputfileClock" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable {station} available</xs:documentation>
@@ -10021,6 +10026,11 @@
 						<xs:element name="inputfileStationPosition" type="filename" minOccurs="0" default="{groopsDataDir}/slr/stations/position/slrf2020_CM/stationPosition.{station}.dat">
 							<xs:annotation>
 								<xs:documentation>station position</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="disableStationWithoutPosition" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>drop stations without apriori position</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileObservations" type="filename" minOccurs="0" default="normalPoints_{satellite}_{station}_{loopTime:%D}.dat">

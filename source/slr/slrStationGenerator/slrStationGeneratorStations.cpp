@@ -37,6 +37,7 @@ SlrStationGeneratorStations::SlrStationGeneratorStations(Config &config)
     readConfig(config, "inputfileStationList",               fileNameStationList,     Config::MUSTSET,  "{groopsDataDir}/slr/stations/stationList.txt", "ascii file with station names");
     readConfig(config, "inputfileStationInfo",               fileNameStationInfo,     Config::MUSTSET,  "{groopsDataDir}/slr/stations/stationInfo/stationInfo.{station}.xml", "station metadata");
     readConfig(config, "inputfileStationPosition",           fileNameStationPosition, Config::OPTIONAL, "{groopsDataDir}/slr/stations/position/slrf2020_CM/stationPosition.{station}.dat", "station position");
+    readConfig(config, "disableStationWithoutPosition",      disableWithoutPosition,  Config::DEFAULT,  "0",   "drop stations without apriori position");
     readConfig(config, "inputfileObservations",              fileNameObs,             Config::OPTIONAL, "normalPoints_{satellite}_{station}_{loopTime:%D}.dat", "variable {station} {satellite} available");
     readConfig(config, "accuracy",                           accuracyExpr,            Config::MUSTSET,  "if(abs(residual)>30, NAN, accuracy)", "[m] used for weighting, variables: {residual}, {accuracy}, {redundancy}, {laserWavelength}, {azimut}, {elevation}");
     readConfig(config, "loadingDisplacement",                gravityfield,            Config::DEFAULT,  "",    "loading deformation");
@@ -84,19 +85,20 @@ void SlrStationGeneratorStations::init(const std::vector<Time> &times, const std
         {
           try
           {
+            if(!System::exists(fileNameStationPosition(varList)))
+              throw(Exception("file <"+fileNameStationPosition(varList).str()+"> not exist"));
+            const Time timesMid = 0.5*(times.front()+times.back());
             Vector3dArc arc = InstrumentFile::read(fileNameStationPosition(varList));
-            auto iter = (arc.size() == 1) ? arc.begin() : std::find_if(arc.begin(), arc.end(), [&](const Epoch &e){return e.time.isInInterval(times.front(), times.back());});
-            if(iter != arc.end())
-            {
-              platform.approxPosition = iter->vector3d;
-              // logInfo<<stationName<<" precise pos at "<<iter->time.dateTimeStr()<<Log::endl;
-            }
-            else
-              throw(Exception(""));
+            auto iter = std::min_element(arc.begin(), arc.end(), [&](const Epoch &e1, const Epoch &e2)
+                                        {return std::fabs((e1.time-timesMid).mjd()) < std::fabs((e2.time-timesMid).mjd());});
+            if(!arc.size() || ((arc.size() > 1) && (std::fabs((iter->time-timesMid).mjd()) > 0.5*medianSampling(arc.times()).mjd())))
+              throw(Exception("No a-priori position found"));
+            platform.approxPosition = iter->vector3d;
           }
-          catch(std::exception &/*e*/)
+          catch(std::exception &e)
           {
-            logInfo<<stationName<<" no precise pos !!!!!!!!!!!!"<<Log::endl;
+            if(disableWithoutPosition)
+              throw;
           }
         }
 

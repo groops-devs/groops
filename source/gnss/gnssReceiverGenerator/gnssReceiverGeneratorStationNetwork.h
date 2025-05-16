@@ -63,6 +63,7 @@ class GnssReceiverGeneratorStationNetwork : public GnssReceiverGeneratorBase
   FileName              fileNameAntennaDef, fileNameReceiverDef, fileNameAccuracyDef;
   FileName              fileNameStationPosition, fileNameClock, fileNameObs;
   UInt                  maxStationCount;
+  Bool                  disableWithoutPosition;
   GravityfieldPtr       gravityfield;
   TidesPtr              tides;
   EphemeridesPtr        ephemerides;
