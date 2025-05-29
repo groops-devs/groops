@@ -136,6 +136,17 @@ void NormalsEliminate::run(Config &config, Parallel::CommunicatorPtr comm)
     {
       logStatus<<"eliminate parameters from normal equations"<<Log::endl;
       const UInt eliminationBlocks = eliminationBlockIndex.size();
+      for(UInt i=0; i<eliminationBlocks; i++)
+      {
+        normal.setBlock(i, i);
+        if(normal.isMyRank(i,i))
+        {
+          Matrix &N = normal.N(i,i);
+          for(UInt k=0; k<N.rows(); k++)
+            if(N(k,k) == 0.)
+              N(k,k) += 1.0;
+        }
+      }
       normal.cholesky(TRUE, 0, eliminationBlocks, TRUE);
       normal.triangularTransSolve(rhs, 0, eliminationBlocks);
       normal.eraseBlocks(0, eliminationBlocks);
