@@ -26,6 +26,7 @@
 - Other:            gnss: simulation considers more apriori models (e.g. TEC maps).
 - Other:            IGRF: Updated International Geomagnetic Reference Field (IGRF) to 14th Generation Release
 - Other:            GNSS: Improved setup of ambiguity parameters. Considers splitted network, splitted observations (e.g. L2LG, L2WG).
+- Other:            Store more double digits in xml format.
 
 
 # Release 2024-06-24

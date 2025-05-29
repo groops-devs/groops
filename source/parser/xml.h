@@ -277,7 +277,7 @@ template<typename T> void XmlAttribute::setValue(const T &var)
   {
     std::stringstream ss;
     ss.setf(std::ios::scientific,std::ios::floatfield);
-    ss.precision(14);
+    ss.precision(18);
     ss<<var; ss>>text;
     if(!(ss.good()||ss.eof()))
       throw Exception("stream error");
@@ -349,7 +349,7 @@ template<typename T> void XmlNode::setValue(const T &var)
   {
     std::stringstream ss;
     ss.setf(std::ios::scientific,std::ios::floatfield);
-    ss.precision(14);
+    ss.precision(18);
     ss<<var; ss>>text_;
     if(!(ss.good()||ss.eof()))
       throw Exception("stream error");
