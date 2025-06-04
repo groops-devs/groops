@@ -501,7 +501,7 @@ Matrix Arc::matrix() const
   {
     if(!size())
       return Matrix();
-    Matrix A(size(), 1+at(0).data().rows());
+    Matrix A(size(), 1+at(0).data().rows(), Matrix::NOFILL);
     for(UInt i=0; i<size(); i++)
       A(i,0) = at(i).time.mjd();
 

@@ -93,7 +93,7 @@ template<> void load(InArchive  &ar, Rotary3d &x)
 {
   if(ar.version() < 20170920)
   {
-    Matrix R(3,3);
+    Matrix R(3, 3, Matrix::NOFILL);
     ar>>nameValue("xx", R(0,0))>>nameValue("xy", R(0,1))>>nameValue("xz", R(0,2));
     ar>>nameValue("yx", R(1,0))>>nameValue("yy", R(1,1))>>nameValue("yz", R(1,2));
     ar>>nameValue("zx", R(2,0))>>nameValue("zy", R(2,1))>>nameValue("zz", R(2,2));

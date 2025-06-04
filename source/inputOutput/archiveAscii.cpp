@@ -377,7 +377,7 @@ void InArchiveAscii::load(Matrix &A)
           values.at(i).push_back(std::stod(dummy));
         }
       }
-      A = Matrix(values.size(), values.at(0).size());
+      A = Matrix(values.size(), values.at(0).size(), Matrix::NOFILL);
       for(UInt i=0; i<A.rows(); i++)
         for(UInt k=0; k<A.columns(); k++)
           A(i,k) = values.at(i).at(k);
@@ -389,7 +389,7 @@ void InArchiveAscii::load(Matrix &A)
     stream>>type>>rows>>c>>columns>>c;
     if(type=="Matrix(")
     {
-      A = Matrix(rows,columns);
+      A = Matrix(rows, columns, Matrix::NOFILL);
       for(UInt i=0; i<A.rows(); i++)
         for(UInt k=0; k<A.columns(); k++)
           A(i,k) = readDouble(stream);

@@ -62,13 +62,14 @@ public:
 
   const_MatrixSlice()                          = delete;  //!< Disallow default constructor.
   const_MatrixSlice(const const_MatrixSlice &) = default; //!< Copy constructor.
+  const_MatrixSlice(const_MatrixSlice &&)      = default; //!< Move constructor.
   const_MatrixSlice &operator=(const const_MatrixSlice &) = delete; //!< Disallow copying.
 
   UInt rows()    const {return _rows;}          //!< row count.
   UInt columns() const {return _columns;}       //!< column count.
   UInt size()    const {return _rows*_columns;} //!< size = rows*columns.
 
-  inline const Double &operator () (UInt row, UInt column) const; /// matrix element.
+  inline Double operator () (UInt row, UInt column) const; /// matrix element.
 
   /** @brief Transposed matrix.
   * The transpose points to the same memory. */
@@ -100,7 +101,7 @@ public:
   /** @brief Pointer to the memory.
   * Access to the element `A(row,column)` with
   * `ptr = (A.isRowMajorOrder()) ? (A.field() + (column + row*A.ld())) : (A.field() + (row + column*A.ld()));` */
-  inline const Double *field() const;
+  inline const Double *const_field() const;
 
   /** @brief Leading Dimension.
   * Number of elements needed to reach the next column or row,
@@ -129,7 +130,7 @@ protected:
   Bool _rowMajorOrder;
   std::shared_ptr<MatrixBase> base;
 
-  const_MatrixSlice(UInt rows, UInt columns, const_MatrixSlice::Type type, const_MatrixSlice::Uplo uplo, Double fill=0);
+  const_MatrixSlice(UInt rows, UInt columns, const_MatrixSlice::Type type, const_MatrixSlice::Uplo uplo, Bool fill, Double value);
 
   friend class MatrixSlice;
   friend class Matrix;
@@ -156,10 +157,12 @@ protected:
 class MatrixSlice : public const_MatrixSlice
 {
 public:
-  MatrixSlice() = delete;                                           //!< Disallow default constructor.
-  MatrixSlice(const MatrixSlice &) = default;                       //!< Copy constructor.
-  MatrixSlice(const const_MatrixSlice &x) : const_MatrixSlice(x) {} //!< Copy constructor.
-  MatrixSlice &operator=(MatrixSlice &) = delete;                   //!< Disallow copying
+  MatrixSlice() = delete;                                                 //!< Disallow default constructor.
+  MatrixSlice(const MatrixSlice &) = default;                             //!< Copy constructor.
+  MatrixSlice(const const_MatrixSlice &x) : const_MatrixSlice(x) {}       //!< Copy constructor.
+  MatrixSlice(MatrixSlice &&) = default;                                  //!< Move constructor.
+  MatrixSlice(const_MatrixSlice &&x) : const_MatrixSlice(std::move(x)) {} //!< Move constructor.
+  MatrixSlice &operator=(MatrixSlice &) = delete;                         //!< Disallow copying
 
   /// writable matrix element.
   inline Double &operator () (UInt row, UInt column) const;
@@ -210,7 +213,7 @@ public:
   const MatrixSlice &operator/=(Double c) const;
 
 protected:
-  MatrixSlice(UInt rows, UInt columns, MatrixSlice::Type type, MatrixSlice::Uplo uplo, Double fill=0) : const_MatrixSlice(rows, columns, type, uplo, fill) {}
+  MatrixSlice(UInt rows, UInt columns, MatrixSlice::Type type, MatrixSlice::Uplo uplo, Bool fill, Double value) : const_MatrixSlice(rows, columns, type, uplo, fill, value) {}
 }; // class MatrixSlice
 
 /***********************************************/
@@ -223,20 +226,33 @@ protected:
 class Matrix : public MatrixSlice
 {
 public:
+  /// to mark uninitialzed elements.
+  enum Fill {NOFILL};
+
   /// Default Constructor.
-  explicit Matrix(UInt rows=0, UInt columns=0, Double fill=0.) : MatrixSlice(rows, columns, GENERAL, UPPER, fill) {}
+  Matrix() : MatrixSlice(0, 0, GENERAL, UPPER, FALSE, 0.) {}
+
+  /// Default Constructor.
+  explicit Matrix(UInt rows, UInt columns, Double fill=0.) : MatrixSlice(rows, columns, GENERAL, UPPER, TRUE, fill) {}
+
+  /// Constructor with uninitialzed elements.
+  explicit Matrix(UInt rows, UInt columns, Fill /*fill*/) : MatrixSlice(rows, columns, GENERAL, UPPER, FALSE, 0.) {}
 
   /** @brief Constructor for quadratic matrices.
   * @param rows Number of rows and columns.
   * @param type GENERAL, SYMMETRIC, TRIANGULAR
   * @param uplo Only the UPPER or LOWER part of the matrix is used */
-  Matrix(UInt rows, Type type, Uplo uplo=Matrix::UPPER) : MatrixSlice(rows, rows, type, uplo) {}
+  Matrix(UInt rows, Type type, Uplo uplo=Matrix::UPPER) : MatrixSlice(rows, rows, type, uplo, TRUE, 0.) {}
 
   Matrix(const Matrix &x);                                           //!< Copy Constructor.
   Matrix(const const_MatrixSlice &x);                                //!< Copy Constructor.
+  Matrix(Matrix &&x);                                                //!< Move Constructor.
+  Matrix(const_MatrixSlice &&x);                                     //!< Move Constructor.
   Matrix(std::initializer_list<std::initializer_list<Double>> list); //!< List Constructor.
   Matrix &operator=(const Matrix &x);                                //!< Assignment.
   Matrix &operator=(const const_MatrixSlice &x);                     //!< Assignment.
+  Matrix &operator=(Matrix &&x);                                     //!< Move Assignment.
+  Matrix &operator=(const_MatrixSlice &&x);                          //!< Move Assignment.
 
   /// matrix element.
   Double operator()(UInt row, UInt column) const {return const_MatrixSlice::operator()(row,column);}
@@ -281,7 +297,7 @@ public:
   MatrixSlice row(UInt row, UInt len=1) {return slice(row,0,len,columns());}
 
 private:
-  void assignment(const const_MatrixSlice &x);
+  Bool shrink();
 };
 
 /***********************************************/
@@ -298,11 +314,14 @@ public:
 
   Vector(const Vector &) = default;              //!< Copy Constructor.
   Vector(const const_MatrixSlice &x);            //!< Copy Constructor.
+  Vector(Vector &&) = default;                   //!< Move Constructor.
+  Vector(const_MatrixSlice &&x);                 //!< Move Constructor.
   Vector(std::initializer_list<Double> list);    //!< List Constructor.
   Vector(const std::vector<Double> &x);          //!< Cast operator.
-//   explicit Vector(const std::vector<Time> &x);   //!< Cast operator.
   Vector &operator=(const Vector &) = default;   //!< Assignment.
   Vector &operator=(const const_MatrixSlice &x); //!< Assignment.
+  Vector &operator=(Vector &&) = default;        //!< Move Assignment.
+  Vector &operator=(const_MatrixSlice &&x);      //!< Move Assignment.
 
   inline Double operator()(UInt row) const {return const_MatrixSlice::operator()(row,0);} //!< vector element.
   inline Double operator[](UInt row) const {return const_MatrixSlice::operator()(row,0);} //!< vector element.
@@ -671,10 +690,8 @@ void generateQ(MatrixSliceRef A, const Vector &tau);
 class MatrixBase
 {
 public:
-  explicit MatrixBase(UInt size);  //!< Constructor
-
-  /// count of elements in field.
-  UInt size() const {return _size;}
+  MatrixBase(UInt size, Bool fill, Double value);  //!< Constructor
+  MatrixBase(const MatrixBase &) = default;        //!< Copy Constructor.
 
   /// Readonly access to field.
   inline const Double *const_field() const {return ptr.get();}
@@ -684,8 +701,8 @@ public:
   inline Double *field();
 
 private:
+  std::shared_ptr<Double[]> ptr;
   UInt _size;
-  std::shared_ptr<Double> ptr;
 };
 
 /// @} group matrix
@@ -698,9 +715,10 @@ inline Double *MatrixBase::field()
 {
   if(ptr.use_count()>1) // not threat save
   {
-    auto ptr2 = std::shared_ptr<Double>(new Double[size()], std::default_delete<Double[]>());
-    std::copy_n(ptr.get(), size(), ptr2.get());
-    std::swap(ptr, ptr2);
+    auto ptr2 = std::shared_ptr<Double[]>(new Double[_size]);
+    // auto ptr2 = std::make_shared_for_overwrite<Double[]>(_size); // since c++20
+    std::copy_n(ptr.get(), _size, ptr2.get());
+    ptr = std::move(ptr2);
   }
   return ptr.get();
 }
@@ -717,7 +735,7 @@ inline Matrix const_MatrixSlice::operator-(const const_MatrixSlice &x) const {re
 
 /***********************************************/
 
-inline const Double *const_MatrixSlice::field() const
+inline const Double *const_MatrixSlice::const_field() const
 {
   if(!base)
     throw(Exception("const_MatrixSlice.field: Null-Pointer"));
@@ -736,7 +754,7 @@ inline Double *MatrixSlice::field() const
 /***********************************************/
 
 // readonly
-inline const Double &const_MatrixSlice::operator () (UInt row, UInt  column) const
+inline Double const_MatrixSlice::operator () (UInt row, UInt  column) const
 {
   if((row>=rows()) || (column>=columns()))
     throw(Exception("Access to matrix element ("s+row%"%i x "s+column%"%i) out of range, matrix size ("s+rows()%"%i x "s+columns()%"%i)"s));

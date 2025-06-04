@@ -118,7 +118,7 @@ Transform3d localNorthEastUp(const Vector3d &point, const Ellipsoid &ellipsoid);
 
 inline Matrix Transform3d::matrix() const
 {
-  Matrix R(3,3);
+  Matrix R(3, 3, Matrix::NOFILL);
   for(UInt i=0; i<3; i++)
     for(UInt k=0; k<3; k++)
       R(i,k) = field[i][k];

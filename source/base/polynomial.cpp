@@ -151,7 +151,7 @@ Matrix Polynomial::interpolate(const std::vector<Time> &timesNew, const_MatrixSl
       else
       {
         // polynomial matrix
-        Matrix P(count, degree+1);
+        Matrix P(count, degree+1, Matrix::NOFILL);
         for(UInt k=0; k<count; k++)
         {
           const Double factor = (timesNew.at(i)-times.at(idx+k)).seconds()/sampling;

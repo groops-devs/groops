@@ -22,11 +22,19 @@
 /***** MatrixBase ******************************/
 /***********************************************/
 
-MatrixBase::MatrixBase(UInt size) : _size(size)
+MatrixBase::MatrixBase(UInt size, Bool fill, Double value) : _size(size)
 {
   try
   {
-    ptr = std::shared_ptr<Double>(new Double[_size], std::default_delete<Double[]>());
+    ptr = std::shared_ptr<Double[]>(new Double[_size]);
+    if(fill)
+      std::fill_n(ptr.get(), _size, value);
+
+    // since c++20
+    // if(fill)
+    //   ptr = std::make_shared<Double[]>(_size, value);
+    // else
+    //   ptr = std::make_shared_for_overwrite<Double[]>(_size);
   }
   catch(std::exception &e)
   {
@@ -38,7 +46,7 @@ MatrixBase::MatrixBase(UInt size) : _size(size)
 /***** const_MatrixSlice ***********************/
 /***********************************************/
 
-const_MatrixSlice::const_MatrixSlice(UInt rows, UInt columns, Matrix::Type type, Matrix::Uplo uplo, Double fill) :
+const_MatrixSlice::const_MatrixSlice(UInt rows, UInt columns, Matrix::Type type, Matrix::Uplo uplo, Bool fill, Double value) :
   _rows(rows),
   _columns(columns),
   _start(0),
@@ -48,10 +56,7 @@ const_MatrixSlice::const_MatrixSlice(UInt rows, UInt columns, Matrix::Type type,
   _rowMajorOrder(FALSE)
 {
   if(size())
-  {
-    base = std::make_shared<MatrixBase>(size());
-    std::fill_n(base->field(), base->size(), fill);
-  }
+    base = std::make_shared<MatrixBase>(size(), fill, value);
 }
 
 /***********************************************/
@@ -195,24 +200,22 @@ MatrixSliceRef MatrixSlice::operator /= (Double c) const
 /***** Matrix **********************************/
 /***********************************************/
 
-void Matrix::assignment(const const_MatrixSlice &x)
+Bool Matrix::shrink()
 {
-  if(!size())
-  {
-    base = nullptr;
-  }
-  else if((_ld!=_rows) || _rowMajorOrder)
-  {
-    _start         = 0;
-    _ld            = _rows;
-    _rowMajorOrder = FALSE;
-    base = std::make_shared<MatrixBase>(_rows*_columns);
-    copy(x, *this);
-  }
+  if(!size() || (!_rowMajorOrder && (_ld == _rows) && (_start == 0)))
+    return FALSE;
+
+  auto baseNew = std::make_shared<MatrixBase>(_rows*_columns, FALSE, 0.);
+  if(!_rowMajorOrder)
+    lapack_dlacpy(_rows, _columns, const_field(), ld(), baseNew->field(), _rows);
   else
-  {
-    base = std::make_shared<MatrixBase>(*x.base);
-  }
+    for(UInt i=0; i<_columns; i++)
+      blas_dcopy(static_cast<F77Int>(_rows), const_field()+i, static_cast<F77Int>(ld()), baseNew->field()+i*_rows, 1);
+  base           = std::move(baseNew);
+  _start         = 0;
+  _ld            = _rows;
+  _rowMajorOrder = FALSE;
+  return TRUE;
 }
 
 /***********************************************/
@@ -221,7 +224,8 @@ Matrix::Matrix(const Matrix &x) : MatrixSlice(x)
 {
   try
   {
-    assignment(x);
+    if(base && !shrink())
+      base = std::make_shared<MatrixBase>(*x.base);
   }
   catch(std::exception &e)
   {
@@ -235,7 +239,8 @@ Matrix::Matrix(const const_MatrixSlice &x) : MatrixSlice(x)
 {
   try
   {
-    assignment(x);
+    if(base && !shrink())
+      base = std::make_shared<MatrixBase>(*x.base);
   }
   catch(std::exception &e)
   {
@@ -245,7 +250,27 @@ Matrix::Matrix(const const_MatrixSlice &x) : MatrixSlice(x)
 
 /***********************************************/
 
-Matrix::Matrix(std::initializer_list<std::initializer_list<Double>> list) : MatrixSlice(list.size(), (list.size() ? list.begin()->size() : 0), GENERAL, UPPER)
+Matrix::Matrix(const_MatrixSlice &&x) : MatrixSlice(std::move(x))
+{
+  try
+  {
+    shrink();
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+Matrix::Matrix(Matrix &&x) : Matrix(std::move(static_cast<const_MatrixSlice &>(x)))
+{
+}
+
+/***********************************************/
+
+Matrix::Matrix(std::initializer_list<std::initializer_list<Double>> list) : MatrixSlice(list.size(), (list.size() ? list.begin()->size() : 0), GENERAL, UPPER, FALSE, 0.)
 {
   try
   {
@@ -276,7 +301,9 @@ Matrix &Matrix::operator=(const const_MatrixSlice &x)
     _type          = x._type;
     _uplo          = x._uplo;
     _rowMajorOrder = x._rowMajorOrder;
-    assignment(x);
+    base           = x.base;
+    if(base && !shrink())
+      base = std::make_shared<MatrixBase>(*x.base);
     return *this;
   }
   catch(std::exception &e)
@@ -293,6 +320,29 @@ Matrix &Matrix::operator=(const Matrix &x)
 }
 
 /***********************************************/
+
+Matrix &Matrix::operator=(const_MatrixSlice &&x)
+{
+  _rows          = x._rows;
+  _columns       = x._columns;
+  _start         = x._start;
+  _ld            = x._ld;
+  _type          = x._type;
+  _uplo          = x._uplo;
+  _rowMajorOrder = x._rowMajorOrder;
+  base           = std::move(x.base);
+  shrink();
+  return *this;
+}
+
+/***********************************************/
+
+Matrix &Matrix::operator=(Matrix &&x)
+{
+  return operator=(std::move(static_cast<const_MatrixSlice &>(x)));
+}
+
+/***********************************************/
 /***** Vector **********************************/
 /***********************************************/
 
@@ -300,7 +350,7 @@ Vector::Vector(const const_MatrixSlice &x) : Matrix(x)
 {
   try
   {
-    if(x.columns() > 1)
+    if(columns() > 1)
       throw(Exception("Matrix assignment to Vector with more than 1 column"));
   }
   catch(std::exception &e)
@@ -311,7 +361,22 @@ Vector::Vector(const const_MatrixSlice &x) : Matrix(x)
 
 /***********************************************/
 
-Vector::Vector(std::initializer_list<Double> list) : Matrix(list.size(), 1)
+Vector::Vector(const_MatrixSlice &&x) : Matrix(std::move(x))
+{
+  try
+  {
+    if(columns() > 1)
+      throw(Exception("Matrix assignment to Vector with more than 1 column"));
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+Vector::Vector(std::initializer_list<Double> list) : Matrix(list.size(), 1, Matrix::NOFILL)
 {
   try
   {
@@ -326,7 +391,7 @@ Vector::Vector(std::initializer_list<Double> list) : Matrix(list.size(), 1)
 
 /***********************************************/
 
-Vector::Vector(const std::vector<Double> &x) : Matrix(x.size(), 1)
+Vector::Vector(const std::vector<Double> &x) : Matrix(x.size(), 1, Matrix::NOFILL)
 {
   try
   {
@@ -348,6 +413,23 @@ Vector &Vector::operator=(const const_MatrixSlice &x)
     if(x.columns() > 1)
       throw(Exception("Matrix assignment to Vector with more than 1 column"));
     Matrix::operator=(x);
+    return *this;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+Vector &Vector::operator=(const_MatrixSlice &&x)
+{
+  try
+  {
+    if(x.columns() > 1)
+      throw(Exception("Matrix assignment to Vector with more than 1 column"));
+    Matrix::operator=(std::move(x));
     return *this;
   }
   catch(std::exception &e)
@@ -448,10 +530,10 @@ void copy(const_MatrixSliceRef A, MatrixSliceRef B)
     const UInt rows    = (B.isRowMajorOrder()) ? B.columns() : B.rows();
     const UInt columns = (B.isRowMajorOrder()) ? B.rows() : B.columns();
     if(A.isRowMajorOrder() == B.isRowMajorOrder())
-      lapack_dlacpy(rows, columns, A.field(),A.ld(), B.field(),B.ld());
+      lapack_dlacpy(rows, columns, A.const_field(),A.ld(), B.field(),B.ld());
     else
       for(UInt i=0; i<columns; i++)
-        blas_dcopy(static_cast<F77Int>(rows), A.field()+i, static_cast<F77Int>(A.ld()), B.field()+i*B.ld(), 1);
+        blas_dcopy(static_cast<F77Int>(rows), A.const_field()+i, static_cast<F77Int>(A.ld()), B.field()+i*B.ld(), 1);
   }
   catch(std::exception &e)
   {
@@ -476,10 +558,10 @@ void swap(MatrixSliceRef A, MatrixSliceRef B)
     const UInt incB = (B.isRowMajorOrder()) ? B.ld() : 1;
     if(A.rows()>=A.columns())
       for(UInt i=0; i<A.columns(); i++)
-        blas_dswap(static_cast<F77Int>(A.rows()), A.field()+i*ldA, static_cast<F77Int>(incA), B.field()+i*ldB, static_cast<F77Int>(incB));
+        blas_dswap(static_cast<F77Int>(A.rows()), A.const_field()+i*ldA, static_cast<F77Int>(incA), B.field()+i*ldB, static_cast<F77Int>(incB));
     else
       for(UInt i=0; i<A.rows(); i++)
-        blas_dswap(static_cast<F77Int>(A.columns()), A.field()+i*incA, static_cast<F77Int>(ldA), B.field()+i*incB, static_cast<F77Int>(ldB));
+        blas_dswap(static_cast<F77Int>(A.columns()), A.const_field()+i*incA, static_cast<F77Int>(ldA), B.field()+i*incB, static_cast<F77Int>(ldB));
   }
   catch(std::exception &e)
   {
@@ -534,10 +616,12 @@ Matrix reorder(const_MatrixSliceRef A, const std::vector<UInt> &rowIndex)
 {
   try
   {
-    Matrix B(rowIndex.size(), A.columns());
+    Matrix B(rowIndex.size(), A.columns(), Matrix::NOFILL);
     for(UInt i=0; i<B.rows(); i++)
       if(rowIndex[i] != NULLINDEX)
         copy(A.row(rowIndex.at(i)), B.row(i));
+      else
+        B.row(i).setNull();
     return B;
   }
   catch(std::exception &e)
@@ -579,8 +663,8 @@ Double inner(const_MatrixSliceRef A, const_MatrixSliceRef B)
 
     const UInt rows    = (B.isRowMajorOrder()) ? B.columns() : B.rows();
     const UInt columns = (B.isRowMajorOrder()) ? B.rows() : B.columns();
-    const Double *ptr1 = A.field();
-    const Double *ptr2 = B.field();
+    const Double *ptr1 = A.const_field();
+    const Double *ptr2 = B.const_field();
     Double sum  = 0;
 
     if(A.isRowMajorOrder() == B.isRowMajorOrder())
@@ -783,7 +867,7 @@ void axpy(Double c, const_MatrixSliceRef A, MatrixSliceRef B)
 
     const UInt rows    = (B.isRowMajorOrder()) ? B.columns() : B.rows();
     const UInt columns = (B.isRowMajorOrder()) ? B.rows() : B.columns();
-    const Double *ptr1 = A.field();
+    const Double *ptr1 = A.const_field();
           Double *ptr2 = B.field();
 
     if(A.isRowMajorOrder() == B.isRowMajorOrder())
@@ -834,10 +918,10 @@ void matMult(Double c, const_MatrixSliceRef A, const_MatrixSliceRef B, MatrixSli
       const Bool isUpper = (A.isRowMajorOrder()) ? (!A.isUpper()) : A.isUpper();
       if(!C.isRowMajorOrder())
         blas_dsymm(TRUE, isUpper, static_cast<F77Int>(C.rows()), static_cast<F77Int>(C.columns()),
-                   c, A.field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
+                   c, A.const_field(), static_cast<F77Int>(A.ld()), B.const_field(), static_cast<F77Int>(B.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
       else
         blas_dsymm(FALSE, isUpper, static_cast<F77Int>(C.columns()), static_cast<F77Int>(C.rows()),
-                   c, A.field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
+                   c, A.const_field(), static_cast<F77Int>(A.ld()), B.const_field(), static_cast<F77Int>(B.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
       return;
     }
 
@@ -846,10 +930,10 @@ void matMult(Double c, const_MatrixSliceRef A, const_MatrixSliceRef B, MatrixSli
       const Bool isUpper = (B.isRowMajorOrder()) ? (!B.isUpper()) : B.isUpper();
       if(!C.isRowMajorOrder())
         blas_dsymm(FALSE, isUpper, static_cast<F77Int>(C.rows()), static_cast<F77Int>(C.columns()),
-                   c, B.field(), static_cast<F77Int>(B.ld()), A.field(), static_cast<F77Int>(A.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
+                   c, B.const_field(), static_cast<F77Int>(B.ld()), A.const_field(), static_cast<F77Int>(A.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
       else
         blas_dsymm(TRUE, isUpper, static_cast<F77Int>(C.columns()), static_cast<F77Int>(C.rows()),
-                   c, B.field(), static_cast<F77Int>(B.ld()), A.field(), static_cast<F77Int>(A.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
+                   c, B.const_field(), static_cast<F77Int>(B.ld()), A.const_field(), static_cast<F77Int>(A.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
       return;
     }
 
@@ -858,10 +942,10 @@ void matMult(Double c, const_MatrixSliceRef A, const_MatrixSliceRef B, MatrixSli
 
     if(!C.isRowMajorOrder())
       blas_dgemm(A.isRowMajorOrder(), B.isRowMajorOrder(), static_cast<F77Int>(C.rows()), static_cast<F77Int>(C.columns()), static_cast<F77Int>(A.columns()),
-                 c, A.field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
+                 c, A.const_field(), static_cast<F77Int>(A.ld()), B.const_field(), static_cast<F77Int>(B.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
     else
       blas_dgemm(!B.isRowMajorOrder(), !A.isRowMajorOrder(), static_cast<F77Int>(C.columns()), static_cast<F77Int>(C.rows()), static_cast<F77Int>(A.columns()),
-                 c, B.field(), static_cast<F77Int>(B.ld()), A.field(), static_cast<F77Int>(A.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
+                 c, B.const_field(), static_cast<F77Int>(B.ld()), A.const_field(), static_cast<F77Int>(A.ld()), 1.0, C.field(), static_cast<F77Int>(C.ld()));
   }
   catch(std::exception &e)
   {
@@ -884,7 +968,7 @@ void rankKUpdate(Double c, const_MatrixSliceRef A, MatrixSliceRef N)
 
     const Bool isUpper = (N.isRowMajorOrder()) ? (!N.isUpper()) : N.isUpper();
     blas_dsyrk(isUpper, !A.isRowMajorOrder(), static_cast<F77Int>(N.rows()), static_cast<F77Int>(A.rows()),
-               c, A.field(), static_cast<F77Int>(A.ld()), 1.0, N.field(), static_cast<F77Int>(N.ld()));
+               c, A.const_field(), static_cast<F77Int>(A.ld()), 1.0, N.field(), static_cast<F77Int>(N.ld()));
   }
   catch(std::exception &e)
   {
@@ -909,7 +993,7 @@ void rank2KUpdate(Double c, const_MatrixSliceRef A, const_MatrixSliceRef B, Matr
 
     const Bool isUpper = (N.isRowMajorOrder()) ? (!N.isUpper()) : N.isUpper();
     blas_dsyr2k(isUpper, !A.isRowMajorOrder(), static_cast<F77Int>(N.rows()), static_cast<F77Int>(A.rows()),
-                c, A.field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()), 1.0, N.field(), static_cast<F77Int>(N.ld()));
+                c, A.const_field(), static_cast<F77Int>(A.ld()), B.const_field(), static_cast<F77Int>(B.ld()), 1.0, N.field(), static_cast<F77Int>(N.ld()));
   }
   catch(std::exception &e)
   {
@@ -995,12 +1079,12 @@ Matrix eigenValueDecomposition(MatrixSliceRef A, Matrix &VL, Matrix &VR, Bool co
     if(A.getType()!=Matrix::GENERAL)
       throw(Exception("Matrix must be GENERAL"));
 
-    Matrix eigenValues(A.rows(), 2);
+    Matrix eigenValues(A.rows(), 2, Matrix::NOFILL);
     Int    info;
     if(computeEigenVectors)
     {
-      VL = Matrix(A.rows(), A.rows());
-      VR = Matrix(A.rows(), A.rows());
+      VL = Matrix(A.rows(), A.rows(), Matrix::NOFILL);
+      VR = Matrix(A.rows(), A.rows(), Matrix::NOFILL);
       info = lapack_dgeev(TRUE, TRUE, A.rows(), A.field(), A.ld(),   // Input matrix field
                           &eigenValues(0,0), &eigenValues(0,1),      // Real and complex eigenvalue vectors
                           VL.field(), VL.ld(), VR.field(), VR.ld()); // Left and right eigenvectors
@@ -1038,8 +1122,8 @@ Vector singularValueDecomposition(MatrixSliceRef A, Matrix &U, Matrix &Vt, Bool 
     Int    info;
     if(computeSingularVectors)
     {
-      U  = Matrix(m,s);
-      Vt = Matrix(s,n);
+      U  = Matrix(m, s, Matrix::NOFILL);
+      Vt = Matrix(s, n, Matrix::NOFILL);
       info = lapack_dgesdd(TRUE, m, n, A.field(), A.ld(), singular.field(), U.field(), U.ld(), Vt.field(), Vt.ld());
     }
     else
@@ -1432,10 +1516,10 @@ void triangularMult(Double c, const_MatrixSliceRef A, MatrixSliceRef B)
     Bool isUpper = (A.isRowMajorOrder()) ? (!A.isUpper()) : A.isUpper();
     if(!B.isRowMajorOrder())
       blas_dtrmm(TRUE,  isUpper, A.isRowMajorOrder(), FALSE, static_cast<F77Int>(B.rows()), static_cast<F77Int>(B.columns()),
-                 c, A.field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()));
+                 c, A.const_field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()));
     else
       blas_dtrmm(FALSE, isUpper, !A.isRowMajorOrder(), FALSE, static_cast<F77Int>(B.columns()), static_cast<F77Int>(B.rows()),
-                 c, A.field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()));
+                 c, A.const_field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()));
   }
   catch(std::exception &e)
   {
@@ -1457,10 +1541,10 @@ void triangularSolve(Double c, const_MatrixSliceRef A, MatrixSliceRef B)
     const Bool isUpper = (A.isRowMajorOrder()) ? (!A.isUpper()) : A.isUpper();
     if(!B.isRowMajorOrder())
       blas_dtrsm(TRUE,  isUpper,  A.isRowMajorOrder(), FALSE, static_cast<F77Int>(B.rows()), static_cast<F77Int>(B.columns()),
-                c, A.field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()));
+                c, A.const_field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()));
     else
       blas_dtrsm(FALSE, isUpper, !A.isRowMajorOrder(), FALSE, static_cast<F77Int>(B.columns()), static_cast<F77Int>(B.rows()),
-                 c, A.field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()));
+                 c, A.const_field(), static_cast<F77Int>(A.ld()), B.field(), static_cast<F77Int>(B.ld()));
   }
   catch(std::exception &e)
   {
@@ -1503,9 +1587,9 @@ void QMult(const_MatrixSliceRef B, const Vector &tau, MatrixSliceRef A)
       throw(Exception("Matrix A must be GENERAL"));
 
     if(!A.isRowMajorOrder())
-      lapack_dormqr(TRUE, FALSE, A.rows(),A.columns(),B.columns(), B.field(),B.ld(),tau.field(), A.field(),A.ld());
+      lapack_dormqr(TRUE, FALSE, A.rows(),A.columns(),B.columns(), B.const_field(),B.ld(),tau.field(), A.field(),A.ld());
     else
-      lapack_dormqr(FALSE, TRUE, A.columns(),A.rows(),B.columns(), B.field(),B.ld(),tau.field(), A.field(),A.ld());
+      lapack_dormqr(FALSE, TRUE, A.columns(),A.rows(),B.columns(), B.const_field(),B.ld(),tau.field(), A.field(),A.ld());
   }
   catch(std::exception &e)
   {
@@ -1525,9 +1609,9 @@ void QTransMult(const_MatrixSliceRef B, const Vector &tau, MatrixSliceRef A)
       throw(Exception("Matrix C must be GENERAL"));
 
     if(!A.isRowMajorOrder())
-      lapack_dormqr(TRUE, TRUE, A.rows(),A.columns(),B.columns(), B.field(),B.ld(),tau.field(), A.field(),A.ld());
+      lapack_dormqr(TRUE, TRUE, A.rows(),A.columns(),B.columns(), B.const_field(),B.ld(),tau.const_field(), A.field(),A.ld());
     else
-      lapack_dormqr(FALSE, FALSE, A.columns(),A.rows(),B.columns(), B.field(),B.ld(),tau.field(), A.field(),A.ld());
+      lapack_dormqr(FALSE, FALSE, A.columns(),A.rows(),B.columns(), B.const_field(),B.ld(),tau.const_field(), A.field(),A.ld());
   }
   catch(std::exception &e)
   {
@@ -1541,7 +1625,7 @@ void generateQ(MatrixSliceRef A, const Vector &tau)
 {
   try
   {
-    const Int info = lapack_dorgqr(A.rows(), A.columns(), tau.rows(), A.field(), A.ld(), tau.field());
+    const Int info = lapack_dorgqr(A.rows(), A.columns(), tau.rows(), A.field(), A.ld(), tau.const_field());
     if(info!=0)
       throw(Exception("can not compute Q matrix, error = "+info%"%i"s));
     const_cast<MatrixSlice&>(A).setType(Matrix::GENERAL);

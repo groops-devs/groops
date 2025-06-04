@@ -344,7 +344,7 @@ void InArchiveJson::load(Matrix &A)
   readXml(xmlNode, "columns", columns);
 
   if(type == "general")
-    A = Matrix(rows, columns);
+    A = Matrix(rows, columns, Matrix::NOFILL);
   else if(type == "upperTriangularMatrix")
     A = Matrix(rows, Matrix::TRIANGULAR, Matrix::UPPER);
   else if(type == "lowerTriangularMatrix")

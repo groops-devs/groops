@@ -270,7 +270,7 @@ template<> void load(InArchive &ar, GriddedDataRectangular &x)
     x.values.resize(valueCount);
     for(UInt id=0; id<x.values.size(); id++)
     {
-      x.values.at(id) = Matrix(x.latitudes.size(), x.longitudes.size());
+      x.values.at(id) = Matrix(x.latitudes.size(), x.longitudes.size(), Matrix::NOFILL);
       for(UInt i=0; i<x.values.at(id).rows(); i++)
         for(UInt k=0; k<x.values.at(id).columns(); k++)
           ar>>nameValue("value", x.values.at(id)(i, k));
