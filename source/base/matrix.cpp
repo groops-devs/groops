@@ -200,32 +200,31 @@ MatrixSliceRef MatrixSlice::operator /= (Double c) const
 /***** Matrix **********************************/
 /***********************************************/
 
-Bool Matrix::shrink()
-{
-  if(!size() || (!_rowMajorOrder && (_ld == _rows) && (_start == 0)))
-    return FALSE;
-
-  auto baseNew = std::make_shared<MatrixBase>(_rows*_columns, FALSE, 0.);
-  if(!_rowMajorOrder)
-    lapack_dlacpy(_rows, _columns, const_field(), ld(), baseNew->field(), _rows);
-  else
-    for(UInt i=0; i<_columns; i++)
-      blas_dcopy(static_cast<F77Int>(_rows), const_field()+i, static_cast<F77Int>(ld()), baseNew->field()+i*_rows, 1);
-  base           = std::move(baseNew);
-  _start         = 0;
-  _ld            = _rows;
-  _rowMajorOrder = FALSE;
-  return TRUE;
-}
-
-/***********************************************/
-
-Matrix::Matrix(const Matrix &x) : MatrixSlice(x)
+void Matrix::assignment(Bool movePossible)
 {
   try
   {
-    if(base && !shrink())
-      base = std::make_shared<MatrixBase>(*x.base);
+    if(!base)
+      return;
+    if(_rowMajorOrder || (_ld != _rows) || (_start != 0))
+    {
+      // shrink memeory if needed
+      auto baseNew = std::make_shared<MatrixBase>(_rows*_columns, FALSE, 0.);
+      if(!_rowMajorOrder)
+        lapack_dlacpy(_rows, _columns, const_field(), ld(), baseNew->field(), _rows);
+      else
+        for(UInt i=0; i<_columns; i++)
+          blas_dcopy(static_cast<F77Int>(_rows), const_field()+i, static_cast<F77Int>(ld()), baseNew->field()+i*_rows, 1);
+      base           = std::move(baseNew);
+      _start         = 0;
+      _ld            = _rows;
+      _rowMajorOrder = FALSE;
+    }
+    else if(!movePossible || (base.use_count() > 1))
+    {
+      auto baseNew = std::make_shared<MatrixBase>(*base);
+      base = std::move(baseNew);
+    }
   }
   catch(std::exception &e)
   {
@@ -235,38 +234,10 @@ Matrix::Matrix(const Matrix &x) : MatrixSlice(x)
 
 /***********************************************/
 
-Matrix::Matrix(const const_MatrixSlice &x) : MatrixSlice(x)
-{
-  try
-  {
-    if(base && !shrink())
-      base = std::make_shared<MatrixBase>(*x.base);
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-Matrix::Matrix(const_MatrixSlice &&x) : MatrixSlice(std::move(x))
-{
-  try
-  {
-    shrink();
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-
-Matrix::Matrix(Matrix &&x) : Matrix(std::move(static_cast<const_MatrixSlice &>(x)))
-{
-}
+Matrix::Matrix(const Matrix &x)            : MatrixSlice(x)            {assignment();}
+Matrix::Matrix(const const_MatrixSlice &x) : MatrixSlice(x)            {assignment();}
+Matrix::Matrix(Matrix &&x)                 : MatrixSlice(std::move(x)) {assignment(TRUE);}
+Matrix::Matrix(const_MatrixSlice &&x)      : MatrixSlice(std::move(x)) {assignment(TRUE);}
 
 /***********************************************/
 
@@ -292,24 +263,16 @@ Matrix::Matrix(std::initializer_list<std::initializer_list<Double>> list) : Matr
 
 Matrix &Matrix::operator=(const const_MatrixSlice &x)
 {
-  try
-  {
-    _rows          = x._rows;
-    _columns       = x._columns;
-    _start         = x._start;
-    _ld            = x._ld;
-    _type          = x._type;
-    _uplo          = x._uplo;
-    _rowMajorOrder = x._rowMajorOrder;
-    base           = x.base;
-    if(base && !shrink())
-      base = std::make_shared<MatrixBase>(*x.base);
-    return *this;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
+  _rows          = x._rows;
+  _columns       = x._columns;
+  _start         = x._start;
+  _ld            = x._ld;
+  _type          = x._type;
+  _uplo          = x._uplo;
+  _rowMajorOrder = x._rowMajorOrder;
+  base           = x.base;
+  assignment();
+  return *this;
 }
 
 /***********************************************/
@@ -331,7 +294,7 @@ Matrix &Matrix::operator=(const_MatrixSlice &&x)
   _uplo          = x._uplo;
   _rowMajorOrder = x._rowMajorOrder;
   base           = std::move(x.base);
-  shrink();
+  assignment(TRUE);
   return *this;
 }
 

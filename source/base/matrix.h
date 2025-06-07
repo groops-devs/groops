@@ -297,7 +297,7 @@ public:
   MatrixSlice row(UInt row, UInt len=1) {return slice(row,0,len,columns());}
 
 private:
-  Bool shrink();
+  void assignment(Bool movePossible=FALSE);
 };
 
 /***********************************************/
