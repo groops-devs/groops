@@ -381,7 +381,15 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
           fileNameVariableList.setVariable("station", recv->name());
           std::vector<Vector3d> posApriori = recv->pos;
           if(fileNameClock.empty())
+          {
             recv->pos = recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, FALSE/*estimateKinematicPosition*/);
+
+            Double maxDiff = 0.;
+            for(UInt i=0; i<posApriori.size(); i++)
+              maxDiff = std::max(maxDiff, (recv->pos.at(i)-posApriori.at(i)).r());
+            if(maxDiff > 10.0)
+              logWarning<<recv->name()<<": estimated code based position differ from apriori position by "<<maxDiff%"%.2f m"s<<Log::endl;
+          }
           // observation equations based on positions from code observations
           GnssReceiver::ObservationEquationList eqn(*recv, gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, GnssObservation::RANGE | GnssObservation::PHASE);
           recv->pos = std::move(posApriori); // restore apriori positions
