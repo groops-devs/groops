@@ -28,6 +28,7 @@
 - Other:            GNSS: Improved setup of ambiguity parameters. Considers splitted network, splitted observations (e.g. L2LG, L2WG).
 - Other:            Store more double digits in xml format.
 - Other:            NormalsEliminate: regularize unused eliminated parameters.
+- Other:            Sinex2StationPosition: Apply frequencies to all intervals.
 
 
 # Release 2024-06-24

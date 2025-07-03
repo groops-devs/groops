@@ -81,6 +81,7 @@ void Sinex2StationPositions::run(Config &config, Parallel::CommunicatorPtr /*com
       Time        referenceTime, timeStart, timeEnd;
       Vector3d    position, velocity;
       Vector3dArc arc;
+      std::map<std::string, Vector3d> ampl3d;
     };
 
     struct Station
@@ -424,13 +425,11 @@ void Sinex2StationPositions::run(Config &config, Parallel::CommunicatorPtr /*com
           continue;
 
         // parameter type
-        if(String::upperCase(line.substr(7, 1)) != "A")
+        std::string para = String::upperCase(line.substr(7, 5));
+        if(!String::startsWith(para, "A") || !(String::endsWith(para, "COS") || String::endsWith(para, "SIN")))
           continue;
-        const Bool isCos = (String::upperCase(line.substr(9, 3)) == "COS");
-        if(!isCos && (String::upperCase(line.substr(9, 3)) != "SIN"))
-          continue; // other parameter type
+
         Vector3d ampl3d;
-        const Double omega = 2*PI*String::toDouble(line.substr(8, 1)); // annual or semiannual
         const Double A = String::toDouble(line.substr(47, 21));
         const Char   c = String::upperCase(line.substr(12, 1)).at(0);
         if(     c == 'X') ampl3d = Vector3d(A, 0, 0);
@@ -444,16 +443,51 @@ void Sinex2StationPositions::run(Config &config, Parallel::CommunicatorPtr /*com
         for(auto &interval : stations[name].intervals)
           if((interval.solutionId == solutionId) && (interval.pointCode == pointCode))
           {
+            interval.ampl3d[para] += ampl3d;
             used = TRUE;
-            for(UInt i=0; i<interval.arc.size(); i++)
-              interval.arc.at(i).vector3d += ampl3d * (isCos ? cos(omega*interval.arc.at(i).time.decimalYear()) : sin(omega*interval.arc.at(i).time.decimalYear()));
           }
         count += used;
         if(!used)
          logWarning<<"Unused: "<<line<<Log::endl;
       }
       logInfo<<"  "<<count<<" of "<<sinex.findBlock("SOLUTION/ESTIMATE")->lines.size()<<" parameters used"<<Log::endl;
-    }
+
+      for(auto &station : stations)
+      {
+        // find oscillations in one of the intervals
+        std::map<std::string, Vector3d> ampl3d;
+        for(auto &interval : station.second.intervals)
+          if(interval.ampl3d.size())
+            ampl3d = interval.ampl3d;
+        // check if oscillations in all intervals the same
+        Bool same = TRUE;
+        for(auto &interval : station.second.intervals)
+          if(interval.ampl3d.size())
+            same = same && std::equal(ampl3d.begin(), ampl3d.end(), interval.ampl3d.begin(), [](auto &a, auto &b)
+                                     {return (a.first == b.first) && ((a.second-b.second).r() < 0.0001);});
+        if(same) // can extend to missing intervals
+          for(auto &interval : station.second.intervals)
+            if(!interval.ampl3d.size())
+              interval.ampl3d = ampl3d;
+
+        // check for empty intervals
+        for(auto &interval : station.second.intervals)
+          if(!interval.ampl3d.size())
+            logWarning<<station.first<<" interval "<<interval.timeStart.dateTimeStr()<<" -- "<<interval.timeEnd.dateTimeStr()<<" without frequencies"<<Log::endl;
+
+        // apply oscillations
+        for(auto &interval : station.second.intervals)
+          for(auto &A : interval.ampl3d)
+          {
+            const Bool isCos   = (A.first.substr(2, 3) == "COS");
+            const Double omega = 2*PI*String::toDouble(A.first.substr(1, 1)); // annual or semiannual
+            if(!isCos && (A.first.substr(2, 3) != "SIN"))
+              throw(Exception("COS/SIN expected"));
+            for(UInt i=0; i<interval.arc.size(); i++)
+              interval.arc.at(i).vector3d += A.second * (isCos ? std::cos(omega*interval.arc.at(i).time.decimalYear()) : std::sin(omega*interval.arc.at(i).time.decimalYear()));
+          }
+      }
+    } // if(!fileNameSinexFreq.empty())
 
     // =========================================================
 
