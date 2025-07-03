@@ -21212,7 +21212,7 @@
 			</xs:element>
 			<xs:element name="FileConvert">
 				<xs:annotation>
-					<xs:documentation>Converts GROOPS file between different file formats (ASCII, XML, binary).</xs:documentation>
+					<xs:documentation>Converts GROOPS file between different file formats (ASCII, XML, JSON, binary).</xs:documentation>
 					<xs:appinfo>rename: outputFile = outputfile</xs:appinfo>
 					<xs:appinfo>rename: inputFile = inputfile</xs:appinfo>
 					<xs:appinfo>tag: System</xs:appinfo>
@@ -21228,12 +21228,12 @@
 					<xs:sequence>
 						<xs:element name="outputfile" type="filename" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>GROOPS formats: .xml, .txt, .dat</xs:documentation>
+								<xs:documentation>GROOPS formats: .xml, .txt, .json, .dat (optional with additional .gz)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfile" type="filename">
 							<xs:annotation>
-								<xs:documentation>GROOPS formats: .xml, .txt, .dat</xs:documentation>
+								<xs:documentation>GROOPS formats: .xml, .txt, .json, .dat (optional with additional .gz)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>

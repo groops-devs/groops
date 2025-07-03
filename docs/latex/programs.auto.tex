@@ -7386,8 +7386,9 @@ Name & Type & Annotation\\
 %==================================
 \section{Programs: System}
 \subsection{FileConvert}\label{FileConvert}
-Converts GROOPS file between different file formats (ASCII, XML, binary),
+Converts GROOPS file between different file formats (ASCII, XML, JSON, binary),
 see \reference{file formats}{general.fileFormat} for details.
+With an additional extension of '.gz' files are directly compressed and uncompressed.
 It prints also some information about the content.
 Therefore it can be used to get an idea about the content of binary files.
 
@@ -7397,8 +7398,8 @@ Therefore it can be used to get an idea about the content of binary files.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfile & \hfuzz=500pt filename & \hfuzz=500pt GROOPS formats: .xml, .txt, .dat\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt GROOPS formats: .xml, .txt, .dat\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfile & \hfuzz=500pt filename & \hfuzz=500pt GROOPS formats: .xml, .txt, .json, .dat (optional with additional .gz)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt GROOPS formats: .xml, .txt, .json, .dat (optional with additional .gz)\\
 \hline
 \end{tabularx}
 

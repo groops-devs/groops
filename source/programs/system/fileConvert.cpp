@@ -12,8 +12,9 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-Converts GROOPS file between different file formats (ASCII, XML, binary),
+Converts GROOPS file between different file formats (ASCII, XML, JSON, binary),
 see \reference{file formats}{general.fileFormat} for details.
+With an additional extension of '.gz' files are directly compressed and uncompressed.
 It prints also some information about the content.
 Therefore it can be used to get an idea about the content of binary files.
 )";
@@ -59,7 +60,7 @@ class FileConvert
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(FileConvert, SINGLEPROCESS, "Converts GROOPS file between different file formats (ASCII, XML, binary).",
+GROOPS_REGISTER_PROGRAM(FileConvert, SINGLEPROCESS, "Converts GROOPS file between different file formats (ASCII, XML, JSON, binary).",
                         System, Instrument, VariationalEquation, DoodsonHarmonics, Grid, Matrix, PotentialCoefficients, TimeSplines)
 
 /***********************************************/
@@ -73,8 +74,8 @@ void FileConvert::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     renameDeprecatedConfig(config, "outputFile", "outputfile", date2time(2020, 8, 20));
     renameDeprecatedConfig(config, "inputFile",  "inputfile",  date2time(2020, 8, 20));
 
-    readConfig(config, "outputfile", fileNameOutput, Config::OPTIONAL, "", "GROOPS formats: .xml, .txt, .dat");
-    readConfig(config, "inputfile",  fileNameInput,  Config::MUSTSET,  "", "GROOPS formats: .xml, .txt, .dat");
+    readConfig(config, "outputfile", fileNameOutput, Config::OPTIONAL, "", "GROOPS formats: .xml, .txt, .json, .dat (optional with additional .gz)");
+    readConfig(config, "inputfile",  fileNameInput,  Config::MUSTSET,  "", "GROOPS formats: .xml, .txt, .json, .dat (optional with additional .gz)");
     if(isCreateSchema(config)) return;
 
     // =============================================
