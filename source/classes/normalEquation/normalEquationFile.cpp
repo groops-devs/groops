@@ -75,6 +75,8 @@ void NormalEquationFile::init(MatrixDistributed &normalsTotal, UInt rhsCount)
   {
     NormalEquationInfo info;
     readFileNormalEquation(fileName, info, normals, n, normalsTotal.communicator());
+    if(!Parallel::isMaster(normalsTotal.communicator()))
+      n = Matrix();
 
     std::vector<UInt> index(normalsTotal.parameterCount(), NULLINDEX);
     std::iota(index.begin()+startIndex, index.begin()+startIndex+normals.parameterCount(), 0);
