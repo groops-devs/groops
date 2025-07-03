@@ -74,6 +74,8 @@ public:
   void push_back(const GnssSingleObservation &singleObs) {obs.push_back(singleObs);}
   void erase(UInt idType)                                {obs.erase(obs.begin()+idType); obs.shrink_to_fit();}
   void shrink_to_fit()                                   {obs.shrink_to_fit();}
+  void sort()                                            {std::sort(obs.begin(), obs.end(), [](auto &a, auto &b){return a.type < b.type;});}
+
 
   Bool init(const GnssReceiver &receiver, const GnssTransmitter &transmitter, const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
             UInt idEpoch, Angle elevationCutOff, Double &phaseWindupOld);

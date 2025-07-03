@@ -175,7 +175,7 @@ Bool GnssObservation::observationList(GnssObservation::Group group, std::vector<
       // need obs at two frequencies
       std::set<GnssType> typeFrequencies;
       for(UInt i=0; i<size(); i++)
-        if(at(i).type == GnssType::RANGE)
+        if((at(i).type == GnssType::RANGE) && (at(i).sigma > 0))
           typeFrequencies.insert(at(i).type & GnssType::FREQUENCY);
       if(typeFrequencies.size() < 2)
         return FALSE;
@@ -192,7 +192,7 @@ Bool GnssObservation::observationList(GnssObservation::Group group, std::vector<
       // need obs at two frequencies
       std::set<GnssType> typeFrequencies;
       for(UInt i=0; i<size(); i++)
-        if(at(i).type == GnssType::PHASE)
+        if((at(i).type == GnssType::PHASE) && (at(i).sigma > 0))
           typeFrequencies.insert(at(i).type & GnssType::FREQUENCY);
       if(typeFrequencies.size() < 2)
         return FALSE;
@@ -207,9 +207,8 @@ Bool GnssObservation::observationList(GnssObservation::Group group, std::vector<
     if(group & IONO)
     {
       for(UInt i=0; i<size(); i++)
-        if(at(i).sigma>0)
-          if(at(i).type == GnssType::IONODELAY)
-            types.push_back( at(i).type );
+        if((at(i).type == GnssType::IONODELAY) && (at(i).sigma > 0))
+          types.push_back( at(i).type );
     }
 
     return (types.size() != 0);
@@ -385,16 +384,17 @@ void GnssObservationEquation::eliminateGroupParameters(Bool removeRows)
     if(!B.size())
       return;
     const Vector tau = QR_decomposition(B);
+    if(!removeRows)
+      rankDeficit += B.columns();
     for(Matrix &A : std::vector<std::reference_wrapper<Matrix>>{A, l})
       if(A.size())
       {
         QTransMult(B, tau, A);
-        A.row(0, B.columns()).setNull();
         if(removeRows)
           A = A.row(B.columns(), A.rows()-B.columns());
         else
         {
-          rankDeficit += B.columns();
+          A.row(0, B.columns()).setNull();
           QMult(B, tau, A);
         }
       }

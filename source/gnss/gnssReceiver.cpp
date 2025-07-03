@@ -415,6 +415,7 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
           observations_.at(idEpoch).resize(idTrans+1, nullptr);
         if(observations_[idEpoch][idTrans])
           logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": observation already exists"<<Log::endl;
+        obs->sort();
         std::swap(observations_[idEpoch][idTrans], obs);
         delete obs;
       } // for(satellite)
@@ -538,6 +539,7 @@ void GnssReceiver::simulateZeroObservations(const std::vector<GnssType> &types,
           observations_.at(idEpoch).resize(idTrans+1, nullptr);
         if(observations_[idEpoch][idTrans])
           logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": observation already exists"<<Log::endl;
+        obs->sort();
         std::swap(observations_[idEpoch][idTrans], obs);
         delete obs;
       } // for(satellite)
