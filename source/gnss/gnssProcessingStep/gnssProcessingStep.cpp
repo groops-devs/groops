@@ -441,7 +441,7 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
       const Double sigma = Vce::standardDeviation(lPl(0), obsCount, huber, huberPower);
       logInfo<<"  sigma = "<<sigma%"%.2f"s<<Log::endl;
       if((sigma!=sigma) || (sigma<=0))
-        logWarning<<"  Cannot compute sigma = sqrt("<<lPl(0)<<"/"<<obsCount<<")"<<Log::endl;
+        logWarning<<"  Cannot compute sigma = sqrt("<<lPl(0)%"%f/"s<<obsCount<<")"<<Log::endl;
     }
 
     constexpr UInt monteCarloColumns = 100;
@@ -653,9 +653,7 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
 
                 // influence of B parameters = B(B'B)^(-1)B'
                 QTransMult(B, tau, AWz);
-                AWz.row(0, B.columns()).setNull();
-                for(UInt i=0; i<B.columns(); i++)
-                  AWz(i,i) = 1.0;
+                copy(Vce::monteCarlo(B.columns(), AWz.columns()), AWz.row(0, B.columns()));
                 QMult(B, tau, AWz);
               }
 
