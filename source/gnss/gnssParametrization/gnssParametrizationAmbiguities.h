@@ -84,6 +84,7 @@ class GnssParametrizationAmbiguities : public GnssParametrizationBase
     GnssTransmitterPtr    trans;
     GnssParameterIndex    index;
     std::vector<GnssType> types;
+    Matrix                Bias;
   };
 
   class Ambiguity : public GnssAmbiguity

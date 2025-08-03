@@ -351,7 +351,7 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
 
       // system of normal equations
       // --------------------------
-      std::vector<UInt> pivTrans, pivAmbi;
+      Vector isTrans, isAmbi;
       if(Parallel::isMaster(normalEquationInfo.comm))
       {
         // block normal matrix (upper triangle)
@@ -362,7 +362,7 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
         Matrix Nta(idTypeTrans.size(), idTypeAmbi.size());  // trans x ambiguities
         Matrix Naa(idTypeAmbi.size(),  Matrix::SYMMETRIC);  // ambiguities x ambiguities
 
-        // pseudo obsevration equations n = bias_r + bias^t + N_r^t
+        // pseudo observation equations n = bias_r + bias^t + N_r^t
         for(auto &info : ambiguityInfos)
         {
           const Double w = info.idEpochEnd-info.idEpochStart+1;
@@ -407,16 +407,16 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
           Double tolerance = 0;
           for(UInt i=0; i<Ntt.rows(); i++)
             tolerance = std::max(tolerance, std::fabs(Ntt(i,i)));
-          UInt rank = 0;
-          pivTrans = choleskyPivoting(Ntt, rank, 1e-8*Ntt.rows()*tolerance);
-          pivTrans.resize(rank);
-          if(Naa.size())
+          GnssLambda::Transformation Z(Ntt.rows());
+          UInt rank = GnssLambda::choleskyReversePivot(Ntt, Z, 0, 1e-8*Ntt.rows()*tolerance, FALSE/*timing*/);
+          isTrans = Vector(Ntt.rows());
+          isTrans.row(0, rank).fill(1.);
+          isTrans = Z.transformBack(isTrans);
+          if(Naa.size() && rank)
           {
-            Matrix Nta_piv(rank, Nta.columns());
-            for(UInt i=0; i<rank; i++)
-              copy(Nta.row(pivTrans.at(i)), Nta_piv.row(i));
-            triangularSolve(1., Ntt.slice(0, 0, rank, rank).trans(), Nta_piv);
-            rankKUpdate(-1, Nta_piv, Naa);
+            Nta = Z.transform(Nta);
+            triangularSolve(1., Ntt.slice(0, 0, rank, rank).trans(), Nta.row(0, rank));
+            rankKUpdate(-1, Nta.row(0, rank), Naa);
           }
         }
         if(Naa.size()) // ambiguites
@@ -424,26 +424,26 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
           Double tolerance = 0;
           for(UInt i=0; i<Naa.rows(); i++)
             tolerance = std::max(tolerance, std::fabs(Naa(i,i)));
-          UInt rank = 0;
-          pivAmbi = choleskyPivoting(Naa, rank, 1e-8*Naa.rows()*tolerance);
-          pivAmbi.resize(rank);
+          GnssLambda::Transformation Z(Naa.rows());
+          UInt rank = GnssLambda::choleskyReversePivot(Naa, Z, 0, 1e-8*Naa.rows()*tolerance, FALSE/*timing*/);
+          isAmbi = Vector(Naa.rows());
+          isAmbi.row(0, rank).fill(1.);
+          isAmbi = Z.transformBack(isAmbi);
         }
       } // if(isMaster)
-      Parallel::broadCast(pivTrans, 0, normalEquationInfo.comm);
-      Parallel::broadCast(pivAmbi,  0, normalEquationInfo.comm);
+      Parallel::broadCast(isTrans, 0, normalEquationInfo.comm);
+      Parallel::broadCast(isAmbi,  0, normalEquationInfo.comm);
 
       // store estimable float biases at transmitters
       // --------------------------------------------
-      for(UInt i=0; i<pivTrans.size(); i++)
-        paraTrans.at(idTypeTrans.at(pivTrans.at(i)).first)->types.push_back(idTypeTrans.at(pivTrans.at(i)).second);
+      for(UInt i=0; i<idTypeTrans.size(); i++)
+        if(isTrans(i))
+          paraTrans.at(idTypeTrans.at(i).first)->types.push_back(idTypeTrans.at(i).second);
 
       // store estimable ambiguities
       // ---------------------------
-      std::vector<Bool> isAmbi(idTypeAmbi.size(), FALSE);
-      for(UInt i=0; i<pivAmbi.size(); i++)
-        isAmbi.at(pivAmbi.at(i)) = TRUE;
       for(auto &info : ambiguityInfos)
-        if((info.idxAmbi != NULLINDEX) && isAmbi.at(info.idxAmbi))
+        if((info.idxAmbi != NULLINDEX) && isAmbi(info.idxAmbi))
           info.typesNew.push_back(info.typesFreqSys.front() & ~GnssType::ATTRIBUTE);
     } // for(typeFreqSys)
 
@@ -454,6 +454,9 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
       if(para && para->types.size())
       {
         std::sort(para->types.begin(), para->types.end());
+        para->Bias = Matrix(para->types.size(), para->types.size());
+        for(UInt i=0; i<para->types.size(); i++)
+          para->Bias(i, i) = para->types.at(i).wavelength();
         std::vector<ParameterName> parameterNames(para->types.size());
         for(UInt i=0; i<para->types.size(); i++)
           parameterNames.at(i) = ParameterName(para->trans->name(), "phaseBias("+para->types.at(i).str()+")");
@@ -491,7 +494,7 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
         if(info.ambi->types != info.typesNew)
         {
           info.ambi->types = info.typesNew;
-          info.ambi->T     = GnssLambda::phaseDecorrelation(info.ambi->types, gnss->receivers.at(info.idRecv)->wavelengthFactor);
+          info.ambi->T     = GnssLambda::phaseDecorrelation(info.ambi->types, gnss->receivers.at(info.idRecv)->wavelengthFactor, 1.);
           info.ambi->value = Vector(info.ambi->T.columns());
         }
       }
@@ -517,7 +520,7 @@ void GnssParametrizationAmbiguities::aprioriParameter(const GnssNormalEquationIn
     if(Parallel::isMaster(normalEquationInfo.comm))
       for(auto para : paraTrans)
         if(para && para->index)
-          copy(para->trans->signalBias.compute(para->types), x0.row(normalEquationInfo.index(para->index), para->types.size()));
+          copy(leastSquares(Matrix(para->Bias), para->trans->signalBias.compute(para->types)), x0.row(normalEquationInfo.index(para->index), para->Bias.columns()));
 
     // float bias at receiver
     for(auto para : paraRecv)
@@ -549,7 +552,7 @@ void GnssParametrizationAmbiguities::designMatrix(const GnssNormalEquationInfo &
       MatrixSlice Design(A.column(paraTrans->index));
       for(UInt idType=0; idType<eqn.typesTransmitted.size(); idType++)
         if(eqn.typesTransmitted.at(idType).isInList(paraTrans->types, idx))
-          copy(eqn.A.column(GnssObservationEquation::idxUnit + eqn.types.size() + idType), Design.column(idx));
+          matMult(1., eqn.A.column(GnssObservationEquation::idxUnit+ eqn.types.size() + idType), paraTrans->Bias.row(idx), Design);
     }
 
     // float bias at receiver
@@ -669,12 +672,13 @@ Double GnssParametrizationAmbiguities::ambiguityResolve(const GnssNormalEquation
       if(startInteger > 0)
         normalsAmbi.cholesky(FALSE/*timing*/, 0, 1, TRUE/*collect*/);
       if(normalsAmbi.isMyRank(1,1))
-        GnssLambda::choleskyReversePivot(normalsAmbi.N(1,1), Z, startInteger, TRUE/*timing*/);  // Z is now only valid at master
+        GnssLambda::choleskyReversePivot(normalsAmbi.N(1,1), Z, startInteger, 0., TRUE/*timing*/);  // Z is now only valid at master
+      // permuted normals: Nx=rhs => (Z^-T W^T W Z^-1) Zx = Z^-T*rhs with the orthogonal permutation matrix Z = Z^-T
 
       // float solution
       // --------------
-      rhs = Z.transform(rhs); // only valid at master
-      x0  = Z.transform(x0);  // only valid at master
+      rhs = Z.transform(rhs);  // only valid at master (Z = Z^-T)
+      x0  = Z.transform(x0);   // only valid at master
       normalsAmbi.triangularTransSolve(rhs);
       Vector dxFloat = rhs;
       sigmaFloat = std::sqrt((lPl-quadsum(rhs))/(obsCount-dim));
@@ -811,38 +815,41 @@ Double GnssParametrizationAmbiguities::updateParameter(const GnssNormalEquationI
     // float bias at transmitter
     // -------------------------
     Double maxChange = 0;
-    Gnss::InfoParameterChange infoTrans("mm");
+    Gnss::InfoParameterChange infoTrans("cyc");
     for(auto para : paraTrans)
       if(para && para->index)
       {
-        const Vector dBias = x.row(normalEquationInfo.index(para->index), para->types.size());
+        const Vector dx    = x.row(normalEquationInfo.index(para->index), para->types.size());
+        const Vector dBias = para->Bias * dx;
         for(UInt idType=0; idType<para->types.size(); idType++)
           para->trans->signalBias.biases.at(GnssType::index(para->trans->signalBias.types, para->types.at(idType))) += dBias(idType);
-        for(UInt idType=0; idType<para->types.size(); idType++)
-          if(infoTrans.update(1e3*dBias(idType)))
-            infoTrans.info = "phase bias transmitter ("+para->types.at(idType).str()+")";
+        for(UInt k=0; k<dx.rows(); k++)
+          if(infoTrans.update(dx(k)))
+            infoTrans.info = "phase bias transmitter ("+normalEquationInfo.parameterNames().at(normalEquationInfo.index(para->index)+k).str()+")";
       }
-    infoTrans.synchronizeAndPrint(normalEquationInfo.comm, 1e-3, maxChange);
+    infoTrans.synchronizeAndPrint(normalEquationInfo.comm, 0.19, maxChange); // cycles -> meter
 
     // float bias at receiver
     // ----------------------
-    Gnss::InfoParameterChange infoRecv("mm");
+    Gnss::InfoParameterChange infoRecv("cyc");
     for(auto para : paraRecv)
       if(para && para->index)
       {
-        const Vector dBias = para->Bias * x.row(normalEquationInfo.index(para->index), para->Bias.columns());
+        const Vector dx    = x.row(normalEquationInfo.index(para->index), para->Bias.columns());
+        const Vector dBias = para->Bias * dx;
         for(UInt idType=0; idType<dBias.size(); idType++)
           para->recv->signalBias.biases.at(GnssType::index(para->recv->signalBias.types, para->types.at(idType))) += dBias(idType);
-        for(UInt idType=0; idType<para->types.size(); idType++)
-          if(infoRecv.update(1e3*dBias(idType)))
-            infoRecv.info = "phase bias receiver ("+para->recv->name()+", "+para->types.at(idType).str()+")";
+        for(UInt k=0; k<dx.rows(); k++)
+          if(infoRecv.update(dx(k)))
+            infoRecv.info = "phase bias receiver ("+normalEquationInfo.parameterNames().at(normalEquationInfo.index(para->index)+k).str()+")";
       }
-    infoRecv.synchronizeAndPrint(normalEquationInfo.comm, 1e-3, maxChange);
+    infoRecv.synchronizeAndPrint(normalEquationInfo.comm, 0.19, maxChange); // cycles -> meter
 
     // ambiguities
     // -----------
+    auto ambiguities = getAmbiguities();
     Gnss::InfoParameterChange info("cyc");
-    for(auto ambi : getAmbiguities())
+    for(auto ambi : ambiguities)
       if(ambi->index)
       {
         const Vector dx = x.row(normalEquationInfo.index(ambi->index), ambi->value.rows());
@@ -855,7 +862,7 @@ Double GnssParametrizationAmbiguities::updateParameter(const GnssNormalEquationI
 
     // remove integer part from observations
     // -------------------------------------
-    for(auto ambi : getAmbiguities())
+    for(auto ambi : ambiguities)
       if(ambi->value.size())
       {
         Vector x(ambi->value.rows());
@@ -867,7 +874,7 @@ Double GnssParametrizationAmbiguities::updateParameter(const GnssNormalEquationI
 
     // remove resolved ambiguities
     // ---------------------------
-    for(auto ambi : getAmbiguities())
+    for(auto ambi : ambiguities)
       if(ambi->resolved.size())
       {
         const UInt remove = static_cast<UInt>(sum(ambi->resolved));
