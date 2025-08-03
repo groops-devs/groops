@@ -1734,7 +1734,7 @@
 								<xs:documentation>variable {station} available</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="huber" type="double" minOccurs="0" default="2.5">
+						<xs:element name="huber" type="double" minOccurs="0" default="4">
 							<xs:annotation>
 								<xs:documentation>clock jumps &gt; huber*sigma0 are downweighted</xs:documentation>
 							</xs:annotation>
@@ -1759,7 +1759,7 @@
 								<xs:documentation>use these receivers for zero-mean constraint</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="sigmaZeroMeanConstraint" type="double" minOccurs="0" default="0.0001">
+						<xs:element name="sigmaZeroMeanConstraint" type="double" minOccurs="0" default="10">
 							<xs:annotation>
 								<xs:documentation>(0 = unconstrained) sigma [m] for zero-mean constraint over all selected clocks</xs:documentation>
 							</xs:annotation>

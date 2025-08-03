@@ -1502,13 +1502,13 @@ The absolute initial clock error and clock drift cannot be determined if all rec
 and transmitter clocks are estimated together due to their linear dependency.
 This linear dependency would lead to a rank deficiency in the normal equation matrix in the same
 manner as described in \configClass{parametrization:clocks}{gnssParametrizationType:clocks}.
-To circumvent the rank deficiency additional zero-mean constraints are required for the first and last epoch.
-The realization of the constraint is done as an additional observation equation in the form
+To circumvent this issue, an additional zero-mean constraint is added in each epoch
+as observation equation
 \begin{equation}
   0 = \frac{1}{n_i + n_k} (\sum_i \Delta t^{s_i} + \sum_k \Delta t_{r_k})
 \end{equation}
-summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
-with a standard deviation of \config{sigmaZeroMeanConstraint}.
+summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}.
+This should be a loose constraint with a relatively large standard deviation of \config{sigmaZeroMeanConstraint}.
 
 The \file{parameter names}{parameterName} are \verb|<station or prn>:clock::<time>|
 and \verb|<station or prn>:clockDrift::|.

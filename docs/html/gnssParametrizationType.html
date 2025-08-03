@@ -240,12 +240,12 @@ Clock jumps are treated as outliers and are automatically downweighted as descri
 and transmitter clocks are estimated together due to their linear dependency.
 This linear dependency would lead to a rank deficiency in the normal equation matrix in the same
 manner as described in <a class="groops-class" href="gnssParametrizationType.html#clocks">parametrization:clocks</a>.
-To circumvent the rank deficiency additional zero-mean constraints are required for the first and last epoch.
-The realization of the constraint is done as an additional observation equation in the form
+To circumvent this issue, an additional zero-mean constraint is added in each epoch
+as observation equation
 \[
   0 = \frac{1}{n_i + n_k} (\sum_i \Delta t^{s_i} + \sum_k \Delta t_{r_k})
-\]summed over all <a class="groops-class" href="platformSelectorType.html">selectTransmitters/ReceiversZeroMean</a>
-with a standard deviation of <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station or prn>:clock::&lt;time></code>
+\]summed over all <a class="groops-class" href="platformSelectorType.html">selectTransmitters/ReceiversZeroMean</a>.
+This should be a loose constraint with a relatively large standard deviation of <strong class="groops-config-element">sigmaZeroMeanConstraint</strong>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station or prn>:clock::&lt;time></code>
 and <code>&lt;station or prn>:clockDrift::</code>.
 </p>
 <table class="table table-hover">
