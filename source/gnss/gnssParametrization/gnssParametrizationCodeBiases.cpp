@@ -472,14 +472,14 @@ void GnssParametrizationCodeBiases::constraints(const GnssNormalEquationInfo &no
       logStatus<<"apply "<<zeroMeanDesign.rows()<<" zero mean equations for code bias parameters"<<Log::endl;
       if(zeroMeanDesign.size())
       {
-        GnssDesignMatrix A(normalEquationInfo, Vector(zeroMeanDesign.rows()));
+        GnssDesignMatrix A(normalEquationInfo, zeroMeanDesign.rows());
         for(auto para : paraTrans)
           if(para && para->index && (idxBiasTrans.at(para->trans->idTrans()) != NULLINDEX))
             axpy(1./sigmaZeroMean, zeroMeanDesign.column(idxBiasTrans.at(para->trans->idTrans()), para->Bias.columns()), A.column(para->index));
         for(auto para : paraRecv)
           if(para && para->index && (idxBiasRecv.at(para->recv->idRecv()) != NULLINDEX))
             axpy(1./sigmaZeroMean, zeroMeanDesign.column(idxBiasRecv.at(para->recv->idRecv()), para->Bias.columns()), A.column(para->index));
-        A.accumulateNormals(normals, n, lPl, obsCount);
+        GnssDesignMatrix::accumulateNormals(A, Vector(zeroMeanDesign.rows()), normals, n, lPl, obsCount);
       }
     }
   }

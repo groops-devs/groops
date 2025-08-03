@@ -318,20 +318,21 @@ void GnssParametrizationClocksModel::constraintsEpoch(const GnssNormalEquationIn
         if(Parallel::isMaster(normalEquationInfo.comm))
         {
           const Double p = 1./(countTrans + countRecv)/sigmaZeroMean; // weight;
-          GnssDesignMatrix A(normalEquationInfo, Vector(1));
+          Vector l(1);
+          GnssDesignMatrix A(normalEquationInfo, 1);
           for(UInt idTrans=0; idTrans<indexTrans.size(); idTrans++)
             if(selectedTransmittersZeroMean.at(idTrans) && indexTrans.at(idTrans).size() && indexTrans.at(idTrans).at(idEpoch))
             {
-              A.l(0) += lTransEpoch(idTrans) * p; // remove apriori value -> regularization towards 0
+              l(0) += lTransEpoch(idTrans) * p; // remove apriori value -> regularization towards 0
               A.column(indexTrans.at(idTrans).at(idEpoch))(0,0) = p;
             }
           for(UInt idRecv=0; idRecv<indexRecv.size(); idRecv++)
             if(selectedReceiversZeroMean.at(idRecv) && indexRecv.at(idRecv).size() && indexRecv.at(idRecv).at(idEpoch))
             {
-              A.l(0) += lRecvEpoch(idRecv) * p; // remove apriori value -> regularization towards 0
+              l(0) += lRecvEpoch(idRecv) * p; // remove apriori value -> regularization towards 0
               A.column(indexRecv.at(idRecv).at(idEpoch))(0,0) = p;
             }
-          A.accumulateNormals(normals, n, lPl, obsCount);
+          GnssDesignMatrix::accumulateNormals(A, l, normals, n, lPl, obsCount);
         }
       } // if(countTrans + countRecv)
     } // if(first or last epoch)
@@ -342,9 +343,9 @@ void GnssParametrizationClocksModel::constraintsEpoch(const GnssNormalEquationIn
       if(!gnss->receivers.at(idRecv)->useable(idEpoch))
         if(indexRecv.at(idRecv).size() && indexRecv.at(idRecv).at(idEpoch) && gnss->receivers.at(idRecv)->isMyRank())
         {
-          GnssDesignMatrix A(normalEquationInfo, Vector(1));
+          GnssDesignMatrix A(normalEquationInfo, 1);
           A.column(indexRecv.at(idRecv).at(idEpoch))(0,0) = 1./1e3; // sigma = 1000m
-          A.accumulateNormals(normals, n, lPl, obsCount);
+          GnssDesignMatrix::accumulateNormals(A, Vector(1), normals, n, lPl, obsCount);
        }
 
     // find next epoch
@@ -360,14 +361,15 @@ void GnssParametrizationClocksModel::constraintsEpoch(const GnssNormalEquationIn
       {
         const Double p  = 1./sigma0Trans(idTrans)/sigmaEpochTrans.at(idTrans).at(idEpoch);
         const Double dt = (gnss->times.at(idEpochNext)-gnss->times.at(idEpoch)).seconds();
-        GnssDesignMatrix A(normalEquationInfo, Vector(1));
-        A.l(0) = (LIGHT_VELOCITY * gnss->transmitters.at(idTrans)->clockError(idEpochNext)
-                - LIGHT_VELOCITY * gnss->transmitters.at(idTrans)->clockError(idEpoch)
-                - driftTrans(idTrans)*dt) * p;
+        GnssDesignMatrix A(normalEquationInfo, 1);
+        Vector l(1);
+        l(0) = (LIGHT_VELOCITY * gnss->transmitters.at(idTrans)->clockError(idEpochNext)
+             - LIGHT_VELOCITY * gnss->transmitters.at(idTrans)->clockError(idEpoch)
+             - driftTrans(idTrans)*dt) * p;
         A.column(indexTrans.at(idTrans).at(idEpochNext))(0,0) = -p;
         A.column(indexTrans.at(idTrans).at(idEpoch))(0,0)     = +p;
         A.column(indexDriftTrans.at(idTrans))(0,0)            = +p*dt;
-        A.accumulateNormals(normals, n, lPl, obsCount);
+        GnssDesignMatrix::accumulateNormals(A, l, normals, n, lPl, obsCount);
       }
 
     // receiver clock model
@@ -377,14 +379,15 @@ void GnssParametrizationClocksModel::constraintsEpoch(const GnssNormalEquationIn
       {
         const Double p  = 1./sigma0Recv(idRecv)/sigmaEpochRecv.at(idRecv).at(idEpoch);
         const Double dt = (gnss->times.at(idEpochNext)-gnss->times.at(idEpoch)).seconds();
-        GnssDesignMatrix A(normalEquationInfo, Vector(1));
-        A.l(0) = (LIGHT_VELOCITY * gnss->receivers.at(idRecv)->clockError(idEpochNext)
-                - LIGHT_VELOCITY * gnss->receivers.at(idRecv)->clockError(idEpoch)
-                - driftRecv(idRecv)*dt) * p;
+        GnssDesignMatrix A(normalEquationInfo, 1);
+        Vector l(1);
+        l(0) = (LIGHT_VELOCITY * gnss->receivers.at(idRecv)->clockError(idEpochNext)
+             - LIGHT_VELOCITY * gnss->receivers.at(idRecv)->clockError(idEpoch)
+             - driftRecv(idRecv)*dt) * p;
         A.column(indexRecv.at(idRecv).at(idEpochNext))(0,0) = -p;
         A.column(indexRecv.at(idRecv).at(idEpoch))(0,0)     = +p;
         A.column(indexDriftRecv.at(idRecv))(0,0)            = +p*dt;
-        A.accumulateNormals(normals, n, lPl, obsCount);
+        GnssDesignMatrix::accumulateNormals(A, l, normals, n, lPl, obsCount);
       }
   }
   catch(std::exception &e)

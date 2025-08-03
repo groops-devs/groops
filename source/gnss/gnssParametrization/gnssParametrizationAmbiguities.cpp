@@ -127,7 +127,11 @@ public:
   AmbiguityInfo(Ambiguity *ambi) :
     ambi(ambi), idRecv(ambi->track->receiver->idRecv()), idTrans(ambi->track->transmitter->idTrans()),
     idEpochStart(ambi->track->idEpochStart), idEpochEnd(ambi->track->idEpochEnd),
-    parameterCount(ambi->value.rows()), typesAmbiguity(ambi->types), typesTrack(ambi->track->types) {}
+    parameterCount(ambi->value.rows()), typesAmbiguity(ambi->types)
+  {
+    std::copy_if(ambi->track->types.begin(), ambi->track->types.end(), std::back_inserter(typesTrack),
+                 [](auto type) {return type == GnssType::PHASE;});
+  }
 
   void save(OutArchive &oa) const
   {
@@ -263,11 +267,11 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
         para->Bias = Matrix(types.size(), typesBias.size()+typesTrend.size());
         UInt idx;
         for(UInt i=0; i<types.size(); i++)
-          para->Bias(i, GnssType::index(typesBias, types.at(i))) = LIGHT_VELOCITY/types.at(i).frequency();
+          para->Bias(i, GnssType::index(typesBias, types.at(i))) = types.at(i).wavelength();
         std::sort(typesTrend.begin(), typesTrend.end());
         for(UInt i=0; i<types.size(); i++)
           if(types.at(i).isInList(typesTrend, idx))
-            para->Bias(i, typesBias.size()+idx) = LIGHT_VELOCITY/types.at(i).frequency() * types.at(i).frequencyNumber();
+            para->Bias(i, typesBias.size()+idx) = types.at(i).wavelength() * types.at(i).frequencyNumber();
 
         // parameter names
         std::vector<ParameterName> parameterNames(typesBias.size()+typesTrend.size());
@@ -288,7 +292,7 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
     for(auto &info : ambiguityInfos)
       for(GnssType &type : info.typesTrack)
         if(!type.isInList(typesFreqSys))
-          typesFreqSys.push_back(type & (GnssType::TYPE + GnssType::FREQUENCY + GnssType::SYSTEM));
+          typesFreqSys.push_back(type & ~(GnssType::ATTRIBUTE + GnssType::PRN));
 
     for(GnssType typeFreqSys : typesFreqSys)
     {
@@ -296,7 +300,7 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
       // -----------------------
       std::vector<std::pair<UInt, std::vector<GnssType>>> idTypeAmbi;  // idRecv,   GnssTypes
       std::vector<std::pair<UInt, GnssType>>              idTypeRecv;  // idRecv,   GnssType w/o PRN
-      std::vector<std::pair<UInt, GnssType>>              idTypeTrans; // idRTrand, GnssType w/o ATTRIBUTE
+      std::vector<std::pair<UInt, GnssType>>              idTypeTrans; // idRTrans, GnssType w/o ATTRIBUTE
       for(auto &info : ambiguityInfos)
       {
         // reset indices

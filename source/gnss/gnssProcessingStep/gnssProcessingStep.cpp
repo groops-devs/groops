@@ -151,10 +151,71 @@ void GnssProcessingStep::process(GnssProcessingStep::State &state)
 
 GnssProcessingStep::State::State(GnssPtr gnss, Parallel::CommunicatorPtr comm) :
   gnss(gnss), normalEquationInfo(gnss->times.size(), gnss->receivers.size(), gnss->transmitters.size(), comm),
-  changedNormalEquationInfo(TRUE), sigmaType(gnss->receivers.size()), sigmaFactor(gnss->receivers.size())
+  changedNormalEquationInfo(TRUE), stations(gnss->receivers.size()) {}
+
+/***********************************************/
+
+void GnssProcessingStep::State::decorrelatedDesignMatrix(GnssObservationEquation &eqn, GnssDesignMatrix &B, GnssDesignMatrix &A)
 {
   try
   {
+    auto &station = stations.at(eqn.receiver->idRecv());
+    if(!station.arOrder)
+    {
+      gnss->designMatrix(normalEquationInfo, eqn, A);
+      return;
+    }
+
+    // TODO: consider stations with lower sampling!
+    // find future epochs of same track
+    std::vector<UInt> idEpochs(1, eqn.idEpoch);
+    auto iterIdEpoch = std::upper_bound(normalEquationInfo.idEpochs.begin(), normalEquationInfo.idEpochs.end(), idEpochs.back());
+    for(UInt lag=1; (lag <= station.arOrder) && (iterIdEpoch != normalEquationInfo.idEpochs.end()); lag++, iterIdEpoch++)
+    {
+      const GnssObservation *obs = eqn.receiver->observation(eqn.transmitter->idTrans(), *iterIdEpoch);
+      if(!obs || (obs->track != eqn.track))
+        break;
+      idEpochs.push_back(*iterIdEpoch); // store epoch
+    }
+
+    if(idEpochs.size() == 1)
+    {
+      gnss->designMatrix(normalEquationInfo, eqn, A);
+      return;
+    }
+
+    const UInt obsCount = eqn.types.size();
+    const UInt order    = idEpochs.size()-1;
+    std::vector<Double> factors(obsCount);
+    std::vector<UInt>   rowInA(obsCount);
+    std::vector<UInt>   idxType(obsCount);
+    std::iota(rowInA.begin(), rowInA.end(), 0);
+    for(UInt i=0; i<obsCount; i++)
+      idxType.at(i) = GnssType::index(station.arTypes, eqn.types.at(i));
+
+    // lag 0
+    for(UInt i=0; i<obsCount; i++)
+    {
+      eqn.l.row(i) *= station.arProcesses.at(idxType.at(i)).at(order).at(0);
+      eqn.A.row(i) *= station.arProcesses.at(idxType.at(i)).at(order).at(0);
+    }
+    gnss->designMatrix(normalEquationInfo, eqn, A);
+
+    // other lags
+    for(UInt k=1; k<idEpochs.size(); k++)
+    {
+      const GnssObservation *obs = eqn.receiver->observation(eqn.transmitter->idTrans(), idEpochs.at(k));
+      GnssObservationEquation eqnB(*obs, *eqn.receiver, *eqn.transmitter,
+                                   gnss->funcRotationCrf2Trf, gnss->funcReduceModels, idEpochs.at(k), TRUE, eqn.types);
+      eqnB.eliminateGroupParameters(FALSE);
+      B.init(eqnB.l.rows());
+      gnss->designMatrix(normalEquationInfo, eqnB, B);
+      for(UInt i=0; i<obsCount; i++)
+        factors.at(i) = station.arProcesses.at(idxType.at(i)).at(order).at(k);
+      GnssDesignMatrix::axpy(rowInA, factors, B, A);
+      for(UInt i=0; i<obsCount; i++)
+        eqn.l(i) += factors.at(i) * eqnB.l(i);
+    }
   }
   catch(std::exception &e)
   {
@@ -287,8 +348,7 @@ void GnssProcessingStep::State::buildNormals(Bool constraintsOnly, Bool solveEpo
     // --------------------
     Parallel::barrier(normalEquationInfo.comm);
     logStatus<<"accumulate normals"<<Log::endl;
-    GnssDesignMatrix A(normalEquationInfo);
-    std::vector<GnssObservationEquation> eqns(gnss->transmitters.size());
+    GnssDesignMatrix A(normalEquationInfo), B(normalEquationInfo);
     UInt blockStart = 0; // first block, which is not regularized and reduced
     UInt blockCount = 0;
     UInt idLoop     = 0;
@@ -304,38 +364,41 @@ void GnssProcessingStep::State::buildNormals(Bool constraintsOnly, Bool solveEpo
         for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
           if(normalEquationInfo.estimateReceiver.at(idRecv) && gnss->receivers.at(idRecv)->isMyRank())
           {
-            // all observation equations for this epoch
-            UInt countEqn = 0;
-            for(UInt idTrans=0; idTrans<gnss->receivers.at(idRecv)->idTransmitterSize(idEpoch); idTrans++)
-              if(gnss->basicObservationEquations(normalEquationInfo, idRecv, idTrans, idEpoch, eqns.at(countEqn)))
-              {
-                eqns.at(countEqn).eliminateGroupParameters();
-                if(!normalEquationInfo.accumulateEpochObservations)
-                {
-                  A.init(eqns.at(countEqn).l);
-                  gnss->designMatrix(normalEquationInfo, eqns.at(countEqn), A);
-                  A.accumulateNormals(normals, n, lPl(0), obsCount);
-                  obsCount -= eqns.at(countEqn).rankDeficit;
-                }
-                countEqn++;
-              }
-
-            if(normalEquationInfo.accumulateEpochObservations)
+            if(!normalEquationInfo.accumulateEpochObservations)
             {
+              GnssObservationEquation eqn;
+              for(UInt idTrans=0; idTrans<gnss->receivers.at(idRecv)->idTransmitterSize(idEpoch); idTrans++)
+                if(gnss->basicObservationEquations(normalEquationInfo, idRecv, idTrans, idEpoch, eqn))
+                {
+                  eqn.eliminateGroupParameters(!stations.at(idRecv).arOrder);
+                  A.init(eqn.l.rows());
+                  decorrelatedDesignMatrix(eqn, B, A);
+                  GnssDesignMatrix::accumulateNormals(A, eqn.l, normals, n, lPl(0), obsCount);
+                  obsCount -= eqn.rankDeficit;
+                }
+            }
+            else // accumulateEpochObservations
+            {
+              // all observation equations for this epoch
+              std::vector<GnssObservationEquation> eqns(gnss->transmitters.size());
+              UInt countEqn = 0;
+              for(UInt idTrans=0; idTrans<gnss->receivers.at(idRecv)->idTransmitterSize(idEpoch); idTrans++)
+                if(gnss->basicObservationEquations(normalEquationInfo, idRecv, idTrans, idEpoch, eqns.at(countEqn)))
+                  eqns.at(countEqn++).eliminateGroupParameters(!stations.at(idRecv).arOrder);
               // copy all observations to a single vector
-              A.init(Vector(std::accumulate(eqns.begin(), eqns.begin()+countEqn, UInt(0), [](UInt count, auto &eqn) {return count+eqn.l.rows();})));
+              Vector l(std::accumulate(eqns.begin(), eqns.begin()+countEqn, UInt(0), [](UInt count, auto &eqn) {return count+eqn.l.rows();}));
+              A.init(l.rows());
               UInt idx=0;
               for(UInt i=0; i<countEqn; i++)
               {
-                copy(eqns.at(i).l, A.l.row(idx, eqns.at(i).l.rows()));
-                gnss->designMatrix(normalEquationInfo, eqns.at(i), A.selectRows(idx, eqns.at(i).l.rows()));
+                copy(eqns.at(i).l, l.row(idx, eqns.at(i).l.rows()));
+                decorrelatedDesignMatrix(eqns.at(i), B, A.selectRows(idx, eqns.at(i).l.rows()));
                 idx += eqns.at(i).l.rows();
               }
-              A.selectRows(0, 0); // select all
-              A.accumulateNormals(normals, n, lPl(0), obsCount);
+              GnssDesignMatrix::accumulateNormals(A.selectRows(0, l.rows()), l, normals, n, lPl(0), obsCount);
               obsCount -= std::accumulate(eqns.begin(), eqns.begin()+countEqn, UInt(0), [](UInt count, auto &eqn) {return count+eqn.rankDeficit;});
             }
-         } // for(idRecv)
+          } // for(idRecv)
 
       // perform following steps not every epoch
       blockCount += normalEquationInfo.blockCountEpoch(idEpoch);
@@ -488,7 +551,7 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
 
       // reconstruct N12
       // ---------------
-      GnssDesignMatrix A(normalEquationInfo);
+      GnssDesignMatrix A(normalEquationInfo), B(normalEquationInfo);
       UInt idLoop = 0;
       Log::Timer timer(normalEquationInfo.idEpochs.size());;
       for(UInt idEpoch : normalEquationInfo.idEpochs)
@@ -502,9 +565,9 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
             for(UInt idTrans=0; idTrans<gnss->receivers.at(idRecv)->idTransmitterSize(idEpoch); idTrans++)
               if(gnss->basicObservationEquations(normalEquationInfo, idRecv, idTrans, idEpoch, eqn))
               {
-                eqn.eliminateGroupParameters();
-                A.init(eqn.l);
-                gnss->designMatrix(normalEquationInfo, eqn, A);
+                eqn.eliminateGroupParameters(!stations.at(idRecv).arOrder);
+                A.init(eqn.l.rows());
+                decorrelatedDesignMatrix(eqn, B, A);
                 A.transMult(eqn.l-A.mult(n, blockStart, normalEquationInfo.blockCount()-blockStart), n, 0, blockStart);
                 A.transMult(-A.mult(monteCarlo, blockStart, blockCount), monteCarlo, 0, blockStart);
               }
@@ -620,9 +683,9 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
             if(gnss->basicObservationEquations(normalEquationInfo, idRecv, idTrans, idEpoch, eqn))
             {
               // setup observation equations
-              A.init(eqn.l);
+              A.init(eqn.l.rows());
               gnss->designMatrix(normalEquationInfo, eqn, A);
-              Vector We  = eqn.l - A.mult(x); // decorrelated residuals
+              Vector We  = eqn.l - A.mult(x); // homogenized residuals
               Matrix AWz = A.mult(Wz);        // redundancies
 
               // estimate & reduce B parameters (ionosphere)
@@ -673,7 +736,7 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
                     infosResiduals.at(idType).info = (typesResiduals.at(idType)+eqn.transmitter->PRN()).str()+", ("+ eqn.receiver->name()+", "+gnss->times.at(idEpoch).dateTimeStr()+")";
                 } // for(k)
 
-              gnss->receivers.at(idRecv)->observation(idTrans, idEpoch)->setDecorrelatedResiduals(eqn.types, We, r);
+              gnss->receivers.at(idRecv)->observation(idTrans, idEpoch)->setHomogenizedResiduals(eqn.types, We, r);
             } // for(idTrans)
         } // for(idRecv)
     } // for(idEpoch)
@@ -746,10 +809,10 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
 
               // apply old factors to store total factor
               for(UInt idType=0; idType<types.size(); idType++)
-                if(types.at(idType).isInList(sigmaType.at(recv->idRecv()), idx))
-                  factors.at(idType) *= sigmaFactor.at(recv->idRecv()).at(idx);
-              sigmaType.at(recv->idRecv())   = types;
-              sigmaFactor.at(recv->idRecv()) = factors;
+                if(types.at(idType).isInList(stations.at(recv->idRecv()).sigmaTypes, idx))
+                  factors.at(idType) *= stations.at(recv->idRecv()).sigmaFactors.at(idx);
+              stations.at(recv->idRecv()).sigmaTypes   = std::move(types);
+              stations.at(recv->idRecv()).sigmaFactors = std::move(factors);
             } // if(adjustSigma0)
 
             if(computeWeights)
@@ -782,7 +845,7 @@ Double GnssProcessingStep::State::estimateSolution(const std::function<Vector(co
             if(!(computeWeights && adjustSigma0))
               break; // iteration not needed
           } // for(recv, iter)
-    }
+    } // if(computeWeights || adjustSigma0)
 
     // residual analysis
     // -----------------

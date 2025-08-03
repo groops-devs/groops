@@ -33,18 +33,18 @@ class GnssDesignMatrix
   Matrix                         A;
 
 public:
-  Vector l;
-
-  GnssDesignMatrix(const GnssNormalEquationInfo &normalEquationInfo, const_MatrixSliceRef l=Vector());
+  GnssDesignMatrix(const GnssNormalEquationInfo &normalEquationInfo, UInt rows=0);
  ~GnssDesignMatrix() {}
 
-  void              init(const_MatrixSliceRef l);
+  void              init(UInt rows);
   GnssDesignMatrix &selectRows(UInt row, UInt rows);
   MatrixSlice       column(const GnssParameterIndex &index);
+  MatrixSlice       column(UInt block, UInt col, UInt cols);
   Matrix            mult(const_MatrixSliceRef x);
   Matrix            mult(const std::vector<Matrix> &x, UInt startBlock, UInt countBlock);
   void              transMult(const_MatrixSliceRef l, std::vector<Matrix> &x, UInt startBlock, UInt countBlock);
-  void              accumulateNormals(MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount);
+  static void       accumulateNormals(const GnssDesignMatrix &A, const_MatrixSliceRef l, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount);
+  static void       axpy(const std::vector<UInt> &rowInA, const std::vector<Double> &factors, const GnssDesignMatrix &B, GnssDesignMatrix &A);
 };
 
 /// @}

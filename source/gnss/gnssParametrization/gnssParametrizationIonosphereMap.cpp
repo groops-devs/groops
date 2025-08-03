@@ -118,7 +118,7 @@ void GnssParametrizationIonosphereMap::init(Gnss *gnss, Parallel::CommunicatorPt
               if(recv->observation(idTrans, idEpoch))
               {
                 GnssObservationEquation eqn(*recv->observation(idTrans, idEpoch), *recv, *gnss->transmitters.at(idTrans), gnss->funcRotationCrf2Trf,
-                                            nullptr/*reduceModels*/, idEpoch, FALSE/*decorrelate*/, {}/*types*/);
+                                            nullptr/*reduceModels*/, idEpoch, FALSE/*homogenize*/, {}/*types*/);
                 // pierce point
                 const Vector3d point = rotationCrf2Trf.rotate(intersection(radiusIono, eqn.posRecv, eqn.posTrans));
                 const Double VTEC = interpolateGrid(point, grid, griddedVTEC);
@@ -167,7 +167,8 @@ void GnssParametrizationIonosphereMap::initParameter(GnssNormalEquationInfo &nor
       index.push_back(normalEquationInfo.parameterNamesOther(parameterNames));
     }
 
-    logInfo<<(temporalNames.size()*baseNames.size())%"%9i VTEC map parameters"s<<Log::endl;
+    if(temporalNames.size() && baseNames.size())
+      logInfo<<(temporalNames.size()*baseNames.size())%"%9i VTEC map parameters"s<<Log::endl;
   }
   catch(std::exception &e)
   {
@@ -319,7 +320,7 @@ Double GnssParametrizationIonosphereMap::updateParameter(const GnssNormalEquatio
             if(recv->observation(idTrans, idEpoch))
             {
               GnssObservationEquation eqn(*recv->observation(idTrans, idEpoch), *recv, *gnss->transmitters.at(idTrans), gnss->funcRotationCrf2Trf,
-                                          nullptr/*reduceModels*/, idEpoch, FALSE/*decorrelate*/, {}/*types*/);
+                                          nullptr/*reduceModels*/, idEpoch, FALSE/*homogenize*/, {}/*types*/);
               // spatial representation
               const Rotary3d rot   = magnetosphere->rotaryCelestial2SolarGeomagneticFrame(eqn.timeRecv);
               const Double   dVTEC = sphericalHarmonicSynthesis(rot.rotate(intersection(radiusIono, eqn.posRecv, eqn.posTrans)), dx);

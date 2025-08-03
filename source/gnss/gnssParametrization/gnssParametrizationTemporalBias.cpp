@@ -223,9 +223,10 @@ void GnssParametrizationTemporalBias::constraints(const GnssNormalEquationInfo &
     for(auto para : parameters)
       if(para && para->index)
       {
-        GnssDesignMatrix A(normalEquationInfo, -1./sigmaZeroMean/gnss->times.size() * mean.trans() * para->x); // constrain towards zero (0-x0)
+        Vector l = -1./sigmaZeroMean/gnss->times.size() * mean.trans() * para->x;
+        GnssDesignMatrix A(normalEquationInfo, l.rows()); // constrain towards zero (0-x0)
         axpy(1./sigmaZeroMean/gnss->times.size(), mean.trans(), A.column(para->index));
-        A.accumulateNormals(normals, n, lPl, obsCount);
+        GnssDesignMatrix::accumulateNormals(A, l, normals, n, lPl, obsCount);
       }
   }
   catch(std::exception &e)

@@ -17,29 +17,27 @@
 
 /***********************************************/
 
-GnssDesignMatrix::GnssDesignMatrix(const GnssNormalEquationInfo &normalEquationInfo_, const_MatrixSliceRef l_) :
+GnssDesignMatrix::GnssDesignMatrix(const GnssNormalEquationInfo &normalEquationInfo_, UInt rows_) :
       normalEquationInfo(normalEquationInfo_),
       blockIndices(normalEquationInfo.blockIndices()),
       indexUsedParameter(normalEquationInfo.blockCount()),
       countUsedParameter(normalEquationInfo.blockCount()),
       row(0),
-      rows(l_.rows()),
-      A(l_.rows(), normalEquationInfo.parameterCount()),
-      l(l_)
+      rows(rows_),
+      A(rows_, normalEquationInfo.parameterCount())
 {
 }
 
 /***********************************************/
 
-void GnssDesignMatrix::init(const_MatrixSliceRef l)
+void GnssDesignMatrix::init(UInt rows_)
 {
   try
   {
-    this->l = l;
-    if(A.rows() < l.rows())
-      A = Matrix(l.rows(), blockIndices.back());
+    if(A.rows() < rows_)
+      A = Matrix(rows_, blockIndices.back());
     row  = 0;
-    rows = l.rows();
+    rows = rows_;
 
     for(UInt i : indexUsedBlock)
     {
@@ -65,8 +63,6 @@ GnssDesignMatrix &GnssDesignMatrix::selectRows(UInt row_, UInt rows_)
   {
     row  = row_;
     rows = rows_;
-    if(!rows)
-      rows = l.rows()-row_;
     return *this;
   }
   catch(std::exception &e)
@@ -84,7 +80,20 @@ MatrixSlice GnssDesignMatrix::column(const GnssParameterIndex &index)
     const UInt block = normalEquationInfo.block(index);
     const UInt col   = normalEquationInfo.index(index) - normalEquationInfo.blockIndex(block);
     const UInt cols  = normalEquationInfo.count(index);
+    return column(block, col, cols);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
 
+/***********************************************/
+
+MatrixSlice GnssDesignMatrix::column(UInt block, UInt col, UInt cols)
+{
+  try
+  {
     const auto iter = std::lower_bound(indexUsedBlock.begin(), indexUsedBlock.end(), block);
     if(iter == indexUsedBlock.end() || block < *iter)
       indexUsedBlock.insert(iter, block);
@@ -190,54 +199,109 @@ void GnssDesignMatrix::transMult(const_MatrixSliceRef l, std::vector<Matrix> &x,
 
 /***********************************************/
 
-void GnssDesignMatrix::accumulateNormals(MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount)
+void GnssDesignMatrix::accumulateNormals(const GnssDesignMatrix &A, const_MatrixSliceRef l, MatrixDistributed &normals, std::vector<Matrix> &n, Double &lPl, UInt &obsCount)
 {
   try
   {
-    for(UInt ii=0; ii<indexUsedBlock.size(); ii++)
+    for(UInt ii=0; ii<A.indexUsedBlock.size(); ii++)
     {
-      const UInt blocki = indexUsedBlock[ii];
+      const UInt blocki = A.indexUsedBlock[ii];
       normals.setBlock(blocki, blocki);
       if(!normals.N(blocki, blocki).size())
         normals.N(blocki, blocki) = Matrix(normals.blockSize(blocki), Matrix::SYMMETRIC);
 
-      for(UInt kk=ii+1; kk<indexUsedBlock.size(); kk++)
+      for(UInt kk=ii+1; kk<A.indexUsedBlock.size(); kk++)
       {
-        const UInt blockk = indexUsedBlock[kk];
+        const UInt blockk = A.indexUsedBlock[kk];
         normals.setBlock(blocki, blockk);
         if(!normals.N(blocki, blockk).size())
           normals.N(blocki, blockk) = Matrix(normals.blockSize(blocki), normals.blockSize(blockk));
       }
 
-      for(UInt i=0; i<indexUsedParameter[blocki].size(); i++)
+      for(UInt i=0; i<A.indexUsedParameter[blocki].size(); i++)
       {
-        const UInt index = indexUsedParameter[blocki][i];
-        const UInt count = countUsedParameter[blocki][i];
-        const const_MatrixSlice Ai(A.slice(row, blockIndices[blocki]+index, rows, count).trans());
+        const UInt index = A.indexUsedParameter[blocki][i];
+        const UInt count = A.countUsedParameter[blocki][i];
+        const const_MatrixSlice Ai(A.A.slice(A.row, A.blockIndices[blocki]+index, A.rows, count).trans());
 
         // right hand side
-        matMult(1., Ai, l.row(row, rows), n.at(blocki).row(index, count));
+        matMult(1., Ai, l, n.at(blocki).row(index, count));
 
         // diagonal block
         rankKUpdate(1., Ai.trans(), normals.N(blocki, blocki).slice(index, index, count, count));
-        for(UInt k=i+1; k<indexUsedParameter[blocki].size(); k++)
-          matMult(1., Ai, A.slice(row, blockIndices[blocki]+indexUsedParameter[blocki][k], rows, countUsedParameter[blocki][k]),
-                  normals.N(blocki, blocki).slice(index, indexUsedParameter[blocki][k], count, countUsedParameter[blocki][k]));
+        for(UInt k=i+1; k<A.indexUsedParameter[blocki].size(); k++)
+          matMult(1., Ai, A.A.slice(A.row, A.blockIndices[blocki]+A.indexUsedParameter[blocki][k], A.rows, A.countUsedParameter[blocki][k]),
+                  normals.N(blocki, blocki).slice(index, A.indexUsedParameter[blocki][k], count, A.countUsedParameter[blocki][k]));
 
         // other blocks
-        for(UInt kk=ii+1; kk<indexUsedBlock.size(); kk++)
+        for(UInt kk=ii+1; kk<A.indexUsedBlock.size(); kk++)
         {
-          const UInt blockk = indexUsedBlock[kk];
-          for(UInt k=0; k<indexUsedParameter[blockk].size(); k++)
-            matMult(1., Ai, A.slice(row, blockIndices[blockk]+indexUsedParameter[blockk][k], rows, countUsedParameter[blockk][k]),
-                    normals.N(blocki, blockk).slice(index, indexUsedParameter[blockk][k], count, countUsedParameter[blockk][k]));
+          const UInt blockk = A.indexUsedBlock[kk];
+          for(UInt k=0; k<A.indexUsedParameter[blockk].size(); k++)
+            matMult(1., Ai, A.A.slice(A.row, A.blockIndices[blockk]+A.indexUsedParameter[blockk][k], A.rows, A.countUsedParameter[blockk][k]),
+                    normals.N(blocki, blockk).slice(index, A.indexUsedParameter[blockk][k], count, A.countUsedParameter[blockk][k]));
         }
       }
     }
 
     // accumulate right hand side
-    obsCount += rows;
+    obsCount += l.rows();
     lPl      += quadsum(l);
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void GnssDesignMatrix::axpy(const std::vector<UInt> &rowInA, const std::vector<Double> &factors, const GnssDesignMatrix &B, GnssDesignMatrix &A)
+{
+  try
+  {
+    UInt idxUsedBlock = 0;
+    for(UInt block : B.indexUsedBlock)
+    {
+      while((idxUsedBlock < A.indexUsedBlock.size()) && (A.indexUsedBlock[idxUsedBlock] < block))
+        idxUsedBlock++;
+      if((idxUsedBlock >= A.indexUsedBlock.size()) || block < A.indexUsedBlock[idxUsedBlock])
+        A.indexUsedBlock.insert(A.indexUsedBlock.begin()+idxUsedBlock, block);
+
+      UInt idx = 0;
+      for(UInt k=0; k<B.indexUsedParameter[block].size(); k++)
+      {
+        const UInt col  = B.indexUsedParameter[block][k];
+        const UInt cols = B.countUsedParameter[block][k];
+        {
+          while((idx < A.indexUsedParameter[block].size()) && (A.indexUsedParameter[block][idx]+A.countUsedParameter[block][idx] < col))
+            idx++;
+          if((idx >= A.indexUsedParameter[block].size()) || (col+cols < A.indexUsedParameter[block][idx])) // new block
+          {
+            A.indexUsedParameter[block].insert(A.indexUsedParameter[block].begin()+idx, col);
+            A.countUsedParameter[block].insert(A.countUsedParameter[block].begin()+idx, cols);
+          }
+          else if((A.indexUsedParameter[block][idx] != col) || (A.countUsedParameter[block][idx] != cols)) // merge
+          {
+            const UInt end = std::max(col+cols, A.indexUsedParameter[block][idx]+A.countUsedParameter[block][idx]);
+            A.indexUsedParameter[block][idx] = std::min(col, A.indexUsedParameter[block][idx]);
+            A.countUsedParameter[block][idx] = end - A.indexUsedParameter[block][idx];
+            // merge with following parameter group?
+            while((idx+1 < A.indexUsedParameter[block].size()) && (A.indexUsedParameter[block][idx]+A.countUsedParameter[block][idx] >= A.indexUsedParameter[block][idx+1]))
+            {
+              A.countUsedParameter[block][idx] = std::max(A.countUsedParameter[block][idx], A.indexUsedParameter[block][idx+1]+A.countUsedParameter[block][idx+1]-A.indexUsedParameter[block][idx]);
+              A.indexUsedParameter[block].erase(A.indexUsedParameter[block].begin()+idx+1);
+              A.countUsedParameter[block].erase(A.countUsedParameter[block].begin()+idx+1);
+            }
+          }
+        }
+        MatrixSlice       As(A.A.slice(A.row, A.blockIndices[block]+col, A.rows, cols));
+        const_MatrixSlice Bs(B.A.slice(B.row, B.blockIndices[block]+col, B.rows, cols));
+        for(UInt i=0; i<rowInA.size(); i++)
+          if(rowInA.at(i) != NULLINDEX)
+            ::axpy(factors.at(i), Bs.row(i), As.row(rowInA.at(i)));
+      }
+    }
   }
   catch(std::exception &e)
   {

@@ -313,10 +313,10 @@ void GnssParametrizationStaticPositions::constraints(const GnssNormalEquationInf
     }
 
     // weighted no-net constraints
-    GnssDesignMatrix Design(normalEquationInfo, x);
-    if(sigmaNoNetTranslation) Design.l.row(idxNNT, 3)  *= 1./sigmaNoNetTranslation;
-    if(sigmaNoNetRotation)    Design.l.row(idxNNR, 3)  *= 1./sigmaNoNetRotation;
-    if(sigmaNoNetScale)       Design.l.row(idxNNS, 1)  *= 1./sigmaNoNetScale;
+    GnssDesignMatrix Design(normalEquationInfo, x.rows());
+    if(sigmaNoNetTranslation) x.row(idxNNT, 3)         *= 1./sigmaNoNetTranslation;
+    if(sigmaNoNetRotation)    x.row(idxNNR, 3)         *= 1./sigmaNoNetRotation;
+    if(sigmaNoNetScale)       x.row(idxNNS, 1)         *= 1./sigmaNoNetScale;
     if(sigmaNoNetTranslation) A.trans().row(idxNNT, 3) *= 1./sigmaNoNetTranslation;
     if(sigmaNoNetRotation)    A.trans().row(idxNNR, 3) *= 1./sigmaNoNetRotation;
     if(sigmaNoNetScale)       A.trans().row(idxNNS, 1) *= 1./sigmaNoNetScale;
@@ -324,7 +324,7 @@ void GnssParametrizationStaticPositions::constraints(const GnssNormalEquationInf
     for(UInt idRecv=0; idRecv<gnss->receivers.size(); idRecv++)
       if(selectedNoNetReceivers.at(idRecv) && index.at(idRecv))
         copy(A.row(3*i++,3).trans(), Design.column(index.at(idRecv)));
-    Design.accumulateNormals(normals, n, lPl, obsCount);
+    GnssDesignMatrix::accumulateNormals(Design, x, normals, n, lPl, obsCount);
   }
   catch(std::exception &e)
   {

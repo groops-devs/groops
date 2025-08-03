@@ -68,21 +68,33 @@ public:
   class State
   {
   public:
-    GnssPtr                            gnss;
-    GnssNormalEquationInfo             normalEquationInfo;
-    Bool                               changedNormalEquationInfo;
-    MatrixDistributed                  normals;
-    std::vector<Matrix>                n;        // at master (after solve)
-    Vector                             lPl;      // at master (after solve)
-    UInt                               obsCount; // at master (after solve)
-    std::vector<std::vector<GnssType>> sigmaType;
-    std::vector<std::vector<Double>>   sigmaFactor; // for each receiver and type
+    class StationStatistics
+    {
+    public:
+      std::vector<GnssType> sigmaTypes;
+      std::vector<Double>   sigmaFactors; // for each type
+      UInt                  arOrder;
+      std::vector<GnssType> arTypes;
+      std::vector<std::vector<std::vector<Double>>> arProcesses; // for each type, order, order
+
+      StationStatistics() : arOrder(0) {}
+    };
+
+    GnssPtr                        gnss;
+    GnssNormalEquationInfo         normalEquationInfo;
+    Bool                           changedNormalEquationInfo;
+    MatrixDistributed              normals;
+    std::vector<Matrix>            n;        // at master (after solve)
+    Vector                         lPl;      // at master (after solve)
+    UInt                           obsCount; // at master (after solve)
+    std::vector<StationStatistics> stations;
 
     /** @brief Constructor. */
     State(GnssPtr gnss, Parallel::CommunicatorPtr comm);
 
     void regularizeNotUsedParameters(UInt blockStart, UInt blockCount, const std::vector<ParameterName> &parameterNames);
     void collectNormalsBlocks       (UInt blockStart, UInt blockCount);
+    void decorrelatedDesignMatrix   (GnssObservationEquation &eqn, GnssDesignMatrix &B, GnssDesignMatrix &A);
     void buildNormals               (Bool constraintsOnly, Bool solveEpochParameters);
     Double estimateSolution         (const std::function<Vector(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, Vector &xInt, Double &sigma)> &searchInteger,
                                      const std::vector<Byte> &ambiguityTransmitters, const std::vector<Byte> &ambiguityReceivers,

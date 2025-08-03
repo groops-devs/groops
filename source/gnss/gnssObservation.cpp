@@ -221,7 +221,7 @@ Bool GnssObservation::observationList(GnssObservation::Group group, std::vector<
 
 /***********************************************/
 
-void GnssObservation::setDecorrelatedResiduals(const std::vector<GnssType> &types, const_MatrixSliceRef residuals, const_MatrixSliceRef redundancy)
+void GnssObservation::setHomogenizedResiduals(const std::vector<GnssType> &types, const_MatrixSliceRef residuals, const_MatrixSliceRef redundancy)
 {
   try
   {
@@ -258,7 +258,7 @@ void GnssObservation::updateParameter(const_MatrixSliceRef x, const_MatrixSliceR
 
 void GnssObservationEquation::compute(const GnssObservation &observation, const GnssReceiver &receiver_, const GnssTransmitter &transmitter_,
                                       const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
-                                      UInt idEpoch_, Bool decorrelate, const std::vector<GnssType> &types_)
+                                      UInt idEpoch_, Bool homogenize, const std::vector<GnssType> &types_)
 {
   try
   {
@@ -359,9 +359,9 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
     if(reduceModels)
       reduceModels(*this);
 
-    // Decorrelate
-    // -----------
-    if(decorrelate)
+    // Homogenize
+    // ----------
+    if(homogenize)
       for(UInt i=0; i<obsCount; i++)
       {
         if(l.size()) l.row(i) *= 1/sigma(i);

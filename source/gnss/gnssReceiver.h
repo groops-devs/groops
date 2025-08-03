@@ -234,7 +234,7 @@ public:
 
 class GnssAmbiguity;
 
-/** @brief Class for tracking phases along epochs. */
+/** @brief Class for tracking phases and ranges along epochs. */
 class GnssTrack
 {
 public:

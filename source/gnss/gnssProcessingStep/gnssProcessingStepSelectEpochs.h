@@ -67,10 +67,14 @@ inline void GnssProcessingStepSelectEpochs::process(GnssProcessingStep::State &s
   try
   {
     logStatus<<"=== select epochs ==========================================="<<Log::endl;
+    auto oldEpochs = state.normalEquationInfo.idEpochs;
     state.normalEquationInfo.idEpochs.clear();
     for(UInt idEpoch=0; idEpoch<state.gnss->times.size(); idEpoch+=nthEpoch)
       state.normalEquationInfo.idEpochs.push_back(idEpoch);
     logInfo<<"  "<<state.normalEquationInfo.idEpochs.size()<<" of "<<state.gnss->times.size()<<" epochs selected"<<Log::endl;
+    if((oldEpochs != state.normalEquationInfo.idEpochs) && std::any_of(state.stations.begin(), state.stations.end(), [](auto &s){return s.arOrder;}))
+      logWarningOnce<<"estimated decorrelation AR process has been reset because the select epochs have changed"<<Log::endl;
+    std::for_each(state.stations.begin(), state.stations.end(), [](auto &s){s.arOrder = 0;});
     state.changedNormalEquationInfo = TRUE;
   }
   catch(std::exception &e)

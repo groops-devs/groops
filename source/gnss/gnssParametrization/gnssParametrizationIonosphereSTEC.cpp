@@ -91,7 +91,7 @@ void GnssParametrizationIonosphereSTEC::init(Gnss *gnss, Parallel::CommunicatorP
               if(recv->observation(idTrans, idEpoch))
               {
                 GnssObservationEquation eqn(*recv->observation(idTrans, idEpoch), *recv, *gnss->transmitters.at(idTrans), gnss->funcRotationCrf2Trf,
-                                            nullptr/*reduceModels*/, idEpoch, FALSE/*decorrelate*/, {}/*types*/);
+                                            nullptr/*reduceModels*/, idEpoch, FALSE/*homogenize*/, {}/*types*/);
                 varList.setVariable("E", eqn.elevationRecvLocal);
                 recv->observation(idTrans, idEpoch)->sigmaSTEC = exprSigmaSTEC->evaluate(varList);
               } // for(recv, trans)

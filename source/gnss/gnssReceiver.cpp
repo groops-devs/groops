@@ -607,7 +607,8 @@ void GnssReceiver::simulateObservations(NoiseGeneratorPtr noiseClock, NoiseGener
     {
       Vector value(track->types.size());
       for(UInt i=0; i<value.size(); i++)
-        value(i) = wavelengthFactor*track->types.at(i).wavelength() * ambiguityRandom(generator); // cycles to meter
+        if(track->types.at(i) == GnssType::PHASE)
+          value(i) = wavelengthFactor*track->types.at(i).wavelength() * ambiguityRandom(generator); // cycles to meter
       new Ambiguity(track.get(), value); // track is owner of ambiguity
     }
 
@@ -876,10 +877,10 @@ void GnssReceiver::createTracks(const std::vector<GnssTransmitterPtr> &transmitt
         if(!obs) // at end?
           break;
 
-        // phase types of start epoch
+        // phase and range types of start epoch
         std::vector<GnssType> types;
         for(UInt idType= 0; idType <obs->size(); idType++)
-          if(obs->at(idType).type == GnssType::PHASE)
+          if((obs->at(idType).type == GnssType::PHASE) || (obs->at(idType).type == GnssType::RANGE))
             types.push_back(obs->at(idType).type);
         std::sort(types.begin(), types.end());
 
@@ -897,7 +898,7 @@ void GnssReceiver::createTracks(const std::vector<GnssTransmitterPtr> &transmitt
             // test types
             std::vector<GnssType> typesNew;
             for(UInt idType=0; idType<obs->size(); idType++)
-              if(obs->at(idType).type == GnssType::PHASE)
+              if((obs->at(idType).type == GnssType::PHASE) || (obs->at(idType).type == GnssType::RANGE))
                 typesNew.push_back(obs->at(idType).type);
             if(!GnssType::allEqual(types, typesNew))
               break;
@@ -1450,21 +1451,16 @@ void GnssReceiver::cycleSlipsRepairAtSameFrequency(ObservationEquationList &eqnL
   {
     // get all phase types
     std::vector<GnssType> types;
-    for(UInt idEpoch=0; idEpoch<idEpochSize(); idEpoch++)
-      for(UInt idTrans=0; idTrans<idTransmitterSize(idEpoch); idTrans++)
-        if(observation(idTrans, idEpoch))
-        {
-          const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
-          for(UInt idType=0; idType<eqn.types.size(); idType++)
-            if((eqn.types.at(idType) == GnssType::PHASE) && !eqn.types.at(idType).isInList(types))
-              types.push_back(eqn.types.at(idType) & ~GnssType::PRN);
-        }
+    for(const auto &track : tracks)
+      for(GnssType type : track->types)
+        if((type == GnssType::PHASE) && !type.isInList(types))
+          types.push_back(type & ~GnssType::PRN);
     std::sort(types.begin(), types.end());
 
     // find two phase observations with same system and frequency
     for(UInt idType=1; idType<types.size(); idType++)
       for(UInt idType1=0; idType1<idType; idType1++)
-        if(types.at(idType) == (types.at(idType1) & (GnssType::FREQUENCY + GnssType::SYSTEM + GnssType::FREQ_NO)))
+        if(types.at(idType) == (types.at(idType1) & ~GnssType::ATTRIBUTE))
         {
           const Double wavelength = types.at(idType).wavelength();
           // compute difference
@@ -1495,11 +1491,10 @@ void GnssReceiver::cycleSlipsRepairAtSameFrequency(ObservationEquationList &eqnL
           // fix jumps
           for(UInt i=0; i<values.size(); i++)
           {
+            const Double v = wavelength * std::round(values.at(i) - v0);
             GnssObservationEquation &eqn = *eqnList(idxTrans.at(i), idxEpoch.at(i));
-            const UInt   idx = GnssType::index(eqn.types, types.at(idType));
-            const Double v   = wavelength * std::round(values.at(i)-v0);
-            eqn.l(idx) -= v;
-            observation(idxTrans.at(i), idxEpoch.at(i))->at(eqn.types.at(idx)).observation -= v;
+            eqn.l(GnssType::index(eqn.types, types.at(idType))) -= v;
+            observation(idxTrans.at(i), idxEpoch.at(i))->at(types.at(idType)).observation -= v;
           }
         } // for(idType)
   }
@@ -1566,7 +1561,7 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
             if(eqn.types.at(idType).isInList(types, idx))
               matMult(1., eqn.A.column(GnssObservationEquation::idxUnit+idType), Bias.row(idx), A);
 
-          // decorrelate
+          // homogenize
           for(UInt i=0; i<l.rows(); i++)
           {
             l(i)     *= 1./eqn.sigma(i);

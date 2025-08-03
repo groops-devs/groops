@@ -81,9 +81,9 @@ public:
             UInt idEpoch, Angle elevationCutOff, Double &phaseWindupOld);
 
   /** @brief Returns true if observation types required by @a analysisType are available, @a type contains list of these observations. */
-  Bool observationList         (Group group, std::vector<GnssType> &types) const;
-  void setDecorrelatedResiduals(const std::vector<GnssType> &types, const_MatrixSliceRef residuals, const_MatrixSliceRef redundancy);
-  void updateParameter         (const_MatrixSliceRef x, const_MatrixSliceRef covariance=Matrix());
+  Bool observationList        (Group group, std::vector<GnssType> &types) const;
+  void setHomogenizedResiduals(const std::vector<GnssType> &types, const_MatrixSliceRef residuals, const_MatrixSliceRef redundancy);
+  void updateParameter        (const_MatrixSliceRef x, const_MatrixSliceRef covariance=Matrix());
 };
 
 /***** CLASS ***********************************/
@@ -132,12 +132,12 @@ public:
 
   GnssObservationEquation(const GnssObservation &observation, const GnssReceiver &receiver, const GnssTransmitter &transmitter,
                           const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
-                          UInt idEpoch, Bool decorrelate, const std::vector<GnssType> &types)
-    {compute(observation, receiver, transmitter, rotationCrf2Trf, reduceModels, idEpoch, decorrelate, types);}
+                          UInt idEpoch, Bool homogenize, const std::vector<GnssType> &types)
+    {compute(observation, receiver, transmitter, rotationCrf2Trf, reduceModels, idEpoch, homogenize, types);}
 
   void compute(const GnssObservation &observation, const GnssReceiver &receiver, const GnssTransmitter &transmitter,
                const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
-               UInt idEpoch, Bool decorrelate, const std::vector<GnssType> &types);
+               UInt idEpoch, Bool homogenize, const std::vector<GnssType> &types);
 
   void eliminateGroupParameters(Bool removeRows=TRUE);
 };
