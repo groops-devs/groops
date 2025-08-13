@@ -292,7 +292,7 @@ void GnssParametrizationAmbiguities::initParameter(GnssNormalEquationInfo &norma
     for(auto &info : ambiguityInfos)
       for(GnssType &type : info.typesTrack)
         if(!type.isInList(typesFreqSys))
-          typesFreqSys.push_back(type & ~(GnssType::ATTRIBUTE + GnssType::PRN));
+          typesFreqSys.push_back(type & ~(GnssType::ATTRIBUTE + GnssType::PRN + GnssType::FREQ_NO));
 
     for(GnssType typeFreqSys : typesFreqSys)
     {
