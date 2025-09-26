@@ -131,6 +131,11 @@
 								<xs:documentation>supports wildcards: * and ?</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="minimumSize" type="uint" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>minimum file size in byte.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>

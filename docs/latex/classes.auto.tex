@@ -171,6 +171,7 @@ Test for conditions. See \reference{Loop and conditions}{general.loopsAndConditi
 \subsection{FileExist}
 Check for a file or directory existing.
 Supports wildcards * for any number of characters and ? for exactly one character.
+Files smaller than \config{minSize} are treated as non-existent.
 
 
 \keepXColumns
@@ -179,6 +180,7 @@ Supports wildcards * for any number of characters and ? for exactly one characte
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~file & \hfuzz=500pt filename & \hfuzz=500pt supports wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minimumSize & \hfuzz=500pt uint & \hfuzz=500pt minimum file size in byte.\\
 \hline
 \end{tabularx}
 

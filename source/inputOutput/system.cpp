@@ -140,6 +140,13 @@ Bool System::exists(const FileName &fileName)
 
 /***********************************************/
 
+UInt System::fileSize(const FileName &fileName)
+{
+  return std::filesystem::file_size(fileName.str());
+}
+
+/***********************************************/
+
 Bool System::isDirectory(const FileName &fileName)
 {
   return std::filesystem::is_directory(fileName.str());

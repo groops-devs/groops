@@ -19,6 +19,7 @@ static const char *docstringConditionFileExist = R"(
 \subsection{FileExist}
 Check for a file or directory existing.
 Supports wildcards * for any number of characters and ? for exactly one character.
+Files smaller than \config{minSize} are treated as non-existent.
 )";
 #endif
 
@@ -37,6 +38,7 @@ Supports wildcards * for any number of characters and ? for exactly one characte
 class ConditionFileExist : public Condition
 {
   FileName fileName;
+  UInt     minSize;
 
 public:
   ConditionFileExist(Config &config);
@@ -52,7 +54,10 @@ inline ConditionFileExist::ConditionFileExist(Config &config)
 {
   try
   {
-    readConfig(config, "file", fileName, Config::MUSTSET, "", "supports wildcards: * and ?");
+    minSize = 0;
+
+    readConfig(config, "file",        fileName, Config::MUSTSET,  "", "supports wildcards: * and ?");
+    readConfig(config, "minimumSize", minSize,  Config::OPTIONAL, "", "minimum file size in byte.");
     if(isCreateSchema(config)) return;
   }
   catch(std::exception &e)
@@ -67,7 +72,8 @@ inline Bool ConditionFileExist::condition(const VariableList &varList) const
 {
   try
   {
-    return System::exists(fileName(varList));
+    return System::exists(fileName(varList)) &&
+          (System::isDirectory(fileName(varList)) || (System::fileSize(fileName(varList).str()) >= minSize));
   }
   catch(std::exception &e)
   {
