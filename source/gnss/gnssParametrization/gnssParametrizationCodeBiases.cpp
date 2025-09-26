@@ -182,6 +182,7 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
           N = N.slice(1, 1, N.rows()-1, N.rows()-1); // without clock
 
           para->Bias = T * nullSpace(N, TRUE);
+          Parallel::broadCast(para->Bias, 0, normalEquationInfo.comm); // to ensure that all nodes use the same matrix
           if(!para->Bias.size())
             continue;
 
@@ -259,6 +260,7 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
         N = N.slice(1, 1, N.rows()-1, N.rows()-1); // without clock
 
         para->Bias = T * nullSpace(N, TRUE);
+        Parallel::broadCast(para->Bias, 0, normalEquationInfo.comm); // to ensure that all nodes use the same matrix
         if(!para->Bias.size())
           continue;
 

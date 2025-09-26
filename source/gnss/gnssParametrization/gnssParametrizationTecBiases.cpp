@@ -139,6 +139,7 @@ void GnssParametrizationTecBiases::initParameter(GnssNormalEquationInfo &normalE
           while((countZeros < eigen.rows()) && (eigen(countZeros) < 1e-8))
             countZeros++;
           para->Bias = N.column(0, countZeros);
+          Parallel::broadCast(para->Bias, 0, normalEquationInfo.comm); // to ensure that all nodes use the same matrix
           if(!para->Bias.size())
             continue;
 
@@ -213,6 +214,7 @@ void GnssParametrizationTecBiases::initParameter(GnssNormalEquationInfo &normalE
         while((countZeros < eigen.rows()) && (eigen(countZeros) < 1e-8))
           countZeros++;
         para->Bias = T * N.column(0, countZeros);
+        Parallel::broadCast(para->Bias, 0, normalEquationInfo.comm); // to ensure that all nodes use the same matrix
         if(!para->Bias.size())
           continue;
 
