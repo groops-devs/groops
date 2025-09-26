@@ -10028,6 +10028,8 @@ This program computes the \configFile{outputfileOrbit}{instrument}
 from two-line elements (TLE/3LE)
 as can be found at e.g. \url{http://celestrak.org/NORAD/elements/}.
 The first satellite in the input file that matches the wildcard of \config{satelliteName} is used.
+If more records with exactly the same name are found, the one with the closest reference epoch
+is used for each point in the \configClass{timeSeries}{timeSeriesType}.
 
 The program uses the Simplified General Perturbation (SGP) model. More information can
 be found in the Revisiting Spacetrack Report 3 by Vallado et al. 2006.

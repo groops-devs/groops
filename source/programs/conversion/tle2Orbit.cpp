@@ -16,6 +16,8 @@ This program computes the \configFile{outputfileOrbit}{instrument}
 from two-line elements (TLE/3LE)
 as can be found at e.g. \url{http://celestrak.org/NORAD/elements/}.
 The first satellite in the input file that matches the wildcard of \config{satelliteName} is used.
+If more records with exactly the same name are found, the one with the closest reference epoch
+is used for each point in the \configClass{timeSeries}{timeSeriesType}.
 
 The program uses the Simplified General Perturbation (SGP) model. More information can
 be found in the Revisiting Spacetrack Report 3 by Vallado et al. 2006.
@@ -49,39 +51,39 @@ void Tle2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
   try
   {
     FileName         fileNameOrbit, fileNameTLE;
-    std::string      satelliteName;
+    std::string      wildcardName;
     TimeSeriesPtr    timeSeries;
     EarthRotationPtr earthRotation;
 
     readConfig(config, "outputfileOrbit", fileNameOrbit, Config::MUSTSET, "",  "");
     readConfig(config, "inputfileTLE",    fileNameTLE,   Config::MUSTSET, "",  "two line elements (TLE/3LE)");
-    readConfig(config, "satelliteName",   satelliteName, Config::DEFAULT, "*", "first name of wildcard match is used");
+    readConfig(config, "satelliteName",   wildcardName,  Config::DEFAULT, "*", "first name of wildcard match is used");
     readConfig(config, "timeSeries",      timeSeries,    Config::MUSTSET, "",  "output orbit at these times");
     readConfig(config, "earthRotation",   earthRotation, Config::MUSTSET, "",  "rotation to CRF");
     if(isCreateSchema(config)) return;
 
     logStatus<<"read TLE <"<<fileNameTLE<<">"<<Log::endl;
-    ElsetRec rec;
-    Time     satEpoch;
+    std::vector<std::pair<Time, ElsetRec>> records;
     InFile file(fileNameTLE);
-    const std::regex pattern = String::wildcard2regex(satelliteName);
-    std::string line;
-    Bool found = FALSE;
+    const std::regex pattern = String::wildcard2regex(wildcardName);
+    std::string line, satName;
     while(std::getline(file, line))
     {
+      line = String::trim(line);
       std::string line1, line2;
       std::getline(file, line1);
       std::getline(file, line2);
-      if(std::regex_match(String::trim(line), pattern))
+      if((satName.empty() && std::regex_match(line, pattern)) || (line == satName))
       {
-        logInfo<<" used satellite: '"<<String::trim(line)<<"'"<<Log::endl;
+        satName = line;
         if(!(line1.size() && line2.size() && (line1.at(0) == '1') && (line2.at(0) == '2')))
           throw(Exception("parser error"));
 
         // first line
         const Double xpdotp = 24*60/(2.*PI);
-        const Int yy = String::toInt(line1.substr(18, 2)); // two digit year
-        satEpoch     = date2time(yy + ((yy > 56) ? 1900 : 2000), 1, 1) + mjd2time(String::toDouble(line1.substr(20, 12))-1);
+        const Int yy  = String::toInt(line1.substr(18, 2)); // two digit year
+        Time satEpoch = date2time(yy + ((yy > 56) ? 1900 : 2000), 1, 1) + mjd2time(String::toDouble(line1.substr(20, 12))-1);
+        ElsetRec rec;
         rec.ndot     = String::toDouble(line1.substr(33, 10))/ (xpdotp*1440.);
         rec.nddot    = String::toDouble(line1.at(44)+"."s+line1.substr(45, 5)) * std::pow(10, String::toInt(line1.substr(50, 2)))/(xpdotp*1440.*1440.);
         rec.bstar    = String::toDouble(line1.at(53)+"."s+line1.substr(54, 5)) * std::pow(10, String::toInt(line1.substr(59, 2)));
@@ -97,26 +99,31 @@ void Tle2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         rec.jdsatepoch  = satEpoch.mjdInt() + 2400000.5;
         rec.jdsatepochF = satEpoch.mjdMod();
 
-        sgp4init('a', rec);
-
-        found = TRUE;
-        break;
+        records.push_back(std::make_pair(satEpoch, rec));
+        logInfo<<" used satellite: '"<<line<<"' "<<satEpoch.dateTimeStr()<<Log::endl;
       }
     }
 
-    if(!found)
+    if(!records.size())
       throw(Exception("no satellite found"));
 
     logStatus<<"integrate orbit"<<Log::endl;
     const std::vector<Time> times = timeSeries->times();
     OrbitArc arc;
 
+    auto iterRecord = records.begin();
     Single::forEach(times.size(), [&](UInt i)
     {
+      auto iterRecordNew = std::min_element(records.begin(), records.end(),
+                                            [&](auto &r1, auto &r2) {return std::fabs((times.at(i)-r1.first).mjd()) < std::fabs((times.at(i)-r2.first).mjd());});
+      if(iterRecordNew != iterRecord)
+        sgp4init('a', iterRecordNew->second);
+      iterRecord = iterRecordNew;
+
       Double p[3], v[3];
-      rec.error = 0;
-      sgp4(rec, (timeGPS2UTC(times.at(i))-satEpoch).seconds()/60., p, v);
-      if(rec.error)
+      iterRecord->second.error = 0;
+      sgp4(iterRecord->second, (timeGPS2UTC(times.at(i))-iterRecord->first).seconds()/60., p, v);
+      if(iterRecord->second.error)
         logWarning<<times.at(i).dateTimeStr()<<" integration error"<<Log::endl;
 
       OrbitEpoch epoch;

@@ -31,6 +31,7 @@
 - Other:            NormalsEliminate: regularize unused eliminated parameters.
 - Other:            Sinex2StationPosition: Apply frequencies to all intervals.
 - Other:            GNSS: apriori ionospheric map is interpolated in solar-geomagentic frame.
+- Other:            Tle2Orbit: Use closest record if multiple records for the same satellites are given.
 
 
 # Release 2024-06-24
