@@ -12,7 +12,7 @@
 /***********************************************/
 
 #include "base/import.h"
-#include "base/planets.h"
+#include "base/basisSplines.h"
 #include "base/sphericalHarmonics.h"
 #include "config/config.h"
 #include "files/fileGriddedDataTimeSeries.h"
@@ -103,25 +103,51 @@ void GnssParametrizationIonosphereMap::init(Gnss *gnss, Parallel::CommunicatorPt
       GriddedDataRectangular grid;
       if(!grid.init(file.grid()))
         throw(Exception(fileNameIn.str()+" must contain a rectangular grid"));
+      if((gnss->times.front() < file.times().front()) || (gnss->times.back() > file.times().back()))
+        throw(Exception("wrong time interval ["+file.times().front().dateTimeStr()+", "+file.times().back().dateTimeStr()+"] in <"+fileNameIn.str()+">"));
+
+      UInt indexData = file.nodeCount();
+      std::vector<Vector>   griddedVTEC(file.splineDegree()+1);
+      std::vector<Rotary3d> rotSmf2Trf(file.splineDegree()+1); // SolarGeomagneticFrame ->  Terrestrial
 
       Log::Timer timer(gnss->times.size());
       for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
       {
         timer.loopStep(idEpoch);
 
-        const Vector   griddedVTEC     = file.data(gnss->times.at(idEpoch)).column(0);
-        const Rotary3d rotationCrf2Trf = gnss->rotationCrf2Trf(gnss->times.at(idEpoch));
+        // find time interval and read missing nodes
+        const UInt idx = std::min(static_cast<UInt>(std::distance(file.times().begin(),
+                                                                  std::upper_bound(file.times().begin(), file.times().end(), gnss->times.at(idEpoch)))), file.times().size()-1)-1;
+        const UInt start = (idx > indexData) ? std::max(idx, indexData+griddedVTEC.size()) : idx;
+        const UInt end   = (idx > indexData) ? idx+griddedVTEC.size() : std::min(idx+griddedVTEC.size(), indexData);
+        for(UInt i=start; i<end; i++)
+        {
+          griddedVTEC.at(i%griddedVTEC.size()) = file.data(i).column(0);
+          rotSmf2Trf.at(i%griddedVTEC.size())  = gnss->rotationCrf2Trf(file.times().at(i)) * inverse(magnetosphere->rotaryCelestial2SolarGeomagneticFrame(file.times().at(i)));
+        }
+        indexData = idx;
+
+        // prepare spline interpolation
+        const Double t     = (gnss->times.at(idEpoch)-file.times().at(idx)).mjd()/(file.times().at(idx+1)-file.times().at(idx)).mjd();
+        const Vector coeff = BasisSplines::compute(t, file.splineDegree());
+
+        // Celestial -> SolarGeomagneticFrame
+        const Rotary3d rotCrf2Smf = magnetosphere->rotaryCelestial2SolarGeomagneticFrame(gnss->times.at(idEpoch));
 
         for(auto recv : gnss->receivers)
           if(recv->isMyRank() && recv->useable(idEpoch) && selectedReceivers.at(recv->idRecv()))
             for(UInt idTrans=0; idTrans<recv->idTransmitterSize(idEpoch); idTrans++)
               if(recv->observation(idTrans, idEpoch))
               {
+
                 GnssObservationEquation eqn(*recv->observation(idTrans, idEpoch), *recv, *gnss->transmitters.at(idTrans), gnss->funcRotationCrf2Trf,
                                             nullptr/*reduceModels*/, idEpoch, FALSE/*homogenize*/, {}/*types*/);
-                // pierce point
-                const Vector3d point = rotationCrf2Trf.rotate(intersection(radiusIono, eqn.posRecv, eqn.posTrans));
-                const Double VTEC = interpolateGrid(point, grid, griddedVTEC);
+                // pierce point in SolarGeomagneticFrame
+                const Vector3d point = rotCrf2Smf.rotate(intersection(radiusIono, eqn.posRecv, eqn.posTrans));
+                // spline interpolation
+                Double VTEC = 0;
+                for(UInt i=0; i<coeff.rows(); i++)
+                  VTEC += coeff(i) * interpolateGrid(rotSmf2Trf.at((indexData+i)%griddedVTEC.size()).rotate(point), grid, griddedVTEC.at((indexData+i)%griddedVTEC.size()));
                 // mapping VTEC -> STEC
                 recv->observation(idTrans, idEpoch)->STEC += mapping(eqn.elevationRecvLocal) * VTEC;
               } // for(recv, trans)
@@ -360,11 +386,42 @@ void GnssParametrizationIonosphereMap::writeResults(const GnssNormalEquationInfo
       GriddedDataRectangular gridFile;
       if(!gridFile.init(file.grid()))
         throw(Exception(fileNameIn.str()+" must contain a rectangular grid"));
+      if((timesOut.front() < file.times().front()) || (timesOut.back() > file.times().back()))
+        throw(Exception("wrong time interval ["+file.times().front().dateTimeStr()+", "+file.times().back().dateTimeStr()+"] in <"+fileNameIn.str()+">"));
+
+      UInt indexData = file.nodeCount();
+      std::vector<Vector>   griddedVTEC(file.splineDegree()+1);
+      std::vector<Rotary3d> rotSmf2Trf(file.splineDegree()+1); // SolarGeomagneticFrame -> Terrestrial
+
       for(UInt idEpoch=0; idEpoch<timesOut.size(); idEpoch++)
       {
-        const Vector griddedVTEC = file.data(timesOut.at(idEpoch)).column(0);
+        // find time interval and read missing nodes
+        const UInt idx = std::min(static_cast<UInt>(std::distance(file.times().begin(),
+                                                                  std::upper_bound(file.times().begin(), file.times().end(), timesOut.at(idEpoch)))), file.times().size()-1)-1;
+        const UInt start = (idx > indexData) ? std::max(idx, indexData+griddedVTEC.size()) : idx;
+        const UInt end   = (idx > indexData) ? idx+griddedVTEC.size() : std::min(idx+griddedVTEC.size(), indexData);
+        for(UInt i=start; i<end; i++)
+        {
+          griddedVTEC.at(i%griddedVTEC.size()) = file.data(i).column(0);
+          rotSmf2Trf.at(i%griddedVTEC.size())  = gnss->rotationCrf2Trf(file.times().at(i)) * inverse(magnetosphere->rotaryCelestial2SolarGeomagneticFrame(file.times().at(i)));
+        }
+        indexData = idx;
+
+        // prepare spline interpolation
+        const Double t     = (timesOut.at(idEpoch)-file.times().at(idx)).mjd()/(file.times().at(idx+1)-file.times().at(idx)).mjd();
+        const Vector coeff = BasisSplines::compute(t, file.splineDegree());
+
+        // Terrestrial -> SolarGeomagneticFrame
+        const Rotary3d rotTrf2Smf = magnetosphere->rotaryCelestial2SolarGeomagneticFrame(timesOut.at(idEpoch)) * inverse(gnss->rotationCrf2Trf(timesOut.at(idEpoch)));
+
         for(UInt i=0; i<gridOut.points.size(); i++)
-          data.at(idEpoch)(i, 0) += interpolateGrid(gridOut.points.at(i), gridFile, griddedVTEC);
+        {
+          Vector3d point = rotTrf2Smf.rotate(gridOut.points.at(i));
+          Double VTEC = 0;
+          for(UInt i=0; i<coeff.rows(); i++)
+            VTEC += coeff(i) * interpolateGrid(rotSmf2Trf.at((indexData+i)%griddedVTEC.size()).rotate(point), gridFile, griddedVTEC.at((indexData+i)%griddedVTEC.size()));
+          data.at(idEpoch)(i, 0) += VTEC;
+        }
       }
     } // if(!fileNameIn.empty())
 

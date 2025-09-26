@@ -30,6 +30,7 @@
 - Other:            Store more double digits in xml format.
 - Other:            NormalsEliminate: regularize unused eliminated parameters.
 - Other:            Sinex2StationPosition: Apply frequencies to all intervals.
+- Other:            GNSS: apriori ionospheric map is interpolated in solar-geomagentic frame.
 
 
 # Release 2024-06-24
