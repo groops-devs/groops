@@ -31,7 +31,7 @@ inserted into eq. \eqref{gnssParametrizationType:IonosphereSTEC:STEC}.
 The result is written as a \file{times series file}{instrument} at epochs with observations
 depending on \configClass{GnssProcessing:processingStep:selectEpochs}{gnssProcessingStepType:selectEpochs}.
 
-This class provides a simplifed model of the ionosphere for single receivers
+This class provides a simplified model of the ionosphere for single receivers
 and enables the separation of the TEC and signal biases, meaning
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases} becomes estimable.
 Local and short-term scintillations should be considered by adding loosely constrained
@@ -45,6 +45,7 @@ The \file{parameter names}{parameterName} are \verb|<station>:VTEC::<time>|.
 
 #include "base/import.h"
 #include "config/config.h"
+#include "classes/parametrizationTemporal/parametrizationTemporal.h"
 #include "classes/platformSelector/platformSelector.h"
 #include "gnss/gnss.h"
 #include "gnss/gnssParametrization/gnssParametrization.h"
@@ -65,7 +66,13 @@ class GnssParametrizationIonosphereVTEC : public GnssParametrizationBase
   std::vector<std::vector<GnssParameterIndex>> index; // for each receiver, for each epoch
   std::vector<std::vector<Double>>             VTEC;
 
+  ParametrizationTemporalPtr                   parametrizationGradient;
+  std::vector<GnssParameterIndex>              indexGradient; // for each receiver
+  std::vector<Vector>                          xGradient;
+  std::vector<std::vector<Double>>             gradientX, gradientY;
+
   Double mapping(Angle elevation) const;
+  void   mappingGradient(const GnssObservationEquation &eqn, Double &dx, Double &dy) const;
 
 public:
   GnssParametrizationIonosphereVTEC(Config &config);
