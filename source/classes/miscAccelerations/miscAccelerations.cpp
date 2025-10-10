@@ -63,9 +63,9 @@ MiscAccelerations::MiscAccelerations(Config &config, const std::string &name)
         acc.push_back(new MiscAccelerationsFromParametrization(config));
       if(readConfigChoiceElement(config, "group",                          type, "group misc accelerations"))
         acc.push_back(new MiscAccelerationsGroup(config));
-      if(readConfigChoiceElement(config, "solarRadiationPressure",         type, "DEPRECATED"))
+      if(readConfigChoiceElement(config, "solarRadiationPressure",         type, "DEPRECATED since 2022-12-19. Use radiationPressure instead."))
        acc.push_back(new MiscAccelerationsSolarRadiationPressure(config));
-      if(readConfigChoiceElement(config, "albedo",                         type, "DEPRECATED"))
+      if(readConfigChoiceElement(config, "albedo",                         type, "DEPRECATED since 2022-12-19. Use radiationPressure instead."))
        acc.push_back(new MiscAccelerationsAlbedo(config));
       endChoice(config);
       if(isCreateSchema(config))

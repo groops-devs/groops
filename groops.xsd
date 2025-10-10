@@ -4706,7 +4706,7 @@
 			</xs:element>
 			<xs:element name="fileGnssStationInfo">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Use platformEquipment instead</xs:documentation>
+					<xs:documentation>DEPRECATED since 2022-11-11. Use platformEquipment instead</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
@@ -5351,7 +5351,7 @@
 			</xs:element>
 			<xs:element name="solarRadiationPressure">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED</xs:documentation>
+					<xs:documentation>DEPRECATED since 2022-12-19. Use radiationPressure instead.</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
@@ -5371,7 +5371,7 @@
 			</xs:element>
 			<xs:element name="albedo">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED</xs:documentation>
+					<xs:documentation>DEPRECATED since 2022-12-19. Use radiationPressure instead.</xs:documentation>
 					<xs:appinfo>rename: inputfileEmissity = inputfileEmissivity</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25317,7 +25317,7 @@
 			</xs:element>
 			<xs:element name="GnssAttitude2Orbex">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use StarCamera2Orbex instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2024-11-30. Please use StarCamera2Orbex instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25388,13 +25388,13 @@
 			</xs:element>
 			<xs:element name="GnssPrn2SvnBlockVariables">
 				<xs:annotation>
-					<xs:documentation>This program no longer works! See documentation for help.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2024-02-12. This program no longer works! See documentation for help.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="GnssStationInfoCreate">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use PlatformCreate instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2024-12-02. Please use PlatformCreate instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25526,7 +25526,7 @@
 			</xs:element>
 			<xs:element name="GridRectangular2NetCdf">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-07-06. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25647,7 +25647,7 @@
 			</xs:element>
 			<xs:element name="NetCdf2GridRectangular">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-07-06. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25694,7 +25694,7 @@
 			</xs:element>
 			<xs:element name="Sinex2StationPosition">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use Sinex2StationPositions instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25744,7 +25744,7 @@
 			</xs:element>
 			<xs:element name="Sinex2StationPostSeismicDeformation">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use Sinex2StationPositions instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>

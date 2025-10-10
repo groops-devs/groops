@@ -2,7 +2,7 @@
 /**
 * @file gnssStationInfoCreate.cpp
 *
-* @brief DEPRECATED. Use PlatformCreate instead.
+* @brief DEPRECATED since 2024-12-02. Use PlatformCreate instead.
 *
 * @author Torsten Mayer-Guerr
 * @date 2012-11-24
@@ -15,7 +15,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-DEPRECATED. Please use \program{PlatformCreate} instead.
+DEPRECATED since 2024-12-02. Please use \program{PlatformCreate} instead.
 )";
 
 /***********************************************/
@@ -25,7 +25,7 @@ DEPRECATED. Please use \program{PlatformCreate} instead.
 
 /***** CLASS ***********************************/
 
-/** @brief DEPRECATED. Please use PlatformCreate instead.
+/** @brief DEPRECATED since 2024-12-02. Please use PlatformCreate instead.
 * @ingroup programsGroup */
 class GnssStationInfoCreate
 {
@@ -33,7 +33,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GnssStationInfoCreate, SINGLEPROCESS, "DEPRECATED. Please use PlatformCreate instead.", Deprecated)
+GROOPS_REGISTER_PROGRAM(GnssStationInfoCreate, SINGLEPROCESS, "DEPRECATED since 2024-12-02. Please use PlatformCreate instead.", Deprecated)
 GROOPS_RENAMED_PROGRAM(GnssCreateStationInfo, GnssStationInfoCreate, date2time(2019, 9, 5))
 
 /***********************************************/
@@ -159,7 +159,7 @@ void GnssStationInfoCreate::run(Config &config, Parallel::CommunicatorPtr /*comm
     readConfig(config, "referencePoint",        station.referencePoints,    Config::OPTIONAL, "",  "e.g. center of mass in satellite frame");
     if(isCreateSchema(config)) return;
 
-    logWarning<<"DEPRECATED. Please use PlatformCreate instead."<<Log::endl;
+    logWarning<<"DEPRECATED since 2024-12-02. Please use PlatformCreate instead."<<Log::endl;
 
     // ============================
 

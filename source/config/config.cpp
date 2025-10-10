@@ -761,7 +761,8 @@ void renameDeprecatedConfig(Config &config, const std::string &oldName, const st
       XmlNodePtr xmlChild = config.stack.top().xmlNode->findChild(oldName);
       if(!xmlChild)
         break;
-      logWarningOnce<<"In '"<<config.currentNodeName()<<"':"<<" config element '"<<oldName<<"' has new name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
+      logWarningOnce<<"DEPRECATED (please update the config file in the GUI): "
+                    <<"In '"<<config.currentNodeName()<<"':"<<" config element '"<<oldName<<"' has new name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
       xmlChild->setName(newName);
     }
   }
@@ -785,7 +786,8 @@ void renameDeprecatedChoice(Config &config, std::string &type, const std::string
 
     if(type == oldName)
     {
-      logWarningOnce<<"'"<<config.currentNodeName()<<"':' has new choice name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
+      logWarningOnce<<"DEPRECATED (please update the config file in the GUI): "
+                    <<"'"<<config.currentNodeName()<<"':' has new choice name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
       type = newName;
     }
   }
