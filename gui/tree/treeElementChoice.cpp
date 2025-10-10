@@ -88,6 +88,13 @@ bool TreeElementChoice::isSelectionUnknown(int index) const
 
 /***********************************************/
 
+bool TreeElementChoice::isSelectionDeprecated(int index) const
+{
+  return (index < annotationList.size()) && (annotationList[index].startsWith("DEPRECATED"));
+}
+
+/***********************************************/
+
 XmlNodePtr TreeElementChoice::createXmlTree(bool /*createRootEvenIfEmpty*/) const
 {
   try
@@ -212,10 +219,12 @@ QWidget *TreeElementChoice::createEditor()
       return comboBox;
     for(int i=0; i<comboBox->count(); i++)
     {
-      if(isSelectionUnknown(i))
-        comboBox->setItemIcon(i, QIcon(":/icons/scalable/element-unknown.svg"));
       if(isSelectionRenamedInSchema(i))
         comboBox->setItemIcon(i, QIcon(":/icons/scalable/edit-rename.svg"));
+      else if(isSelectionUnknown(i))
+        comboBox->setItemIcon(i, QIcon(":/icons/scalable/element-unknown.svg"));
+      else if(isSelectionDeprecated(i))
+        comboBox->setItemIcon(i, QIcon(":/icons/scalable/warning.svg"));
     }
     connect(comboBox, SIGNAL(highlighted(int)), this, SLOT(comboBoxHighlighted(int)));
 

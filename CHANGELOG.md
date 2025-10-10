@@ -23,6 +23,7 @@
 - Bugfix:           ParameterVector2GnssAntennaDefinition: Sometimes the parameters were assigned incorrectly.
 - Other:            GUI: offer links for numbers and strings of different types.
 - Other:            GUI: Open multiple config files with the file selector.
+- Other:            GUI: Inform about deprecated elements.
 - Other:            gnss: set margin for polynomial orbit interpolation to 1e-7 seconds.
 - Other:            gnss: simulation considers more apriori models (e.g. TEC maps).
 - Other:            IGRF: Updated International Geomagnetic Reference Field (IGRF) to 14th Generation Release
