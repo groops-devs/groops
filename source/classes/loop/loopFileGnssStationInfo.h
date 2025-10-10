@@ -2,7 +2,7 @@
 /**
 * @file loopFileGnssStationInfo.h
 *
-* @brief DEPRECATDED. Use LoopPlatformEquipment instead.
+* @brief DEPRECATED since 2022-11-11. Use LoopPlatformEquipment instead.
 *
 * @author Sebastian Strasser
 * @date 2018-01-29
@@ -17,7 +17,7 @@
 #ifdef DOCSTRING_Loop
 static const char *docstringLoopFileGnssStationInfo = R"(
 \subsection{FileGnssStationInfo}
-DEPRECATDED. Use LoopPlatformEquipment instead.
+DEPRECATED since 2022-11-11. Use LoopPlatformEquipment instead.
 )";
 #endif
 
@@ -29,7 +29,7 @@ DEPRECATDED. Use LoopPlatformEquipment instead.
 
 /***** CLASS ***********************************/
 
-/** @brief DEPRECATDED. Use LoopPlatformEquipment instead.
+/** @brief DEPRECATED since 2022-11-11. Use LoopPlatformEquipment instead.
 * @ingroup loopGroup
 * @see Loop */
 class LoopFileGnssStationInfo : public Loop
@@ -75,7 +75,7 @@ inline LoopFileGnssStationInfo::LoopFileGnssStationInfo(Config &config)
     readConfigCondition(config);
     if(isCreateSchema(config)) return;
 
-    logWarningOnce<<"LoopFileGnssStationInfo is DEPRECATDED. Use LoopPlatformEquipment instead."<<Log::endl;
+    logWarningOnce<<"DEPRECATED since 2022-11-11: Loop->FileGnssStationInfo. Use Loop->PlatformEquipment instead."<<Log::endl;
 
     readFilePlatform(fileName, platform);
   }

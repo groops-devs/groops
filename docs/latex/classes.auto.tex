@@ -3874,7 +3874,7 @@ The result would therefore be the same as using \program{LoopPrograms} with a ne
 See \reference{Loop and conditions}{general.loopsAndConditions} for usage.
 
 
-\subsection{TimeSeries}
+\subsection{TimeSeries}\label{loopType:timeSeries}
 Loop over points in time.
 
 
@@ -3892,7 +3892,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{TimeIntervals}
+\subsection{TimeIntervals}\label{loopType:timeIntervals}
 Loop over the intervals between points in time.
 
 
@@ -3911,7 +3911,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{ManualList}\label{loopType:manualList}
+\subsection{StringList}\label{loopType:stringList}
 Loop over list of strings.
 
 
@@ -3920,7 +3920,7 @@ Loop over list of strings.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~string & \hfuzz=500pt string & \hfuzz=500pt explicit list of strings\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~string & \hfuzz=500pt string & \hfuzz=500pt explicit list of strings\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
@@ -3929,10 +3929,10 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{ManualTable}
-Loop over rows of a table containing strings.
-The table can be defined \config{rowWise} or \config{columnWise}.
-Each row/column must have the same number of cells.
+\subsection{StringTable}\label{loopType:stringTable}
+Loop over \config{row}s of a table containing strings.
+Each row must have the same number of cells.
+For each column an extra \config{variableLoopString} can be defined.
 
 
 \keepXColumns
@@ -3940,13 +3940,9 @@ Each row/column must have the same number of cells.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~table & \hfuzz=500pt choice & \hfuzz=500pt define table by rows/columns\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~rowWise & \hfuzz=500pt sequence & \hfuzz=500pt define table by rows\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~row & \hfuzz=500pt sequence & \hfuzz=500pt define table by rows\\
-\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~cell & \hfuzz=500pt string & \hfuzz=500pt explicit list of cells in row/column\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~columnWise & \hfuzz=500pt sequence & \hfuzz=500pt define table by columns\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~column & \hfuzz=500pt sequence & \hfuzz=500pt define table by columns\\
-\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~cell & \hfuzz=500pt string & \hfuzz=500pt explicit list of cells in row/column\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~row & \hfuzz=500pt sequence & \hfuzz=500pt rows of a table\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~cell & \hfuzz=500pt string & \hfuzz=500pt list of columns in a row\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~transpose & \hfuzz=500pt boolean & \hfuzz=500pt loop over columns instead of rows\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt 1. variable name for the 1. column, next variable name for the 2. column, ... \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
@@ -3955,8 +3951,8 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{FileAscii}
-Loop over list of strings from files.
+\subsection{FileStringList}\label{loopType:fileStringList}
+Loop over list of strings from \file{files}{stringList}.
 
 
 \keepXColumns
@@ -3964,11 +3960,7 @@ Loop over list of strings from files.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt simple ASCII file with strings (separated by whitespace)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sort & \hfuzz=500pt boolean & \hfuzz=500pt sort entries alphabetically (ascending)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~removeDuplicates & \hfuzz=500pt boolean & \hfuzz=500pt remove duplicate entries (order is preserved)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~startIndex & \hfuzz=500pt uint & \hfuzz=500pt start at element startIndex (counting from 0)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~count & \hfuzz=500pt uint & \hfuzz=500pt use count elements (default: use all)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt string list file\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
@@ -3977,8 +3969,8 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{FileAsciiTable}
-Loop over rows of a table containing strings.
+\subsection{FileStringTable}\label{loopType:fileStringTable}
+Loop over rows of a \file{table}{stringTable} containing strings.
 Each row must have the same number of columns.
 
 
@@ -3987,9 +3979,8 @@ Each row must have the same number of columns.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt simple ASCII file with multiple columns (separated by whitespace)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~startLine & \hfuzz=500pt uint & \hfuzz=500pt start at line startLine (counting from 0)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~countLines & \hfuzz=500pt uint & \hfuzz=500pt read count lines (default: all)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt string table file with multiple columns\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~transpose & \hfuzz=500pt boolean & \hfuzz=500pt loop over columns instead of rows\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt 1. variable name for the 1. column, next variable name for the 2. column, ... \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
@@ -3998,7 +3989,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{FileLines}
+\subsection{FileTextLines}\label{loopType:fileTextLines}
 Loop over lines of a text file.
 
 
@@ -4007,11 +3998,9 @@ Loop over lines of a text file.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt simple ASCII file with lines\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sort & \hfuzz=500pt boolean & \hfuzz=500pt sort lines alphabetically (ascending)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~removeDuplicates & \hfuzz=500pt boolean & \hfuzz=500pt remove duplicate lines (order is preserved)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt simple text file with lines\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~startIndex & \hfuzz=500pt uint & \hfuzz=500pt start at element startIndex (counting from 0)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~count & \hfuzz=500pt uint & \hfuzz=500pt use number of lines only (default: use all)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~count & \hfuzz=500pt uint & \hfuzz=500pt use number of loops only (default: use all)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopLine & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
@@ -4020,8 +4009,8 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{Matrix}
-Loop over rows of a matrix. To define the loop variables the standard
+\subsection{Matrix}\label{loopType:matrix}
+Loop over rows of a \file{matrix}{matrix}. To define the loop variables the standard
 data variables of the matrix are available, see~\reference{dataVariables}{general.parser:dataVariables}.
 
 
@@ -4042,7 +4031,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{UniformSampling}
+\subsection{NumberSequence}\label{loopType:numberSequence}
 Loop over sequence of numbers.
 
 
@@ -4101,22 +4090,6 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{Loop}\label{loopType:loop}
-Loop over nested loops. First \config{loop} is outermost loop, every subsequent \config{loop} is one level below the previous \config{loop}.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~loop & \hfuzz=500pt \hyperref[loopType]{loop} & \hfuzz=500pt subloop\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
-\hline
-\end{tabularx}
-
-
 \subsection{PlatformEquipment}\label{loopType:platformEquipment}
 Loop over specific equipment of a \file{platform file}{platform}.
 
@@ -4143,6 +4116,76 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopPositionX & \hfuzz=500pt string & \hfuzz=500pt variable with position x\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopPositionY & \hfuzz=500pt string & \hfuzz=500pt variable with position y\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopPositionY & \hfuzz=500pt string & \hfuzz=500pt variable with position z\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
+\hline
+\end{tabularx}
+
+
+\subsection{Loop}\label{loopType:loop}
+Loop over nested loops. First \config{loop} is outermost loop, every subsequent \config{loop} is one level below the previous \config{loop}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~loop & \hfuzz=500pt \hyperref[loopType]{loop} & \hfuzz=500pt subloop\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
+\hline
+\end{tabularx}
+
+
+\subsection{SortAndRemoveDuplicates}\label{loopType:sortAndRemoveDuplicates}
+Perform the \configClass{loop}{loopType} in the alphabetically
+order defined by the evaluated \config{sortString} for each loop step.
+So the string must contain loop variables. If \config{sortString}
+is empty, no sorting will take place.
+
+Example: The \config{sortString}=\verb|{loopTime:%m}| of a time series
+sorts the times in ascending order by month.
+
+The same principle is used to remove duplicates. If different loop steps
+evaluates \config{removeDuplicatesString} to the same string,
+only the first loop step is executed.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~loop & \hfuzz=500pt \hyperref[loopType]{loop} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sortString & \hfuzz=500pt string & \hfuzz=500pt use \{loopVariables\}, sort alphabetically\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~descending & \hfuzz=500pt boolean & \hfuzz=500pt sorting descending instead of ascending\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~removeDuplicatesString & \hfuzz=500pt string & \hfuzz=500pt use \{loopVariables\}, remove duplicates (order is preserved)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
+\hline
+\end{tabularx}
+
+
+\subsection{ManualTable}
+DEPRECATED since 2025-09-27. Use LoopStringTable instead.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~table & \hfuzz=500pt choice & \hfuzz=500pt define table by rows/columns\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~rowWise & \hfuzz=500pt sequence & \hfuzz=500pt define table by rows\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~row & \hfuzz=500pt sequence & \hfuzz=500pt define table by rows\\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~cell & \hfuzz=500pt string & \hfuzz=500pt explicit list of cells in row/column\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~columnWise & \hfuzz=500pt sequence & \hfuzz=500pt define table by columns\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~column & \hfuzz=500pt sequence & \hfuzz=500pt define table by columns\\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~cell & \hfuzz=500pt string & \hfuzz=500pt explicit list of cells in row/column\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt 1. variable name for the 1. column, next variable name for the 2. column, ... \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\

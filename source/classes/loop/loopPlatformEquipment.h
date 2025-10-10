@@ -116,7 +116,7 @@ inline Bool LoopPlatformEquipment::iteration(VariableList &varList)
       {
         switch(eq->getType())
         {
-          case PlatformEquipment::GNSSANTENNA:  varList.setVariable(nameInfo, std::dynamic_pointer_cast<PlatformGnssAntenna>(eq)->radome); break;
+          case PlatformEquipment::GNSSANTENNA:  varList.setVariable(nameInfo, std::dynamic_pointer_cast<PlatformGnssAntenna>(eq)->radome);   break;
           case PlatformEquipment::GNSSRECEIVER: varList.setVariable(nameInfo, std::dynamic_pointer_cast<PlatformGnssReceiver>(eq)->version); break;
           default: varList.setVariable(nameInfo,""); break;
         }
