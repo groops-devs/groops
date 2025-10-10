@@ -34,7 +34,7 @@
 - Other:            Sinex2StationPosition: Apply frequencies to all intervals.
 - Other:            GNSS: apriori ionospheric map is interpolated in solar-geomagentic frame.
 - Other:            Tle2Orbit: Use closest record if multiple records for the same satellites are given.
-
+- Other:            Config: The variables groopsConfigFile and workingDir are set automatically.
 
 # Release 2024-06-24
 - Interface change: Variables can now declared at any place in the config file (not only in the global section).

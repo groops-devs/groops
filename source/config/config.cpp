@@ -15,6 +15,7 @@
 #include "base/doodson.h"
 #include "base/gnssType.h"
 #include "inputOutput/file.h"
+#include "inputOutput/system.h"
 #include "parser/xml.h"
 #include "parser/stringParser.h"
 #include "parser/expressionParser.h"
@@ -76,7 +77,14 @@ Config::Config(FileName &fileName, const std::map<std::string, std::string> &com
 
     // local variables before global?
     // ------------------------------
-    XmlNodePtr xmlNode;
+    XmlNodePtr xmlNode = XmlNode::create("groopsConfigFile");
+    xmlNode->setText(fileName.str());
+    stack.top().links["groopsConfigFile"] = xmlNode;
+
+    xmlNode = XmlNode::create("workingDir");
+    xmlNode->setText(System::currentWorkingDirectory());
+    stack.top().links["workingDir"] = xmlNode;
+
     while((xmlNode = root->findNextChild()))
     {
       XmlAttrPtr label = xmlNode->getAttribute("label");

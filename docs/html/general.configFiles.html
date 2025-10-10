@@ -133,7 +133,7 @@ can be declared in the global section without the variable <code>loopTime</code>
 file paths throughout many GROOPS programs. Since this variable is going to be needed in
 most config files, it is recommended to define it in a template file that is used when creating
 new config files in the GUI. See section <a class="groops-ref" href="general.gui.html">Graphical User Interface (GUI)</a>
-for details on how to set up a template file.</p><p>Global variables can be manipulated when running a config file by passing the argument <code>--global &lt;name>=&lt;value></code>.
+for details on how to set up a template file.</p><p>In addition, the variables <code>groopsConfigFile</code> and <code>workingDir</code> are set automatically.</p><p>Global variables can be manipulated when running a config file by passing the argument <code>--global &lt;name>=&lt;value></code>.
 For example, running the command
 <pre>
   groops --global timeStart=58849 --global satellite=swarm config.xml
