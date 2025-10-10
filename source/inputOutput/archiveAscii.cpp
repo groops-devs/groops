@@ -167,13 +167,14 @@ void OutArchiveAscii::save(const GnssType &x) {stream<<' '<<x.str();            
 
 /***********************************************/
 
-void InArchiveAscii::load(Int      &x) {stripComments(); stream>>x;}
-void InArchiveAscii::load(UInt     &x) {stripComments(); stream>>x;}
-void InArchiveAscii::load(Double   &x) {stripComments(); x = readDouble(stream);}
-void InArchiveAscii::load(Bool     &x) {stripComments(); stream>>x;}
-void InArchiveAscii::load(Angle    &x) {stripComments(); Double w = readDouble(stream); x = Angle(w*DEG2RAD);}
-void InArchiveAscii::load(Doodson  &x) {stripComments(); std::string s; stream>>s; x = Doodson(s);}
-void InArchiveAscii::load(GnssType &x) {stripComments(); std::string s; stream>>s; x = GnssType(s);}
+void InArchiveAscii::load(std::string &x) {stripComments(); stream>>std::quoted(x);}
+void InArchiveAscii::load(Int         &x) {stripComments(); stream>>x;}
+void InArchiveAscii::load(UInt        &x) {stripComments(); stream>>x;}
+void InArchiveAscii::load(Double      &x) {stripComments(); x = readDouble(stream);}
+void InArchiveAscii::load(Bool        &x) {stripComments(); stream>>x;}
+void InArchiveAscii::load(Angle       &x) {stripComments(); Double w = readDouble(stream); x = Angle(w*DEG2RAD);}
+void InArchiveAscii::load(Doodson     &x) {stripComments(); std::string s; stream>>s; x = Doodson(s);}
+void InArchiveAscii::load(GnssType    &x) {stripComments(); std::string s; stream>>s; x = GnssType(s);}
 
 /***********************************************/
 /***********************************************/
@@ -183,35 +184,11 @@ void OutArchiveAscii::save(const std::string &x)
   try
   {
     stream<<' ';
-    if((!x.empty()) && (x.find_first_of(" \t\n#") == std::string::npos))
+    if((!x.empty()) && (x.find_first_of(" \t\n\"#") == std::string::npos))
       stream<<x; // string without special characters
     else
-      stream<<'"'<<x<<'"';
+      stream<<std::quoted(x);
     isNewLine = FALSE;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-/***********************************************/
-
-void InArchiveAscii::load(std::string &x)
-{
-  try
-  {
-    stripComments();
-    stream>>x;
-    if(x.at(0)=='"')
-    {
-      if(x.size()==1)
-        x += stream.get();
-      while(x.at(x.size()-1)!='"')
-        x += stream.get();
-      x = x.substr(1, x.size()-2);
-    }
   }
   catch(std::exception &e)
   {
