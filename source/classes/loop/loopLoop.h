@@ -54,7 +54,7 @@ inline LoopLoop::LoopLoop(Config &config)
   try
   {
     readConfigLater(config, "loop", loops, loopConfigs, Config::MUSTSET,  "", "subloop");
-    readConfig(config, "variableLoopIndex",  nameIndex, Config::OPTIONAL, "", "variable with index of current iteration (starts with zero)");
+    readConfig(config, "variableLoopIndex", nameIndex, Config::OPTIONAL, "", "variable with index of current iteration (starts with zero)");
     readConfigCondition(config);
     if(isCreateSchema(config))
       return;

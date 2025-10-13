@@ -2,7 +2,7 @@
 /**
 * @file miscAccelerationsAlbedo.cpp
 *
-* @brief DEPRECATED. Use radiationPressure instead.
+* @brief DEPRECATED since 2022-12-19. Use radiationPressure instead.
 * @see MiscAccelerations
 *
 * @author Torsten Mayer-Guerr
@@ -35,6 +35,8 @@ MiscAccelerationsAlbedo::MiscAccelerationsAlbedo(Config &config)
     readConfig(config, "solarflux",             solarflux,            Config::DEFAULT,  "1367", "solar flux constant in 1 AU [W/m**2]");
     readConfig(config, "factor",                factor,               Config::DEFAULT,  "1.0",  "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
+
+    logWarningOnce<<"MiscAccelerationsAlbedo is DEPRECATDED since 2022-12-19. Use MiscAccelerationsRadiationPressure instead."<<Log::endl;
 
     // read reflectivity
     if(!fileNameReflectivity.empty())

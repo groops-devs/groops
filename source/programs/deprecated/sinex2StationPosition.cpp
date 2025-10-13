@@ -2,7 +2,7 @@
 /**
 * @file sinex2StationPosition.cpp
 *
-* @brief DEPRECATED. Please use Sinex2StationPositions instead.
+* @brief DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.
 *
 * @author Sebastian Strasser
 * @date 2016-12-07
@@ -14,7 +14,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-DEPRECATED. Please use \program{Sinex2StationPositions} instead.
+DEPRECATED since 2023-02-16. Please use \program{Sinex2StationPositions} instead.
 )";
 
 /***********************************************/
@@ -27,7 +27,7 @@ DEPRECATED. Please use \program{Sinex2StationPositions} instead.
 
 /***** CLASS ***********************************/
 
-/** @brief DEPRECATED. Please use Sinex2StationPositions instead.
+/** @brief DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.
 * @ingroup programsConversionGroup */
 class Sinex2StationPosition
 {
@@ -54,7 +54,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(Sinex2StationPosition, SINGLEPROCESS, "DEPRECATED. Please use Sinex2StationPositions instead.", Deprecated)
+GROOPS_REGISTER_PROGRAM(Sinex2StationPosition, SINGLEPROCESS, "DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.", Deprecated)
 GROOPS_RENAMED_PROGRAM(GnssSinex2StationPosition, Sinex2StationPosition, date2time(2018, 12, 4))
 
 /***********************************************/
@@ -79,7 +79,7 @@ void Sinex2StationPosition::run(Config &config, Parallel::CommunicatorPtr /*comm
     readConfig(config, "extrapolateBackward",      extrapolateBackward,     Config::DEFAULT,   "0",       "also compute positions for epochs before first interval defined in SINEX file");
     if(isCreateSchema(config)) return;
 
-    logWarning<<"DEPRECATED. Please use Sinex2StationPositions instead."<<Log::endl;
+    logWarning<<"DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead."<<Log::endl;
 
     logStatus<<"read SINEX file <"<<fileNameSinex<<">"<<Log::endl;
     std::map<std::string, Station> stations;

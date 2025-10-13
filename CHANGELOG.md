@@ -6,6 +6,7 @@
 - New program:      SynthesisSphericalHarmonicsMatrix.
 - New program:      Gravityfield2GravityVector.
 - New class:        PlotDegreeAmplitudes: degreeAmplitudesSimple.
+- New class:        Loop: SortAndRemoveDuplicates of an arbitrary loop.
 - New option:       GnssAntennaNormalsConstraint: gnssType selection for TEC constraint.
 - New option:       PlotAxisLabeled: majorTickSpacing, minorTickSpacing, gridLineSpacing.
 - New option:       GNSS/SLR: optional disabling of stations without precise apriori positions.
@@ -23,6 +24,7 @@
 - Bugfix:           ParameterVector2GnssAntennaDefinition: Sometimes the parameters were assigned incorrectly.
 - Other:            GUI: offer links for numbers and strings of different types.
 - Other:            GUI: Open multiple config files with the file selector.
+- Other:            GUI: Inform about deprecated elements.
 - Other:            gnss: set margin for polynomial orbit interpolation to 1e-7 seconds.
 - Other:            gnss: simulation considers more apriori models (e.g. TEC maps).
 - Other:            IGRF: Updated International Geomagnetic Reference Field (IGRF) to 14th Generation Release
@@ -33,7 +35,8 @@
 - Other:            Sinex2StationPosition: Apply frequencies to all intervals.
 - Other:            GNSS: apriori ionospheric map is interpolated in solar-geomagentic frame.
 - Other:            Tle2Orbit: Use closest record if multiple records for the same satellites are given.
-
+- Others:           Loop: revised interface.
+- Other:            Config: The variables groopsConfigFile and workingDir are set automatically.
 
 # Release 2024-06-24
 - Interface change: Variables can now declared at any place in the config file (not only in the global section).

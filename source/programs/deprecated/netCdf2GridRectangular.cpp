@@ -2,7 +2,7 @@
 /**
 * @file netCdf2GridRectangular.cpp
 *
-* @brief DEPRECATED. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.
+* @brief DEPRECATED since 2023-07-06. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.
 *
 * @author Andreas Kvas
 * @author Torsten Mayer-Guerr
@@ -15,7 +15,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-DEPRECATED. Please use \program{NetCdf2GriddedData} or \program{NetCdf2GriddedDataTimeSeries} instead.
+DEPRECATED since 2023-07-06. Please use \program{NetCdf2GriddedData} or \program{NetCdf2GriddedDataTimeSeries} instead.
 )";
 
 /***********************************************/
@@ -34,7 +34,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(NetCdf2GridRectangular, SINGLEPROCESS, "DEPRECATED. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.", Deprecated)
+GROOPS_REGISTER_PROGRAM(NetCdf2GridRectangular, SINGLEPROCESS, "DEPRECATED since 2023-07-06. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.", Deprecated)
 
 /***********************************************/
 
@@ -59,7 +59,7 @@ void NetCdf2GridRectangular::run(Config &config, Parallel::CommunicatorPtr /*com
     readConfig(config, "inverseFlattening",         f,        Config::DEFAULT,  STRING_DEFAULT_GRS80_f, "reference flattening for ellipsoidal coordinates");
     if(isCreateSchema(config)) return;
 
-    logWarning<<"DEPRECATED. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead."<<Log::endl;
+    logWarning<<"DEPRECATED since 2023-07-06. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead."<<Log::endl;
 
 #ifdef GROOPS_DISABLE_NETCDF
     throw(Exception("Compiled without NetCDF library"));

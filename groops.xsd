@@ -4055,6 +4055,11 @@
 	<xs:complexType name="loopType">
 		<xs:annotation>
 			<xs:appinfo>rename: temporal = timeIntervals</xs:appinfo>
+			<xs:appinfo>rename: manualList = stringList</xs:appinfo>
+			<xs:appinfo>rename: fileAscii = fileStringList</xs:appinfo>
+			<xs:appinfo>rename: fileAsciiTable = fileStringTable</xs:appinfo>
+			<xs:appinfo>rename: fileLines = fileTextLines</xs:appinfo>
+			<xs:appinfo>rename: uniformSampling = numberSequence</xs:appinfo>
 		</xs:annotation>
 		<xs:choice>
 			<xs:element name="timeSeries">
@@ -4130,13 +4135,13 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="manualList">
+			<xs:element name="stringList">
 				<xs:annotation>
 					<xs:documentation>Loop over list of strings</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="string" type="string" maxOccurs="unbounded">
+						<xs:element name="string" type="string" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>explicit list of strings</xs:documentation>
 							</xs:annotation>
@@ -4164,66 +4169,30 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="manualTable">
+			<xs:element name="stringTable">
 				<xs:annotation>
 					<xs:documentation>Loop over table of strings</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="table">
+						<xs:element name="row" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>define table by rows/columns</xs:documentation>
+								<xs:documentation>rows of a table</xs:documentation>
 							</xs:annotation>
 							<xs:complexType>
-								<xs:choice>
-									<xs:element name="rowWise">
+								<xs:sequence>
+									<xs:element name="cell" type="string" maxOccurs="unbounded">
 										<xs:annotation>
-											<xs:documentation>define table by rows</xs:documentation>
+											<xs:documentation>list of columns in a row</xs:documentation>
 										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="row" maxOccurs="unbounded">
-													<xs:annotation>
-														<xs:documentation>define table by rows</xs:documentation>
-													</xs:annotation>
-													<xs:complexType>
-														<xs:sequence>
-															<xs:element name="cell" type="string" maxOccurs="unbounded">
-																<xs:annotation>
-																	<xs:documentation>explicit list of cells in row/column</xs:documentation>
-																</xs:annotation>
-															</xs:element>
-														</xs:sequence>
-													</xs:complexType>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
 									</xs:element>
-									<xs:element name="columnWise">
-										<xs:annotation>
-											<xs:documentation>define table by columns</xs:documentation>
-										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="column" maxOccurs="unbounded">
-													<xs:annotation>
-														<xs:documentation>define table by columns</xs:documentation>
-													</xs:annotation>
-													<xs:complexType>
-														<xs:sequence>
-															<xs:element name="cell" type="string" maxOccurs="unbounded">
-																<xs:annotation>
-																	<xs:documentation>explicit list of cells in row/column</xs:documentation>
-																</xs:annotation>
-															</xs:element>
-														</xs:sequence>
-													</xs:complexType>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-								</xs:choice>
+								</xs:sequence>
 							</xs:complexType>
+						</xs:element>
+						<xs:element name="transpose" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>loop over columns instead of rows</xs:documentation>
+							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopString" type="string" default="loopString" maxOccurs="unbounded">
 							<xs:annotation>
@@ -4248,7 +4217,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="fileAscii">
+			<xs:element name="fileStringList">
 				<xs:annotation>
 					<xs:documentation>Loop over list of strings from file</xs:documentation>
 				</xs:annotation>
@@ -4256,27 +4225,7 @@
 					<xs:sequence>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>simple ASCII file with strings (separated by whitespace)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="sort" type="boolean" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>sort entries alphabetically (ascending)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="removeDuplicates" type="boolean" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>remove duplicate entries (order is preserved)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="startIndex" type="uint" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>start at element startIndex (counting from 0)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="count" type="uint" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>use count elements (default: use all)</xs:documentation>
+								<xs:documentation>string list file</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopString" type="string" minOccurs="0" default="loopString">
@@ -4302,7 +4251,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="fileAsciiTable">
+			<xs:element name="fileStringTable">
 				<xs:annotation>
 					<xs:documentation>Loop over of a table containing strings</xs:documentation>
 				</xs:annotation>
@@ -4310,17 +4259,12 @@
 					<xs:sequence>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>simple ASCII file with multiple columns (separated by whitespace)</xs:documentation>
+								<xs:documentation>string table file with multiple columns</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="startLine" type="uint" minOccurs="0" default="0">
+						<xs:element name="transpose" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
-								<xs:documentation>start at line startLine (counting from 0)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="countLines" type="uint" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>read count lines (default: all)</xs:documentation>
+								<xs:documentation>loop over columns instead of rows</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopString" type="string" default="loopString" maxOccurs="unbounded">
@@ -4346,7 +4290,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="fileLines">
+			<xs:element name="fileTextLines">
 				<xs:annotation>
 					<xs:documentation>Loop over of lines of a text file</xs:documentation>
 				</xs:annotation>
@@ -4354,17 +4298,7 @@
 					<xs:sequence>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>simple ASCII file with lines</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="sort" type="boolean" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>sort lines alphabetically (ascending)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="removeDuplicates" type="boolean" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>remove duplicate lines (order is preserved)</xs:documentation>
+								<xs:documentation>simple text file with lines</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="startIndex" type="uint" minOccurs="0" default="0">
@@ -4374,7 +4308,7 @@
 						</xs:element>
 						<xs:element name="count" type="uint" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>use number of lines only (default: use all)</xs:documentation>
+								<xs:documentation>use number of loops only (default: use all)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopLine" type="string" minOccurs="0" default="loopLine">
@@ -4445,7 +4379,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="uniformSampling">
+			<xs:element name="numberSequence">
 				<xs:annotation>
 					<xs:documentation>Loop over sequence of numbers</xs:documentation>
 				</xs:annotation>
@@ -4572,30 +4506,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="loop">
-				<xs:annotation>
-					<xs:documentation>Loop over loops</xs:documentation>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="loop" type="loopType" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>subloop</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="condition" type="conditionType" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>check before each loop step</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="platformEquipment">
 				<xs:annotation>
 					<xs:documentation>Loop over equipment of a platform file</xs:documentation>
@@ -4709,9 +4619,157 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="loop">
+				<xs:annotation>
+					<xs:documentation>Loop over loops</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="loop" type="loopType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>subloop</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="sortAndRemoveDuplicates">
+				<xs:annotation>
+					<xs:documentation>sort loops</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="loop" type="loopType"/>
+						<xs:element name="sortString" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>use {loopVariables}, sort alphabetically</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="descending" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>sorting descending instead of ascending</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="removeDuplicatesString" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>use {loopVariables}, remove duplicates (order is preserved)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopCount" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="manualTable">
+				<xs:annotation>
+					<xs:documentation>DEPRECATED since 2025-09-27. Use stringTable instead</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="table">
+							<xs:annotation>
+								<xs:documentation>define table by rows/columns</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="rowWise">
+										<xs:annotation>
+											<xs:documentation>define table by rows</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="row" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>define table by rows</xs:documentation>
+													</xs:annotation>
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="cell" type="string" maxOccurs="unbounded">
+																<xs:annotation>
+																	<xs:documentation>explicit list of cells in row/column</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="columnWise">
+										<xs:annotation>
+											<xs:documentation>define table by columns</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="column" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>define table by columns</xs:documentation>
+													</xs:annotation>
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="cell" type="string" maxOccurs="unbounded">
+																<xs:annotation>
+																	<xs:documentation>explicit list of cells in row/column</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="variableLoopString" type="string" default="loopString" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>1. variable name for the 1. column, next variable name for the 2. column, ... </xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopCount" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="fileGnssStationInfo">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Use platformEquipment instead</xs:documentation>
+					<xs:documentation>DEPRECATED since 2022-11-11. Use platformEquipment instead</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
@@ -5356,7 +5414,7 @@
 			</xs:element>
 			<xs:element name="solarRadiationPressure">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED</xs:documentation>
+					<xs:documentation>DEPRECATED since 2022-12-19. Use radiationPressure instead.</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
@@ -5376,7 +5434,7 @@
 			</xs:element>
 			<xs:element name="albedo">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED</xs:documentation>
+					<xs:documentation>DEPRECATED since 2022-12-19. Use radiationPressure instead.</xs:documentation>
 					<xs:appinfo>rename: inputfileEmissity = inputfileEmissivity</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25322,7 +25380,7 @@
 			</xs:element>
 			<xs:element name="GnssAttitude2Orbex">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use StarCamera2Orbex instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2024-11-30. Please use StarCamera2Orbex instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25393,13 +25451,13 @@
 			</xs:element>
 			<xs:element name="GnssPrn2SvnBlockVariables">
 				<xs:annotation>
-					<xs:documentation>This program no longer works! See documentation for help.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2024-02-12. This program no longer works! See documentation for help.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="GnssStationInfoCreate">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use PlatformCreate instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2024-12-02. Please use PlatformCreate instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25531,7 +25589,7 @@
 			</xs:element>
 			<xs:element name="GridRectangular2NetCdf">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-07-06. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25652,7 +25710,7 @@
 			</xs:element>
 			<xs:element name="NetCdf2GridRectangular">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-07-06. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25699,7 +25757,7 @@
 			</xs:element>
 			<xs:element name="Sinex2StationPosition">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use Sinex2StationPositions instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25749,7 +25807,7 @@
 			</xs:element>
 			<xs:element name="Sinex2StationPostSeismicDeformation">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use Sinex2StationPositions instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>

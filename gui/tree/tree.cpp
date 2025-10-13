@@ -69,26 +69,31 @@ Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *tabEnvironme
 
     // Layout
     // ======
+    auto createBar = [this](const QIcon &icon, QLabel *label, const std::vector<QPushButton*> &buttons)
+    {
+      QLabel *iconLabel = new QLabel(this);
+      iconLabel->setPixmap(icon.pixmap(24,24));
+      QHBoxLayout *layoutBar = new QHBoxLayout(this);
+      layoutBar->addWidget(iconLabel);
+      layoutBar->addWidget(label, 1);
+      for(QPushButton *button : buttons)
+        layoutBar->addWidget(button);
+      layoutBar->setContentsMargins(3, 3, 3, 3);
+      auto frame = new QFrame(this);
+      frame->setFrameStyle(QFrame::Box);
+      frame->setLayout(layoutBar);
+      frame->setVisible(false);
+      const QString highlightColor = frame->palette().highlight().color().name().right(6);
+      frame->setStyleSheet(".QFrame { color: #"+highlightColor+"; background-color: #4d"+highlightColor+" }");
+      return frame;
+    };
+
     // Bar handling external file changes
     // ----------------------------------
     {
       QPushButton *buttonReopen = new QPushButton(QIcon(":/icons/scalable/view-refresh.svg"), "Reopen", this);
       QPushButton *buttonIgnore = new QPushButton(QIcon(":/icons/scalable/ignore.svg"), "Ignore", this);
-      QLabel *iconLabel = new QLabel(this);
-      iconLabel->setPixmap(QIcon(":/icons/scalable/warning.svg").pixmap(24,24));
-      QHBoxLayout *layoutBar = new QHBoxLayout(this);
-      layoutBar->addWidget(iconLabel);
-      layoutBar->addWidget(new QLabel("File was modified externally. Reopen?", this), 1);
-      layoutBar->addWidget(buttonReopen);
-      layoutBar->addWidget(buttonIgnore);
-      layoutBar->setContentsMargins(3, 3, 3, 3);
-      barFileExternallyChanged = new QFrame(this);
-      barFileExternallyChanged->setFrameStyle(QFrame::Box);
-      barFileExternallyChanged->setLayout(layoutBar);
-      barFileExternallyChanged->setVisible(false);
-      const QString highlightColor = barFileExternallyChanged->palette().highlight().color().name().right(6);
-      barFileExternallyChanged->setStyleSheet(".QFrame { color: #"+highlightColor+"; background-color: #4d"+highlightColor+" }");
-
+      barFileExternallyChanged = createBar(QIcon(":/icons/scalable/warning.svg"), new QLabel("File was modified externally. Reopen?", this), {buttonReopen, buttonIgnore});
       connect(buttonReopen, SIGNAL(clicked()), this, SLOT(barFileExternallyChangedReopen()));
       connect(buttonIgnore, SIGNAL(clicked()), this, SLOT(barClickedIgnore()));
     }
@@ -98,22 +103,8 @@ Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *tabEnvironme
     {
       QPushButton *buttonShowAll   = new QPushButton(QIcon(":/icons/scalable/edit-find-replace.svg"), "Show all", this);
       QPushButton *buttonIgnore    = new QPushButton(QIcon(":/icons/scalable/ignore.svg"), "Ignore", this);
-      QLabel *iconLabel = new QLabel(this);
-      iconLabel->setPixmap(QIcon(":/icons/scalable/warning.svg").pixmap(24,24));
-      QHBoxLayout *layoutBar = new QHBoxLayout(this);
       labelBrokenLinks = new QLabel(this);
-      layoutBar->addWidget(iconLabel);
-      layoutBar->addWidget(labelBrokenLinks, 1);
-      layoutBar->addWidget(buttonShowAll);
-      layoutBar->addWidget(buttonIgnore);
-      layoutBar->setContentsMargins(3, 3, 3, 3);
-      barBrokenLinks = new QFrame(this);
-      barBrokenLinks->setFrameStyle(QFrame::Box);
-      barBrokenLinks->setLayout(layoutBar);
-      barBrokenLinks->setVisible(false);
-      const QString highlightColor = barBrokenLinks->palette().highlight().color().name().right(6);
-      barBrokenLinks->setStyleSheet(".QFrame { color: #"+highlightColor+"; background-color: #4d"+highlightColor+" }");
-
+      barBrokenLinks = createBar(QIcon(":/icons/scalable/warning.svg"), labelBrokenLinks, {buttonShowAll, buttonIgnore});
       connect(buttonShowAll, SIGNAL(clicked()), this, SLOT(barBrokenLinksExpand()));
       connect(buttonIgnore,  SIGNAL(clicked()), this, SLOT(barClickedIgnore()));
     }
@@ -125,23 +116,8 @@ Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *tabEnvironme
       QPushButton *buttonRemoveAll = new QPushButton(QIcon(":/icons/scalable/edit-delete.svg"), "Remove all", this);
       QPushButton *buttonIgnore    = new QPushButton(QIcon(":/icons/scalable/ignore.svg"), "Ignore", this);
       buttonRemoveAll->setMinimumWidth(95);
-      QLabel *iconLabel = new QLabel(this);
-      iconLabel->setPixmap(QIcon(":/icons/scalable/help-about.svg").pixmap(24,24));
-      QHBoxLayout *layoutBar = new QHBoxLayout(this);
       labelUnknownElements = new QLabel(this);
-      layoutBar->addWidget(iconLabel);
-      layoutBar->addWidget(labelUnknownElements, 1);
-      layoutBar->addWidget(buttonShowAll);
-      layoutBar->addWidget(buttonRemoveAll);
-      layoutBar->addWidget(buttonIgnore);
-      layoutBar->setContentsMargins(3, 3, 3, 3);
-      barUnknownElements = new QFrame(this);
-      barUnknownElements->setFrameStyle(QFrame::Box);
-      barUnknownElements->setLayout(layoutBar);
-      barUnknownElements->setVisible(false);
-      const QString highlightColor = barUnknownElements->palette().highlight().color().name().right(6);
-      barUnknownElements->setStyleSheet(".QFrame { color: #"+highlightColor+"; background-color: #4d"+highlightColor+" }");
-
+      barUnknownElements = createBar(QIcon(":/icons/scalable/help-about.svg"), labelUnknownElements, {buttonShowAll, buttonRemoveAll, buttonIgnore});
       connect(buttonShowAll,   SIGNAL(clicked()), this, SLOT(barUnknownElementsExpand()));
       connect(buttonRemoveAll, SIGNAL(clicked()), this, SLOT(barUnknownElementsRemoveAll()));
       connect(buttonIgnore,    SIGNAL(clicked()), this, SLOT(barClickedIgnore()));
@@ -154,26 +130,22 @@ Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *tabEnvironme
       QPushButton *buttonUpdateAll = new QPushButton(QIcon(":/icons/scalable/edit-rename.svg"), "Update all", this);
       QPushButton *buttonIgnore    = new QPushButton(QIcon(":/icons/scalable/ignore.svg"), "Ignore", this);
       buttonUpdateAll->setMinimumWidth(95);
-      QLabel *iconLabel = new QLabel(this);
-      iconLabel->setPixmap(QIcon(":/icons/scalable/help-about.svg").pixmap(24,24));
-      QHBoxLayout *layoutBar = new QHBoxLayout(this);
       labelSchemaRenamedElements = new QLabel(this);
-      layoutBar->addWidget(iconLabel);
-      layoutBar->addWidget(labelSchemaRenamedElements, 1);
-      layoutBar->addWidget(buttonShowAll);
-      layoutBar->addWidget(buttonUpdateAll);
-      layoutBar->addWidget(buttonIgnore);
-      layoutBar->setContentsMargins(3, 3, 3, 3);
-      barSchemaRenamedElements = new QFrame(this);
-      barSchemaRenamedElements->setFrameStyle(QFrame::Box);
-      barSchemaRenamedElements->setLayout(layoutBar);
-      barSchemaRenamedElements->setVisible(false);
-      const QString highlightColor = barSchemaRenamedElements->palette().highlight().color().name().right(6);
-      barSchemaRenamedElements->setStyleSheet(".QFrame { color: #"+highlightColor+"; background-color: #4d"+highlightColor+" }");
-
+      barSchemaRenamedElements = createBar(QIcon(":/icons/scalable/help-about.svg"), labelSchemaRenamedElements, {buttonShowAll, buttonUpdateAll, buttonIgnore});
       connect(buttonShowAll,   SIGNAL(clicked()), this, SLOT(barSchemaRenamedElementsExpand()));
       connect(buttonUpdateAll, SIGNAL(clicked()), this, SLOT(barSchemaRenamedElementsUpdateAll()));
       connect(buttonIgnore,    SIGNAL(clicked()), this, SLOT(barClickedIgnore()));
+    }
+
+    // Bar handling deprecated elements
+    // --------------------------------
+    {
+      QPushButton *buttonShowAll   = new QPushButton(QIcon(":/icons/scalable/edit-find-replace.svg"), "Show all", this);
+      QPushButton *buttonIgnore    = new QPushButton(QIcon(":/icons/scalable/ignore.svg"), "Ignore", this);
+      labelDeprecatedElements = new QLabel(this);
+      barDeprecatedElements = createBar(QIcon(":/icons/scalable/help-about.svg"), labelDeprecatedElements, {buttonShowAll, buttonIgnore});
+      connect(buttonShowAll, SIGNAL(clicked()), this, SLOT(barDeprecatedElementsExpand()));
+      connect(buttonIgnore,  SIGNAL(clicked()), this, SLOT(barClickedIgnore()));
     }
 
     this->treeWidget = new TreeWidget(this, tabEnvironment);
@@ -185,6 +157,7 @@ Tree::Tree(QWidget *parent, ActionList *actionList, TabEnvironment *tabEnvironme
     layout->addWidget(barBrokenLinks);
     layout->addWidget(barUnknownElements);
     layout->addWidget(barSchemaRenamedElements);
+    layout->addWidget(barDeprecatedElements);
     layout->addWidget(treeWidget, 1);
     setLayout(layout);
 
@@ -257,10 +230,11 @@ void Tree::clearTree()
     setSelectedItem(nullptr);
     _isClean = true;
     undoStack->clear();
-    brokenLinkCount = unknownCount = renamedCount = 0;
+    brokenLinkCount = unknownCount = renamedCount = deprecatedCount = 0;
     barFileExternallyChanged->setHidden(true);
     barUnknownElements->setHidden(true);
     barSchemaRenamedElements->setHidden(true);
+    barDeprecatedElements->setHidden(true);
 
     if(rootElement)
       rootElement->removeItem();
@@ -1309,25 +1283,28 @@ void Tree::setColumnWidth(int column, int width)
 /**** Event-Handler ****************************/
 /***********************************************/
 
-static void countBrokenLinksRenamesAndUnknowns(const TreeElement *element, int &brokenLinkCount, int &unknownCount, int &renamedCount)
+static void countBrokenLinksUnknownsRenamesAndDeprecated(const TreeElement *element, int &brokenLinkCount, int &unknownCount, int &renamedCount, int &deprecatedCount)
 {
   try
   {
     if(!element || element->disabled())
       return;
-    if(dynamic_cast<const TreeElementComplex*>(element))
-      for(const auto &child : dynamic_cast<const TreeElementComplex*>(element)->children())
-        countBrokenLinksRenamesAndUnknowns(child, brokenLinkCount, unknownCount, renamedCount);
-    if(element->loop)
-      countBrokenLinksRenamesAndUnknowns(element->loop, brokenLinkCount, unknownCount, renamedCount);
-    if(element->condition)
-      countBrokenLinksRenamesAndUnknowns(element->condition, brokenLinkCount, unknownCount, renamedCount);
+
     if(element->isBrokenLinked())
       brokenLinkCount++;
     if(dynamic_cast<const TreeElementUnknown*>(element) || element->isSelectionUnknown(element->selectedIndex()))
       unknownCount++;
     if(element->isRenamedInSchema() || element->isSelectionRenamedInSchema(element->selectedIndex()))
       renamedCount++;
+    if(element->isDeprecated() || element->isSelectionDeprecated(element->selectedIndex()))
+      deprecatedCount++;
+
+    // check loop, condition, children
+    countBrokenLinksUnknownsRenamesAndDeprecated(element->loop,      brokenLinkCount, unknownCount, renamedCount, deprecatedCount);
+    countBrokenLinksUnknownsRenamesAndDeprecated(element->condition, brokenLinkCount, unknownCount, renamedCount, deprecatedCount);
+    if(dynamic_cast<const TreeElementComplex*>(element))
+      for(const auto &child : dynamic_cast<const TreeElementComplex*>(element)->children())
+        countBrokenLinksUnknownsRenamesAndDeprecated(child, brokenLinkCount, unknownCount, renamedCount, deprecatedCount);
   }
   catch(std::exception &e)
   {
@@ -1346,17 +1323,21 @@ void Tree::treeChanged()
     int brokenLinkCountOld = brokenLinkCount;
     int unknownCountOld    = unknownCount;
     int renamedCountOld    = renamedCount;
-    brokenLinkCount = unknownCount = renamedCount = 0;
-    countBrokenLinksRenamesAndUnknowns(rootElement, brokenLinkCount, unknownCount, renamedCount);
+    int deprecatedCountOld = deprecatedCount;
+    brokenLinkCount = unknownCount = renamedCount = deprecatedCount = 0;
+    countBrokenLinksUnknownsRenamesAndDeprecated(rootElement, brokenLinkCount, unknownCount, renamedCount, deprecatedCount);
     if(!brokenLinkCount || (brokenLinkCount > brokenLinkCountOld))
       barBrokenLinks->setVisible(brokenLinkCount);
     if(!unknownCount || (unknownCount > unknownCountOld))
       barUnknownElements->setVisible(unknownCount);
     if(!renamedCount || (renamedCount > renamedCountOld))
       barSchemaRenamedElements->setVisible(renamedCount);
+    if(!deprecatedCount || (deprecatedCount > deprecatedCountOld))
+      barDeprecatedElements->setVisible(deprecatedCount);
     labelBrokenLinks->setText(QString("File contains %1 broken links.").arg(brokenLinkCount));
     labelUnknownElements->setText(QString("File contains %1 unknown elements.").arg(unknownCount));
     labelSchemaRenamedElements->setText(QString("File contains %1 elements that were renamed in the schema.").arg(renamedCount));
+    labelDeprecatedElements->setText(QString("File contains %1 deprecated elements.").arg(deprecatedCount));
   }
   catch(std::exception &e)
   {
@@ -1623,20 +1604,42 @@ void Tree::barSchemaRenamedElementsUpdateAll()
   // recursive call
   std::function<void(TreeElement*)> updateName = [&updateName](TreeElement *element)
   {
+    if(element->canUpdateName())
+      element->updateName();
+    if(element->loop)      updateName(element->loop);
+    if(element->condition) updateName(element->condition);
     if(dynamic_cast<TreeElementComplex*>(element))
       for(auto &child : dynamic_cast<TreeElementComplex*>(element)->children())
         updateName(child);
-    if(element->loop)
-      for(auto &child : element->loop->children())
-        updateName(child);
-    if(element->condition)
-      for(auto &child : element->condition->children())
-        updateName(child);
-    if(element->canUpdateName())
-      element->updateName();
   };
 
   updateName(rootElement);
+}
+
+/***********************************************/
+
+void Tree::barDeprecatedElementsExpand()
+{
+  // recursive call
+  std::function<bool(TreeElement*)> expand = [&expand](TreeElement *element)
+  {
+    if(!element->item() || element->disabled())
+      return false;
+    bool expandChild = FALSE;
+    if(dynamic_cast<TreeElementComplex*>(element))
+      for(auto &child : dynamic_cast<TreeElementComplex*>(element)->children())
+        expandChild = expand(child) || expandChild;
+    expandChild = (element->loop      && expand(element->loop))      || expandChild;
+    expandChild = (element->condition && expand(element->condition)) || expandChild;
+    if(expandChild)
+    {
+      element->item()->setExpanded(true);
+      return true;
+    }
+    return element->isDeprecated() || element->isSelectionDeprecated(element->selectedIndex());
+  };
+
+  expand(rootElement);
 }
 
 /***********************************************/

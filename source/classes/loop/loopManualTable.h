@@ -2,7 +2,7 @@
 /**
 * @file loopManualTable.h
 *
-* @brief Loop over rows of a table containing strings.
+* @brief DEPRECATED since 2025-09-27. Use LoopStringTable instead.
 *
 * @author Sebastian Strasser
 * @date 2017-02-20
@@ -17,9 +17,7 @@
 #ifdef DOCSTRING_Loop
 static const char *docstringLoopManualTable = R"(
 \subsection{ManualTable}
-Loop over rows of a table containing strings.
-The table can be defined \config{rowWise} or \config{columnWise}.
-Each row/column must have the same number of cells.
+DEPRECATED since 2025-09-27. Use LoopStringTable instead.
 )";
 #endif
 
@@ -31,7 +29,7 @@ Each row/column must have the same number of cells.
 
 /***** CLASS ***********************************/
 
-/** @brief Loop over rows of a table containing strings.
+/** @brief DEPRECATED since 2025-09-27. Use LoopStringTable instead.
 * @ingroup loopGroup
 * @see Loop */
 class LoopManualTable : public Loop
@@ -90,6 +88,8 @@ inline LoopManualTable::LoopManualTable(Config &config)
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL, "",           "variable with total number of iterations");
     readConfigCondition(config);
     if(isCreateSchema(config)) return;
+
+    logWarningOnce<<"DEPRECATED since 2025-09-27: Loop->ManualTable. Use Loop->StringTable instead."<<Log::endl;
 
     // transpose columns
     for(UInt i=0; i<columns.size(); i++)

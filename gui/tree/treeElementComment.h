@@ -39,6 +39,7 @@ public:
   bool    optional()          const override {return true;}
   bool    unbounded()         const override {return true;}
   bool    isRenamedInSchema() const override {return false;}
+  bool    isDeprecated()      const override {return false;}
 
   /** @brief Generate XML-tree. */
   XmlNodePtr createXmlTree(bool createRootEvenIfEmpty) const override;

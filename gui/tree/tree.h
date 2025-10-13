@@ -192,10 +192,12 @@ private:
   QFrame     *barBrokenLinks;
   QFrame     *barUnknownElements;
   QFrame     *barSchemaRenamedElements;
+  QFrame     *barDeprecatedElements;
   QLabel     *labelBrokenLinks;
   QLabel     *labelUnknownElements;
   QLabel     *labelSchemaRenamedElements;
-  int         brokenLinkCount, unknownCount, renamedCount;
+  QLabel     *labelDeprecatedElements;
+  int         brokenLinkCount, unknownCount, renamedCount, deprecatedCount;
   TreeWidget *treeWidget;
 
 public:
@@ -215,6 +217,7 @@ private slots:
   void barUnknownElementsRemoveAll();
   void barSchemaRenamedElementsExpand();
   void barSchemaRenamedElementsUpdateAll();
+  void barDeprecatedElementsExpand();
   void barClickedIgnore();
 };
 

@@ -2,7 +2,7 @@
 /**
 * @file miscAccelerationsAlbedo.h
 *
-* @brief DEPRECATED. Use radiationPressure instead.
+* @brief DEPRECATED since 2022-12-19. Use radiationPressure instead.
 * @see MiscAccelerations
 *
 * @author Torsten Mayer-Guerr
@@ -18,7 +18,7 @@
 #ifdef DOCSTRING_MiscAccelerations
 static const char *docstringMiscAccelerationsAlbedo = R"(
 \subsection{Albedo}\label{miscAccelerationsType:albedo}
-DEPRECATED. Use radiationPressure instead.
+DEPRECATED since 2022-12-19. Use radiationPressure instead.
 )";
 #endif
 
@@ -29,7 +29,7 @@ DEPRECATED. Use radiationPressure instead.
 
 /***** CLASS ***********************************/
 
-/** @brief DEPRECATED. Use radiationPressure instead.
+/** @brief DEPRECATED since 2022-12-19. Use radiationPressure instead.
 * @ingroup miscAccelerationsGroup
 * @see MiscAccelerations */
 class MiscAccelerationsAlbedo : public MiscAccelerationsBase

@@ -15,6 +15,7 @@
 #include "base/doodson.h"
 #include "base/gnssType.h"
 #include "inputOutput/file.h"
+#include "inputOutput/system.h"
 #include "parser/xml.h"
 #include "parser/stringParser.h"
 #include "parser/expressionParser.h"
@@ -76,7 +77,14 @@ Config::Config(FileName &fileName, const std::map<std::string, std::string> &com
 
     // local variables before global?
     // ------------------------------
-    XmlNodePtr xmlNode;
+    XmlNodePtr xmlNode = XmlNode::create("groopsConfigFile");
+    xmlNode->setText(fileName.str());
+    stack.top().links["groopsConfigFile"] = xmlNode;
+
+    xmlNode = XmlNode::create("workingDir");
+    xmlNode->setText(System::currentWorkingDirectory());
+    stack.top().links["workingDir"] = xmlNode;
+
     while((xmlNode = root->findNextChild()))
     {
       XmlAttrPtr label = xmlNode->getAttribute("label");
@@ -761,7 +769,8 @@ void renameDeprecatedConfig(Config &config, const std::string &oldName, const st
       XmlNodePtr xmlChild = config.stack.top().xmlNode->findChild(oldName);
       if(!xmlChild)
         break;
-      logWarningOnce<<"In '"<<config.currentNodeName()<<"':"<<" config element '"<<oldName<<"' has new name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
+      logWarningOnce<<"DEPRECATED (please update the config file in the GUI): "
+                    <<"In '"<<config.currentNodeName()<<"':"<<" config element '"<<oldName<<"' has new name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
       xmlChild->setName(newName);
     }
   }
@@ -785,7 +794,8 @@ void renameDeprecatedChoice(Config &config, std::string &type, const std::string
 
     if(type == oldName)
     {
-      logWarningOnce<<"'"<<config.currentNodeName()<<"':' has new choice name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
+      logWarningOnce<<"DEPRECATED (please update the config file in the GUI): "
+                    <<"'"<<config.currentNodeName()<<"':' has new choice name '"<<newName<<"' since "<<time.dateStr()<<Log::endl;
       type = newName;
     }
   }
