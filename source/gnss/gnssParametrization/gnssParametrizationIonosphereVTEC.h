@@ -37,7 +37,12 @@ and enables the separation of the TEC and signal biases, meaning
 Local and short-term scintillations should be considered by adding loosely constrained
 \configClass{parametrization:ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}.
 
-The \file{parameter names}{parameterName} are \verb|<station>:VTEC::<time>|.
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|<station>:VTEC::<time>|,
+\item \verb|<station>:VTECGradient.x:<temporal>:<interval>|,
+\item \verb|<station>:VTECGradient.y:<temporal>:<interval>|.
+\end{itemize}
 )";
 #endif
 
@@ -63,7 +68,7 @@ class GnssParametrizationIonosphereVTEC : public GnssParametrizationBase
   std::vector<Byte>                            selectedReceivers;
   FileName                                     fileNameVTEC;
   Double                                       mapR, mapH, mapAlpha;
-  std::vector<std::vector<GnssParameterIndex>> index; // for each receiver, for each epoch
+  std::vector<std::vector<GnssParameterIndex>> indexVTEC; // for each receiver, for each epoch
   std::vector<std::vector<Double>>             VTEC;
 
   ParametrizationTemporalPtr                   parametrizationGradient;
@@ -72,7 +77,6 @@ class GnssParametrizationIonosphereVTEC : public GnssParametrizationBase
   std::vector<std::vector<Double>>             gradientX, gradientY;
 
   Double mapping(Angle elevation) const;
-  void   mappingGradient(const GnssObservationEquation &eqn, Double &dx, Double &dy) const;
 
 public:
   GnssParametrizationIonosphereVTEC(Config &config);

@@ -1621,9 +1621,9 @@
 								<xs:documentation>constant of MSLM mapping function</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="vtecGradientEstimation" type="parametrizationTemporalType" minOccurs="0" maxOccurs="unbounded">
+						<xs:element name="gradient" type="parametrizationTemporalType" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>[degree] parametrization of north and east gradients</xs:documentation>
+								<xs:documentation>parametrization of north and east gradients</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
