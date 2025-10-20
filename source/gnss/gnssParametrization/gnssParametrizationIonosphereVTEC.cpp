@@ -15,7 +15,6 @@
 #include "base/planets.h"
 #include "config/config.h"
 #include "files/fileInstrument.h"
-#include "classes/magnetosphere/magnetosphere.h"
 #include "gnss/gnssParametrization/gnssParametrizationIonosphereVTEC.h"
 
 /***********************************************/
@@ -24,12 +23,13 @@ GnssParametrizationIonosphereVTEC::GnssParametrizationIonosphereVTEC(Config &con
 {
   try
   {
-    readConfig(config, "name",              name,              Config::OPTIONAL, "parameter.VTEC", "");
-    readConfig(config, "selectReceivers",   selectReceivers,   Config::MUSTSET,   R"(["all"])", "");
-    readConfig(config, "outputfileVTEC",    fileNameVTEC,      Config::OPTIONAL, "output/vtec_{loopTime:%D}.{station}.dat", "variable {station} available");
-    readConfig(config, "mapR",              mapR,              Config::DEFAULT,  "6371e3",     "constant of MSLM mapping function");
-    readConfig(config, "mapH",              mapH,              Config::DEFAULT,  "506.7e3",    "constant of MSLM mapping function");
-    readConfig(config, "mapAlpha",          mapAlpha,          Config::DEFAULT,  "0.9782",     "constant of MSLM mapping function");
+    readConfig(config, "name",            name,                    Config::OPTIONAL, "parameter.VTEC", "");
+    readConfig(config, "selectReceivers", selectReceivers,         Config::MUSTSET,   R"(["all"])", "");
+    readConfig(config, "outputfileVTEC",  fileNameVTEC,            Config::OPTIONAL, "output/vtec_{loopTime:%D}.{station}.dat", "variable {station} available, columns: MJD, VTEC, north gradient, east gradient");
+    readConfig(config, "mapR",            mapR,                    Config::DEFAULT,  "6371e3",     "constant of MSLM mapping function");
+    readConfig(config, "mapH",            mapH,                    Config::DEFAULT,  "506.7e3",    "constant of MSLM mapping function");
+    readConfig(config, "mapAlpha",        mapAlpha,                Config::DEFAULT,  "0.9782",     "constant of MSLM mapping function");
+    readConfig(config, "gradient",        parametrizationGradient, Config::DEFAULT,  "",           "parametrization of north and east gradients");
     if(isCreateSchema(config)) return;
   }
   catch(std::exception &e)
@@ -46,8 +46,25 @@ void GnssParametrizationIonosphereVTEC::init(Gnss *gnss, Parallel::CommunicatorP
   {
     this->gnss = gnss;
     selectedReceivers = gnss->selectReceivers(selectReceivers);
-    index.resize(gnss->receivers.size());
+    indexVTEC.resize(gnss->receivers.size());
     VTEC.resize(gnss->receivers.size());
+
+    indexGradient.resize(gnss->receivers.size());
+    xGradient.resize(gnss->receivers.size());
+    gradientX.resize(gnss->receivers.size());
+    gradientY.resize(gnss->receivers.size());
+
+    for(auto recv : gnss->receivers)
+    {
+      const UInt idRecv = recv->idRecv();
+      if(recv->useable() && recv->isMyRank())
+      {
+        VTEC.at(idRecv).resize(gnss->times.size(), 0);
+        xGradient.at(idRecv) = Vector(2*parametrizationGradient->parameterCount());
+        gradientX.at(idRecv).resize(gnss->times.size(), 0);
+        gradientY.at(idRecv).resize(gnss->times.size(), 0);
+      }
+    }
   }
   catch(std::exception &e)
   {
@@ -61,8 +78,10 @@ void GnssParametrizationIonosphereVTEC::initParameter(GnssNormalEquationInfo &no
 {
   try
   {
-    index.clear();
-    index.resize(gnss->receivers.size());
+    indexVTEC.clear();
+    indexVTEC.resize(gnss->receivers.size());
+    indexGradient.clear();
+    indexGradient.resize(gnss->receivers.size(),GnssParameterIndex());
     if(!isEnabled(normalEquationInfo, name))
       return;
 
@@ -72,19 +91,38 @@ void GnssParametrizationIonosphereVTEC::initParameter(GnssNormalEquationInfo &no
       const UInt idRecv = recv->idRecv();
       if(recv->useable() && normalEquationInfo.estimateReceiver.at(idRecv) && selectedReceivers.at(idRecv))
       {
-        index.at(idRecv).resize(gnss->times.size());
+        indexVTEC.at(idRecv).resize(gnss->times.size());
         if(recv->isMyRank())
           VTEC.at(idRecv).resize(gnss->times.size(), 0);
         for(UInt idEpoch : normalEquationInfo.idEpochs)
           if(recv->useable(idEpoch))
           {
-            index.at(idRecv).at(idEpoch) = normalEquationInfo.parameterNamesEpochReceiver(idEpoch, idRecv, {ParameterName(recv->name(), "VTEC", "", gnss->times.at(idEpoch))});
+            indexVTEC.at(idRecv).at(idEpoch) = normalEquationInfo.parameterNamesEpochReceiver(idEpoch, idRecv, {ParameterName(recv->name(), "VTEC", "", gnss->times.at(idEpoch))});
             countPara++;
           }
       }
     }
     if(countPara)
       logInfo<<countPara%"%9i VTEC epoch parameters"s<<Log::endl;
+
+    // VTEC gradient
+    UInt countParaGradient = 0;
+    if(parametrizationGradient->parameterCount())
+      for(auto recv : gnss->receivers)
+      {
+        const UInt idRecv = recv->idRecv();
+        if(recv->useable() && normalEquationInfo.estimateReceiver.at(idRecv) && selectedReceivers.at(idRecv))
+        {
+          std::vector<ParameterName> parameterNames;
+          std::vector<ParameterName> name({{gnss->receivers.at(idRecv)->name(), "VTECGradient.x"}, {gnss->receivers.at(idRecv)->name(), "VTECGradient.y"}});
+          parametrizationGradient->parameterName(name, parameterNames);
+          indexGradient.at(idRecv) = normalEquationInfo.parameterNamesReceiver(idRecv, parameterNames);
+          countParaGradient += parameterNames.size();
+        }
+      }
+    if(countParaGradient)
+      logInfo<<countParaGradient%"%9i VTEC gradient parameters"s<<Log::endl;
+
   }
   catch(std::exception &e)
   {
@@ -103,8 +141,10 @@ void GnssParametrizationIonosphereVTEC::aprioriParameter(const GnssNormalEquatio
       {
         const UInt idRecv = recv->idRecv();
         for(UInt idEpoch : normalEquationInfo.idEpochs)
-          if(index.at(idRecv).size() && index.at(idRecv).at(idEpoch))
-            x0(normalEquationInfo.index(index.at(idRecv).at(idEpoch)), 0) = VTEC.at(idRecv).at(idEpoch);
+          if(indexVTEC.at(idRecv).size() && indexVTEC.at(idRecv).at(idEpoch))
+            x0(normalEquationInfo.index(indexVTEC.at(idRecv).at(idEpoch)), 0) = VTEC.at(idRecv).at(idEpoch);
+        if(indexGradient.at(idRecv))
+          copy(xGradient.at(idRecv), x0.row(normalEquationInfo.index(indexGradient.at(idRecv)), xGradient.at(idRecv).rows()));
       }
   }
   catch(std::exception &e)
@@ -127,11 +167,26 @@ void GnssParametrizationIonosphereVTEC::designMatrix(const GnssNormalEquationInf
 {
   try
   {
-    if(!index.at(eqn.receiver->idRecv()).size() || !index.at(eqn.receiver->idRecv()).at(eqn.idEpoch))
-      return;
+    const Double map = mapping(eqn.elevationRecvLocal);
 
     // VTEC at station per epoch
-    axpy(mapping(eqn.elevationRecvLocal), eqn.A.column(GnssObservationEquation::idxSTEC), A.column(index.at(eqn.receiver->idRecv()).at(eqn.idEpoch)));
+    if(indexVTEC.at(eqn.receiver->idRecv()).size() && indexVTEC.at(eqn.receiver->idRecv()).at(eqn.idEpoch))
+      axpy(map, eqn.A.column(GnssObservationEquation::idxSTEC), A.column(indexVTEC.at(eqn.receiver->idRecv()).at(eqn.idEpoch)));
+
+    // VTEC gradient at station
+    if(indexGradient.at(eqn.receiver->idRecv()))
+    {
+      Matrix B(eqn.A.rows(), 2);
+      axpy(map*std::cos(eqn.azimutRecvLocal), eqn.A.column(GnssObservationEquation::idxSTEC), B.column(0));
+      axpy(map*std::sin(eqn.azimutRecvLocal), eqn.A.column(GnssObservationEquation::idxSTEC), B.column(1));
+      // temporal parametrization
+      std::vector<UInt>   idx;
+      std::vector<Double> factor;
+      parametrizationGradient->factors(std::max(eqn.timeRecv, gnss->times.at(0)), idx, factor);
+      MatrixSlice Design(A.column(indexGradient.at(eqn.receiver->idRecv())));
+      for(UInt i=0; i<factor.size(); i++)
+        axpy(factor.at(i), B, Design.column(B.columns()*idx.at(i), B.columns()));
+    }
   }
   catch(std::exception &e)
   {
@@ -154,36 +209,66 @@ Double GnssParametrizationIonosphereVTEC::updateParameter(const GnssNormalEquati
     Double stdVTEC   = 0;
     UInt   countVTEC = 0;
 
-    Gnss::InfoParameterChange info("tec");
+    Gnss::InfoParameterChange infoVTEC("tec");
+    Gnss::InfoParameterChange infoGradient("tec");
     for(auto recv : gnss->receivers)
       if(recv->isMyRank())
       {
         const UInt idRecv = recv->idRecv();
-        for(UInt idEpoch : normalEquationInfo.idEpochs)
-          if(index.at(idRecv).size() && index.at(idRecv).at(idEpoch))
+        Vector dxGradient;
+        if(indexGradient.at(idRecv))
+        {
+          dxGradient = x.row(normalEquationInfo.index(indexGradient.at(idRecv)), 2*parametrizationGradient->parameterCount());
+          xGradient.at(idRecv) += dxGradient;
+        }
+
+        for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
+        {
+          // update VTEC
+          Double dVTEC = 0;
+          if(indexVTEC.at(idRecv).size() && indexVTEC.at(idRecv).at(idEpoch))
           {
-            // update VTEC
-            const Double dVTEC = x(normalEquationInfo.index(index.at(idRecv).at(idEpoch)), 0);
+            dVTEC = x(normalEquationInfo.index(indexVTEC.at(idRecv).at(idEpoch)), 0);
             VTEC.at(idRecv).at(idEpoch) += dVTEC;
-            if(info.update(dVTEC))
-              info.info = "VTEC ("+recv->name()+", "+gnss->times.at(idEpoch).dateTimeStr()+")";
+            if(infoVTEC.update(dVTEC))
+              infoVTEC.info = "VTEC ("+recv->name()+", "+gnss->times.at(idEpoch).dateTimeStr()+")";
 
             minVTEC   = std::min(VTEC.at(idRecv).at(idEpoch), minVTEC);
             maxVTEC   = std::max(VTEC.at(idRecv).at(idEpoch), maxVTEC);
             meanVTEC += VTEC.at(idRecv).at(idEpoch);
             stdVTEC  += VTEC.at(idRecv).at(idEpoch)*VTEC.at(idRecv).at(idEpoch);
             countVTEC++;
+          }
 
-            // update STEC
+          // update gradient
+          Double dgx=0, dgy=0;
+          if(indexGradient.at(idRecv))
+          {
+            std::vector<UInt>   index;
+            std::vector<Double> factor;
+            parametrizationGradient->factors(std::max(recv->timeCorrected(idEpoch), gnss->times.at(0)), index, factor);
+            for(UInt k=0; k<factor.size(); k++)
+            {
+              dgx += factor.at(k) * dxGradient(2*index.at(k)+0);
+              dgy += factor.at(k) * dxGradient(2*index.at(k)+1);
+            }
+            gradientX.at(idRecv).at(idEpoch) += dgx;
+            gradientY.at(idRecv).at(idEpoch) += dgy;
+            if(infoGradient.update(std::sqrt(dgx*dgx+dgy*dgy)))
+              infoGradient.info = "VTEC gradient ("+recv->name()+", "+gnss->times.at(idEpoch).dateTimeStr()+")";
+          }
+
+          // update STEC
+          if(dVTEC || dgx || dgy)
             for(UInt idTrans=0; idTrans<recv->idTransmitterSize(idEpoch); idTrans++)
               if(recv->observation(idTrans, idEpoch))
               {
                 GnssObservationEquation eqn(*recv->observation(idTrans, idEpoch), *recv, *gnss->transmitters.at(idTrans), gnss->funcRotationCrf2Trf,
                                             nullptr/*reduceModels*/, idEpoch, FALSE/*homogenize*/, {}/*types*/);
-                recv->observation(idTrans, idEpoch)->STEC += mapping(eqn.elevationRecvLocal) * dVTEC;
+                recv->observation(idTrans, idEpoch)->STEC += mapping(eqn.elevationRecvLocal) * (dVTEC + std::cos(eqn.azimutRecvLocal)*dgx + std::sin(eqn.azimutRecvLocal)*dgy);
               }
-          }
-      }
+        } // for(idEpoch)
+      } // for(recv)
 
     // VTEC statistics
     Parallel::reduceMin(minVTEC,   0, normalEquationInfo.comm);
@@ -195,10 +280,11 @@ Double GnssParametrizationIonosphereVTEC::updateParameter(const GnssNormalEquati
     meanVTEC /= countVTEC;
     std::string infoStr = " (total: "+meanVTEC%"%.2f +- "s+stdVTEC%"%.2f ["s+minVTEC%"%.2f -- "s+maxVTEC%"%.2f])"s;
     Parallel::broadCast(infoStr, 0, normalEquationInfo.comm);
-    info.info += infoStr;
+    infoVTEC.info += infoStr;
 
     Double maxChange = 0;
-    info.synchronizeAndPrint(normalEquationInfo.comm, 0, maxChange);
+    infoVTEC.synchronizeAndPrint    (normalEquationInfo.comm, 0, maxChange);
+    infoGradient.synchronizeAndPrint(normalEquationInfo.comm, 0, maxChange);
     return maxChange;
   }
   catch(std::exception &e)
@@ -225,15 +311,19 @@ void GnssParametrizationIonosphereVTEC::writeResults(const GnssNormalEquationInf
       for(auto &recv : gnss->receivers)
         if(normalEquationInfo.estimateReceiver.at(recv->idRecv()) && recv->isMyRank())
         {
-          MiscValueArc arc;
+          MiscValuesArc arc;
           for(UInt idEpoch : normalEquationInfo.idEpochs)
-            if(index.at(recv->idRecv()).size() && index.at(recv->idRecv()).at(idEpoch))
+          {
+            if(indexVTEC.at(recv->idRecv()).size() && indexVTEC.at(recv->idRecv()).at(idEpoch))
             {
-              MiscValueEpoch epoch;
-              epoch.time  = gnss->times.at(idEpoch);
-              epoch.value = VTEC.at(recv->idRecv()).at(idEpoch);
+              MiscValuesEpoch epoch(3);
+              epoch.time      = gnss->times.at(idEpoch);
+              epoch.values(0) = VTEC.at(recv->idRecv()).at(idEpoch);
+              epoch.values(1) = gradientX.at(recv->idRecv()).at(idEpoch);
+              epoch.values(2) = gradientY.at(recv->idRecv()).at(idEpoch);
               arc.push_back(epoch);
             }
+          }
           fileNameVariableList.setVariable("station", recv->name());
           if(arc.size())
             InstrumentFile::write(fileNameVTEC(fileNameVariableList).appendBaseName(suffix), arc);
