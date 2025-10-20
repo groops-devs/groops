@@ -19,14 +19,17 @@
 static const char *docstringGnssParametrizationIonosphereVTEC = R"(
 \subsection{IonosphereVTEC}\label{gnssParametrizationType:ionosphereVTEC}
 The influence of the ionosphere is modelled by a VTEC parameter (vertical total electron content)
-in terms of $[TECU]$ for every selected receiver each epoch. The slant TEC is computed
-using the elevation $E$ dependent Modified Single-Layer Model (MSLM) mapping function
+in terms of $[TECU]$ for every selected receiver at each epoch. Optionally, VTEC gradients in the
+North (x) and East (y) direction can be estimated via \configClass{gradient}{parametrizationTemporalType}.
+The slant TEC is computed based on the VTEC and the optional North and East gradients $\Delta V_x$ and $\Delta V_y$
+using the elevation-dependent Modified Single-Layer Model (MSLM) mapping function
 \begin{equation}\label{gnssParametrizationType:IonosphereVTEC:STEC}
-  STEC = \frac{VTEC}{\cos z'}
+  STEC = \frac{VTEC + \cos(A) \Delta V_x + \sin(A) \Delta V_y}{\cos z'}
   \qquad\text{with}\qquad
   \sin z'= \left(\frac{R}{R+H}\right)\sin\left(\alpha(\pi/2-E)\right)
 \end{equation}
-inserted into eq. \eqref{gnssParametrizationType:IonosphereSTEC:STEC}.
+inserted into eq.~\eqref{gnssParametrizationType:IonosphereSTEC:STEC},
+where $A$ is the azimuth angle and $E$ is the elevation angle.
 
 The result is written as a \file{times series file}{instrument} at epochs with observations
 depending on \configClass{GnssProcessing:processingStep:selectEpochs}{gnssProcessingStepType:selectEpochs}.

@@ -1603,7 +1603,7 @@
 						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
 						<xs:element name="outputfileVTEC" type="filename" minOccurs="0" default="output/vtec_{loopTime:%D}.{station}.dat">
 							<xs:annotation>
-								<xs:documentation>variable {station} available</xs:documentation>
+								<xs:documentation>variable {station} available, columns: MJD, VTEC, north gradient, east gradient</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="mapR" type="double" minOccurs="0" default="6371e3">

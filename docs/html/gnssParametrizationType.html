@@ -136,27 +136,40 @@ with a standard deviation of <strong class="groops-config-element">sigmaSTEC</st
 
 <h2 id="ionosphereVTEC">IonosphereVTEC</h2><p>
 The influence of the ionosphere is modelled by a VTEC parameter (vertical total electron content)
-in terms of $[TECU]$ for every selected receiver each epoch. The slant TEC is computed
-using the elevation $E$ dependent Modified Single-Layer Model (MSLM) mapping function
+in terms of $[TECU]$ for every selected receiver at each epoch. Optionally, VTEC gradients in the
+North (x) and East (y) direction can be estimated via <a class="groops-class" href="parametrizationTemporalType.html">gradient</a>.
+The slant TEC is computed based on the VTEC and the optional North and East gradients $\Delta V_x$ and $\Delta V_y$
+using the elevation-dependent Modified Single-Layer Model (MSLM) mapping function
 \[\label{gnssParametrizationType:IonosphereVTEC:STEC}
-  STEC = \frac{VTEC}{\cos z'}
+  STEC = \frac{VTEC + \cos(A) \Delta V_x + \sin(A) \Delta V_y}{\cos z'}
   \qquad\text{with}\qquad
   \sin z'= \left(\frac{R}{R+H}\right)\sin\left(\alpha(\pi/2-E)\right)
-\]inserted into eq. \eqref{gnssParametrizationType:IonosphereSTEC:STEC}.</p><p>The result is written as a <a class="groops-file" href="fileFormat_instrument.html">times series file</a> at epochs with observations
-depending on <a class="groops-class" href="gnssProcessingStepType.html#selectEpochs">GnssProcessing:processingStep:selectEpochs</a>.</p><p>This class provides a simplifed model of the ionosphere for single receivers
+\]inserted into eq. \eqref{gnssParametrizationType:IonosphereSTEC:STEC},
+where $A$ is the azimuth angle and $E$ is the elevation angle.</p><p>The result is written as a <a class="groops-file" href="fileFormat_instrument.html">times series file</a> at epochs with observations
+depending on <a class="groops-class" href="gnssProcessingStepType.html#selectEpochs">GnssProcessing:processingStep:selectEpochs</a>.</p><p>This class provides a simplified model of the ionosphere for single receivers
 and enables the separation of the TEC and signal biases, meaning
 <a class="groops-class" href="gnssParametrizationType.html#tecBiases">parametrization:tecBiases</a> becomes estimable.
 Local and short-term scintillations should be considered by adding loosely constrained
-<a class="groops-class" href="gnssParametrizationType.html#ionosphereSTEC">parametrization:ionosphereSTEC</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are <code>&lt;station>:VTEC::&lt;time></code>.
+<a class="groops-class" href="gnssParametrizationType.html#ionosphereSTEC">parametrization:ionosphereSTEC</a>.</p><p>The <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are
+<ul>
+
+<li><code>&lt;station>:VTEC::&lt;time></code>,
+</li><li>
+<code>&lt;station>:VTECGradient.x:&lt;temporal>:&lt;interval></code>,
+</li><li>
+<code>&lt;station>:VTECGradient.y:&lt;temporal>:&lt;interval></code>.
+</li></ul>
+
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">name</div></div></td><td>string</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">selectReceivers</div></div></td><td><a href="platformSelectorType.html">platformSelector</a></td><td></td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileVTEC</div></div></td><td>filename</td><td>variable {station} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outputfileVTEC</div></div></td><td>filename</td><td>variable {station} available, columns: MJD, VTEC, north gradient, east gradient</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">mapR</div></div></td><td>double</td><td>constant of MSLM mapping function</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">mapH</div></div></td><td>double</td><td>constant of MSLM mapping function</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">mapAlpha</div></div></td><td>double</td><td>constant of MSLM mapping function</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">gradient</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>parametrization of north and east gradients</td></tr>
 </table>
 
 <h2 id="ionosphereMap">IonosphereMap</h2><p>
