@@ -87,7 +87,7 @@ void GnssParametrizationTemporalBias::init(Gnss *gnss, Parallel::CommunicatorPtr
 
           if(arc.size())
           {
-            Polynomial polynomial(arc.times(), 3, FALSE/*throwException*/); // linear interpolation
+            Polynomial polynomial(arc.times(), 1, FALSE/*throwException*/); // linear interpolation
             para->bias = polynomial.interpolate(gnss->times, arc.matrix().column(1));
             for(UInt idEpoch=0; idEpoch<para->bias.size(); idEpoch++)
               if(std::isnan(para->bias.at(idEpoch)))
@@ -97,10 +97,16 @@ void GnssParametrizationTemporalBias::init(Gnss *gnss, Parallel::CommunicatorPtr
 
         if(temporal->parameterCount())
         {
-          Matrix A(gnss->times.size(), temporal->parameterCount());
+          Vector l(gnss->times.size()+temporal->parameterCount());
+          Matrix A(gnss->times.size()+temporal->parameterCount(), temporal->parameterCount());
+          axpy(1e-6, identityMatrix(temporal->parameterCount()), A.row(gnss->times.size(), temporal->parameterCount())); // loose regularization
           for(UInt idEpoch=0; idEpoch<gnss->times.size(); idEpoch++)
-            copy(temporal->factors(gnss->times.at(idEpoch)).trans(), A.row(idEpoch));
-          para->x = leastSquares(A, Vector(para->bias));
+            if(gnss->transmitters.at(idTrans)->useable(idEpoch))
+            {
+              copy(temporal->factors(gnss->times.at(idEpoch)).trans(), A.row(idEpoch));
+              l(idEpoch) = para->bias(idEpoch);
+            }
+          para->x = leastSquares(A, l);
         }
       }
 

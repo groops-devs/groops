@@ -24,6 +24,7 @@
 - Bugfix:           GnssParametrizationIonosphereSTEC: constant sigmaSTEC>0 was evaluated always to one.
 - Bugfix:           ParameterVector2GnssAntennaDefinition: Sometimes the parameters were assigned incorrectly.
 - Bugfix:           GNSS: Fixed bug in preprocessing when only one phase observation is available.
+- Bugfix:           GNSS: Fixed bug in gnssParametrizationTemporalBias when reading apriori values.
 - Other:            GUI: offer links for numbers and strings of different types.
 - Other:            GUI: Open multiple config files with the file selector.
 - Other:            GUI: Inform about deprecated elements.
