@@ -2761,10 +2761,13 @@ Metadata input files (marked with \textbf{*} below) are provided in GROOPS file 
   \item \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}\textbf{*}:
         Antenna center variations.
         Created via \program{GnssAntex2AntennaDefinition} or \program{GnssAntennaDefinitionCreate}.
-  \item \configFile{inputfileReceiverDefinition}{gnssReceiverDefinition}\textbf{*}:
+  \item \configFile{inputfileSignalDefintion}{gnssReceiverDefinition}\textbf{*}:
         Transmitted signal types.
         Created via \program{GnssReceiverDefinitionCreate} in case you want to define which signal
         types a satellite transmits.
+  \item \configFile{inputfileClockFrequencyScale}{instrument}\textbf{*}:
+        Scale factor of transmitted signals due to frequency offset/clock drift.
+        Can be dreived from broadcast clocks drifts.
   \item \configFile{inputfileOrbit}{instrument}: Converted via \program{Sp3Format2Orbit} or
         output of \program{GnssProcessing}.
   \item \configFile{inputfileAttitude}{instrument}:
@@ -2788,6 +2791,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~useNearestFrequency & \hfuzz=500pt  & \hfuzz=500pt use pattern of nearest frequency if no matching pattern is found\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~throwException & \hfuzz=500pt  & \hfuzz=500pt throw exception if no matching pattern is found\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSignalDefintion & \hfuzz=500pt filename & \hfuzz=500pt transmitted signal types\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileClockFrequencyScale & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAttitude & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileClock & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\

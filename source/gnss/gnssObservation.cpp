@@ -317,6 +317,7 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
     r12 += 2*inner(posTrans, velocityTrans)/LIGHT_VELOCITY;                 // relativistic clock correction
     r12 -= LIGHT_VELOCITY * transmitter->clockError(idEpoch);
     r12 += LIGHT_VELOCITY * receiver->clockError(idEpoch);
+    r12 *= transmitter->scaleFactor(idEpoch);
 
     for(UInt i=0; i<obsCount; i++)
       if((types.at(i) == GnssType::RANGE) || (types.at(i) == GnssType::PHASE))

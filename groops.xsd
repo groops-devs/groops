@@ -3142,6 +3142,11 @@
 								<xs:documentation>transmitted signal types</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="inputfileClockFrequencyScale" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable {prn} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="inputfileOrbit" type="filename" default="orbit_{loopTime:%D}.{prn}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {prn} available</xs:documentation>
@@ -3155,6 +3160,11 @@
 						<xs:element name="inputfileClock" type="filename" default="clock_{loopTime:%D}.{prn}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {prn} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="interpolateClock" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>linear interpolation of missing epochs</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="7">

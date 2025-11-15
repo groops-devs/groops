@@ -92,10 +92,14 @@ The file name is interpreted as a template with the variable <code>{prn}</code> 
         Antenna center variations.
         Created via <a class="groops-program" href="GnssAntex2AntennaDefinition.html">GnssAntex2AntennaDefinition</a> or <a class="groops-program" href="GnssAntennaDefinitionCreate.html">GnssAntennaDefinitionCreate</a>.
   </li><li>
-<a class="groops-class" href="fileFormat_gnssReceiverDefinition.html">inputfileReceiverDefinition</a><b>*</b>:
+<a class="groops-class" href="fileFormat_gnssReceiverDefinition.html">inputfileSignalDefintion</a><b>*</b>:
         Transmitted signal types.
         Created via <a class="groops-program" href="GnssReceiverDefinitionCreate.html">GnssReceiverDefinitionCreate</a> in case you want to define which signal
         types a satellite transmits.
+  </li><li>
+<a class="groops-class" href="fileFormat_instrument.html">inputfileClockFrequencyScale</a><b>*</b>:
+        Scale factor of transmitted signals due to frequency offset/clock drift.
+        Can be dreived from broadcast clocks drifts.
   </li><li>
 <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>: Converted via <a class="groops-program" href="Sp3Format2Orbit.html">Sp3Format2Orbit</a> or
         output of <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>.
@@ -119,9 +123,11 @@ The file name is interpreted as a template with the variable <code>{prn}</code> 
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">useNearestFrequency</div></div></td><td></td><td>use pattern of nearest frequency if no matching pattern is found</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">throwException</div></div></td><td></td><td>throw exception if no matching pattern is found</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileSignalDefintion</div></div></td><td>filename</td><td>transmitted signal types</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAttitude</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">inputfileClockFrequencyScale</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileOrbit</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileAttitude</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">inputfileClock</div></div></td><td>filename</td><td>variable {prn} available</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolateClock</div></div></td><td>boolean</td><td>linear interpolation of missing epochs</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>for orbit interpolation and velocity calculation</td></tr>
 </table>
 

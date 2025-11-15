@@ -34,10 +34,13 @@ Metadata input files (marked with \textbf{*} below) are provided in GROOPS file 
   \item \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}\textbf{*}:
         Antenna center variations.
         Created via \program{GnssAntex2AntennaDefinition} or \program{GnssAntennaDefinitionCreate}.
-  \item \configFile{inputfileReceiverDefinition}{gnssReceiverDefinition}\textbf{*}:
+  \item \configFile{inputfileSignalDefintion}{gnssReceiverDefinition}\textbf{*}:
         Transmitted signal types.
         Created via \program{GnssReceiverDefinitionCreate} in case you want to define which signal
         types a satellite transmits.
+  \item \configFile{inputfileClockFrequencyScale}{instrument}\textbf{*}:
+        Scale factor of transmitted signals due to frequency offset/clock drift.
+        Can be dreived from broadcast clocks drifts.
   \item \configFile{inputfileOrbit}{instrument}: Converted via \program{Sp3Format2Orbit} or
         output of \program{GnssProcessing}.
   \item \configFile{inputfileAttitude}{instrument}:
