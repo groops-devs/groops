@@ -11,6 +11,7 @@
 - New option:       PlotAxisLabeled: majorTickSpacing, minorTickSpacing, gridLineSpacing.
 - New option:       GNSS/SLR: optional disabling of stations without precise apriori positions.
 - New option:       condition->fileExist: minimumSize.
+- New option:       GNNS->parametrizationVTEC: optional gradient estimation.
 - File format:      TideGeneratingPotential includes now degree 3 tides.
 - File format:      Each file is now readable/writable in JSON format as well.
 - File format:      Removed deprecated GnssStationInfo (replaced by Platform).
