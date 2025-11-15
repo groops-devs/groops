@@ -911,7 +911,7 @@ void GnssReceiver::createTracks(const std::vector<GnssTransmitterPtr> &transmitt
         // need phases at two frequencies (additional to extraTypes)
         std::vector<GnssType> typeFrequencies;
         for(GnssType type : types)
-          if(!type.isInList(extraTypes) && !type.isInList(typeFrequencies))
+          if((type == GnssType::PHASE) && !type.isInList(extraTypes) && !type.isInList(typeFrequencies))
             typeFrequencies.push_back(type & GnssType::FREQUENCY);
 
         // define track
