@@ -4,6 +4,7 @@ data. For the respective month a set of spherical harmonic coefficients up to a 
 An example scenario for this task can be found at
 \url{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGraceGravityfieldRecovery.zip}
 including the required GROOPS scripts and data sets for the gravity field recovery process.
+The provided scenario consists of a slightly simplified example as compared to the operational one.
 The background models are provided at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/data/}.
 
 
@@ -13,10 +14,10 @@ The following background models were used during the data processing:
   \item \textbf{Earth rotation}: \href{https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html}{IERS 2010} % IERS 2010
   \item \textbf{Moon, sun and planets ephemerides}: \href{https://ipnpr.jpl.nasa.gov/progress_report/42-196/196C.pdf}{JPL DE432} %JPL DE432
   \item \textbf{Earth tide}: \href{https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html}{IERS 2010} % IERS 2010
-  \item \textbf{Ocean tide}: \href{https://www.aviso.altimetry.fr/es/data/products/auxiliary-products/global-tide-fes/description-fes2014.html}{FES2014b} % FES2014b
+  \item \textbf{Ocean tide}: \href{https://www.aviso.altimetry.fr/en/data/products/auxiliary-products/global-tide-fes/description-fes2014.html}{FES2014b} % FES2014b
   \item \textbf{Pole tide}: \href{https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html}{IERS 2010} % IERS 2010
   \item \textbf{Ocean pole tide}: \href{https://doi.org/10.1029/2001JC001224}{Desai 2004} % Desai 2004 (IERS 2010)
-  \item \textbf{Atmospheric tides}: \href{https://doi.org/10.1093/gji/ggx302}{AOD1B RL06} % AOD1B RL06
+  \item \textbf{Atmospheric tides}: \href{https://doi.org/10.1029/2022MS003193}{TiME22} % TiME22
   \item \textbf{Atmosphere and Ocean Dealiasing}: \href{https://doi.org/10.1093/gji/ggx302}{AOD1B RL06} % AOD1B RL06
   \item \textbf{Sub-monthly continental hydrology}: \href{https://doi.org/10.2312/GFZ.b103-08095}{LSDM (ESMGFZ)} % LSDM (ESMGFZ)
   \item \textbf{Relativistic corrections}: \href{https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html}{IERS 2010} % IERS 2010
@@ -121,7 +122,7 @@ In this step the static gravity field (GOCO06s) is combined with the following t
     \item \configClass{gravityfield:timeSplines}{gravityfieldType:timeSplines}: atmosphere and ocean dealiasing (AOD1B RL06)
     \item \configClass{gravityfield:timeSplines}{gravityfieldType:timeSplines}: hydrology dealiasing (LSDM)
     \item \configClass{doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: ocean tides (FES2014b)
-    \item \configClass{doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: atmospheric tides (AOD1B RL06)
+    \item \configClass{doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: atmospheric tides (TiME22)
     \item \configClass{tides:poleTide}{tidesType:poleTide}: pole tides (IERS 2010)
     \item \configClass{tides:poleOceanTide}{tidesType:oceanPoleTide}: ocean pole tides (IERS 2010)
 \end{itemize}
@@ -214,16 +215,20 @@ can be repeated again.
 
 \subsection{Preprocessing}\label{cookbook.gravityFieldGrace:preprocessing}
 The script \verb|030groopsPreprocessing.xml| implements the following steps and settings.
-The program \program{PreprocessingSst} processes SST observations and kinematic orbit data and performs
-a complete least squares adjustment for gravity field determination by computing the observations equations.
+The program \program{PreprocessingSst} processes SST observations and kinematic orbit data, and
+performs a complete least squares adjustment for gravity field determination by computing
+the observations equations. It also allows for an iterative refinement of the stochastic model
+of the observations along with arc-wise variance factors through variance component estimation (VCE).
 Force model parameters (gravitational potential coefficients and accelerometer calibration parameters)
 are computed by integrating the parameter sensitivity matrix from the variational equations.
 Parameters describing effects due to the SST observation system and geometry (KBR antenna phase
 center variations) are computed using the dynamic orbits as a Taylor point.
 Short time gravity variations can be co-estimated together with the monthly mean gravity field.
 The autoregressive model sequence constraining the short time parameters is provided in the data folder.
+It is precomputed from hydrology and nontidal atmospheric and ocean background models.
 See \href{https://doi.org/10.1007/s00190-019-01314-1}{Kvas 2019} for more information about
 this co-estimation.
+
 \begin{itemize}
     \item \configClass{observation}{observationType}: sstVariational
         \begin{itemize}
@@ -306,7 +311,8 @@ Additional temporal variations (e.g. trend and annual oscillation) could be esti
 The desired spherical harmonic coefficients are determined in the script \verb|050groopsMonthlySolve.xml|.
 \program{NormalsSolverVCE} accumulates \configClass{normalEquation}{normalEquationType} and solves
 the total combined system. Variance component estimation is used to determine the relative weighting
-of the individual normals. The estimated parameter vector (\configFile{outputfileSolution}{matrix})
+of the individual normals, i.e. the arc-wise variances. The previously computed stochastic model of
+the observations remains unchanged. The estimated parameter vector (\configFile{outputfileSolution}{matrix})
 the estimated accuracies (\configFile{outputfileSigmax}{matrix}) and the full covariance matrix
 (\configFile{outputfileCovariance}{matrix}) can be saved.
 Using \program{Gravityfield2PotentialCoefficients} the final solution can be saved as

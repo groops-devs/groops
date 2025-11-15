@@ -75,6 +75,7 @@ data. For the respective month a set of spherical harmonic coefficients up to a 
 An example scenario for this task can be found at
 <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGraceGravityfieldRecovery.zip" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGraceGravityfieldRecovery.zip</a>
 including the required GROOPS scripts and data sets for the gravity field recovery process.
+The provided scenario consists of a slightly simplified example as compared to the operational one.
 The background models are provided at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/data/" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/data/</a>.</p><p>
 <h2 id="backgroundModels">Background models</h2><p>
 The following background models were used during the data processing:
@@ -86,13 +87,13 @@ The following background models were used during the data processing:
   </li><li>
 <b>Earth tide</b>: <a href="https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html">IERS 2010</a> 
   </li><li>
-<b>Ocean tide</b>: <a href="https://www.aviso.altimetry.fr/es/data/products/auxiliary-products/global-tide-fes/description-fes2014.html">FES2014b</a> 
+<b>Ocean tide</b>: <a href="https://www.aviso.altimetry.fr/en/data/products/auxiliary-products/global-tide-fes/description-fes2014.html">FES2014b</a> 
   </li><li>
 <b>Pole tide</b>: <a href="https://www.iers.org/IERS/EN/Publications/TechnicalNotes/tn36.html">IERS 2010</a> 
   </li><li>
 <b>Ocean pole tide</b>: <a href="https://doi.org/10.1029/2001JC001224">Desai 2004</a> 
   </li><li>
-<b>Atmospheric tides</b>: <a href="https://doi.org/10.1093/gji/ggx302">AOD1B RL06</a> 
+<b>Atmospheric tides</b>: <a href="https://doi.org/10.1029/2022MS003193">TiME22</a> 
   </li><li>
 <b>Atmosphere and Ocean Dealiasing</b>: <a href="https://doi.org/10.1093/gji/ggx302">AOD1B RL06</a> 
   </li><li>
@@ -199,7 +200,7 @@ In this step the static gravity field (GOCO06s) is combined with the following t
     </li><li>
 <a class="groops-class" href="tidesType.html#doodsonHarmonicTide">doodsonHarmonicTide</a>: ocean tides (FES2014b)
     </li><li>
-<a class="groops-class" href="tidesType.html#doodsonHarmonicTide">doodsonHarmonicTide</a>: atmospheric tides (AOD1B RL06)
+<a class="groops-class" href="tidesType.html#doodsonHarmonicTide">doodsonHarmonicTide</a>: atmospheric tides (TiME22)
     </li><li>
 <a class="groops-class" href="tidesType.html#poleTide">tides:poleTide</a>: pole tides (IERS 2010)
     </li><li>
@@ -321,17 +322,19 @@ the orbit once more using <a class="groops-program" href="PreprocessingVariation
 This step usually ensures convergence. If the maximum orbit difference is still not sufficient this step
 can be repeated again.</p><p><h2 id="preprocessing">Preprocessing</h2><p>
 The script <code>030groopsPreprocessing.xml</code> implements the following steps and settings.
-The program <a class="groops-program" href="PreprocessingSst.html">PreprocessingSst</a> processes SST observations and kinematic orbit data and performs
-a complete least squares adjustment for gravity field determination by computing the observations equations.
+The program <a class="groops-program" href="PreprocessingSst.html">PreprocessingSst</a> processes SST observations and kinematic orbit data, and
+performs a complete least squares adjustment for gravity field determination by computing
+the observations equations. It also allows for an iterative refinement of the stochastic model
+of the observations along with arc-wise variance factors through variance component estimation (VCE).
 Force model parameters (gravitational potential coefficients and accelerometer calibration parameters)
 are computed by integrating the parameter sensitivity matrix from the variational equations.
 Parameters describing effects due to the SST observation system and geometry (KBR antenna phase
 center variations) are computed using the dynamic orbits as a Taylor point.
 Short time gravity variations can be co-estimated together with the monthly mean gravity field.
 The autoregressive model sequence constraining the short time parameters is provided in the data folder.
+It is precomputed from hydrology and nontidal atmospheric and ocean background models.
 See <a href="https://doi.org/10.1007/s00190-019-01314-1">Kvas 2019</a> for more information about
-this co-estimation.
-<ul>
+this co-estimation.</p><p><ul>
 
     <li><a class="groops-class" href="observationType.html">observation</a>: sstVariational
         <ul>
@@ -443,7 +446,8 @@ Additional temporal variations (e.g. trend and annual oscillation) could be esti
 The desired spherical harmonic coefficients are determined in the script <code>050groopsMonthlySolve.xml</code>.
 <a class="groops-program" href="NormalsSolverVCE.html">NormalsSolverVCE</a> accumulates <a class="groops-class" href="normalEquationType.html">normalEquation</a> and solves
 the total combined system. Variance component estimation is used to determine the relative weighting
-of the individual normals. The estimated parameter vector (<a class="groops-class" href="fileFormat_matrix.html">outputfileSolution</a>)
+of the individual normals, i.e. the arc-wise variances. The previously computed stochastic model of
+the observations remains unchanged. The estimated parameter vector (<a class="groops-class" href="fileFormat_matrix.html">outputfileSolution</a>)
 the estimated accuracies (<a class="groops-class" href="fileFormat_matrix.html">outputfileSigmax</a>) and the full covariance matrix
 (<a class="groops-class" href="fileFormat_matrix.html">outputfileCovariance</a>) can be saved.
 Using <a class="groops-program" href="Gravityfield2PotentialCoefficients.html">Gravityfield2PotentialCoefficients</a> the final solution can be saved as
