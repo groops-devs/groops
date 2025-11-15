@@ -5280,7 +5280,9 @@ Name & Type & Annotation\\
 This program accumulates normal equations and writes the total combined system to
 \configFile{outputfileNormalequation}{normalEquation}.
 The \configFile{inputfileNormalEquation}{normalEquation}s must have all the same size and the same block structure.
+
 This program is the simplified and fast version of the more general program \program{NormalsBuild}.
+For input normals with different parameters, see \program{NormalsReorderAndAccumulate}.
 
 
 \keepXColumns
@@ -5302,6 +5304,7 @@ For a detailed description of the used algorithm see \configClass{normalEquation
 Large normal equation systems can be divided into blocks with \config{normalsBlockSize}.
 
 A simplifed and fast version of this program is \program{NormalsAccumulate}.
+For input normals with different parameters see \program{NormalsReorderAndAccumulate}.
 To solve the system of normal equations use \program{NormalsSolverVCE}.
 
 
@@ -5605,6 +5608,35 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileNormalEquation & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~parameterSelection & \hfuzz=500pt \hyperref[parameterSelectorType]{parameterSelector} & \hfuzz=500pt parameter order/selection of output normal equations\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outBlockSize & \hfuzz=500pt uint & \hfuzz=500pt block size for distributing the normal equations, 0: one block\\
+\hline
+\end{tabularx}
+
+This program is \reference{parallelized}{general.parallelization}.
+\clearpage
+%==================================
+\subsection{NormalsReorderAndAccumulate}\label{NormalsReorderAndAccumulate}
+This program accumulates \configFile{inputfileNormalEquation}{normalEquation}s with respect
+to the parameter names and writes the total combined system to \configFile{outputfileNormalequation}{normalEquation}.
+
+The combined normal equation is extended to include all parameter names uniquely from all input normals.
+The input normals are sorted so that parameters with the same name are accumulated.
+This requires that the names in each normal equation are unique.
+
+The output can be written as multiple small block files with \config{outBlockSize},
+or as single block with \config{outBlockSize}=0,
+or blocked with respect to the first part of the parameter names (object), if \config{outBlockSize} left empty.
+
+See also \program{NormalsBuild} and \program{NormalsAccumulate}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileNormalEquation & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileNormalEquation & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outBlockSize & \hfuzz=500pt uint & \hfuzz=500pt block size for distributing the normal equations, 0: one block, empty: blocking by objects\\
 \hline
 \end{tabularx}
 

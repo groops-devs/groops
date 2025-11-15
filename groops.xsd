@@ -17967,6 +17967,23 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="NormalsReorderAndAccumulate">
+				<xs:annotation>
+					<xs:documentation>accumulate normal equations and write to file</xs:documentation>
+					<xs:appinfo>tag: NormalEquation</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileNormalEquation" type="filename"/>
+						<xs:element name="inputfileNormalEquation" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outBlockSize" type="uint" minOccurs="0" default="2048">
+							<xs:annotation>
+								<xs:documentation>block size for distributing the normal equations, 0: one block, empty: blocking by objects</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="NormalsScale">
 				<xs:annotation>
 					<xs:documentation>Scales rows and columns of a normal equation system</xs:documentation>

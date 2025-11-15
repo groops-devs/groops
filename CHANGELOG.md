@@ -5,6 +5,7 @@
 - New program:      GnssResiduals2TransmitterAccuracyDefinition.
 - New program:      SynthesisSphericalHarmonicsMatrix.
 - New program:      Gravityfield2GravityVector.
+- New program:      NormalsReorderAndAccumulate.
 - New class:        PlotDegreeAmplitudes: degreeAmplitudesSimple.
 - New class:        Loop: SortAndRemoveDuplicates of an arbitrary loop.
 - New option:       GnssAntennaNormalsConstraint: gnssType selection for TEC constraint.

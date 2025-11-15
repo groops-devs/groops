@@ -421,6 +421,7 @@ programs/normals/normalsMultiplyAdd.cpp
 programs/normals/normalsRegularizationBorders.cpp
 programs/normals/normalsRegularizationSphericalHarmonics.cpp
 programs/normals/normalsReorder.cpp
+programs/normals/normalsReorderAndAccumulate.cpp
 programs/normals/normalsScale.cpp
 programs/normals/normalsSolverVCE.cpp
 programs/normals/normalsTemporalCombination.cpp
