@@ -1,4 +1,6 @@
 # main
+
+# Release 2025-11-15
 - New program:      StarCamera2Orbex (replaces GnssAttitude2Orbex).
 - New program:      DoodsonHarmonicsChangePartialTides.
 - New program:      Conversion: OceanTidesDTU2GriddedData.
@@ -13,7 +15,7 @@
 - New option:       GNSS/SLR: optional disabling of stations without precise apriori positions.
 - New option:       condition->fileExist: minimumSize.
 - New option:       GNNS->parametrizationVTEC: optional gradient estimation.
-- New option:       GNNS->TransmitterGeneratorGnss: option to disbale clock interpolation.
+- New option:       GNNS->TransmitterGeneratorGnss: option to disable clock interpolation.
 - File format:      TideGeneratingPotential includes now degree 3 tides.
 - File format:      Each file is now readable/writable in JSON format as well.
 - File format:      Removed deprecated GnssStationInfo (replaced by Platform).
@@ -41,7 +43,7 @@
 - Other:            Sinex2StationPosition: Apply frequencies to all intervals.
 - Other:            GNSS: apriori ionospheric map is interpolated in solar-geomagentic frame.
 - Other:            Tle2Orbit: Use closest record if multiple records for the same satellites are given.
-- Others:           Loop: revised interface.
+- Other:            Loop: revised interface.
 - Other:            Config: The variables groopsConfigFile and workingDir are set automatically.
 
 # Release 2024-06-24
