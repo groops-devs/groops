@@ -160,9 +160,9 @@ void NormalsReorderAndAccumulate::run(Config &config, Parallel::CommunicatorPtr 
       rhs = reorder(rhs, indexVector);
 
       // accumulate
-      rhsSum.column(0, rhs.rows()) += rhs;
-      lPl.row(0, rhs.rows())       += info.lPl;
-      observationCount             += info.observationCount;
+      rhsSum.column(0, rhs.columns()) += rhs;
+      lPl.row(0, rhs.columns())       += info.lPl;
+      observationCount                += info.observationCount;
       for(UInt i=0; i<normals.blockCount(); i++)
         for(UInt k=i; k<normals.blockCount(); k++)
           if(normals.isMyRank(i, k))
