@@ -186,7 +186,7 @@ void SlrParametrizationDynamicOrbits::designMatrix(const SlrNormalEquationInfo &
     if(!para || !para->index)
       return;
 
-    const Matrix PosDesign = para->polynomial.interpolate(eqn.timesBounce, para->PosDesign, 3);
+    const Matrix PosDesign = para->polynomial.interpolate(eqn.timesSat, para->PosDesign, 3);
 
     // gravity
     UInt idx = 0;
@@ -195,20 +195,20 @@ void SlrParametrizationDynamicOrbits::designMatrix(const SlrNormalEquationInfo &
       if(paraGravity->indexParameter)
       {
         MatrixSlice Design(A.column(paraGravity->indexParameter));
-        for(UInt idEpoch=0; idEpoch<eqn.timesBounce.size(); idEpoch++)
-          matMult(1., eqn.A.slice(idEpoch, SlrObservationEquation::idxPosSat, 1, 3),
+        for(UInt idEpoch=0; idEpoch<eqn.timesSat.size(); idEpoch++)
+          matMult(1., eqn.A.slice(eqn.index.at(idEpoch), SlrObservationEquation::idxPosSat, eqn.count.at(idEpoch), 3),
                   PosDesign.slice(3*idEpoch, idx, 3, Design.columns()),
-                  Design.row(idEpoch));
+                  Design.row(eqn.index.at(idEpoch), eqn.count.at(idEpoch)));
       }
       idx += paraGravity->parametrization->parameterCount();
     }
 
     // satellite related parameters, includes satellite state (6 parameter)
     MatrixSlice Design(A.column(para->index));
-    for(UInt idEpoch=0; idEpoch<eqn.timesBounce.size(); idEpoch++)
-      matMult(1., eqn.A.slice(idEpoch, SlrObservationEquation::idxPosSat, 1, 3),
+    for(UInt idEpoch=0; idEpoch<eqn.timesSat.size(); idEpoch++)
+      matMult(1., eqn.A.slice(eqn.index.at(idEpoch), SlrObservationEquation::idxPosSat, eqn.count.at(idEpoch), 3),
               PosDesign.slice(3*idEpoch, para->idxParameterSatellite, 3, Design.columns()),
-              Design.row(idEpoch));
+              Design.row(eqn.index.at(idEpoch), eqn.count.at(idEpoch)));
   }
   catch(std::exception &e)
   {

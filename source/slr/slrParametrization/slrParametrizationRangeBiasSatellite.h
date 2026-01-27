@@ -121,7 +121,7 @@ inline void SlrParametrizationRangeBiasSatellite::observationCorrections(SlrObse
   try
   {
     const UInt idSat = eqn.satellite->idSat();
-    if((parameters.size() > idSat) && parameters.at(idSat))
+    if((eqn.type == SlrObservationEquation::RANGE) && (parameters.size() > idSat) && parameters.at(idSat))
       eqn.l -= parameters.at(idSat)->range;
   }
   catch(std::exception &e)
@@ -181,7 +181,7 @@ inline void SlrParametrizationRangeBiasSatellite::designMatrix(const SlrNormalEq
   try
   {
     auto para = this->parameters.at(eqn.satellite->idSat());
-    if(para && para->index)
+    if((eqn.type == SlrObservationEquation::RANGE) && para && para->index)
       axpy(1., eqn.A.column(SlrObservationEquation::idxRange), A.column(para->index));
   }
   catch(std::exception &e)

@@ -126,13 +126,14 @@ void SlrParametrizationTimeBias::designMatrix(const SlrNormalEquationInfo &/*nor
     if(paraStations && paraStations->index)
     {
       MatrixSlice Design(A.column(paraStations->index));
-      for(UInt idEpoch=0; idEpoch<eqn.timesTrans.size(); idEpoch++)
+      for(UInt idEpoch=0; idEpoch<eqn.timesStat.size(); idEpoch++)
       {
+        const const_MatrixSlice B(eqn.A.slice(eqn.index.at(idEpoch), SlrObservationEquation::idxTime, eqn.count.at(idEpoch), 1));
         std::vector<UInt>   idx;
         std::vector<Double> factor;
-        parametrizationTemporal->factors(eqn.timesTrans.at(idEpoch), idx, factor);
+        parametrizationTemporal->factors(eqn.timesStat.at(idEpoch), idx, factor);
         for(UInt i=0; i<factor.size(); i++)
-          Design(idEpoch, i) += 1e-3 * eqn.A(idEpoch, SlrObservationEquation::idxTime) * factor.at(i); // [ms]
+          axpy(1e-3*factor.at(i), B, Design.slice(eqn.index.at(idEpoch), idx.at(i), eqn.count.at(idEpoch), 1)); // [ms]
       }
     }
   }

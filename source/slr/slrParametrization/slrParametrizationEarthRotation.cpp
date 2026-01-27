@@ -139,10 +139,10 @@ void SlrParametrizationEarthRotation::designMatrix(const SlrNormalEquationInfo &
     if(!(indexParameterPole || indexParameterUT1 || indexParameterNutation))
       return;
 
-    const Matrix eop = slr->polynomialEop.interpolate(eqn.timesTrans, slr->eop);
-    for(UInt idEpoch=0; idEpoch<eqn.timesTrans.size(); idEpoch++)
+    const Matrix eop = slr->polynomialEop.interpolate(eqn.timesStat, slr->eop);
+    for(UInt idEpoch=0; idEpoch<eqn.timesStat.size(); idEpoch++)
     {
-      const Time   time     = eqn.timesTrans.at(idEpoch);
+      const Time   time     = eqn.timesStat.at(idEpoch);
       const Double xp       = eop(idEpoch, 0);
       const Double yp       = eop(idEpoch, 1);
       const Double sp       = eop(idEpoch, 2);
@@ -159,7 +159,7 @@ void SlrParametrizationEarthRotation::designMatrix(const SlrNormalEquationInfo &
       const Matrix rotQ({{1.-a*X2,   -a*X*Y,             X},    // Precession & nutation rotation matrix
                          {  -a*X*Y, 1.-a*Y2,             Y},
                          {      -X,      -Y, 1.-a*(X2+Y2)}});
-      const Vector posEarth = slr->rotationCrf2Trf(time).rotate(eqn.posTrans.at(idEpoch)).vector();
+      const Vector posEarth = slr->rotationCrf2Trf(time).rotate(eqn.posStat.at(idEpoch)).vector();
 
       // temporal parametrization
       auto designMatrixTemporal = [&](ParametrizationTemporalPtr parametrization, const_MatrixSliceRef B, const SlrParameterIndex &index)
@@ -167,7 +167,7 @@ void SlrParametrizationEarthRotation::designMatrix(const SlrNormalEquationInfo &
         std::vector<UInt>   idx;
         std::vector<Double> factor;
         parametrization->factors(time, idx, factor);
-        MatrixSlice Design(A.column(index).row(idEpoch));
+        MatrixSlice Design(A.column(index).row(eqn.index.at(idEpoch), eqn.count.at(idEpoch)));
         for(UInt i=0; i<factor.size(); i++)
           axpy(factor.at(i), B, Design.column(B.columns()*idx.at(i), B.columns()));
       };
@@ -184,7 +184,7 @@ void SlrParametrizationEarthRotation::designMatrix(const SlrNormalEquationInfo &
         Matrix B(3,2);
         matMult(DEG2RAD/3600e3, partWxp, posEarth, B.column(0));
         matMult(DEG2RAD/3600e3, partWyp, posEarth, B.column(1));
-        B = eqn.A.slice(idEpoch, SlrObservationEquation::idxPosStat, 1, 3) * (rotQ * (rotERA * B));
+        B = eqn.A.slice(eqn.index.at(idEpoch), SlrObservationEquation::idxPosStat, eqn.count.at(idEpoch), 3) * (rotQ * (rotERA * B));
         designMatrixTemporal(parametrizationPole, B, indexParameterPole);
       }
 
@@ -197,7 +197,7 @@ void SlrParametrizationEarthRotation::designMatrix(const SlrNormalEquationInfo &
                         {std::cos(S-ERA-sp),  std::sin(S-ERA-sp),  0},
                         {                 0,                   0,  0}});
 
-        Matrix B = 1e-3 * 2*PI*1.00273781191135448/86400. * (eqn.A.slice(idEpoch, SlrObservationEquation::idxPosStat, 1, 3) * (rotQ * (partERA * (rotW * posEarth))));
+        Matrix B = 1e-3 * 2*PI*1.00273781191135448/86400. * (eqn.A.slice(eqn.index.at(idEpoch), SlrObservationEquation::idxPosStat, eqn.count.at(idEpoch), 3) * (rotQ * (partERA * (rotW * posEarth))));
         designMatrixTemporal(parametrizationUT1, B, indexParameterUT1);
       }
 
@@ -217,7 +217,7 @@ void SlrParametrizationEarthRotation::designMatrix(const SlrNormalEquationInfo &
         Matrix p = rotERA * (rotW * posEarth);
         matMult(DEG2RAD/3600e3, partQX, p, B.column(0));
         matMult(DEG2RAD/3600e3, partQY, p, B.column(1));
-        B = eqn.A.slice(idEpoch, SlrObservationEquation::idxPosStat, 1, 3) * B;
+        B = eqn.A.slice(eqn.index.at(idEpoch), SlrObservationEquation::idxPosStat, eqn.count.at(idEpoch), 3) * B;
         designMatrixTemporal(parametrizationNutation, B, indexParameterNutation);
       }
     } // for(idEpoch)

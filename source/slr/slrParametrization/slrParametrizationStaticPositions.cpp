@@ -182,10 +182,10 @@ void SlrParametrizationStaticPositions::designMatrix(const SlrNormalEquationInfo
     if(index.at(eqn.station->idStat()))
     {
       MatrixSlice Design(A.column(index.at(eqn.station->idStat())));
-      for(UInt idEpoch=0; idEpoch<eqn.timesTrans.size(); idEpoch++)
-        matMult(1., eqn.A.slice(idEpoch, SlrObservationEquation::idxPosStat, 1, 3),
-                slr->rotationCrf2Trf(eqn.timesTrans.at(idEpoch)).matrix().trans(),
-                Design.row(idEpoch));
+      for(UInt idEpoch=0; idEpoch<eqn.timesStat.size(); idEpoch++)
+        matMult(1., eqn.A.slice(eqn.index.at(idEpoch), SlrObservationEquation::idxPosStat, eqn.count.at(idEpoch), 3),
+                slr->rotationCrf2Trf(eqn.timesStat.at(idEpoch)).matrix().trans(),
+                Design.row(eqn.index.at(idEpoch), eqn.count.at(idEpoch)));
     }
   }
   catch(std::exception &e)

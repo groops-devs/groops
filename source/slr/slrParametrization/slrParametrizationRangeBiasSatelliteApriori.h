@@ -108,12 +108,12 @@ inline void SlrParametrizationRangeBiasSatelliteApriori::observationCorrections(
   try
   {
     const UInt idSat = eqn.satellite->idSat();
-    if((range.size() <= idSat) ||  !range.at(idSat).size())
+    if((eqn.type != SlrObservationEquation::RANGE) || (range.size() <= idSat) ||  !range.at(idSat).size())
       return;
 
     const MiscValueArc &arc = range.at(idSat);
-    for(UInt i=0; (i<arc.size()) && (arc.at(i).time <= eqn.timesTrans.back()); i++)
-      if((i+1 >= arc.size()) || (arc.at(i+1).time >= eqn.timesTrans.front()))
+    for(UInt i=0; (i<arc.size()) && (arc.at(i).time <= eqn.timesStat.back()); i++)
+      if((i+1 >= arc.size()) || (arc.at(i+1).time >= eqn.timesStat.front()))
       {
         eqn.l -= arc.at(i).value;
         break;

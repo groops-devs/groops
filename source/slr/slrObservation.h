@@ -43,7 +43,7 @@ public:
   Bool init(const SlrStation &station, const SlrSatellite &satellite,
             const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, Angle elevationCutOff);
 
-  void setDecorrelatedResiduals(const_MatrixSliceRef residuals, const_MatrixSliceRef redundancy);
+  void setHomogenizedResiduals(const_MatrixSliceRef residuals, const_MatrixSliceRef redundancy);
 };
 
 /***** CLASS ***********************************/
@@ -58,9 +58,11 @@ public:
         idxTime    = 6,  // transmit time offset
         idxRange   = 7}; // One way range
 
-  const SlrObservation *observation;
-  const SlrStation     *station;
-  const SlrSatellite   *satellite;
+  enum Type {RANGE, DIRECTIONS};
+
+  Type  type;
+  const SlrStation   *station;
+  const SlrSatellite *satellite;
 
   // weighted observations (with 1/sigma)
   Vector l;
@@ -69,22 +71,17 @@ public:
   Vector sigmas0;
 
   // approximate values (Taylor point)
-  std::vector<Time>     timesTrans, timesBounce, timesRecv;
-  std::vector<Vector3d> posTrans, posBounce, posRecv;
-  std::vector<Vector3d> velTrans, velBounce;
+  std::vector<UInt>     index, count; // observations per epoch
+  std::vector<Vector3d> posStat,   posSat;
+  std::vector<Time>     timesStat, timesSat;
   std::vector<Angle>    azimutStat, elevationStat;
   Vector                laserWavelength;
 
-  SlrObservationEquation() : observation(nullptr), station(nullptr), satellite(nullptr) {}
-
-  SlrObservationEquation(const SlrObservation &observation, const SlrStation &station, const SlrSatellite &satellite,
-                         const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
-                         const std::function<void(SlrObservationEquation &eqn)> &reduceModels, Bool decorrelate)
-    {compute(observation, station, satellite, rotationCrf2Trf, reduceModels, decorrelate);}
+  SlrObservationEquation() : station(nullptr), satellite(nullptr) {}
 
   void compute(const SlrObservation &observation, const SlrStation &station, const SlrSatellite &satellite,
                const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
-               const std::function<void(SlrObservationEquation &eqn)> &reduceModels, Bool decorrelate);
+               const std::function<void(SlrObservationEquation &eqn)> &reduceModels, Bool homogenize);
 };
 
 /***********************************************/

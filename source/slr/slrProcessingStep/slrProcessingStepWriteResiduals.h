@@ -82,7 +82,8 @@ inline void SlrProcessingStepWriteResiduals::process(SlrProcessingStep::State &s
             std::vector<SatelliteLaserRangingArc> arcList;
             for(auto &obs : stat->observations.at(sat->idSat()))
             {
-              SlrObservationEquation eqn(*obs, *stat, *sat, state.slr->funcRotationCrf2Trf, state.slr->funcReduceModels, FALSE);
+              SlrObservationEquation eqn;
+              eqn.compute(*obs, *stat, *sat, state.slr->funcRotationCrf2Trf, state.slr->funcReduceModels, FALSE);
               Matrix data(obs->observations.rows(), 1+Epoch::dataCount(Epoch::SATELLITELASERRANGING));
               copy(obs->residuals,    data.column(1)); // data1 range [seconds]
               copy(obs->redundancies, data.column(3)); // data3 redundancy
