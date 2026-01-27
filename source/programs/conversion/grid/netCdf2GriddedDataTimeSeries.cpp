@@ -95,53 +95,100 @@ void NetCdf2GriddedDataTimeSeries::run(Config &config, Parallel::CommunicatorPtr
       for(auto &var : file.variables())
       {
         auto dims = var.dimensions();
-        if((dims.size() != 3) ||
-           (std::find(dims.begin(), dims.end(), dimLat) == dims.end()) ||
-           (std::find(dims.begin(), dims.end(), dimLon) == dims.end()) ||
+        if((std::find(dims.begin(), dims.end(), dimLat)  == dims.end()) ||
+           (std::find(dims.begin(), dims.end(), dimLon)  == dims.end()) ||
            (std::find(dims.begin(), dims.end(), dimTime) == dims.end()))
           continue;
-        dataNames.push_back(var.name());
+        UInt countDims = 0;
+        for(auto &dim : dims)
+          if((dim != dimLat) && (dim != dimLon) && (dim != dimTime) && (dim.length() > 1))
+            countDims++;
+        if(countDims <= 1)
+          dataNames.push_back(var.name());
       }
       if(!dataNames.size())
         logWarning<<"No suitable variables found"<<Log::endl;
     }
 
-    std::vector<NetCdf::Variable>  vars(dataNames.size());
-    std::vector<std::vector<NetCdf::Dimension>> dims(dataNames.size());
-    UInt idx = 0;
+    class Var
+    {
+    public:
+      NetCdf::Variable  var;
+      std::vector<UInt> start, count;
+      UInt              idxTime;
+      UInt              incLat, incLon, incCol;
+      UInt              countColumns;
+    };
+
+    std::vector<Var> vars(dataNames.size());
+    UInt countColumns = 0;
     for(UInt i=0; i<vars.size(); i++)
     {
-      vars.at(i) = file.variable(dataNames.at(i));
-      dims.at(i) = vars.at(i).dimensions();
-      logInfo<<"  data"<<idx++<<" = "<<vars.at(i).name()<<Log::endl;
-      for(auto &attr : vars.at(i).attributes())
+      vars.at(i).var = file.variable(dataNames.at(i));
+      std::vector<NetCdf::Dimension> dims = vars.at(i).var.dimensions();
+
+      std::stringstream ss;
+      if(dims.size())
+      {
+        ss<<"("<<dims.at(0).name();
+        for(UInt i=1; i<dims.size(); i++)
+          ss<<", "<<dims.at(i).name();
+        ss<<")";
+      }
+      logInfo<<"  data"<<countColumns<<" = "<<vars.at(i).var.name()<<ss.str()<<Log::endl;
+      for(auto &attr : vars.at(i).var.attributes())
         logInfo<<"    - "<<attr.name()<<" value = "<<attr.value()<<Log::endl;
-      if(dims.at(i).size() != 3)
-        throw(Exception("variable <"+vars.at(i).name()+"> has wrong dimensions"));
-      if(dims.at(i).at(0) != dimTime)
-        throw(Exception("variable <"+vars.at(i).name()+"> must have time as first dimension"));
+
+      if((std::find(dims.begin(), dims.end(), dimLat)  == dims.end()) ||
+         (std::find(dims.begin(), dims.end(), dimLon)  == dims.end()) ||
+         (std::find(dims.begin(), dims.end(), dimTime) == dims.end()))
+        throw(Exception("variable <"+vars.at(i).var.name()+"> must have at least time, lat, lon dimensions"));
+
+      vars.at(i).start = vars.at(i).count = std::vector<UInt>(dims.size(), 0);
+      vars.at(i).countColumns = 1;
+      UInt inc = 1;
+      for(UInt k=dims.size(); k-->0;)
+      {
+        vars.at(i).count.at(k) = dims.at(k).length();
+        if(dims.at(k) == dimTime)
+        {
+          vars.at(i).idxTime = k;
+        }
+        else
+        {
+          if(dims.at(k) == dimLat)
+            vars.at(i).incLat = inc;
+          else if(dims.at(k) == dimLon)
+            vars.at(i).incLon = inc;
+          else if(dims.at(k).length() > 1)
+          {
+            if(countColumns > 1)
+              throw(Exception("variable <"+vars.at(i).var.name()+"> has wrong dimensions"));
+            vars.at(i).incCol = inc;
+            vars.at(i).countColumns = dims.at(k).length();
+          }
+          inc *= dims.at(k).length();
+        }
+      }
+      countColumns += vars.at(i).countColumns;
     }
 
     // read data variables
     // -------------------
-    std::vector<Matrix> data(times.size(), Matrix(griddedDataRectangular.longitudes.size()*griddedDataRectangular.latitudes.size(), dataNames.size()));
+    std::vector<Matrix> data(times.size(), Matrix(griddedDataRectangular.longitudes.size()*griddedDataRectangular.latitudes.size(), countColumns));
     Single::forEach(times.size(), [&](UInt idEpoch)
     {
-      for(UInt i=0; i<vars.size(); i++)
+      UInt idxCol = 0;
+      for(auto &var : vars)
       {
-        std::vector<UInt> start(dims.at(i).size(), 0);
-        std::vector<UInt> count;
-        for(auto &dim : dims.at(i))
-          count.push_back(dim.length());
-        start.at(0) = idEpoch;
-        count.at(0) = 1;
-
-        if((dims.at(i).at(1) == dimLon) && (dims.at(i).at(2) == dimLat))
-          copy(vars.at(i).values(start, count), data.at(idEpoch).column(i));
-        else if((dims.at(i).at(1) == dimLat) && (dims.at(i).at(2) == dimLon))
-          reshape(reshape(vars.at(i).values(start, count), count.at(2), count.at(1)), data.at(idEpoch).column(i));
-        else
-          throw(Exception("variable <"+vars.at(i).name()+"> must have ("+latName+", "+lonName+") dimensions"));
+        var.start.at(var.idxTime) = idEpoch;
+        var.count.at(var.idxTime) = 1;
+        const Vector values = var.var.values(var.start, var.count);
+        for(UInt i=0; i<griddedDataRectangular.latitudes.size(); i++)
+          for(UInt k=0; k<griddedDataRectangular.longitudes.size(); k++)
+            for(UInt j=0; j<var.countColumns; j++)
+              data.at(idEpoch)(i*griddedDataRectangular.longitudes.size()+k, idxCol+j) = values(var.incLat*i+var.incLon*k+var.incCol*j);
+        idxCol += var.countColumns;
       }
     });
 

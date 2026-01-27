@@ -2,6 +2,7 @@
 - Bugfix:           ConditionFileExist: fixed bug with wildcards.
 - Bugfix:           GUI: fixed bug when moving elements to same position.
 - Bugfix:           GNSS, WriteNormalEquations: check non-matching parameter selection.
+- Other:            NetCDF: enable to read multidimensional variables to store in muliple columns.
 
 # Release 2025-11-15
 - New program:      StarCamera2Orbex (replaces GnssAttitude2Orbex).

@@ -87,7 +87,6 @@ void NetCdf2GriddedData::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
 
     // set up time axis
     // ----------------
-    UInt dimSize = 2; // lat, lon
     UInt idEpoch = 0;
     NetCdf::Dimension dimTime;
     if(!timeName.empty() && file.hasVariable(timeName))
@@ -98,7 +97,6 @@ void NetCdf2GriddedData::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       idEpoch = std::distance(epochs.begin(), std::min_element(epochs.begin(), epochs.end(),
                               [&](Time &t1, Time &t2) {return std::fabs((t1-time).mjd()) < std::fabs((t2-time).mjd());}));
       logInfo<<"  epoch used: "<<epochs.at(idEpoch).dateTimeStr()<<Log::endl;
-      dimSize++; // time, lat, lon
     }
     else
       timeName = std::string();
@@ -110,53 +108,85 @@ void NetCdf2GriddedData::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
       for(auto &var : file.variables())
       {
         auto dims = var.dimensions();
-        if((dims.size() != dimSize) ||
-           (std::find(dims.begin(), dims.end(), dimLat) == dims.end()) ||
-           (std::find(dims.begin(), dims.end(), dimLon) == dims.end()) ||
-           (!timeName.empty() && (std::find(dims.begin(), dims.end(), dimTime) == dims.end())))
+        if((std::find(dims.begin(), dims.end(), dimLat) == dims.end()) ||
+           (std::find(dims.begin(), dims.end(), dimLon) == dims.end()))
           continue;
-        dataNames.push_back(var.name());
+        UInt countDims = 0;
+        for(auto &dim : dims)
+          if((dim != dimLat) && (dim != dimLon) && (!timeName.empty() && (dim != dimTime)) && (dim.length() > 1))
+            countDims++;
+        if(countDims <= 1)
+          dataNames.push_back(var.name());
       }
       if(!dataNames.size())
         logWarning<<"No suitable variables found"<<Log::endl;
     }
 
-
     // read data variables
     // -------------------
-    UInt idx = 0;
+    UInt idxCol = 0;
     for(const std::string &name : dataNames)
     {
-      auto var  = file.variable(name);
-      auto dims = var.dimensions();
+      NetCdf::Variable var = file.variable(name);
+      std::vector<NetCdf::Dimension> dims = var.dimensions();
 
-      logInfo<<"  data"<<idx++<<" = "<<var.name()<<Log::endl;
+      std::stringstream ss;
+      if(dims.size())
+      {
+        ss<<"("<<dims.at(0).name();
+        for(UInt i=1; i<dims.size(); i++)
+          ss<<", "<<dims.at(i).name();
+        ss<<")";
+      }
+      logInfo<<"  data"<<idxCol<<" = "<<var.name()<<ss.str()<<Log::endl;
       for(auto &attr : var.attributes())
         logInfo<<"    - "<<attr.name()<<" value = "<<attr.value()<<Log::endl;
 
+      if((std::find(dims.begin(), dims.end(), dimLat) == dims.end()) ||
+         (std::find(dims.begin(), dims.end(), dimLon) == dims.end()))
+        throw(Exception("variable <"+var.name()+"> must have at least lat, lon dimensions"));
+
       std::vector<UInt> start(dims.size(), 0);
-      std::vector<UInt> count;
-      for(auto &dim : dims)
-        count.push_back(dim.length());
-
-      if(dims.size() != dimSize)
-        throw(Exception("variable <"+name+"> has wrong dimensions"));
-
-      if(!timeName.empty() && (dims.size() > 2))
+      std::vector<UInt> count(dims.size(), 0);
+      UInt incLat = 0, incLon = 0, incCol = 0;
+      UInt countColumns = 1;
+      UInt inc = 1;
+      for(UInt k=dims.size(); k-->0;)
       {
-        if(dims.at(0) != dimTime)
-          throw(Exception("variable <"+name+"> must have time as first dimension"));
-        start.at(0) = idEpoch;
-        count.at(0) = 1;
+        count.at(k) = dims.at(k).length();
+        if(!timeName.empty() && (dims.at(k) == dimTime))
+        {
+          start.at(k) = idEpoch;
+          count.at(k) = 1;
+        }
+        else
+        {
+          if(dims.at(k) == dimLat)
+            incLat = inc;
+          else if(dims.at(k) == dimLon)
+            incLon = inc;
+          else if(dims.at(k).length() > 1)
+          {
+            if(countColumns > 1)
+              throw(Exception("variable <"+var.name()+"> has wrong dimensions"));
+            incCol = inc;
+            countColumns = dims.at(k).length();
+          }
+          inc *= dims.at(k).length();
+        }
       }
+      idxCol += countColumns;
 
-      Matrix values = reshape(var.values(start, count), count.at(dims.size()-1), count.at(dims.size()-2));
-      if((dims.at(dims.size()-1) == dimLat) && (dims.at(dims.size()-2) == dimLon))
-        grid.values.push_back(values);
-      else if((dims.at(dims.size()-1) == dimLon) && (dims.at(dims.size()-2) == dimLat))
-        grid.values.push_back(values.trans());
-      else
-        throw(Exception("variable <"+name+"> must have ("+latName+", "+lonName+") dimensions"));
+      // get data
+      const Vector values = var.values(start, count);
+      for(UInt j=0; j<countColumns; j++)
+      {
+        Matrix data(grid.latitudes.size(), grid.longitudes.size());
+        for(UInt i=0; i<grid.latitudes.size(); i++)
+          for(UInt k=0; k<grid.longitudes.size(); k++)
+            data(i, k) = values(incLat*i+incLon*k+incCol*j);
+        grid.values.push_back(data);
+      }
     }
 
     // write grid
