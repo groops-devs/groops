@@ -1,4 +1,5 @@
 # main
+- Bugfix:           GNSS, WriteNormalEquations: check non-matching parameter selection.
 
 # Release 2025-11-15
 - New program:      StarCamera2Orbex (replaces GnssAttitude2Orbex).

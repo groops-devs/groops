@@ -93,6 +93,11 @@ inline void GnssProcessingStepWriteNormalEquations::process(GnssProcessingStep::
     if(parameterSelector)
     {
       indexVector = parameterSelector->indexVector(state.normalEquationInfo.parameterNames());
+      if(!indexVector.size())
+      {
+        logWarningOnce<<"No matching parameters selected"<<Log::endl;
+        return;
+      }
 
       const UInt countEpochParameter = state.normalEquationInfo.blockIndex(state.normalEquationInfo.blockInterval());
       eliminateEpochParameters = (*std::min_element(indexVector.begin(), indexVector.end()) >= countEpochParameter);
