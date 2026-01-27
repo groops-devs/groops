@@ -53,6 +53,9 @@ namespace System
   * Supports wildcards: * and ?. */
   Bool exists(const FileName &fileName);
 
+  /** @brief List of files and directories that match the wildcard (* and ?). */
+  std::vector<FileName> fileList(const FileName &fileName);
+
   /** @brief Returns size (in byte) of a given file*/
   UInt fileSize(const FileName &fileName);
 

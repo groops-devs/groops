@@ -479,7 +479,7 @@ void InArchiveAscii::load(SphericalHarmonics &harm)
       {
         std::string no;
         ss>>no;
-        if(no != "no")
+        if(no.rfind("no", 0) != 0)
           hasErrors = TRUE;
       }
       // Header fertig ?

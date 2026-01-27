@@ -1,4 +1,5 @@
 # main
+- Bugfix:           ConditionFileExist: fixed bug with wildcards.
 - Bugfix:           GUI: fixed bug when moving elements to same position.
 - Bugfix:           GNSS, WriteNormalEquations: check non-matching parameter selection.
 

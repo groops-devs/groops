@@ -72,8 +72,11 @@ inline Bool ConditionFileExist::condition(const VariableList &varList) const
 {
   try
   {
-    return System::exists(fileName(varList)) &&
-          (System::isDirectory(fileName(varList)) || (System::fileSize(fileName(varList).str()) >= minSize));
+    const std::vector<FileName> fileList = System::fileList(fileName(varList));
+    for(auto entry : fileList)
+      if(System::isDirectory(entry) || (System::fileSize(entry) >= minSize))
+        return TRUE;
+    return FALSE;
   }
   catch(std::exception &e)
   {

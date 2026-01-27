@@ -98,9 +98,23 @@ Bool System::exists(const FileName &fileName)
 {
   try
   {
+    return fileList(fileName).size();
+  }
+  catch(std::exception &/*e*/)
+  {
+    return FALSE;
+  }
+}
+
+/***********************************************/
+
+std::vector<FileName> System::fileList(const FileName &fileName)
+{
+  try
+  {
     // contains no wildcards?
     if(fileName.str().find_first_of("*?") == std::string::npos)
-      return std::filesystem::exists(fileName.str());
+      return (std::filesystem::exists(fileName.str()) ? std::vector<FileName>{fileName} : std::vector<FileName>{});
 
     // split path into parts
     std::vector<std::string> parts = String::split(fileName.str(), "/\\");
@@ -114,27 +128,29 @@ Bool System::exists(const FileName &fileName)
       path = currentWorkingDirectory().str() + "/";
 
     // search directory for matching entries
+    std::vector<FileName> list;
     const std::regex pattern = String::wildcard2regex(parts.at(level));
     for(auto const &entry : std::filesystem::directory_iterator{path})
       if(std::regex_match(entry.path().filename().string(), pattern))
       {
         if(level == parts.size()-1)
-          return TRUE;
-        if(std::filesystem::is_directory(entry))
+          list.push_back(path+entry.path().filename().string());
+        else if(std::filesystem::is_directory(entry))
         {
           // replace pattern by current entry
           std::string path2 = path + entry.path().filename().string() + "/";
           for(UInt i=level+1; i<parts.size()-1; i++)
             path2 += parts.at(i) + "/";
-          if(exists(path2+parts.back()))
-            return TRUE;
+          std::vector<FileName> list2 = fileList(path2+parts.back());
+          list.insert(list.end(), list2.begin(), list2.end());
         }
       }
-    return FALSE;
+
+    return list;
   }
-  catch(std::exception &/*e*/)
+  catch(std::exception &e)
   {
-    return FALSE;
+    GROOPS_RETHROW(e)
   }
 }
 
