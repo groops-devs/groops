@@ -1942,14 +1942,12 @@ void TreeWidget::dragMoveEvent(QDragMoveEvent *event)
       // check if element tried to move into itself or its children
       if(dragElement && (event->source() == this) && (event->possibleActions() & Qt::MoveAction))
       {
-        TreeElement *parent = item->treeElement();
-        while(parent && (parent != dragElement))
-          parent = parent->parentElement;
-        if(parent == dragElement)
-        {
-          event->ignore();
-          return;
-        }
+        for(auto parent = item->treeElement(); parent; parent = parent->parentElement)
+          if(parent == dragElement)
+          {
+            event->ignore();
+            return;
+          }
       }
 
       event->acceptProposedAction();
@@ -1993,6 +1991,14 @@ void TreeWidget::dropEvent(QDropEvent *event)
       // can directly moved?
       if(dragElement && (event->source() == this) && (event->dropAction() & Qt::MoveAction))
       {
+        // check if element tried to move into itself or its children
+        for(auto parent = targetElement; parent; parent = parent->parentElement)
+          if(parent == dragElement)
+          {
+            event->ignore();
+            return;
+          }
+
         // move within same unbounded list
         // if(targetElement->parentElement->canMoveChild(targetElement, dragElement))
         // {

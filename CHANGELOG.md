@@ -1,4 +1,5 @@
 # main
+- Bugfix:           GUI: fixed bug when moving elements to same position.
 - Bugfix:           GNSS, WriteNormalEquations: check non-matching parameter selection.
 
 # Release 2025-11-15
