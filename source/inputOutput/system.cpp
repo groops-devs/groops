@@ -126,6 +126,8 @@ std::vector<FileName> System::fileList(const FileName &fileName)
       path += parts.at(level++) + "/";
     if(path.empty())
       path = currentWorkingDirectory().str() + "/";
+    if(!std::filesystem::exists(path))
+      return std::vector<FileName>{};
 
     // search directory for matching entries
     std::vector<FileName> list;
@@ -158,7 +160,14 @@ std::vector<FileName> System::fileList(const FileName &fileName)
 
 UInt System::fileSize(const FileName &fileName)
 {
-  return std::filesystem::file_size(fileName.str());
+  try
+  {
+    return std::filesystem::file_size(fileName.str());
+  }
+  catch(std::exception &/*e*/)
+  {
+    return 0;
+  }
 }
 
 /***********************************************/
