@@ -99,8 +99,10 @@ void Instrument2AllanVariance::run(Config &config, Parallel::CommunicatorPtr com
         const Double factor = 0.5/(std::pow(m*sampling.seconds(), 2) * (data.rows()-2*m));
         for(UInt i=1; i<data.columns(); i++)
           for(UInt n=0; n<data.rows()-2*m; n++)
+          {
             allanVariance(m, i) += factor * std::pow(data(n+2*m, i) - 2*data(n+m, i) + data(n, i), 2);
-        samplesPerInterval(m)++;
+            samplesPerInterval(m)++;
+          }
       }
     }, comm);
     Parallel::reduceSum(allanVariance, 0, comm);
