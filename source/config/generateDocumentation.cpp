@@ -788,9 +788,9 @@ void Documentation::writeHtml(const FileName &directoryName)
 
       content<<R"(<p>GROOPS depends on data files such as Earth rotation, Love numbers, and GNSS meta information.)"<<std::endl;
       content<<R"(An initial data set that is regularly updated is available on our FTP server,)"<<std::endl;
-      content<<R"(<a target="_blank" href="https://ftp.tugraz.at/outgoing/ITSG/groops">https://ftp.tugraz.at/outgoing/ITSG/groops</a>.)"<<std::endl;
+      content<<R"(<a target="_blank" href="https://ftp.tugraz.at/pub/ITSG/groops">https://ftp.tugraz.at/pub/ITSG/groops</a>.)"<<std::endl;
       content<<R"(You can choose between downloading the data directory or a single)"<<std::endl;
-      content<<R"(<a href="https://ftp.tugraz.at/outgoing/ITSG/groops/data.zip">data.zip</a> with the same content.</p>)"<<std::endl;
+      content<<R"(<a href="https://ftp.tugraz.at/pub/ITSG/groops/data.zip">data.zip</a> with the same content.</p>)"<<std::endl;
 
       content<<R"(<p>Additional tutorial videos are available at our <a target="_blank" href="https://www.youtube.com/channel/UCzUirVN2JuEKZwdM9dIqllg/videos">YouTube channel</a>.)"<<std::endl;
       content<<R"(Questions about the usage of GROOPS can be posted in the)"<<std::endl;

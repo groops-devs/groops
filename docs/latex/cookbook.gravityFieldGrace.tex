@@ -2,10 +2,10 @@
 This cookbook chapter describes an example of estimating a gravity field solution using GRACE observation
 data. For the respective month a set of spherical harmonic coefficients up to a maximum degree is determined.
 An example scenario for this task can be found at
-\url{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGraceGravityfieldRecovery.zip}
+\url{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGraceGravityfieldRecovery.zip}
 including the required GROOPS scripts and data sets for the gravity field recovery process.
 The provided scenario consists of a slightly simplified example as compared to the operational one.
-The background models are provided at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/data/}.
+The background models are provided at \url{https://ftp.tugraz.at/pub/ITSG/groops/data/}.
 
 
 \subsection{Background models}\label{cookbook.gravityFieldGrace:backgroundModels}
@@ -72,7 +72,7 @@ The accelerometer data is initially calibrated by estimating a bias using
 with \program{SimulateAccelerometer}. For simulating accelerometer data a satellite model
 implying the satellite's mass and surfaces is required. Such a model can be created with
 \program{SatelliteModelCreate}. Models for the GRACE and GRACE-FO satellites are also provided
-at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/data/satelliteModel/}. Non-gravitational forces
+at \url{https://ftp.tugraz.at/pub/ITSG/groops/data/satelliteModel/}. Non-gravitational forces
 comprising atmospheric drag, solar radiation pressure and albedo have to modeled when simulating
 the accelerometer data. The acceleration bias parameters are determined as degree 3 time splines
 with 6h nodes. When determining these parameters the thruster events are excluded from the estimation.

@@ -85,11 +85,13 @@ inline LoopSortAndRemoveDuplicates::LoopSortAndRemoveDuplicates(Config &config)
 
     // perform the loops
     // -----------------
+    VariableList varList;
     for(;;)
     {
       loops.resize(loops.size()+1);
-      if(!loopPtr->iteration(loops.back().varList))
+      if(!loopPtr->iteration(varList))
         break;
+      loops.back().varList = varList;
       // evaluate sort string & duplicate string
       loops.back().sortString       = StringParser::parse(sortString.first,       VariableList(sortString.second)       += loops.back().varList);
       loops.back().duplicatesString = StringParser::parse(duplicatesString.first, VariableList(duplicatesString.second) += loops.back().varList);

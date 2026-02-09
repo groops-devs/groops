@@ -10,8 +10,8 @@ International GNSS Service (IGS). Resulting products usually comprise:
 Scientific details about the underlying processing approach and the applied parametrizations, models, and corrections
 can be found in a doctoral thesis available under DOI \href{https://doi.org/10.3217/978-3-85125-885-1}{10.3217/978-3-85125-885-1}.
 
-An example scenario for this task is available at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip}.
-It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at \url{https://ftp.tugraz.at/outgoing/ITSG/groops} (data folder or zipped archive).
+An example scenario for this task is available at \url{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssNetwork.zip}.
+It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at \url{https://ftp.tugraz.at/pub/ITSG/groops} (data folder or zipped archive).
 The scenario generally represents what is described in this cookbook, but may slightly differ in certain settings.
 
 \emph{Note: Global GNSS processing can become very computationally intensive. Depending on the number of satellites
@@ -20,7 +20,7 @@ of a normal desktop computer and may require computer clusters or number crunche
 \reference{Parallelization}{general.parallelization}\emph{).}
 
 \subsection{Data preparation}\label{cookbook.gnssNetwork:metadata}
-Most of the required metadata files are provided in GROOPS file formats at \url{https://ftp.tugraz.at/outgoing/ITSG/groops}.
+Most of the required metadata files are provided in GROOPS file formats at \url{https://ftp.tugraz.at/pub/ITSG/groops}.
 These files are regularly updated.
 
 Data that has to be gathered from other sources comprises:
@@ -34,7 +34,7 @@ Receiver observations, broadcast ephemerides, and precise satellite orbits and c
 GPS, GLONASS, and Galileo orbits and clocks for the period 1994-2020 are also available as part of
 \href{https://doi.org/10.3217/dataset-4528-0723-0867}{Graz University of Technology's contribution to IGS repro3}.
 
-The \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip}{example scenario} includes a small set of this data.
+The \href{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssNetwork.zip}{example scenario} includes a small set of this data.
 The script \verb|010groopsConvert.xml| can be used to convert these external formats into GROOPS formats.
 
 Prepare a \file{station list file}{stringTable} that contains the stations to be processed.
@@ -49,7 +49,7 @@ by estimating their initial state and additional empirical parameters for solar 
 The resulting \file{variational equations}{variationalEquation} file contains the integrated orbit, derivatives
 with respect to the satellite state vector, attitude, Earth rotation and satellite model.
 
-Orbit preprocessing is covered by the script \verb|020groopsGnssPreprocessing.xml| in the \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip}{example scenario}.
+Orbit preprocessing is covered by the script \verb|020groopsGnssPreprocessing.xml| in the \href{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssNetwork.zip}{example scenario}.
 
 It is recommended to perform the steps below in a \reference{loop}{general.loopsAndConditions} over all
 satellites/PRNs using \program{LoopPrograms}. To get the relation between \verb|{prn}| and \verb|{svn}| setup
@@ -121,7 +121,7 @@ a \file{reduced dynamic orbit file}{instrument} from \program{PreprocessingVaria
 and an \file{attitude file}{instrument} from \program{SimulateStarCameraGnss} for each satellite.
 
 \subsection{GNSS processing}\label{cookbook.gnssNetwork:processing}
-The script \verb|030groopsGnssProcessing.xml| in the \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip}{example scenario}
+The script \verb|030groopsGnssProcessing.xml| in the \href{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssNetwork.zip}{example scenario}
 implements the following steps and settings.
 
 These are the settings for \program{GnssProcessing}. If not otherwise stated use the default values.
