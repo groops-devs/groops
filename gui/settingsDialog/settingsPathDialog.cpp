@@ -77,7 +77,7 @@ void SettingsPathDialog::clickedSchemaChange()
 
   QString name = QFileDialog::getOpenFileName(this, tr("Change Schema File - GROOPS"),
                                               item->text(), tr("XML Schema files (*.xsd)"));
-  if(!name.isEmpty() && !ui->listSchema->findItems(name, Qt::MatchFixedString).size())
+  if(!name.isEmpty() && !ui->listSchema->findItems(name, Qt::MatchFixedString|Qt::MatchCaseSensitive).size())
   {
     // validate XSD schema file
     Schema schema;
@@ -105,7 +105,7 @@ void SettingsPathDialog::clickedSchemaAdd()
 {
   QString name = QFileDialog::getOpenFileName(this, tr("Add Schema File - GROOPS"),
                                               ui->listSchema->currentItem() ? ui->listSchema->currentItem()->text() : "groops.xsd", tr("XML Schema files (*.xsd)"));
-  if(!name.isEmpty() && !ui->listSchema->findItems(name, Qt::MatchFixedString).size())
+  if(!name.isEmpty() && !ui->listSchema->findItems(name, Qt::MatchFixedString|Qt::MatchCaseSensitive).size())
   {
     // validate XSD schema file
     Schema schema;
@@ -122,7 +122,7 @@ void SettingsPathDialog::clickedSchemaAdd()
 
     ui->listSchema->addItem(name);
     ui->listSchema->sortItems();
-    ui->listSchema->findItems(name, Qt::MatchFixedString).at(0)->setSelected(true);
+    ui->listSchema->findItems(name, Qt::MatchFixedString|Qt::MatchCaseSensitive).at(0)->setSelected(true);
   }
 }
 
