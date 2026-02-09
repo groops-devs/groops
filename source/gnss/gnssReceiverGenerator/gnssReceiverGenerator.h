@@ -21,7 +21,7 @@ static const char *docstringGnssReceiverGenerator = R"(
 Definition and basic information of GNSS receivers.
 
 Most of the input files are provided in GROOPS file formats at
-\url{https://ftp.tugraz.at/outgoing/ITSG/groops} (marked with \textbf{*} below).
+\url{https://ftp.tugraz.at/pub/ITSG/groops} (marked with \textbf{*} below).
 These files are regularly updated.
 \begin{itemize}
   \item \configFile{inputfileStationInfo}{platform}\textbf{*}:

@@ -4,6 +4,7 @@
 - Bugfix:           GUI: fixed bug when moving elements to same position.
 - Bugfix:           GNSS, WriteNormalEquations: check non-matching parameter selection.
 - Other:            NetCDF: enable to read multidimensional variables to store in muliple columns.
+- Other:            Changed ftp.tugraz.at/outgoing/ITSG to ftp.tugraz.at/pub/ITSG.
 
 # Release 2025-11-15
 - New program:      StarCamera2Orbex (replaces GnssAttitude2Orbex).
@@ -192,8 +193,8 @@
     - Direct use of orbits without integrating variational equations in case of fixed transmitters (e.g., PPP).
     - New class to add flexible parametrizations to the normal equation system.
     - New class to select transmitters/receivers for each parametrization.
-    - Unified all transmitter classes into single class and merged all transmitter data and metadata into one folder at https://ftp.tugraz.at/outgoing/ITSG/groops/data/gnss/.
-    - Example scenarios with config files at https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/.
+    - Unified all transmitter classes into single class and merged all transmitter data and metadata into one folder at https://ftp.tugraz.at/pub/ITSG/groops/data/gnss/.
+    - Example scenarios with config files at https://ftp.tugraz.at/pub/ITSG/groops/scenario/.
     - Updated and expanded documentation and cookbooks to reflect all GNSS-related changes.
 - New program:      InstrumentAccelerometer2ThermosphericDensity: Estimate neutral density from accelerometer data.
 - New class:        In Thermosphere: new model nrlmsis2

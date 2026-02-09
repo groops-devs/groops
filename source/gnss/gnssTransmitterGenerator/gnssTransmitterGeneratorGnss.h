@@ -26,7 +26,7 @@ and \configFile{inputfileReceiverDefinition}{gnssReceiverDefinition} are read fo
 The file name is interpreted as a template with the variable \verb|{prn}| being replaced by the satellite PRN.
 
 Metadata input files (marked with \textbf{*} below) are provided in GROOPS file formats at
-\url{https://ftp.tugraz.at/outgoing/ITSG/groops}. These files are regularly updated.
+\url{https://ftp.tugraz.at/pub/ITSG/groops}. These files are regularly updated.
 \begin{itemize}
   \item \configFile{inputfileTransmitterInfo}{platform}\textbf{*}:
         PRN-SVN mapping, antenna offsets and orientations.

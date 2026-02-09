@@ -1,5 +1,8 @@
 ![GROOPS Logo](https://github.com/groops-devs/groops/blob/main/docs/html/static/groops_banner.png)
 
+> [!IMPORTANT]
+> The link for retrieving data has changed to [ftp.tugraz.at/pub/ITSG/groops](https://ftp.tugraz.at/pub/ITSG/groops).
+
 The Gravity Recovery Object Oriented Programming System (GROOPS) is a software toolkit written in C++
 that enables the user to perform core geodetic tasks.
 Key features of the software include gravity field recovery from satellite and terrestrial data,
@@ -57,9 +60,9 @@ After a successful installation our [Documentation](https://groops-devs.github.i
 is the perfect way to get familiar with the different features of GROOPS.
 
 GROOPS depends on data files such as Earth rotation, Love numbers, and wavelet coefficients.
-An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/outgoing/ITSG/groops/).
+An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/pub/ITSG/groops/).
 You can choose between downloading the data directory or
-a single [zip file](https://ftp.tugraz.at/outgoing/ITSG/groops/data.zip) with the same content.
+a single [zip file](https://ftp.tugraz.at/pub/ITSG/groops/data.zip) with the same content.
 
 ## Contributing
 
