@@ -2,6 +2,3 @@
 # -------------
 *.*~
 *.bak
-
-# the VS Code settings folder
-.vscode/
