@@ -6,12 +6,12 @@ see the cookbook \reference{GNSS satellite orbit determination and station netwo
 Scientific details about the underlying processing approach and the applied parametrizations, models, and corrections
 can be found in a doctoral thesis available under DOI \href{https://doi.org/10.3217/978-3-85125-885-1}{10.3217/978-3-85125-885-1}.
 
-An example scenario for this task is available at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssPPP.zip}.
-It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at \url{https://ftp.tugraz.at/outgoing/ITSG/groops} (data folder or zipped archive).
+An example scenario for this task is available at \url{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssPPP.zip}.
+It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at \url{https://ftp.tugraz.at/pub/ITSG/groops} (data folder or zipped archive).
 The scenario generally represents what is described in this cookbook, but may slightly differ in certain settings.
 
 \subsection{Data preparation}\label{cookbook.gnssPpp:metadata}
-Most of the required metadata files are provided in GROOPS file formats at \url{https://ftp.tugraz.at/outgoing/ITSG/groops}.
+Most of the required metadata files are provided in GROOPS file formats at \url{https://ftp.tugraz.at/pub/ITSG/groops}.
 These files are regularly updated.
 
 Data that has to be gathered from other sources comprises:
@@ -27,13 +27,13 @@ Receiver observations, precise satellite orbits and clocks, and possibly attitud
 GPS, GLONASS, and Galileo orbits, clocks, attitude, and signal biases for the period 1994-2020 are also available as part of
 \href{https://doi.org/10.3217/dataset-4528-0723-0867}{Graz University of Technology's contribution to IGS repro3}.
 
-The \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssPPP.zip}{example scenario} includes a small set of this data.
+The \href{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssPPP.zip}{example scenario} includes a small set of this data.
 The script \verb|010groopsConvert.xml| can be used to convert these external formats into GROOPS formats.
 
 Prepare a \file{station list file}{stringList} that contains the stations (one per line) to be processed.
 
 \subsection{Processing of a ground station}\label{cookbook.gnssPpp:processing}
-The script \verb|02groopsGnssProcessing.xml| in the \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssPPP.zip}{example scenario}
+The script \verb|02groopsGnssProcessing.xml| in the \href{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssPPP.zip}{example scenario}
 implements the following steps and settings.
 
 These are the settings for \program{GnssProcessing}. If not otherwise stated use the default values.

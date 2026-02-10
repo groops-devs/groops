@@ -1,12 +1,12 @@
 \section{Kinematic orbit determination of LEO satellites}\label{cookbook.kinematicOrbit}
 This cookbook chapter describes exemplarily the steps for determining kinematic orbits of low-Earth orbit (LEO) satellites.
 
-An example scenario for this task is available at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}.
-It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at \url{https://ftp.tugraz.at/outgoing/ITSG/groops} (data folder or zipped archive).
+An example scenario for this task is available at \url{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}.
+It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at \url{https://ftp.tugraz.at/pub/ITSG/groops} (data folder or zipped archive).
 The scenario generally represents what is described in this cookbook, but may slightly differ in certain settings.
 
 \subsection{Prepare GNSS satellite data}\label{cookbook.kinematicOrbit:gnssMetadata}
-Most of the required metadata files are provided in GROOPS file formats at \url{https://ftp.tugraz.at/outgoing/ITSG/groops}.
+Most of the required metadata files are provided in GROOPS file formats at \url{https://ftp.tugraz.at/pub/ITSG/groops}.
 These files are regularly updated.
 
 Data that has to be gathered from other sources comprises:
@@ -22,11 +22,11 @@ Receiver observations, precise satellite orbits and clocks, and possibly attitud
 GPS, GLONASS, and Galileo orbits, clocks, attitude, and signal biases for the period 1994-2020 are also available as part of
 \href{https://doi.org/10.3217/dataset-4528-0723-0867}{Graz University of Technology's contribution to IGS repro3}.
 
-The \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}{example scenario} includes a small set of this data.
+The \href{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}{example scenario} includes a small set of this data.
 The script \verb|010groopsConvert.xml| can be used to convert these external formats into GROOPS formats.
 
 \subsection{Prepare LEO metadata}\label{cookbook.kinematicOrbit:leoMetadata}
-Metadata for several LEO missions is availabe at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/data/gnss/receiverLowEarthOrbiter}.
+Metadata for several LEO missions is availabe at \url{https://ftp.tugraz.at/pub/ITSG/groops/data/gnss/receiverLowEarthOrbiter}.
 
 If you want to process another mission, you can create the necessary files with these steps:
 \begin{itemize}
@@ -43,7 +43,7 @@ If you want to process another mission, you can create the necessary files with 
 \end{itemize}
 
 \subsection{Prepare LEO data}\label{cookbook.kinematicOrbit:leoData}
-The \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}{example scenario} includes a small set of this data for the GRACE-FO mission.
+The \href{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}{example scenario} includes a small set of this data for the GRACE-FO mission.
 The script \verb|020groopsConvertGracefo.xml| can be used to convert these external formats into GROOPS formats.
 
 The data preparation steps are:
@@ -59,7 +59,7 @@ The data preparation steps are:
 Detailed description of instrument data handling can be found in \reference{Instrument data handling}{cookbook.instrument}.
 
 \subsection{Estimate kinematic orbits}\label{cookbook.kinematicOrbit:processing}
-The script \verb|03groopsGnssProcessing.xml| in the \href{https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}{example scenario}
+The script \verb|03groopsGnssProcessing.xml| in the \href{https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip}{example scenario}
 implements the following steps and settings.
 
 These are the settings for \program{GnssProcessing}. If not otherwise stated use the default values.
