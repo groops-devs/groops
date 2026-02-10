@@ -73,7 +73,7 @@ with \program{SimulateAccelerometer}. For simulating accelerometer data a satell
 implying the satellite's mass and surfaces is required. Such a model can be created with
 \program{SatelliteModelCreate}. Models for the GRACE and GRACE-FO satellites are also provided
 at \url{https://ftp.tugraz.at/outgoing/ITSG/groops/data/satelliteModel/}. Non-gravitational forces
-comprising atmospheric drag, solar radiation pressure and albedo have to modeled when simulating
+comprising atmospheric drag, solar radiation pressure and albedo have to be modeled when simulating
 the accelerometer data. The acceleration bias parameters are determined as degree 3 time splines
 with 6h nodes. When determining these parameters the thruster events are excluded from the estimation.
 
@@ -284,7 +284,7 @@ standard deviations from \configFile{outputfileSigmax}{matrix} up to a certain d
 In the program \program{Gravityfield2PotentialCoefficients} the estimated spherical harmonics
 coefficients are read with
 \configClass{gravityfield:fromParametrization}{gravityfieldType:fromParametrization}.
-The monthly mean gravity field can be added back by additionaly selecting the time splines created
+The monthly mean gravity field can be added back by additionally selecting the time splines created
 in \verb|000groopsBackgroundModels.xml| using
 \configClass{gravityfield:timeSplines}{gravityfieldType:timeSplines}. The preprocessing solution
 is saved as a \file{spherical harmonics file}{potentialCoefficients}.
@@ -312,7 +312,7 @@ The desired spherical harmonic coefficients are determined in the script \verb|0
 \program{NormalsSolverVCE} accumulates \configClass{normalEquation}{normalEquationType} and solves
 the total combined system. Variance component estimation is used to determine the relative weighting
 of the individual normals, i.e. the arc-wise variances. The previously computed stochastic model of
-the observations remains unchanged. The estimated parameter vector (\configFile{outputfileSolution}{matrix})
+the observations remains unchanged. The estimated parameter vector (\configFile{outputfileSolution}{matrix}), 
 the estimated accuracies (\configFile{outputfileSigmax}{matrix}) and the full covariance matrix
 (\configFile{outputfileCovariance}{matrix}) can be saved.
 Using \program{Gravityfield2PotentialCoefficients} the final solution can be saved as
