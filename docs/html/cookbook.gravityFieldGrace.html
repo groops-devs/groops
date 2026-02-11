@@ -151,7 +151,7 @@ with <a class="groops-program" href="SimulateAccelerometer.html">SimulateAcceler
 implying the satellite's mass and surfaces is required. Such a model can be created with
 <a class="groops-program" href="SatelliteModelCreate.html">SatelliteModelCreate</a>. Models for the GRACE and GRACE-FO satellites are also provided
 at <a href="https://ftp.tugraz.at/pub/ITSG/groops/data/satelliteModel/" target="_blank">https://ftp.tugraz.at/pub/ITSG/groops/data/satelliteModel/</a>. Non-gravitational forces
-comprising atmospheric drag, solar radiation pressure and albedo have to modeled when simulating
+comprising atmospheric drag, solar radiation pressure and albedo have to be modeled when simulating
 the accelerometer data. The acceleration bias parameters are determined as degree 3 time splines
 with 6h nodes. When determining these parameters the thruster events are excluded from the estimation.</p><p>The SST observations, the light time corrections and the antenna center corrections are synchronized
 with a 5s sampling together with simulated SST data created with <a class="groops-program" href="SimulateSatelliteTracking.html">SimulateSatelliteTracking</a>.
@@ -423,7 +423,7 @@ spherical harmonic coefficients from <a class="groops-class" href="fileFormat_ma
 standard deviations from <a class="groops-class" href="fileFormat_matrix.html">outputfileSigmax</a> up to a certain degree.</p><p>In the program <a class="groops-program" href="Gravityfield2PotentialCoefficients.html">Gravityfield2PotentialCoefficients</a> the estimated spherical harmonics
 coefficients are read with
 <a class="groops-class" href="gravityfieldType.html#fromParametrization">gravityfield:fromParametrization</a>.
-The monthly mean gravity field can be added back by additionaly selecting the time splines created
+The monthly mean gravity field can be added back by additionally selecting the time splines created
 in <code>000groopsBackgroundModels.xml</code> using
 <a class="groops-class" href="gravityfieldType.html#timeSplines">gravityfield:timeSplines</a>. The preprocessing solution
 is saved as a <a class="groops-file" href="fileFormat_potentialCoefficients.html">spherical harmonics file</a>.</p><p><h2 id="monthlyNormals">Setting up normal equations</h2><p>
@@ -447,7 +447,7 @@ The desired spherical harmonic coefficients are determined in the script <code>0
 <a class="groops-program" href="NormalsSolverVCE.html">NormalsSolverVCE</a> accumulates <a class="groops-class" href="normalEquationType.html">normalEquation</a> and solves
 the total combined system. Variance component estimation is used to determine the relative weighting
 of the individual normals, i.e. the arc-wise variances. The previously computed stochastic model of
-the observations remains unchanged. The estimated parameter vector (<a class="groops-class" href="fileFormat_matrix.html">outputfileSolution</a>)
+the observations remains unchanged. The estimated parameter vector (<a class="groops-class" href="fileFormat_matrix.html">outputfileSolution</a>),
 the estimated accuracies (<a class="groops-class" href="fileFormat_matrix.html">outputfileSigmax</a>) and the full covariance matrix
 (<a class="groops-class" href="fileFormat_matrix.html">outputfileCovariance</a>) can be saved.
 Using <a class="groops-program" href="Gravityfield2PotentialCoefficients.html">Gravityfield2PotentialCoefficients</a> the final solution can be saved as

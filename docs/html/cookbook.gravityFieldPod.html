@@ -85,14 +85,14 @@ Accelerometer data
 </li></ul>
 
 Reduced sampling can be achieved by <a class="groops-program" href="InstrumentReduceSampling.html">InstrumentReduceSampling</a>. If the satellite mission does not provide any required
-accelerometer data, these data can be generated via <a class="groops-program" href="SimulateAccelerometer.html">SimulateAccelerometer</a>.</p><p>For satellite missions with less knowledge about the acting forces, it make sense to consider more than one state vector within an orbit revolution.
+accelerometer data, these data can be generated via <a class="groops-program" href="SimulateAccelerometer.html">SimulateAccelerometer</a>.</p><p>For satellite missions with less knowledge about the acting forces, it makes sense to consider more than one state vector within an orbit revolution.
 Otherwise the accuracy of the estimated parameters will decrease. This implies that shorter arcs are necessary. The assignment of the kinematic orbit
 data as well as the 3x3 covariance matrices data to the arcs can be done with <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>.</p><p><h2>Step 2: Conversion of the background gravity field</h2><p>
 <a class="groops-program" href="Gravityfield2SphericalHarmonicsVector.html">Gravityfield2SphericalHarmonicsVector</a> converts the static respectively background gravity field into spherical harmonics.</p><p><h2>Step 3: Preprocessing POD</h2><p>
 For determining the accuracies and weights of the kinematic orbits it is sufficient to make a least-square estimation with only certain parameters, due
 to the fact that some parameters do not influence the estimation of the accuracies and weights.
-This estimation is done with <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>. Additional this program determines the temporal correlation of the kinematic orbit positions
-x,y and z. If short arcs are used the setting <a class="groops-class" href="observationType.html#podIntegral">observation:podIntegral</a> shall be used. This setting
+This estimation is done with <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>. Additionally, this program determines the temporal correlation of the kinematic orbit positions
+x, y and z. If short arcs are used the setting <a class="groops-class" href="observationType.html#podIntegral">observation:podIntegral</a> shall be used. This setting
 considers the frictional forces by means of a macro model as well as the conservative and non-conservative forces.</p><p><h2>Step 4: Solving of normal equations system</h2><p>
 <a class="groops-program" href="NormalsSolverVCE.html">NormalsSolverVCE</a> sets up the observation equations and summarized them to a normal equations system. The subsequent least-square estimation delivers
 the parameters surcharges.</p><p><h2>Step 5: Determination of the estimated gravity field parameters</h2><p>
