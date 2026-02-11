@@ -3,6 +3,7 @@
 - Bugfix:           GUI: fixed MatchCaseSensitive for schema selction.
 - Bugfix:           GUI: fixed bug when moving elements to same position.
 - Bugfix:           GNSS, WriteNormalEquations: check non-matching parameter selection.
+- Bugfix:           Instrument2AllanVariance: Fix sample counting.
 - Other:            NetCDF: enable to read multidimensional variables to store in muliple columns.
 - Other:            Changed ftp.tugraz.at/outgoing/ITSG to ftp.tugraz.at/pub/ITSG.
 
