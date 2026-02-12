@@ -230,10 +230,10 @@ template<> void load(InArchive &ar, GriddedData &x)
   for(UInt i=0; i<pointCount; i++)
   {
     ar>>beginGroup("points");
-    ar>>nameValue("longitude", lat);
-    ar>>nameValue("latitude",  lon);
+    ar>>nameValue("longitude", lon);
+    ar>>nameValue("latitude",  lat);
     ar>>nameValue("height",    h);
-    x.points.at(i) = x.ellipsoid(lat, lon, h);
+    x.points.at(i) = x.ellipsoid(lon, lat, h);
     if(hasArea)
       ar>>nameValue("areas",  x.areas.at(i));
     for(UInt k=0; k<x.values.size(); k++)

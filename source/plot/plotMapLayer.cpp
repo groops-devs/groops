@@ -30,14 +30,14 @@
 // Latex documentation
 static const char *docstringPlotMapLayerGrid = R"(
 \subsection{GriddedData}
-Creates a regular grid of yxz values. The standard \reference{dataVariables}{general.parser:dataVariables}
+Creates a regular grid of xyz values. The standard \reference{dataVariables}{general.parser:dataVariables}
 are available to select the data column of \configFile{inputfileGriddedData}{griddedData}.
 Empty grid cells are not plotted. Cells with more than one value will be set to the mean value.
 The grid spacing can be determined automatically for regular rectangular grids otherwise
 it must be set with \config{increment}. To get a better display together with some projections
 the grid should be internally \config{resample}d to higher resolution.
 It is assumed that the points of \configFile{inputfileGriddedData}{griddedData} represents centers of grid cells.
-This assumption can be changed with \config{gridlineRegistered} (e.g if the data starts at the north pole).
+This assumption can be changed with \config{gridlineRegistered} (e.g. if the data starts at the north pole).
 )";
 
 class PlotMapLayerGrid : public PlotMapLayer
