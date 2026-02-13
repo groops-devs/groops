@@ -154,6 +154,9 @@ std::string PlotMapLayerGrid::scriptEntry() const
 {
   try
   {
+    if(!points.size())
+      return "";
+
     std::stringstream ss;
     ss<<"gmt xyz2grd -bi3d "<<dataFileName<<" -G"<<dataFileName<<".grd -Vn -I"<<incrementLon*RAD2DEG*3600.<<"s/"<<incrementLat*RAD2DEG*3600.<<"s -R"<<PlotBasics::scriptVariable("region")<<(isGridline ? "" : " -r")<<std::endl;
     if(illuminate)
@@ -254,6 +257,9 @@ std::string PlotMapLayerPoints::scriptEntry() const
 {
   try
   {
+    if(!points.size())
+      return "";
+
     std::stringstream ss;
     if(line)
     {
@@ -383,6 +389,9 @@ std::string PlotMapLayerArrows::scriptEntry() const
 {
   try
   {
+    if(!points.size())
+      return "";
+
     std::stringstream ss;
 
     // arrows from grid file
@@ -1047,6 +1056,9 @@ void PlotMapLayer::getIntervalZ(Bool isLogarithmic, Double &minZ, Double &maxZ) 
   {
     if(!requiresColorBar())
       return;
+    // in case there are no valid data points
+    if(!points.size())
+      return;
 
     UInt   count =  0;
     Double avg   =  0.;
@@ -1107,6 +1119,9 @@ std::string PlotMapLayer::scriptStatisticsInfo(UInt fontSize, Double width, cons
   try
   {
     if(!requiresColorBar())
+      return std::string();
+
+    if(!points.size())
       return std::string();
 
     Double rms, avg, vmin, vmax, mean;
