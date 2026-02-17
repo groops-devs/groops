@@ -18,6 +18,8 @@
 static const char *docstringConditionStringContainsPattern = R"(
 \subsection{StringContainsPattern}
 Determines if there is a match between a pattern or a regular expression and some subsequence in a string.
+Note that, wildcards * and ? are not supported for \config{pattern} when 
+\config{isRegularExpression} is 0.
 )";
 #endif
 
@@ -53,7 +55,7 @@ inline ConditionStringContainsPattern::ConditionStringContainsPattern(Config &co
   try
   {
     readConfig(config, "string",              text,                Config::OPTIONAL, "",  "should contain a {variable}");
-    readConfig(config, "pattern",             pattern,             Config::OPTIONAL, "",  "");
+    readConfig(config, "pattern",             pattern,             Config::OPTIONAL, "",  "literal '{' in regex should be escaped twice with '##{'");
     readConfig(config, "isRegularExpression", isRegularExpression, Config::DEFAULT,  "0", "pattern is  a regular expression");
     readConfig(config, "caseSensitive",       caseSensitive,       Config::DEFAULT,  "1", "treat lower and upper case as distinct");
     if(isCreateSchema(config)) return;
@@ -78,6 +80,8 @@ inline Bool ConditionStringContainsPattern::condition(const VariableList &varLis
       p = String::lowerCase(p);
     }
 
+    // Note: because pattern is parsed twice, literal '{' in regex quantifiers must 
+    // survive both passes (or avoid braces, e.g. use '^L..$' instead of '^L.{2}$').
     if(isRegularExpression)
       return std::regex_search(t, std::regex(p));
     else
