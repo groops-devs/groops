@@ -18,6 +18,10 @@
 static const char *docstringCondition = R"(
 \section{Condition}\label{conditionType}
 Test for conditions. See \reference{Loop and conditions}{general.loopsAndConditions} for usage.
+For condition fields of type \verb|filename| (e.g. \config{string/pattern}), text parsing 
+can occur at config read and again at runtime variable expansion. Therefore literal braces 
+in patterns (especially regex quantifiers like \verb|{2}|) may need escaping twice (e.g. \verb|##{|) 
+or equivalent brace-free regex forms.
 )";
 #endif
 
