@@ -153,7 +153,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         day   = String::toInt(line.substr(12, 6));
         hour  = String::toInt(line.substr(18, 6));
         min   = String::toInt(line.substr(24, 6));
-        sec   = String::toDouble(line.substr(33, 43));
+        sec   = String::toDouble(line.substr(33, 10));
         antennaInfo.timeStart = date2time(year, month, day, hour, min, sec);
         getLine(file, line, label);
       }
@@ -167,7 +167,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         day   = String::toInt(line.substr(12, 6));
         hour  = String::toInt(line.substr(18, 6));
         min   = String::toInt(line.substr(24, 6));
-        sec   = String::toDouble(line.substr(33, 43));
+        sec   = String::toDouble(line.substr(33, 10));
         if(sec >= 59)
           sec = 60; // to prevent gaps, since VALID UNTIL is inclusive in ANTEX but timeEnd is exclusive in GROOPS
         antennaInfo.timeEnd = date2time(year, month, day, hour, min, sec);
