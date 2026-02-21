@@ -710,7 +710,7 @@ void ProgramConfig::run(VariableList &variableList, Parallel::CommunicatorPtr co
         {
           std::string comment;
           StackNode top = config.stack.top();
-          config.stack.pop(); // coment is given in <program> not in <choiceElement>
+          config.stack.pop(); // comment is given in <program> not in <choiceElement>
           XmlAttrPtr attr = config.stack.top().xmlNode->getAttribute("comment");
           if(attr)
             comment = attr->getText();

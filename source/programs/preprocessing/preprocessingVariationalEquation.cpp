@@ -13,23 +13,23 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program integrates an orbit dynamically using the given forces and setup the state transition matrix
-for each time step. These are the prerequisite for a least squares adjustement (e.g. gravity field determination) using
-the variational equation approach. The variational equations are computed arc wise as defined by \configFile{inputfileOrbit}{instrument}.
-This means for each arc new initial state parameters are setup.
+This program integrates an orbit dynamically using the given forces and set up the state transition matrix
+for each time step. These are the prerequisites for a least squares adjustment (e.g. gravity field determination) using
+the variational equation approach. The variational equations are computed arc-wise as defined by \configFile{inputfileOrbit}{instrument}.
+This means for each arc new initial state parameters are set up.
 
 In a first step the \configClass{forces}{forcesType} acting on the satellite are evaluated at the apriori positions given
-by \configFile{inputfileOrbit}{instrument}. Non-conservative forces like solar radiation pressure needs the orientation of the
-satellite (\configFile{inputfileStarCamera}{instrument}) and additional a satellite macro model (\config{satelliteModel})
+by \configFile{inputfileOrbit}{instrument}. Non-conservative forces like solar radiation pressure need the orientation of the
+satellite (\configFile{inputfileStarCamera}{instrument}) and additionally, a satellite macro model (\config{satelliteModel})
 with the surface properties. Furthermore \configFile{inputfileAccelerometer}{instrument} observations are also considered.
 
-In a second step the accelerations are integrated twice to an dynamic orbit using a moving polynomial with the degree
+In a second step the accelerations are integrated twice to a dynamic orbit using a moving polynomial with the degree
 \config{integrationDegree}. The orbit is corrected to be self-consistent. This means the forces should be evaluated
 at the new integrated positions instead of the apriori ones. This correction is computed in a linear approximation
 using the gradient of the forces with respect to the positions (\config{gradientfield}). As this term is small generally
-only the largest force components has to be considered. A low degree spherical harmonic expansion of the static gravity
+only the largest force components have to be considered. A low degree spherical harmonic expansion of the static gravity
 field (about up to degree 5) is sufficient in almost all cases. In this step also the state transition matrix (the partial
-derivatices of the current state, position and velocity) with respect to the initial state is computed.
+derivatives of the current state, position and velocity) with respect to the initial state is computed.
 The integrated orbit together with the state transitions are stored in \configFile{outputfileVariational}{variationalEquation},
 the integrated orbit only in \configFile{outputfileOrbit}{instrument}.
 
