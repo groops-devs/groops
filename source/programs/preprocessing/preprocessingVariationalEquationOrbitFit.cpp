@@ -20,18 +20,18 @@ and stochastic pulses (velocity jumps) at given times, \configClass{stochasticPu
 \configFile{outputfileSolution}{matrix} and an extra file with the parameter names is created. The fitted orbit is written
 as new reference in \configFile{outputfileVariational}{variationalEquation} and additionally in \configFile{outputfileOrbit}{instrument}.
 
-The observed orbit positions (\configFile{inputfileOrbit}{instrument}) together with the epoch wise covariance matrix
-(\configFile{inputfileCovariancePodEpoch}{instrument}) must be splitted in the same arcs as the variational equations but not
-necessarily uniform distributed (use irregularData in \program{InstrumentSynchronize}). An iterative downweighting of
+The observed orbit positions (\configFile{inputfileOrbit}{instrument}) together with the epoch-wise covariance matrix
+(\configFile{inputfileCovariancePodEpoch}{instrument}) must be split in the same arcs as the variational equations but not
+necessarily uniformly distributed (use irregularData in \program{InstrumentSynchronize}). An iterative downweighting of
 outliers is performed by M-Huber method.
 
-The observation equations (parameter sensitity matrix) are computed by integration of the variational equations
+The observation equations (parameter sensitivity matrix) are computed by integration of the variational equations
 (\configFile{inputfileVariational}{variationalEquation}) using a polynomial with \config{integrationDegree} and interpolated to the
 observation epochs using a polynomial with \config{interpolationDegree}.
 
 All parameters used here must be reestimated in the full least squares adjustment
 for the gravity field determination to get a solution which is not biased towards the reference field.
-The solution of additional estimations are relative (deltas) as the parameters are already used as Taylor point
+The solutions of additional estimations are relative (deltas) as the parameters are already used as Taylor point
 in the reference orbit.
 
 See also \program{PreprocessingVariationalEquation}.
