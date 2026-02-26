@@ -74,6 +74,10 @@ void Sinex2StationPositions::run(Config &config, Parallel::CommunicatorPtr /*com
     readConfig(config, "stationName",                           stationNames,        Config::OPTIONAL,  "",  "convert only these stations");
     if(isCreateSchema(config)) return;
 
+    // Change input station names to lower case for case-insensitive comparison with SINEX station names.
+    for(std::string &name : stationNames)
+      name = String::lowerCase(String::trim(name));
+
     struct Interval
     {
       std::string pointCode;
