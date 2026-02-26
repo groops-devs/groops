@@ -5,7 +5,7 @@
 * @brief Observation equations.
 * Set up linearized observation equations (design matrix)
 * to connect unknown parameters with observations.
-* It is used in an least squares adjustement.
+* It is used in a least squares adjustment.
 *
 * @author Torsten Mayer-Guerr
 * @date 2001-11-12
@@ -20,20 +20,20 @@
 #ifdef DOCSTRING_Observation
 static const char *docstringObservation = R"(
 \section{Observation}\label{observationType}
-This class set up the oberservation equations in linearized Gauss-Makoff model
+This class sets up the observation equations in linearized Gauss-Markov model
 \begin{equation}\label{gmm}
 \M l  = \M A \M x + \M e\qquad\text{and}\qquad\mathcal{C}(\M e) = \sigma^2\M P^{-1}.
 \end{equation}
-The observations are divided into short data blocks which can computed independently
-and so easily can be parallelized. Usually this data blocks are short arcs of a
-satellites orbit. In most cases the unknown parameter vector contains coefficients
+The observations are divided into short data blocks which can be computed independently
+and so easily can be parallelized. Usually these data blocks are short arcs of a
+satellite's orbit. In most cases the unknown parameter vector contains coefficients
 of a gravity field parametrization given by \configClass{parametrizationGravity}{parametrizationGravityType}.
-Additional parameters like instrument calibrations parameters are appended at the
+Additional parameters like instrument calibration parameters are appended at the
 end of the vector~$\M x$.
 It is possible to give several observation vectors in one model.
 
 The observations within each arc are decorrelated in the following way:
-In a first step a cholesky decomposition of the covariance matrix is performed
+In a first step a Cholesky decomposition of the covariance matrix is performed
 \begin{equation}
 \M P^{-1} = \M W^T\M W,
 \end{equation}
@@ -48,7 +48,7 @@ gives an estimation from decorrelated observations with equal variance
 \qquad\text{and}\qquad
 \mathcal{C}(\bar{\M e})= \sigma^2 \M I.
 \end{equation}
-Usually the arc depending parameters are eliminated in the next step
+Usually the arc dependent parameters are eliminated in the next step
 and not mentioned for the parameter names in the following.
 )";
 #endif
@@ -76,14 +76,14 @@ typedef std::shared_ptr<Observation> ObservationPtr;
 /** @brief Observation equations.
 * Set up linearized observation equations (design matrix)
 * to connect unknown parameters with observations.
-* It is used in an least squares adjustement.
-* An Instance of this class can be created by @ref readConfig. */
+* It is used in a least squares adjustment.
+* An instance of this class can be created by @ref readConfig. */
 class Observation
 {
 public:
   virtual ~Observation() {}
 
-  /** @brief Estimate parameter in the given interval only.
+  /** @brief Estimate parameters in the given interval only.
   * Change result of @a parameterCount(), @a gravityParameterCount(), @a parameterName().
   * @return TRUE if parameters are changed */
   virtual Bool setInterval(const Time &timeStart, const Time &timeEnd) = 0;
@@ -109,15 +109,15 @@ public:
   virtual void parameterName(std::vector<ParameterName> &name) const = 0;
 
   /** @brief Observation equations for an Arc.
-  * The desgin matrix @a A contains the common parameter (mostly gravity field parameters).
-  * The design matrix for arc specific parameters (e.g. bias, staellite state vector) is separated in Matrix @a B.
-  * @param arcNo Index of the arc to be computedNummer [0, arcCount)
+  * The design matrix @a A contains the common parameter (mostly gravity field parameters).
+  * The design matrix for arc specific parameters (e.g. bias, satellite state vector) is separated in Matrix @a B.
+  * @param[in] arcNo Index of the arc to be computed, a number in [0, @a arcCount)
   * @param[out] l Observation vector (multiple vectors/columns possible)
   * @param[out] A Design matrix for common parameters.
   * @param[out] B Design matrix for arc related parameters. */
   virtual void observation(UInt arcNo, Matrix &l, Matrix &A, Matrix &B) = 0;
 
-  /** @brief creates an derived instance of this class. */
+  /** @brief creates a derived instance of this class. */
   static ObservationPtr create(Config &config, const std::string &name);
 };
 
@@ -129,7 +129,7 @@ public:
 * @param config The config node which includes the node with the options for this class
 * @param name Tag name in the config.
 * @param[out] observation Created class.
-* @param mustSet If is MUSTSET and @a name is not found, this function throws an exception instead of returning with FALSE.
+* @param mustSet If it is MUSTSET and @a name is not found, this function throws an exception instead of returning with FALSE.
 * @param defaultValue Ignored at the moment.
 * @param annotation Description of the function of this class.
 * @relates Observation */

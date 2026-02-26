@@ -18,7 +18,7 @@
 static const char *docstringGnssProcessingStepGroup = R"(
 \subsection{Group}\label{gnssProcessingStepType:group}
 Perform these processing steps. This step can be used to structure complex processing flows.
-The \configClass{select..}{gnssProcessingStepType:selectParametrizations} processing steps
+The \configClass{processingStep}{gnssProcessingStepType}s
 defined within a group only affect the steps within this group.
 )";
 #endif

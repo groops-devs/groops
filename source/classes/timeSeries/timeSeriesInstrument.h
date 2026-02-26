@@ -54,8 +54,8 @@ inline TimeSeriesInstrument::TimeSeriesInstrument(Config &config)
     timeEnd = date2time(9999, 1, 1);
 
     readConfig(config, "inputfileInstrument", fileName,  Config::MUSTSET,  "", "");
-    readConfig(config, "timeStart",           timeStart, Config::OPTIONAL, "", "exclude peochs before this epoch");
-    readConfig(config, "timeEnd",             timeEnd,   Config::OPTIONAL, "", "only epochs before this time are used");
+    readConfig(config, "timeStart",           timeStart, Config::OPTIONAL, "", "inclusive, i.e. exclude eochs before this epoch");
+    readConfig(config, "timeEnd",             timeEnd,   Config::OPTIONAL, "", "exclusive, i.e. only epochs before this time are used");
     if(isCreateSchema(config)) return;
   }
   catch(std::exception &e)

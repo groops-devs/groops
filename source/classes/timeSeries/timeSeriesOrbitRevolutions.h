@@ -54,7 +54,7 @@ inline TimeSeriesOrbitRevolutions::TimeSeriesOrbitRevolutions(Config &config)
     timeEnd = date2time(9999, 1, 1);
 
     readConfig(config, "inputfileOrbit", fileName,  Config::MUSTSET,  "", "");
-    readConfig(config, "timeStart",      timeStart, Config::OPTIONAL, "", "exclude peochs before this epoch");
+    readConfig(config, "timeStart",      timeStart, Config::OPTIONAL, "", "exclude eochs before this epoch");
     readConfig(config, "timeEnd",        timeEnd,   Config::OPTIONAL, "", "only epochs before this time are used");
     if(isCreateSchema(config)) return;
   }

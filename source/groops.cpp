@@ -25,7 +25,7 @@ Usage: groops [--log <logfile.txt>] [--settings <groopsDefaults.xml>] [--silent]
 -g, --global         pass a global variable to config files as name=value pair
 -c, --settings       read constants from file (default search: groopsDefaults.xml)
 -s, --silent         runs silently
--d, --doc            generate documentation files (latex/html/...)
+-d, --doc            generate documentation files (latex/html/...) within the given directory
 -x, --xsd            write xsd-schema of xml-configfile options
 -C, --write-settings write the users current settings to file
 

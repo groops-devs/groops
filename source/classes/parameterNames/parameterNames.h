@@ -16,7 +16,7 @@
 #ifdef DOCSTRING_ParameterNames
 static const char *docstringParameterNames = R"(
 \section{ParameterNames}\label{parameterNamesType}
-Generate a list of parameter names. All parameters are appended.
+Generates a list of parameter names. All parameters are appended.
 )";
 #endif
 

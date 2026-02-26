@@ -20,7 +20,9 @@ static const char *docstringGnssProcessingStepResolveAmbiguities = R"(
 Performs a least squares adjustment like \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}
 but with additional integer phase ambiguity resolution.
 After this step all resolved ambiguities are removed from the normal equation system.
-Only ambiguites are resolved with involved \configClass{selectTransmitters/Receivers}{platformSelectorType}.
+Only ambiguities involving \configClass{selectTransmitters/Receivers}{platformSelectorType} are resolved.
+If \configClass{selectTransmitters/Receivers}{platformSelectorType} is not set, all usable transmitters and/or 
+receivers are selected for ambiguity resolution.
 
 Integer ambiguity resolution is performed based on the least squares ambiguity decorrelation adjustment
 (LAMBDA) method (Teunissen 1995, DOI \href{https://doi.org/10.1007/BF00863419}{10.1007/BF00863419}), specifically
@@ -118,13 +120,13 @@ inline void GnssProcessingStepResolveAmbiguities::process(GnssProcessingStep::St
   {
     logStatus<<"=== resolve ambiguities  ===================================="<<Log::endl;
     std::vector<Byte> selectedTransmitters(state.gnss->transmitters.size());
-    if(!selectTransmitters) // if no selector is given, assume all useable
+    if(!selectTransmitters) // if no selector is given, assume all usable
       std::transform(state.gnss->transmitters.begin(), state.gnss->transmitters.end(), selectedTransmitters.begin(), [](const auto t){return t->useable();});
     else
       selectedTransmitters = state.gnss->selectTransmitters(selectTransmitters);
 
     std::vector<Byte> selectedReceivers(state.gnss->receivers.size());
-    if(!selectReceivers) // if no selector is given, assume all useable
+    if(!selectReceivers) // if no selector is given, assume all usable
       std::transform(state.gnss->receivers.begin(), state.gnss->receivers.end(), selectedReceivers.begin(), [](const auto r){return r->useable();});
     else
       selectedReceivers = state.gnss->selectReceivers(selectReceivers);

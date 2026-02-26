@@ -19,11 +19,11 @@
 static const char *docstringGnssParametrizationClocksModel = R"(
 \subsection{ClocksModel}\label{gnssParametrizationType:clocksModel}
 This parametrization is an alternative to \configClass{parametrization:clocks}{gnssParametrizationType:clocks}.
-Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{platformSelectorType}
+Clock errors are estimated epoch-wise for each \configClass{selectTransmitters/Receivers}{platformSelectorType}
 and, opposed to \configClass{parametrization:clocks}{gnssParametrizationType:clocks}, are also estimated for epochs
 that have no valid observations available (e.g. data gaps).
 
-The clock error of the an epoch can be predicted by the clock error
+The clock error of an epoch can be predicted by the clock error
 of the preceding epoch and an unknown clock drift
 \begin{equation}
   \Delta t_{i+1} = \Delta t_{i} + t_{drift} dt + \epsilon_i.
