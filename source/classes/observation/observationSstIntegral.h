@@ -21,8 +21,8 @@ Like \configClass{observation:podIntegral}{observationType:podIntegral} (see the
 but with two satellites and additional satellite-to-satellite (SST) observations.
 
 If multiple \configFile{inputfileSatelliteTracking}{instrument} are given
-all data are add together. So corrections in extra files like the light time correction
-can easily be added. Empirical parameters for the SST observations can be setup with
+all data are added together. So corrections in extra files like the light time correction
+can easily be added. Empirical parameters for the SST observations can be set up with
 \configClass{parametrizationSst}{parametrizationSatelliteTrackingType}.
 The accuracy or the full covariance matrix of SST is provided in
 \configClass{covarianceSst}{covarianceSstType}.
@@ -60,7 +60,7 @@ and for each arc if \config{keepSatelliteStates} is set
 
 /***** CLASS ***********************************/
 
-/** @brief Satellite to satellite tracking (Short Arc Integral).
+/** @brief Satellite-to-satellite tracking (Short Arc Integral).
 * @ingroup observationGroup
 * @see Observation */
 class ObservationSstIntegral : public Observation

@@ -19,7 +19,7 @@ static const char *docstringGnssProcessingStepWriteResiduals = R"(
 \subsection{WriteResiduals}\label{gnssProcessingStepType:writeResiduals}
 Writes the \file{observation residuals}{instrument} for all
 \configClass{selectReceivers}{platformSelectorType}.
-For for each station a file is written. The file name is interpreted as
+For each station a file is written. The file name is interpreted as
 a template with the variable \verb|{station}| being replaced by the station name.
 )";
 #endif

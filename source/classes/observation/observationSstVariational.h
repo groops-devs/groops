@@ -20,9 +20,9 @@ static const char *docstringObservationSstVariational = R"(
 Like \configClass{observation:podVariational}{observationType:podVariational} (see there for details)
 but with two satellites and additional satellite-to-satellite (SST) observations.
 
-If multiple \configFile{inputfileSatelliteTracking}{instrument} are given
-all data are add together. So corrections in extra files like the light time correction
-can easily be added. Empirical parameters for the SST observations can be setup with
+If multiple \configFile{inputfileSatelliteTracking}{instrument} are given,
+all data are added together. So corrections in extra files like the light time correction
+can easily be added. Empirical parameters for the SST observations can be set up with
 \configClass{parametrizationSst}{parametrizationSatelliteTrackingType}.
 The accuracy or the full covariance matrix of SST is provided in
 \configClass{covarianceSst}{covarianceSstType}.
@@ -60,7 +60,7 @@ The following parameters with \file{parameter names}{parameterName} are set up:
 
 /***** CLASS ***********************************/
 
-/** @brief Satellite to satellite tracking (Variational equations).
+/** @brief Satellite-to-satellite tracking (Variational equations).
 * @ingroup observationGroup
 * @see Observation */
 class ObservationSstVariational : public Observation

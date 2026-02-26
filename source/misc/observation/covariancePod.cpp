@@ -33,10 +33,10 @@ CovariancePod::CovariancePod(Config &config, const std::string &name)
 
     readConfigSequence(config, name, Config::MUSTSET, "", "");
     readConfig(config, "sigma",                        sigma,               Config::DEFAULT,  "1", "general variance factor");
-    readConfig(config, "inputfileSigmasPerArc",        fileNameSigmaArc,    Config::OPTIONAL, "",  "different accuaries for each arc (multplicated with sigma)");
-    readConfig(config, "inputfileSigmasPerEpoch",      fileNameSigmaEpoch,  Config::OPTIONAL, "",  "different accuaries for each epoch (added)");
+    readConfig(config, "inputfileSigmasPerArc",        fileNameSigmaArc,    Config::OPTIONAL, "",  "different accuracies for each arc (multiplied with sigma)");
+    readConfig(config, "inputfileSigmasPerEpoch",      fileNameSigmaEpoch,  Config::OPTIONAL, "",  "different accuracies for each epoch (added)");
     readConfig(config, "inputfileCovarianceFunction",  fileNameCovFunc,     Config::OPTIONAL, "",  "covariances in time for along, cross, and radial direction");
-    readConfig(config, "inputfileCovariancePodEpoch",  fileNameCovPodEpoch, Config::OPTIONAL, "",  "3x3 epoch wise covariances");
+    readConfig(config, "inputfileCovariancePodEpoch",  fileNameCovPodEpoch, Config::OPTIONAL, "",  "3x3 epoch-wise covariances");
     endSequence(config);
     if(isCreateSchema(config)) return;
 

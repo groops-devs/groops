@@ -59,7 +59,7 @@ typedef std::shared_ptr<GnssProcessingStep> GnssProcessingStepPtr;
 /***** CLASS ***********************************/
 
 /** @brief Provides a list of receivers.
-* An Instance of this class can be created by @ref readConfig. */
+* An instance of this class can be created by @ref readConfig. */
 class GnssProcessingStep
 {
   std::vector<GnssProcessingStepBase*> bases;
@@ -113,7 +113,7 @@ public:
   /** @brief Perform the processing steps. */
   void process(State &state);
 
-  /** @brief creates an derived instance of this class. */
+  /** @brief creates a derived instance of this class. */
   static GnssProcessingStepPtr create(Config &config, const std::string &name) {return GnssProcessingStepPtr(new GnssProcessingStep(config, name));}
 };
 
@@ -121,7 +121,7 @@ public:
 
 /** @brief Creates an instance of the class GnssProcessingStep.
 * Search for a node with @a name in the Config node.
-* if @a name is not found the function returns FALSE and @a var is untouched.
+* if @a name is not found, the function returns FALSE and @a var is untouched.
 * @param config The config node which includes the node with the options for this class
 * @param name Tag name in the config.
 * @param[out] var Created class.

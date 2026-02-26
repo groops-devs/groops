@@ -17,7 +17,7 @@
 #ifdef DOCSTRING_CovarianceSst
 static const char *docstringCovarianceSst = R"(
 \section{CovarianceSst}\label{covarianceSstType}
-Provides arc wise covariance matrices for satellite-to-satellite observations SST).
+Provides arc-wise covariance matrices for satellite-to-satellite observations (SST).
 The \configFile{inputfileCovarianceFunction}{matrix} provides a temporal covariance function.
 From it the Toeplitz covariance matrix is constructed
 \begin{equation}

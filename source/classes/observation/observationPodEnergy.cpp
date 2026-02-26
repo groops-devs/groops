@@ -41,7 +41,7 @@ ObservationPodEnergy::ObservationPodEnergy(Config &config)
     readConfig(config, "ephemerides",             ephemerides,         Config::OPTIONAL, "jpl", "");
     readConfig(config, "parametrizationGravity",  parametrization,     Config::MUSTSET,   "",   "gravity field parametrization (potential)");
     readConfig(config, "parametrizationBias",     bias,                Config::MUSTSET,   "",   "unknown total energy per arc");
-    readConfig(config, "interpolationDegree",     interpolationDegree, Config::DEFAULT,   "8",  "orbit differentation  by polynomial approximation of degree n");
+    readConfig(config, "interpolationDegree",     interpolationDegree, Config::DEFAULT,   "8",  "orbit differentiation  by polynomial approximation of degree n");
     readConfig(config, "integrationDegree",       integrationDegree,   Config::DEFAULT,   "7",  "integration of forces by polynomial approximation of degree n");
     readConfig(config, "covariancePod",           covPod,              Config::OPTIONAL,  "",   "covariance matrix of kinematic orbits");
     if(isCreateSchema(config)) return;
