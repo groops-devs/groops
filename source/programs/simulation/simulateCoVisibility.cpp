@@ -70,6 +70,7 @@ void SimulateCoVisibility::run(Config &config, Parallel::CommunicatorPtr comm)
   {
     FileName outName1, orbit1Name, orbit2Name;
     Vector3d OGSpos;
+    Double minElev, maxElev, maxRange;
     EarthRotationPtr earthRotation;
 
     readConfig(config, "outputfileSatelliteTracking",  outName1,        Config::MUSTSET,  "file", "GROOPS co-visibility file");
@@ -78,6 +79,9 @@ void SimulateCoVisibility::run(Config &config, Parallel::CommunicatorPtr comm)
     readConfig(config, "position0x",                   OGSpos.x(),      Config::MUSTSET, "", "[m] in ECEF");
     readConfig(config, "position0y",                   OGSpos.y(),      Config::MUSTSET, "", "[m] in ECEF");
     readConfig(config, "position0z",                   OGSpos.z(),      Config::MUSTSET, "", "[m] in ECEF");
+    readConfig(config, "minElev",                      minElev,         Config::MUSTSET, "", "[deg] mask on horizon");
+    readConfig(config, "maxElev",                      maxElev,         Config::MUSTSET, "", "[deg] mask on zenith");
+    readConfig(config, "maxRange",                     maxRange,        Config::MUSTSET, "", "[m] mask on SAT-OGS range");
     readConfig(config, "earthRotation",                earthRotation,   Config::MUSTSET, "file", "rotate data into Earth-fixed frame");
 
     if(isCreateSchema(config)) return;
@@ -90,8 +94,8 @@ void SimulateCoVisibility::run(Config &config, Parallel::CommunicatorPtr comm)
     InstrumentFile::checkArcCount({orbit1File, orbit2File});
     std::vector<Arc> arcList(orbit1File.arcCount());
 
-    Double theta_th_min = (PI/2-10*DEG2RAD)*RAD2DEG;
-    Double theta_th_max = (PI/2-85*DEG2RAD)*RAD2DEG;
+    Double theta_th_min = (PI/2-minElev*DEG2RAD)*RAD2DEG;
+    Double theta_th_max = (PI/2-maxElev*DEG2RAD)*RAD2DEG;
 
     logInfo<<"  min angle           : "<<theta_th_min<<" degrees"<<Log::endl;
     logInfo<<"  max angle           : "<<theta_th_max<<" degrees"<<Log::endl;
@@ -135,6 +139,7 @@ void SimulateCoVisibility::run(Config &config, Parallel::CommunicatorPtr comm)
        Vector3d vvelocity       = Orbit2_vel     - Orbit1_vel;
        Vector3d vacceleration   = Orbit2_acc     - Orbit1_acc;
 
+       Vector3d los_sat         = vrange/vrange.norm();
        Vector3d vrangeOGS_s1    = Orbit1_pos     - OGSpos;
        Vector3d vrangeOGS_s2    = Orbit2_pos     - OGSpos;
        Vector3d los_OGS_s1      = vrangeOGS_s1/vrangeOGS_s1.norm();
@@ -158,18 +163,21 @@ void SimulateCoVisibility::run(Config &config, Parallel::CommunicatorPtr comm)
       rMatrix(2,1) =   std::sin(B)*std::cos(L);
       rMatrix(2,2) =   std::sin(L);
 
+
       
       SimulateCoVisibilityEpoch epoch;
       epoch.time               = orbit1.at(i).time;
       epoch.range              = vrange.norm();
+      epoch.rangeRateProj      = inner(vvelocity, los_sat);
       epoch.rangeRate          = vvelocity.norm();
       epoch.rangeAcceleration  = vacceleration.norm();
+      
 
 
      // Double relAzimuth1 = std::atan2(inner(Vector3d(rMatrix(0,0), rMatrix(0,1), rMatrix(0,2)) ,los_OGS_s1), 
      //                                 inner(Vector3d(rMatrix(1,0), rMatrix(1,1), rMatrix(1,2)), los_OGS_s1));
       epoch.relAzimuth1 = std::atan2(inner(Vector3d(rMatrix(0,0), rMatrix(0,1), rMatrix(0,2)) ,los_OGS_s1), 
-                                     inner(Vector3d(rMatrix(1,0), rMatrix(1,1), rMatrix(1,2)), los_OGS_s1))*RAD2DEG;
+                                     inner(Vector3d(rMatrix(1,0), rMatrix(1,1), rMatrix(1,2)), los_OGS_s1))*RAD2DEG; // geocentric to ENU 
 
      // Double relAzimuth2 = std::atan2(inner(Vector3d(rMatrix(0,0), rMatrix(0,1), rMatrix(0,2)) ,los_OGS_s2), 
      //                                 inner(Vector3d(rMatrix(1,0), rMatrix(1,1), rMatrix(1,2)), los_OGS_s2));
@@ -177,7 +185,7 @@ void SimulateCoVisibility::run(Config &config, Parallel::CommunicatorPtr comm)
                                      inner(Vector3d(rMatrix(1,0), rMatrix(1,1), rMatrix(1,2)), los_OGS_s2))*RAD2DEG;
 
       
-       // epoch.relElevation      = PI/2 -
+       // epoch.relElevation      = PI/2 -s
        //                            std::acos(inner(vrange, orbit1.at(i).position)/(vrange.norm(), 
        //                            orbit1.at(i).position.norm()));   
 
@@ -186,7 +194,7 @@ void SimulateCoVisibility::run(Config &config, Parallel::CommunicatorPtr comm)
 
         
         
-        if (epoch.relElevation1 < theta_th_min & epoch.relElevation1 > theta_th_max & vrangeOGS_s1.norm() < 30000000) {
+        if (epoch.relElevation1 < theta_th_min & epoch.relElevation1 > theta_th_max & vrangeOGS_s1.norm() < maxRange) {
           // block of code if condition is true
           epoch.coVis1  = 1;
         }
@@ -200,7 +208,7 @@ void SimulateCoVisibility::run(Config &config, Parallel::CommunicatorPtr comm)
                                     OGSpos.norm())))*RAD2DEG;
 
 
-        if (epoch.relElevation2 < theta_th_min & epoch.relElevation2 > theta_th_max & vrangeOGS_s2.norm() < 30000000) {
+        if (epoch.relElevation2 < theta_th_min & epoch.relElevation2 > theta_th_max & vrangeOGS_s2.norm() < maxRange) {
           // block of code if condition is true
           epoch.coVis2  = 1;
         }
@@ -225,6 +233,8 @@ void SimulateCoVisibility::run(Config &config, Parallel::CommunicatorPtr comm)
        // 
         epoch.OGS_s1 = vrangeOGS_s1.norm();
         epoch.OGS_s2 = vrangeOGS_s2.norm();
+
+        epoch.rangeRateProj_OGS_s1      = inner(Orbit1_vel, los_OGS_s1);
         
 
         arc.push_back(epoch);
@@ -243,6 +253,8 @@ void SimulateCoVisibility::run(Config &config, Parallel::CommunicatorPtr comm)
         logInfo<<"  co-visibility   : "<<epoch.coVisTot<<" seconds"<<Log::endl;
         logInfo<<"  OGS Sat1 range  : "<<epoch.OGS_s1<<" km"<<Log::endl;
         logInfo<<"  OGS Sat2 range  : "<<epoch.OGS_s2<<" km"<<Log::endl;
+        logInfo<<"  Projected vel   : "<<epoch.rangeRateProj<<" m/s"<<Log::endl;
+        logInfo<<"  Projected v OGS : "<<epoch.rangeRateProj_OGS_s1<<" m/s"<<Log::endl;
         logInfo<<"  Posx sat1  : "<<Orbit1_pos.x()<<" km"<<Log::endl;
         logInfo<<"  Posy sat1  : "<<Orbit1_pos.y()<<" km"<<Log::endl;
         logInfo<<"  Posz sat1  : "<<Orbit1_pos.z()<<" km"<<Log::endl;
