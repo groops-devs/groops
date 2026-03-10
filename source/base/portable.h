@@ -5,7 +5,7 @@
 * @brief Define standard types.
 *
 * This is important to account for different systems.
-* e.g. 'int' have some times 16 Bit or 32 Bit size.
+* e.g. 'int' have sometimes 16 Bit or 32 Bit size.
 *
 * @author Torsten Mayer-Guerr
 * @date 2004-10-25
@@ -36,7 +36,7 @@
 
 /** @brief Standard types.
 * This is important to account for different systems.
-* e.g. 'int' have some times 16 Bit or 32 Bit size.
+* e.g. 'int' have sometimes 16 Bit or 32 Bit size.
 */
 //@{
 typedef float             Float;
