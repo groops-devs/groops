@@ -713,6 +713,8 @@ class SimulateCoVisibilityEpoch : public Epoch
 public:
   Double range;
   Double rangeRate;
+  Double rangeRateProj;
+  Double rangeRateProj_OGS_s1;
   Double rangeAcceleration;
   Double relElevation1;
   Double relElevation2;
@@ -725,7 +727,7 @@ public:
   Double OGS_s1;
   Double OGS_s2;
 
-  SimulateCoVisibilityEpoch() : range(0), rangeRate(0), rangeAcceleration(0), relElevation1(0), relElevation2(0), relAzimuth1(0), relAzimuth2(0), coVis1(0), coVis2(0), coVis(0), coVisTot(0), OGS_s1(0), OGS_s2(0) {}
+  SimulateCoVisibilityEpoch() : range(0), rangeRate(0), rangeRateProj(0), rangeRateProj_OGS_s1(0), rangeAcceleration(0), relElevation1(0), relElevation2(0), relAzimuth1(0), relAzimuth2(0), coVis1(0), coVis2(0), coVis(0), coVisTot(0), OGS_s1(0), OGS_s2(0) {}
 
   static constexpr Type type = COVISIBILITY;
   virtual Type   getType() const {return type;}
