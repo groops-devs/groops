@@ -75,14 +75,14 @@ Defines the content of a map of <a class="groops-program" href="PlotMap.html">Pl
 </p>
 
 <h2>GriddedData</h2><p>
-Creates a regular grid of yxz values. The standard <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>
+Creates a regular grid of xyz values. The standard <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>
 are available to select the data column of <a class="groops-class" href="fileFormat_griddedData.html">inputfileGriddedData</a>.
 Empty grid cells are not plotted. Cells with more than one value will be set to the mean value.
 The grid spacing can be determined automatically for regular rectangular grids otherwise
 it must be set with <strong class="groops-config-element">increment</strong>. To get a better display together with some projections
 the grid should be internally <strong class="groops-config-element">resample</strong>d to higher resolution.
 It is assumed that the points of <a class="groops-class" href="fileFormat_griddedData.html">inputfileGriddedData</a> represents centers of grid cells.
-This assumption can be changed with <strong class="groops-config-element">gridlineRegistered</strong> (e.g if the data starts at the north pole).
+This assumption can be changed with <strong class="groops-config-element">gridlineRegistered</strong> (e.g. if the data starts at the north pole).
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

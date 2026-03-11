@@ -40,7 +40,7 @@ public:
 
   /** @brief Transformation ellipsoidal coordinates in @a Vector3d.
   * @param L longitude (-PI,PI]
-  * @param B latitude [-PI,PI]
+  * @param B latitude [-PI/2,PI/2]
   * @param h height [m]
   */
   const Vector3d operator()(Angle L, Angle B, Double h) const;
