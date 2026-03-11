@@ -76,14 +76,14 @@ in a least squares adjustment. Additional to the initial satellite state for eac
 <a class="groops-class" href="parametrizationGravityType.html">parametrizationGravity</a>, satellite <a class="groops-class" href="parametrizationAccelerationType.html">parametrizationAcceleration</a>
 and stochastic pulses (velocity jumps) at given times, <a class="groops-class" href="timeSeriesType.html">stochasticPulse</a>. The estimated parameters can be stored with
 <a class="groops-class" href="fileFormat_matrix.html">outputfileSolution</a> and an extra file with the parameter names is created. The fitted orbit is written
-as new reference in <a class="groops-class" href="fileFormat_variationalEquation.html">outputfileVariational</a> and additionally in <a class="groops-class" href="fileFormat_instrument.html">outputfileOrbit</a>.</p><p>The observed orbit positions (<a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>) together with the epoch wise covariance matrix
-(<a class="groops-class" href="fileFormat_instrument.html">inputfileCovariancePodEpoch</a>) must be splitted in the same arcs as the variational equations but not
-necessarily uniform distributed (use irregularData in <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>). An iterative downweighting of
-outliers is performed by M-Huber method.</p><p>The observation equations (parameter sensitity matrix) are computed by integration of the variational equations
+as new reference in <a class="groops-class" href="fileFormat_variationalEquation.html">outputfileVariational</a> and additionally in <a class="groops-class" href="fileFormat_instrument.html">outputfileOrbit</a>.</p><p>The observed orbit positions (<a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>) together with the epoch-wise covariance matrix
+(<a class="groops-class" href="fileFormat_instrument.html">inputfileCovariancePodEpoch</a>) must be split in the same arcs as the variational equations but not
+necessarily uniformly distributed (use irregularData in <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>). An iterative downweighting of
+outliers is performed by M-Huber method.</p><p>The observation equations (parameter sensitivity matrix) are computed by integration of the variational equations
 (<a class="groops-class" href="fileFormat_variationalEquation.html">inputfileVariational</a>) using a polynomial with <strong class="groops-config-element">integrationDegree</strong> and interpolated to the
 observation epochs using a polynomial with <strong class="groops-config-element">interpolationDegree</strong>.</p><p>All parameters used here must be reestimated in the full least squares adjustment
 for the gravity field determination to get a solution which is not biased towards the reference field.
-The solution of additional estimations are relative (deltas) as the parameters are already used as Taylor point
+The solutions of additional estimations are relative (deltas) as the parameters are already used as Taylor point
 in the reference orbit.</p><p>See also <a class="groops-program" href="PreprocessingVariationalEquation.html">PreprocessingVariationalEquation</a>.
 </p>
 <table class="table table-hover">
