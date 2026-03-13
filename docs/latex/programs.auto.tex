@@ -6434,8 +6434,8 @@ This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \subsection{PreprocessingPod}\label{PreprocessingPod}
-This program estimates empirical covariance functions of the instrument noise and determine arc wise variances to
-downweight arc with outliers.
+This program estimates empirical covariance functions of the instrument noise and determines arc-wise variances to
+downweight arcs with outliers.
 
 A complete least squares adjustment for gravity field determination is performed by computing the \config{observation}
 equations, see \configClass{observation:podIntegral}{observationType:podIntegral} or
@@ -6461,9 +6461,9 @@ An additional variance factor can be computed (\config{estimateArcSigmas}) for e
 \begin{equation}
   \hat{\sigma}_k^2 = \frac{\hat{\M e}_k^T\M\Sigma^{-1}\hat{\M e}_k}{r_k},
 \end{equation}
-where $r_k$ is the redundancy. This variance factor should be around one for normal behaving arcs
-as the noise characteristics is already considered by the covariance matrix but bad arcs get a much larger variance.
-By appling this factor bad arcs or arcs with large outliers are downweighted.
+where $r_k$ is the redundancy. This variance factor should be around one for normally behaving arcs
+as the noise characteristics are already considered by the covariance matrix but bad arcs get a much larger variance.
+By applying this factor bad arcs or arcs with large outliers are downweighted.
 
 
 \keepXColumns
@@ -6507,13 +6507,13 @@ Name & Type & Annotation\\
 \hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~accelerateComputation & \hfuzz=500pt boolean & \hfuzz=500pt acceleration of computation by transforming the observations\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~covariancePod & \hfuzz=500pt sequence & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sigma & \hfuzz=500pt double & \hfuzz=500pt apriori factor of covariance function\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileSigmasPerArc & \hfuzz=500pt filename & \hfuzz=500pt apriori different accuaries for each arc (multiplicated with sigma)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileSigmasPerArc & \hfuzz=500pt filename & \hfuzz=500pt apriori different accuracies for each arc (multiplied with sigma)\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileCovarianceFunction & \hfuzz=500pt filename & \hfuzz=500pt approximate covariances in time\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileCovariancePodEpoch & \hfuzz=500pt filename & \hfuzz=500pt 3x3 epoch covariances\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sampling & \hfuzz=500pt double & \hfuzz=500pt [seconds] sampling of the covariance function\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileArcList & \hfuzz=500pt filename & \hfuzz=500pt list to correspond points of time to arc numbers\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~adjustmentThreshold & \hfuzz=500pt double & \hfuzz=500pt Adjustment factor threshold: Iteration will be stopped once both SST and POD adjustment factors are under this threshold\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~iterationCount & \hfuzz=500pt uint & \hfuzz=500pt (maximum) number of iterations for the estimation of calibration parameter and error PSD\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~iterationCount & \hfuzz=500pt uint & \hfuzz=500pt (maximum) number of iterations for the estimation of calibration parameters and error PSD\\
 \hline
 \end{tabularx}
 

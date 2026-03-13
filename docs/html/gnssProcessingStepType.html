@@ -89,13 +89,13 @@ or <a class="groops-ref" href="cookbook.kinematicOrbit.html">Kinematic orbit det
 Iterative non-linear least squares adjustment.
 In every iteration it accumulates the system of normal equations, solves the system and updates the estimated parameters.
 The estimated parameters serve as a priori values in the next iteration and the following processing steps.
-Iterates until either every single parameter update (converted to an influence in meter)
+Iterates until either every single parameter update (converted to an influence in meters)
 is below a <strong class="groops-config-element">convergenceThreshold</strong> or <strong class="groops-config-element">maxIterationCount</strong> is reached.</p><p>With <strong class="groops-config-element">computeResiduals</strong> the observation equations are computed
 again after each update to compute the observation residuals.</p><p>The overall standard deviation of a single observation used for the weighting
 is composed of several factors
 \[
   \hat{\sigma}_i = \hat{\sigma}_i^{huber} \hat{\sigma}_{[\tau\nu a]}^{recv} \sigma_{[\tau\nu a]}^{recv}(E,A),
-\]where $[\tau\nu a]$ is the signal type, the azmiuth and elevation dependent $\sigma_{[\tau\nu a]}^{recv}(E,A)$ is given by
+\]where $[\tau\nu a]$ is the signal type, the azimuth and elevation dependent $\sigma_{[\tau\nu a]}^{recv}(E,A)$ is given by
 <a class="groops-class" href="fileFormat_gnssAntennaDefinition.html">receiver:inputfileAccuracyDefinition</a> and the other factors are
 estimated iteratively from the residuals.</p><p>With <strong class="groops-config-element">computeWeights</strong> a standardized variance $\hat{s}_i^2$
 for each residual $\hat{\epsilon}_i$ is computed
@@ -133,7 +133,9 @@ separately
 Performs a least squares adjustment like <a class="groops-class" href="gnssProcessingStepType.html#estimate">processingStep:estimate</a>
 but with additional integer phase ambiguity resolution.
 After this step all resolved ambiguities are removed from the normal equation system.
-Only ambiguites are resolved with involved <a class="groops-class" href="platformSelectorType.html">selectTransmitters/Receivers</a>.</p><p>Integer ambiguity resolution is performed based on the least squares ambiguity decorrelation adjustment
+Only ambiguities involving <a class="groops-class" href="platformSelectorType.html">selectTransmitters/Receivers</a> are resolved.
+If <a class="groops-class" href="platformSelectorType.html">selectTransmitters/Receivers</a> is not set, all usable transmitters and/or 
+receivers are selected for ambiguity resolution.</p><p>Integer ambiguity resolution is performed based on the least squares ambiguity decorrelation adjustment
 (LAMBDA) method (Teunissen 1995, DOI <a href="https://doi.org/10.1007/BF00863419">10.1007/BF00863419</a>), specifically
 the modified algorithm (MLAMBDA) by Chang et al. (2005, DOI <a href="https://doi.org/10.1007/s00190-005-0004-x">10.1007/s00190-005-0004-x</a>).
 First the covariance matrix of the integer ambiguity parameters is computed by eliminating all but those parameters
@@ -179,7 +181,7 @@ It is not the full inverse but only the elements which are set in the normal mat
 (see  <a class="groops-class" href="gnssProcessingStepType.html#selectNormalsBlockStructure">gnssProcessingStep:selectNormalsBlockStructure</a>)
 are computed. The matrix is passed to the <a class="groops-class" href="gnssParametrizationType.html">parametrizations</a>.
 Only used in <a class="groops-class" href="gnssParametrizationType.html#kinematicPositions">parametrizations:kinematicPositions</a>
-to get the epoch wise covariance information at the moment.
+to get the epoch-wise covariance information at the moment.
 </p>
 
 <h2 id="writeResults">WriteResults</h2><p>
@@ -201,7 +203,7 @@ output the float solution.
 Accumulates the normal equations matrix and writes it.
 If <a class="groops-class" href="parameterSelectorType.html">remainingParameters</a>
 is set only the selected parameters are written to the normal equations
-and all other parameters are eliminated beforehand (implicitly solved).</p><p>The solution of the normals would results in $\Delta\M x$
+and all other parameters are eliminated beforehand (implicitly solved).</p><p>The solution of the normals would result in $\Delta\M x$
 (see <a class="groops-class" href="gnssParametrizationType.html">parametrizations</a>). To write the
 appropriate apriori vector $\M x_0$ use
 <a class="groops-class" href="gnssProcessingStepType.html#writeAprioriSolution">processingStep:writeAprioriSolution</a>.
@@ -230,7 +232,7 @@ is set only the selected parameters are written.
 <h2 id="writeResiduals">WriteResiduals</h2><p>
 Writes the <a class="groops-file" href="fileFormat_instrument.html">observation residuals</a> for all
 <a class="groops-class" href="platformSelectorType.html">selectReceivers</a>.
-For for each station a file is written. The file name is interpreted as
+For each station a file is written. The file name is interpreted as
 a template with the variable <code>{station}</code> being replaced by the station name.
 </p>
 <table class="table table-hover">
@@ -359,7 +361,7 @@ and select all stations excluding the core stations in that step.
 
 <h2 id="forEachReceiverSeparately">ForEachReceiverSeparately</h2><p>
 Perform these processing steps for each <a class="groops-class" href="platformSelectorType.html">selectReceivers</a> separately.
-All non-receiver related parameters parameters are disabled in these processing steps (see .</p><p>This step can be used for individual precise point positioning (PPP) of all stations.
+All non-receiver-related parameters parameters are disabled in these processing steps.</p><p>This step can be used for individual precise point positioning (PPP) of all stations.
 During <a class="groops-ref" href="cookbook.gnssNetwork.html#processing">GNSS satellite orbit determination and network analysis</a> this step is used after the
 initial processing of the core network to process all other stations individually. In that case provide the same station list as
 <a class="groops-class" href="fileFormat_stringList.html">inputfileExcludeStationList</a> in this step that was used as <a class="groops-class" href="fileFormat_stringList.html">inputfileStationList</a> in the
@@ -374,8 +376,8 @@ initial processing of the core network to process all other stations individuall
 
 <h2 id="group">Group</h2><p>
 Perform these processing steps. This step can be used to structure complex processing flows.
-The <a class="groops-class" href="gnssProcessingStepType.html#selectParametrizations">select..</a> processing steps
-defined within a group only affect the steps within this group.
+The <a class="groops-class" href="gnssProcessingStepType.html">processingStep</a>s that affect the following steps
+(those beginning with Select) only have an effect until the end of the group.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

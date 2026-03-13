@@ -333,7 +333,7 @@ Name & Type & Annotation\\
 %==================================
 
 \section{CovariancePod}\label{covariancePodType}
-Provides arc wise covariance matrices for precise orbit data.
+Provides arc-wise covariance matrices for precise orbit data.
 Temporal correlations are modeled in the orbit system (along, cross, radial).
 The \configFile{inputfileCovarianceFunction}{matrix} provides temporal covariance functions for each axis.
 From the diagonal matrix for each time step
@@ -350,13 +350,13 @@ the Toeplitz covariance matrix for an arc is constructed
   \end{pmatrix}
 \end{equation}
 
-The epoch wise $3\times3$ covariance matrices given by \configFile{inputfileCovariancePodEpoch}{instrument}
-are eigen value decomposed
+The epoch-wise $3\times3$ covariance matrices given by \configFile{inputfileCovariancePodEpoch}{instrument}
+are eigenvalue-decomposed
 \begin{equation}
   \M C_{3\times3}(t_i) = \M Q \M\Lambda \M Q^T,
 \end{equation}
-where $\M Q$ is an orthgonal matrix and $\M\Lambda$ diagonal.
-This used to split the covariances matrices
+where $\M Q$ is an orthogonal matrix and $\M\Lambda$ diagonal.
+This is used to split the covariances matrices
 \begin{equation}
   \M C_{3\times3}(t_i) = \M D(t_i) \M D(t_i)^T = (\M Q \M\Lambda^{1/2} \M Q^T)(\M Q \M\Lambda^{1/2} \M Q^T)^T,
 \end{equation}
@@ -383,10 +383,10 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~covariancePodType & \hfuzz=500pt sequence & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sigma & \hfuzz=500pt double & \hfuzz=500pt general variance factor\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileSigmasPerArc & \hfuzz=500pt filename & \hfuzz=500pt different accuaries for each arc (multplicated with sigma)\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileSigmasPerEpoch & \hfuzz=500pt filename & \hfuzz=500pt different accuaries for each epoch (added)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileSigmasPerArc & \hfuzz=500pt filename & \hfuzz=500pt different accuracies for each arc (multiplied with sigma)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileSigmasPerEpoch & \hfuzz=500pt filename & \hfuzz=500pt different accuracies for each epoch (added)\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileCovarianceFunction & \hfuzz=500pt filename & \hfuzz=500pt covariances in time for along, cross, and radial direction\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileCovariancePodEpoch & \hfuzz=500pt filename & \hfuzz=500pt 3x3 epoch wise covariances\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileCovariancePodEpoch & \hfuzz=500pt filename & \hfuzz=500pt 3x3 epoch-wise covariances\\
 \hline
 \end{tabularx}
 
@@ -394,7 +394,7 @@ Name & Type & Annotation\\
 %==================================
 
 \section{CovarianceSst}\label{covarianceSstType}
-Provides arc wise covariance matrices for satellite-to-satellite observations SST).
+Provides arc-wise covariance matrices for satellite-to-satellite observations (SST).
 The \configFile{inputfileCovarianceFunction}{matrix} provides a temporal covariance function.
 From it the Toeplitz covariance matrix is constructed
 \begin{equation}
@@ -1465,10 +1465,11 @@ Name & Type & Annotation\\
 
 
 \subsection{Clocks}\label{gnssParametrizationType:clocks}
-Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{platformSelectorType}.
+Clock errors are estimated epoch-wise for each \configClass{selectTransmitters/Receivers}{platformSelectorType}.
 No clock errors are estimated if no valid observations are available (e.g. data gaps in the observations).
 
-These parameters are lineary dependent and would lead to a rank deficiency in the normal equation
+If all transmitters and receivers are selected by \config{selectTransmitters} and \config{selectReceivers} respectively,
+these parameters will be lineary dependent which would lead to a rank deficiency in the normal equation
 matrix. To circumvent this issue, the estimation requires an additional zero-mean constraint added in each epoch.
 This is realized with an additional observation equation
 \begin{equation}
@@ -1500,11 +1501,11 @@ Name & Type & Annotation\\
 
 \subsection{ClocksModel}\label{gnssParametrizationType:clocksModel}
 This parametrization is an alternative to \configClass{parametrization:clocks}{gnssParametrizationType:clocks}.
-Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{platformSelectorType}
+Clock errors are estimated epoch-wise for each \configClass{selectTransmitters/Receivers}{platformSelectorType}
 and, opposed to \configClass{parametrization:clocks}{gnssParametrizationType:clocks}, are also estimated for epochs
 that have no valid observations available (e.g. data gaps).
 
-The clock error of the an epoch can be predicted by the clock error
+The clock error of an epoch can be predicted by the clock error
 of the preceding epoch and an unknown clock drift
 \begin{equation}
   \Delta t_{i+1} = \Delta t_{i} + t_{drift} dt + \epsilon_i.
@@ -1561,11 +1562,11 @@ Each code and phase observation (e.g \verb|C1C| or \verb|L2W|) contains a bias a
 This class provides the apriori model $\M f(\M x_0)$ of eq. \eqref{gnssParametrizationType:model} only.
 
 The \configFile{inputfileSignalBiasTransmitter/Receiver}{gnssSignalBias} are read
-for each receiver and transmitter. The file name is interpreted as a template with
-the variables \verb|{prn}| and \verb|{station}| being replaced by the name.
+for each transmitter and receiver. Those file names are interpreted as a template with
+the variable \verb|{prn}| or \verb|{station}| being replaced by transmitter PRNs or receiver station names, respectively.
 (Infos regarding the variables \verb|{prn}| and \verb|{station}| can be found in
 \configClass{gnssTransmitterGeneratorType}{gnssTransmitterGeneratorType} and
-\configClass{gnssReceiverGeneratorType}{gnssReceiverGeneratorType} respectively). The files can
+\configClass{gnssReceiverGeneratorType}{gnssReceiverGeneratorType} respectively). Those files can
 be converted with \program{GnssSinexBias2SignalBias}.
 
 The estimation of the biases is complex due to different linear dependencies, which
@@ -1575,8 +1576,8 @@ For simplification the parametrization for $\Delta\M x$ has been split into:
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases}, and
 \configClass{parametrization:ambiguities}{gnssParametrizationType:ambiguities} (including phase biases).
 The file handling on the other hand still remains within this class. Any prior
-values for the receiver/transmitter biases are read with the respective \config{inputFileSignalBias}.
-All biases for a receiver/transmitter are accumulated and written to the respective \config{outputFileSignalBias}.
+values for the transmitter/receiver biases are read with the respective \config{inputfileSignalBiasTransmitter/Receiver}.
+All biases for a transmitter/receiver are accumulated and written to the respective \config{outputfileSignalBiasTransmitter/Receiver}.
 
 
 \keepXColumns
@@ -1603,7 +1604,7 @@ Sets up an ambiguity parameter for each track and phase observation type.
 As the phase observations contain a float bias at transmitter/receiver level, not all ambiguities
 are resolvable to integer values. The number of resolvable ambiguities can be increased with
 known phase biases read from file via \configClass{parametrization:signalBiases}{gnssParametrizationType:signalBiases}.
-In this case, \configClass{estimateTransmitter/ReceiverPhaseBiasTransmitter}{platformSelectorType} should
+In this case, \configClass{estimateTransmitter/ReceiverPhaseBias}{platformSelectorType} should
 not be used for the corresponding transmitters and receivers.
 
 In case of GLONASS, the phase biases at receiver level differ between different frequency channels
@@ -1984,7 +1985,7 @@ The \file{parameter names}{parameterName} are
 \item \verb|earth:polarMotion.yp:<temporal>:<interval>|,
 \item \verb|earth:UT1:<temporal>:<interval>|,
 \item \verb|earth:nutation.X:<temporal>:<interval>|,
-\item \verb|earth:nutation.>:<temporal>:<interval>|.
+\item \verb|earth:nutation.Y:<temporal>:<interval>|.
 \end{itemize}
 
 
@@ -2011,7 +2012,7 @@ The amount of patterns to be estimated is configurable with a list of \configCla
 For each added \configClass{patternTypes}{gnssType} a set of parameters will be evaluated. The observations
 will be assigned to the first \configClass{patternTypes}{gnssType} that matches their own.
 E.g. having the patterns: \verb|***G| and \verb|L1*| would lead to all GPS observations be assigned
-to the observation equations of the first pattern. The patterntype \verb|L1*| would then consist
+to the observation equations of the first pattern. The pattern type \verb|L1*| would then consist
 of all other GNSS L1 phase observations. \config{addNonMatchingTypes} will, if activated, create automatically patterns
 for \configClass{observations}{gnssType} that are not selected within the list \configClass{patternTypes}{gnssType}.
 Furthermore, it is possible to group same antenna build types from different receivers by \config{groupAntennas}.
@@ -2158,7 +2159,7 @@ or \reference{Kinematic orbit determination of LEO satellites}{cookbook.kinemati
 Iterative non-linear least squares adjustment.
 In every iteration it accumulates the system of normal equations, solves the system and updates the estimated parameters.
 The estimated parameters serve as a priori values in the next iteration and the following processing steps.
-Iterates until either every single parameter update (converted to an influence in meter)
+Iterates until either every single parameter update (converted to an influence in meters)
 is below a \config{convergenceThreshold} or \config{maxIterationCount} is reached.
 
 With \config{computeResiduals} the observation equations are computed
@@ -2169,7 +2170,7 @@ is composed of several factors
 \begin{equation}
   \hat{\sigma}_i = \hat{\sigma}_i^{huber} \hat{\sigma}_{[\tau\nu a]}^{recv} \sigma_{[\tau\nu a]}^{recv}(E,A),
 \end{equation}
-where $[\tau\nu a]$ is the signal type, the azmiuth and elevation dependent $\sigma_{[\tau\nu a]}^{recv}(E,A)$ is given by
+where $[\tau\nu a]$ is the signal type, the azimuth and elevation dependent $\sigma_{[\tau\nu a]}^{recv}(E,A)$ is given by
 \configFile{receiver:inputfileAccuracyDefinition}{gnssAntennaDefinition} and the other factors are
 estimated iteratively from the residuals.
 
@@ -2220,7 +2221,9 @@ Name & Type & Annotation\\
 Performs a least squares adjustment like \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}
 but with additional integer phase ambiguity resolution.
 After this step all resolved ambiguities are removed from the normal equation system.
-Only ambiguites are resolved with involved \configClass{selectTransmitters/Receivers}{platformSelectorType}.
+Only ambiguities involving \configClass{selectTransmitters/Receivers}{platformSelectorType} are resolved.
+If \configClass{selectTransmitters/Receivers}{platformSelectorType} is not set, all usable transmitters and/or 
+receivers are selected for ambiguity resolution.
 
 Integer ambiguity resolution is performed based on the least squares ambiguity decorrelation adjustment
 (LAMBDA) method (Teunissen 1995, DOI \href{https://doi.org/10.1007/BF00863419}{10.1007/BF00863419}), specifically
@@ -2278,7 +2281,7 @@ It is not the full inverse but only the elements which are set in the normal mat
 (see  \configClass{gnssProcessingStep:selectNormalsBlockStructure}{gnssProcessingStepType:selectNormalsBlockStructure})
 are computed. The matrix is passed to the \configClass{parametrizations}{gnssParametrizationType}.
 Only used in \configClass{parametrizations:kinematicPositions}{gnssParametrizationType:kinematicPositions}
-to get the epoch wise covariance information at the moment.
+to get the epoch-wise covariance information at the moment.
 
 
 \subsection{WriteResults}\label{gnssProcessingStepType:writeResults}
@@ -2310,7 +2313,7 @@ If \configClass{remainingParameters}{parameterSelectorType}
 is set only the selected parameters are written to the normal equations
 and all other parameters are eliminated beforehand (implicitly solved).
 
-The solution of the normals would results in $\Delta\M x$
+The solution of the normals would result in $\Delta\M x$
 (see \configClass{parametrizations}{gnssParametrizationType}). To write the
 appropriate apriori vector $\M x_0$ use
 \configClass{processingStep:writeAprioriSolution}{gnssProcessingStepType:writeAprioriSolution}.
@@ -2351,7 +2354,7 @@ Name & Type & Annotation\\
 \subsection{WriteResiduals}\label{gnssProcessingStepType:writeResiduals}
 Writes the \file{observation residuals}{instrument} for all
 \configClass{selectReceivers}{platformSelectorType}.
-For for each station a file is written. The file name is interpreted as
+For each station a file is written. The file name is interpreted as
 a template with the variable \verb|{station}| being replaced by the station name.
 
 
@@ -2532,7 +2535,7 @@ Name & Type & Annotation\\
 
 \subsection{ForEachReceiverSeparately}\label{gnssProcessingStepType:forEachReceiverSeparately}
 Perform these processing steps for each \configClass{selectReceivers}{platformSelectorType} separately.
-All non-receiver related parameters parameters are disabled in these processing steps (see .
+All non-receiver-related parameters parameters are disabled in these processing steps.
 
 This step can be used for individual precise point positioning (PPP) of all stations.
 During \reference{GNSS satellite orbit determination and network analysis}{cookbook.gnssNetwork:processing} this step is used after the
@@ -2555,8 +2558,8 @@ Name & Type & Annotation\\
 
 \subsection{Group}\label{gnssProcessingStepType:group}
 Perform these processing steps. This step can be used to structure complex processing flows.
-The \configClass{select..}{gnssProcessingStepType:selectParametrizations} processing steps
-defined within a group only affect the steps within this group.
+The \configClass{processingStep}{gnssProcessingStepType}s that affect the following steps
+(those beginning with Select) only have an effect until the end of the group.
 
 
 \keepXColumns
@@ -2738,8 +2741,8 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~denoisingLambda & \hfuzz=500pt double & \hfuzz=500pt regularization parameter for total variation denoising used in cylce slip detection\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~tecWindowSize & \hfuzz=500pt uint & \hfuzz=500pt (0 = disabled) window size for TEC smoothness evaluation used in cycle slip detection\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~tecSigmaFactor & \hfuzz=500pt double & \hfuzz=500pt factor applied to moving standard deviation used as threshold in TEC smoothness evaluation during cycle slip detection\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileTrackBefore & \hfuzz=500pt filename & \hfuzz=500pt variables \{station\}, \{prn\}, \{timeStart\}, \{timeEnd\}, \{types\}, TEC and MW-like combinations in cycles for each track before cycle slip detection\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileTrackAfter & \hfuzz=500pt filename & \hfuzz=500pt variables \{station\}, \{prn\}, \{timeStart\}, \{timeEnd\}, \{types\}, TEC and MW-like combinations in cycles for each track after cycle slip detection\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileTrackBefore & \hfuzz=500pt filename & \hfuzz=500pt variables \{station\}, \{prn\}, \{trackTimeStart\}, \{trackTimeEnd\}, \{types\}, TEC and MW-like combinations in cycles for each track before cycle slip detection\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileTrackAfter & \hfuzz=500pt filename & \hfuzz=500pt variables \{station\}, \{prn\}, \{trackTimeStart\}, \{trackTimeEnd\}, \{types\}, TEC and MW-like combinations in cycles for each track after cycle slip detection\\
 \hline
 \end{tabularx}
 
@@ -4650,7 +4653,7 @@ Both files are optional and if not specified, the respective effect on the accel
 The \config{factorEarthRadation} can be used to scale the computed acceleration of the earth radiation.
 
 The thermal radiation (TRP) of the satellite itself is either computed as direct re-emission or
-based on the actual temperature of the satellite surfaces, depending on the seetings of the
+based on the actual temperature of the satellite surfaces, depending on the setings of the
 \file{satellite macro model}{satelliteModel}. The second one uses a transient temperature model
 with a temporal differential equation which disallows parallel computing.
 The \config{factorThermalRadiation} can be used to scale the computed acceleration of the TRP.
@@ -5092,20 +5095,20 @@ Name & Type & Annotation\\
 %==================================
 
 \section{Observation}\label{observationType}
-This class set up the oberservation equations in linearized Gauss-Makoff model
+This class sets up the observation equations in linearized Gauss-Markov model
 \begin{equation}\label{gmm}
 \M l  = \M A \M x + \M e\qquad\text{and}\qquad\mathcal{C}(\M e) = \sigma^2\M P^{-1}.
 \end{equation}
-The observations are divided into short data blocks which can computed independently
-and so easily can be parallelized. Usually this data blocks are short arcs of a
-satellites orbit. In most cases the unknown parameter vector contains coefficients
+The observations are divided into short data blocks which can be computed independently
+and so easily can be parallelized. Usually these data blocks are short arcs of a
+satellite's orbit. In most cases the unknown parameter vector contains coefficients
 of a gravity field parametrization given by \configClass{parametrizationGravity}{parametrizationGravityType}.
-Additional parameters like instrument calibrations parameters are appended at the
+Additional parameters like instrument calibration parameters are appended at the
 end of the vector~$\M x$.
 It is possible to give several observation vectors in one model.
 
 The observations within each arc are decorrelated in the following way:
-In a first step a cholesky decomposition of the covariance matrix is performed
+In a first step a Cholesky decomposition of the covariance matrix is performed
 \begin{equation}
 \M P^{-1} = \M W^T\M W,
 \end{equation}
@@ -5120,7 +5123,7 @@ gives an estimation from decorrelated observations with equal variance
 \qquad\text{and}\qquad
 \mathcal{C}(\bar{\M e})= \sigma^2 \M I.
 \end{equation}
-Usually the arc depending parameters are eliminated in the next step
+Usually the arc dependent parameters are eliminated in the next step
 and not mentioned for the parameter names in the following.
 
 
@@ -5130,7 +5133,7 @@ It is based on \file{inputfileVariational}{variationalEquation} calculated with 
 Necessary integrations are performed by integrating a moving interpolation polynomial of degree \config{integrationDegree}.
 
 The kinematic positions as pseudo observations are taken from
-\config{rightHandSide} and should not given equally spaced in time. The observation
+\config{rightHandSide} and should not be given equally spaced in time. The observation
 equations are interpolated to these times by a moving polynomial of degree \config{interpolationDegree}.
 
 The accuracy or the full covariance matrix of the precise orbit data is provided in
@@ -5154,8 +5157,8 @@ can be used to transform the observation equations
   \begin{pmatrix} \M Q_1^T \M R \\ \M 0 \end{pmatrix} \M A \M x +
   \begin{pmatrix} \M Q_1^T \M e \\ \M Q_2^T \M e \end{pmatrix}.
 \end{equation}
-As the zero lines should not be considered the computational time for the accumulation is reduced.
-This option is not meaningful for evaluating the residuals such in \program{PreprocessingPod}.
+As the zero lines should not be considered, the computational time for the accumulation is reduced.
+This option is not meaningful for evaluating the residuals such as in \program{PreprocessingPod}.
 
 The following parameters with \file{parameter names}{parameterName} are set up:
 \begin{itemize}
@@ -5329,11 +5332,11 @@ The observation equations for precise orbit data (POD) are given by
   - \int_{t_0}^t \M g_0 \cdot\dot{\M r}'\,dt
   = V + E.
 \end{equation}
-where the velocities of the satellite $\ddot{\M r}(t)$ are derived from
+where the velocities of the satellite $\dot{\M r}(t)$ are derived from
 the kinematic positions in \configClass{rightHandSide}{podRightSideType} and the Earth's rotation vector~$\M\Omega(t)$ is modeled
-within \configClass{earthRotation}{earthRotationType}. The orbit differentation is
+within \configClass{earthRotation}{earthRotationType}. The orbit differentiation is
 performed by a polynomial interpolation with degree \config{interpolationDegree}.
-The integrals are solved a polynomial interpolation with degree \config{integrationDegree}.
+The integrals are solved by a polynomial interpolation with degree \config{integrationDegree}.
 The reference forces $\M g_0(t)$ are computed with the background models in \configClass{rightHandSide}{podRightSideType}.
 
 All instrument data \configFile{inputfileOrbit}{instrument}, \configFile{inputfileStarCamera}{instrument}, and \configFile{inputfileAccelerometer}{instrument}
@@ -5368,7 +5371,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrizationGravity & \hfuzz=500pt \hyperref[parametrizationGravityType]{parametrizationGravity} & \hfuzz=500pt gravity field parametrization (potential)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrizationBias & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt unknown total energy per arc\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt orbit differentation  by polynomial approximation of degree n\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt orbit differentiation  by polynomial approximation of degree n\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~integrationDegree & \hfuzz=500pt uint & \hfuzz=500pt integration of forces by polynomial approximation of degree n\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~covariancePod & \hfuzz=500pt \hyperref[covariancePodType]{covariancePod} & \hfuzz=500pt covariance matrix of kinematic orbits\\
 \hline
@@ -5379,9 +5382,9 @@ Name & Type & Annotation\\
 Like \configClass{observation:podVariational}{observationType:podVariational} (see there for details)
 but with two satellites and additional satellite-to-satellite (SST) observations.
 
-If multiple \configFile{inputfileSatelliteTracking}{instrument} are given
-all data are add together. So corrections in extra files like the light time correction
-can easily be added. Empirical parameters for the SST observations can be setup with
+If multiple \configFile{inputfileSatelliteTracking}{instrument} are given,
+all data are added together. So corrections in extra files like the light time correction
+can easily be added. Empirical parameters for the SST observations can be set up with
 \configClass{parametrizationSst}{parametrizationSatelliteTrackingType}.
 The accuracy or the full covariance matrix of SST is provided in
 \configClass{covarianceSst}{covarianceSstType}.
@@ -5443,8 +5446,8 @@ Like \configClass{observation:podIntegral}{observationType:podIntegral} (see the
 but with two satellites and additional satellite-to-satellite (SST) observations.
 
 If multiple \configFile{inputfileSatelliteTracking}{instrument} are given
-all data are add together. So corrections in extra files like the light time correction
-can easily be added. Empirical parameters for the SST observations can be setup with
+all data are added together. So corrections in extra files like the light time correction
+can easily be added. Empirical parameters for the SST observations can be set up with
 \configClass{parametrizationSst}{parametrizationSatelliteTrackingType}.
 The accuracy or the full covariance matrix of SST is provided in
 \configClass{covarianceSst}{covarianceSstType}.
@@ -5513,13 +5516,13 @@ but with two simultaneous satellite-to-satellite (SST) observations.
 
 This class reads two SST observation files (\configFile{inputfileSatelliteTracking1}{instrument} and
 \configFile{inputfileSatelliteTracking2}{instrument}).
-Empirical parameters for the SST observations can be setup independently for both SST observation
+Empirical parameters for the SST observations can be set up independently for both SST observation
 types with \configClass{parametrizationSst1}{parametrizationSatelliteTrackingType} and
 \configClass{parametrizationSst2}{parametrizationSatelliteTrackingType}.
 
 Both SST observation types are reduced by the same background models and the same impact
 of accelerometer measurements. The covariance matrix of the reduced observations should not consider
-the the instrument noise only (\configClass{covarianceSst1/2}{covarianceSstType}) but must
+the instrument noise only (\configClass{covarianceSst1/2}{covarianceSstType}) but must
 take the cross correlations \configClass{covarianceAcc}{covarianceSstType} into account.
 The covariance matrix of the reduced observations is given by
 \begin{equation}
@@ -5917,11 +5920,11 @@ Name & Type & Annotation\\
 %==================================
 
 \section{ParameterNames}\label{parameterNamesType}
-Generate a list of parameter names. All parameters are appended.
+Generates a list of parameter names. All parameters are appended.
 
 
 \subsection{Name}
-The parameter is given by explicitly by four parts:
+The parameter is given explicitly by four parts:
 \begin{enumerate}
 \item object: Object this parameter refers to, e.g. \verb|graceA|, \verb|G023|, \verb|earth|, \ldots
 \item type: Type of this parameter, e.g. \verb|accBias|, \verb|position.x|, \ldots
@@ -9355,7 +9358,7 @@ Name & Type & Annotation\\
 
 
 \subsection{Monthly}
-If \config{monthMiddle} is set, time points are generated at mid of each month inclusively
+If \config{useMonthMiddle} is set, time points are generated at mid of each month inclusively
 the \config{monthStart} in \config{yearStart} and \config{monthEnd} in \config{yearEnd}.
 Otherwise times are given at the first of each month and a time point after the last month.
 
@@ -9375,7 +9378,7 @@ Name & Type & Annotation\\
 
 
 \subsection{Yearly}
-If \config{yearMiddle} is set, time points are generated at mid of each year inclusively \config{yearStart}
+If \config{useYearMiddle} is set, time points are generated at mid of each year inclusively \config{yearStart}
 and \config{yearEnd}. Otherwise times are given at the first of each year and a time point after the last year.
 
 
@@ -9437,8 +9440,8 @@ starting from \config{timeStart} and before \config{timeEnd}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt exclude peochs before this epoch\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt only epochs before this time are used\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt inclusive, i.e. exclude eochs before this epoch\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt exclusive, i.e. only epochs before this time are used\\
 \hline
 \end{tabularx}
 
@@ -9471,7 +9474,7 @@ starting from \config{timeStart} and before \config{timeEnd}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt exclude peochs before this epoch\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt exclude eochs before this epoch\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt only epochs before this time are used\\
 \hline
 \end{tabularx}

@@ -214,8 +214,9 @@ To account for signal biases add
 </table>
 
 <h2 id="clocks">Clocks</h2><p>
-Clock errors are estimated epoch-wise for each <a class="groops-class" href="platformSelectorType.html">selectTransmitter/Receiver</a>.
-No clock errors are estimated if no valid observations are available (e.g. data gaps in the observations).</p><p>These parameters are lineary dependent and would lead to a rank deficiency in the normal equation
+Clock errors are estimated epoch-wise for each <a class="groops-class" href="platformSelectorType.html">selectTransmitters/Receivers</a>.
+No clock errors are estimated if no valid observations are available (e.g. data gaps in the observations).</p><p>If all transmitters and receivers are selected by <strong class="groops-config-element">selectTransmitters</strong> and <strong class="groops-config-element">selectReceivers</strong> respectively,
+these parameters will be lineary dependent which would lead to a rank deficiency in the normal equation
 matrix. To circumvent this issue, the estimation requires an additional zero-mean constraint added in each epoch.
 This is realized with an additional observation equation
 \[
@@ -238,9 +239,9 @@ with a standard deviation of <strong class="groops-config-element">sigmaZeroMean
 
 <h2 id="clocksModel">ClocksModel</h2><p>
 This parametrization is an alternative to <a class="groops-class" href="gnssParametrizationType.html#clocks">parametrization:clocks</a>.
-Clock errors are estimated epoch-wise for each <a class="groops-class" href="platformSelectorType.html">selectTransmitter/Receiver</a>
+Clock errors are estimated epoch-wise for each <a class="groops-class" href="platformSelectorType.html">selectTransmitters/Receivers</a>
 and, opposed to <a class="groops-class" href="gnssParametrizationType.html#clocks">parametrization:clocks</a>, are also estimated for epochs
-that have no valid observations available (e.g. data gaps).</p><p>The clock error of the an epoch can be predicted by the clock error
+that have no valid observations available (e.g. data gaps).</p><p>The clock error of an epoch can be predicted by the clock error
 of the preceding epoch and an unknown clock drift
 \[
   \Delta t_{i+1} = \Delta t_{i} + t_{drift} dt + \epsilon_i.
@@ -281,11 +282,11 @@ Each code and phase observation (e.g <code>C1C</code> or <code>L2W</code>) conta
 \[
   [\tau\nu a]_r^s(t) = \dots + \text{bias}[\tau\nu a]^s + \text{bias}[\tau\nu a]_r + \dots
 \]This class provides the apriori model $\M f(\M x_0)$ of eq. \eqref{gnssParametrizationType:model} only.</p><p>The <a class="groops-class" href="fileFormat_gnssSignalBias.html">inputfileSignalBiasTransmitter/Receiver</a> are read
-for each receiver and transmitter. The file name is interpreted as a template with
-the variables <code>{prn}</code> and <code>{station}</code> being replaced by the name.
+for each transmitter and receiver. Those file names are interpreted as a template with
+the variable <code>{prn}</code> or <code>{station}</code> being replaced by transmitter PRNs or receiver station names, respectively.
 (Infos regarding the variables <code>{prn}</code> and <code>{station}</code> can be found in
 <a class="groops-class" href="gnssTransmitterGeneratorType.html">gnssTransmitterGeneratorType</a> and
-<a class="groops-class" href="gnssReceiverGeneratorType.html">gnssReceiverGeneratorType</a> respectively). The files can
+<a class="groops-class" href="gnssReceiverGeneratorType.html">gnssReceiverGeneratorType</a> respectively). Those files can
 be converted with <a class="groops-program" href="GnssSinexBias2SignalBias.html">GnssSinexBias2SignalBias</a>.</p><p>The estimation of the biases is complex due to different linear dependencies, which
 result in rank deficiencies in the system of normal equations.
 For simplification the parametrization for $\Delta\M x$ has been split into:
@@ -293,8 +294,8 @@ For simplification the parametrization for $\Delta\M x$ has been split into:
 <a class="groops-class" href="gnssParametrizationType.html#tecBiases">parametrization:tecBiases</a>, and
 <a class="groops-class" href="gnssParametrizationType.html#ambiguities">parametrization:ambiguities</a> (including phase biases).
 The file handling on the other hand still remains within this class. Any prior
-values for the receiver/transmitter biases are read with the respective <strong class="groops-config-element">inputFileSignalBias</strong>.
-All biases for a receiver/transmitter are accumulated and written to the respective <strong class="groops-config-element">outputFileSignalBias</strong>.
+values for the transmitter/receiver biases are read with the respective <strong class="groops-config-element">inputfileSignalBiasTransmitter/Receiver</strong>.
+All biases for a transmitter/receiver are accumulated and written to the respective <strong class="groops-config-element">outputfileSignalBiasTransmitter/Receiver</strong>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -314,7 +315,7 @@ Sets up an ambiguity parameter for each track and phase observation type.
 \]As the phase observations contain a float bias at transmitter/receiver level, not all ambiguities
 are resolvable to integer values. The number of resolvable ambiguities can be increased with
 known phase biases read from file via <a class="groops-class" href="gnssParametrizationType.html#signalBiases">parametrization:signalBiases</a>.
-In this case, <a class="groops-class" href="platformSelectorType.html">estimateTransmitter/ReceiverPhaseBiasTransmitter</a> should
+In this case, <a class="groops-class" href="platformSelectorType.html">estimateTransmitter/ReceiverPhaseBias</a> should
 not be used for the corresponding transmitters and receivers.</p><p>In case of GLONASS, the phase biases at receiver level differ between different frequency channels
 (frequency division multiple access, FDMA) and for each channel an extra float phase bias is estimated.
 With <strong class="groops-config-element">linearGlonassBias</strong> a linear relationship between bias and frequency channel is assumed,
@@ -619,7 +620,7 @@ determined by GNSS, a hard constraint to its a priori value can then be added.</
 </li><li>
 <code>earth:nutation.X:&lt;temporal>:&lt;interval></code>,
 </li><li>
-<code>earth:nutation.>:&lt;temporal>:&lt;interval></code>.
+<code>earth:nutation.Y:&lt;temporal>:&lt;interval></code>.
 </li></ul>
 
 </p>
@@ -639,7 +640,7 @@ The receivers to be estimated can be selected by <a class="groops-class" href="p
 For each added <a class="groops-class" href="gnssType.html">patternTypes</a> a set of parameters will be evaluated. The observations
 will be assigned to the first <a class="groops-class" href="gnssType.html">patternTypes</a> that matches their own.
 E.g. having the patterns: <code>***G</code> and <code>L1*</code> would lead to all GPS observations be assigned
-to the observation equations of the first pattern. The patterntype <code>L1*</code> would then consist
+to the observation equations of the first pattern. The pattern type <code>L1*</code> would then consist
 of all other GNSS L1 phase observations. <strong class="groops-config-element">addNonMatchingTypes</strong> will, if activated, create automatically patterns
 for <a class="groops-class" href="gnssType.html">observations</a> that are not selected within the list <a class="groops-class" href="gnssType.html">patternTypes</a>.
 Furthermore, it is possible to group same antenna build types from different receivers by <strong class="groops-config-element">groupAntennas</strong>.

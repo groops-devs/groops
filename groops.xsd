@@ -270,12 +270,12 @@
 			</xs:element>
 			<xs:element name="inputfileSigmasPerArc" type="filename" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>different accuaries for each arc (multplicated with sigma)</xs:documentation>
+					<xs:documentation>different accuracies for each arc (multiplied with sigma)</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="inputfileSigmasPerEpoch" type="filename" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>different accuaries for each epoch (added)</xs:documentation>
+					<xs:documentation>different accuracies for each epoch (added)</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="inputfileCovarianceFunction" type="filename" minOccurs="0">
@@ -285,7 +285,7 @@
 			</xs:element>
 			<xs:element name="inputfileCovariancePodEpoch" type="filename" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>3x3 epoch wise covariances</xs:documentation>
+					<xs:documentation>3x3 epoch-wise covariances</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -3085,12 +3085,12 @@
 									</xs:element>
 									<xs:element name="outputfileTrackBefore" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track before cycle slip detection</xs:documentation>
+											<xs:documentation>variables {station}, {prn}, {trackTimeStart}, {trackTimeEnd}, {types}, TEC and MW-like combinations in cycles for each track before cycle slip detection</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="outputfileTrackAfter" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track after cycle slip detection</xs:documentation>
+											<xs:documentation>variables {station}, {prn}, {trackTimeStart}, {trackTimeEnd}, {types}, TEC and MW-like combinations in cycles for each track after cycle slip detection</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 								</xs:sequence>
@@ -5923,7 +5923,7 @@
 						</xs:element>
 						<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="8">
 							<xs:annotation>
-								<xs:documentation>orbit differentation  by polynomial approximation of degree n</xs:documentation>
+								<xs:documentation>orbit differentiation  by polynomial approximation of degree n</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="integrationDegree" type="uint" minOccurs="0" default="7">
@@ -10692,12 +10692,12 @@
 						<xs:element name="inputfileInstrument" type="filename"/>
 						<xs:element name="timeStart" type="time" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>exclude peochs before this epoch</xs:documentation>
+								<xs:documentation>inclusive, i.e. exclude eochs before this epoch</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="timeEnd" type="time" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>only epochs before this time are used</xs:documentation>
+								<xs:documentation>exclusive, i.e. only epochs before this time are used</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -10726,7 +10726,7 @@
 						<xs:element name="inputfileOrbit" type="filename"/>
 						<xs:element name="timeStart" type="time" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>exclude peochs before this epoch</xs:documentation>
+								<xs:documentation>exclude eochs before this epoch</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="timeEnd" type="time" minOccurs="0">
@@ -19700,7 +19700,7 @@
 									</xs:element>
 									<xs:element name="inputfileSigmasPerArc" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>apriori different accuaries for each arc (multiplicated with sigma)</xs:documentation>
+											<xs:documentation>apriori different accuracies for each arc (multiplied with sigma)</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="inputfileCovarianceFunction" type="filename" minOccurs="0">
@@ -19733,7 +19733,7 @@
 						</xs:element>
 						<xs:element name="iterationCount" type="uint" minOccurs="0" default="3">
 							<xs:annotation>
-								<xs:documentation>(maximum) number of iterations for the estimation of calibration parameter and error PSD</xs:documentation>
+								<xs:documentation>(maximum) number of iterations for the estimation of calibration parameters and error PSD</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
