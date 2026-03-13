@@ -7605,6 +7605,34 @@ This program is \reference{parallelized}{general.parallelization}.
 \clearpage
 %==================================
 \section{Programs: Conversion}
+\subsection{Accelerometer2GraceL1b}\label{Accelerometer2GraceL1b}
+This program converts accelerometer data from the \file{instrument file (ACCELEROMETER)}{instrument}
+format into GRACE SDS format.
+
+The text file \config{inputfileHeader} is placed at the beginning of the \config{outputfile}.
+The \reference{text parser}{general.parser:text} is applied so that all variables can be used.
+In addition, the times of the data are available with the variables \verb|{epochmin}|, \verb|{epochmax}|,
+and \verb|{epochcount}|.
+
+See also \program{GraceL1b2Accelerometer}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfile & \hfuzz=500pt filename & \hfuzz=500pt ACT1B\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileHeader & \hfuzz=500pt filename & \hfuzz=500pt YAML Header, \{epochmin\}, \{epochmax\}, \{epochcount\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt ACCELEROMETER\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAngularAccelerometer & \hfuzz=500pt filename & \hfuzz=500pt ACCELEROMETER\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileFlags & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES(qualflg, acl\_res.x, acl\_res.y, acl\_res.z)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~satelliteId & \hfuzz=500pt string & \hfuzz=500pt A, B, C or D\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{BerneseKinematic2Orbit}\label{BerneseKinematic2Orbit}
 Read kinematic orbits in Bernese format.
 
@@ -9506,6 +9534,35 @@ Name & Type & Annotation\\
 
 \clearpage
 %==================================
+\subsection{Orbit2GraceL1b}\label{Orbit2GraceL1b}
+This program converts an \file{instrument file (ORBIT)}{instrument} specified in the celestial reference frame (CRF)
+to the GRACE/GRACE-FO SDS format (GNV1B, GNI1B). If \configClass{earthRotation}{earthRotationType} is provided,
+the orbit is rotated into the terrestrial reference frame as required for the GNV1B product; otherwise,
+a GNI1B product is written.
+
+The text file \config{inputfileHeader} is placed at the beginning of the \config{outputfile}.
+The \reference{text parser}{general.parser:text} is applied so that all variables can be used.
+In addition, the times of the data are available with the variables \verb|{epochmin}|, \verb|{epochmax}|,
+and \verb|{epochcount}|.
+
+See also \program{GraceL1b2Orbit}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfile & \hfuzz=500pt filename & \hfuzz=500pt GNV1B/GNI1B\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileHeader & \hfuzz=500pt filename & \hfuzz=500pt YAML Header, \{epochmin\}, \{epochmax\}, \{epochcount\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~satelliteId & \hfuzz=500pt string & \hfuzz=500pt A, B, C or D\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt rotation into Earth fixed frame\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
 \subsection{Orbit2GroopsAscii}\label{Orbit2GroopsAscii}
 Convert groops orbits and corresponding covariance information to ASCII format.
 The format is used to publish TUG orbits. It contains a two line header
@@ -9691,6 +9748,38 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{SatelliteTracking2GraceL1b}\label{SatelliteTracking2GraceL1b}
+This program converts low-low satellite tracking data (KBR or LRI) from
+the GROOPS format \file{instrument file (SATELLITETRACKING)}{instrument}
+to the GRACE SDS format (KBR1B or LRI1B).
+It reads the satellite tracking data and optionally corrections
+(antenna offsets and light time corrections) and flags into one \config{outputfile}.
+
+The text file \config{inputfileHeader} is placed at the beginning of the \config{outputfile}.
+The \reference{text parser}{general.parser:text} is applied so that all variables can be used.
+In addition, the times of the data are available with the variables \verb|{epochmin}|, \verb|{epochmax}|,
+and \verb|{epochcount}|.
+
+See also \program{GraceL1b2SatelliteTracking}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfile & \hfuzz=500pt filename & \hfuzz=500pt KBR1B or LRI1B\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileHeader & \hfuzz=500pt filename & \hfuzz=500pt YAML Header, \{epochmin\}, \{epochmax\}, \{epochcount\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSatelliteTracking & \hfuzz=500pt filename & \hfuzz=500pt SATELLITETRACKING\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileIonoCorr & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUE\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileLighttime & \hfuzz=500pt filename & \hfuzz=500pt SATELLITETRACKING\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileAntCentr & \hfuzz=500pt filename & \hfuzz=500pt SATELLITETRACKING\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSNR & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES(K\_A\_SNR, Ka\_A\_SNR, K\_B\_SNR, Ka\_B\_SNR, qualflg)\\
 \hline
 \end{tabularx}
 
@@ -9962,6 +10051,37 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~earthRotation & \hfuzz=500pt \hyperref[earthRotationType]{earthRotation} & \hfuzz=500pt rotation from TRF to CRF\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~gravityfield & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt degree 1 fluid mantle for CM2CE correction (SP3 orbits should be in center of Earth)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt orbits in SP3 format\\
+\hline
+\end{tabularx}
+
+\clearpage
+%==================================
+\subsection{StarCamera2GraceL1b}\label{StarCamera2GraceL1b}
+This program converts orientation data measured by a star camera (SRF to CRF)
+from the GROOPS format \file{instrument file (STARCAMERA)}{instrument} to the GRACE SDS format (SCA1B).
+
+It reads one \config{inputfileStarCamera} and optionally one
+\config{inputfileStarCameraFlags} containing \file{MISCVALUES}{instrument}(sca\_id, qual\_rss, qualflg),
+and writes one SDS output file.
+
+The text file \config{inputfileHeader} is placed at the beginning of the \config{outputfile}.
+The \reference{text parser}{general.parser:text} is applied so that all variables can be used.
+In addition, the times of the data are available with the variables \verb|{epochmin}|, |\verb|{epochmax}|,
+and \verb|{epochcount}|.
+
+See also \program{GraceL1b2StarCamera}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfile & \hfuzz=500pt filename & \hfuzz=500pt SCA1B\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileHeader & \hfuzz=500pt filename & \hfuzz=500pt YAML Header, \{epochmin\}, \{epochmax\}, \{epochcount\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStarCamera & \hfuzz=500pt filename & \hfuzz=500pt STARCAMERA\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileStarCameraFlags & \hfuzz=500pt filename & \hfuzz=500pt MISCVALUES(sca\_id, qual\_rss, qualflg)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~satelliteId & \hfuzz=500pt string & \hfuzz=500pt A, B, C or D\\
 \hline
 \end{tabularx}
 

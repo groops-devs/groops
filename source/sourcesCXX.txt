@@ -513,6 +513,7 @@ programs/conversion/goce/goceXml2Orbit.cpp
 programs/conversion/goce/goceXml2StarCamera.cpp
 programs/conversion/goce/goceXmlEggNom1b.cpp
 programs/conversion/grace/fileGrace.cpp
+programs/conversion/grace/accelerometer2GraceL1b.cpp
 programs/conversion/grace/grace2PotentialCoefficients.cpp
 programs/conversion/grace/graceAccelerometer2L1bAscii.cpp
 programs/conversion/grace/graceCoefficients2BlockMeanTimeSplines.cpp
@@ -536,6 +537,9 @@ programs/conversion/grace/graceL1b2TimeOffset.cpp
 programs/conversion/grace/graceL1b2Uso.cpp
 programs/conversion/grace/graceL1b2Vector.cpp
 programs/conversion/grace/graceSequenceOfEvents.cpp
+programs/conversion/grace/orbit2GraceL1b.cpp
+programs/conversion/grace/satelliteTracking2GraceL1b.cpp
+programs/conversion/grace/starCamera2GraceL1b.cpp
 programs/conversion/grail/grailCdr2Orbit.cpp
 programs/conversion/grail/grailCdr2SatelliteTracking.cpp
 programs/conversion/grail/grailCdr2StarCamera.cpp

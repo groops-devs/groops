@@ -21507,6 +21507,48 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="Accelerometer2GraceL1b">
+				<xs:annotation>
+					<xs:documentation>convert GROOPS ACC data into SDS L1B data</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Grace</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>ACT1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileHeader" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>YAML Header, {epochmin}, {epochmax}, {epochcount} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAccelerometer" type="filename">
+							<xs:annotation>
+								<xs:documentation>ACCELEROMETER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAngularAccelerometer" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>ACCELEROMETER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileFlags" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(qualflg, acl_res.x, acl_res.y, acl_res.z)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="satelliteId" type="string">
+							<xs:annotation>
+								<xs:documentation>A, B, C or D</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="BerneseKinematic2Orbit">
 				<xs:annotation>
 					<xs:documentation>read kinematic orbits in Bernese format</xs:documentation>
@@ -24616,6 +24658,39 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="Orbit2GraceL1b">
+				<xs:annotation>
+					<xs:documentation>convert GROOPS L1B data to SDS data</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Grace</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>GNV1B/GNI1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileHeader" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>YAML Header, {epochmin}, {epochmax}, {epochcount} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit" type="filename"/>
+						<xs:element name="satelliteId" type="string">
+							<xs:annotation>
+								<xs:documentation>A, B, C or D</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
+							<xs:annotation>
+								<xs:documentation>rotation into Earth fixed frame</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="Orbit2GroopsAscii">
 				<xs:annotation>
 					<xs:documentation>write orbit positions to TUG ASCII format</xs:documentation>
@@ -24852,6 +24927,53 @@
 					<xs:sequence>
 						<xs:element name="outputfileOrbit" type="filename"/>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SatelliteTracking2GraceL1b">
+				<xs:annotation>
+					<xs:documentation>read GROOPS L1B data (KBR1B or LRI1B)</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Grace</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>KBR1B or LRI1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileHeader" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>YAML Header, {epochmin}, {epochmax}, {epochcount} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSatelliteTracking" type="filename">
+							<xs:annotation>
+								<xs:documentation>SATELLITETRACKING</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileIonoCorr" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUE</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileLighttime" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>SATELLITETRACKING</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAntCentr" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>SATELLITETRACKING</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSNR" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(K_A_SNR, Ka_A_SNR, K_B_SNR, Ka_B_SNR, qualflg)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -25206,6 +25328,43 @@
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>orbits in SP3 format</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="StarCamera2GraceL1b">
+				<xs:annotation>
+					<xs:documentation>convert GROOPS L1B data to SDS data (SCA1B)</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Grace</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>SCA1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileHeader" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>YAML Header, {epochmin}, {epochmax}, {epochcount} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileStarCamera" type="filename">
+							<xs:annotation>
+								<xs:documentation>STARCAMERA</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileStarCameraFlags" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(sca_id, qual_rss, qualflg)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="satelliteId" type="string">
+							<xs:annotation>
+								<xs:documentation>A, B, C or D</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
