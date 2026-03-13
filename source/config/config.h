@@ -2,7 +2,7 @@
 /**
 * @file config.h
 *
-* @brief Read a configuration file or writes the configuration options in a XSD-Schema.
+* @brief Reads a configuration file or writes configuration options to an XSD Schema.
 *
 * @author Torsten Mayer-Guerr
 * @author Sebastian Strasser
@@ -29,7 +29,7 @@ typedef std::shared_ptr<Loop> LoopPtr;
 
 /***** CLASS ***********************************/
 
-/** @brief Read a configuration file or writes the configuration options in a XSD-Schema. */
+/** @brief Reads a configuration file or writes configuration options to an XSD Schema. */
 class Config
 {
 public:
@@ -37,13 +37,13 @@ public:
   enum AppearanceCount {ONCE, UNBOUNDED};
   enum ComplexType     {CHOICE, SEQUENCE, COMPLEXTYPE};
 
-  /** @brief Creates a Configuration from a XML file.
+  /** @brief Creates a Configuration from an XML file.
   * Elements from @a Config can be read with @a readConfig. */
   Config(FileName &fileName, const std::map<std::string, std::string> &commandlineGlobals = std::map<std::string, std::string>());
 
   Config(Config &&)                 = default; //!< Move is allowed
   Config(const Config &)            = delete;  //!< Copy constructor not allowed
-  Config &operator=(const Config &) = delete;  //!< assignment not allowed
+  Config &operator=(const Config &) = delete;  //!< Assignment not allowed
 
   /** @brief Gives the parsed content of the node with @a name. */
   Bool getConfigText(const std::string &name, const std::string &type, Config::Appearance mustSet,
@@ -56,7 +56,7 @@ public:
   Bool getConfig(const std::string &name, Config::Appearance mustSet, Config &conf);
 
   /** @brief Removes all nodes with @a name from @a config and stores it in @a conf.
-  * Number of elements is unknown as loops and conditions are not evaluated.  */
+  * The number of elements is unknown as loops and conditions are not evaluated.  */
   Bool getUnboundedConfig(const std::string &name, Config &conf);
 
   /** @brief Reads the first variable(s) @p var.
@@ -64,7 +64,7 @@ public:
   * Should be used after @a readConfigLater. */
   template<typename T> void read(T &var, VariableList &variableList) const;
 
-  /** @brief Get the current variable list. */
+  /** @brief Gets the current variable list. */
   VariableList &getVarList() {return stack.top().varList;}
 
   // --- Schema mode ----
@@ -73,19 +73,19 @@ public:
   * Schema mode. Only used by generateDocumentation. */
   Config();
 
-  /** @brief Writes Configuration options to a XSD-Schema file.
-  * Every program and class will be called. A call of @a readConfig do
-  * not read any variables but identify the configuration options.
-  * These options will be saved in a XSD-Schema file. */
+  /** @brief Writes configuration options to an XSD Schema file.
+  * Every program and class will be called. A call to @a readConfig does
+  * not read any variables but identifies the configuration options.
+  * These options will be saved in an XSD Schema file. */
   static void writeSchema(const std::string &fileName);
 
-  /** @brief Register an element to a XSD-Schema. */
+  /** @brief Registers an element in an XSD Schema. */
   void xselement(const std::string &name, const std::string &type, Config::Appearance mustSet, Config::AppearanceCount count, const std::string &defaultValue, const std::string &annotation);
 
   /** @brief XML node with elements for documentationTable. */
   XmlNodePtr table();
 
-  /** @brief nested name of current xmlNode. */
+  /** @brief Nested name of the current xmlNode. */
   std::string currentNodeName() const;
 
 protected:
@@ -142,7 +142,7 @@ public:
 
 /** @brief Config elements of a program.
 * It can be read with @a readConfig().
-* The config is evaluated and the is program executed with @a run().
+* The config is evaluated and the program is executed with @a run().
 * @ingroup configGroup */
 class ProgramConfig : public Config
 {
@@ -152,22 +152,22 @@ public:
 
 /***** FUNCTIONS ***********************************/
 
-/** @brief Check if functions are called in schema mode.
+/** @brief Checks if functions are called in schema mode.
 * No code is allowed except the readConfig functions in schema mode.
 * @ingroup configGroup */
 Bool isCreateSchema(Config &config);
 
-/** @brief Has Config an element with @a name?
+/** @brief Does Config have an element with @a name?
 * If @a mustSet is MUSTSET and name is not found, an exception is thrown.
 * @ingroup configGroup */
 Bool hasName(Config &config, const std::string &name, Config::Appearance mustSet=Config::OPTIONAL);
 
-/** @brief Indicate a renamed config element.
+/** @brief Indicates a renamed config element.
 * Must be called before the @a readConfig functions.
 * @ingroup configGroup */
 void renameDeprecatedConfig(Config &config, const std::string &oldName, const std::string &newName, const Time &time);
 
-/** @brief Indicate a renamed choice element.
+/** @brief Indicates a renamed choice element.
 * Must be called after @a readConfigChoice and before the @a readConfigChoiceElement functions.
 * @ingroup configGroup */
 void renameDeprecatedChoice(Config &config, std::string &type, const std::string &oldName, const std::string &newName, const Time &time);
@@ -178,24 +178,24 @@ void renameDeprecatedChoice(Config &config, std::string &type, const std::string
 Bool readConfigSequence(Config &config, const std::string &name, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
 /** @brief Ends a group of readConfig elements.
-* Must be called only if the @a readConfigSequence return TRUE before.
+* Must be called only if the @a readConfigSequence returns TRUE.
 * @ingroup configGroup */
 void endSequence(Config &config);
 
 /** @brief Starts a choice.
-* If result is TRUE the selected choice is given in @a choice.
+* If the result is TRUE, the selected choice is given in @a choice.
 * If @a mustSet is MUSTSET and name is not found, an exception is thrown.
 * @ingroup configGroup */
 Bool readConfigChoice(Config &config, const std::string &name, std::string &choice, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
-/** @brief Check the selected choice.
+/** @brief Checks the selected choice.
 * Returns TRUE if @a name is the selected @a choice.
 * In schema mode all possible @a readConfigChoiceElement must be called.
 * @ingroup configGroup */
 Bool readConfigChoiceElement(Config &config, const std::string &name, const std::string &choice, const std::string &annotation="");
 
 /** @brief Ends a group of choice elements.
-* Must be called only if the @a readConfigChoice return TRUE before.
+* Must be called only if the @a readConfigChoice returns TRUE.
 * @ingroup configGroup */
 void endChoice(Config &config);
 
@@ -203,18 +203,18 @@ void endChoice(Config &config);
 * If @a name is in the @a config, the value is set in @a var and TRUE is returned.
 * If @a name is not in the @a config or the content is empty, FALSE is returned. In this case the value of @a var depends on @a mustSet:
 * @a mustSet = Config::MUSTSET: an exception is thrown.
-* @a mustSet = Config::OPTIONAL: @a var is left untouched and @a defaultValue is not used (@a defaultValue might be set as hint for groopsGui).
+* @a mustSet = Config::OPTIONAL: @a var is left untouched and @a defaultValue is not used (@a defaultValue might be set as a hint for groopsGui).
 * @a mustSet = Config::DEFAULT: @a var is set to @a defaultValue (or in case an empty class is created).
 * @ingroup configGroup */
 template<typename T> Bool readConfig(Config &config, const std::string &name, T &var, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
 /** @brief Removes the config of a variable from @a config and stores it in configNew.
-* It can be later evluated with configNew.read(). @a var is untouched and only used to determine the type.
+* It can be later evaluated with configNew.read(). @a var is untouched and only used to determine the type.
 * @ingroup configGroup */
 template<typename T> Bool readConfigLater(Config &config, const std::string &name, const T &var, Config &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 
 /** @brief Removes the config of a variable from @a config and stores it in configNew.
-* It can be later evluated with configNew.read(). @a var is untouched and only used to determine the type.
+* It can be later evaluated with configNew.read(). @a var is untouched and only used to determine the type.
 * @ingroup configGroup */
 template<typename T> Bool readConfigLater(Config &config, const std::string &name, const std::vector<T> &var, std::vector<Config> &configNew, Config::Appearance mustSet, const std::string &defaultValue, const std::string &annotation);
 

@@ -17,7 +17,7 @@
 #ifdef DOCSTRING_CovariancePod
 static const char *docstringCovariancePod = R"(
 \section{CovariancePod}\label{covariancePodType}
-Provides arc wise covariance matrices for precise orbit data.
+Provides arc-wise covariance matrices for precise orbit data.
 Temporal correlations are modeled in the orbit system (along, cross, radial).
 The \configFile{inputfileCovarianceFunction}{matrix} provides temporal covariance functions for each axis.
 From the diagonal matrix for each time step
@@ -34,13 +34,13 @@ the Toeplitz covariance matrix for an arc is constructed
   \end{pmatrix}
 \end{equation}
 
-The epoch wise $3\times3$ covariance matrices given by \configFile{inputfileCovariancePodEpoch}{instrument}
-are eigen value decomposed
+The epoch-wise $3\times3$ covariance matrices given by \configFile{inputfileCovariancePodEpoch}{instrument}
+are eigenvalue-decomposed
 \begin{equation}
   \M C_{3\times3}(t_i) = \M Q \M\Lambda \M Q^T,
 \end{equation}
-where $\M Q$ is an orthgonal matrix and $\M\Lambda$ diagonal.
-This used to split the covariances matrices
+where $\M Q$ is an orthogonal matrix and $\M\Lambda$ diagonal.
+This is used to split the covariances matrices
 \begin{equation}
   \M C_{3\times3}(t_i) = \M D(t_i) \M D(t_i)^T = (\M Q \M\Lambda^{1/2} \M Q^T)(\M Q \M\Lambda^{1/2} \M Q^T)^T,
 \end{equation}
@@ -113,12 +113,12 @@ public:
   /** @brief Decorrelates observation equations.
   * The observations must be given as x,y,z per epoch in CRF [m].
   * The list of observation vector and design matrices are decorrelated.
-  * @return Cholesky decomposition of the covariance matrix (without orbit rotation and epoch wise covariance matrix). */
+  * @return Cholesky decomposition of the covariance matrix (without orbit rotation and epoch-wise covariance matrix). */
   static Matrix decorrelate(const OrbitArc &pod, Double sigmaArc, const ObservationSigmaArc &sigmaEpoch,
                             const Covariance3dArc &covPod, const_MatrixSliceRef covFunction,
                             const std::list<MatrixSlice> &A);
 
-  /** @brief creates an derived instance of this class. */
+  /** @brief creates a derived instance of this class. */
   static CovariancePodPtr create(Config &config, const std::string &name) {return std::make_shared<CovariancePod>(config, name);}
 };
 

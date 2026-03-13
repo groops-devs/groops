@@ -239,6 +239,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         Double x = String::toDouble(line.substr(0, 10));
         Double y = String::toDouble(line.substr(10, 10));
         Double z = String::toDouble(line.substr(20, 10));
+        // from millimeters to meters
         if(!setZero) antenna->patterns.at(i).offset = 1e-3 * Vector3d(x,y,z);
 
         antenna->patterns.at(i).dZenit  = Angle(dzen*DEG2RAD);
@@ -300,9 +301,10 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         // transformation to left-handed antenna system
         antennaInfo.local2antennaFrame = flipY() * rotaryZ(Angle(PI/2));
 
-        // shift from GnssAntennaPattern::offset to GnssAntennaInfo::position
+        // set the PlatformEquipment::position as the mean of offsets of all patterns
         for(UInt i=0; i<antenna->patterns.size(); i++)
           antennaInfo.position += (1./antenna->patterns.size()) * antenna->patterns.at(i).offset;
+        // shift the origin of offsets from the reference point (CoM) to PlatformEquipment::position
         for(UInt i=0; i<antenna->patterns.size(); i++)
           antenna->patterns.at(i).offset = antennaInfo.local2antennaFrame.transform(antenna->patterns.at(i).offset - antennaInfo.position);
 

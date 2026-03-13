@@ -31,7 +31,7 @@ Both files are optional and if not specified, the respective effect on the accel
 The \config{factorEarthRadation} can be used to scale the computed acceleration of the earth radiation.
 
 The thermal radiation (TRP) of the satellite itself is either computed as direct re-emission or
-based on the actual temperature of the satellite surfaces, depending on the seetings of the
+based on the actual temperature of the satellite surfaces, depending on the setings of the
 \file{satellite macro model}{satelliteModel}. The second one uses a transient temperature model
 with a temporal differential equation which disallows parallel computing.
 The \config{factorThermalRadiation} can be used to scale the computed acceleration of the TRP.

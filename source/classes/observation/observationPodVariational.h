@@ -22,7 +22,7 @@ It is based on \file{inputfileVariational}{variationalEquation} calculated with 
 Necessary integrations are performed by integrating a moving interpolation polynomial of degree \config{integrationDegree}.
 
 The kinematic positions as pseudo observations are taken from
-\config{rightHandSide} and should not given equally spaced in time. The observation
+\config{rightHandSide} and should not be given equally spaced in time. The observation
 equations are interpolated to these times by a moving polynomial of degree \config{interpolationDegree}.
 
 The accuracy or the full covariance matrix of the precise orbit data is provided in
@@ -46,8 +46,8 @@ can be used to transform the observation equations
   \begin{pmatrix} \M Q_1^T \M R \\ \M 0 \end{pmatrix} \M A \M x +
   \begin{pmatrix} \M Q_1^T \M e \\ \M Q_2^T \M e \end{pmatrix}.
 \end{equation}
-As the zero lines should not be considered the computational time for the accumulation is reduced.
-This option is not meaningful for evaluating the residuals such in \program{PreprocessingPod}.
+As the zero lines should not be considered, the computational time for the accumulation is reduced.
+This option is not meaningful for evaluating the residuals such as in \program{PreprocessingPod}.
 
 The following parameters with \file{parameter names}{parameterName} are set up:
 \begin{itemize}

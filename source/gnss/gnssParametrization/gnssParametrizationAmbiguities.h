@@ -25,7 +25,7 @@ Sets up an ambiguity parameter for each track and phase observation type.
 As the phase observations contain a float bias at transmitter/receiver level, not all ambiguities
 are resolvable to integer values. The number of resolvable ambiguities can be increased with
 known phase biases read from file via \configClass{parametrization:signalBiases}{gnssParametrizationType:signalBiases}.
-In this case, \configClass{estimateTransmitter/ReceiverPhaseBiasTransmitter}{platformSelectorType} should
+In this case, \configClass{estimateTransmitter/ReceiverPhaseBias}{platformSelectorType} should
 not be used for the corresponding transmitters and receivers.
 
 In case of GLONASS, the phase biases at receiver level differ between different frequency channels

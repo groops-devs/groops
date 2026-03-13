@@ -18,7 +18,7 @@
 static const char *docstringGnssProcessingStepForEachReceiverSeparately = R"(
 \subsection{ForEachReceiverSeparately}\label{gnssProcessingStepType:forEachReceiverSeparately}
 Perform these processing steps for each \configClass{selectReceivers}{platformSelectorType} separately.
-All non-receiver related parameters parameters are disabled in these processing steps (see .
+All non-receiver-related parameters parameters are disabled in these processing steps.
 
 This step can be used for individual precise point positioning (PPP) of all stations.
 During \reference{GNSS satellite orbit determination and network analysis}{cookbook.gnssNetwork:processing} this step is used after the

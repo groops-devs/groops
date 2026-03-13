@@ -18,7 +18,7 @@
 #ifdef DOCSTRING_TimeSeries
 static const char *docstringTimeSeriesYearly = R"(
 \subsection{Yearly}
-If \config{yearMiddle} is set, time points are generated at mid of each year inclusively \config{yearStart}
+If \config{useYearMiddle} is set, time points are generated at mid of each year inclusively \config{yearStart}
 and \config{yearEnd}. Otherwise times are given at the first of each year and a time point after the last year.
 )";
 #endif

@@ -15,7 +15,7 @@
 // Latex documentation
 static const char *docstringParameterNamesName = R"(
 \subsection{Name}
-The parameter is given by explicitly by four parts:
+The parameter is given explicitly by four parts:
 \begin{enumerate}
 \item object: Object this parameter refers to, e.g. \verb|graceA|, \verb|G023|, \verb|earth|, \ldots
 \item type: Type of this parameter, e.g. \verb|accBias|, \verb|position.x|, \ldots

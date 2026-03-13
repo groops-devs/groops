@@ -22,7 +22,7 @@ It is not the full inverse but only the elements which are set in the normal mat
 (see  \configClass{gnssProcessingStep:selectNormalsBlockStructure}{gnssProcessingStepType:selectNormalsBlockStructure})
 are computed. The matrix is passed to the \configClass{parametrizations}{gnssParametrizationType}.
 Only used in \configClass{parametrizations:kinematicPositions}{gnssParametrizationType:kinematicPositions}
-to get the epoch wise covariance information at the moment.
+to get the epoch-wise covariance information at the moment.
 )";
 #endif
 

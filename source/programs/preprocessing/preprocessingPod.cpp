@@ -13,8 +13,8 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-This program estimates empirical covariance functions of the instrument noise and determine arc wise variances to
-downweight arc with outliers.
+This program estimates empirical covariance functions of the instrument noise and determines arc-wise variances to
+downweight arcs with outliers.
 
 A complete least squares adjustment for gravity field determination is performed by computing the \config{observation}
 equations, see \configClass{observation:podIntegral}{observationType:podIntegral} or
@@ -40,9 +40,9 @@ An additional variance factor can be computed (\config{estimateArcSigmas}) for e
 \begin{equation}
   \hat{\sigma}_k^2 = \frac{\hat{\M e}_k^T\M\Sigma^{-1}\hat{\M e}_k}{r_k},
 \end{equation}
-where $r_k$ is the redundancy. This variance factor should be around one for normal behaving arcs
-as the noise characteristics is already considered by the covariance matrix but bad arcs get a much larger variance.
-By appling this factor bad arcs or arcs with large outliers are downweighted.
+where $r_k$ is the redundancy. This variance factor should be around one for normally behaving arcs
+as the noise characteristics are already considered by the covariance matrix but bad arcs get a much larger variance.
+By applying this factor bad arcs or arcs with large outliers are downweighted.
 )";
 
 /***********************************************/
@@ -152,7 +152,7 @@ void PreprocessingPod::run(Config &config, Parallel::CommunicatorPtr comm)
     if(readConfigSequence(config, "covariancePod", Config::MUSTSET, "", ""))
     {
       readConfig(config, "sigma",                        sigma0Pod,       Config::DEFAULT,  "1",  "apriori factor of covariance function");
-      readConfig(config, "inputfileSigmasPerArc",        sigmaPodName,    Config::OPTIONAL, "",   "apriori different accuaries for each arc (multiplicated with sigma)");
+      readConfig(config, "inputfileSigmasPerArc",        sigmaPodName,    Config::OPTIONAL, "",   "apriori different accuracies for each arc (multiplied with sigma)");
       readConfig(config, "inputfileCovarianceFunction",  covPodName,      Config::OPTIONAL, "",   "approximate covariances in time");
       readConfig(config, "inputfileCovariancePodEpoch",  covPodEpochName, Config::OPTIONAL, "",   "3x3 epoch covariances");
       readConfig(config, "sampling",                     samplingPod,     Config::DEFAULT,  "30", "[seconds] sampling of the covariance function");
@@ -160,7 +160,7 @@ void PreprocessingPod::run(Config &config, Parallel::CommunicatorPtr comm)
     }
     readConfig(config, "inputfileArcList",    fileNameArcList,     Config::OPTIONAL, "",   "list to correspond points of time to arc numbers");
     readConfig(config, "adjustmentThreshold", adjustmentThreshold, Config::DEFAULT,  "0",  "Adjustment factor threshold: Iteration will be stopped once both SST and POD adjustment factors are under this threshold");
-    readConfig(config, "iterationCount",      iterCount,           Config::DEFAULT,  "3",  "(maximum) number of iterations for the estimation of calibration parameter and error PSD");
+    readConfig(config, "iterationCount",      iterCount,           Config::DEFAULT,  "3",  "(maximum) number of iterations for the estimation of calibration parameters and error PSD");
     if(isCreateSchema(config)) return;
 
     // =============================================
@@ -224,7 +224,7 @@ void PreprocessingPod::run(Config &config, Parallel::CommunicatorPtr comm)
 
     // =============================================
 
-    // Determine max. length of ovariance functions
+    // Determine max. length of covariance functions
     // --------------------------------------------
     UInt covLengthPod = 0;
     for(UInt arcNo=0; arcNo<arcCount; arcNo++)
@@ -310,7 +310,7 @@ void PreprocessingPod::run(Config &config, Parallel::CommunicatorPtr comm)
 
         if(!fileNameSigmax.empty())
         {
-          logStatus<<"inverte cholesky matrix and write standard deviations to <"<<fileNameSigmax<<">"<<Log::endl;
+          logStatus<<"inverte Cholesky matrix and write standard deviations to <"<<fileNameSigmax<<">"<<Log::endl;
           const UInt blockIndexStatic = 0;
           for(UInt i=blockIndexStatic; i<normals.blockCount(); i++)
             for(UInt k=i; k<normals.blockCount(); k++)

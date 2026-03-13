@@ -25,11 +25,11 @@ The observation equations for precise orbit data (POD) are given by
   - \int_{t_0}^t \M g_0 \cdot\dot{\M r}'\,dt
   = V + E.
 \end{equation}
-where the velocities of the satellite $\ddot{\M r}(t)$ are derived from
+where the velocities of the satellite $\dot{\M r}(t)$ are derived from
 the kinematic positions in \configClass{rightHandSide}{podRightSideType} and the Earth's rotation vector~$\M\Omega(t)$ is modeled
-within \configClass{earthRotation}{earthRotationType}. The orbit differentation is
+within \configClass{earthRotation}{earthRotationType}. The orbit differentiation is
 performed by a polynomial interpolation with degree \config{interpolationDegree}.
-The integrals are solved a polynomial interpolation with degree \config{integrationDegree}.
+The integrals are solved by a polynomial interpolation with degree \config{integrationDegree}.
 The reference forces $\M g_0(t)$ are computed with the background models in \configClass{rightHandSide}{podRightSideType}.
 
 All instrument data \configFile{inputfileOrbit}{instrument}, \configFile{inputfileStarCamera}{instrument}, and \configFile{inputfileAccelerometer}{instrument}

@@ -28,7 +28,7 @@ public:
   virtual void writeText(const std::string &text) = 0;
   virtual void writeConfigTable(Config &config) = 0;
 
-  /** @brief Generates a hmtl user documentation files.
+  /** @brief Generates a html user documentation files.
   * @ingroup configGroup */
   static void writeHtml(const FileName &directoryName);
 
