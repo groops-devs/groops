@@ -25,7 +25,16 @@ and write it as \configFile{outputfileEOP}{earthOrientationParameter}.
 
 /***** CLASS ***********************************/
 
-/** @brief Earth Orientation Parameter from IGS daily file.
+/** @brief Convert one or several IGS daily Earth Rotation Parameter (ERP) file(s) to a GROOPS Earth Orientation Parameter file.
+ * The input IGS daily ERP file(s) should be in the format "version 2", as described in 
+ * <a href="https://lists.igs.org/pipermail/igsmail/1998/003315.html?_gl=1*1xa369f*_ga*MjkxNzcxMzAyLjE3NzEyNDY4MjM.*_ga_Z5RH7R682C*czE3NzMzMjYyOTYkbzUkZzEkdDE3NzMzMjgwMDckajU3JGwwJGgw&_ga=2.96939671.964448877.1773324318-291771302.1771246823">IGSMAIL-1943</a>.
+ * Note that, as the first 9 lines of all input ERP files are regarded as header and will be skipped, the program will not
+ * work with IGS weekly ERP files though they share the same format for data lines. 
+ * And when feeding multiple files, it is the user's responsibility to make sure that 
+ * those input files are in the correct chronological order. This program does not sort the 
+ * data records before writing them into the output GROOPS EOP file.
+ * 
+ * As no CPOs included in IGS ERP files, the output GROOPS EOP file will have CPOs values of 0.0.
 * @ingroup programsConversionGroup */
 class Igs2EarthOrientationParameter
 {
@@ -47,9 +56,9 @@ void Igs2EarthOrientationParameter::run(Config &config, Parallel::CommunicatorPt
     Time timeStart, timeEnd = date2time(9999,1,1);
 
     readConfig(config, "outputfileEOP", outName,    Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",     fileNameIn, Config::MUSTSET,  "", "");
-    readConfig(config, "timeStart",     timeStart,  Config::OPTIONAL, "", "");
-    readConfig(config, "timeEnd",       timeEnd,    Config::OPTIONAL, "", "");
+    readConfig(config, "inputfile",     fileNameIn, Config::MUSTSET,  "", "IGS daily ERP files");
+    readConfig(config, "timeStart",     timeStart,  Config::OPTIONAL, "", "Start time of ERPs to read (inclusive). Default: MJD 0");
+    readConfig(config, "timeEnd",       timeEnd,    Config::OPTIONAL, "", "End time of ERPs to read (inclusive). Default: Date 9999-01-01");
     if(isCreateSchema(config)) return;
 
     logStatus<<"read input files"<<Log::endl;

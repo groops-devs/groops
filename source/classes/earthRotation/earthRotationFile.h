@@ -2,7 +2,7 @@
 /**
 * @file earthRotationFile.h
 *
-* @brief Interpolated values from file.
+* @brief Interpolates EOPs from input file.
 * @see EarthRotation
 *
 * @author Torsten Mayer-Guerr
@@ -30,7 +30,7 @@ This file can be created with \program{EarthOrientationParameterTimeSeries}.
 
 /***** CLASS ***********************************/
 
-/** @brief According to IERS2010 conventions.
+/** @brief Interpolates EOPs from input file.
 * @ingroup earthRotationGroup
 * @see EarthRotation */
 class EarthRotationFile : public EarthRotation

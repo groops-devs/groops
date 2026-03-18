@@ -32,6 +32,15 @@ A file with the earth orientation parameter is needed (\configFile{inputfileEOP}
 /***** CLASS ***********************************/
 
 /** @brief According to IERS2010 conventions.
+ * In addtion to those interpolated values from the input file, 
+ * - diurnal and semi-diurnal variations from ocean tides are considered by the IERS routine \c ORTHO_EOP.F for
+ *   x-pole, y-pole and dUT1
+ * - librations are considered by the routine \c PMSDNUT2.F for x-pole and y-pole
+ * - librations are considered by the routine \c UTLIBR.F for dUT1 and LOD 
+ * 
+ * sp is calculated with the ERFA function \c eraSp00. X,Y, and S are calculated either by the truncated 
+ * precession & nutation model with the ERFA function \c eraXys00b or by the untruncated 
+ * precession & nutation model with the ERFA functions \c eraXy06 and \c eraS06.
 * @ingroup earthRotationGroup
 * @see EarthRotation */
 class EarthRotationIers2010 : public EarthRotation

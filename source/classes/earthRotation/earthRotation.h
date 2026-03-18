@@ -42,7 +42,7 @@ typedef std::shared_ptr<EarthRotation> EarthRotationPtr;
 /***** CLASS ***********************************/
 
 /** @brief Transformation between CRF and TRF.
-* An Instance of this class can be created by @ref readConfig. */
+* An Instance of this class can be created by calling the function @ref readConfig(). */
 class EarthRotation
 {
 public:
@@ -78,17 +78,17 @@ public:
   * @param[out] S CIO locator [rad]. */
   virtual void earthOrientationParameter(const Time &timeGPS, Double &xp, Double &yp, Double &sp, Double &deltaUT, Double &LOD, Double &X, Double &Y, Double &S) const;
 
-  /** @brief creates an derived instance of this class. */
+  /** @brief Creates a derived instance of this class. */
   static EarthRotationPtr create(Config &config, const std::string &name);
 };
 
 /***** FUNCTIONS *******************************/
 
 /** @brief Creates an instance of the class EarthRotation.
-* Search for a node with @a name in the Config node.
-* if @a name is not found the function returns FALSE and @a earthRotation is untouched.
-* @param config The config node which includes the node with the options for this class
-* @param name Tag name in the config.
+* Search for a node with @a name in the configuration node @a config.
+* If @a name is not found, the function returns FALSE and @a earthRotation is untouched.
+* @param config The configuration node which includes the node @a name with the options for this class
+* @param name Tag name in the configuration node.
 * @param[out] earthRotation Created class.
 * @param mustSet If is MUSTSET and @a name is not found, this function throws an exception instead of returning with FALSE.
 * @param defaultValue Ignored at the moment.

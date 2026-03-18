@@ -34,6 +34,15 @@ Includes additional high-frequency EOP models (\configFile{inputfileDoodsonEOP}{
 /***** CLASS ***********************************/
 
 /** @brief According to IERS2010 conventions.
+ * In addtion to those interpolated values from the input file, 
+ * - diurnal, semi-diurnal and even higher frequency variations from ocean tides are considered by the 
+ *   input DoodsonEOP file which contains cofficients of corrections for different tidal consituents for 
+ *   x-pole, y-pole, dUT1 and LOD
+ * - librations are considered by the routine \c PMSDNUT2.F for x-pole and y-pole
+ * - librations are considered by the routine \c UTLIBR.F for dUT1 and LOD 
+ * 
+ * sp is calculated with the ERFA function \c eraSp00. X,Y, and S are calculated by the untruncated 
+ * precession & nutation model with the ERFA functions \c eraXy06 and \c eraS06.
 * @ingroup earthRotationGroup
 * @see EarthRotation */
 class EarthRotationIers2010b : public EarthRotation

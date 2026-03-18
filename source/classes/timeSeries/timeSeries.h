@@ -45,7 +45,7 @@ typedef std::shared_ptr<TimeSeries> TimeSeriesPtr;
 /***** CLASS ***********************************/
 
 /** @brief Generates time series.
-* An instance of this class can be created with @ref readConfig. */
+* An instance of this class can be created with the function @ref readConfig(). */
 class TimeSeries
 {
   std::vector<TimeSeriesBase*> base;
@@ -60,17 +60,17 @@ public:
   /** @brief Time series with increasing order. */
   std::vector<Time> times() const;
 
-  /** @brief creates an derived instance of this class. */
+  /** @brief Creates a derived instance of this class. */
   static TimeSeriesPtr create(Config &config, const std::string &name) {return TimeSeriesPtr(new TimeSeries(config, name));}
 };
 
 /***** FUNCTIONS *******************************/
 
 /** @brief Creates an instance of the class TimeSeries.
-* Search for a node with @a name in the Config node.
-* if @a name is not found the function returns FALSE and a class without times is created.
-* @param config The config node which includes the node with the options for this class
-* @param name Tag name in the config.
+* Search for a node with @a name in the @a config node.
+* if @a name is not found, the function returns FALSE and a class without times is created.
+* @param config The Config node which includes the node with the options for this class
+* @param name Tag name to be searched for in the @a config node.
 * @param[out] timeSeries Created class.
 * @param mustSet If is MUSTSET and @a name is not found, this function throws an exception instead of returning with FALSE.
 * @param defaultValue Ignored at the moment.

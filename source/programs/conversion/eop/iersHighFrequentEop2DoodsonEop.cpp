@@ -26,7 +26,23 @@ and write them as \configFile{outputfileDoodsonEOP}{doodsonEarthOrientationParam
 /***** CLASS ***********************************/
 
 /** @brief Read Diurnal and Subdiurnal Earth Orientation variations.
-* @ingroup programsConversionGroup */
+ * Except for comment lines (starting with '#'), the data format of each line from the input file should be:
+ * 
+ * <tt>name gamma l lp F D Omega Doodson_number period xp_sin xp_cos yp_sin yp_cos UT1_sin UT1_cos LOD_sin LOD_cos</tt>
+ * 
+ * where 
+ * - \b name name of the tidal constituent, e.g. "M2"
+ * - <b> gamma l, lp, F, D, Omega</b> Fundamental arguments (Delaunay arguments) of nutation
+ * - \b Doodson_number Doodson number of the tidal constituent, e.g. "255.555" for M2
+ * - \b period period of the tidal constituent
+ * - <b> xp_sin, xp_cos</b> Coefficients of sine and cosine term for x pole coordinate in micro arc seconds
+ * - <b> yp_sin, yp_cos</b> Coefficients of sine and cosine term for y pole coordinate in micro arc seconds
+ * - <b> UT1_sin, UT1_cos</b> Coefficients of sine and cosine term for UT1 in micro seconds
+ * - <b> LOD_sin, LOD_cos</b> Coefficients of sine and cosine term for LOD in micro seconds
+ * 
+ * For every data line, all fields are necessary. The tide name @a name, if no conventional 
+ * one available, can be arbitrary character strings, just for the purpose of placeholder. 
+ * @ingroup programsConversionGroup */
 class IersHighFrequentEop2DoodsonEop
 {
 public:

@@ -27,6 +27,12 @@ and convert into \file{oceanPoleTide file}{oceanPoleTide}.
 /***** CLASS ***********************************/
 
 /** @brief Read ocean pole tide model.
+ * The input file contains the coefficients of a self-consistent equilibrium ocean pole tide model
+ *  according to the IERS conventions, as described in the Section 6.5 of the IERS Conventions (2010).
+ * An example of a such ocean pole tide model is from Desai (2002), the coefficients of which can be found 
+ * at ftp://tai.bipm.org/iers/conv2010/chapter6/desaiscopolecoef.txt. 
+ * The input deformation coefficients (Love numbers) should cover the maximum degree for the ocean 
+ * pole tide model as specified via @a maxDegree.
 * @ingroup programsConversionGroup */
 class Iers2OceanPoleTide
 {
@@ -48,8 +54,8 @@ void Iers2OceanPoleTide::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     UInt   maxDegree;
 
     readConfig(config, "outputfileOceanPole",        outputName,     Config::MUSTSET, "",                "");
-    readConfig(config, "inputfile",                  inputName,      Config::MUSTSET, "",                "");
-    readConfig(config, "inputfileLoadingLoveNumber", loveNumberName, Config::MUSTSET, "{groopsDataDir}/loading/loadLoveNumbers_Gegout97.txt", "");
+    readConfig(config, "inputfile",                  inputName,      Config::MUSTSET, "",                "coefficients of the ocean pole tide model");
+    readConfig(config, "inputfileLoadingLoveNumber", loveNumberName, Config::MUSTSET, "{groopsDataDir}/loading/loadLoveNumbers_Gegout97.txt", "load deformation coefficients");
     readConfig(config, "maxDegree",                  maxDegree,      Config::MUSTSET, "",                "");
     readConfig(config, "GM",                         GM,             Config::DEFAULT, STRING_DEFAULT_GM, "Geocentric gravitational constant");
     readConfig(config, "R",                          R,              Config::DEFAULT, STRING_DEFAULT_R,  "Reference radius");

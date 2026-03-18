@@ -53,7 +53,7 @@ inline EarthRotationZAxis::EarthRotationZAxis(Config &config)
 {
   readConfig(config, "initialAngle",    angle0,        Config::MUSTSET, "5.133658456", "Angle at time0 [rad]");
   readConfig(config, "angularVelocity", angleVelocity, Config::MUSTSET, "7.29211585531e-5", "[rad/s]");
-  readConfig(config, "time0",           time0,         Config::MUSTSET, "51740.5", "");
+  readConfig(config, "time0",           time0,         Config::MUSTSET, "51740.5", "Time of the initial angle");
   if(isCreateSchema(config)) return;
 }
 

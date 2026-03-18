@@ -26,7 +26,15 @@ and write it as \configFile{outputfileEOP}{earthOrientationParameter}.
 
 /***** CLASS ***********************************/
 
-/** @brief Read Earth Orientation Parameter.
+/** @brief Convert an IERS C04 long term EOP file to a GROOPS Earth Orientation Parameter file.
+ * The input IERS C04 long term EOP file can be 
+ * - <a href="https://datacenter.iers.org/versionMetadata.php?filename=latestVersionMeta/254_EOP_C04_20u24.62-NOW254.txt">eopc04.1962-now: sampled values at 00h UT / dX, dY IAU2000</a>
+ * - <a href="https://datacenter.iers.org/versionMetadata.php?filename=latestVersionMeta/255_EOP_C04_20u24.12h.84-NOW255.txt">eopc04.1984-now: sampled values at 12h UT / dX, dY IAU2000</a>
+ * - <a href="https://datacenter.iers.org/versionMetadata.php?filename=latestVersionMeta/256_EOP_C04_20u24_dPsi_dEps_62-NOW_IAU2000256.txt">eopc04.1962-now: sampled values at 00h UT / dPsi, dEps IAU2000</a>
+ * - <a href="https://datacenter.iers.org/versionMetadata.php?filename=latestVersionMeta/257_EOP_C04_20u24_12h_dPsi_dEps_62-NOW_IAU2000257.txt">eopc04.1984-now: sampled values at 12h UT / dPsi, dEps IAU2000</a>
+ * 
+ * which theoretically should be the same only differing in start dates, sampling clocks and CPO conventions and all can be downloaded from the 
+ * <a href="https://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html">IERS website</a>.
 * @ingroup programsConversionGroup */
 class IersC04IAU2000EarthOrientationParameter
 {
@@ -49,8 +57,8 @@ void IersC04IAU2000EarthOrientationParameter::run(Config &config, Parallel::Comm
 
     readConfig(config, "outputfileEOP", outName,   Config::MUSTSET,  "", "");
     readConfig(config, "inputfile",     inName,    Config::MUSTSET,  "", "");
-    readConfig(config, "timeStart",     timeStart, Config::OPTIONAL, "", "");
-    readConfig(config, "timeEnd",       timeEnd,   Config::OPTIONAL, "", "");
+    readConfig(config, "timeStart",     timeStart, Config::OPTIONAL, "", "Start time of EOPs to read (inclusive). Default: MJD 0");
+    readConfig(config, "timeEnd",       timeEnd,   Config::OPTIONAL, "", "End time of EOPs to read (inclusive). Default: Date 9999-01-01");
     if(isCreateSchema(config)) return;
 
     // Erdrotationsparameter einlesen
@@ -73,6 +81,7 @@ void IersC04IAU2000EarthOrientationParameter::run(Config &config, Parallel::Comm
     std::vector<Double> mjd, xp, yp, du, ld, dX, dY;
     while(std::getline(file, line))
     {
+      // skip header or comment lines which start with '#'
       if(String::startsWith(line, "#"))
         continue;
 

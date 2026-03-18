@@ -48,6 +48,14 @@ from \url{ftp://maia.usno.navy.mil/conv2000/chapter8/}
 /***** CLASS ***********************************/
 
 /** @brief According to IERS2003 conventions.
+ * In addtion to those interpolated values from the input file, 
+ * - diurnal and semi-diurnal variations from ocean tides are considered by the IERS routine \c ORTHO_EOP.F for
+ *   x-pole, y-pole and dUT1
+ * - librations are considered by the routine \c PMSDNUT2.F for x-pole and y-pole
+ * - librations are considered by the routine \c UTLIBR.F for dUT1 and LOD 
+ * 
+ * sp is calculated with the ERFA function \c eraSp00. X,Y, and S are calculated by the 
+ * precession & nutation model with the ERFA function \c eraXys00a.
 * @ingroup earthRotationGroup
 * @see EarthRotation */
 class EarthRotationIers2003 : public EarthRotation

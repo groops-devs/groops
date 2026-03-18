@@ -105,7 +105,7 @@ void EarthRotationIers2010b::earthOrientationParameter(const Time &timeGPS, Doub
 
     // Models
     // ------
-    // diurnal and semidiurnal variations in EOP (x,y,UT1) from ocean tides
+    // diurnal and semidiurnal variations in EOP (x,y,UT1) and LOD from ocean tides
     if(doodsonEop.doodson.size())
     {
       const Vector thetaf = doodsonMatrix * Doodson::arguments(timeGPS);
