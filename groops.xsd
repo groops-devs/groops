@@ -6954,6 +6954,20 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="group">
+				<xs:annotation>
+					<xs:documentation>groups a set of parameter selectors.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="parameterSelection" type="parameterSelectorType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>parameter order/selection</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="complement">
 				<xs:annotation>
 					<xs:documentation>all parameters except those selected</xs:documentation>

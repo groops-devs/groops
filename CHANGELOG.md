@@ -3,6 +3,7 @@
 - New program:      Orbit2GraceL1b.
 - New program:      SatelliteTracking2GraceL1b.
 - New program:      StarCamera2GraceL1b.
+- New class:        ParameterSelector: group.
 - New option:       conditionStringContains/MatchPattern: supports wildcards.
 - Bugfix:           ConditionFileExist: fixed bug with wildcards.
 - Bugfix:           GUI: fixed MatchCaseSensitive for schema selction.
