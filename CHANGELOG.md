@@ -14,6 +14,7 @@
 - Other:            NetCDF: enable to read multidimensional variables to store in muliple columns.
 - Other:            Changed ftp.tugraz.at/outgoing/ITSG to ftp.tugraz.at/pub/ITSG.
 - Other:            ModelEquilibriumTide: Taking into account spatially varying density.
+- Other:            GnssTroposphere2TropoSinex: Revised interface.
 
 # Release 2025-11-15
 - New program:      StarCamera2Orbex (replaces GnssAttitude2Orbex).

@@ -22037,7 +22037,7 @@
 											<xs:documentation>parameter vector</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileSigmax" type="filename">
+									<xs:element name="inputfileSigmax" type="filename" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>standard deviations of the parameters (sqrt of the diagonal of the inverse normal equation)</xs:documentation>
 										</xs:annotation>
@@ -22115,7 +22115,7 @@
 								<xs:documentation>comment in header</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="mappingFunction" type="string" minOccurs="0" default="NONE">
+						<xs:element name="mappingFunction" type="string" minOccurs="0" default="MSLM">
 							<xs:annotation>
 								<xs:documentation>see IONEX documentation</xs:documentation>
 							</xs:annotation>
@@ -22335,7 +22335,7 @@
 											<xs:documentation>Brief description of the input used to generate this solution</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="software" type="string" minOccurs="0" default="GROOPS">
+									<xs:element name="software" type="string" minOccurs="0" default="GROOPS (https://github.com/groops-devs/groops)">
 										<xs:annotation>
 											<xs:documentation>Software used to generate the file</xs:documentation>
 										</xs:annotation>
@@ -22614,17 +22614,17 @@
 								</xs:choice>
 							</xs:complexType>
 						</xs:element>
-						<xs:element name="observationSampling" type="uint" minOccurs="0" default="30">
+						<xs:element name="observationSampling" type="double" minOccurs="0" default="30">
 							<xs:annotation>
 								<xs:documentation>[seconds]</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="intervalLength" type="uint" minOccurs="0" default="86400">
+						<xs:element name="intervalLength" type="double" minOccurs="0" default="86400">
 							<xs:annotation>
 								<xs:documentation>[seconds] interval for bias parameter representation</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="determinationMethod" type="string" default="CO-ESTIMATED_IN_LSA">
+						<xs:element name="determinationMethod" type="string" minOccurs="0" default="CO-ESTIMATED_IN_LSA">
 							<xs:annotation>
 								<xs:documentation>determination method used to generate the bias results (see SINEX Bias format description)</xs:documentation>
 							</xs:annotation>
@@ -22639,32 +22639,32 @@
 								<xs:documentation>one per system, reference code observable on first and second frequency (RINEX3 format)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="description" type="string" default="Graz University of Technology, Austria (TUG/TU Graz)">
+						<xs:element name="description" type="string" minOccurs="0" default="Graz University of Technology, Austria (TUG/TU Graz)">
 							<xs:annotation>
 								<xs:documentation>organizition gathering/altering the file contents</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="contact" type="string">
+						<xs:element name="contact" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>contact name and/or email address</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="input" type="string" default="GNSS observations from the IGS station network">
+						<xs:element name="input" type="string" minOccurs="0" default="GNSS observations from the IGS station network">
 							<xs:annotation>
 								<xs:documentation>brief description of the input used to generate this solution</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="output" type="string" default="Estimated signal biases from GNSS processing">
+						<xs:element name="output" type="string" minOccurs="0" default="Estimated signal biases from GNSS processing">
 							<xs:annotation>
 								<xs:documentation>description of the file contents</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="software" type="string" default="GROOPS">
+						<xs:element name="software" type="string" minOccurs="0" default="GROOPS (https://github.com/groops-devs/groops)">
 							<xs:annotation>
 								<xs:documentation>software used to generate the file</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="hardware" type="string">
+						<xs:element name="hardware" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>computer hardware on which above software was run</xs:documentation>
 							</xs:annotation>
@@ -22732,88 +22732,68 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileTropoSinex" type="filename"/>
-						<xs:element name="stations">
+						<xs:element name="station" maxOccurs="unbounded">
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="inputfileStationList" type="filename">
+									<xs:element name="inputfileStationInfo" type="filename" default="{groopsDataDir}/gnss/receiverStation/stationInfo/stationInfo.{station}.xml">
 										<xs:annotation>
-											<xs:documentation>ASCII file with station names</xs:documentation>
+											<xs:documentation>platform file</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="inputfileTroposphereData" type="filename">
 										<xs:annotation>
-											<xs:documentation>Troposphere data estimates template (columns: mjd, trodry, trowet, tgndry, tgnwet, tgedry, tgewet)</xs:documentation>
+											<xs:documentation>Troposphere data estimates (columns: mjd, trodry, trowet, tgndry, tgnwet, tgedry, tgewet)</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="inputfileTroposphereSigmas" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>Troposphere data sigmas template (columns: mjd, sigma_trowet, sigma_tgnwet, sigma_tgewet)</xs:documentation>
+											<xs:documentation>Troposphere data sigmas (columns: mjd, sigma_trowet, sigma_tgnwet, sigma_tgewet)</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileStationInfo" type="filename" default="{groopsDataDir}/gnss/receiverStation/stationInfo/igs/stationInfo.{station}.xml">
+									<xs:element name="inputfilePosition" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>station info file template</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="inputfileGeoidHeight" type="filename" minOccurs="0">
-										<xs:annotation>
-											<xs:documentation>File including geoid height</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="inputfileGridPos" type="filename">
-										<xs:annotation>
-											<xs:documentation>File including stations positions</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
-										<xs:annotation>
-											<xs:documentation>station phase centers and variations (ANTEX)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="variableStationName" type="filename" minOccurs="0" default="station">
-										<xs:annotation>
-											<xs:documentation>Loop variable for station names from station list</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="observationTimeStart" type="time">
-										<xs:annotation>
-											<xs:documentation>Start time for which solution has observations</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="observationTimeEnd" type="time">
-										<xs:annotation>
-											<xs:documentation>End time for which solution has observations</xs:documentation>
+											<xs:documentation>Precise station position (columns: mjd, x, y, z [m in TRF])</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
-						<xs:element name="dataSamplingInterval" type="double">
+						<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
+							<xs:annotation>
+								<xs:documentation>station phase centers and variations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileGriddedGeoidHeight" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>value closest to the station&apos;s position is used in each case</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="dataSamplingInterval" type="double" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>[sec] GNSS data sampling rate</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="tropoSamplingInterval" type="double">
+						<xs:element name="tropoSamplingInterval" type="double" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>[sec] Tropospheric parameter sampling interval</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="tropoModelingMethod" type="string">
+						<xs:element name="tropoModelingMethod" type="string" minOccurs="0" default="Least Squares">
 							<xs:annotation>
 								<xs:documentation>Tropospheric estimation method: Filter, Smoother, Least Squares, Piece-Wise Linear Interpolation</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="aPrioriTropoModel" type="string">
+						<xs:element name="aPrioriTropoModel" type="string" minOccurs="0" default="VMF3 Operational 1x1° gridded + gradients (V3GR)">
 							<xs:annotation>
 								<xs:documentation>A priori tropospheric model used</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="tropoMappingFunction" type="string">
+						<xs:element name="tropoMappingFunction" type="string" minOccurs="0" default="Vienna Mapping Functions 3 (VMF3)">
 							<xs:annotation>
 								<xs:documentation>Name of mapping function used for hydrostatic and wet delay</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="gradientMappingFunction" type="string">
+						<xs:element name="gradientMappingFunction" type="string" minOccurs="0" default="Chen &amp; Herring (1997), C_dry=0.0031, C_wet=0.0007">
 							<xs:annotation>
 								<xs:documentation>Name of mapping function used for gradients</xs:documentation>
 							</xs:annotation>
@@ -22823,34 +22803,34 @@
 								<xs:documentation>source of surface meteorological observations used (see format desc.)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="observationWeighting" type="string">
+						<xs:element name="observationWeighting" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>observation weighting model applied</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="elevationCutoff" type="double">
+						<xs:element name="elevationCutoff" type="double" minOccurs="0" default="5">
 							<xs:annotation>
 								<xs:documentation>[deg]</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="gnssSystems" type="string">
+						<xs:element name="gnssSystems" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>G=GPS, R=GLONASS, E=Galileo, C=BeiDou</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="timeSystem" type="string" default="G">
+						<xs:element name="timeSystem" type="string" minOccurs="0" default="G">
 							<xs:annotation>
 								<xs:documentation>G (GPS) or UTC</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="oceanTideModel" type="string" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>Ocean tide loading model applied</xs:documentation>
+								<xs:documentation>Name of applied Ocean tide loading model</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="atmosphericTideModel" type="string" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>Atmospheric tide loading model applied</xs:documentation>
+								<xs:documentation>Name of applied Atmospheric tide loading model</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="geoidModel" type="string" minOccurs="0">
@@ -22858,80 +22838,80 @@
 								<xs:documentation>Geoid model name for undulation values</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="systemCode" type="string">
+						<xs:element name="systemCode" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>Terrestrial reference system code</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="remark" type="string" default="TUG">
+						<xs:element name="remark" type="string" minOccurs="0" default="TUG">
 							<xs:annotation>
 								<xs:documentation>Remark used to identify the origin of the coordinates (AC acronym)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="antennaCalibrationModel" type="string">
+						<xs:element name="antennaCalibrationModel" type="string" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>e.g. IGS14_WWWW (WWWW = ANTEX release GPS week)</xs:documentation>
+								<xs:documentation>e.g. IGS20_WWWW (WWWW = ANTEX release GPS week)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="sinexTroHeader">
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="agencyCode" type="string" default="TUG">
+									<xs:element name="agencyCode" type="string" minOccurs="0" default="TUG">
 										<xs:annotation>
 											<xs:documentation>Identify the agency providing the data</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="timeStart" type="time">
+									<xs:element name="timeStart" type="time" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Start time of the data</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="timeEnd" type="time">
+									<xs:element name="timeEnd" type="time" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>End time of the data </xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="observationCode" type="string" default="P">
+									<xs:element name="observationCode" type="string" minOccurs="0" default="P">
 										<xs:annotation>
 											<xs:documentation>Technique used to generate the SINEX solution</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="solutionContents" type="string">
+									<xs:element name="solutionContents" type="string" minOccurs="0" default="MIX">
 										<xs:annotation>
 											<xs:documentation>Marker name if single station, MIX if multiple stations</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="description" type="string">
+									<xs:element name="description" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Organizitions gathering/alerting the file contents</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="output" type="string">
+									<xs:element name="output" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Description of the file contents</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="contact" type="string">
+									<xs:element name="contact" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Address of the relevant contact e-mail</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="software" type="string" default="GROOPS">
+									<xs:element name="software" type="string" minOccurs="0" default="GROOPS (https://github.com/groops-devs/groops)">
 										<xs:annotation>
 											<xs:documentation>Software used to generate the file</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="hardware" type="string">
+									<xs:element name="hardware" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Computer hardware on which above software was run</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="input" type="string">
+									<xs:element name="input" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Brief description of the input used to generate this solution</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="versionNumber" type="string">
+									<xs:element name="versionNumber" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Unique identifier of the product, same as in file name, e.g. 000</xs:documentation>
 										</xs:annotation>
@@ -24590,7 +24570,7 @@
 											<xs:documentation>Brief description of the input used to generate this solution</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="software" type="string" minOccurs="0" default="GROOPS">
+									<xs:element name="software" type="string" minOccurs="0" default="GROOPS (https://github.com/groops-devs/groops)">
 										<xs:annotation>
 											<xs:documentation>Software used to generate the file</xs:documentation>
 										</xs:annotation>

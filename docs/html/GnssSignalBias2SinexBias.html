@@ -103,17 +103,17 @@ to get the correct PRN/SVN assignment to the biases.</p><p>See IGS SINEX Bias fo
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">biasMode</div></div></td><td>choice</td><td>absolute or relative bias estimates</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">absolute</div></div></td><td></td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">relative</div></div></td><td></td><td></td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">observationSampling</div></div></td><td>uint</td><td>[seconds]</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">intervalLength</div></div></td><td>uint</td><td>[seconds] interval for bias parameter representation</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">determinationMethod</div></div></td><td>string</td><td>determination method used to generate the bias results (see SINEX Bias format description)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">observationSampling</div></div></td><td>double</td><td>[seconds]</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">intervalLength</div></div></td><td>double</td><td>[seconds] interval for bias parameter representation</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">determinationMethod</div></div></td><td>string</td><td>determination method used to generate the bias results (see SINEX Bias format description)</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">receiverClockReferenceGnss</div></div></td><td>string</td><td>(G, R, E, C) reference GNSS used for receiver clock estimation</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">satelliteClockReferenceObservables</div></div></td><td>string</td><td>one per system, reference code observable on first and second frequency (RINEX3 format)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">description</div></div></td><td>string</td><td>organizition gathering/altering the file contents</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">contact</div></div></td><td>string</td><td>contact name and/or email address</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">input</div></div></td><td>string</td><td>brief description of the input used to generate this solution</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">output</div></div></td><td>string</td><td>description of the file contents</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">software</div></div></td><td>string</td><td>software used to generate the file</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">hardware</div></div></td><td>string</td><td>computer hardware on which above software was run</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">description</div></div></td><td>string</td><td>organizition gathering/altering the file contents</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">contact</div></div></td><td>string</td><td>contact name and/or email address</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">input</div></div></td><td>string</td><td>brief description of the input used to generate this solution</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">output</div></div></td><td>string</td><td>description of the file contents</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">software</div></div></td><td>string</td><td>software used to generate the file</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">hardware</div></div></td><td>string</td><td>computer hardware on which above software was run</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">comment</div></div></td><td>string</td><td>comments in the comment block</td></tr>
 </table>
 

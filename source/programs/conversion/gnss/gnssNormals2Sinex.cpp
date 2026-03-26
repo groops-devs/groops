@@ -229,7 +229,7 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         rad2DegMinSec(lat, latDeg, latMin, latSec);
 
         std::stringstream ss;
-        *block<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A "<<Sinex::resize(stationInfo.markerNumber, 9)<<" P "<<Sinex::resize(stationInfo.comment, 22)<<" "
+        *block<<" "<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A "<<Sinex::resize(stationInfo.markerNumber, 9)<<" P "<<Sinex::resize(stationInfo.comment, 22)<<" "
               <<lonDeg%"%3i "s<<lonMin%"%2i "s<<lonSec%"%4.1f "s<<latDeg%"%3i "s<<latMin%"%2i "s<<latSec%"%4.1f "s<<height%"%7.1f"s<<std::endl;
       }
     }
@@ -245,7 +245,7 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
           logWarning<<stationInfo.markerName<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
           continue;
         }
-        *block<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "<<Sinex::time2str(ant->timeStart)<<" "
+        *block<<" "<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "<<Sinex::time2str(ant->timeStart)<<" "
               <<Sinex::time2str(ant->timeEnd)<<" UNE "<<ant->position.z()%"%8.4f "s<<ant->position.x()%"%8.4f "s<<ant->position.y()%"%8.4f "s<<std::endl;
       }
     }
@@ -261,7 +261,7 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
           logWarning<<stationInfo.markerName<<": no receiver found at "<<timeRef.dateTimeStr()<<Log::endl;
           continue;
         }
-        *block<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "<<Sinex::time2str(recv->timeStart)<<" "<<Sinex::time2str(recv->timeEnd)<<" "
+        *block<<" "<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "<<Sinex::time2str(recv->timeStart)<<" "<<Sinex::time2str(recv->timeEnd)<<" "
               <<Sinex::resize(recv->name, 20)<<" "<<(recv->serial.empty() ? "-----" : Sinex::resize(recv->serial, 5))
               <<" "<<(recv->version.empty() ? std::string(11, '-') : Sinex::resize(recv->version, 11))<<std::endl;
       }
@@ -280,7 +280,7 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         }
         Angle roll, pitch, yaw;
         Rotary3d(ant->local2antennaFrame.matrix()).cardan(roll, pitch, yaw);
-        *block<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "<<Sinex::time2str(ant->timeStart)<<" "<<Sinex::time2str(ant->timeEnd)<<" "
+        *block<<" "<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "<<Sinex::time2str(ant->timeStart)<<" "<<Sinex::time2str(ant->timeEnd)<<" "
               <<Sinex::resize(ant->name, 15)<<" "<<(ant->radome.empty() ? "NONE" : Sinex::resize(ant->radome, 4))<<" "<<(ant->serial.empty() ? "-----" : Sinex::resize(ant->serial, 5))
               <<" "<<(yaw*RAD2DEG)%"% 4i"s<<std::endl;
       }
@@ -304,7 +304,7 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
           logWarning<<stationInfo.markerName <<": GPS phase center not found for antenna "<<ant->name<<" "<<ant->radome<<" "<<ant->serial<<Log::endl;
           continue;
         }
-        *block<<Sinex::resize(ant->name, 15)<<" "<<(ant->radome.empty() ? "NONE" : Sinex::resize(ant->radome, 4))<<" "<<(ant->serial.empty() ? "-----" : Sinex::resize(ant->serial, 5))<<" "
+        *block<<" "<<Sinex::resize(ant->name, 15)<<" "<<(ant->radome.empty() ? "NONE" : Sinex::resize(ant->radome, 4))<<" "<<(ant->serial.empty() ? "-----" : Sinex::resize(ant->serial, 5))<<" "
               <<Sinex::format(p1->offset.z())<<" "<<Sinex::format(p1->offset.x())<<" "<<Sinex::format(p1->offset.y())<<" "
               <<Sinex::format(p2->offset.z())<<" "<<Sinex::format(p2->offset.x())<<" "<<Sinex::format(p2->offset.y())<<" "
               <<Sinex::resize(antennaModel, 10)<<std::endl;
@@ -332,13 +332,13 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         auto p8 = std::find_if(patterns.begin(), patterns.end(), [](const GnssAntennaPattern &pattern){return pattern.type == GnssType::L8_E;});
         if(p1 == patterns.end() || p5 == patterns.end() || p6 == patterns.end() || p7 == patterns.end() || p8 == patterns.end())
           continue;
-        *block<<Sinex::resize(ant->name, 15)<<" "<<(ant->radome.empty() ? "NONE" : Sinex::resize(ant->radome, 4))<<" "<<(ant->serial.empty() ? "-----" : Sinex::resize(ant->serial, 5))<<" "
+        *block<<" "<<Sinex::resize(ant->name, 15)<<" "<<(ant->radome.empty() ? "NONE" : Sinex::resize(ant->radome, 4))<<" "<<(ant->serial.empty() ? "-----" : Sinex::resize(ant->serial, 5))<<" "
               <<Sinex::format(p1->offset.z())<<" "<<Sinex::format(p1->offset.x())<<" "<<Sinex::format(p1->offset.y())<<" "
               <<Sinex::format(p5->offset.z())<<" "<<Sinex::format(p5->offset.x())<<" "<<Sinex::format(p5->offset.y())<<" "<<Sinex::resize(antennaModel, 10)<<std::endl;
-        *block<<Sinex::resize(ant->name, 15)<<" "<<(ant->radome.empty() ? "NONE" : Sinex::resize(ant->radome, 4))<<" "<<(ant->serial.empty() ? "-----" : Sinex::resize(ant->serial, 5))<<" "
+        *block<<" "<<Sinex::resize(ant->name, 15)<<" "<<(ant->radome.empty() ? "NONE" : Sinex::resize(ant->radome, 4))<<" "<<(ant->serial.empty() ? "-----" : Sinex::resize(ant->serial, 5))<<" "
               <<Sinex::format(p6->offset.z())<<" "<<Sinex::format(p6->offset.x())<<" "<<Sinex::format(p6->offset.y())<<" "
               <<Sinex::format(p7->offset.z())<<" "<<Sinex::format(p7->offset.x())<<" "<<Sinex::format(p7->offset.y())<<" "<<Sinex::resize(antennaModel, 10)<<std::endl;
-        *block<<Sinex::resize(ant->name, 15)<<" "<<(ant->radome.empty() ? "NONE" : Sinex::resize(ant->radome, 4))<<" "<<(ant->serial.empty() ? "-----" : Sinex::resize(ant->serial, 5))<<" "
+        *block<<" "<<Sinex::resize(ant->name, 15)<<" "<<(ant->radome.empty() ? "NONE" : Sinex::resize(ant->radome, 4))<<" "<<(ant->serial.empty() ? "-----" : Sinex::resize(ant->serial, 5))<<" "
               <<Sinex::format(p8->offset.z())<<" "<<Sinex::format(p8->offset.x())<<" "<<Sinex::format(p8->offset.y())<<" "
               <<std::string(20, ' ')<<" "<<Sinex::resize(antennaModel, 10)<<std::endl;
       }
@@ -368,7 +368,7 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
           logWarning<<transmitterInfo.markerName<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
           continue;
         }
-        *block<<ant->serial<<" "<<transmitterInfo.markerNumber.substr(1,2)<<" "<<ant->radome<<" P "<<Sinex::time2str(svn2TimeStart[ant->serial])
+        *block<<" "<<ant->serial<<" "<<transmitterInfo.markerNumber.substr(1,2)<<" "<<ant->radome<<" P "<<Sinex::time2str(svn2TimeStart[ant->serial])
               <<" "<<Sinex::time2str(svn2TimeEnd[ant->serial])<<" "<<ant->name<<std::endl;
       }
     }
@@ -398,17 +398,17 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         std::sort(patterns.begin(), patterns.end(), [](const auto &p1, const auto &p2){return p1->type < p2->type;});
         for(UInt i=0; i<patterns.size(); i+=2)
         {
-          *block<<ant->serial<<" "<<antennaOffsetStr(*ant, *patterns.at(i))<<" "<<(i+1 < patterns.size() ? antennaOffsetStr(*ant, *patterns.at(i+1)) : std::string(22, ' '))
+          *block<<" "<<ant->serial<<" "<<antennaOffsetStr(*ant, *patterns.at(i))<<" "<<(i+1 < patterns.size() ? antennaOffsetStr(*ant, *patterns.at(i+1)) : std::string(22, ' '))
                 <<" "<<Sinex::resize(antennaModel, 10)<<" A "<<(patterns.at(i)->pattern.rows() > 1 ? "F" : "E")<<std::endl;
         }
       }
     }
     // -----------------
     {
-      SinexBlockPtr block = sinex.addBlock("SATELLITE/PHASE_CENTER");
+      SinexBlockPtr block = sinex.addBlock("SOLUTION/EPOCHS");
       *block<<"*SITE PT SOLN T _DATA_START_ __DATA_END__ _MEAN_EPOCH_"<<std::endl;
       for(const auto &stationInfo : stationInfos)
-        *block<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "
+        *block<<" "<<String::upperCase(Sinex::resize(stationInfo.markerName, 4))<<"  A    1 P "
               <<Sinex::time2str(timeStartObs)<<" "<<Sinex::time2str(timeEndObs)<<" "<<Sinex::time2str(0.5*(timeStartObs+timeEndObs))<<std::endl;
     }
     // -----------------
@@ -476,7 +476,7 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
         else if(!isStation && type.size() == 22 && type.substr(0, 14) == "antennaCenter.")
         {
           const std::string frequency = type.substr(type.size()-6, 2);
-          if(frequency.at(0) != 'L')
+          if((frequency.at(0) != 'L') && (frequency.at(0) != '*'))
             throw(Exception("unsupported antenna center parameter: " + info.parameterName.at(i).str()));
           if(type.at(14) == 'x')      parameterType  = "SATA_Y"; // swap X and Y names (definition different for GROOPS and IGS)
           else if(type.at(14) == 'y') parameterType  = "SATA_X"; // swap X and Y names (definition different for GROOPS and IGS)
@@ -485,7 +485,7 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
             throw(Exception("unsupported antenna center parameter: "+info.parameterName.at(i).str()));
           unit           = "m   ";
           siteCode       = object.substr(object.find('|')+1, 4); // SVN
-          pointCode      = (frequency == "L*" ? "LC" : frequency);
+          pointCode      = (frequency.at(1) == '*') ? "LC"s : "L"s+frequency.at(1);
           constraintCode = parameterIsConstrained.at(i) ? "0" : "2";
         }
         else

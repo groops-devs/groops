@@ -54,7 +54,7 @@ template<> Bool readConfig(Config &config, const std::string &name, GnssEop2IgsE
   if(!readConfigSequence(config, name, mustSet, defaultValue, annotation))
     return FALSE;
   readConfig(config, "inputfileSolution",          var.fileNameSolution,        Config::MUSTSET,  "", "parameter vector");
-  readConfig(config, "inputfileSigmax",            var.fileNameSigmax,          Config::MUSTSET,  "", "standard deviations of the parameters (sqrt of the diagonal of the inverse normal equation)");
+  readConfig(config, "inputfileSigmax",            var.fileNameSigmax,          Config::OPTIONAL, "", "standard deviations of the parameters (sqrt of the diagonal of the inverse normal equation)");
   readConfig(config, "inputfileParameterNames",    var.fileNameParameterNames,  Config::MUSTSET,  "", "parameter names");
   readConfig(config, "inputfileTransmitterList",   var.fileNameTransmitterList, Config::OPTIONAL, "", "transmitter PRNs used in solution (used for transmitter count)");
   readConfig(config, "inputfileStationList",       var.fileNameStationList,     Config::OPTIONAL, "", "stations used in solution (used for station count)");
@@ -82,13 +82,16 @@ void GnssEop2IgsErp::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     std::vector<std::string> lines;
     for(const auto &epoch : epochs)
     {
-      logStatus<<"reading solution from <"<<epoch.fileNameSolution<<">"<<Log::endl;
       Vector x;
+      logStatus<<"reading solution from <"<<epoch.fileNameSolution<<">"<<Log::endl;
       readFileMatrix(epoch.fileNameSolution, x);
 
-      logStatus<<"reading standard deviations from <"<<epoch.fileNameSigmax<<">"<<Log::endl;
-      Vector sigmax;
-      readFileMatrix(epoch.fileNameSigmax, sigmax);
+      Vector sigmax(x.rows());
+      if(!epoch.fileNameSigmax.empty())
+      {
+        logStatus<<"reading standard deviations from <"<<epoch.fileNameSigmax<<">"<<Log::endl;
+        readFileMatrix(epoch.fileNameSigmax, sigmax);
+      }
 
       logStatus<<"reading parameter names from <"<<epoch.fileNameParameterNames<<">"<<Log::endl;
       std::vector<ParameterName> parameterNames;

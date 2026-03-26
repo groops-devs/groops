@@ -140,7 +140,7 @@ void writeFileSinex(const FileName &fileName, const Sinex &sinex)
       file<<"-"<<block->label<<std::endl;
       file<<"*"<<std::string(79, '-')<<std::endl;
     }
-    file<<"%ENDSNX";
+    file<<sinex.footer<<std::endl;
   }
   catch(std::exception &e)
   {
@@ -226,7 +226,7 @@ template<> Bool readConfig(Config &config, const std::string &name, Sinex &sinex
     readConfig(config, "contact",          contact,          Config::OPTIONAL, "",       "Address of the relevant contact. e-mail");
     readConfig(config, "output",           output,           Config::OPTIONAL, "",       "Description of the file contents");
     readConfig(config, "input",            input,            Config::OPTIONAL, "",       "Brief description of the input used to generate this solution");
-    readConfig(config, "software",         software,         Config::OPTIONAL, "GROOPS", "Software used to generate the file");
+    readConfig(config, "software",         software,         Config::OPTIONAL, "GROOPS (https://github.com/groops-devs/groops)", "Software used to generate the file");
     readConfig(config, "hardware",         hardware,         Config::OPTIONAL, "",       "Computer hardware on which above software was run");
     readConfig(config, "inputfileComment", fileNameComment,  Config::OPTIONAL, "",       "comments in the comment block from a file (truncated at 80 characters)");
     readConfig(config, "comment",          comments,         Config::OPTIONAL, "",       "comments in the comment block");

@@ -721,7 +721,7 @@ void RinexObservation2GnssReceiver::checkStationInfo()
 {
   try
   {
-    if((!stationInfo.markerName.empty()) && (stationInfo.markerName != stationInfoRinex.markerName))
+    if((!stationInfo.markerName.empty()) && (stationInfo.markerName.substr(0,4) != stationInfoRinex.markerName.substr(0,4)))
       logWarning<<timeOfFirstObs.dateTimeStr()<<" Marker name differs '"<<stationInfo.markerName<<"' != '"<<stationInfoRinex.markerName<<"'"<<Log::endl;
     if((!stationInfo.markerNumber.empty()) && (stationInfo.markerNumber != stationInfoRinex.markerNumber))
       logWarning<<timeOfFirstObs.dateTimeStr()<<" Marker number differs '"<<stationInfo.markerNumber<<"' != '"<<stationInfoRinex.markerNumber<<"'"<<Log::endl;
@@ -734,7 +734,7 @@ void RinexObservation2GnssReceiver::checkStationInfo()
       {
         if((!antennaRinex.name.empty()) && (antenna->name != antennaRinex.name))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna name differs '"<<antenna->name<<"' != '"<<antennaRinex.name<<"'"<<Log::endl;
-        if((!antennaRinex.serial.empty()) && (antenna->serial != antennaRinex.serial))
+        if((!antennaRinex.serial.empty()) && !String::startsWith(antennaRinex.serial, antenna->serial))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna serial differs '"<<antenna->serial<<"' != '"<<antennaRinex.serial<<"'"<<Log::endl;
         if((!antennaRinex.radome.empty()) && (antenna->radome != antennaRinex.radome))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna radome differs '"<<antenna->radome<<"' != '"<<antennaRinex.radome<<"'"<<Log::endl;
@@ -755,7 +755,7 @@ void RinexObservation2GnssReceiver::checkStationInfo()
       {
         if((!receiverRinex.name.empty()) && (recv->name != receiverRinex.name))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver name differs '"<<recv->name<<"' != '"<<receiverRinex.name<<"'"<<Log::endl;
-        if((!receiverRinex.serial.empty()) && (recv->serial != receiverRinex.serial))
+        if((!receiverRinex.serial.empty()) && !String::startsWith(receiverRinex.serial, recv->serial))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver serial differs '"<<recv->serial<<"' != '"<<receiverRinex.serial<<"'"<<Log::endl;
         if((!receiverRinex.version.empty()) && (recv->version != receiverRinex.version))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver version differs '"<<recv->version<<"' != '"<<receiverRinex.version<<"'"<<Log::endl;

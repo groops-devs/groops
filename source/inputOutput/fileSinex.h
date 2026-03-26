@@ -32,7 +32,10 @@ class Sinex
 {
 public:
   std::string              header; /// SINEX file header line
+  std::string              footer; /// SINEX file footer line
   std::list<SinexBlockPtr> blocks; /// SINEX blocks
+
+  Sinex() : header("%=SNX 2.02"), footer("%ENDSNX") {}
 
   SinexBlockPtr findBlock(const std::string &label);
   SinexBlockPtr addBlock(const std::string &label);
@@ -51,8 +54,8 @@ class SinexBlock
 {
 public:
   std::string              label;
-  std::vector<std::string> lines;
-  std::stringstream        ss;
+  std::vector<std::string> lines; // from file
+  std::stringstream        ss;    // to file
 
   std::ostream &operator<<(std::ostream  &(*pf)(std::ostream  &)) {pf(ss); return ss;} // sinex<<std::endl;
   template<typename T> std::ostream &operator<<(const T &t) {return ss<<t;}
