@@ -254,7 +254,7 @@ std::string PlotMapLayerPoints::scriptEntry() const
 {
   try
   {
-    if(!data.size())
+    if(!points.size())
       return "";
 
     std::stringstream ss;
@@ -389,7 +389,7 @@ std::string PlotMapLayerArrows::scriptEntry() const
     std::stringstream ss;
 
     // arrows from grid file
-    if(data.size())
+    if(points.size())
     {
       ss<<"gmt psxy "<<dataFileName<<" -bi"<<2+data.columns()<<"d -J -R -A -SV"<<headSize<<"p+ea+z"<<scale<<"c";
       if(hasZValues)
