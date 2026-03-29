@@ -15,6 +15,7 @@
 - Other:            Changed ftp.tugraz.at/outgoing/ITSG to ftp.tugraz.at/pub/ITSG.
 - Other:            ModelEquilibriumTide: Taking into account spatially varying density.
 - Other:            GnssTroposphere2TropoSinex: Revised interface.
+- Other:            GnssAntex2AntennaDefinition: Handling of changing antennas of a SVN.
 
 # Release 2025-11-15
 - New program:      StarCamera2Orbex (replaces GnssAttitude2Orbex).
