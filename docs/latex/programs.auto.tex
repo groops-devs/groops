@@ -846,8 +846,8 @@ Name & Type & Annotation\\
 %==================================
 \subsection{GnssGlonassFrequencyNumberUpdate}\label{GnssGlonassFrequencyNumberUpdate}
 Update/set GLONASS frequency number in \configFile{inputfileTransmitterInfo}{platform} files.
-
-PRN/SVN to frequency number source: \url{http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO}.
+The \configFile{inputfilePrn2FrequencyNumber}{matrix} can be generated with
+\program{SinexMetadata2GlonassFrequencyNumber}.
 
 See also \program{GnssAntex2AntennaDefinition}.
 
@@ -859,7 +859,7 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt templated for PRN list (variableNamePrn)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt templated for PRN list (variableNamePrn)\\
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfilePrn2FrequencyNumber & \hfuzz=500pt filename & \hfuzz=500pt GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfilePrn2FrequencyNumber & \hfuzz=500pt filename & \hfuzz=500pt matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~prn & \hfuzz=500pt string & \hfuzz=500pt PRN (e.g. R01) for transmitter info files\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableNamePrn & \hfuzz=500pt string & \hfuzz=500pt variable name for PRN in transmitter info files\\
 \hline
@@ -7848,8 +7848,10 @@ Name & Type & Annotation\\
 %==================================
 \subsection{GnssAntex2AntennaDefinition}\label{GnssAntex2AntennaDefinition}
 Converts metadata and antenna definitions from the \href{https://files.igs.org/pub/data/format/antex14.txt}{IGS ANTEX format}.
-to \configFile{transmitterInfo}{platform}, \configFile{antennaDefinition}{gnssAntennaDefinition}, \configFile{svnBlockTable}{stringTable},
-and \configFile{transmitterList}{stringList} files for the respective GNSS and for the list of ground station antennas.
+to \configFile{antennaDefinition}{gnssAntennaDefinition}, \configFile{transmitterInfo}{platform}, and
+\configFile{transmitterList}{stringList} files for the respective GNSS and for the list of ground station antennas.
+
+The \file{transmitterInfo}{platform} files for GLONASS satellites should then be updated using \program{GnssGlonassFrequencyNumberUpdate}.
 
 
 \keepXColumns
@@ -7860,16 +7862,12 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntennaDefinitionStation & \hfuzz=500pt filename & \hfuzz=500pt antenna center variations\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileAntennaDefinitionTransmitter & \hfuzz=500pt filename & \hfuzz=500pt antenna center variations\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterInfo & \hfuzz=500pt filename & \hfuzz=500pt PRN is appended to file name\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSvnBlockTableGps & \hfuzz=500pt filename & \hfuzz=500pt SVN to satellite block mapping\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSvnBlockTableGlonass & \hfuzz=500pt filename & \hfuzz=500pt SVN to satellite block mapping\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSvnBlockTableGalileo & \hfuzz=500pt filename & \hfuzz=500pt SVN to satellite block mapping\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSvnBlockTableBeiDou & \hfuzz=500pt filename & \hfuzz=500pt SVN to satellite block mapping\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileSvnBlockTableQzss & \hfuzz=500pt filename & \hfuzz=500pt SVN to satellite block mapping\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterListGps & \hfuzz=500pt filename & \hfuzz=500pt list of PRNs\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterListGlonass & \hfuzz=500pt filename & \hfuzz=500pt list of PRNs\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterListGalileo & \hfuzz=500pt filename & \hfuzz=500pt list of PRNs\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterListBeiDou & \hfuzz=500pt filename & \hfuzz=500pt list of PRNs\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterListQzss & \hfuzz=500pt filename & \hfuzz=500pt list of PRNs\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileTransmitterListIrnss & \hfuzz=500pt filename & \hfuzz=500pt list of PRNs\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAntex & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt ignore older antenna definitions\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~createZeroModel & \hfuzz=500pt boolean & \hfuzz=500pt create empty antenna patterns\\
@@ -9689,13 +9687,11 @@ Name & Type & Annotation\\
 \subsection{RinexObservation2GnssReceiver}\label{RinexObservation2GnssReceiver}
 Converts \href{https://files.igs.org/pub/data/format/rinex_4.00.pdf}{RINEX} (version 2, 3, and 4) and
 \href{https://terras.gsi.go.jp/ja/crx2rnx.html}{Compact RINEX} observation files to
-\file{GnssReceiver Instrument file}{instrument}.
+\configFile{outputfileGnssReceiver}{instrument}.
 
 In case of \href{https://files.igs.org/pub/data/format/rinex211.txt}{RINEX v2.x} observation files
-containing GLONASS satellites, a mapping from PRN
-to frequency number must be provided via \config{inputfileMatrixPrn2FrequencyNumber}
-in the form of a \file{matrix file}{matrix} with columns: GLONASS PRN, mjdStart, mjdEnd, frequencyNumber.
-Source for mapping: \url{http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO}.
+containing GLONASS satellites, a mapping from PRN to frequency number must be provided via
+\configFile{inputfileMatrixPrn2FrequencyNumber}{matrix}, see \program{SinexMetadata2GlonassFrequencyNumber}.
 RINEX v3+ observation files already contain this information.
 
 \configClass{useType}{gnssType} and \configClass{ignoreType}{gnssType} can be used to filter
@@ -9705,12 +9701,12 @@ If \configFile{inputfileStationInfo}{platform} is set, RINEX antenna and receive
 will be cross-checked with the provided file and warnings are raised in case of differences.
 
 A list of semi-codeless GPS receivers (observing C2D instead of C2W) can be provided via
-\configFile{inputfileSemiCodelessReceivers}{stringList} in ASCII format with one receiver name per line.
+\configFile{inputfileSemiCodelessReceivers}{stringList} with one receiver name per line.
 Observation types will be automatically corrected for these receivers.
 
 Some LEO satellites use special RINEX observation types, either from the unofficial RINEX v2.20
-or custom ones. These can be provided via \configFile{inputfileSpecialObservationTypes}{stringTable}
-in ASCII format. The file must  must contain a table with two columns, the first being the special type,
+or custom ones. These can be provided via \configFile{inputfileSpecialObservationTypes}{stringTable}.
+The file must  must contain a table with two columns, the first being the special type,
 and the second being the equivalent RINEX v3 type.
 
 %Example for RINEX v2.20:
@@ -9732,10 +9728,10 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileGnssReceiver & \hfuzz=500pt filename & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfileRinexObservation & \hfuzz=500pt filename & \hfuzz=500pt RINEX or Compact RINEX observation files\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileMatrixPrn2FrequencyNumber & \hfuzz=500pt filename & \hfuzz=500pt (required for RINEX v2 files containing GLONASS observations) GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileMatrixPrn2FrequencyNumber & \hfuzz=500pt filename & \hfuzz=500pt (required for RINEX v2 files containing GLONASS observations), matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileStationInfo & \hfuzz=500pt filename & \hfuzz=500pt used to determine semi-codeless receivers and to cross-check antenna and receiver info\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSemiCodelessReceivers & \hfuzz=500pt filename & \hfuzz=500pt ASCII list with one receiver name per line\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSpecialObservationTypes & \hfuzz=500pt filename & \hfuzz=500pt ASCII table mapping special observation types to RINEX 3 types, e.g.: LA L1C\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSemiCodelessReceivers & \hfuzz=500pt filename & \hfuzz=500pt list with one receiver name per line\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSpecialObservationTypes & \hfuzz=500pt filename & \hfuzz=500pt table mapping special observation types to RINEX 3 types, e.g.: LA L1C\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~useType & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt only use observations that match any of these patterns\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~ignoreType & \hfuzz=500pt \hyperref[gnssType]{gnssType} & \hfuzz=500pt ignore observations that match any of these patterns\\
 \hline
@@ -9933,7 +9929,8 @@ Create \configFile{outputfileMatrixPrn2FrequencyNumber}{matrix} matrix
 from \href{https://www.igs.org/mgex/metadata/#metadata}{IGS SINEX metadata format}
 with the columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber.
 
-See also \program{RinexObservation2GnssReceiver}.
+See also \program{GnssGlonassFrequencyNumberUpdate}, \program{GnssAntex2AntennaDefinition},
+\program{RinexObservation2GnssReceiver}.
 
 
 \keepXColumns

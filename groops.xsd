@@ -12010,9 +12010,9 @@
 								<xs:documentation>templated for PRN list (variableNamePrn)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfilePrn2FrequencyNumber" type="filename">
+						<xs:element name="inputfilePrn2FrequencyNumber" type="filename" default="{groopsDataDir}/gnss/transmitter/glonassPrnSvn2FrequencyNumber.txt">
 							<xs:annotation>
-								<xs:documentation>GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber</xs:documentation>
+								<xs:documentation>matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="prn" type="string" minOccurs="0" maxOccurs="unbounded">
@@ -21813,31 +21813,6 @@
 								<xs:documentation>PRN is appended to file name</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="outputfileSvnBlockTableGps" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>SVN to satellite block mapping</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outputfileSvnBlockTableGlonass" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>SVN to satellite block mapping</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outputfileSvnBlockTableGalileo" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>SVN to satellite block mapping</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outputfileSvnBlockTableBeiDou" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>SVN to satellite block mapping</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outputfileSvnBlockTableQzss" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>SVN to satellite block mapping</xs:documentation>
-							</xs:annotation>
-						</xs:element>
 						<xs:element name="outputfileTransmitterListGps" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>list of PRNs</xs:documentation>
@@ -21859,6 +21834,11 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="outputfileTransmitterListQzss" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>list of PRNs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileTransmitterListIrnss" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>list of PRNs</xs:documentation>
 							</xs:annotation>
@@ -24879,7 +24859,7 @@
 						</xs:element>
 						<xs:element name="inputfileMatrixPrn2FrequencyNumber" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/transmitter/glonassPrnSvn2FrequencyNumber.txt">
 							<xs:annotation>
-								<xs:documentation>(required for RINEX v2 files containing GLONASS observations) GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber</xs:documentation>
+								<xs:documentation>(required for RINEX v2 files containing GLONASS observations), matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileStationInfo" type="filename" minOccurs="0">
@@ -24889,12 +24869,12 @@
 						</xs:element>
 						<xs:element name="inputfileSemiCodelessReceivers" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/semiCodelessReceivers.txt">
 							<xs:annotation>
-								<xs:documentation>ASCII list with one receiver name per line</xs:documentation>
+								<xs:documentation>list with one receiver name per line</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileSpecialObservationTypes" type="filename" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>ASCII table mapping special observation types to RINEX 3 types, e.g.: LA L1C</xs:documentation>
+								<xs:documentation>table mapping special observation types to RINEX 3 types, e.g.: LA L1C</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="useType" type="gnssType" minOccurs="0" maxOccurs="unbounded">

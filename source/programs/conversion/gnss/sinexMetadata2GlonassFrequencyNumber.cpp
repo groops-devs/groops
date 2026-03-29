@@ -16,7 +16,8 @@ Create \configFile{outputfileMatrixPrn2FrequencyNumber}{matrix} matrix
 from \href{https://www.igs.org/mgex/metadata/#metadata}{IGS SINEX metadata format}
 with the columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber.
 
-See also \program{RinexObservation2GnssReceiver}.
+See also \program{GnssGlonassFrequencyNumberUpdate}, \program{GnssAntex2AntennaDefinition},
+\program{RinexObservation2GnssReceiver}.
 )";
 
 /***********************************************/

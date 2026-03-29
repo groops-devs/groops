@@ -15,8 +15,10 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 Converts metadata and antenna definitions from the \href{https://files.igs.org/pub/data/format/antex14.txt}{IGS ANTEX format}.
-to \configFile{transmitterInfo}{platform}, \configFile{antennaDefinition}{gnssAntennaDefinition}, \configFile{svnBlockTable}{stringTable},
-and \configFile{transmitterList}{stringList} files for the respective GNSS and for the list of ground station antennas.
+to \configFile{antennaDefinition}{gnssAntennaDefinition}, \configFile{transmitterInfo}{platform}, and
+\configFile{transmitterList}{stringList} files for the respective GNSS and for the list of ground station antennas.
+
+The \file{transmitterInfo}{platform} files for GLONASS satellites should then be updated using \program{GnssGlonassFrequencyNumberUpdate}.
 )";
 
 /***********************************************/
