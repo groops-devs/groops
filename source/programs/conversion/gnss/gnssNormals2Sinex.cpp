@@ -368,8 +368,8 @@ void GnssNormals2Sinex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
           logWarning<<transmitterInfo.markerName<<": no antenna found at "<<timeRef.dateTimeStr()<<Log::endl;
           continue;
         }
-        *block<<" "<<ant->serial<<" "<<transmitterInfo.markerNumber.substr(1,2)<<" "<<ant->radome<<" P "<<Sinex::time2str(svn2TimeStart[ant->serial])
-              <<" "<<Sinex::time2str(svn2TimeEnd[ant->serial])<<" "<<ant->name<<std::endl;
+        *block<<" "<<Sinex::resize(ant->serial, 4)<<" "<<transmitterInfo.markerNumber.substr(1,2)<<" "<<Sinex::resize(ant->radome, 9)<<" P "
+              <<Sinex::time2str(svn2TimeStart[ant->serial])<<" "<<Sinex::time2str(svn2TimeEnd[ant->serial])<<" "<<ant->name<<std::endl;
       }
     }
     // -----------------

@@ -86,7 +86,7 @@ void GnssGriddedDataTimeSeries2Ionex::run(Config &config, Parallel::Communicator
     file<<"     1.0            IONOSPHERE MAPS     GNSS                IONEX VERSION / TYPE"<<std::endl;
     file<<resize(program, 20)<<resize(institution, 20)<<System::now()%"%D %H:%M:%S "s<<"PGM / RUN BY / DATE"<<std::endl;
     for(auto &description : descriptions)
-      file<<resize(description, 20)<<"DESCRIPTION"<<std::endl;
+      file<<resize(description, 60)<<"DESCRIPTION"<<std::endl;
     file<<times.front()%"  %y    %m    %d    %H    %M    %S"s<<std::string(24, ' ')<<"EPOCH OF FIRST MAP"<<std::endl;
     file<<times.back() %"  %y    %m    %d    %H    %M    %S"s<<std::string(24, ' ')<<"EPOCH OF LAST MAP"<<std::endl;
     file<<medianSampling(times).seconds()%"% 6i"s<<std::string(54, ' ')<<"INTERVAL"<<std::endl;

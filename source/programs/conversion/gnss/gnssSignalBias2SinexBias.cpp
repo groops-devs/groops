@@ -295,14 +295,14 @@ void GnssSignalBias2SinexBias::readData(std::vector<Data> &data) const
 void GnssSignalBias2SinexBias::writeLine(SinexBlockPtr block, const Time &timeStart, const Time &timeEnd, std::string prn, std::string svn, std::string stationName,
                                          const GnssType &type, std::string unit, Double bias, Double biasSigma, Double biasSlope, Double biasSlopeSigma) const
 {
-  std::transform(stationName.begin(), stationName.end(), stationName.begin(), ::toupper);
+  stationName = String::upperCase(stationName);
 
-  if(stationName.find_first_not_of(' ') != std::string::npos)
+  if(!String::trim(stationName).empty())
   {
-    if(prn.find_first_not_of(' ') == std::string::npos)
-      prn.at(0) = type.str().at(3);
-    if(svn.find_first_not_of(' ') == std::string::npos)
-      svn.at(0) = type.str().at(3);
+    if(String::trim(prn).empty())
+      prn = type.str().at(3);
+    if(String::trim(svn).empty())
+      svn = type.str().at(3);
   }
 
   *block<<" OSB  "<<resize(svn, 4)<<' '<<resize(prn, 3)<<' '<<resize(stationName, 9)<<' '<<type.str().substr(0,3)<<std::string(7, ' ')
