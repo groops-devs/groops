@@ -32,7 +32,7 @@ std::string parseUntil(const std::string &text, const char *search, const Variab
     std::string::size_type posOld = pos;
     pos = text.find_first_of(search, pos);
     textPart += text.substr(posOld, pos-posOld);
-    if((pos != std::string::npos) && (pos > 1) && (text.at(pos-1) == '#')) // escape '#' before?
+    if((pos != std::string::npos) && (pos > 0) && (text.at(pos-1) == '#')) // escape '#' before?
       textPart.back() = text.at(pos++);                                    // replace '#' by excapted character
     else if((pos != std::string::npos) && (text.at(pos) == '{'))
       textPart += parseVariable(text, varList, ++pos, resolved);

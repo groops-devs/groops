@@ -18,7 +18,6 @@
 #include "files/fileFormatRegister.h"
 #include "files/fileGnssAntennaDefinition.h"
 #include "files/fileGnssReceiverDefinition.h"
-#include "files/fileGnssStationInfo.h"
 #include "files/filePlatform.h"
 
 GROOPS_REGISTER_FILEFORMAT(Platform, "platform")
@@ -340,51 +339,78 @@ void readFilePlatform(const FileName &fileName, Platform &x)
     InFileArchive file(fileName, ""/*arbitrary type*/, FILE_PLATFORM_VERSION);
     if(file.type() == FILE_PLATFORM_TYPE)
       file>>nameValue("platform", x);
-    else if(file.type() == FILE_GNSSSTATIONINFO_TYPE)
+    else if(file.type() == "stationInfo") // old deprecated file format
     {
-      GnssStationInfo info;
-      readFileGnssStationInfo(fileName, info);
-      x.markerName     = info.markerName;
-      x.markerNumber   = info.markerNumber;
-      x.comment        = info.comment;
-      x.approxPosition = info.approxPosition;
-      x.referencePoints.resize(info.referencePoints.size());
-      for(UInt i=0; i<x.referencePoints.size(); i++)
+      UInt count;
+      file>>nameValue("stationCount", count);
+      if(count>1)
+        logWarning<<fileName<<" contain more than one station, only the first is used"<<Log::endl;
+      file>>beginGroup("station");
+      file>>nameValue("markerName",     x.markerName);
+      file>>nameValue("markerNumber",   x.markerNumber);
+      file>>nameValue("comment",        x.comment);
+      file>>nameValue("approxPosition", x.approxPosition);
+      file>>beginGroup("antenna");
       {
-        x.referencePoints.at(i).comment    = info.referencePoints.at(i).comment;
-        x.referencePoints.at(i).pointStart = info.referencePoints.at(i).pointStart;
-        x.referencePoints.at(i).pointEnd   = info.referencePoints.at(i).pointEnd;
-        x.referencePoints.at(i).timeStart  = info.referencePoints.at(i).timeStart;
-        x.referencePoints.at(i).timeEnd    = info.referencePoints.at(i).timeEnd;
+        UInt count;
+        file>>nameValue("count", count);
+        for(UInt i=0; i<count; i++)
+        {
+          auto var = std::make_shared<PlatformGnssAntenna>();
+          file>>beginGroup("cell");
+          file>>nameValue("name",               var->name);
+          file>>nameValue("serial",             var->serial);
+          file>>nameValue("radome",             var->radome);
+          file>>nameValue("comment",            var->comment);
+          file>>nameValue("timeStart",          var->timeStart);
+          file>>nameValue("timeEnd",            var->timeEnd);
+          file>>nameValue("position",           var->position);
+          file>>nameValue("local2antennaFrame", var->local2antennaFrame);
+          file>>endGroup("cell");
+          x.equipments.push_back(var);
+        }
       }
-      x.equipments.clear();
-      for(UInt i=0; i<info.antenna.size(); i++)
+      file>>endGroup("antenna");
+      file>>beginGroup("receiver");
       {
-        PlatformGnssAntenna *ant = new PlatformGnssAntenna();
-        ant->name               = info.antenna.at(i).name;
-        ant->serial             = info.antenna.at(i).serial;
-        ant->radome             = info.antenna.at(i).radome;
-        ant->comment            = info.antenna.at(i).comment;
-        ant->timeStart          = info.antenna.at(i).timeStart;
-        ant->timeEnd            = info.antenna.at(i).timeEnd;
-        ant->position           = info.antenna.at(i).position;
-        ant->local2antennaFrame = info.antenna.at(i).local2antennaFrame;
-        x.equipments.push_back(PlatformEquipmentPtr(ant));
+        UInt count;
+        file>>nameValue("count", count);
+        for(UInt i=0; i<count; i++)
+        {
+          auto var = std::make_shared<PlatformGnssReceiver>();
+          file>>beginGroup("cell");
+          file>>nameValue("name",      var->name);
+          file>>nameValue("serial",    var->serial);
+          file>>nameValue("version",   var->version);
+          file>>nameValue("comment",   var->comment);
+          file>>nameValue("timeStart", var->timeStart);
+          file>>nameValue("timeEnd",   var->timeEnd);
+          file>>endGroup("cell");
+          x.equipments.push_back(var);
+        }
       }
-      for(UInt i=0; i<info.receiver.size(); i++)
+      file>>endGroup("receiver");
+      file>>beginGroup("referencePoint");
       {
-        PlatformGnssReceiver *recv = new PlatformGnssReceiver();
-        recv->name               = info.receiver.at(i).name;
-        recv->serial             = info.receiver.at(i).serial;
-        recv->version            = info.receiver.at(i).version;
-        recv->comment            = info.receiver.at(i).comment;
-        recv->timeStart          = info.receiver.at(i).timeStart;
-        recv->timeEnd            = info.receiver.at(i).timeEnd;
-        x.equipments.push_back(PlatformEquipmentPtr(recv));
+        UInt count;
+        file>>nameValue("count", count);
+        x.referencePoints.resize(count);
+        for(UInt i=0; i<count; i++)
+        {
+          file>>beginGroup("cell");
+          file>>nameValue("comment",    x.referencePoints.at(i).comment);
+          file>>nameValue("pointStart", x.referencePoints.at(i).pointStart);
+          file>>nameValue("pointEnd",   x.referencePoints.at(i).pointEnd);
+          file>>nameValue("timeStart",  x.referencePoints.at(i).timeStart);
+          file>>nameValue("timeEnd",    x.referencePoints.at(i).timeEnd);
+          file>>endGroup("cell");
+        }
       }
+      file>>endGroup("referencePoint");
+      file>>endGroup("station");
     }
     else
-      throw(Exception("file type is '"+file.type()+"' but must be '"+FILE_PLATFORM_TYPE+"' or '"+FILE_GNSSSTATIONINFO_TYPE+"'"));
+      throw(Exception("file type is '"+file.type()+"' but must be '"+FILE_PLATFORM_TYPE+"' or 'stationInfo'"));
   }
   catch(std::exception &e)
   {

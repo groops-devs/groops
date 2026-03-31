@@ -17,8 +17,8 @@
 // Latex documentation
 #ifdef DOCSTRING_Loop
 static const char *docstringLoopMatrix = R"(
-\subsection{Matrix}
-Loop over rows of a matrix. To define the loop variables the standard
+\subsection{Matrix}\label{loopType:matrix}
+Loop over rows of a \file{matrix}{matrix}. To define the loop variables the standard
 data variables of the matrix are available, see~\reference{dataVariables}{general.parser:dataVariables}.
 )";
 #endif

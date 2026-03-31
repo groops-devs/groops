@@ -1,6 +1,6 @@
 /***********************************************/
 /**
-* @file graceL1b2Clock.cpp
+* @file graceL1b2ClockOffset.cpp
 *
 * @brief Read GRACE L1B data.
 *

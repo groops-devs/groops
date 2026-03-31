@@ -1,6 +1,6 @@
 /***********************************************/
 /**
-* @file loopManualList.h
+* @file loopStringList.h
 *
 * @brief Loop over list of strings.
 *
@@ -11,13 +11,13 @@
 */
 /***********************************************/
 
-#ifndef __GROOPS_LOOPMANUALLIST__
-#define __GROOPS_LOOPMANUALLIST__
+#ifndef __GROOPS_LOOPSTRINGLIST__
+#define __GROOPS_LOOPSTRINGLIST__
 
 // Latex documentation
 #ifdef DOCSTRING_Loop
-static const char *docstringLoopManualList = R"(
-\subsection{ManualList}\label{loopType:manualList}
+static const char *docstringLoopStringList = R"(
+\subsection{StringList}\label{loopType:stringList}
 Loop over list of strings.
 )";
 #endif
@@ -32,13 +32,13 @@ Loop over list of strings.
 /** @brief Loop over list of strings.
 * @ingroup loopGroup
 * @see Loop */
-class LoopManualList : public Loop
+class LoopStringList : public Loop
 {
   std::string              nameString, nameIndex, nameCount;
   std::vector<std::string> strings;
 
 public:
-  LoopManualList(Config &config);
+  LoopStringList(Config &config);
 
   UInt count() const override {return strings.size();}
   Bool iteration(VariableList &varList) override;
@@ -48,11 +48,11 @@ public:
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopManualList::LoopManualList(Config &config)
+inline LoopStringList::LoopStringList(Config &config)
 {
   try
   {
-    readConfig(config, "string",             strings,    Config::MUSTSET,  "",           "explicit list of strings");
+    readConfig(config, "string",             strings,    Config::OPTIONAL,  "",          "explicit list of strings");
     readConfig(config, "variableLoopString", nameString, Config::OPTIONAL, "loopString", "name of the variable to be replaced");
     readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL, "",           "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL, "",           "variable with total number of iterations");
@@ -67,7 +67,7 @@ inline LoopManualList::LoopManualList(Config &config)
 
 /***********************************************/
 
-inline Bool LoopManualList::iteration(VariableList &varList)
+inline Bool LoopStringList::iteration(VariableList &varList)
 {
   if(index() >= count())
     return FALSE;

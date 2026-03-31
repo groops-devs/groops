@@ -16,7 +16,7 @@
 
 /***********************************************/
 
-Matrix GnssLambda::phaseDecorrelation(const std::vector<GnssType> &types, Double wavelengthFactor)
+Matrix GnssLambda::phaseDecorrelation(const std::vector<GnssType> &types, Double wavelengthFactor, Double weightRange)
 {
   try
   {
@@ -29,19 +29,20 @@ Matrix GnssLambda::phaseDecorrelation(const std::vector<GnssType> &types, Double
     // assume for every phase observation an additional range observation
     // parameters: range, TEC, ambiguities
     const UInt dim = types.size();
-    Matrix A(2*dim, 2+dim);
+    Matrix A(2*dim+1, 2+dim);
     for(UInt i=0; i<dim; i++)
     {
       // phase observations:
-      A(i, 0)   = 1.;                                                      // range
-      A(i, 1)   = types.at(i).ionosphericFactor();                         // TEC
+      A(i, 0)   = 1.;                                        // range
+      A(i, 1)   = types.at(i).ionosphericFactor();           // TEC
       A(i, 2+i) = wavelengthFactor*types.at(i).wavelength(); // ambiguity
       // range observations (100 times less accurate):
       A(i+dim, 0) = 1./100.;       // range
       A(i+dim, 1) = -A(i, 1)/100.; // TEC
     }
+    A(2*dim, 0) = weightRange; // range is determined by geometry
 
-    // solve & deccorelate
+    // solve & decorrelate
     QR_decomposition(A);
     inverse(A.slice(2, 2, dim, dim));
     Transformation Z(dim);
@@ -62,10 +63,11 @@ Matrix GnssLambda::phaseDecorrelation(const std::vector<GnssType> &types, Double
 
 /***********************************************/
 
-void GnssLambda::choleskyReversePivot(Matrix &N, Transformation &Z, UInt index0Z, Bool timing)
+UInt GnssLambda::choleskyReversePivot(Matrix &N, Transformation &Z, UInt index0Z, Double tolerance, Bool timing)
 {
   try
   {
+    UInt rank = N.rows();
     const UInt blockSize = 64;
     Log::Timer timer(N.rows(), 1, timing);
     for(UInt block=0; block<N.rows(); block+=blockSize)
@@ -77,14 +79,15 @@ void GnssLambda::choleskyReversePivot(Matrix &N, Transformation &Z, UInt index0Z
         timer.loopStep(i);
 
         // find minimium
-        UInt   k    = i;
-        Double minN = N(i, i)-tmp(i);
-        for(UInt j=i+1; j<N.rows(); j++)
-          if(N(j, j)-tmp(j) < minN)
+        UInt   k    = NULLINDEX;
+        Double minN = std::numeric_limits<Double>::infinity();
+        for(UInt j=i; j<N.rows(); j++)
+          if((N(j, j)-tmp(j) < minN) && (N(j, j)-tmp(j) > tolerance))
           {
             k    = j;
             minN = N(k, k)-tmp(k);
           }
+        if(k == NULLINDEX) {rank = i; break;} // rank deficit
         // swap
         if(i != k)
         {
@@ -105,12 +108,15 @@ void GnssLambda::choleskyReversePivot(Matrix &N, Transformation &Z, UInt index0Z
         for(UInt k=i+1; k<N.rows(); k++)
           tmp(k) += std::pow(N(i, k), 2);
       }
+      if(rank != N.rows())
+        break;
       if(blockEnd < N.rows())
         rankKUpdate(-1., N.slice(block, blockEnd, blockEnd-block, N.rows()-blockEnd),
                     N.slice(blockEnd, blockEnd, N.rows()-blockEnd, N.rows()-blockEnd));
     }
     timer.loopEnd();
     N.setType(Matrix::TRIANGULAR);
+    return rank;
   }
   catch(std::exception &e)
   {

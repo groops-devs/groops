@@ -11,13 +11,13 @@
 */
 /***********************************************/
 
-#ifndef __GROOPS_LOOPTEMPORAL__
-#define __GROOPS_LOOPTEMPORAL__
+#ifndef __GROOPS_LOOPTIMESERIES__
+#define __GROOPS_LOOPTIMESERIES__
 
 // Latex documentation
 #ifdef DOCSTRING_Loop
 static const char *docstringLoopTimeSeries = R"(
-\subsection{TimeSeries}
+\subsection{TimeSeries}\label{loopType:timeSeries}
 Loop over points in time.
 )";
 #endif

@@ -37,7 +37,7 @@ The \file{parameter names}{parameterName} are
 \item \verb|earth:polarMotion.yp:<temporal>:<interval>|,
 \item \verb|earth:UT1:<temporal>:<interval>|,
 \item \verb|earth:nutation.X:<temporal>:<interval>|,
-\item \verb|earth:nutation.>:<temporal>:<interval>|.
+\item \verb|earth:nutation.Y:<temporal>:<interval>|.
 \end{itemize}
 )";
 #endif

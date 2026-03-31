@@ -34,7 +34,7 @@ class GnssTransmitter : public GnssTransceiver
 {
   GnssType                 type; // system + PRN
   Polynomial               polynomial;
-  std::vector<Double>      clk;
+  std::vector<Double>      clk, scale;
   std::vector<Vector3d>    offset;   // between CoM and ARF in SRF
   std::vector<Transform3d> crf2srf, srf2arf;
 
@@ -44,12 +44,12 @@ public:
 
   GnssTransmitter(GnssType prn, const Platform &platform,
                   GnssAntennaDefinition::NoPatternFoundAction noPatternFoundAction,
-                  const Vector &useableEpochs, const std::vector<Double> &clock, const std::vector<Vector3d> &offset,
+                  const Vector &useableEpochs, const std::vector<Double> &clock, const std::vector<Double> &scale, const std::vector<Vector3d> &offset,
                   const std::vector<Transform3d> &crf2srf, const std::vector<Transform3d> &srf2arf,
                   const std::vector<Time> &timesPosVel, const_MatrixSliceRef position, const_MatrixSliceRef velocity, UInt interpolationDegree)
   : GnssTransceiver(platform, noPatternFoundAction, useableEpochs),
     type(prn), polynomial(timesPosVel, interpolationDegree, TRUE/*throwException*/, FALSE/*leastSquares*/, -(interpolationDegree+1.1), -1.1, 1e-7),
-    clk(clock), offset(offset), crf2srf(crf2srf), srf2arf(srf2arf), timesPosVel(timesPosVel), pos(position), vel(velocity) {}
+    clk(clock), scale(scale), offset(offset), crf2srf(crf2srf), srf2arf(srf2arf), timesPosVel(timesPosVel), pos(position), vel(velocity) {}
 
   /// Destructor.
   virtual ~GnssTransmitter() {}
@@ -64,6 +64,10 @@ public:
   /** @brief Clock error.
   * error = clock time - system time [s] */
   Double clockError(UInt idEpoch) const {return clk.at(idEpoch);}
+
+  /** @brief scale due to frequency offset/clock drift.
+  * observed = scaleFactor * true_range */
+  Double scaleFactor(UInt idEpoch) const {return scale.at(idEpoch);}
 
   /** @brief set clock error.
   * error = observed clock time - system time [s] */

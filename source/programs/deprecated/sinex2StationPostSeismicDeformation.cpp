@@ -2,7 +2,7 @@
 /**
 * @file sinex2StationPostSeismicDeformation.cpp
 *
-* @brief DEPRECATED. Please use Sinex2StationPositions instead.
+* @brief DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.
 *
 * @author Sebastian Strasser
 * @date 2018-05-23
@@ -14,7 +14,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-DEPRECATED. Please use \program{Sinex2StationPositions} instead.
+DEPRECATED since 2023-02-16. Please use \program{Sinex2StationPositions} instead.
 )";
 
 /***********************************************/
@@ -27,7 +27,7 @@ DEPRECATED. Please use \program{Sinex2StationPositions} instead.
 
 /***** CLASS ***********************************/
 
-/** @brief DEPRECATED. Please use Sinex2StationPositions instead.
+/** @brief DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.
 * @ingroup programsConversionGroup */
 class Sinex2StationPostSeismicDeformation
 {
@@ -35,7 +35,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(Sinex2StationPostSeismicDeformation, SINGLEPROCESS, "DEPRECATED. Please use Sinex2StationPositions instead.", Deprecated)
+GROOPS_REGISTER_PROGRAM(Sinex2StationPostSeismicDeformation, SINGLEPROCESS, "DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.", Deprecated)
 
 /***********************************************/
 
@@ -55,7 +55,7 @@ void Sinex2StationPostSeismicDeformation::run(Config &config, Parallel::Communic
     readConfig(config, "localLevelFrame",      localLevelFrame,    Config::DEFAULT,  "0", "output in North, East, Up local-level frame");
     if(isCreateSchema(config)) return;
 
-    logWarning<<"DEPRECATED. Please use Sinex2StationPositions instead."<<Log::endl;
+    logWarning<<"DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead."<<Log::endl;
 
     std::vector<Time> times = timeSeries->times();
     Matrix A(times.size(), 4);

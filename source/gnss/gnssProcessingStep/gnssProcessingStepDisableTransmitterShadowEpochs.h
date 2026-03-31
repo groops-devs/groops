@@ -116,7 +116,7 @@ inline void GnssProcessingStepDisableTransmitterShadowEpochs::process(GnssProces
             if((factorPreviousEpoch < 0.5) && (factor >= 0.5))
               timeShadowExit = state.gnss->times.at(idEpoch);
 
-            // set satellite unuseable during shadow crossing and post-shadow recovery maneuver
+            // set satellite unusable during shadow crossing and post-shadow recovery maneuver
             if((disableShadowEpochs && factor < 0.5) || (disablePostShadowEpochs && state.gnss->times.at(idEpoch) < timeShadowExit+recoveryTime))
             {
               trans->disable(idEpoch, "during shadow crossing and post-shadow recovery maneuver");

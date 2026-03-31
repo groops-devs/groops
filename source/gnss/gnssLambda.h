@@ -51,11 +51,12 @@ namespace GnssLambda
   /** @brief Decorrelate ambiguities (Melbourne Wuebbena like linear combinations).
   * @param types list of phase observations.
   * @param wavelengthFactor 0.5 for old receivers using squaring technology.
+  * @param weightRange weight of range obersvation (relative ro phase observation).
   * @return Transformation matrix from decorrelated ambiguities to phase observations [cycles]->[m]. */
-  Matrix phaseDecorrelation(const std::vector<GnssType> &types, Double wavelengthFactor);
+  Matrix phaseDecorrelation(const std::vector<GnssType> &types, Double wavelengthFactor, Double weightRange=0.0);
 
   // LAMBDA method
-  void   choleskyReversePivot(Matrix &N, Transformation &Z, UInt index0Z, Bool timing);
+  UInt   choleskyReversePivot(Matrix &N, Transformation &Z, UInt index0Z, Double tolerance, Bool timing);
   Bool   choleskyReduce(UInt i, UInt k, MatrixSliceRef W, Transformation &transformation);
   Vector choleskyTransform(MatrixSliceRef W, Transformation &transformation, Bool timing);
   Bool   searchInteger(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, UInt maxSearchSteps, Vector &solution, Double &minNorm);

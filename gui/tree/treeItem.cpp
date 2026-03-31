@@ -186,10 +186,12 @@ void TreeItem::updateValue()
     icon = QIcon(":/icons/scalable/link-broken.svg");
   else if(treeElement()->isLinked())
     icon = QIcon(":/icons/scalable/link.svg");
-  else if(dynamic_cast<TreeElementChoice*>(treeElement()) && dynamic_cast<TreeElementChoice*>(treeElement())->isSelectionUnknown(treeElement()->selectedIndex()))
-    icon = QIcon(":/icons/scalable/element-unknown.svg");
   else if(dynamic_cast<TreeElementChoice*>(treeElement()) && dynamic_cast<TreeElementChoice*>(treeElement())->isSelectionRenamedInSchema(treeElement()->selectedIndex()))
     icon = QIcon(":/icons/scalable/edit-rename.svg");
+  else if(dynamic_cast<TreeElementChoice*>(treeElement()) && dynamic_cast<TreeElementChoice*>(treeElement())->isSelectionUnknown(treeElement()->selectedIndex()))
+    icon = QIcon(":/icons/scalable/element-unknown.svg");
+  else if(dynamic_cast<TreeElementChoice*>(treeElement()) && dynamic_cast<TreeElementChoice*>(treeElement())->isSelectionDeprecated(treeElement()->selectedIndex()))
+    icon = QIcon(":/icons/scalable/warning.svg");
   setIcon(1, icon);
 }
 

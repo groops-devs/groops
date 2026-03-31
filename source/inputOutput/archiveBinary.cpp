@@ -283,10 +283,10 @@ void OutArchiveBinary::save(const const_MatrixSlice &x)
     if(x.size()==0)
       return;
     if((!x.isRowMajorOrder()) && (x.rows()==x.ld()))
-      stream.write(reinterpret_cast<const char*>(x.field()), x.size()*sizeof(Double));
+      stream.write(reinterpret_cast<const char*>(x.const_field()), x.size()*sizeof(Double));
     else if(!x.isRowMajorOrder())
       for(UInt s=0; s<x.columns(); s++)
-        stream.write(reinterpret_cast<const char*>(&x(0,s)), x.rows()*sizeof(Double));
+        stream.write(reinterpret_cast<const char*>(x.const_field()+s*x.ld()), x.rows()*sizeof(Double));
     else
       for(UInt s=0; s<x.columns(); s++)
         for(UInt z=0; z<x.rows(); z++)
@@ -302,10 +302,10 @@ void OutArchiveBinary::save(const const_MatrixSlice &x)
     {
       if(x.isUpper())
         for(UInt s=0; s<x.columns(); s++)
-          stream.write(reinterpret_cast<const char*>(&x(0,s)), (s+1)*sizeof(Double));
+          stream.write(reinterpret_cast<const char*>(x.const_field()+s*x.ld()), (s+1)*sizeof(Double));
       else
         for(UInt s=0; s<x.columns(); s++)
-          stream.write(reinterpret_cast<const char*>(&x(s,s)), (x.rows()-s)*sizeof(Double));
+          stream.write(reinterpret_cast<const char*>(x.const_field()+(s*x.ld()+s)), (x.rows()-s)*sizeof(Double));
     }
     else
     {
@@ -331,7 +331,7 @@ void InArchiveBinary::load(Matrix &x)
   {
     UInt rows, columns;
     load(rows); load(columns);
-    x = Matrix(rows, columns);
+    x = Matrix(rows, columns, Matrix::NOFILL);
     if(x.size()==0)
       return;
     stream.read(reinterpret_cast<char*>(x.field()), x.size()*sizeof(Double));

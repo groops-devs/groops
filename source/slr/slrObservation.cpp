@@ -129,7 +129,7 @@ Bool SlrObservation::init(const SlrStation &station, const SlrSatellite &satelli
 
 /***********************************************/
 
-void SlrObservation::setDecorrelatedResiduals(const_MatrixSliceRef residuals_, const_MatrixSliceRef redundancies_)
+void SlrObservation::setHomogenizedResiduals(const_MatrixSliceRef residuals_, const_MatrixSliceRef redundancies_)
 {
   try
   {
@@ -147,58 +147,60 @@ void SlrObservation::setDecorrelatedResiduals(const_MatrixSliceRef residuals_, c
 /***********************************************/
 /***********************************************/
 
-void SlrObservationEquation::compute(const SlrObservation &observation_, const SlrStation &station_, const SlrSatellite &satellite_,
+void SlrObservationEquation::compute(const SlrObservation &observation, const SlrStation &station_, const SlrSatellite &satellite_,
                                      const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf,
-                                     const std::function<void(SlrObservationEquation &eqn)> &reduceModels, Bool decorrelate)
+                                     const std::function<void(SlrObservationEquation &eqn)> &reduceModels, Bool homogenize)
 {
   try
   {
-    observation = &observation_;
+
+    type        = RANGE;
     station     = &station_;
     satellite   = &satellite_;
 
-    const UInt obsCount = observation->observations.rows();
-    sigmas      = observation->sigmas;
-    sigmas0     = observation->sigmas0;
-    l           = observation->observations;
+    const UInt obsCount = observation.observations.rows();
+    sigmas      = observation.sigmas;
+    sigmas0     = observation.sigmas0;
+    l           = observation.observations;
     A           = Matrix(obsCount, 8);
-    timesTrans  = station->correctedTimes(observation->timesTrans);
-    timesBounce.resize(obsCount);
-    timesRecv.resize(obsCount);
-    posTrans.resize(obsCount);
-    posBounce.resize(obsCount);
-    posRecv.resize(obsCount);
-    velTrans.resize(obsCount);
-    velBounce.resize(obsCount);
+    index.resize(obsCount);
+    std::iota(index.begin(), index.end(), 0);
+    count       = std::vector<UInt>(obsCount, 1);
+    timesStat   = station->correctedTimes(observation.timesTrans);
+    timesSat.resize(obsCount);
+    posStat.resize(obsCount);
+    posSat.resize(obsCount);
     azimutStat.resize(obsCount);
     elevationStat.resize(obsCount);
-    laserWavelength = observation->laserWavelength;
+    laserWavelength = observation.laserWavelength;
 
     for(UInt i=0; i<obsCount; i++)
     {
-      positionVelocityTime(station_, satellite_, rotationCrf2Trf, timesTrans.at(i),
-                           posTrans.at(i), velTrans.at(i), timesBounce.at(i), posBounce.at(i), velBounce.at(i), timesRecv.at(i), posRecv.at(i));
+      Time     timesRecv;
+      Vector3d posRecv, velStat, velSat;
+      positionVelocityTime(station_, satellite_, rotationCrf2Trf, timesStat.at(i),
+                           posStat.at(i), velStat, timesSat.at(i), posSat.at(i), velSat, timesRecv, posRecv);
 
       // reduced observations
-      l(i) -= 0.5*((posBounce.at(i)-posTrans.at(i)).r() + (posRecv.at(i)-posBounce.at(i)).r());
+      l(i) -= 0.5*((posSat.at(i)-posStat.at(i)).r() + (posRecv-posSat.at(i)).r());
 
       // curved space-time
-      const Double r1  = posTrans.at(i).r();
-      const Double r2  = posBounce.at(i).r();
-      const Double r12 = (posTrans.at(i) - posBounce.at(i)).r();
+      const Double r1  = posStat.at(i).r();
+      const Double r2  = posSat.at(i).r();
+      const Double r12 = (posStat.at(i) - posSat.at(i)).r();
       l(i) += 2*DEFAULT_GM/std::pow(LIGHT_VELOCITY,2)*log((r1+r2+r12)/(r1+r2-r12));
 
       // geometry of roundtrip
       // ---------------------
-      const Vector3d k1     = normalize(posBounce.at(i) - posTrans.at(i)); // unit vector stat -> sat
-      const Vector3d k2     = normalize(posRecv.at(i) - posBounce.at(i));  // unit vector sat -> stat
-      const Double   d1Stat = inner(k1, velTrans.at(i)) /LIGHT_VELOCITY;
-      const Double   d1Sat  = inner(k1, velBounce.at(i))/LIGHT_VELOCITY;
-      const Double   d2Stat = inner(k2, velTrans.at(i)) /LIGHT_VELOCITY;
-      const Double   d2Sat  = inner(k2, velBounce.at(i))/LIGHT_VELOCITY;
+      const Vector3d k1     = normalize(posSat.at(i) - posStat.at(i)); // unit vector stat -> sat
+      const Vector3d k2     = normalize(posRecv - posSat.at(i));       // unit vector sat -> stat
+      const Double   d1Stat = inner(k1, velStat)/LIGHT_VELOCITY;
+      const Double   d1Sat  = inner(k1, velSat) /LIGHT_VELOCITY;
+      const Double   d2Stat = inner(k2, velStat)/LIGHT_VELOCITY;
+      const Double   d2Sat  = inner(k2, velSat) /LIGHT_VELOCITY;
 
       // direction to satellite in local frame (north, east, up)
-      const Vector3d kLocal = station_.global2localFrame(timesTrans.at(i)).transform(rotationCrf2Trf(timesTrans.at(i)).rotate(k1));
+      const Vector3d kLocal = station_.global2localFrame(timesStat.at(i)).transform(rotationCrf2Trf(timesStat.at(i)).rotate(k1));
       azimutStat.at(i)    = kLocal.lambda();
       elevationStat.at(i) = kLocal.phi();
 
@@ -217,9 +219,9 @@ void SlrObservationEquation::compute(const SlrObservation &observation_, const S
     if(reduceModels)
       reduceModels(*this);
 
-    // Decorrelate
+    // homogenize
     // -----------
-    if(decorrelate)
+    if(homogenize)
       for(UInt i=0; i<obsCount; i++)
       {
         if(l.size()) l.row(i) *= 1/sigmas(i);

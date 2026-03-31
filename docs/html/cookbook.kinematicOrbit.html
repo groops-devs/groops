@@ -70,10 +70,10 @@
     <main class="container px-0 pt-2 top-buffer">
         <div id="content" class="container">
             <h1 id="cookbook.kinematicOrbit">Kinematic orbit determination of LEO satellites</h1><p>
-This cookbook chapter describes exemplarily the steps for determining kinematic orbits of low-Earth orbit (LEO) satellites.</p><p>An example scenario for this task is available at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip</a>.
-It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops</a> (data folder or zipped archive).
+This cookbook chapter describes exemplarily the steps for determining kinematic orbits of low-Earth orbit (LEO) satellites.</p><p>An example scenario for this task is available at <a href="https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip" target="_blank">https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip</a>.
+It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at <a href="https://ftp.tugraz.at/pub/ITSG/groops" target="_blank">https://ftp.tugraz.at/pub/ITSG/groops</a> (data folder or zipped archive).
 The scenario generally represents what is described in this cookbook, but may slightly differ in certain settings.</p><p><h2 id="gnssMetadata">Prepare GNSS satellite data</h2><p>
-Most of the required metadata files are provided in GROOPS file formats at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops</a>.
+Most of the required metadata files are provided in GROOPS file formats at <a href="https://ftp.tugraz.at/pub/ITSG/groops" target="_blank">https://ftp.tugraz.at/pub/ITSG/groops</a>.
 These files are regularly updated.</p><p>Data that has to be gathered from other sources comprises:
 <ul>
 
@@ -91,9 +91,9 @@ These files are regularly updated.</p><p>Data that has to be gathered from other
 Receiver observations, precise satellite orbits and clocks, and possibly attitude and signal biases can be downloaded from the
 <a href="https://igs.org/data-products-overview/">IGS Data Centers</a>.
 GPS, GLONASS, and Galileo orbits, clocks, attitude, and signal biases for the period 1994-2020 are also available as part of
-<a href="https://doi.org/10.3217/dataset-4528-0723-0867">Graz University of Technology's contribution to IGS repro3</a>.</p><p>The <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip">example scenario</a> includes a small set of this data.
+<a href="https://doi.org/10.3217/dataset-4528-0723-0867">Graz University of Technology's contribution to IGS repro3</a>.</p><p>The <a href="https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip">example scenario</a> includes a small set of this data.
 The script <code>010groopsConvert.xml</code> can be used to convert these external formats into GROOPS formats.</p><p><h2 id="leoMetadata">Prepare LEO metadata</h2><p>
-Metadata for several LEO missions is availabe at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/data/gnss/receiverLowEarthOrbiter" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/data/gnss/receiverLowEarthOrbiter</a>.</p><p>If you want to process another mission, you can create the necessary files with these steps:
+Metadata for several LEO missions is availabe at <a href="https://ftp.tugraz.at/pub/ITSG/groops/data/gnss/receiverLowEarthOrbiter" target="_blank">https://ftp.tugraz.at/pub/ITSG/groops/data/gnss/receiverLowEarthOrbiter</a>.</p><p>If you want to process another mission, you can create the necessary files with these steps:
 <ul>
 
   <li>For creating the <a class="groops-file" href="fileFormat_platform.html">GnssSatelliteInfo file</a> use <a class="groops-program" href="PlatformCreate.html">PlatformCreate</a>. Note that the rotation from the
@@ -114,7 +114,7 @@ Set the <strong class="groops-config-element">pattern</strong>s for code (<stron
   </li></ul>
 
 </ul></p><p><h2 id="leoData">Prepare LEO data</h2><p>
-The <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip">example scenario</a> includes a small set of this data for the GRACE-FO mission.
+The <a href="https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip">example scenario</a> includes a small set of this data for the GRACE-FO mission.
 The script <code>020groopsConvertGracefo.xml</code> can be used to convert these external formats into GROOPS formats.</p><p>The data preparation steps are:
 <ul>
 
@@ -133,7 +133,7 @@ For synchronizing these data use <a class="groops-program" href="InstrumentSynch
 </li></ul>
 
 Detailed description of instrument data handling can be found in <a class="groops-ref" href="cookbook.instrument.html">Instrument data handling</a>.</p><p><h2 id="processing">Estimate kinematic orbits</h2><p>
-The script <code>03groopsGnssProcessing.xml</code> in the <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip">example scenario</a>
+The script <code>03groopsGnssProcessing.xml</code> in the <a href="https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioLeoKinematicOrbit.zip">example scenario</a>
 implements the following steps and settings.</p><p>These are the settings for <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>. If not otherwise stated use the default values.</p><p>As we have only one receiver the processing sampling can be directly taken from the observation file:
 <a class="groops-class" href="timeSeriesType.html#instrument">timeSeries:instrument</a>.</p><p>Add the appropriate <a class="groops-class" href="gnssTransmitterGeneratorType.html#gnss">transmitters:gnss</a> (e.g. GPS)
 and provide the required files (from <a class="groops-ref" href="cookbook.kinematicOrbit.html#gnssMetadata">Prepare GNSS satellite data</a>):

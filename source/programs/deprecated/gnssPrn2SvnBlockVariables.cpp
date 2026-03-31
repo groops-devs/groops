@@ -2,7 +2,7 @@
 /**
 * @file gnssPrn2SvnBlockVariables.cpp
 *
-* @brief DEPRECATED. This program no longer works! See documentation for help.
+* @brief DEPRECATED since 2024-02-12. This program no longer works! See documentation for help.
 *
 * @author Torsten Mayer-Guerr
 * @date 2017-03-14
@@ -12,7 +12,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-DEPRECATED. This program no longer works!
+DEPRECATED since 2024-02-12. This program no longer works!
 
 Setup up a \configClass{loop:platformEquipment}{loopType:platformEquipment} instead with
 \begin{itemize}
@@ -37,7 +37,7 @@ Attribute this loop to programs, which uses the variables.
 
 /***** CLASS ***********************************/
 
-/** @brief DEPRECATED. This program no longer works! See documentation for help.
+/** @brief DEPRECATED since 2024-02-12. This program no longer works! See documentation for help.
 * @ingroup programsGroup */
 class GnssPrn2SvnBlockVariables
 {
@@ -45,7 +45,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GnssPrn2SvnBlockVariables, SINGLEPROCESS, "This program no longer works! See documentation for help.", Deprecated)
+GROOPS_REGISTER_PROGRAM(GnssPrn2SvnBlockVariables, SINGLEPROCESS, "DEPRECATED since 2024-02-12. This program no longer works! See documentation for help.", Deprecated)
 
 /***********************************************/
 

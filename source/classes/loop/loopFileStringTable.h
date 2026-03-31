@@ -1,6 +1,6 @@
 /***********************************************/
 /**
-* @file loopFileAsciiTable.h
+* @file loopFileStringTable.h
 *
 * @brief Loop over rows of a table containing strings.
 *
@@ -11,14 +11,14 @@
 */
 /***********************************************/
 
-#ifndef __GROOPS_LOOPFILEASCIITABLE__
-#define __GROOPS_LOOPFILEASCIITABLE__
+#ifndef __GROOPS_LOOPFILESTRINGTABLE__
+#define __GROOPS_LOOPFILESTRINGTABLE__
 
 // Latex documentation
 #ifdef DOCSTRING_Loop
-static const char *docstringLoopFileAsciiTable = R"(
-\subsection{FileAsciiTable}
-Loop over rows of a table containing strings.
+static const char *docstringLoopFileStringTable = R"(
+\subsection{FileStringTable}\label{loopType:fileStringTable}
+Loop over rows of a \file{table}{stringTable} containing strings.
 Each row must have the same number of columns.
 )";
 #endif
@@ -34,14 +34,14 @@ Each row must have the same number of columns.
 /** @brief Loop over rows of a table containing strings.
 * @ingroup loopGroup
 * @see Loop */
-class LoopFileAsciiTable : public Loop
+class LoopFileStringTable : public Loop
 {
   std::vector<std::vector<std::string>>  stringTable;
   std::vector<std::string>               nameString;
   std::string                            nameIndex, nameCount;
 
 public:
-  LoopFileAsciiTable(Config &config);
+  LoopFileStringTable(Config &config);
 
   UInt count() const override {return stringTable.size();}
   Bool iteration(VariableList &varList) override;
@@ -51,16 +51,15 @@ public:
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopFileAsciiTable::LoopFileAsciiTable(Config &config)
+inline LoopFileStringTable::LoopFileStringTable(Config &config)
 {
   try
   {
     std::vector<FileName> fileNames;
-    UInt     startRow, countRows = MAX_UINT;
+    Bool transpose;
 
-    readConfig(config, "inputfile",          fileNames,  Config::MUSTSET,  "",           "simple ASCII file with multiple columns (separated by whitespace)");
-    readConfig(config, "startLine",          startRow,   Config::DEFAULT,  "0",          "start at line startLine (counting from 0)");
-    readConfig(config, "countLines",         countRows,  Config::OPTIONAL, "",           "read count lines (default: all)");
+    readConfig(config, "inputfile",          fileNames,  Config::MUSTSET,  "",           "string table file with multiple columns");
+    readConfig(config, "transpose",          transpose,  Config::DEFAULT,  "0",          "loop over columns instead of rows");
     readConfig(config, "variableLoopString", nameString, Config::MUSTSET,  "loopString", "1. variable name for the 1. column, next variable name for the 2. column, ... ");
     readConfig(config, "variableLoopIndex",  nameIndex,  Config::OPTIONAL, "",           "variable with index of current iteration (starts with zero)");
     readConfig(config, "variableLoopCount",  nameCount,  Config::OPTIONAL, "",           "variable with total number of iterations");
@@ -70,18 +69,30 @@ inline LoopFileAsciiTable::LoopFileAsciiTable(Config &config)
     for(auto &fileName : fileNames)
       readFileStringTable(fileName, stringTable);
 
+    // transpose table
+    if(stringTable.size() && transpose)
+    {
+      const UInt cols = std::max_element(stringTable.begin(), stringTable.end(), [](auto &s1, auto &s2){return s1.size() < s2.size();})->size();
+      std::vector<std::vector<std::string>> tmp(cols);
+      for(UInt i=0; i<stringTable.size(); i++)
+        for(UInt k=0; k<stringTable.at(i).size(); k++)
+          tmp.at(k).push_back(stringTable.at(i).at(k));
+      stringTable = std::move(tmp);
+    }
+
+    if(stringTable.size() && (nameString.size() > std::min_element(stringTable.begin(), stringTable.end(), [](auto &s1, auto &s2){return s1.size() < s2.size();})->size()))
+      throw(Exception("More variables than minimum columns in the table"));
+
+    // DEPRECTATED
+    // -----------
+    // read deprecated config elements (as after if(isCreateSchema(config)) not shown in the GUI and docu)
+    UInt startRow, countRows = MAX_UINT;
+    readConfig(config, "startLine",  startRow,   Config::DEFAULT,  "0", "start at line startLine (counting from 0)");
+    readConfig(config, "countLines", countRows,  Config::OPTIONAL, "",  "read count lines (default: all)");
+    if((startRow != 0) || (countRows != MAX_UINT))
+      logWarningOnce<<"DEPRECATED since 2025-09-27: In Loop->FileStringTable->startIndex and ->count. Please use a condition instead."<<Log::endl;
     stringTable.erase(stringTable.begin(), stringTable.begin()+std::min(startRow, stringTable.size()));
     stringTable.erase(stringTable.begin()+std::min(countRows, stringTable.size()), stringTable.end());
-
-    if(stringTable.size()>1)
-    {
-      const UInt columns = stringTable.at(0).size();
-      if(nameString.size() > columns)
-        throw(Exception("More variables than columns in the table"));
-      for(UInt i=1; i<stringTable.size(); i++)
-        if(stringTable.at(i).size() != columns)
-          throw(Exception("Varying number of columns in input file(s)"));
-    }
   }
   catch(std::exception &e)
   {
@@ -91,7 +102,7 @@ inline LoopFileAsciiTable::LoopFileAsciiTable(Config &config)
 
 /***********************************************/
 
-inline Bool LoopFileAsciiTable::iteration(VariableList &varList)
+inline Bool LoopFileStringTable::iteration(VariableList &varList)
 {
   if(index() >= count())
     return FALSE;

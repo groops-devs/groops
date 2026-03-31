@@ -161,6 +161,8 @@ FileName FileName::operator()(const VariableList &varList) const
 {
   try
   {
+    if(resolved)
+      return FileName(nameParsed);
     VariableList varList2 = this->varList;
     varList2 += varList;
     return FileName(StringParser::parse(nameUnparsed, varList2));

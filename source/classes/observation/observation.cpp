@@ -5,7 +5,7 @@
 * @brief Observation equations.
 * Set up linearized observation equations (design matrix)
 * to connect unknown parameters with observations.
-* It is used in an least squares adjustement.
+* It is used in a least squares adjustment.
 *
 * @author Torsten Mayer-Guerr
 * @date 2001-11-12

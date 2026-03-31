@@ -73,10 +73,10 @@
 This cookbook chapter describes an example of GNSS precise point positioning (PPP) for a ground station using GPS, GLONASS, and Galileo.
 For information on how to generate the GNSS products (orbits, clocks, signal biases, etc.) required for PPP,
 see the cookbook <a class="groops-ref" href="cookbook.gnssNetwork.html">GNSS satellite orbit determination and station network analysis</a>.</p><p>Scientific details about the underlying processing approach and the applied parametrizations, models, and corrections
-can be found in a doctoral thesis available under DOI <a href="https://doi.org/10.3217/978-3-85125-885-1">10.3217/978-3-85125-885-1</a>.</p><p>An example scenario for this task is available at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssPPP.zip" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssPPP.zip</a>.
-It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops</a> (data folder or zipped archive).
+can be found in a doctoral thesis available under DOI <a href="https://doi.org/10.3217/978-3-85125-885-1">10.3217/978-3-85125-885-1</a>.</p><p>An example scenario for this task is available at <a href="https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssPPP.zip" target="_blank">https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssPPP.zip</a>.
+It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at <a href="https://ftp.tugraz.at/pub/ITSG/groops" target="_blank">https://ftp.tugraz.at/pub/ITSG/groops</a> (data folder or zipped archive).
 The scenario generally represents what is described in this cookbook, but may slightly differ in certain settings.</p><p><h2 id="metadata">Data preparation</h2><p>
-Most of the required metadata files are provided in GROOPS file formats at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops</a>.
+Most of the required metadata files are provided in GROOPS file formats at <a href="https://ftp.tugraz.at/pub/ITSG/groops" target="_blank">https://ftp.tugraz.at/pub/ITSG/groops</a>.
 These files are regularly updated.</p><p>Data that has to be gathered from other sources comprises:
 <ul>
 
@@ -94,9 +94,9 @@ These files are regularly updated.</p><p>Data that has to be gathered from other
 Receiver observations, precise satellite orbits and clocks, and possibly attitude and signal biases can be downloaded from the
 <a href="https://igs.org/data-products-overview/">IGS Data Centers</a>.
 GPS, GLONASS, and Galileo orbits, clocks, attitude, and signal biases for the period 1994-2020 are also available as part of
-<a href="https://doi.org/10.3217/dataset-4528-0723-0867">Graz University of Technology's contribution to IGS repro3</a>.</p><p>The <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssPPP.zip">example scenario</a> includes a small set of this data.
+<a href="https://doi.org/10.3217/dataset-4528-0723-0867">Graz University of Technology's contribution to IGS repro3</a>.</p><p>The <a href="https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssPPP.zip">example scenario</a> includes a small set of this data.
 The script <code>010groopsConvert.xml</code> can be used to convert these external formats into GROOPS formats.</p><p>Prepare a <a class="groops-file" href="fileFormat_stringList.html">station list file</a> that contains the stations (one per line) to be processed.</p><p><h2 id="processing">Processing of a ground station</h2><p>
-The script <code>02groopsGnssProcessing.xml</code> in the <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssPPP.zip">example scenario</a>
+The script <code>02groopsGnssProcessing.xml</code> in the <a href="https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssPPP.zip">example scenario</a>
 implements the following steps and settings.</p><p>These are the settings for <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>. If not otherwise stated use the default values.</p><p>The first step is setting the processing sampling, in this example it is 30 seconds.
 The processing interval usually is a single 24-hour day,
 <a class="groops-class" href="timeSeriesType.html#uniformSampling">timeSeries:uniformSampling</a> with <strong class="groops-config-element">timeStart</strong>=<code>&lt;mjd></code>,

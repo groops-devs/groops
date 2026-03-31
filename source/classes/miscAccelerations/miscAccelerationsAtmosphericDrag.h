@@ -112,8 +112,14 @@ inline Vector3d MiscAccelerationsAtmosphericDrag::acceleration(SatelliteModelPtr
     // direction and speed of thermosphere relative to satellite in SRF
     Vector3d direction = rotSat.inverseRotate(rotEarth.inverseRotate(wind) + crossProduct(omega, position) - velocity);
     const Double v = direction.normalize();
-
-    return (factor/satellite->mass) * rotEarth.rotate(rotSat.rotate(force(satellite, direction, v, density, temperature)));
+    Vector3d acc = (factor/satellite->mass) * rotEarth.rotate(rotSat.rotate(force(satellite, direction, v, density, temperature)));
+    if(std::isnan(acc.r()))
+    {
+      logWarning<<satellite->satelliteName<<" (altitude "<<1e-3*(position.r()-DEFAULT_R)<<" km, velocity "<<1e-3*v<<" km/s)"
+                <<"atmosphericDrag is NaN (set to zero) at "<<time.dateTimeStr()<<Log::endl;
+      acc = Vector3d();
+    }
+    return acc;
   }
   catch(std::exception &e)
   {

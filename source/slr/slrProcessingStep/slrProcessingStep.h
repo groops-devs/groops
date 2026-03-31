@@ -40,8 +40,7 @@ they only affect the steps within this level.
 * @defgroup slrProcessingStepGroup SlrProcessingStep
 * @brief Processing steps in @ref SlrProcessing.
 * @ingroup slrGroup
-* The interface is given by @ref SlrProcessingStep.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref SlrProcessingStep. */
 /// @{
 
 /***** TYPES ***********************************/

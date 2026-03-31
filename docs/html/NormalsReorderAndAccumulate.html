@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GROOPS - GnssStationInfo</title>
+    <title>GROOPS - NormalsReorderAndAccumulate</title>
 
     <!-- JQuery and Popper -->
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
@@ -69,10 +69,22 @@
     </header>
     <main class="container px-0 pt-2 top-buffer">
         <div id="content" class="container">
-            <h1>GnssStationInfo (file format)</h1><p>
+            <h1>NormalsReorderAndAccumulate</h1><p>
 
-DEPRECATED. Use <a class="groops-file" href="fileFormat_platform.html">Platform</a> instead.
+This program accumulates <a class="groops-class" href="fileFormat_normalEquation.html">inputfileNormalEquation</a>s with respect
+to the parameter names and writes the total combined system to <a class="groops-class" href="fileFormat_normalEquation.html">outputfileNormalequation</a>.</p><p>The combined normal equation is extended to include all parameter names uniquely from all input normals.
+The input normals are sorted so that parameters with the same name are accumulated.
+This requires that the names in each normal equation are unique.</p><p>The output can be written as multiple small block files with <strong class="groops-config-element">outBlockSize</strong>,
+or as single block with <strong class="groops-config-element">outBlockSize</strong>=0,
+or blocked with respect to the first part of the parameter names (object), if <strong class="groops-config-element">outBlockSize</strong> left empty.</p><p>See also <a class="groops-program" href="NormalsBuild.html">NormalsBuild</a> and <a class="groops-program" href="NormalsAccumulate.html">NormalsAccumulate</a>.
 </p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">outputfileNormalEquation</div></div></td><td>filename</td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfileNormalEquation</div></div></td><td>filename</td><td></td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">outBlockSize</div></div></td><td>uint</td><td>block size for distributing the normal equations, 0: one block, empty: blocking by objects</td></tr>
+</table>
+This program is <a class="groops-ref" href="general.parallelization.html">parallelized</a>.
 
         </div>
     </main>

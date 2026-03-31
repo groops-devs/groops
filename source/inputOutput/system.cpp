@@ -10,24 +10,13 @@
 */
 /***********************************************/
 
-#define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
-
-// Please select the appropriate header and namespace
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-// // or change to std::filesystem with c++17
-// #include <filesystem>
-// namespace fs = std::filesystem;
-// // or use boost
-// #include <boost/filesystem.hpp>
-// namespace fs = boost::filesystem;
-
 #ifdef _WIN32
   #define popen  _popen
   #define pclose _pclose
 #endif
 
 #include <ctime>
+#include <filesystem>
 #include "base/importStd.h"
 #include "base/string.h"
 #include "base/time.h"
@@ -73,14 +62,14 @@ Bool System::createDirectories(const FileName &fileName)
 {
   if(isDirectory(fileName))
     return TRUE;
-  return fs::create_directories(fileName.str());
+  return std::filesystem::create_directories(fileName.str());
 }
 
 /***********************************************/
 
 Bool System::remove(const FileName &fileName)
 {
-  return (fs::remove_all(fileName.str()) != 0);
+  return (std::filesystem::remove_all(fileName.str()) != 0);
 }
 
 /***********************************************/
@@ -92,9 +81,9 @@ Bool System::move(const FileName &fileNameOld, const FileName &fileNameNew)
     if(!exists(fileNameOld))
       return FALSE;
     if(isDirectory(fileNameNew))
-      fs::rename(fileNameOld.str(), fileNameNew.append(fileNameOld.stripDirectory()).str());
+      std::filesystem::rename(fileNameOld.str(), fileNameNew.append(fileNameOld.stripDirectory()).str());
     else
-      fs::rename(fileNameOld.str(), fileNameNew.str());
+      std::filesystem::rename(fileNameOld.str(), fileNameNew.str());
     return TRUE;
   }
   catch(std::exception &/*e*/)
@@ -109,9 +98,23 @@ Bool System::exists(const FileName &fileName)
 {
   try
   {
+    return fileList(fileName).size();
+  }
+  catch(std::exception &/*e*/)
+  {
+    return FALSE;
+  }
+}
+
+/***********************************************/
+
+std::vector<FileName> System::fileList(const FileName &fileName)
+{
+  try
+  {
     // contains no wildcards?
     if(fileName.str().find_first_of("*?") == std::string::npos)
-      return fs::exists(fileName.str());
+      return (std::filesystem::exists(fileName.str()) ? std::vector<FileName>{fileName} : std::vector<FileName>{});
 
     // split path into parts
     std::vector<std::string> parts = String::split(fileName.str(), "/\\");
@@ -123,29 +126,47 @@ Bool System::exists(const FileName &fileName)
       path += parts.at(level++) + "/";
     if(path.empty())
       path = currentWorkingDirectory().str() + "/";
+    if(!std::filesystem::exists(path))
+      return std::vector<FileName>{};
 
     // search directory for matching entries
+    std::vector<FileName> list;
     const std::regex pattern = String::wildcard2regex(parts.at(level));
-    for(auto const &entry : fs::directory_iterator{path})
+    for(auto const &entry : std::filesystem::directory_iterator{path})
       if(std::regex_match(entry.path().filename().string(), pattern))
       {
         if(level == parts.size()-1)
-          return TRUE;
-        if(fs::is_directory(entry))
+          list.push_back(path+entry.path().filename().string());
+        else if(std::filesystem::is_directory(entry))
         {
           // replace pattern by current entry
           std::string path2 = path + entry.path().filename().string() + "/";
           for(UInt i=level+1; i<parts.size()-1; i++)
             path2 += parts.at(i) + "/";
-          if(exists(path2+parts.back()))
-            return TRUE;
+          std::vector<FileName> list2 = fileList(path2+parts.back());
+          list.insert(list.end(), list2.begin(), list2.end());
         }
       }
-    return FALSE;
+
+    return list;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+UInt System::fileSize(const FileName &fileName)
+{
+  try
+  {
+    return std::filesystem::file_size(fileName.str());
   }
   catch(std::exception &/*e*/)
   {
-    return FALSE;
+    return 0;
   }
 }
 
@@ -153,14 +174,14 @@ Bool System::exists(const FileName &fileName)
 
 Bool System::isDirectory(const FileName &fileName)
 {
-  return fs::is_directory(fileName.str());
+  return std::filesystem::is_directory(fileName.str());
 }
 
 /***********************************************/
 
 FileName System::currentWorkingDirectory()
 {
-  return FileName(fs::current_path().string());
+  return FileName(std::filesystem::current_path().string());
 }
 
 /***********************************************/
@@ -170,8 +191,8 @@ std::vector<FileName> System::directoryListing(const FileName &path, const std::
   try
   {
     std::vector<FileName> files;
-    for(auto const &entry : fs::directory_iterator{path.str()})
-      if(fs::is_regular_file(entry) && std::regex_match(entry.path().filename().string(), pattern))
+    for(auto const &entry : std::filesystem::directory_iterator{path.str()})
+      if(std::filesystem::is_regular_file(entry) && std::regex_match(entry.path().filename().string(), pattern))
         files.push_back(FileName(entry.path().filename().string()));
     return files;
   }

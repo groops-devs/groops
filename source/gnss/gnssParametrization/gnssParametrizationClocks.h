@@ -18,10 +18,11 @@
 #ifdef DOCSTRING_GnssParametrization
 static const char *docstringGnssParametrizationClocks = R"(
 \subsection{Clocks}\label{gnssParametrizationType:clocks}
-Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{platformSelectorType}.
+Clock errors are estimated epoch-wise for each \configClass{selectTransmitters/Receivers}{platformSelectorType}.
 No clock errors are estimated if no valid observations are available (e.g. data gaps in the observations).
 
-These parameters are lineary dependent and would lead to a rank deficiency in the normal equation
+If all transmitters and receivers are selected by \config{selectTransmitters} and \config{selectReceivers} respectively,
+these parameters will be lineary dependent which would lead to a rank deficiency in the normal equation
 matrix. To circumvent this issue, the estimation requires an additional zero-mean constraint added in each epoch.
 This is realized with an additional observation equation
 \begin{equation}

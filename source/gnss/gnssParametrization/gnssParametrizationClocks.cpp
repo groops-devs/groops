@@ -259,20 +259,21 @@ void GnssParametrizationClocks::constraintsEpoch(const GnssNormalEquationInfo &n
 
     if(Parallel::isMaster(normalEquationInfo.comm))
     {
-      GnssDesignMatrix A(normalEquationInfo, Vector(1));
+      Vector           l(1);
+      GnssDesignMatrix A(normalEquationInfo, 1);
       for(UInt idTrans=0; idTrans<indexTrans.size(); idTrans++)
         if(selectedTransmittersZeroMean.at(idTrans) && indexTrans.at(idTrans).size() && indexTrans.at(idTrans).at(idEpoch))
         {
-          A.l(0) += (x0Trans.at(idTrans).at(idEpoch) - LIGHT_VELOCITY*gnss->transmitters.at(idTrans)->clockError(idEpoch))/count/sigmaZeroMean; // remove apriori value -> regularization towards 0
+          l(0) += (x0Trans.at(idTrans).at(idEpoch) - LIGHT_VELOCITY*gnss->transmitters.at(idTrans)->clockError(idEpoch))/count/sigmaZeroMean; // remove apriori value -> regularization towards 0
           A.column(indexTrans.at(idTrans).at(idEpoch))(0,0) = 1./count/sigmaZeroMean;
         }
       for(UInt idRecv=0; idRecv<indexRecv.size(); idRecv++)
         if(selectedReceiversZeroMean.at(idRecv) && indexRecv.at(idRecv).size() && indexRecv.at(idRecv).at(idEpoch))
         {
-          A.l(0) += lRecvEpoch(idRecv)/count/sigmaZeroMean; // remove apriori value -> regularization towards 0
+          l(0) += lRecvEpoch(idRecv)/count/sigmaZeroMean; // remove apriori value -> regularization towards 0
           A.column(indexRecv.at(idRecv).at(idEpoch))(0,0) = 1./count/sigmaZeroMean;
         }
-      A.accumulateNormals(normals, n, lPl, obsCount);
+      GnssDesignMatrix::accumulateNormals(A, l, normals, n, lPl, obsCount);
     }
   }
   catch(std::exception &e)

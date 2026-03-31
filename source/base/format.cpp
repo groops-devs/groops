@@ -97,7 +97,7 @@ std::string operator%(LongDouble value, const std::string &format)
         }
         case 'i': // integer
         {
-          ss<<static_cast<int>(std::round(value));
+          ss<<static_cast<long int>(std::round(value));
           break;
         }
         case 'f':  // float

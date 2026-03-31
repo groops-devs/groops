@@ -131,6 +131,11 @@
 								<xs:documentation>supports wildcards: * and ?</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="minimumSize" type="uint" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>minimum file size in byte.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -189,7 +194,11 @@
 								<xs:documentation>should contain a {variable}</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="pattern" type="filename" minOccurs="0"/>
+						<xs:element name="pattern" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>supports wildcards: * and ?</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="isRegularExpression" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>pattern is  a regular expression</xs:documentation>
@@ -211,7 +220,11 @@
 								<xs:documentation>should contain a {variable}</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="pattern" type="filename" minOccurs="0"/>
+						<xs:element name="pattern" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>supports wildcards: * and ?</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="isRegularExpression" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>pattern is  a regular expression</xs:documentation>
@@ -257,12 +270,12 @@
 			</xs:element>
 			<xs:element name="inputfileSigmasPerArc" type="filename" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>different accuaries for each arc (multplicated with sigma)</xs:documentation>
+					<xs:documentation>different accuracies for each arc (multiplied with sigma)</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="inputfileSigmasPerEpoch" type="filename" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>different accuaries for each epoch (added)</xs:documentation>
+					<xs:documentation>different accuracies for each epoch (added)</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="inputfileCovarianceFunction" type="filename" minOccurs="0">
@@ -272,7 +285,7 @@
 			</xs:element>
 			<xs:element name="inputfileCovariancePodEpoch" type="filename" minOccurs="0">
 				<xs:annotation>
-					<xs:documentation>3x3 epoch wise covariances</xs:documentation>
+					<xs:documentation>3x3 epoch-wise covariances</xs:documentation>
 				</xs:annotation>
 			</xs:element>
 		</xs:sequence>
@@ -1598,7 +1611,7 @@
 						<xs:element name="selectReceivers" type="platformSelectorType" maxOccurs="unbounded" default="[&quot;all&quot;]"/>
 						<xs:element name="outputfileVTEC" type="filename" minOccurs="0" default="output/vtec_{loopTime:%D}.{station}.dat">
 							<xs:annotation>
-								<xs:documentation>variable {station} available</xs:documentation>
+								<xs:documentation>variable {station} available, columns: MJD, VTEC, north gradient, east gradient</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="mapR" type="double" minOccurs="0" default="6371e3">
@@ -1614,6 +1627,11 @@
 						<xs:element name="mapAlpha" type="double" minOccurs="0" default="0.9782">
 							<xs:annotation>
 								<xs:documentation>constant of MSLM mapping function</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="gradient" type="parametrizationTemporalType" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>parametrization of north and east gradients</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -1734,7 +1752,7 @@
 								<xs:documentation>variable {station} available</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="huber" type="double" minOccurs="0" default="2.5">
+						<xs:element name="huber" type="double" minOccurs="0" default="4">
 							<xs:annotation>
 								<xs:documentation>clock jumps &gt; huber*sigma0 are downweighted</xs:documentation>
 							</xs:annotation>
@@ -1759,7 +1777,7 @@
 								<xs:documentation>use these receivers for zero-mean constraint</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="sigmaZeroMeanConstraint" type="double" minOccurs="0" default="0.0001">
+						<xs:element name="sigmaZeroMeanConstraint" type="double" minOccurs="0" default="10">
 							<xs:annotation>
 								<xs:documentation>(0 = unconstrained) sigma [m] for zero-mean constraint over all selected clocks</xs:documentation>
 							</xs:annotation>
@@ -2803,6 +2821,11 @@
 								<xs:documentation>variable {station} available.</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="disableStationWithoutPosition" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>drop stations without apriori position</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="inputfileClock" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>variable {station} available</xs:documentation>
@@ -3062,12 +3085,12 @@
 									</xs:element>
 									<xs:element name="outputfileTrackBefore" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track before cycle slip detection</xs:documentation>
+											<xs:documentation>variables {station}, {prn}, {trackTimeStart}, {trackTimeEnd}, {types}, TEC and MW-like combinations in cycles for each track before cycle slip detection</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="outputfileTrackAfter" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>variables {station}, {prn}, {timeStart}, {timeEnd}, {types}, TEC and MW-like combinations in cycles for each track after cycle slip detection</xs:documentation>
+											<xs:documentation>variables {station}, {prn}, {trackTimeStart}, {trackTimeEnd}, {types}, TEC and MW-like combinations in cycles for each track after cycle slip detection</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 								</xs:sequence>
@@ -3127,6 +3150,11 @@
 								<xs:documentation>transmitted signal types</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="inputfileClockFrequencyScale" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable {prn} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="inputfileOrbit" type="filename" default="orbit_{loopTime:%D}.{prn}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {prn} available</xs:documentation>
@@ -3140,6 +3168,11 @@
 						<xs:element name="inputfileClock" type="filename" default="clock_{loopTime:%D}.{prn}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {prn} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="interpolateClock" type="boolean" minOccurs="0" default="1">
+							<xs:annotation>
+								<xs:documentation>linear interpolation of missing epochs</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="7">
@@ -4040,6 +4073,11 @@
 	<xs:complexType name="loopType">
 		<xs:annotation>
 			<xs:appinfo>rename: temporal = timeIntervals</xs:appinfo>
+			<xs:appinfo>rename: manualList = stringList</xs:appinfo>
+			<xs:appinfo>rename: fileAscii = fileStringList</xs:appinfo>
+			<xs:appinfo>rename: fileAsciiTable = fileStringTable</xs:appinfo>
+			<xs:appinfo>rename: fileLines = fileTextLines</xs:appinfo>
+			<xs:appinfo>rename: uniformSampling = numberSequence</xs:appinfo>
 		</xs:annotation>
 		<xs:choice>
 			<xs:element name="timeSeries">
@@ -4115,13 +4153,13 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="manualList">
+			<xs:element name="stringList">
 				<xs:annotation>
 					<xs:documentation>Loop over list of strings</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="string" type="string" maxOccurs="unbounded">
+						<xs:element name="string" type="string" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
 								<xs:documentation>explicit list of strings</xs:documentation>
 							</xs:annotation>
@@ -4149,66 +4187,30 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="manualTable">
+			<xs:element name="stringTable">
 				<xs:annotation>
 					<xs:documentation>Loop over table of strings</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
-						<xs:element name="table">
+						<xs:element name="row" minOccurs="0" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>define table by rows/columns</xs:documentation>
+								<xs:documentation>rows of a table</xs:documentation>
 							</xs:annotation>
 							<xs:complexType>
-								<xs:choice>
-									<xs:element name="rowWise">
+								<xs:sequence>
+									<xs:element name="cell" type="string" maxOccurs="unbounded">
 										<xs:annotation>
-											<xs:documentation>define table by rows</xs:documentation>
+											<xs:documentation>list of columns in a row</xs:documentation>
 										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="row" maxOccurs="unbounded">
-													<xs:annotation>
-														<xs:documentation>define table by rows</xs:documentation>
-													</xs:annotation>
-													<xs:complexType>
-														<xs:sequence>
-															<xs:element name="cell" type="string" maxOccurs="unbounded">
-																<xs:annotation>
-																	<xs:documentation>explicit list of cells in row/column</xs:documentation>
-																</xs:annotation>
-															</xs:element>
-														</xs:sequence>
-													</xs:complexType>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
 									</xs:element>
-									<xs:element name="columnWise">
-										<xs:annotation>
-											<xs:documentation>define table by columns</xs:documentation>
-										</xs:annotation>
-										<xs:complexType>
-											<xs:sequence>
-												<xs:element name="column" maxOccurs="unbounded">
-													<xs:annotation>
-														<xs:documentation>define table by columns</xs:documentation>
-													</xs:annotation>
-													<xs:complexType>
-														<xs:sequence>
-															<xs:element name="cell" type="string" maxOccurs="unbounded">
-																<xs:annotation>
-																	<xs:documentation>explicit list of cells in row/column</xs:documentation>
-																</xs:annotation>
-															</xs:element>
-														</xs:sequence>
-													</xs:complexType>
-												</xs:element>
-											</xs:sequence>
-										</xs:complexType>
-									</xs:element>
-								</xs:choice>
+								</xs:sequence>
 							</xs:complexType>
+						</xs:element>
+						<xs:element name="transpose" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>loop over columns instead of rows</xs:documentation>
+							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopString" type="string" default="loopString" maxOccurs="unbounded">
 							<xs:annotation>
@@ -4233,7 +4235,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="fileAscii">
+			<xs:element name="fileStringList">
 				<xs:annotation>
 					<xs:documentation>Loop over list of strings from file</xs:documentation>
 				</xs:annotation>
@@ -4241,27 +4243,7 @@
 					<xs:sequence>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>simple ASCII file with strings (separated by whitespace)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="sort" type="boolean" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>sort entries alphabetically (ascending)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="removeDuplicates" type="boolean" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>remove duplicate entries (order is preserved)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="startIndex" type="uint" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>start at element startIndex (counting from 0)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="count" type="uint" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>use count elements (default: use all)</xs:documentation>
+								<xs:documentation>string list file</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopString" type="string" minOccurs="0" default="loopString">
@@ -4287,7 +4269,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="fileAsciiTable">
+			<xs:element name="fileStringTable">
 				<xs:annotation>
 					<xs:documentation>Loop over of a table containing strings</xs:documentation>
 				</xs:annotation>
@@ -4295,17 +4277,12 @@
 					<xs:sequence>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>simple ASCII file with multiple columns (separated by whitespace)</xs:documentation>
+								<xs:documentation>string table file with multiple columns</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="startLine" type="uint" minOccurs="0" default="0">
+						<xs:element name="transpose" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
-								<xs:documentation>start at line startLine (counting from 0)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="countLines" type="uint" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>read count lines (default: all)</xs:documentation>
+								<xs:documentation>loop over columns instead of rows</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopString" type="string" default="loopString" maxOccurs="unbounded">
@@ -4331,7 +4308,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="fileLines">
+			<xs:element name="fileTextLines">
 				<xs:annotation>
 					<xs:documentation>Loop over of lines of a text file</xs:documentation>
 				</xs:annotation>
@@ -4339,17 +4316,7 @@
 					<xs:sequence>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded">
 							<xs:annotation>
-								<xs:documentation>simple ASCII file with lines</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="sort" type="boolean" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>sort lines alphabetically (ascending)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="removeDuplicates" type="boolean" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>remove duplicate lines (order is preserved)</xs:documentation>
+								<xs:documentation>simple text file with lines</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="startIndex" type="uint" minOccurs="0" default="0">
@@ -4359,7 +4326,7 @@
 						</xs:element>
 						<xs:element name="count" type="uint" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>use number of lines only (default: use all)</xs:documentation>
+								<xs:documentation>use number of loops only (default: use all)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="variableLoopLine" type="string" minOccurs="0" default="loopLine">
@@ -4430,7 +4397,7 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="uniformSampling">
+			<xs:element name="numberSequence">
 				<xs:annotation>
 					<xs:documentation>Loop over sequence of numbers</xs:documentation>
 				</xs:annotation>
@@ -4557,30 +4524,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="loop">
-				<xs:annotation>
-					<xs:documentation>Loop over loops</xs:documentation>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="loop" type="loopType" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>subloop</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="condition" type="conditionType" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>check before each loop step</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="platformEquipment">
 				<xs:annotation>
 					<xs:documentation>Loop over equipment of a platform file</xs:documentation>
@@ -4694,9 +4637,157 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="loop">
+				<xs:annotation>
+					<xs:documentation>Loop over loops</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="loop" type="loopType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>subloop</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="sortAndRemoveDuplicates">
+				<xs:annotation>
+					<xs:documentation>sort loops</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="loop" type="loopType"/>
+						<xs:element name="sortString" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>use {loopVariables}, sort alphabetically</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="descending" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>sorting descending instead of ascending</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="removeDuplicatesString" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>use {loopVariables}, remove duplicates (order is preserved)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopCount" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="manualTable">
+				<xs:annotation>
+					<xs:documentation>DEPRECATED since 2025-09-27. Use stringTable instead</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="table">
+							<xs:annotation>
+								<xs:documentation>define table by rows/columns</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="rowWise">
+										<xs:annotation>
+											<xs:documentation>define table by rows</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="row" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>define table by rows</xs:documentation>
+													</xs:annotation>
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="cell" type="string" maxOccurs="unbounded">
+																<xs:annotation>
+																	<xs:documentation>explicit list of cells in row/column</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="columnWise">
+										<xs:annotation>
+											<xs:documentation>define table by columns</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="column" maxOccurs="unbounded">
+													<xs:annotation>
+														<xs:documentation>define table by columns</xs:documentation>
+													</xs:annotation>
+													<xs:complexType>
+														<xs:sequence>
+															<xs:element name="cell" type="string" maxOccurs="unbounded">
+																<xs:annotation>
+																	<xs:documentation>explicit list of cells in row/column</xs:documentation>
+																</xs:annotation>
+															</xs:element>
+														</xs:sequence>
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="variableLoopString" type="string" default="loopString" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>1. variable name for the 1. column, next variable name for the 2. column, ... </xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopIndex" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with index of current iteration (starts with zero)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="variableLoopCount" type="string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>variable with total number of iterations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="condition" type="conditionType" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>check before each loop step</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="fileGnssStationInfo">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Use platformEquipment instead</xs:documentation>
+					<xs:documentation>DEPRECATED since 2022-11-11. Use platformEquipment instead</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
@@ -5341,7 +5432,7 @@
 			</xs:element>
 			<xs:element name="solarRadiationPressure">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED</xs:documentation>
+					<xs:documentation>DEPRECATED since 2022-12-19. Use radiationPressure instead.</xs:documentation>
 				</xs:annotation>
 				<xs:complexType>
 					<xs:sequence>
@@ -5361,7 +5452,7 @@
 			</xs:element>
 			<xs:element name="albedo">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED</xs:documentation>
+					<xs:documentation>DEPRECATED since 2022-12-19. Use radiationPressure instead.</xs:documentation>
 					<xs:appinfo>rename: inputfileEmissity = inputfileEmissivity</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -5832,7 +5923,7 @@
 						</xs:element>
 						<xs:element name="interpolationDegree" type="uint" minOccurs="0" default="8">
 							<xs:annotation>
-								<xs:documentation>orbit differentation  by polynomial approximation of degree n</xs:documentation>
+								<xs:documentation>orbit differentiation  by polynomial approximation of degree n</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="integrationDegree" type="uint" minOccurs="0" default="7">
@@ -6858,6 +6949,20 @@
 						<xs:element name="count" type="expression">
 							<xs:annotation>
 								<xs:documentation>count of zero parameters (variables: length)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="group">
+				<xs:annotation>
+					<xs:documentation>groups a set of parameter selectors.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="parameterSelection" type="parameterSelectorType" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>parameter order/selection</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -10023,6 +10128,11 @@
 								<xs:documentation>station position</xs:documentation>
 							</xs:annotation>
 						</xs:element>
+						<xs:element name="disableStationWithoutPosition" type="boolean" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>drop stations without apriori position</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 						<xs:element name="inputfileObservations" type="filename" minOccurs="0" default="normalPoints_{satellite}_{station}_{loopTime:%D}.dat">
 							<xs:annotation>
 								<xs:documentation>variable {station} {satellite} available</xs:documentation>
@@ -10596,12 +10706,12 @@
 						<xs:element name="inputfileInstrument" type="filename"/>
 						<xs:element name="timeStart" type="time" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>exclude peochs before this epoch</xs:documentation>
+								<xs:documentation>inclusive, i.e. exclude eochs before this epoch</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="timeEnd" type="time" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>only epochs before this time are used</xs:documentation>
+								<xs:documentation>exclusive, i.e. only epochs before this time are used</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -10630,7 +10740,7 @@
 						<xs:element name="inputfileOrbit" type="filename"/>
 						<xs:element name="timeStart" type="time" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>exclude peochs before this epoch</xs:documentation>
+								<xs:documentation>exclude eochs before this epoch</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="timeEnd" type="time" minOccurs="0">
@@ -10799,7 +10909,6 @@
 			<xs:appinfo>rename: GnssAntennaRepresentationConstraint = GnssAntennaNormalsConstraint</xs:appinfo>
 			<xs:appinfo>rename: GnssResiduals2AntennaDefinition = GnssResiduals2AccuracyDefinition</xs:appinfo>
 			<xs:appinfo>rename: GnssResiduals2GriddedData = GnssResiduals2Skyplot</xs:appinfo>
-			<xs:appinfo>rename: GnssCreateStationInfo = GnssStationInfoCreate</xs:appinfo>
 			<xs:appinfo>rename: GnssRepresentation2AntennaDefinition = ParameterVector2GnssAntennaDefinition</xs:appinfo>
 			<xs:appinfo>rename: Gravityfield2DegreeAmplitudeTimeSeries = Gravityfield2DegreeAmplitudesPlotGrid</xs:appinfo>
 			<xs:appinfo>rename: DisplacementTimeSeries = Gravityfield2DisplacementTimeSeries</xs:appinfo>
@@ -10843,6 +10952,7 @@
 			<xs:appinfo>rename: IersRapidEop2Earthrotation = IersRapidIAU2000EarthOrientationParameter</xs:appinfo>
 			<xs:appinfo>rename: IGS2EarthRotation = Igs2EarthOrientationParameter</xs:appinfo>
 			<xs:appinfo>rename: Igs2InstrumentClock = GnssClockRinex2InstrumentClock</xs:appinfo>
+			<xs:appinfo>rename: GnssStationLog2StationInfo = GnssStationLog2Platform</xs:appinfo>
 			<xs:appinfo>rename: Tsxtdx2Orbit = Tsxtdx2Starcamera</xs:appinfo>
 			<xs:appinfo>rename: Tsxtdx2Starcamera = TerraSarTandem2StarCamera</xs:appinfo>
 			<xs:appinfo>rename: Kinematic2Orbit = BerneseKinematic2Orbit</xs:appinfo>
@@ -10853,6 +10963,7 @@
 			<xs:appinfo>rename: ReadOceanBottomPressurePSMSL = PsmslOceanBottomPressure2TimeSeries</xs:appinfo>
 			<xs:appinfo>rename: Sp3file2Orbit = Sp3Format2Orbit</xs:appinfo>
 			<xs:appinfo>rename: Igs2Orbit = Sp3Format2Orbit</xs:appinfo>
+			<xs:appinfo>rename: GnssCreateStationInfo = GnssStationInfoCreate</xs:appinfo>
 			<xs:appinfo>rename: GnssSinex2StationPosition = Sinex2StationPosition</xs:appinfo>
 		</xs:annotation>
 		<xs:choice>
@@ -11248,7 +11359,6 @@
 								<xs:documentation>includes the loading</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="gridOcean" type="gridType" maxOccurs="unbounded"/>
 						<xs:element name="maxDegree" type="uint" minOccurs="0" default="120"/>
 						<xs:element name="GM" type="double" minOccurs="0" default="3.986004415e+14">
 							<xs:annotation>
@@ -11260,14 +11370,14 @@
 								<xs:documentation>reference radius</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="density" type="double" minOccurs="0" default="1025">
+						<xs:element name="inputfileDensityGrid" type="filename">
 							<xs:annotation>
-								<xs:documentation>[kg/m**3] density of sea water</xs:documentation>
+								<xs:documentation>[kg/m^3] density of sea water, zero over land</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="tideGeneratingPotential" type="double" default="-0.0856534056">
 							<xs:annotation>
-								<xs:documentation>[m**2/s**2]</xs:documentation>
+								<xs:documentation>[m^2/s^2]</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="k20" type="double" minOccurs="0" default="0.30190">
@@ -11292,6 +11402,7 @@
 						</xs:element>
 						<xs:element name="inputfilePotentialLoadLoveNumber" type="filename" default="{groopsDataDir}/loading/loadLoveNumbers_Gegout97.txt"/>
 						<xs:element name="inputfileDeformationLoadLoveNumber" type="filename" default="{groopsDataDir}/loading/deformationLoveNumbers_CE_Gegout97.txt"/>
+						<xs:element name="iterationCount" type="uint" minOccurs="0" default="5"/>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -11899,9 +12010,9 @@
 								<xs:documentation>templated for PRN list (variableNamePrn)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="inputfilePrn2FrequencyNumber" type="filename">
+						<xs:element name="inputfilePrn2FrequencyNumber" type="filename" default="{groopsDataDir}/gnss/transmitter/glonassPrnSvn2FrequencyNumber.txt">
 							<xs:annotation>
-								<xs:documentation>GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber</xs:documentation>
+								<xs:documentation>matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="prn" type="string" minOccurs="0" maxOccurs="unbounded">
@@ -12202,138 +12313,6 @@
 							<xs:annotation>
 								<xs:documentation>[m] noise added to the simulated receiver clock</xs:documentation>
 							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-			<xs:element name="GnssStationInfoCreate">
-				<xs:annotation>
-					<xs:documentation>create station information file for GNSS receivers</xs:documentation>
-					<xs:appinfo>tag: Gnss</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileStationInfo" type="filename"/>
-						<xs:element name="markerName" type="string"/>
-						<xs:element name="markerNumber" type="string" minOccurs="0"/>
-						<xs:element name="comment" type="string" minOccurs="0"/>
-						<xs:element name="approxPositionX" type="double" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>[m] in TRF</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="approxPositionY" type="double" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>[m] in TRF</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="approxPositionZ" type="double" minOccurs="0" default="0">
-							<xs:annotation>
-								<xs:documentation>[m] in TRF</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="antenna" maxOccurs="unbounded">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="name" type="string"/>
-									<xs:element name="serial" type="string" minOccurs="0"/>
-									<xs:element name="radome" type="string" minOccurs="0"/>
-									<xs:element name="comment" type="string" minOccurs="0"/>
-									<xs:element name="timeStart" type="time" minOccurs="0"/>
-									<xs:element name="timeEnd" type="time" minOccurs="0"/>
-									<xs:element name="positionX" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="positionY" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="positionZ" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="rotationX" type="angle" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="rotationY" type="angle" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="rotationZ" type="angle" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="flipX" type="boolean" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>flip x-axis (after rotation)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="flipY" type="boolean" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>flip y-axis (after rotation)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="flipZ" type="boolean" minOccurs="0" default="0">
-										<xs:annotation>
-											<xs:documentation>flip z-axis (after rotation)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
-						<xs:element name="receiver" minOccurs="0" maxOccurs="unbounded">
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="name" type="string"/>
-									<xs:element name="serial" type="string" minOccurs="0"/>
-									<xs:element name="version" type="string" minOccurs="0"/>
-									<xs:element name="comment" type="string" minOccurs="0"/>
-									<xs:element name="timeStart" type="time" minOccurs="0"/>
-									<xs:element name="timeEnd" type="time" minOccurs="0"/>
-								</xs:sequence>
-							</xs:complexType>
-						</xs:element>
-						<xs:element name="referencePoint" minOccurs="0" maxOccurs="unbounded">
-							<xs:annotation>
-								<xs:documentation>e.g. center of mass in satellite frame</xs:documentation>
-							</xs:annotation>
-							<xs:complexType>
-								<xs:sequence>
-									<xs:element name="comment" type="string" minOccurs="0"/>
-									<xs:element name="xStart" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="yStart" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>linear motion between start and end</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="zStart" type="double" default="0"/>
-									<xs:element name="xEnd" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="yEnd" type="double" default="0">
-										<xs:annotation>
-											<xs:documentation>linear motion between start and end</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="zEnd" type="double" default="0"/>
-									<xs:element name="timeStart" type="time" minOccurs="0"/>
-									<xs:element name="timeEnd" type="time" minOccurs="0"/>
-								</xs:sequence>
-							</xs:complexType>
 						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
@@ -18010,6 +17989,23 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="NormalsReorderAndAccumulate">
+				<xs:annotation>
+					<xs:documentation>accumulate normal equations and write to file</xs:documentation>
+					<xs:appinfo>tag: NormalEquation</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileNormalEquation" type="filename"/>
+						<xs:element name="inputfileNormalEquation" type="filename" maxOccurs="unbounded"/>
+						<xs:element name="outBlockSize" type="uint" minOccurs="0" default="2048">
+							<xs:annotation>
+								<xs:documentation>block size for distributing the normal equations, 0: one block, empty: blocking by objects</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="NormalsScale">
 				<xs:annotation>
 					<xs:documentation>Scales rows and columns of a normal equation system</xs:documentation>
@@ -19718,7 +19714,7 @@
 									</xs:element>
 									<xs:element name="inputfileSigmasPerArc" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>apriori different accuaries for each arc (multiplicated with sigma)</xs:documentation>
+											<xs:documentation>apriori different accuracies for each arc (multiplied with sigma)</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="inputfileCovarianceFunction" type="filename" minOccurs="0">
@@ -19751,7 +19747,7 @@
 						</xs:element>
 						<xs:element name="iterationCount" type="uint" minOccurs="0" default="3">
 							<xs:annotation>
-								<xs:documentation>(maximum) number of iterations for the estimation of calibration parameter and error PSD</xs:documentation>
+								<xs:documentation>(maximum) number of iterations for the estimation of calibration parameters and error PSD</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -21379,7 +21375,7 @@
 			</xs:element>
 			<xs:element name="FileConvert">
 				<xs:annotation>
-					<xs:documentation>Converts GROOPS file between different file formats (ASCII, XML, binary).</xs:documentation>
+					<xs:documentation>Converts GROOPS file between different file formats (ASCII, XML, JSON, binary).</xs:documentation>
 					<xs:appinfo>rename: outputFile = outputfile</xs:appinfo>
 					<xs:appinfo>rename: inputFile = inputfile</xs:appinfo>
 					<xs:appinfo>tag: System</xs:appinfo>
@@ -21395,12 +21391,12 @@
 					<xs:sequence>
 						<xs:element name="outputfile" type="filename" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>GROOPS formats: .xml, .txt, .dat</xs:documentation>
+								<xs:documentation>GROOPS formats: .xml, .txt, .json, .dat (optional with additional .gz)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfile" type="filename">
 							<xs:annotation>
-								<xs:documentation>GROOPS formats: .xml, .txt, .dat</xs:documentation>
+								<xs:documentation>GROOPS formats: .xml, .txt, .json, .dat (optional with additional .gz)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -21566,6 +21562,48 @@
 						<xs:element name="executeParallel" type="boolean" minOccurs="0" default="0">
 							<xs:annotation>
 								<xs:documentation>execute several commands in parallel</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Accelerometer2GraceL1b">
+				<xs:annotation>
+					<xs:documentation>convert GROOPS ACC data into SDS L1B data</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Grace</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>ACT1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileHeader" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>YAML Header, {epochmin}, {epochmax}, {epochcount} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAccelerometer" type="filename">
+							<xs:annotation>
+								<xs:documentation>ACCELEROMETER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAngularAccelerometer" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>ACCELEROMETER</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileFlags" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(qualflg, acl_res.x, acl_res.y, acl_res.z)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="satelliteId" type="string">
+							<xs:annotation>
+								<xs:documentation>A, B, C or D</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -21821,31 +21859,6 @@
 								<xs:documentation>PRN is appended to file name</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="outputfileSvnBlockTableGps" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>SVN to satellite block mapping</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outputfileSvnBlockTableGlonass" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>SVN to satellite block mapping</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outputfileSvnBlockTableGalileo" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>SVN to satellite block mapping</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outputfileSvnBlockTableBeiDou" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>SVN to satellite block mapping</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="outputfileSvnBlockTableQzss" type="filename" minOccurs="0">
-							<xs:annotation>
-								<xs:documentation>SVN to satellite block mapping</xs:documentation>
-							</xs:annotation>
-						</xs:element>
 						<xs:element name="outputfileTransmitterListGps" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>list of PRNs</xs:documentation>
@@ -21867,6 +21880,11 @@
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="outputfileTransmitterListQzss" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>list of PRNs</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="outputfileTransmitterListIrnss" type="filename" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>list of PRNs</xs:documentation>
 							</xs:annotation>
@@ -22045,7 +22063,7 @@
 											<xs:documentation>parameter vector</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileSigmax" type="filename">
+									<xs:element name="inputfileSigmax" type="filename" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>standard deviations of the parameters (sqrt of the diagonal of the inverse normal equation)</xs:documentation>
 										</xs:annotation>
@@ -22123,7 +22141,7 @@
 								<xs:documentation>comment in header</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="mappingFunction" type="string" minOccurs="0" default="NONE">
+						<xs:element name="mappingFunction" type="string" minOccurs="0" default="MSLM">
 							<xs:annotation>
 								<xs:documentation>see IONEX documentation</xs:documentation>
 							</xs:annotation>
@@ -22343,7 +22361,7 @@
 											<xs:documentation>Brief description of the input used to generate this solution</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="software" type="string" minOccurs="0" default="GROOPS">
+									<xs:element name="software" type="string" minOccurs="0" default="GROOPS (https://github.com/groops-devs/groops)">
 										<xs:annotation>
 											<xs:documentation>Software used to generate the file</xs:documentation>
 										</xs:annotation>
@@ -22622,17 +22640,17 @@
 								</xs:choice>
 							</xs:complexType>
 						</xs:element>
-						<xs:element name="observationSampling" type="uint" minOccurs="0" default="30">
+						<xs:element name="observationSampling" type="double" minOccurs="0" default="30">
 							<xs:annotation>
 								<xs:documentation>[seconds]</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="intervalLength" type="uint" minOccurs="0" default="86400">
+						<xs:element name="intervalLength" type="double" minOccurs="0" default="86400">
 							<xs:annotation>
 								<xs:documentation>[seconds] interval for bias parameter representation</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="determinationMethod" type="string" default="CO-ESTIMATED_IN_LSA">
+						<xs:element name="determinationMethod" type="string" minOccurs="0" default="CO-ESTIMATED_IN_LSA">
 							<xs:annotation>
 								<xs:documentation>determination method used to generate the bias results (see SINEX Bias format description)</xs:documentation>
 							</xs:annotation>
@@ -22647,32 +22665,32 @@
 								<xs:documentation>one per system, reference code observable on first and second frequency (RINEX3 format)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="description" type="string" default="Graz University of Technology, Austria (TUG/TU Graz)">
+						<xs:element name="description" type="string" minOccurs="0" default="Graz University of Technology, Austria (TUG/TU Graz)">
 							<xs:annotation>
 								<xs:documentation>organizition gathering/altering the file contents</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="contact" type="string">
+						<xs:element name="contact" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>contact name and/or email address</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="input" type="string" default="GNSS observations from the IGS station network">
+						<xs:element name="input" type="string" minOccurs="0" default="GNSS observations from the IGS station network">
 							<xs:annotation>
 								<xs:documentation>brief description of the input used to generate this solution</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="output" type="string" default="Estimated signal biases from GNSS processing">
+						<xs:element name="output" type="string" minOccurs="0" default="Estimated signal biases from GNSS processing">
 							<xs:annotation>
 								<xs:documentation>description of the file contents</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="software" type="string" default="GROOPS">
+						<xs:element name="software" type="string" minOccurs="0" default="GROOPS (https://github.com/groops-devs/groops)">
 							<xs:annotation>
 								<xs:documentation>software used to generate the file</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="hardware" type="string">
+						<xs:element name="hardware" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>computer hardware on which above software was run</xs:documentation>
 							</xs:annotation>
@@ -22731,29 +22749,6 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
-			<xs:element name="GnssStationLog2StationInfo">
-				<xs:annotation>
-					<xs:documentation>GNSS analysis</xs:documentation>
-					<xs:appinfo>tag: Conversion</xs:appinfo>
-					<xs:appinfo>tag: Gnss</xs:appinfo>
-				</xs:annotation>
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="outputfileStationInfo" type="filename"/>
-						<xs:element name="inputfileStationLog" type="filename"/>
-						<xs:element name="inputfileAntennaDefinition" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
-							<xs:annotation>
-								<xs:documentation>used to check antennas</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-						<xs:element name="inputfileSinex" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/igs_with_former.snx">
-							<xs:annotation>
-								<xs:documentation>used to cross-check station log with SINEX file</xs:documentation>
-							</xs:annotation>
-						</xs:element>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
 			<xs:element name="GnssTroposphere2TropoSinex">
 				<xs:annotation>
 					<xs:documentation>Convert GNSS troposphere data from GROOPS format to SINEX_TRO format.</xs:documentation>
@@ -22763,88 +22758,68 @@
 				<xs:complexType>
 					<xs:sequence>
 						<xs:element name="outputfileTropoSinex" type="filename"/>
-						<xs:element name="stations">
+						<xs:element name="station" maxOccurs="unbounded">
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="inputfileStationList" type="filename">
+									<xs:element name="inputfileStationInfo" type="filename" default="{groopsDataDir}/gnss/receiverStation/stationInfo/stationInfo.{station}.xml">
 										<xs:annotation>
-											<xs:documentation>ASCII file with station names</xs:documentation>
+											<xs:documentation>platform file</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="inputfileTroposphereData" type="filename">
 										<xs:annotation>
-											<xs:documentation>Troposphere data estimates template (columns: mjd, trodry, trowet, tgndry, tgnwet, tgedry, tgewet)</xs:documentation>
+											<xs:documentation>Troposphere data estimates (columns: mjd, trodry, trowet, tgndry, tgnwet, tgedry, tgewet)</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="inputfileTroposphereSigmas" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>Troposphere data sigmas template (columns: mjd, sigma_trowet, sigma_tgnwet, sigma_tgewet)</xs:documentation>
+											<xs:documentation>Troposphere data sigmas (columns: mjd, sigma_trowet, sigma_tgnwet, sigma_tgewet)</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="inputfileStationInfo" type="filename" default="{groopsDataDir}/gnss/receiverStation/stationInfo/igs/stationInfo.{station}.xml">
+									<xs:element name="inputfilePosition" type="filename" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>station info file template</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="inputfileGeoidHeight" type="filename" minOccurs="0">
-										<xs:annotation>
-											<xs:documentation>File including geoid height</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="inputfileGridPos" type="filename">
-										<xs:annotation>
-											<xs:documentation>File including stations positions</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
-										<xs:annotation>
-											<xs:documentation>station phase centers and variations (ANTEX)</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="variableStationName" type="filename" minOccurs="0" default="station">
-										<xs:annotation>
-											<xs:documentation>Loop variable for station names from station list</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="observationTimeStart" type="time">
-										<xs:annotation>
-											<xs:documentation>Start time for which solution has observations</xs:documentation>
-										</xs:annotation>
-									</xs:element>
-									<xs:element name="observationTimeEnd" type="time">
-										<xs:annotation>
-											<xs:documentation>End time for which solution has observations</xs:documentation>
+											<xs:documentation>Precise station position (columns: mjd, x, y, z [m in TRF])</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 								</xs:sequence>
 							</xs:complexType>
 						</xs:element>
-						<xs:element name="dataSamplingInterval" type="double">
+						<xs:element name="inputfileAntennaDefinition" type="filename" default="{groopsDataDir}/gnss/receiverStation/antennaDefinition/igs/igs20/antennaDefinition_igs20.dat">
+							<xs:annotation>
+								<xs:documentation>station phase centers and variations</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileGriddedGeoidHeight" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>value closest to the station&apos;s position is used in each case</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="dataSamplingInterval" type="double" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>[sec] GNSS data sampling rate</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="tropoSamplingInterval" type="double">
+						<xs:element name="tropoSamplingInterval" type="double" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>[sec] Tropospheric parameter sampling interval</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="tropoModelingMethod" type="string">
+						<xs:element name="tropoModelingMethod" type="string" minOccurs="0" default="Least Squares">
 							<xs:annotation>
 								<xs:documentation>Tropospheric estimation method: Filter, Smoother, Least Squares, Piece-Wise Linear Interpolation</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="aPrioriTropoModel" type="string">
+						<xs:element name="aPrioriTropoModel" type="string" minOccurs="0" default="VMF3 Operational 1x1° gridded + gradients (V3GR)">
 							<xs:annotation>
 								<xs:documentation>A priori tropospheric model used</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="tropoMappingFunction" type="string">
+						<xs:element name="tropoMappingFunction" type="string" minOccurs="0" default="Vienna Mapping Functions 3 (VMF3)">
 							<xs:annotation>
 								<xs:documentation>Name of mapping function used for hydrostatic and wet delay</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="gradientMappingFunction" type="string">
+						<xs:element name="gradientMappingFunction" type="string" minOccurs="0" default="Chen &amp; Herring (1997), C_dry=0.0031, C_wet=0.0007">
 							<xs:annotation>
 								<xs:documentation>Name of mapping function used for gradients</xs:documentation>
 							</xs:annotation>
@@ -22854,34 +22829,34 @@
 								<xs:documentation>source of surface meteorological observations used (see format desc.)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="observationWeighting" type="string">
+						<xs:element name="observationWeighting" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>observation weighting model applied</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="elevationCutoff" type="double">
+						<xs:element name="elevationCutoff" type="double" minOccurs="0" default="5">
 							<xs:annotation>
 								<xs:documentation>[deg]</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="gnssSystems" type="string">
+						<xs:element name="gnssSystems" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>G=GPS, R=GLONASS, E=Galileo, C=BeiDou</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="timeSystem" type="string" default="G">
+						<xs:element name="timeSystem" type="string" minOccurs="0" default="G">
 							<xs:annotation>
 								<xs:documentation>G (GPS) or UTC</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="oceanTideModel" type="string" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>Ocean tide loading model applied</xs:documentation>
+								<xs:documentation>Name of applied Ocean tide loading model</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="atmosphericTideModel" type="string" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>Atmospheric tide loading model applied</xs:documentation>
+								<xs:documentation>Name of applied Atmospheric tide loading model</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="geoidModel" type="string" minOccurs="0">
@@ -22889,80 +22864,80 @@
 								<xs:documentation>Geoid model name for undulation values</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="systemCode" type="string">
+						<xs:element name="systemCode" type="string" minOccurs="0">
 							<xs:annotation>
 								<xs:documentation>Terrestrial reference system code</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="remark" type="string" default="TUG">
+						<xs:element name="remark" type="string" minOccurs="0" default="TUG">
 							<xs:annotation>
 								<xs:documentation>Remark used to identify the origin of the coordinates (AC acronym)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
-						<xs:element name="antennaCalibrationModel" type="string">
+						<xs:element name="antennaCalibrationModel" type="string" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>e.g. IGS14_WWWW (WWWW = ANTEX release GPS week)</xs:documentation>
+								<xs:documentation>e.g. IGS20_WWWW (WWWW = ANTEX release GPS week)</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="sinexTroHeader">
 							<xs:complexType>
 								<xs:sequence>
-									<xs:element name="agencyCode" type="string" default="TUG">
+									<xs:element name="agencyCode" type="string" minOccurs="0" default="TUG">
 										<xs:annotation>
 											<xs:documentation>Identify the agency providing the data</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="timeStart" type="time">
+									<xs:element name="timeStart" type="time" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Start time of the data</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="timeEnd" type="time">
+									<xs:element name="timeEnd" type="time" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>End time of the data </xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="observationCode" type="string" default="P">
+									<xs:element name="observationCode" type="string" minOccurs="0" default="P">
 										<xs:annotation>
 											<xs:documentation>Technique used to generate the SINEX solution</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="solutionContents" type="string">
+									<xs:element name="solutionContents" type="string" minOccurs="0" default="MIX">
 										<xs:annotation>
 											<xs:documentation>Marker name if single station, MIX if multiple stations</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="description" type="string">
+									<xs:element name="description" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Organizitions gathering/alerting the file contents</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="output" type="string">
+									<xs:element name="output" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Description of the file contents</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="contact" type="string">
+									<xs:element name="contact" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Address of the relevant contact e-mail</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="software" type="string" default="GROOPS">
+									<xs:element name="software" type="string" minOccurs="0" default="GROOPS (https://github.com/groops-devs/groops)">
 										<xs:annotation>
 											<xs:documentation>Software used to generate the file</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="hardware" type="string">
+									<xs:element name="hardware" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Computer hardware on which above software was run</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="input" type="string">
+									<xs:element name="input" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Brief description of the input used to generate this solution</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="versionNumber" type="string">
+									<xs:element name="versionNumber" type="string" minOccurs="0">
 										<xs:annotation>
 											<xs:documentation>Unique identifier of the product, same as in file name, e.g. 000</xs:documentation>
 										</xs:annotation>
@@ -24621,7 +24596,7 @@
 											<xs:documentation>Brief description of the input used to generate this solution</xs:documentation>
 										</xs:annotation>
 									</xs:element>
-									<xs:element name="software" type="string" minOccurs="0" default="GROOPS">
+									<xs:element name="software" type="string" minOccurs="0" default="GROOPS (https://github.com/groops-devs/groops)">
 										<xs:annotation>
 											<xs:documentation>Software used to generate the file</xs:documentation>
 										</xs:annotation>
@@ -24698,6 +24673,39 @@
 						<xs:element name="targetClass" type="uint" minOccurs="0" default="1">
 							<xs:annotation>
 								<xs:documentation>set 1 for passive retroreflector, set 0 for no retroreflector (includes debris)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Orbit2GraceL1b">
+				<xs:annotation>
+					<xs:documentation>convert GROOPS L1B data to SDS data</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Grace</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>GNV1B/GNI1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileHeader" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>YAML Header, {epochmin}, {epochmax}, {epochcount} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileOrbit" type="filename"/>
+						<xs:element name="satelliteId" type="string">
+							<xs:annotation>
+								<xs:documentation>A, B, C or D</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="earthRotation" type="earthRotationType" minOccurs="0" default="file">
+							<xs:annotation>
+								<xs:documentation>rotation into Earth fixed frame</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 					</xs:sequence>
@@ -24897,7 +24905,7 @@
 						</xs:element>
 						<xs:element name="inputfileMatrixPrn2FrequencyNumber" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/transmitter/glonassPrnSvn2FrequencyNumber.txt">
 							<xs:annotation>
-								<xs:documentation>(required for RINEX v2 files containing GLONASS observations) GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber</xs:documentation>
+								<xs:documentation>(required for RINEX v2 files containing GLONASS observations), matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileStationInfo" type="filename" minOccurs="0">
@@ -24907,12 +24915,12 @@
 						</xs:element>
 						<xs:element name="inputfileSemiCodelessReceivers" type="filename" minOccurs="0" default="{groopsDataDir}/gnss/receiverStation/semiCodelessReceivers.txt">
 							<xs:annotation>
-								<xs:documentation>ASCII list with one receiver name per line</xs:documentation>
+								<xs:documentation>list with one receiver name per line</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="inputfileSpecialObservationTypes" type="filename" minOccurs="0">
 							<xs:annotation>
-								<xs:documentation>ASCII table mapping special observation types to RINEX 3 types, e.g.: LA L1C</xs:documentation>
+								<xs:documentation>table mapping special observation types to RINEX 3 types, e.g.: LA L1C</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="useType" type="gnssType" minOccurs="0" maxOccurs="unbounded">
@@ -24939,6 +24947,53 @@
 					<xs:sequence>
 						<xs:element name="outputfileOrbit" type="filename"/>
 						<xs:element name="inputfile" type="filename" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="SatelliteTracking2GraceL1b">
+				<xs:annotation>
+					<xs:documentation>read GROOPS L1B data (KBR1B or LRI1B)</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Grace</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>KBR1B or LRI1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileHeader" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>YAML Header, {epochmin}, {epochmax}, {epochcount} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSatelliteTracking" type="filename">
+							<xs:annotation>
+								<xs:documentation>SATELLITETRACKING</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileIonoCorr" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUE</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileLighttime" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>SATELLITETRACKING</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileAntCentr" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>SATELLITETRACKING</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileSNR" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(K_A_SNR, Ka_A_SNR, K_B_SNR, Ka_B_SNR, qualflg)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
@@ -25298,6 +25353,43 @@
 					</xs:sequence>
 				</xs:complexType>
 			</xs:element>
+			<xs:element name="StarCamera2GraceL1b">
+				<xs:annotation>
+					<xs:documentation>convert GROOPS L1B data to SDS data (SCA1B)</xs:documentation>
+					<xs:appinfo>tag: Conversion</xs:appinfo>
+					<xs:appinfo>tag: Grace</xs:appinfo>
+					<xs:appinfo>tag: Instrument</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfile" type="filename">
+							<xs:annotation>
+								<xs:documentation>SCA1B</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileHeader" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>YAML Header, {epochmin}, {epochmax}, {epochcount} available</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileStarCamera" type="filename">
+							<xs:annotation>
+								<xs:documentation>STARCAMERA</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="inputfileStarCameraFlags" type="filename" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>MISCVALUES(sca_id, qual_rss, qualflg)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="satelliteId" type="string">
+							<xs:annotation>
+								<xs:documentation>A, B, C or D</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="StarCamera2Orbex">
 				<xs:annotation>
 					<xs:documentation>Converts satellite attitude from StarCamera to ORBEX format.</xs:documentation>
@@ -25502,7 +25594,7 @@
 			</xs:element>
 			<xs:element name="GnssAttitude2Orbex">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use StarCamera2Orbex instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2024-11-30. Please use StarCamera2Orbex instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25573,13 +25665,145 @@
 			</xs:element>
 			<xs:element name="GnssPrn2SvnBlockVariables">
 				<xs:annotation>
-					<xs:documentation>This program no longer works! See documentation for help.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2024-02-12. This program no longer works! See documentation for help.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="GnssStationInfoCreate">
+				<xs:annotation>
+					<xs:documentation>DEPRECATED since 2024-12-02. Please use PlatformCreate instead.</xs:documentation>
+					<xs:appinfo>tag: Deprecated</xs:appinfo>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="outputfileStationInfo" type="filename"/>
+						<xs:element name="markerName" type="string"/>
+						<xs:element name="markerNumber" type="string" minOccurs="0"/>
+						<xs:element name="comment" type="string" minOccurs="0"/>
+						<xs:element name="approxPositionX" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>[m] in TRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="approxPositionY" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>[m] in TRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="approxPositionZ" type="double" minOccurs="0" default="0">
+							<xs:annotation>
+								<xs:documentation>[m] in TRF</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="antenna" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="name" type="string"/>
+									<xs:element name="serial" type="string" minOccurs="0"/>
+									<xs:element name="radome" type="string" minOccurs="0"/>
+									<xs:element name="comment" type="string" minOccurs="0"/>
+									<xs:element name="timeStart" type="time" minOccurs="0"/>
+									<xs:element name="timeEnd" type="time" minOccurs="0"/>
+									<xs:element name="positionX" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="positionY" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="positionZ" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] ARP in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="rotationX" type="angle" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="rotationY" type="angle" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="rotationZ" type="angle" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>[degree] from local/vehicle to left-handed antenna system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="flipX" type="boolean" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>flip x-axis (after rotation)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="flipY" type="boolean" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>flip y-axis (after rotation)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="flipZ" type="boolean" minOccurs="0" default="0">
+										<xs:annotation>
+											<xs:documentation>flip z-axis (after rotation)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="receiver" minOccurs="0" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="name" type="string"/>
+									<xs:element name="serial" type="string" minOccurs="0"/>
+									<xs:element name="version" type="string" minOccurs="0"/>
+									<xs:element name="comment" type="string" minOccurs="0"/>
+									<xs:element name="timeStart" type="time" minOccurs="0"/>
+									<xs:element name="timeEnd" type="time" minOccurs="0"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="referencePoint" minOccurs="0" maxOccurs="unbounded">
+							<xs:annotation>
+								<xs:documentation>e.g. center of mass in satellite frame</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="comment" type="string" minOccurs="0"/>
+									<xs:element name="xStart" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="yStart" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>linear motion between start and end</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="zStart" type="double" default="0"/>
+									<xs:element name="xEnd" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>[m] in north, east, up or vehicle system</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="yEnd" type="double" default="0">
+										<xs:annotation>
+											<xs:documentation>linear motion between start and end</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="zEnd" type="double" default="0"/>
+									<xs:element name="timeStart" type="time" minOccurs="0"/>
+									<xs:element name="timeEnd" type="time" minOccurs="0"/>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
 			<xs:element name="GridRectangular2NetCdf">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-07-06. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25700,7 +25924,7 @@
 			</xs:element>
 			<xs:element name="NetCdf2GridRectangular">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-07-06. Please use NetCdf2GriddedData or NetCdf2GriddedDataTimeSeries instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25747,7 +25971,7 @@
 			</xs:element>
 			<xs:element name="Sinex2StationPosition">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use Sinex2StationPositions instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>
@@ -25797,7 +26021,7 @@
 			</xs:element>
 			<xs:element name="Sinex2StationPostSeismicDeformation">
 				<xs:annotation>
-					<xs:documentation>DEPRECATED. Please use Sinex2StationPositions instead.</xs:documentation>
+					<xs:documentation>DEPRECATED since 2023-02-16. Please use Sinex2StationPositions instead.</xs:documentation>
 					<xs:appinfo>tag: Deprecated</xs:appinfo>
 				</xs:annotation>
 				<xs:complexType>

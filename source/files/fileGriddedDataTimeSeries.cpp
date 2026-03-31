@@ -87,7 +87,7 @@ Matrix InFileGriddedDataTimeSeries::data(UInt idNode) // points x data columns
         open(file.fileName());
     }
 
-    Matrix data(grid_.points.size(), dataCount_);
+    Matrix data(grid_.points.size(), dataCount_, Matrix::NOFILL);
     while(indexFile <= idNode)
     {
       // Seek to appropriate interval.

@@ -70,6 +70,7 @@ class SlrStationGeneratorStations : public SlrStationGeneratorBase
   FileName              fileNameStationList, fileNameStationInfo;
   FileName              fileNameStationPosition;
   FileName              fileNameObs;
+  Bool                  disableWithoutPosition;
   ExpressionVariablePtr accuracyExpr;
   GravityfieldPtr       gravityfield;
   TidesPtr              tides;

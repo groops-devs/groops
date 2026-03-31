@@ -33,8 +33,7 @@ See also \program{SlrProcessing}.
 * @defgroup slrSatelliteGeneratorGroup SlrSatelliteGenerator
 * @brief Provides a list of satellites.
 * @ingroup classesGroup
-* The interface is given by @ref SlrSatelliteGenerator.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref SlrSatelliteGenerator. */
 /// @{
 
 /***** TYPES ***********************************/

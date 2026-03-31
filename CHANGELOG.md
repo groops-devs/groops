@@ -1,15 +1,41 @@
 # main
+- New program:      Accelerometer2GraceL1b.
+- New program:      Orbit2GraceL1b.
+- New program:      SatelliteTracking2GraceL1b.
+- New program:      StarCamera2GraceL1b.
+- New class:        ParameterSelector: group.
+- New option:       conditionStringContains/MatchPattern: supports wildcards.
+- Bugfix:           ConditionFileExist: fixed bug with wildcards.
+- Bugfix:           GUI: fixed MatchCaseSensitive for schema selction.
+- Bugfix:           GUI: fixed bug when moving elements to same position.
+- Bugfix:           GNSS, WriteNormalEquations: check non-matching parameter selection.
+- Bugfix:           Instrument2AllanVariance: Fix sample counting.
+- Bugfix:           The parser was sometimes applied twice to filenames.
+- Other:            NetCDF: enable to read multidimensional variables to store in muliple columns.
+- Other:            Changed ftp.tugraz.at/outgoing/ITSG to ftp.tugraz.at/pub/ITSG.
+- Other:            ModelEquilibriumTide: Taking into account spatially varying density.
+- Other:            GnssTroposphere2TropoSinex: Revised interface.
+- Other:            GnssAntex2AntennaDefinition: Handling of changing antennas of a SVN.
+
+# Release 2025-11-15
 - New program:      StarCamera2Orbex (replaces GnssAttitude2Orbex).
 - New program:      DoodsonHarmonicsChangePartialTides.
 - New program:      Conversion: OceanTidesDTU2GriddedData.
 - New program:      GnssResiduals2TransmitterAccuracyDefinition.
 - New program:      SynthesisSphericalHarmonicsMatrix.
 - New program:      Gravityfield2GravityVector.
+- New program:      NormalsReorderAndAccumulate.
 - New class:        PlotDegreeAmplitudes: degreeAmplitudesSimple.
+- New class:        Loop: SortAndRemoveDuplicates of an arbitrary loop.
 - New option:       GnssAntennaNormalsConstraint: gnssType selection for TEC constraint.
 - New option:       PlotAxisLabeled: majorTickSpacing, minorTickSpacing, gridLineSpacing.
+- New option:       GNSS/SLR: optional disabling of stations without precise apriori positions.
+- New option:       condition->fileExist: minimumSize.
+- New option:       GNNS->parametrizationVTEC: optional gradient estimation.
+- New option:       GNNS->TransmitterGeneratorGnss: option to disable clock interpolation.
 - File format:      TideGeneratingPotential includes now degree 3 tides.
 - File format:      Each file is now readable/writable in JSON format as well.
+- File format:      Removed deprecated GnssStationInfo (replaced by Platform).
 - Bugfix:           GUI: fixed Ctrl+Shift+Up/Down for variables.
 - Bugfix:           slrParametrizationRangeBiasStationSatellite: Fix station index.
 - Bugfix:           parameterNames: fixed wrong order.
@@ -17,11 +43,25 @@
 - Bugfix:           GnssOrbex2StarCamera: reads now free format.
 - Bugfix:           GnssNormals2Sinex: fixed parser error.
 - Bugfix:           GnssParametrizationIonosphereSTEC: constant sigmaSTEC>0 was evaluated always to one.
+- Bugfix:           ParameterVector2GnssAntennaDefinition: Sometimes the parameters were assigned incorrectly.
+- Bugfix:           GNSS: Fixed bug in preprocessing when only one phase observation is available.
+- Bugfix:           GNSS: Fixed bug in gnssParametrizationTemporalBias when reading apriori values.
 - Other:            GUI: offer links for numbers and strings of different types.
+- Other:            GUI: Open multiple config files with the file selector.
+- Other:            GUI: Inform about deprecated elements.
 - Other:            gnss: set margin for polynomial orbit interpolation to 1e-7 seconds.
 - Other:            gnss: simulation considers more apriori models (e.g. TEC maps).
 - Other:            IGRF: Updated International Geomagnetic Reference Field (IGRF) to 14th Generation Release
-
+- Other:            GNSS: Improved setup of ambiguity parameters. Considers splitted network, splitted observations (e.g. L2LG, L2WG).
+- Other:            GNSS: More stable estimation of ambiguities. Faster ambiguity resolution (decorrelation step).
+- Other:            GNSS: range scale due to transmitter frequency offset/clock drift.
+- Other:            Store more double digits in xml format.
+- Other:            NormalsEliminate: regularize unused eliminated parameters.
+- Other:            Sinex2StationPosition: Apply frequencies to all intervals.
+- Other:            GNSS: apriori ionospheric map is interpolated in solar-geomagentic frame.
+- Other:            Tle2Orbit: Use closest record if multiple records for the same satellites are given.
+- Other:            Loop: revised interface.
+- Other:            Config: The variables groopsConfigFile and workingDir are set automatically.
 
 # Release 2024-06-24
 - Interface change: Variables can now declared at any place in the config file (not only in the global section).
@@ -164,8 +204,8 @@
     - Direct use of orbits without integrating variational equations in case of fixed transmitters (e.g., PPP).
     - New class to add flexible parametrizations to the normal equation system.
     - New class to select transmitters/receivers for each parametrization.
-    - Unified all transmitter classes into single class and merged all transmitter data and metadata into one folder at https://ftp.tugraz.at/outgoing/ITSG/groops/data/gnss/.
-    - Example scenarios with config files at https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/.
+    - Unified all transmitter classes into single class and merged all transmitter data and metadata into one folder at https://ftp.tugraz.at/pub/ITSG/groops/data/gnss/.
+    - Example scenarios with config files at https://ftp.tugraz.at/pub/ITSG/groops/scenario/.
     - Updated and expanded documentation and cookbooks to reflect all GNSS-related changes.
 - New program:      InstrumentAccelerometer2ThermosphericDensity: Estimate neutral density from accelerometer data.
 - New class:        In Thermosphere: new model nrlmsis2

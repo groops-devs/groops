@@ -80,8 +80,11 @@ void Igs2EarthOrientationParameter::run(Config &config, Parallel::CommunicatorPt
 
 
     logInfo<<"  count = "<<mjd.size()<<Log::endl;
-    logInfo<<"  start = "<<mjd2time(mjd.at(0)).dateTimeStr()<<Log::endl;
-    logInfo<<"  end   = "<<mjd2time(mjd.back()).dateTimeStr()<<Log::endl;
+    if(mjd.size())
+    {
+      logInfo<<"  start = "<<mjd2time(mjd.at(0)).dateTimeStr()<<Log::endl;
+      logInfo<<"  end   = "<<mjd2time(mjd.back()).dateTimeStr()<<Log::endl;
+    }
 
     Matrix EOP(mjd.size(), 7);
     for(UInt i=0; i<EOP.rows(); i++)

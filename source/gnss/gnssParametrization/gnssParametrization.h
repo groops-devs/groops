@@ -100,7 +100,7 @@ public:
   /** @brief init base on transmitters and receivers in @p gnss. */
   void init(Gnss *gnss, Parallel::CommunicatorPtr comm);
 
-  /** @brief How many observations are needed to estimate parameters?. */
+  /** @brief How many observations are needed to estimate parameters? */
   void requirements(GnssNormalEquationInfo &normalEquationInfo, std::vector<UInt> &transCount, std::vector<UInt> &transCountEpoch,
                     std::vector<UInt> &recvCount, std::vector<UInt> &recvCountEpoch);
 

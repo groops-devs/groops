@@ -81,7 +81,7 @@ namespace Parallel
   * Based on the idea: https://arxiv.org/abs/1804.04481 */
   void broadCastExceptions(CommunicatorPtr comm, std::function<void(CommunicatorPtr)> func);
 
-  /** @brief Is @a broadCastExceptions interrupted by an external process?. */
+  /** @brief Is @a broadCastExceptions interrupted by an external process? */
   Bool isExternal(std::exception &e);
 
   // =========================================================

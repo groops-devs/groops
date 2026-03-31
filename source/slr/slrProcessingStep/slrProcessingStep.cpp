@@ -312,23 +312,21 @@ Double SlrProcessingStep::State::estimateSolution(Bool computeResiduals, Bool co
               {
                 A.init(eqn.l);
                 slr->designMatrix(normalEquationInfo, eqn, A);
-                Vector We  = eqn.l - A.mult(x); // decorrelated residuals
+                Vector We  = eqn.l - A.mult(x); // homogenized residuals
                 Matrix AWz = A.mult(Wz);        // redundancies
 
                 // redundancies
-                // ------------
                 Vector r(We.rows());
                 for(UInt i=0; i<We.rows(); i++)
                   r(i) = 1. - quadsum(AWz.row(i));
 
                 // find max. residual (for statistics)
-                // -----------------------------------
                 for(UInt k=0; k<We.rows(); k++)
                   if(std::fabs(eqn.sigmas(k)-eqn.sigmas0(k)) < 1e-8) // without outlier
                     if(infosResiduals.update(1e3*(We(k)*eqn.sigmas(k) - station->observations.at(idSat).at(idPass)->residuals(k))))
-                      infosResiduals.info = eqn.station->name()+" -> "+eqn.satellite->name()+", "+eqn.timesTrans.at(k).dateTimeStr();
+                      infosResiduals.info = eqn.station->name()+" -> "+eqn.satellite->name()+", "+eqn.timesStat.at(k).dateTimeStr();
 
-                station->observations.at(idSat).at(idPass)->setDecorrelatedResiduals(We, r);
+                station->observations.at(idSat).at(idPass)->setHomogenizedResiduals(We, r);
               }
       }
     } // for(idStat)

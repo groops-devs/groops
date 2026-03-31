@@ -122,7 +122,7 @@ inline void SlrParametrizationRangeBiasStation::observationCorrections(SlrObserv
   try
   {
     const UInt idStat = eqn.station->idStat();
-    if((parameters.size() > idStat) && parameters.at(idStat))
+    if((eqn.type == SlrObservationEquation::RANGE) && (parameters.size() > idStat) && parameters.at(idStat))
       eqn.l -= parameters.at(idStat)->range;
   }
   catch(std::exception &e)
@@ -182,7 +182,7 @@ inline void SlrParametrizationRangeBiasStation::designMatrix(const SlrNormalEqua
   try
   {
     auto para = this->parameters.at(eqn.station->idStat());
-    if(para && para->index)
+    if((eqn.type == SlrObservationEquation::RANGE) && para && para->index)
       axpy(1., eqn.A.column(SlrObservationEquation::idxRange), A.column(para->index));
   }
   catch(std::exception &e)

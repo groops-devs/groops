@@ -35,6 +35,9 @@ public:
   /** @brief Is the selection renamed (new name in the schema)? */
   bool isSelectionRenamedInSchema(int index) const override;
 
+  /** @brief Is the selection deprecated? */
+  bool isSelectionDeprecated(int index) const override;
+
   /** @brief Generate XML-tree.
   * recursively called for all children. */
   XmlNodePtr createXmlTree(bool /*createRootEvenIfEmpty*/) const override;

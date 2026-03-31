@@ -32,6 +32,7 @@ public:
   bool isRenamedInSchema() const override {return false;}
   bool canSetLoop()        const override {return false;}
   bool canSetCondition()   const override {return false;}
+  bool isDeprecated()      const override {return false;}
 
   /** @brief Values can be edited. */
   bool isEditable() const override {return _isEditable;}

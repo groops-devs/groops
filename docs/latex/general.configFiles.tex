@@ -44,7 +44,7 @@ In addition to these basic types, there are a large number of complex data types
 which are described in section~\reference{Classes}{classes}.
 
 \subsection{Variables}\label{general.configFiles:variables}
-In addition to programs a config file can also include elements called variables.
+In addition to programs, a config file can also include elements called variables.
 These elements are comparable to read-only variables in programming and can be referenced from any program and config element.
 This can be done by either linking an element directly to a variable or
 by using the name as a variable in an expression of an input field (see section~\reference{Parsers and variables}{general.parser}).
@@ -65,6 +65,8 @@ file paths throughout many GROOPS programs. Since this variable is going to be n
 most config files, it is recommended to define it in a template file that is used when creating
 new config files in the GUI. See section~\reference{Graphical User Interface (GUI)}{general.gui}
 for details on how to set up a template file.
+
+In addition, the variables \verb|groopsConfigFile| and \verb|workingDir| are set automatically.
 
 Global variables can be manipulated when running a config file by passing the argument \verb|--global <name>=<value>|.
 For example, running the command

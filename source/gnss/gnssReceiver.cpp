@@ -415,6 +415,7 @@ void GnssReceiver::readObservations(const FileName &fileName, const std::vector<
           observations_.at(idEpoch).resize(idTrans+1, nullptr);
         if(observations_[idEpoch][idTrans])
           logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": observation already exists"<<Log::endl;
+        obs->sort();
         std::swap(observations_[idEpoch][idTrans], obs);
         delete obs;
       } // for(satellite)
@@ -538,6 +539,7 @@ void GnssReceiver::simulateZeroObservations(const std::vector<GnssType> &types,
           observations_.at(idEpoch).resize(idTrans+1, nullptr);
         if(observations_[idEpoch][idTrans])
           logWarning<<name()<<" -> "<<transmitters.at(idTrans)->name()<<" at "<<times.at(idEpoch).dateTimeStr()<<": observation already exists"<<Log::endl;
+        obs->sort();
         std::swap(observations_[idEpoch][idTrans], obs);
         delete obs;
       } // for(satellite)
@@ -605,7 +607,8 @@ void GnssReceiver::simulateObservations(NoiseGeneratorPtr noiseClock, NoiseGener
     {
       Vector value(track->types.size());
       for(UInt i=0; i<value.size(); i++)
-        value(i) = wavelengthFactor*track->types.at(i).wavelength() * ambiguityRandom(generator); // cycles to meter
+        if(track->types.at(i) == GnssType::PHASE)
+          value(i) = wavelengthFactor*track->types.at(i).wavelength() * ambiguityRandom(generator); // cycles to meter
       new Ambiguity(track.get(), value); // track is owner of ambiguity
     }
 
@@ -874,10 +877,10 @@ void GnssReceiver::createTracks(const std::vector<GnssTransmitterPtr> &transmitt
         if(!obs) // at end?
           break;
 
-        // phase types of start epoch
+        // phase and range types of start epoch
         std::vector<GnssType> types;
         for(UInt idType= 0; idType <obs->size(); idType++)
-          if(obs->at(idType).type == GnssType::PHASE)
+          if((obs->at(idType).type == GnssType::PHASE) || (obs->at(idType).type == GnssType::RANGE))
             types.push_back(obs->at(idType).type);
         std::sort(types.begin(), types.end());
 
@@ -895,7 +898,7 @@ void GnssReceiver::createTracks(const std::vector<GnssTransmitterPtr> &transmitt
             // test types
             std::vector<GnssType> typesNew;
             for(UInt idType=0; idType<obs->size(); idType++)
-              if(obs->at(idType).type == GnssType::PHASE)
+              if((obs->at(idType).type == GnssType::PHASE) || (obs->at(idType).type == GnssType::RANGE))
                 typesNew.push_back(obs->at(idType).type);
             if(!GnssType::allEqual(types, typesNew))
               break;
@@ -908,7 +911,7 @@ void GnssReceiver::createTracks(const std::vector<GnssTransmitterPtr> &transmitt
         // need phases at two frequencies (additional to extraTypes)
         std::vector<GnssType> typeFrequencies;
         for(GnssType type : types)
-          if(!type.isInList(extraTypes) && !type.isInList(typeFrequencies))
+          if((type == GnssType::PHASE) && !type.isInList(extraTypes) && !type.isInList(typeFrequencies))
             typeFrequencies.push_back(type & GnssType::FREQUENCY);
 
         // define track
@@ -1448,59 +1451,52 @@ void GnssReceiver::cycleSlipsRepairAtSameFrequency(ObservationEquationList &eqnL
   {
     // get all phase types
     std::vector<GnssType> types;
-    for(UInt idEpoch=0; idEpoch<idEpochSize(); idEpoch++)
-      for(UInt idTrans=0; idTrans<idTransmitterSize(idEpoch); idTrans++)
-        if(observation(idTrans, idEpoch))
-        {
-          const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
-          for(UInt idType=0; idType<eqn.types.size(); idType++)
-            if((eqn.types.at(idType) == GnssType::PHASE) && !eqn.types.at(idType).isInList(types))
-              types.push_back(eqn.types.at(idType) & ~(GnssType::PRN+GnssType::FREQ_NO));
-        }
+    for(const auto &track : tracks)
+      for(GnssType type : track->types)
+        if((type == GnssType::PHASE) && !type.isInList(types))
+          types.push_back(type & ~GnssType::PRN);
     std::sort(types.begin(), types.end());
 
     // find two phase observations with same system and frequency
     for(UInt idType=1; idType<types.size(); idType++)
-      if(types.at(idType) == (types.at(idType-1) & (GnssType::FREQUENCY + GnssType::SYSTEM)))
-      {
-        // compute difference
-        std::vector<UInt>   idxTrans, idxEpoch;
-        std::vector<Double> values;
-        for(UInt idEpoch=0; idEpoch<idEpochSize(); idEpoch++)
-          for(UInt idTrans=0; idTrans<idTransmitterSize(idEpoch); idTrans++)
-            if(observation(idTrans, idEpoch))
-            {
-              const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
-              UInt idx, idx1;
-              if(!types.at(idType).isInList(eqn.types, idx) || !types.at(idType-1).isInList(eqn.types, idx1))
-                continue;
-              idxTrans.push_back(idTrans);
-              idxEpoch.push_back(idEpoch);
-              values.push_back((eqn.l(idx)-eqn.l(idx1))/eqn.types.at(idx).wavelength()); // diff in cycles
-            }
-
-        if(!values.size())
-          throw(Exception(name()+": "+types.at(idType).str()+" and "+types.at(idType-1).str()+" must be observed together"));
-
-        // consider bias (e.g. quarter cycles)
-        Vector v0s(values.size());
-        for(UInt i=0; i<values.size(); i++)
-          v0s(i) = values.at(i)-std::round(values.at(i));
-        const Double v0 = median(v0s);
-
-        if(std::fabs(std::fabs(v0)-0.5) < 0.05)
-          logWarning<<name()<<": a phase bias difference of near a half cycle ("<<v0<<") between "<<types.at(idType).str()<<" and "<<types.at(idType-1).str()<<" might causes problems"<<Log::endl;
-
-        // fix jumps
-        for(UInt i=0; i<values.size(); i++)
+      for(UInt idType1=0; idType1<idType; idType1++)
+        if(types.at(idType) == (types.at(idType1) & ~GnssType::ATTRIBUTE))
         {
-          GnssObservationEquation &eqn = *eqnList(idxTrans.at(i), idxEpoch.at(i));
-          const UInt   idx = GnssType::index(eqn.types, types.at(idType));
-          const Double v   = eqn.types.at(idx).wavelength() * std::round(values.at(i)-v0);
-          eqn.l(idx) -= v;
-          observation(idxTrans.at(i), idxEpoch.at(i))->at(eqn.types.at(idx)).observation -= v;
-        }
-      } // for(idType)
+          const Double wavelength = types.at(idType).wavelength();
+          // compute difference
+          std::vector<UInt>   idxTrans, idxEpoch;
+          std::vector<Double> values;
+          for(UInt idEpoch=0; idEpoch<idEpochSize(); idEpoch++)
+            for(UInt idTrans=0; idTrans<idTransmitterSize(idEpoch); idTrans++)
+              if(observation(idTrans, idEpoch))
+              {
+                const GnssObservationEquation &eqn = *eqnList(idTrans, idEpoch);
+                UInt idx, idx1;
+                if(!types.at(idType).isInList(eqn.types, idx) || !types.at(idType1).isInList(eqn.types, idx1))
+                  continue;
+                idxTrans.push_back(idTrans);
+                idxEpoch.push_back(idEpoch);
+                values.push_back((eqn.l(idx)-eqn.l(idx1))/wavelength); // diff in cycles
+              }
+
+          if(!values.size())
+            continue;
+
+          // consider bias (e.g. quarter cycles)
+          Vector v0s(values.size());
+          for(UInt i=0; i<values.size(); i++)
+            v0s(i) = values.at(i)-std::round(values.at(i));
+          const Double v0 = computeBias(v0s, 0.05);
+
+          // fix jumps
+          for(UInt i=0; i<values.size(); i++)
+          {
+            const Double v = wavelength * std::round(values.at(i) - v0);
+            GnssObservationEquation &eqn = *eqnList(idxTrans.at(i), idxEpoch.at(i));
+            eqn.l(GnssType::index(eqn.types, types.at(idType))) -= v;
+            observation(idxTrans.at(i), idxEpoch.at(i))->at(types.at(idType)).observation -= v;
+          }
+        } // for(idType)
   }
   catch(std::exception &e)
   {
@@ -1565,7 +1561,7 @@ void GnssReceiver::trackOutlierDetection(const ObservationEquationList &eqnList,
             if(eqn.types.at(idType).isInList(types, idx))
               matMult(1., eqn.A.column(GnssObservationEquation::idxUnit+idType), Bias.row(idx), A);
 
-          // decorrelate
+          // homogenize
           for(UInt i=0; i<l.rows(); i++)
           {
             l(i)     *= 1./eqn.sigma(i);

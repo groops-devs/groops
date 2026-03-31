@@ -30,14 +30,14 @@
 // Latex documentation
 static const char *docstringPlotMapLayerGrid = R"(
 \subsection{GriddedData}
-Creates a regular grid of yxz values. The standard \reference{dataVariables}{general.parser:dataVariables}
+Creates a regular grid of xyz values. The standard \reference{dataVariables}{general.parser:dataVariables}
 are available to select the data column of \configFile{inputfileGriddedData}{griddedData}.
 Empty grid cells are not plotted. Cells with more than one value will be set to the mean value.
 The grid spacing can be determined automatically for regular rectangular grids otherwise
 it must be set with \config{increment}. To get a better display together with some projections
 the grid should be internally \config{resample}d to higher resolution.
 It is assumed that the points of \configFile{inputfileGriddedData}{griddedData} represents centers of grid cells.
-This assumption can be changed with \config{gridlineRegistered} (e.g if the data starts at the north pole).
+This assumption can be changed with \config{gridlineRegistered} (e.g. if the data starts at the north pole).
 )";
 
 class PlotMapLayerGrid : public PlotMapLayer
@@ -94,7 +94,7 @@ PlotMapLayerGrid::PlotMapLayerGrid(Config &config)
     points = grid.points;
     areas  = grid.areas;
 
-    if(grid.values.size()==0)
+    if(!points.size() || !grid.values.size())
       throw(Exception("<"+fileNameGrid.str()+"> has no values."));
 
     // try to define grid spacing
@@ -254,6 +254,9 @@ std::string PlotMapLayerPoints::scriptEntry() const
 {
   try
   {
+    if(!points.size())
+      return "";
+
     std::stringstream ss;
     if(line)
     {
@@ -386,12 +389,15 @@ std::string PlotMapLayerArrows::scriptEntry() const
     std::stringstream ss;
 
     // arrows from grid file
-    ss<<"gmt psxy "<<dataFileName<<" -bi"<<2+data.columns()<<"d -J -R -A -SV"<<headSize<<"p+ea+z"<<scale<<"c";
-    if(hasZValues)
-      ss<<" -W"<<penSize<<"p+cl -CgroopsPlot.cpt";
-    else
-      ss<<" -W"<<penSize<<"p,"<<penColor->str()<<" -G"<<penColor->str();
-    ss<<" -O -K >> groopsPlot.ps"<<std::endl;
+    if(points.size())
+    {
+      ss<<"gmt psxy "<<dataFileName<<" -bi"<<2+data.columns()<<"d -J -R -A -SV"<<headSize<<"p+ea+z"<<scale<<"c";
+      if(hasZValues)
+        ss<<" -W"<<penSize<<"p+cl -CgroopsPlot.cpt";
+      else
+        ss<<" -W"<<penSize<<"p,"<<penColor->str()<<" -G"<<penColor->str();
+      ss<<" -O -K >> groopsPlot.ps"<<std::endl;
+    }
 
     if(drawScaleArrow)
     {
@@ -547,9 +553,7 @@ void PlotMapLayerPolygon::writeDataFile(const Ellipsoid &/*ellipsoid*/, const Fi
     for(auto &p : polygons)
     {
       for(UInt i=0; i<p.L.size(); i++)
-      {
         file<<p.L(i)*RAD2DEG<<" "<<p.B(i)*RAD2DEG<<std::endl;
-      }
       file<<">"<<std::endl;
     }
   }
@@ -1045,7 +1049,7 @@ void PlotMapLayer::getIntervalZ(Bool isLogarithmic, Double &minZ, Double &maxZ) 
 {
   try
   {
-    if(!requiresColorBar())
+    if(!requiresColorBar() || !data.size())
       return;
 
     UInt   count =  0;

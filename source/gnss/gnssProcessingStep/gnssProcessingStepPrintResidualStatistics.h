@@ -77,9 +77,9 @@ inline void GnssProcessingStepPrintResidualStatistics::process(GnssProcessingSte
         Vector factors(types.size());
         for(UInt i=0; i<types.size(); i++)
         {
-          const UInt idx = GnssType::index(state.sigmaType.at(idRecv), types.at(i));
+          const UInt idx = GnssType::index(state.stations.at(idRecv).sigmaTypes, types.at(i));
           if(idx != NULLINDEX)
-            factors(i) = state.sigmaFactor.at(idRecv).at(idx);
+            factors(i) = state.stations.at(idRecv).sigmaFactors.at(idx);
         }
         Parallel::reduceSum(factors, 0, state.normalEquationInfo.comm);
         if(Parallel::isMaster(state.normalEquationInfo.comm))

@@ -56,6 +56,7 @@ GnssReceiverGeneratorStationNetwork::GnssReceiverGeneratorStationNetwork(Config 
     readConfig(config, "inputfileReceiverDefinition",        fileNameReceiverDef,     Config::OPTIONAL, "", "observed signal types");
     readConfig(config, "inputfileAccuracyDefinition",        fileNameAccuracyDef,     Config::MUSTSET,  "{groopsDataDir}/gnss/receiverStation/accuracyDefinition/accuracyDefinition.xml", "elevation and azimuth dependent accuracy");
     readConfig(config, "inputfileStationPosition",           fileNameStationPosition, Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/position/igs/igs20/stationPosition.{station}.dat", "variable {station} available.");
+    readConfig(config, "disableStationWithoutPosition",      disableWithoutPosition,  Config::DEFAULT,  "0",    "drop stations without apriori position");
     readConfig(config, "inputfileClock",                     fileNameClock,           Config::OPTIONAL, "",     "variable {station} available");
     readConfig(config, "inputfileObservations",              fileNameObs,             Config::OPTIONAL, "gnssReceiver_{loopTime:%D}.{station}.dat", "variable {station} available");
     readConfig(config, "loadingDisplacement",                gravityfield,            Config::DEFAULT,  "",     "loading deformation");
@@ -140,13 +141,20 @@ void GnssReceiverGeneratorStationNetwork::init(std::vector<GnssType> simulationT
           {
             try
             {
+              if(!System::exists(fileNameStationPosition(fileNameVariableList)))
+                throw(Exception("file <"+fileNameStationPosition(fileNameVariableList).str()+"> not exist"));
+              const Time timesMid = 0.5*(times.front()+times.back());
               Vector3dArc arc = InstrumentFile::read(fileNameStationPosition(fileNameVariableList));
-              auto iter = (arc.size() == 1) ? arc.begin() : std::find_if(arc.begin(), arc.end(), [&](const Epoch &e){return e.time.isInInterval(times.front(), times.back());});
-              if(iter != arc.end())
-                platform.approxPosition = iter->vector3d;
+              auto iter = std::min_element(arc.begin(), arc.end(), [&](const Epoch &e1, const Epoch &e2)
+                                          {return std::fabs((e1.time-timesMid).mjd()) < std::fabs((e2.time-timesMid).mjd());});
+              if(!arc.size() || ((arc.size() > 1) && (std::fabs((iter->time-timesMid).mjd()) > 0.5*medianSampling(arc.times()).mjd())))
+                throw(Exception("No a-priori position found"));
+              platform.approxPosition = iter->vector3d;
             }
-            catch(std::exception &/*e*/)
+            catch(std::exception &e)
             {
+              if(disableWithoutPosition)
+                throw;
             }
           }
 
@@ -373,7 +381,15 @@ void GnssReceiverGeneratorStationNetwork::preprocessing(Gnss *gnss, Parallel::Co
           fileNameVariableList.setVariable("station", recv->name());
           std::vector<Vector3d> posApriori = recv->pos;
           if(fileNameClock.empty())
+          {
             recv->pos = recv->estimateInitialClockErrorFromCodeObservations(gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, huber, huberPower, FALSE/*estimateKinematicPosition*/);
+
+            Double maxDiff = 0.;
+            for(UInt i=0; i<posApriori.size(); i++)
+              maxDiff = std::max(maxDiff, (recv->pos.at(i)-posApriori.at(i)).r());
+            if(maxDiff > 10.0)
+              logWarning<<recv->name()<<": estimated code based position differ from apriori position by "<<maxDiff%"%.2f m"s<<Log::endl;
+          }
           // observation equations based on positions from code observations
           GnssReceiver::ObservationEquationList eqn(*recv, gnss->transmitters, gnss->funcRotationCrf2Trf, gnss->funcReduceModels, GnssObservation::RANGE | GnssObservation::PHASE);
           recv->pos = std::move(posApriori); // restore apriori positions

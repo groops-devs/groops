@@ -11,13 +11,13 @@
 */
 /***********************************************/
 
-#ifndef __GROOPS_LoopTimeIntervals__
-#define __GROOPS_LoopTimeIntervals__
+#ifndef __GROOPS_LOOPTIMEINTERVALS__
+#define __GROOPS_LOOPTIMEINTERVALS__
 
 // Latex documentation
 #ifdef DOCSTRING_Loop
 static const char *docstringLoopTimeIntervals = R"(
-\subsection{TimeIntervals}
+\subsection{TimeIntervals}\label{loopType:timeIntervals}
 Loop over the intervals between points in time.
 )";
 #endif

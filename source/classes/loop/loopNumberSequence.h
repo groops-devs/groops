@@ -1,6 +1,6 @@
 /***********************************************/
 /**
-* @file loopUniformSampling.h
+* @file loopNumberSequence.h
 *
 * @brief Loop over sequence of numbers.
 *
@@ -11,13 +11,13 @@
 */
 /***********************************************/
 
-#ifndef __GROOPS_LOOPUNIFORMSAMPLING__
-#define __GROOPS_LOOPUNIFORMSAMPLING__
+#ifndef __GROOPS_LOOPNUMBERSEQUENCE__
+#define __GROOPS_LOOPNUMBERSEQUENCE__
 
 // Latex documentation
 #ifdef DOCSTRING_Loop
-static const char *docstringLoopUniformSampling = R"(
-\subsection{UniformSampling}
+static const char *docstringLoopNumberSequence = R"(
+\subsection{NumberSequence}\label{loopType:numberSequence}
 Loop over sequence of numbers.
 )";
 #endif
@@ -32,13 +32,13 @@ Loop over sequence of numbers.
 /** @brief Loop over sequence of numbers.
 * @ingroup loopGroup
 * @see Loop */
-class LoopUniformSampling : public Loop
+class LoopNumberSequence : public Loop
 {
   std::string         nameNumber, nameIndex, nameCount;
   std::vector<Double> numbers;
 
 public:
-  LoopUniformSampling(Config &config);
+  LoopNumberSequence(Config &config);
 
   UInt count() const override {return numbers.size();}
   Bool iteration(VariableList &varList) override;
@@ -48,7 +48,7 @@ public:
 /***** Inlines *********************************/
 /***********************************************/
 
-inline LoopUniformSampling::LoopUniformSampling(Config &config)
+inline LoopNumberSequence::LoopNumberSequence(Config &config)
 {
   try
   {
@@ -74,7 +74,7 @@ inline LoopUniformSampling::LoopUniformSampling(Config &config)
 
 /***********************************************/
 
-inline Bool LoopUniformSampling::iteration(VariableList &varList)
+inline Bool LoopNumberSequence::iteration(VariableList &varList)
 {
   if(index() >= count())
     return FALSE;

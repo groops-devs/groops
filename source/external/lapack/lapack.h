@@ -65,7 +65,7 @@ Int lapack_dgels (Bool trans, UInt m, UInt n, UInt nrhs, Double A[], UInt ldA, D
 // QR-decomposition
 Int lapack_dgeqrf(UInt m, UInt n, Double A[], UInt ldA, Double tau[]);
 Int lapack_dormqr(Bool left, Bool trans, UInt m, UInt n, UInt k, const Double A[], UInt ldA, const Double tau[], Double C[], UInt ldC);
-Int lapack_dorgqr(UInt m, UInt n, UInt k, Double A[], UInt ldA, Double tau[]);
+Int lapack_dorgqr(UInt m, UInt n, UInt k, Double A[], UInt ldA, const Double tau[]);
 
 // Band matrices
 Int lapack_dpbsv(Bool upper, UInt n, UInt kd, UInt nrhs, Double A[], UInt ldA, Double B[], UInt ldB);
@@ -100,7 +100,7 @@ void wrapdgetri(const F77Int &n, F77Double A[], const F77Int &ldA, F77Int ipiv[]
 void wrapdgels (const F77Int &trans, const F77Int &m, const F77Int &n, const F77Int &nrhs, F77Double A[], const F77Int &ldA, F77Double B[], const F77Int &ldB, F77Double work[], const F77Int &lwork, F77Int &info);
 void wrapdgeqrf(const F77Int &m, const F77Int &n, F77Double A[], const F77Int &ldA, F77Double tau[], F77Double work[], const F77Int &lwork, F77Int &info);
 void wrapdormqr(const F77Int &left, const F77Int &trans, const F77Int &m, const F77Int &n, const F77Int &k, const F77Double A[], const F77Int &ldA, const F77Double tau[], F77Double C[], const F77Int &ldC, F77Double work[], const F77Int &lwork, F77Int &info);
-void wrapdorgqr(const F77Int &m, const F77Int &n, const F77Int &k, F77Double A[], const F77Int &ldA, F77Double tau[], F77Double work[], const F77Int &lwork, F77Int &info);
+void wrapdorgqr(const F77Int &m, const F77Int &n, const F77Int &k, F77Double A[], const F77Int &ldA, const F77Double tau[], F77Double work[], const F77Int &lwork, F77Int &info);
 void wrapdpbsv (const F77Int &upper, const F77Int &n, const F77Int &kd, const F77Int &nrhs, F77Double A[], const F77Int &ldA, F77Double B[], const F77Int &ldB, F77Int &info);
 void wrapdpbtrf(const F77Int &upper, const F77Int &n, const F77Int &kd, F77Double A[], const F77Int &ldA, F77Int &info);
 void wrapdgbtrf(const F77Int &n, const F77Int &m, const F77Int &kl, const F77Int &ku, F77Double A[], const F77Int &ldA, F77Int ipiv[], F77Int &info);
@@ -229,7 +229,7 @@ inline Int lapack_dormqr(Bool left, Bool trans, UInt m, UInt n, UInt k, const Do
   return info;
 }
 
-inline Int lapack_dorgqr(UInt m, UInt n, UInt k, Double A[], UInt ldA, Double tau[])
+inline Int lapack_dorgqr(UInt m, UInt n, UInt k, Double A[], UInt ldA, const Double tau[])
 {
   F77Int    info;
   F77Double tmp;

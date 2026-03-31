@@ -175,7 +175,7 @@ Bool GnssObservation::observationList(GnssObservation::Group group, std::vector<
       // need obs at two frequencies
       std::set<GnssType> typeFrequencies;
       for(UInt i=0; i<size(); i++)
-        if(at(i).type == GnssType::RANGE)
+        if((at(i).type == GnssType::RANGE) && (at(i).sigma > 0))
           typeFrequencies.insert(at(i).type & GnssType::FREQUENCY);
       if(typeFrequencies.size() < 2)
         return FALSE;
@@ -192,7 +192,7 @@ Bool GnssObservation::observationList(GnssObservation::Group group, std::vector<
       // need obs at two frequencies
       std::set<GnssType> typeFrequencies;
       for(UInt i=0; i<size(); i++)
-        if(at(i).type == GnssType::PHASE)
+        if((at(i).type == GnssType::PHASE) && (at(i).sigma > 0))
           typeFrequencies.insert(at(i).type & GnssType::FREQUENCY);
       if(typeFrequencies.size() < 2)
         return FALSE;
@@ -207,9 +207,8 @@ Bool GnssObservation::observationList(GnssObservation::Group group, std::vector<
     if(group & IONO)
     {
       for(UInt i=0; i<size(); i++)
-        if(at(i).sigma>0)
-          if(at(i).type == GnssType::IONODELAY)
-            types.push_back( at(i).type );
+        if((at(i).type == GnssType::IONODELAY) && (at(i).sigma > 0))
+          types.push_back( at(i).type );
     }
 
     return (types.size() != 0);
@@ -222,7 +221,7 @@ Bool GnssObservation::observationList(GnssObservation::Group group, std::vector<
 
 /***********************************************/
 
-void GnssObservation::setDecorrelatedResiduals(const std::vector<GnssType> &types, const_MatrixSliceRef residuals, const_MatrixSliceRef redundancy)
+void GnssObservation::setHomogenizedResiduals(const std::vector<GnssType> &types, const_MatrixSliceRef residuals, const_MatrixSliceRef redundancy)
 {
   try
   {
@@ -259,7 +258,7 @@ void GnssObservation::updateParameter(const_MatrixSliceRef x, const_MatrixSliceR
 
 void GnssObservationEquation::compute(const GnssObservation &observation, const GnssReceiver &receiver_, const GnssTransmitter &transmitter_,
                                       const std::function<Rotary3d(const Time &time)> &rotationCrf2Trf, const std::function<void(GnssObservationEquation &eqn)> &reduceModels,
-                                      UInt idEpoch_, Bool decorrelate, const std::vector<GnssType> &types_)
+                                      UInt idEpoch_, Bool homogenize, const std::vector<GnssType> &types_)
 {
   try
   {
@@ -318,6 +317,7 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
     r12 += 2*inner(posTrans, velocityTrans)/LIGHT_VELOCITY;                 // relativistic clock correction
     r12 -= LIGHT_VELOCITY * transmitter->clockError(idEpoch);
     r12 += LIGHT_VELOCITY * receiver->clockError(idEpoch);
+    r12 *= transmitter->scaleFactor(idEpoch);
 
     for(UInt i=0; i<obsCount; i++)
       if((types.at(i) == GnssType::RANGE) || (types.at(i) == GnssType::PHASE))
@@ -360,9 +360,9 @@ void GnssObservationEquation::compute(const GnssObservation &observation, const 
     if(reduceModels)
       reduceModels(*this);
 
-    // Decorrelate
-    // -----------
-    if(decorrelate)
+    // Homogenize
+    // ----------
+    if(homogenize)
       for(UInt i=0; i<obsCount; i++)
       {
         if(l.size()) l.row(i) *= 1/sigma(i);
@@ -385,16 +385,17 @@ void GnssObservationEquation::eliminateGroupParameters(Bool removeRows)
     if(!B.size())
       return;
     const Vector tau = QR_decomposition(B);
+    if(!removeRows)
+      rankDeficit += B.columns();
     for(Matrix &A : std::vector<std::reference_wrapper<Matrix>>{A, l})
       if(A.size())
       {
         QTransMult(B, tau, A);
-        A.row(0, B.columns()).setNull();
         if(removeRows)
           A = A.row(B.columns(), A.rows()-B.columns());
         else
         {
-          rankDeficit += B.columns();
+          A.row(0, B.columns()).setNull();
           QMult(B, tau, A);
         }
       }

@@ -96,7 +96,7 @@ void NormalEquationRegularizationGeneralized::init(MatrixDistributed &normals, U
 
     for(const FileName &fileName : fileNamesCovariance)
     {
-      MatrixDistributed Vi({0, paraCount}, normals.communicator()); // just one block
+      auto &Vi = V.emplace_back(std::vector<UInt>{0, paraCount}, normals.communicator()); // just one block
       if(Vi.isMyRank(0, 0))
       {
         readFileMatrix(fileName, Vi.N(0, 0));
@@ -106,8 +106,8 @@ void NormalEquationRegularizationGeneralized::init(MatrixDistributed &normals, U
           throw(Exception("Matrix <"+fileName.str()+"> is not symmetric."));
         fillSymmetric(Vi.N(0, 0));
       }
-      Vi.reorder(index, blockIndex, calcRank); // distribute blocks
-      V.push_back(Vi);
+      Vi.reorder(index, blockIndex, [&](UInt, UInt, UInt) {return Vi.rank(0, 0);}); // divide into blocks
+      Vi.reorder(index, blockIndex, calcRank);                                      // distribute blocks
     }
 
     Sigma.init(blockIndex, normals.communicator(), calcRank);

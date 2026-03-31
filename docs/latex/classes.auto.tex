@@ -171,6 +171,7 @@ Test for conditions. See \reference{Loop and conditions}{general.loopsAndConditi
 \subsection{FileExist}
 Check for a file or directory existing.
 Supports wildcards * for any number of characters and ? for exactly one character.
+Files smaller than \config{minSize} are treated as non-existent.
 
 
 \keepXColumns
@@ -179,6 +180,7 @@ Supports wildcards * for any number of characters and ? for exactly one characte
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~file & \hfuzz=500pt filename & \hfuzz=500pt supports wildcards: * and ?\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~minimumSize & \hfuzz=500pt uint & \hfuzz=500pt minimum file size in byte.\\
 \hline
 \end{tabularx}
 
@@ -245,7 +247,11 @@ Name & Type & Annotation\\
 
 
 \subsection{StringContainsPattern}
-Determines if there is a match between a pattern or a regular expression and some subsequence in a string.
+Determines if there is a match between a \config{pattern} and some subsequence in a \config{string}.
+Supports wildcards * for any number of characters and ? for exactly one character.
+If \config{isRegularExpression} is set, \config{pattern} is interpreted as a
+regular expression instead. In any case, the \reference{text parser}{general.parser:text}
+is applied beforehand.
 
 
 \keepXColumns
@@ -254,7 +260,7 @@ Determines if there is a match between a pattern or a regular expression and som
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~string & \hfuzz=500pt filename & \hfuzz=500pt should contain a \{variable\}\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~pattern & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~pattern & \hfuzz=500pt filename & \hfuzz=500pt supports wildcards: * and ?\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~isRegularExpression & \hfuzz=500pt boolean & \hfuzz=500pt pattern is  a regular expression\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~caseSensitive & \hfuzz=500pt boolean & \hfuzz=500pt treat lower and upper case as distinct\\
 \hline
@@ -262,7 +268,11 @@ Name & Type & Annotation\\
 
 
 \subsection{StringMatchPattern}
-Determines if a pattern or a regular expression matches the entire string.
+Determines if a \config{pattern} matches the entire \config{string}.
+Supports wildcards * for any number of characters and ? for exactly one character.
+If \config{isRegularExpression} is set, \config{pattern} is interpreted as a
+regular expression instead. In any case, the \reference{text parser}{general.parser:text}
+is applied beforehand.
 
 
 \keepXColumns
@@ -271,7 +281,7 @@ Determines if a pattern or a regular expression matches the entire string.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~string & \hfuzz=500pt filename & \hfuzz=500pt should contain a \{variable\}\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~pattern & \hfuzz=500pt filename & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~pattern & \hfuzz=500pt filename & \hfuzz=500pt supports wildcards: * and ?\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~isRegularExpression & \hfuzz=500pt boolean & \hfuzz=500pt pattern is  a regular expression\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~caseSensitive & \hfuzz=500pt boolean & \hfuzz=500pt treat lower and upper case as distinct\\
 \hline
@@ -323,7 +333,7 @@ Name & Type & Annotation\\
 %==================================
 
 \section{CovariancePod}\label{covariancePodType}
-Provides arc wise covariance matrices for precise orbit data.
+Provides arc-wise covariance matrices for precise orbit data.
 Temporal correlations are modeled in the orbit system (along, cross, radial).
 The \configFile{inputfileCovarianceFunction}{matrix} provides temporal covariance functions for each axis.
 From the diagonal matrix for each time step
@@ -340,13 +350,13 @@ the Toeplitz covariance matrix for an arc is constructed
   \end{pmatrix}
 \end{equation}
 
-The epoch wise $3\times3$ covariance matrices given by \configFile{inputfileCovariancePodEpoch}{instrument}
-are eigen value decomposed
+The epoch-wise $3\times3$ covariance matrices given by \configFile{inputfileCovariancePodEpoch}{instrument}
+are eigenvalue-decomposed
 \begin{equation}
   \M C_{3\times3}(t_i) = \M Q \M\Lambda \M Q^T,
 \end{equation}
-where $\M Q$ is an orthgonal matrix and $\M\Lambda$ diagonal.
-This used to split the covariances matrices
+where $\M Q$ is an orthogonal matrix and $\M\Lambda$ diagonal.
+This is used to split the covariances matrices
 \begin{equation}
   \M C_{3\times3}(t_i) = \M D(t_i) \M D(t_i)^T = (\M Q \M\Lambda^{1/2} \M Q^T)(\M Q \M\Lambda^{1/2} \M Q^T)^T,
 \end{equation}
@@ -373,10 +383,10 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~covariancePodType & \hfuzz=500pt sequence & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~sigma & \hfuzz=500pt double & \hfuzz=500pt general variance factor\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileSigmasPerArc & \hfuzz=500pt filename & \hfuzz=500pt different accuaries for each arc (multplicated with sigma)\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileSigmasPerEpoch & \hfuzz=500pt filename & \hfuzz=500pt different accuaries for each epoch (added)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileSigmasPerArc & \hfuzz=500pt filename & \hfuzz=500pt different accuracies for each arc (multiplied with sigma)\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileSigmasPerEpoch & \hfuzz=500pt filename & \hfuzz=500pt different accuracies for each epoch (added)\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileCovarianceFunction & \hfuzz=500pt filename & \hfuzz=500pt covariances in time for along, cross, and radial direction\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileCovariancePodEpoch & \hfuzz=500pt filename & \hfuzz=500pt 3x3 epoch wise covariances\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~inputfileCovariancePodEpoch & \hfuzz=500pt filename & \hfuzz=500pt 3x3 epoch-wise covariances\\
 \hline
 \end{tabularx}
 
@@ -384,7 +394,7 @@ Name & Type & Annotation\\
 %==================================
 
 \section{CovarianceSst}\label{covarianceSstType}
-Provides arc wise covariance matrices for satellite-to-satellite observations SST).
+Provides arc-wise covariance matrices for satellite-to-satellite observations (SST).
 The \configFile{inputfileCovarianceFunction}{matrix} provides a temporal covariance function.
 From it the Toeplitz covariance matrix is constructed
 \begin{equation}
@@ -1356,25 +1366,33 @@ Name & Type & Annotation\\
 
 \subsection{IonosphereVTEC}\label{gnssParametrizationType:ionosphereVTEC}
 The influence of the ionosphere is modelled by a VTEC parameter (vertical total electron content)
-in terms of $[TECU]$ for every selected receiver each epoch. The slant TEC is computed
-using the elevation $E$ dependent Modified Single-Layer Model (MSLM) mapping function
+in terms of $[TECU]$ for every selected receiver at each epoch. Optionally, VTEC gradients in the
+North (x) and East (y) direction can be estimated via \configClass{gradient}{parametrizationTemporalType}.
+The slant TEC is computed based on the VTEC and the optional North and East gradients $\Delta V_x$ and $\Delta V_y$
+using the elevation-dependent Modified Single-Layer Model (MSLM) mapping function
 \begin{equation}\label{gnssParametrizationType:IonosphereVTEC:STEC}
-  STEC = \frac{VTEC}{\cos z'}
+  STEC = \frac{VTEC + \cos(A) \Delta V_x + \sin(A) \Delta V_y}{\cos z'}
   \qquad\text{with}\qquad
   \sin z'= \left(\frac{R}{R+H}\right)\sin\left(\alpha(\pi/2-E)\right)
 \end{equation}
-inserted into eq. \eqref{gnssParametrizationType:IonosphereSTEC:STEC}.
+inserted into eq.~\eqref{gnssParametrizationType:IonosphereSTEC:STEC},
+where $A$ is the azimuth angle and $E$ is the elevation angle.
 
 The result is written as a \file{times series file}{instrument} at epochs with observations
 depending on \configClass{GnssProcessing:processingStep:selectEpochs}{gnssProcessingStepType:selectEpochs}.
 
-This class provides a simplifed model of the ionosphere for single receivers
+This class provides a simplified model of the ionosphere for single receivers
 and enables the separation of the TEC and signal biases, meaning
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases} becomes estimable.
 Local and short-term scintillations should be considered by adding loosely constrained
 \configClass{parametrization:ionosphereSTEC}{gnssParametrizationType:ionosphereSTEC}.
 
-The \file{parameter names}{parameterName} are \verb|<station>:VTEC::<time>|.
+The \file{parameter names}{parameterName} are
+\begin{itemize}
+\item \verb|<station>:VTEC::<time>|,
+\item \verb|<station>:VTECGradient.x:<temporal>:<interval>|,
+\item \verb|<station>:VTECGradient.y:<temporal>:<interval>|.
+\end{itemize}
 
 
 \keepXColumns
@@ -1384,10 +1402,11 @@ Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~name & \hfuzz=500pt string & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~selectReceivers & \hfuzz=500pt \hyperref[platformSelectorType]{platformSelector} & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileVTEC & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~outputfileVTEC & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available, columns: MJD, VTEC, north gradient, east gradient\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~mapR & \hfuzz=500pt double & \hfuzz=500pt constant of MSLM mapping function\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~mapH & \hfuzz=500pt double & \hfuzz=500pt constant of MSLM mapping function\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~mapAlpha & \hfuzz=500pt double & \hfuzz=500pt constant of MSLM mapping function\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~gradient & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt parametrization of north and east gradients\\
 \hline
 \end{tabularx}
 
@@ -1446,10 +1465,11 @@ Name & Type & Annotation\\
 
 
 \subsection{Clocks}\label{gnssParametrizationType:clocks}
-Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{platformSelectorType}.
+Clock errors are estimated epoch-wise for each \configClass{selectTransmitters/Receivers}{platformSelectorType}.
 No clock errors are estimated if no valid observations are available (e.g. data gaps in the observations).
 
-These parameters are lineary dependent and would lead to a rank deficiency in the normal equation
+If all transmitters and receivers are selected by \config{selectTransmitters} and \config{selectReceivers} respectively,
+these parameters will be lineary dependent which would lead to a rank deficiency in the normal equation
 matrix. To circumvent this issue, the estimation requires an additional zero-mean constraint added in each epoch.
 This is realized with an additional observation equation
 \begin{equation}
@@ -1481,11 +1501,11 @@ Name & Type & Annotation\\
 
 \subsection{ClocksModel}\label{gnssParametrizationType:clocksModel}
 This parametrization is an alternative to \configClass{parametrization:clocks}{gnssParametrizationType:clocks}.
-Clock errors are estimated epoch-wise for each \configClass{selectTransmitter/Receiver}{platformSelectorType}
+Clock errors are estimated epoch-wise for each \configClass{selectTransmitters/Receivers}{platformSelectorType}
 and, opposed to \configClass{parametrization:clocks}{gnssParametrizationType:clocks}, are also estimated for epochs
 that have no valid observations available (e.g. data gaps).
 
-The clock error of the an epoch can be predicted by the clock error
+The clock error of an epoch can be predicted by the clock error
 of the preceding epoch and an unknown clock drift
 \begin{equation}
   \Delta t_{i+1} = \Delta t_{i} + t_{drift} dt + \epsilon_i.
@@ -1502,13 +1522,13 @@ The absolute initial clock error and clock drift cannot be determined if all rec
 and transmitter clocks are estimated together due to their linear dependency.
 This linear dependency would lead to a rank deficiency in the normal equation matrix in the same
 manner as described in \configClass{parametrization:clocks}{gnssParametrizationType:clocks}.
-To circumvent the rank deficiency additional zero-mean constraints are required for the first and last epoch.
-The realization of the constraint is done as an additional observation equation in the form
+To circumvent this issue, an additional zero-mean constraint is added in each epoch
+as observation equation
 \begin{equation}
   0 = \frac{1}{n_i + n_k} (\sum_i \Delta t^{s_i} + \sum_k \Delta t_{r_k})
 \end{equation}
-summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}
-with a standard deviation of \config{sigmaZeroMeanConstraint}.
+summed over all \configClass{selectTransmitters/ReceiversZeroMean}{platformSelectorType}.
+This should be a loose constraint with a relatively large standard deviation of \config{sigmaZeroMeanConstraint}.
 
 The \file{parameter names}{parameterName} are \verb|<station or prn>:clock::<time>|
 and \verb|<station or prn>:clockDrift::|.
@@ -1542,11 +1562,11 @@ Each code and phase observation (e.g \verb|C1C| or \verb|L2W|) contains a bias a
 This class provides the apriori model $\M f(\M x_0)$ of eq. \eqref{gnssParametrizationType:model} only.
 
 The \configFile{inputfileSignalBiasTransmitter/Receiver}{gnssSignalBias} are read
-for each receiver and transmitter. The file name is interpreted as a template with
-the variables \verb|{prn}| and \verb|{station}| being replaced by the name.
+for each transmitter and receiver. Those file names are interpreted as a template with
+the variable \verb|{prn}| or \verb|{station}| being replaced by transmitter PRNs or receiver station names, respectively.
 (Infos regarding the variables \verb|{prn}| and \verb|{station}| can be found in
 \configClass{gnssTransmitterGeneratorType}{gnssTransmitterGeneratorType} and
-\configClass{gnssReceiverGeneratorType}{gnssReceiverGeneratorType} respectively). The files can
+\configClass{gnssReceiverGeneratorType}{gnssReceiverGeneratorType} respectively). Those files can
 be converted with \program{GnssSinexBias2SignalBias}.
 
 The estimation of the biases is complex due to different linear dependencies, which
@@ -1556,8 +1576,8 @@ For simplification the parametrization for $\Delta\M x$ has been split into:
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases}, and
 \configClass{parametrization:ambiguities}{gnssParametrizationType:ambiguities} (including phase biases).
 The file handling on the other hand still remains within this class. Any prior
-values for the receiver/transmitter biases are read with the respective \config{inputFileSignalBias}.
-All biases for a receiver/transmitter are accumulated and written to the respective \config{outputFileSignalBias}.
+values for the transmitter/receiver biases are read with the respective \config{inputfileSignalBiasTransmitter/Receiver}.
+All biases for a transmitter/receiver are accumulated and written to the respective \config{outputfileSignalBiasTransmitter/Receiver}.
 
 
 \keepXColumns
@@ -1584,7 +1604,7 @@ Sets up an ambiguity parameter for each track and phase observation type.
 As the phase observations contain a float bias at transmitter/receiver level, not all ambiguities
 are resolvable to integer values. The number of resolvable ambiguities can be increased with
 known phase biases read from file via \configClass{parametrization:signalBiases}{gnssParametrizationType:signalBiases}.
-In this case, \configClass{estimateTransmitter/ReceiverPhaseBiasTransmitter}{platformSelectorType} should
+In this case, \configClass{estimateTransmitter/ReceiverPhaseBias}{platformSelectorType} should
 not be used for the corresponding transmitters and receivers.
 
 In case of GLONASS, the phase biases at receiver level differ between different frequency channels
@@ -1965,7 +1985,7 @@ The \file{parameter names}{parameterName} are
 \item \verb|earth:polarMotion.yp:<temporal>:<interval>|,
 \item \verb|earth:UT1:<temporal>:<interval>|,
 \item \verb|earth:nutation.X:<temporal>:<interval>|,
-\item \verb|earth:nutation.>:<temporal>:<interval>|.
+\item \verb|earth:nutation.Y:<temporal>:<interval>|.
 \end{itemize}
 
 
@@ -1992,7 +2012,7 @@ The amount of patterns to be estimated is configurable with a list of \configCla
 For each added \configClass{patternTypes}{gnssType} a set of parameters will be evaluated. The observations
 will be assigned to the first \configClass{patternTypes}{gnssType} that matches their own.
 E.g. having the patterns: \verb|***G| and \verb|L1*| would lead to all GPS observations be assigned
-to the observation equations of the first pattern. The patterntype \verb|L1*| would then consist
+to the observation equations of the first pattern. The pattern type \verb|L1*| would then consist
 of all other GNSS L1 phase observations. \config{addNonMatchingTypes} will, if activated, create automatically patterns
 for \configClass{observations}{gnssType} that are not selected within the list \configClass{patternTypes}{gnssType}.
 Furthermore, it is possible to group same antenna build types from different receivers by \config{groupAntennas}.
@@ -2139,7 +2159,7 @@ or \reference{Kinematic orbit determination of LEO satellites}{cookbook.kinemati
 Iterative non-linear least squares adjustment.
 In every iteration it accumulates the system of normal equations, solves the system and updates the estimated parameters.
 The estimated parameters serve as a priori values in the next iteration and the following processing steps.
-Iterates until either every single parameter update (converted to an influence in meter)
+Iterates until either every single parameter update (converted to an influence in meters)
 is below a \config{convergenceThreshold} or \config{maxIterationCount} is reached.
 
 With \config{computeResiduals} the observation equations are computed
@@ -2150,7 +2170,7 @@ is composed of several factors
 \begin{equation}
   \hat{\sigma}_i = \hat{\sigma}_i^{huber} \hat{\sigma}_{[\tau\nu a]}^{recv} \sigma_{[\tau\nu a]}^{recv}(E,A),
 \end{equation}
-where $[\tau\nu a]$ is the signal type, the azmiuth and elevation dependent $\sigma_{[\tau\nu a]}^{recv}(E,A)$ is given by
+where $[\tau\nu a]$ is the signal type, the azimuth and elevation dependent $\sigma_{[\tau\nu a]}^{recv}(E,A)$ is given by
 \configFile{receiver:inputfileAccuracyDefinition}{gnssAntennaDefinition} and the other factors are
 estimated iteratively from the residuals.
 
@@ -2201,7 +2221,9 @@ Name & Type & Annotation\\
 Performs a least squares adjustment like \configClass{processingStep:estimate}{gnssProcessingStepType:estimate}
 but with additional integer phase ambiguity resolution.
 After this step all resolved ambiguities are removed from the normal equation system.
-Only ambiguites are resolved with involved \configClass{selectTransmitters/Receivers}{platformSelectorType}.
+Only ambiguities involving \configClass{selectTransmitters/Receivers}{platformSelectorType} are resolved.
+If \configClass{selectTransmitters/Receivers}{platformSelectorType} is not set, all usable transmitters and/or 
+receivers are selected for ambiguity resolution.
 
 Integer ambiguity resolution is performed based on the least squares ambiguity decorrelation adjustment
 (LAMBDA) method (Teunissen 1995, DOI \href{https://doi.org/10.1007/BF00863419}{10.1007/BF00863419}), specifically
@@ -2259,7 +2281,7 @@ It is not the full inverse but only the elements which are set in the normal mat
 (see  \configClass{gnssProcessingStep:selectNormalsBlockStructure}{gnssProcessingStepType:selectNormalsBlockStructure})
 are computed. The matrix is passed to the \configClass{parametrizations}{gnssParametrizationType}.
 Only used in \configClass{parametrizations:kinematicPositions}{gnssParametrizationType:kinematicPositions}
-to get the epoch wise covariance information at the moment.
+to get the epoch-wise covariance information at the moment.
 
 
 \subsection{WriteResults}\label{gnssProcessingStepType:writeResults}
@@ -2291,7 +2313,7 @@ If \configClass{remainingParameters}{parameterSelectorType}
 is set only the selected parameters are written to the normal equations
 and all other parameters are eliminated beforehand (implicitly solved).
 
-The solution of the normals would results in $\Delta\M x$
+The solution of the normals would result in $\Delta\M x$
 (see \configClass{parametrizations}{gnssParametrizationType}). To write the
 appropriate apriori vector $\M x_0$ use
 \configClass{processingStep:writeAprioriSolution}{gnssProcessingStepType:writeAprioriSolution}.
@@ -2332,7 +2354,7 @@ Name & Type & Annotation\\
 \subsection{WriteResiduals}\label{gnssProcessingStepType:writeResiduals}
 Writes the \file{observation residuals}{instrument} for all
 \configClass{selectReceivers}{platformSelectorType}.
-For for each station a file is written. The file name is interpreted as
+For each station a file is written. The file name is interpreted as
 a template with the variable \verb|{station}| being replaced by the station name.
 
 
@@ -2513,7 +2535,7 @@ Name & Type & Annotation\\
 
 \subsection{ForEachReceiverSeparately}\label{gnssProcessingStepType:forEachReceiverSeparately}
 Perform these processing steps for each \configClass{selectReceivers}{platformSelectorType} separately.
-All non-receiver related parameters parameters are disabled in these processing steps (see .
+All non-receiver-related parameters parameters are disabled in these processing steps.
 
 This step can be used for individual precise point positioning (PPP) of all stations.
 During \reference{GNSS satellite orbit determination and network analysis}{cookbook.gnssNetwork:processing} this step is used after the
@@ -2536,8 +2558,8 @@ Name & Type & Annotation\\
 
 \subsection{Group}\label{gnssProcessingStepType:group}
 Perform these processing steps. This step can be used to structure complex processing flows.
-The \configClass{select..}{gnssProcessingStepType:selectParametrizations} processing steps
-defined within a group only affect the steps within this group.
+The \configClass{processingStep}{gnssProcessingStepType}s that affect the following steps
+(those beginning with Select) only have an effect until the end of the group.
 
 
 \keepXColumns
@@ -2575,7 +2597,7 @@ Name & Type & Annotation\\
 Definition and basic information of GNSS receivers.
 
 Most of the input files are provided in GROOPS file formats at
-\url{https://ftp.tugraz.at/outgoing/ITSG/groops} (marked with \textbf{*} below).
+\url{https://ftp.tugraz.at/pub/ITSG/groops} (marked with \textbf{*} below).
 These files are regularly updated.
 \begin{itemize}
   \item \configFile{inputfileStationInfo}{platform}\textbf{*}:
@@ -2651,6 +2673,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileReceiverDefinition & \hfuzz=500pt filename & \hfuzz=500pt observed signal types\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAccuracyDefinition & \hfuzz=500pt filename & \hfuzz=500pt elevation and azimuth dependent accuracy\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileStationPosition & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available.\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~disableStationWithoutPosition & \hfuzz=500pt boolean & \hfuzz=500pt drop stations without apriori position\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileClock & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileObservations & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~loadingDisplacement & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt loading deformation\\
@@ -2718,8 +2741,8 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~denoisingLambda & \hfuzz=500pt double & \hfuzz=500pt regularization parameter for total variation denoising used in cylce slip detection\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~tecWindowSize & \hfuzz=500pt uint & \hfuzz=500pt (0 = disabled) window size for TEC smoothness evaluation used in cycle slip detection\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~tecSigmaFactor & \hfuzz=500pt double & \hfuzz=500pt factor applied to moving standard deviation used as threshold in TEC smoothness evaluation during cycle slip detection\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileTrackBefore & \hfuzz=500pt filename & \hfuzz=500pt variables \{station\}, \{prn\}, \{timeStart\}, \{timeEnd\}, \{types\}, TEC and MW-like combinations in cycles for each track before cycle slip detection\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileTrackAfter & \hfuzz=500pt filename & \hfuzz=500pt variables \{station\}, \{prn\}, \{timeStart\}, \{timeEnd\}, \{types\}, TEC and MW-like combinations in cycles for each track after cycle slip detection\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileTrackBefore & \hfuzz=500pt filename & \hfuzz=500pt variables \{station\}, \{prn\}, \{trackTimeStart\}, \{trackTimeEnd\}, \{types\}, TEC and MW-like combinations in cycles for each track before cycle slip detection\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element.pdf}~outputfileTrackAfter & \hfuzz=500pt filename & \hfuzz=500pt variables \{station\}, \{prn\}, \{trackTimeStart\}, \{trackTimeEnd\}, \{types\}, TEC and MW-like combinations in cycles for each track after cycle slip detection\\
 \hline
 \end{tabularx}
 
@@ -2741,7 +2764,7 @@ and \configFile{inputfileReceiverDefinition}{gnssReceiverDefinition} are read fo
 The file name is interpreted as a template with the variable \verb|{prn}| being replaced by the satellite PRN.
 
 Metadata input files (marked with \textbf{*} below) are provided in GROOPS file formats at
-\url{https://ftp.tugraz.at/outgoing/ITSG/groops}. These files are regularly updated.
+\url{https://ftp.tugraz.at/pub/ITSG/groops}. These files are regularly updated.
 \begin{itemize}
   \item \configFile{inputfileTransmitterInfo}{platform}\textbf{*}:
         PRN-SVN mapping, antenna offsets and orientations.
@@ -2749,10 +2772,13 @@ Metadata input files (marked with \textbf{*} below) are provided in GROOPS file 
   \item \configFile{inputfileAntennaDefinition}{gnssAntennaDefinition}\textbf{*}:
         Antenna center variations.
         Created via \program{GnssAntex2AntennaDefinition} or \program{GnssAntennaDefinitionCreate}.
-  \item \configFile{inputfileReceiverDefinition}{gnssReceiverDefinition}\textbf{*}:
+  \item \configFile{inputfileSignalDefintion}{gnssReceiverDefinition}\textbf{*}:
         Transmitted signal types.
         Created via \program{GnssReceiverDefinitionCreate} in case you want to define which signal
         types a satellite transmits.
+  \item \configFile{inputfileClockFrequencyScale}{instrument}\textbf{*}:
+        Scale factor of transmitted signals due to frequency offset/clock drift.
+        Can be dreived from broadcast clocks drifts.
   \item \configFile{inputfileOrbit}{instrument}: Converted via \program{Sp3Format2Orbit} or
         output of \program{GnssProcessing}.
   \item \configFile{inputfileAttitude}{instrument}:
@@ -2776,9 +2802,11 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~useNearestFrequency & \hfuzz=500pt  & \hfuzz=500pt use pattern of nearest frequency if no matching pattern is found\\
 \hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~throwException & \hfuzz=500pt  & \hfuzz=500pt throw exception if no matching pattern is found\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileSignalDefintion & \hfuzz=500pt filename & \hfuzz=500pt transmitted signal types\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileClockFrequencyScale & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileAttitude & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileClock & \hfuzz=500pt filename & \hfuzz=500pt variable \{prn\} available\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolateClock & \hfuzz=500pt boolean & \hfuzz=500pt linear interpolation of missing epochs\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt for orbit interpolation and velocity calculation\\
 \hline
 \end{tabularx}
@@ -3871,7 +3899,7 @@ The result would therefore be the same as using \program{LoopPrograms} with a ne
 See \reference{Loop and conditions}{general.loopsAndConditions} for usage.
 
 
-\subsection{TimeSeries}
+\subsection{TimeSeries}\label{loopType:timeSeries}
 Loop over points in time.
 
 
@@ -3889,7 +3917,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{TimeIntervals}
+\subsection{TimeIntervals}\label{loopType:timeIntervals}
 Loop over the intervals between points in time.
 
 
@@ -3908,7 +3936,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{ManualList}\label{loopType:manualList}
+\subsection{StringList}\label{loopType:stringList}
 Loop over list of strings.
 
 
@@ -3917,7 +3945,7 @@ Loop over list of strings.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~string & \hfuzz=500pt string & \hfuzz=500pt explicit list of strings\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~string & \hfuzz=500pt string & \hfuzz=500pt explicit list of strings\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
@@ -3926,10 +3954,10 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{ManualTable}
-Loop over rows of a table containing strings.
-The table can be defined \config{rowWise} or \config{columnWise}.
-Each row/column must have the same number of cells.
+\subsection{StringTable}\label{loopType:stringTable}
+Loop over \config{row}s of a table containing strings.
+Each row must have the same number of cells.
+For each column an extra \config{variableLoopString} can be defined.
 
 
 \keepXColumns
@@ -3937,13 +3965,9 @@ Each row/column must have the same number of cells.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~table & \hfuzz=500pt choice & \hfuzz=500pt define table by rows/columns\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~rowWise & \hfuzz=500pt sequence & \hfuzz=500pt define table by rows\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~row & \hfuzz=500pt sequence & \hfuzz=500pt define table by rows\\
-\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~cell & \hfuzz=500pt string & \hfuzz=500pt explicit list of cells in row/column\\
-\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~columnWise & \hfuzz=500pt sequence & \hfuzz=500pt define table by columns\\
-\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~column & \hfuzz=500pt sequence & \hfuzz=500pt define table by columns\\
-\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~cell & \hfuzz=500pt string & \hfuzz=500pt explicit list of cells in row/column\\
+\hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~row & \hfuzz=500pt sequence & \hfuzz=500pt rows of a table\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~cell & \hfuzz=500pt string & \hfuzz=500pt list of columns in a row\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~transpose & \hfuzz=500pt boolean & \hfuzz=500pt loop over columns instead of rows\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt 1. variable name for the 1. column, next variable name for the 2. column, ... \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
@@ -3952,8 +3976,8 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{FileAscii}
-Loop over list of strings from files.
+\subsection{FileStringList}\label{loopType:fileStringList}
+Loop over list of strings from \file{files}{stringList}.
 
 
 \keepXColumns
@@ -3961,11 +3985,7 @@ Loop over list of strings from files.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt simple ASCII file with strings (separated by whitespace)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sort & \hfuzz=500pt boolean & \hfuzz=500pt sort entries alphabetically (ascending)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~removeDuplicates & \hfuzz=500pt boolean & \hfuzz=500pt remove duplicate entries (order is preserved)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~startIndex & \hfuzz=500pt uint & \hfuzz=500pt start at element startIndex (counting from 0)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~count & \hfuzz=500pt uint & \hfuzz=500pt use count elements (default: use all)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt string list file\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
@@ -3974,8 +3994,8 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{FileAsciiTable}
-Loop over rows of a table containing strings.
+\subsection{FileStringTable}\label{loopType:fileStringTable}
+Loop over rows of a \file{table}{stringTable} containing strings.
 Each row must have the same number of columns.
 
 
@@ -3984,9 +4004,8 @@ Each row must have the same number of columns.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt simple ASCII file with multiple columns (separated by whitespace)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~startLine & \hfuzz=500pt uint & \hfuzz=500pt start at line startLine (counting from 0)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~countLines & \hfuzz=500pt uint & \hfuzz=500pt read count lines (default: all)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt string table file with multiple columns\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~transpose & \hfuzz=500pt boolean & \hfuzz=500pt loop over columns instead of rows\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt 1. variable name for the 1. column, next variable name for the 2. column, ... \\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
@@ -3995,7 +4014,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{FileLines}
+\subsection{FileTextLines}\label{loopType:fileTextLines}
 Loop over lines of a text file.
 
 
@@ -4004,11 +4023,9 @@ Loop over lines of a text file.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt simple ASCII file with lines\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sort & \hfuzz=500pt boolean & \hfuzz=500pt sort lines alphabetically (ascending)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~removeDuplicates & \hfuzz=500pt boolean & \hfuzz=500pt remove duplicate lines (order is preserved)\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~inputfile & \hfuzz=500pt filename & \hfuzz=500pt simple text file with lines\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~startIndex & \hfuzz=500pt uint & \hfuzz=500pt start at element startIndex (counting from 0)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~count & \hfuzz=500pt uint & \hfuzz=500pt use number of lines only (default: use all)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~count & \hfuzz=500pt uint & \hfuzz=500pt use number of loops only (default: use all)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopLine & \hfuzz=500pt string & \hfuzz=500pt name of the variable to be replaced\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
@@ -4017,8 +4034,8 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{Matrix}
-Loop over rows of a matrix. To define the loop variables the standard
+\subsection{Matrix}\label{loopType:matrix}
+Loop over rows of a \file{matrix}{matrix}. To define the loop variables the standard
 data variables of the matrix are available, see~\reference{dataVariables}{general.parser:dataVariables}.
 
 
@@ -4039,7 +4056,7 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{UniformSampling}
+\subsection{NumberSequence}\label{loopType:numberSequence}
 Loop over sequence of numbers.
 
 
@@ -4098,22 +4115,6 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
-\subsection{Loop}\label{loopType:loop}
-Loop over nested loops. First \config{loop} is outermost loop, every subsequent \config{loop} is one level below the previous \config{loop}.
-
-
-\keepXColumns
-\begin{tabularx}{\textwidth}{N T A}
-\hline
-Name & Type & Annotation\\
-\hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~loop & \hfuzz=500pt \hyperref[loopType]{loop} & \hfuzz=500pt subloop\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
-\hline
-\end{tabularx}
-
-
 \subsection{PlatformEquipment}\label{loopType:platformEquipment}
 Loop over specific equipment of a \file{platform file}{platform}.
 
@@ -4147,8 +4148,78 @@ Name & Type & Annotation\\
 \end{tabularx}
 
 
+\subsection{Loop}\label{loopType:loop}
+Loop over nested loops. First \config{loop} is outermost loop, every subsequent \config{loop} is one level below the previous \config{loop}.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~loop & \hfuzz=500pt \hyperref[loopType]{loop} & \hfuzz=500pt subloop\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
+\hline
+\end{tabularx}
+
+
+\subsection{SortAndRemoveDuplicates}\label{loopType:sortAndRemoveDuplicates}
+Perform the \configClass{loop}{loopType} in the alphabetically
+order defined by the evaluated \config{sortString} for each loop step.
+So the string must contain loop variables. If \config{sortString}
+is empty, no sorting will take place.
+
+Example: The \config{sortString}=\verb|{loopTime:%m}| of a time series
+sorts the times in ascending order by month.
+
+The same principle is used to remove duplicates. If different loop steps
+evaluates \config{removeDuplicatesString} to the same string,
+only the first loop step is executed.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~loop & \hfuzz=500pt \hyperref[loopType]{loop} & \hfuzz=500pt \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~sortString & \hfuzz=500pt string & \hfuzz=500pt use \{loopVariables\}, sort alphabetically\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~descending & \hfuzz=500pt boolean & \hfuzz=500pt sorting descending instead of ascending\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~removeDuplicatesString & \hfuzz=500pt string & \hfuzz=500pt use \{loopVariables\}, remove duplicates (order is preserved)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
+\hline
+\end{tabularx}
+
+
+\subsection{ManualTable}
+DEPRECATED since 2025-09-27. Use LoopStringTable instead.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~table & \hfuzz=500pt choice & \hfuzz=500pt define table by rows/columns\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~rowWise & \hfuzz=500pt sequence & \hfuzz=500pt define table by rows\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~row & \hfuzz=500pt sequence & \hfuzz=500pt define table by rows\\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~cell & \hfuzz=500pt string & \hfuzz=500pt explicit list of cells in row/column\\
+\hfuzz=500pt\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset.pdf}~columnWise & \hfuzz=500pt sequence & \hfuzz=500pt define table by columns\\
+\hfuzz=500pt\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~column & \hfuzz=500pt sequence & \hfuzz=500pt define table by columns\\
+\hfuzz=500pt\quad\quad\includegraphics[width=1em]{connector.pdf}\includegraphics[width=1em]{element-mustset-unbounded.pdf}~cell & \hfuzz=500pt string & \hfuzz=500pt explicit list of cells in row/column\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~variableLoopString & \hfuzz=500pt string & \hfuzz=500pt 1. variable name for the 1. column, next variable name for the 2. column, ... \\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopIndex & \hfuzz=500pt string & \hfuzz=500pt variable with index of current iteration (starts with zero)\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~variableLoopCount & \hfuzz=500pt string & \hfuzz=500pt variable with total number of iterations\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~condition & \hfuzz=500pt \hyperref[conditionType]{condition} & \hfuzz=500pt check before each loop step\\
+\hline
+\end{tabularx}
+
+
 \subsection{FileGnssStationInfo}
-DEPRECATDED. Use LoopPlatformEquipment instead.
+DEPRECATED since 2022-11-11. Use LoopPlatformEquipment instead.
 
 
 \keepXColumns
@@ -4582,7 +4653,7 @@ Both files are optional and if not specified, the respective effect on the accel
 The \config{factorEarthRadation} can be used to scale the computed acceleration of the earth radiation.
 
 The thermal radiation (TRP) of the satellite itself is either computed as direct re-emission or
-based on the actual temperature of the satellite surfaces, depending on the seetings of the
+based on the actual temperature of the satellite surfaces, depending on the setings of the
 \file{satellite macro model}{satelliteModel}. The second one uses a transient temperature model
 with a temporal differential equation which disallows parallel computing.
 The \config{factorThermalRadiation} can be used to scale the computed acceleration of the TRP.
@@ -4724,7 +4795,7 @@ Name & Type & Annotation\\
 
 
 \subsection{SolarRadiationPressure}\label{miscAccelerationsType:solarRadiationPressure}
-DEPRECATED. Use radiationPressure instead.
+DEPRECATED since 2022-12-19. Use radiationPressure instead.
 
 
 \keepXColumns
@@ -4740,7 +4811,7 @@ Name & Type & Annotation\\
 
 
 \subsection{Albedo}\label{miscAccelerationsType:albedo}
-DEPRECATED. Use radiationPressure instead.
+DEPRECATED since 2022-12-19. Use radiationPressure instead.
 
 
 \keepXColumns
@@ -5024,20 +5095,20 @@ Name & Type & Annotation\\
 %==================================
 
 \section{Observation}\label{observationType}
-This class set up the oberservation equations in linearized Gauss-Makoff model
+This class sets up the observation equations in linearized Gauss-Markov model
 \begin{equation}\label{gmm}
 \M l  = \M A \M x + \M e\qquad\text{and}\qquad\mathcal{C}(\M e) = \sigma^2\M P^{-1}.
 \end{equation}
-The observations are divided into short data blocks which can computed independently
-and so easily can be parallelized. Usually this data blocks are short arcs of a
-satellites orbit. In most cases the unknown parameter vector contains coefficients
+The observations are divided into short data blocks which can be computed independently
+and so easily can be parallelized. Usually these data blocks are short arcs of a
+satellite's orbit. In most cases the unknown parameter vector contains coefficients
 of a gravity field parametrization given by \configClass{parametrizationGravity}{parametrizationGravityType}.
-Additional parameters like instrument calibrations parameters are appended at the
+Additional parameters like instrument calibration parameters are appended at the
 end of the vector~$\M x$.
 It is possible to give several observation vectors in one model.
 
 The observations within each arc are decorrelated in the following way:
-In a first step a cholesky decomposition of the covariance matrix is performed
+In a first step a Cholesky decomposition of the covariance matrix is performed
 \begin{equation}
 \M P^{-1} = \M W^T\M W,
 \end{equation}
@@ -5052,7 +5123,7 @@ gives an estimation from decorrelated observations with equal variance
 \qquad\text{and}\qquad
 \mathcal{C}(\bar{\M e})= \sigma^2 \M I.
 \end{equation}
-Usually the arc depending parameters are eliminated in the next step
+Usually the arc dependent parameters are eliminated in the next step
 and not mentioned for the parameter names in the following.
 
 
@@ -5062,7 +5133,7 @@ It is based on \file{inputfileVariational}{variationalEquation} calculated with 
 Necessary integrations are performed by integrating a moving interpolation polynomial of degree \config{integrationDegree}.
 
 The kinematic positions as pseudo observations are taken from
-\config{rightHandSide} and should not given equally spaced in time. The observation
+\config{rightHandSide} and should not be given equally spaced in time. The observation
 equations are interpolated to these times by a moving polynomial of degree \config{interpolationDegree}.
 
 The accuracy or the full covariance matrix of the precise orbit data is provided in
@@ -5086,8 +5157,8 @@ can be used to transform the observation equations
   \begin{pmatrix} \M Q_1^T \M R \\ \M 0 \end{pmatrix} \M A \M x +
   \begin{pmatrix} \M Q_1^T \M e \\ \M Q_2^T \M e \end{pmatrix}.
 \end{equation}
-As the zero lines should not be considered the computational time for the accumulation is reduced.
-This option is not meaningful for evaluating the residuals such in \program{PreprocessingPod}.
+As the zero lines should not be considered, the computational time for the accumulation is reduced.
+This option is not meaningful for evaluating the residuals such as in \program{PreprocessingPod}.
 
 The following parameters with \file{parameter names}{parameterName} are set up:
 \begin{itemize}
@@ -5261,11 +5332,11 @@ The observation equations for precise orbit data (POD) are given by
   - \int_{t_0}^t \M g_0 \cdot\dot{\M r}'\,dt
   = V + E.
 \end{equation}
-where the velocities of the satellite $\ddot{\M r}(t)$ are derived from
+where the velocities of the satellite $\dot{\M r}(t)$ are derived from
 the kinematic positions in \configClass{rightHandSide}{podRightSideType} and the Earth's rotation vector~$\M\Omega(t)$ is modeled
-within \configClass{earthRotation}{earthRotationType}. The orbit differentation is
+within \configClass{earthRotation}{earthRotationType}. The orbit differentiation is
 performed by a polynomial interpolation with degree \config{interpolationDegree}.
-The integrals are solved a polynomial interpolation with degree \config{integrationDegree}.
+The integrals are solved by a polynomial interpolation with degree \config{integrationDegree}.
 The reference forces $\M g_0(t)$ are computed with the background models in \configClass{rightHandSide}{podRightSideType}.
 
 All instrument data \configFile{inputfileOrbit}{instrument}, \configFile{inputfileStarCamera}{instrument}, and \configFile{inputfileAccelerometer}{instrument}
@@ -5300,7 +5371,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~ephemerides & \hfuzz=500pt \hyperref[ephemeridesType]{ephemerides} & \hfuzz=500pt \\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrizationGravity & \hfuzz=500pt \hyperref[parametrizationGravityType]{parametrizationGravity} & \hfuzz=500pt gravity field parametrization (potential)\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parametrizationBias & \hfuzz=500pt \hyperref[parametrizationTemporalType]{parametrizationTemporal} & \hfuzz=500pt unknown total energy per arc\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt orbit differentation  by polynomial approximation of degree n\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~interpolationDegree & \hfuzz=500pt uint & \hfuzz=500pt orbit differentiation  by polynomial approximation of degree n\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~integrationDegree & \hfuzz=500pt uint & \hfuzz=500pt integration of forces by polynomial approximation of degree n\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~covariancePod & \hfuzz=500pt \hyperref[covariancePodType]{covariancePod} & \hfuzz=500pt covariance matrix of kinematic orbits\\
 \hline
@@ -5311,9 +5382,9 @@ Name & Type & Annotation\\
 Like \configClass{observation:podVariational}{observationType:podVariational} (see there for details)
 but with two satellites and additional satellite-to-satellite (SST) observations.
 
-If multiple \configFile{inputfileSatelliteTracking}{instrument} are given
-all data are add together. So corrections in extra files like the light time correction
-can easily be added. Empirical parameters for the SST observations can be setup with
+If multiple \configFile{inputfileSatelliteTracking}{instrument} are given,
+all data are added together. So corrections in extra files like the light time correction
+can easily be added. Empirical parameters for the SST observations can be set up with
 \configClass{parametrizationSst}{parametrizationSatelliteTrackingType}.
 The accuracy or the full covariance matrix of SST is provided in
 \configClass{covarianceSst}{covarianceSstType}.
@@ -5375,8 +5446,8 @@ Like \configClass{observation:podIntegral}{observationType:podIntegral} (see the
 but with two satellites and additional satellite-to-satellite (SST) observations.
 
 If multiple \configFile{inputfileSatelliteTracking}{instrument} are given
-all data are add together. So corrections in extra files like the light time correction
-can easily be added. Empirical parameters for the SST observations can be setup with
+all data are added together. So corrections in extra files like the light time correction
+can easily be added. Empirical parameters for the SST observations can be set up with
 \configClass{parametrizationSst}{parametrizationSatelliteTrackingType}.
 The accuracy or the full covariance matrix of SST is provided in
 \configClass{covarianceSst}{covarianceSstType}.
@@ -5445,13 +5516,13 @@ but with two simultaneous satellite-to-satellite (SST) observations.
 
 This class reads two SST observation files (\configFile{inputfileSatelliteTracking1}{instrument} and
 \configFile{inputfileSatelliteTracking2}{instrument}).
-Empirical parameters for the SST observations can be setup independently for both SST observation
+Empirical parameters for the SST observations can be set up independently for both SST observation
 types with \configClass{parametrizationSst1}{parametrizationSatelliteTrackingType} and
 \configClass{parametrizationSst2}{parametrizationSatelliteTrackingType}.
 
 Both SST observation types are reduced by the same background models and the same impact
 of accelerometer measurements. The covariance matrix of the reduced observations should not consider
-the the instrument noise only (\configClass{covarianceSst1/2}{covarianceSstType}) but must
+the instrument noise only (\configClass{covarianceSst1/2}{covarianceSstType}) but must
 take the cross correlations \configClass{covarianceAcc}{covarianceSstType} into account.
 The covariance matrix of the reduced observations is given by
 \begin{equation}
@@ -5849,11 +5920,11 @@ Name & Type & Annotation\\
 %==================================
 
 \section{ParameterNames}\label{parameterNamesType}
-Generate a list of parameter names. All parameters are appended.
+Generates a list of parameter names. All parameters are appended.
 
 
 \subsection{Name}
-The parameter is given by explicitly by four parts:
+The parameter is given explicitly by four parts:
 \begin{enumerate}
 \item object: Object this parameter refers to, e.g. \verb|graceA|, \verb|G023|, \verb|earth|, \ldots
 \item type: Type of this parameter, e.g. \verb|accBias|, \verb|position.x|, \ldots
@@ -6121,6 +6192,20 @@ Expand parameter index vector by adding zero parameters.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~count & \hfuzz=500pt expression & \hfuzz=500pt count of zero parameters (variables: length)\\
+\hline
+\end{tabularx}
+
+
+\subsection{Group}\label{parameterSelectorType:group}
+Groups a set of \configClass{parameterSelection}{parameterSelectorType}s and has no further effect itself.
+
+
+\keepXColumns
+\begin{tabularx}{\textwidth}{N T A}
+\hline
+Name & Type & Annotation\\
+\hline
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset-unbounded.pdf}~parameterSelection & \hfuzz=500pt \hyperref[parameterSelectorType]{parameterSelector} & \hfuzz=500pt parameter order/selection\\
 \hline
 \end{tabularx}
 
@@ -7546,14 +7631,14 @@ Defines the content of a map of \program{PlotMap}. Multiple layers are are plott
 
 
 \subsection{GriddedData}
-Creates a regular grid of yxz values. The standard \reference{dataVariables}{general.parser:dataVariables}
+Creates a regular grid of xyz values. The standard \reference{dataVariables}{general.parser:dataVariables}
 are available to select the data column of \configFile{inputfileGriddedData}{griddedData}.
 Empty grid cells are not plotted. Cells with more than one value will be set to the mean value.
 The grid spacing can be determined automatically for regular rectangular grids otherwise
 it must be set with \config{increment}. To get a better display together with some projections
 the grid should be internally \config{resample}d to higher resolution.
 It is assumed that the points of \configFile{inputfileGriddedData}{griddedData} represents centers of grid cells.
-This assumption can be changed with \config{gridlineRegistered} (e.g if the data starts at the north pole).
+This assumption can be changed with \config{gridlineRegistered} (e.g. if the data starts at the north pole).
 
 
 \keepXColumns
@@ -8783,6 +8868,7 @@ Name & Type & Annotation\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStationList & \hfuzz=500pt filename & \hfuzz=500pt ascii file with station names\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileStationInfo & \hfuzz=500pt filename & \hfuzz=500pt station metadata\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileStationPosition & \hfuzz=500pt filename & \hfuzz=500pt station position\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~disableStationWithoutPosition & \hfuzz=500pt boolean & \hfuzz=500pt drop stations without apriori position\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileObservations & \hfuzz=500pt filename & \hfuzz=500pt variable \{station\} \{satellite\} available\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~accuracy & \hfuzz=500pt expression & \hfuzz=500pt [m] used for weighting, variables: \{residual\}, \{accuracy\}, \{redundancy\}, \{laserWavelength\}, \{azimut\}, \{elevation\}\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~loadingDisplacement & \hfuzz=500pt \hyperref[gravityfieldType]{gravityfield} & \hfuzz=500pt loading deformation\\
@@ -9286,7 +9372,7 @@ Name & Type & Annotation\\
 
 
 \subsection{Monthly}
-If \config{monthMiddle} is set, time points are generated at mid of each month inclusively
+If \config{useMonthMiddle} is set, time points are generated at mid of each month inclusively
 the \config{monthStart} in \config{yearStart} and \config{monthEnd} in \config{yearEnd}.
 Otherwise times are given at the first of each month and a time point after the last month.
 
@@ -9306,7 +9392,7 @@ Name & Type & Annotation\\
 
 
 \subsection{Yearly}
-If \config{yearMiddle} is set, time points are generated at mid of each year inclusively \config{yearStart}
+If \config{useYearMiddle} is set, time points are generated at mid of each year inclusively \config{yearStart}
 and \config{yearEnd}. Otherwise times are given at the first of each year and a time point after the last year.
 
 
@@ -9368,8 +9454,8 @@ starting from \config{timeStart} and before \config{timeEnd}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileInstrument & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt exclude peochs before this epoch\\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt only epochs before this time are used\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt inclusive, i.e. exclude eochs before this epoch\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt exclusive, i.e. only epochs before this time are used\\
 \hline
 \end{tabularx}
 
@@ -9402,7 +9488,7 @@ starting from \config{timeStart} and before \config{timeEnd}.
 Name & Type & Annotation\\
 \hline
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileOrbit & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt exclude peochs before this epoch\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeStart & \hfuzz=500pt time & \hfuzz=500pt exclude eochs before this epoch\\
 \hfuzz=500pt\includegraphics[width=1em]{element.pdf}~timeEnd & \hfuzz=500pt time & \hfuzz=500pt only epochs before this time are used\\
 \hline
 \end{tabularx}
@@ -9519,8 +9605,8 @@ Name & Type & Annotation\\
 \subsection{MendesAndPavlis}\label{troposphereType:mendesAndPavlis}
 
 Tropospheric delays based on the Mendes-Pavlis model that employs meteorological data.
-(Mendes et al. (2002), DOI: \href{https://doi.org/10.1029/2001GL014394}{10.1029/2001GL014394} and
-Mendes & Pavlis (2004), DOI:\href{https://doi.org/10.1029/2004GL020308}{110.1029/2004GL020308})
+(Mendes et al. (2002), \href{https://doi.org/10.1029/2001GL014394}{10.1029/2001GL014394} and
+Mendes and Pavlis (2004), \href{https://doi.org/10.1029/2004GL020308}{110.1029/2004GL020308})
 
 The meteorological data have to be provided via \configFile{inputfileStationMeteorology}{instrument}.
 This file contains the temperature, air pressure and humidity and must be first generated using the

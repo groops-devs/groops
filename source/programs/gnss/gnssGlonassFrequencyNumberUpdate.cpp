@@ -13,8 +13,8 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 Update/set GLONASS frequency number in \configFile{inputfileTransmitterInfo}{platform} files.
-
-PRN/SVN to frequency number source: \url{http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO}.
+The \configFile{inputfilePrn2FrequencyNumber}{matrix} can be generated with
+\program{SinexMetadata2GlonassFrequencyNumber}.
 
 See also \program{GnssAntex2AntennaDefinition}.
 )";
@@ -50,7 +50,7 @@ void GnssGlonassFrequencyNumberUpdate::run(Config &config, Parallel::Communicato
 
     readConfig(config, "outputfileTransmitterInfo",    fileNameOutTransmitterInfo,       Config::OPTIONAL, "",    "templated for PRN list (variableNamePrn)");
     readConfig(config, "inputfileTransmitterInfo",     fileNameInTransmitterInfo,        Config::MUSTSET,  "",    "templated for PRN list (variableNamePrn)");
-    readConfig(config, "inputfilePrn2FrequencyNumber", fileNameInPrnSvn2FrequencyNumber, Config::MUSTSET,  "",    "GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber");
+    readConfig(config, "inputfilePrn2FrequencyNumber", fileNameInPrnSvn2FrequencyNumber, Config::MUSTSET,  "{groopsDataDir}/gnss/transmitter/glonassPrnSvn2FrequencyNumber.txt", "matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber");
     readConfig(config, "prn",                          prnList,                          Config::OPTIONAL, "",    "PRN (e.g. R01) for transmitter info files");
     readConfig(config, "variableNamePrn",              variableNamePrn,                  Config::OPTIONAL, "prn", "variable name for PRN in transmitter info files");
     if(isCreateSchema(config)) return;

@@ -79,12 +79,16 @@ public:
   virtual bool    optional()          const {return (xsdElement) ? xsdElement->optional  : true;}
   virtual bool    unbounded()         const {return (xsdElement) ? xsdElement->unbounded : false;}
   virtual bool    isRenamedInSchema() const {return (xmlName() != _schemaName);}
+  virtual bool    isDeprecated()      const {return annotation().startsWith("DEPRECATED");}
 
   /** @brief Is the selection without coresponding schema? (choice only) */
   virtual bool isSelectionUnknown(int /*index*/) const  {return false;}
 
   /** @brief Is the selection renamed (new name in the schema)? (choice only)  */
   virtual bool isSelectionRenamedInSchema(int /*index*/) const {return false;}
+
+  /** @brief Is the selection deprecated? (choice only) */
+  virtual bool isSelectionDeprecated(int /*index*/) const  {return false;}
 
   // ========================================================
 

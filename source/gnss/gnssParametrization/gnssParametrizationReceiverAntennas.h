@@ -26,7 +26,7 @@ The amount of patterns to be estimated is configurable with a list of \configCla
 For each added \configClass{patternTypes}{gnssType} a set of parameters will be evaluated. The observations
 will be assigned to the first \configClass{patternTypes}{gnssType} that matches their own.
 E.g. having the patterns: \verb|***G| and \verb|L1*| would lead to all GPS observations be assigned
-to the observation equations of the first pattern. The patterntype \verb|L1*| would then consist
+to the observation equations of the first pattern. The pattern type \verb|L1*| would then consist
 of all other GNSS L1 phase observations. \config{addNonMatchingTypes} will, if activated, create automatically patterns
 for \configClass{observations}{gnssType} that are not selected within the list \configClass{patternTypes}{gnssType}.
 Furthermore, it is possible to group same antenna build types from different receivers by \config{groupAntennas}.

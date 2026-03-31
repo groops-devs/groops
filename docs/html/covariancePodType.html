@@ -71,7 +71,7 @@
         <div id="content" class="container">
             
 <h1 id="covariancePodType">CovariancePod</h1><p>
-Provides arc wise covariance matrices for precise orbit data.
+Provides arc-wise covariance matrices for precise orbit data.
 Temporal correlations are modeled in the orbit system (along, cross, radial).
 The <a class="groops-class" href="fileFormat_matrix.html">inputfileCovarianceFunction</a> provides temporal covariance functions for each axis.
 From the diagonal matrix for each time step
@@ -86,12 +86,12 @@ From the diagonal matrix for each time step
              & \cdots   & \ddots   & \ddots   & \ddots & \cdots \\
   \end{pmatrix}
 \]
-The epoch wise $3\times3$ covariance matrices given by <a class="groops-class" href="fileFormat_instrument.html">inputfileCovariancePodEpoch</a>
-are eigen value decomposed
+The epoch-wise $3\times3$ covariance matrices given by <a class="groops-class" href="fileFormat_instrument.html">inputfileCovariancePodEpoch</a>
+are eigenvalue-decomposed
 \[
   \M C_{3\times3}(t_i) = \M Q \M\Lambda \M Q^T,
-\]where $\M Q$ is an orthgonal matrix and $\M\Lambda$ diagonal.
-This used to split the covariances matrices
+\]where $\M Q$ is an orthogonal matrix and $\M\Lambda$ diagonal.
+This is used to split the covariances matrices
 \[
   \M C_{3\times3}(t_i) = \M D(t_i) \M D(t_i)^T = (\M Q \M\Lambda^{1/2} \M Q^T)(\M Q \M\Lambda^{1/2} \M Q^T)^T,
 \]and to compose a block diagonal matrix for an arc
@@ -111,10 +111,10 @@ The last matrix can be used to downweight outliers in single epochs and will be 
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">covariancePodType</div></div></td><td>sequence</td><td></td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">sigma</div></div></td><td>double</td><td>general variance factor</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerArc</div></div></td><td>filename</td><td>different accuaries for each arc (multplicated with sigma)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerEpoch</div></div></td><td>filename</td><td>different accuaries for each epoch (added)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerArc</div></div></td><td>filename</td><td>different accuracies for each arc (multiplied with sigma)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileSigmasPerEpoch</div></div></td><td>filename</td><td>different accuracies for each epoch (added)</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovarianceFunction</div></div></td><td>filename</td><td>covariances in time for along, cross, and radial direction</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovariancePodEpoch</div></div></td><td>filename</td><td>3x3 epoch wise covariances</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config optional">inputfileCovariancePodEpoch</div></div></td><td>filename</td><td>3x3 epoch-wise covariances</td></tr>
 </table>
 
         </div>

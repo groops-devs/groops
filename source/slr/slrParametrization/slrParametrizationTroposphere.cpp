@@ -118,20 +118,20 @@ void SlrParametrizationTroposphere::observationCorrections(SlrObservationEquatio
   try
   {
     auto para = parameters.at(eqn.station->idStat());
-    if(!para)
+    if((eqn.type != SlrObservationEquation::RANGE) || !para)
       return;
 
-    for(UInt idEpoch=0; idEpoch<eqn.timesTrans.size(); idEpoch++)
+    for(UInt idEpoch=0; idEpoch<eqn.timesStat.size(); idEpoch++)
     {
       // apriori value
-      Double delay = troposphere->slantDelay(para->idTropo, eqn.timesTrans.at(idEpoch), LIGHT_VELOCITY/eqn.laserWavelength(idEpoch),
+      Double delay = troposphere->slantDelay(para->idTropo, eqn.timesStat.at(idEpoch), LIGHT_VELOCITY/eqn.laserWavelength(idEpoch),
                                              eqn.azimutStat.at(idEpoch), eqn.elevationStat.at(idEpoch));
 
       // estimated wet effect
       if(parametrization->parameterCount())
-        delay += troposphere->mappingFunctionWet(para->idTropo, eqn.timesTrans.at(idEpoch), LIGHT_VELOCITY/eqn.laserWavelength(idEpoch),
+        delay += troposphere->mappingFunctionWet(para->idTropo, eqn.timesStat.at(idEpoch), LIGHT_VELOCITY/eqn.laserWavelength(idEpoch),
                                                  eqn.azimutStat.at(idEpoch), eqn.elevationStat.at(idEpoch))
-               * inner(parametrization->factors(eqn.timesTrans.at(idEpoch)), para->x);
+               * inner(parametrization->factors(eqn.timesStat.at(idEpoch)), para->x);
 
       eqn.l(idEpoch) -= delay;
     }
@@ -166,20 +166,20 @@ void SlrParametrizationTroposphere::designMatrix(const SlrNormalEquationInfo &/*
   try
   {
     auto para = parameters.at(eqn.station->idStat());
-    if(!para || !para->index)
+    if((eqn.type != SlrObservationEquation::RANGE) || !para || !para->index)
       return;
 
-    for(UInt idEpoch=0; idEpoch<eqn.timesTrans.size(); idEpoch++)
+    for(UInt idEpoch=0; idEpoch<eqn.timesStat.size(); idEpoch++)
     {
-      const Double mappingFunction = troposphere->mappingFunctionWet(para->idTropo, eqn.timesTrans.at(idEpoch), LIGHT_VELOCITY/eqn.laserWavelength(idEpoch),
+      const Double mappingFunction = troposphere->mappingFunctionWet(para->idTropo, eqn.timesStat.at(idEpoch), LIGHT_VELOCITY/eqn.laserWavelength(idEpoch),
                                                                         eqn.azimutStat.at(idEpoch), eqn.elevationStat.at(idEpoch));
-      const Double B = mappingFunction * eqn.A(idEpoch, SlrObservationEquation::idxRange);
+      const const_MatrixSlice B(eqn.A.slice(eqn.index.at(idEpoch), SlrObservationEquation::idxRange, eqn.count.at(idEpoch), 1));
       std::vector<UInt>   idx;
       std::vector<Double> factor;
-      parametrization->factors(eqn.timesTrans.at(idEpoch), idx, factor);
+      parametrization->factors(eqn.timesStat.at(idEpoch), idx, factor);
       MatrixSlice Design(A.column(para->index));
       for(UInt i=0; i<factor.size(); i++)
-        Design(idEpoch, idx.at(i)) = factor.at(i) * B;
+        axpy(mappingFunction*factor.at(i), B, Design.slice(eqn.index.at(idEpoch), idx.at(i), eqn.count.at(idEpoch), 1));
     } // for(idEpoch)
   }
   catch(std::exception &e)

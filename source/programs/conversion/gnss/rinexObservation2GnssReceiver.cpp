@@ -14,13 +14,11 @@
 static const char *docstring = R"(
 Converts \href{https://files.igs.org/pub/data/format/rinex_4.00.pdf}{RINEX} (version 2, 3, and 4) and
 \href{https://terras.gsi.go.jp/ja/crx2rnx.html}{Compact RINEX} observation files to
-\file{GnssReceiver Instrument file}{instrument}.
+\configFile{outputfileGnssReceiver}{instrument}.
 
 In case of \href{https://files.igs.org/pub/data/format/rinex211.txt}{RINEX v2.x} observation files
-containing GLONASS satellites, a mapping from PRN
-to frequency number must be provided via \config{inputfileMatrixPrn2FrequencyNumber}
-in the form of a \file{matrix file}{matrix} with columns: GLONASS PRN, mjdStart, mjdEnd, frequencyNumber.
-Source for mapping: \url{http://semisys.gfz-potsdam.de/semisys/api/?symname=2002&format=json&satellite=GLO}.
+containing GLONASS satellites, a mapping from PRN to frequency number must be provided via
+\configFile{inputfileMatrixPrn2FrequencyNumber}{matrix}, see \program{SinexMetadata2GlonassFrequencyNumber}.
 RINEX v3+ observation files already contain this information.
 
 \configClass{useType}{gnssType} and \configClass{ignoreType}{gnssType} can be used to filter
@@ -30,12 +28,12 @@ If \configFile{inputfileStationInfo}{platform} is set, RINEX antenna and receive
 will be cross-checked with the provided file and warnings are raised in case of differences.
 
 A list of semi-codeless GPS receivers (observing C2D instead of C2W) can be provided via
-\configFile{inputfileSemiCodelessReceivers}{stringList} in ASCII format with one receiver name per line.
+\configFile{inputfileSemiCodelessReceivers}{stringList} with one receiver name per line.
 Observation types will be automatically corrected for these receivers.
 
 Some LEO satellites use special RINEX observation types, either from the unofficial RINEX v2.20
-or custom ones. These can be provided via \configFile{inputfileSpecialObservationTypes}{stringTable}
-in ASCII format. The file must  must contain a table with two columns, the first being the special type,
+or custom ones. These can be provided via \configFile{inputfileSpecialObservationTypes}{stringTable}.
+The file must  must contain a table with two columns, the first being the special type,
 and the second being the equivalent RINEX v3 type.
 
 %Example for RINEX v2.20:
@@ -120,10 +118,10 @@ void RinexObservation2GnssReceiver::run(Config &config, Parallel::CommunicatorPt
 
     readConfig(config, "outputfileGnssReceiver",             fileNameOut,                       Config::MUSTSET,  "", "");
     readConfig(config, "inputfileRinexObservation",          fileNameInObs,                     Config::MUSTSET,  "", "RINEX or Compact RINEX observation files");
-    readConfig(config, "inputfileMatrixPrn2FrequencyNumber", fileNameInPrn2FrequencyNumber,     Config::OPTIONAL, "{groopsDataDir}/gnss/transmitter/glonassPrnSvn2FrequencyNumber.txt", "(required for RINEX v2 files containing GLONASS observations) GROOPS matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber");
+    readConfig(config, "inputfileMatrixPrn2FrequencyNumber", fileNameInPrn2FrequencyNumber,     Config::OPTIONAL, "{groopsDataDir}/gnss/transmitter/glonassPrnSvn2FrequencyNumber.txt", "(required for RINEX v2 files containing GLONASS observations), matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber");
     readConfig(config, "inputfileStationInfo",               fileNameStationInfo,               Config::OPTIONAL, "", "used to determine semi-codeless receivers and to cross-check antenna and receiver info");
-    readConfig(config, "inputfileSemiCodelessReceivers",     fileNameSemiCodelessReceivers,     Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/semiCodelessReceivers.txt", "ASCII list with one receiver name per line");
-    readConfig(config, "inputfileSpecialObservationTypes",   fileNameSpecialObservationTypes,   Config::OPTIONAL, "", "ASCII table mapping special observation types to RINEX 3 types, e.g.: LA L1C");
+    readConfig(config, "inputfileSemiCodelessReceivers",     fileNameSemiCodelessReceivers,     Config::OPTIONAL, "{groopsDataDir}/gnss/receiverStation/semiCodelessReceivers.txt", "list with one receiver name per line");
+    readConfig(config, "inputfileSpecialObservationTypes",   fileNameSpecialObservationTypes,   Config::OPTIONAL, "", "table mapping special observation types to RINEX 3 types, e.g.: LA L1C");
     readConfig(config, "useType",                            useType,                           Config::OPTIONAL, "", "only use observations that match any of these patterns");
     readConfig(config, "ignoreType",                         ignoreType,                        Config::OPTIONAL, "", "ignore observations that match any of these patterns");
     if(isCreateSchema(config)) return;
@@ -721,7 +719,7 @@ void RinexObservation2GnssReceiver::checkStationInfo()
 {
   try
   {
-    if((!stationInfo.markerName.empty()) && (stationInfo.markerName != stationInfoRinex.markerName))
+    if((!stationInfo.markerName.empty()) && (stationInfo.markerName.substr(0,4) != stationInfoRinex.markerName.substr(0,4)))
       logWarning<<timeOfFirstObs.dateTimeStr()<<" Marker name differs '"<<stationInfo.markerName<<"' != '"<<stationInfoRinex.markerName<<"'"<<Log::endl;
     if((!stationInfo.markerNumber.empty()) && (stationInfo.markerNumber != stationInfoRinex.markerNumber))
       logWarning<<timeOfFirstObs.dateTimeStr()<<" Marker number differs '"<<stationInfo.markerNumber<<"' != '"<<stationInfoRinex.markerNumber<<"'"<<Log::endl;
@@ -734,7 +732,7 @@ void RinexObservation2GnssReceiver::checkStationInfo()
       {
         if((!antennaRinex.name.empty()) && (antenna->name != antennaRinex.name))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna name differs '"<<antenna->name<<"' != '"<<antennaRinex.name<<"'"<<Log::endl;
-        if((!antennaRinex.serial.empty()) && (antenna->serial != antennaRinex.serial))
+        if((!antennaRinex.serial.empty()) && !String::startsWith(antennaRinex.serial, antenna->serial))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna serial differs '"<<antenna->serial<<"' != '"<<antennaRinex.serial<<"'"<<Log::endl;
         if((!antennaRinex.radome.empty()) && (antenna->radome != antennaRinex.radome))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Antenna radome differs '"<<antenna->radome<<"' != '"<<antennaRinex.radome<<"'"<<Log::endl;
@@ -755,7 +753,7 @@ void RinexObservation2GnssReceiver::checkStationInfo()
       {
         if((!receiverRinex.name.empty()) && (recv->name != receiverRinex.name))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver name differs '"<<recv->name<<"' != '"<<receiverRinex.name<<"'"<<Log::endl;
-        if((!receiverRinex.serial.empty()) && (recv->serial != receiverRinex.serial))
+        if((!receiverRinex.serial.empty()) && !String::startsWith(receiverRinex.serial, recv->serial))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver serial differs '"<<recv->serial<<"' != '"<<receiverRinex.serial<<"'"<<Log::endl;
         if((!receiverRinex.version.empty()) && (recv->version != receiverRinex.version))
           logWarning<<timeOfFirstObs.dateTimeStr()<<" Receiver version differs '"<<recv->version<<"' != '"<<receiverRinex.version<<"'"<<Log::endl;

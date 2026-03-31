@@ -15,7 +15,9 @@ static const char *docstring = R"(
 This program accumulates normal equations and writes the total combined system to
 \configFile{outputfileNormalequation}{normalEquation}.
 The \configFile{inputfileNormalEquation}{normalEquation}s must have all the same size and the same block structure.
+
 This program is the simplified and fast version of the more general program \program{NormalsBuild}.
+For input normals with different parameters, see \program{NormalsReorderAndAccumulate}.
 )";
 
 /***********************************************/

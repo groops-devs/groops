@@ -16,6 +16,7 @@
 #include "config/configRegister.h"
 #include "inputOutput/logging.h"
 #include "classes/parameterSelector/parameterSelectorComplement.h"
+#include "classes/parameterSelector/parameterSelectorGroup.h"
 #include "classes/parameterSelector/parameterSelectorMatrix.h"
 #include "classes/parameterSelector/parameterSelectorNames.h"
 #include "classes/parameterSelector/parameterSelectorRange.h"
@@ -31,6 +32,7 @@ GROOPS_REGISTER_CLASS(ParameterSelector, "parameterSelectorType",
                       ParameterSelectorRange,
                       ParameterSelectorMatrix,
                       ParameterSelectorZeros,
+                      ParameterSelectorGroup,
                       ParameterSelectorComplement)
 
 GROOPS_READCONFIG_UNBOUNDED_CLASS(ParameterSelector, "parameterSelectorType")
@@ -56,6 +58,8 @@ ParameterSelector::ParameterSelector(Config &config, const std::string &name)
         parameters.push_back(new ParameterSelectorMatrix(config));
       if(readConfigChoiceElement(config, "zeros",      type, "additional zero parameters"))
         parameters.push_back(new ParameterSelectorZeros(config));
+      if(readConfigChoiceElement(config, "group",      type, "groups a set of parameter selectors."))
+        parameters.push_back(new ParameterSelectorGroup(config));
       if(readConfigChoiceElement(config, "complement", type, "all parameters except those selected"))
         parameters.push_back(new ParameterSelectorComplement(config));
       endChoice(config);

@@ -2,7 +2,7 @@
 /**
 * @file observationDualSstVariational.h
 *
-* @brief Satellite to satellite tracking with two simultaneous ranging observations (Variational equations).
+* @brief Satellite-to-satellite tracking with two simultaneous ranging observations (Variational equations).
 *
 * @author Andreas Kvas
 * @date 2020-07-24
@@ -22,13 +22,13 @@ but with two simultaneous satellite-to-satellite (SST) observations.
 
 This class reads two SST observation files (\configFile{inputfileSatelliteTracking1}{instrument} and
 \configFile{inputfileSatelliteTracking2}{instrument}).
-Empirical parameters for the SST observations can be setup independently for both SST observation
+Empirical parameters for the SST observations can be set up independently for both SST observation
 types with \configClass{parametrizationSst1}{parametrizationSatelliteTrackingType} and
 \configClass{parametrizationSst2}{parametrizationSatelliteTrackingType}.
 
 Both SST observation types are reduced by the same background models and the same impact
 of accelerometer measurements. The covariance matrix of the reduced observations should not consider
-the the instrument noise only (\configClass{covarianceSst1/2}{covarianceSstType}) but must
+the instrument noise only (\configClass{covarianceSst1/2}{covarianceSstType}) but must
 take the cross correlations \configClass{covarianceAcc}{covarianceSstType} into account.
 The covariance matrix of the reduced observations is given by
 \begin{equation}
@@ -71,7 +71,7 @@ The following parameters with \file{parameter names}{parameterName} are set up:
 
 /***** CLASS ***********************************/
 
-/** @brief Satellite to satellite tracking with two simultaneous ranging observations (Variational equations).
+/** @brief Satellite-to-satellite tracking with two simultaneous ranging observations (Variational equations).
 * @ingroup observationGroup
 * @see Observation */
 class ObservationDualSstVariational : public Observation

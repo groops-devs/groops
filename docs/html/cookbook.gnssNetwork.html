@@ -81,13 +81,13 @@ Station positions, clocks, signal biases, and troposphere estimates
 Earth orientation parameters
 </li></ul>
 </p><p>Scientific details about the underlying processing approach and the applied parametrizations, models, and corrections
-can be found in a doctoral thesis available under DOI <a href="https://doi.org/10.3217/978-3-85125-885-1">10.3217/978-3-85125-885-1</a>.</p><p>An example scenario for this task is available at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip</a>.
-It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops</a> (data folder or zipped archive).
+can be found in a doctoral thesis available under DOI <a href="https://doi.org/10.3217/978-3-85125-885-1">10.3217/978-3-85125-885-1</a>.</p><p>An example scenario for this task is available at <a href="https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssNetwork.zip" target="_blank">https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssNetwork.zip</a>.
+It includes GROOPS scripts and data for the example, but not the general GROOPS data and metadata found at <a href="https://ftp.tugraz.at/pub/ITSG/groops" target="_blank">https://ftp.tugraz.at/pub/ITSG/groops</a> (data folder or zipped archive).
 The scenario generally represents what is described in this cookbook, but may slightly differ in certain settings.</p><p><em>Note: Global GNSS processing can become very computationally intensive. Depending on the number of satellites
 and stations, the observation and processing sampling, and parametrizations it can quickly exceed the capabilities
 of a normal desktop computer and may require computer clusters or number crunchers (see section</em>
 <a class="groops-ref" href="general.parallelization.html">Parallelization</a><em>).</em></p><p><h2 id="metadata">Data preparation</h2><p>
-Most of the required metadata files are provided in GROOPS file formats at <a href="https://ftp.tugraz.at/outgoing/ITSG/groops" target="_blank">https://ftp.tugraz.at/outgoing/ITSG/groops</a>.
+Most of the required metadata files are provided in GROOPS file formats at <a href="https://ftp.tugraz.at/pub/ITSG/groops" target="_blank">https://ftp.tugraz.at/pub/ITSG/groops</a>.
 These files are regularly updated.</p><p>Data that has to be gathered from other sources comprises:
 <ul>
 
@@ -101,7 +101,7 @@ These files are regularly updated.</p><p>Data that has to be gathered from other
 Receiver observations, broadcast ephemerides, and precise satellite orbits and clocks can be downloaded from the
 <a href="https://igs.org/data-products-overview/">IGS Data Centers</a>.
 GPS, GLONASS, and Galileo orbits and clocks for the period 1994-2020 are also available as part of
-<a href="https://doi.org/10.3217/dataset-4528-0723-0867">Graz University of Technology's contribution to IGS repro3</a>.</p><p>The <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip">example scenario</a> includes a small set of this data.
+<a href="https://doi.org/10.3217/dataset-4528-0723-0867">Graz University of Technology's contribution to IGS repro3</a>.</p><p>The <a href="https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssNetwork.zip">example scenario</a> includes a small set of this data.
 The script <code>010groopsConvert.xml</code> can be used to convert these external formats into GROOPS formats.</p><p>Prepare a <a class="groops-file" href="fileFormat_stringTable.html">station list file</a> that contains the stations to be processed.
 Each line can contain more than one station. The first station in each line that has data available is used for the processing.
 If your network contains more than 60-70 stations, it is recommended to start processing with a core network (see <a class="groops-ref" href="cookbook.gnssNetwork.html#advanced">Advanced</a>).
@@ -110,7 +110,7 @@ Numerical integration of the satellite orbits is the first step in global GNSS p
 Dynamic orbits are integrated based on <a class="groops-class" href="forcesType.html">force models</a> and then fitted to the approximate orbits
 by estimating their initial state and additional empirical parameters for solar radiation pressure to improve the orbit fit.
 The resulting <a class="groops-file" href="fileFormat_variationalEquation.html">variational equations</a> file contains the integrated orbit, derivatives
-with respect to the satellite state vector, attitude, Earth rotation and satellite model.</p><p>Orbit preprocessing is covered by the script <code>020groopsGnssPreprocessing.xml</code> in the <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip">example scenario</a>.</p><p>It is recommended to perform the steps below in a <a class="groops-ref" href="general.loopsAndConditions.html">loop</a> over all
+with respect to the satellite state vector, attitude, Earth rotation and satellite model.</p><p>Orbit preprocessing is covered by the script <code>020groopsGnssPreprocessing.xml</code> in the <a href="https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssNetwork.zip">example scenario</a>.</p><p>It is recommended to perform the steps below in a <a class="groops-ref" href="general.loopsAndConditions.html">loop</a> over all
 satellites/PRNs using <a class="groops-program" href="LoopPrograms.html">LoopPrograms</a>. To get the relation between <code>{prn}</code> and <code>{svn}</code> setup
 an additional <a class="groops-class" href="loopType.html#platformEquipment">loop:platformEquipment</a> inside
 <a class="groops-class" href="loopType.html#loop">loop:loop</a> with
@@ -214,7 +214,7 @@ This second loop should perform only one step. The following programs are looped
 For the spherical harmonics expansions a <strong class="groops-config-element">maxDegree</strong>=<code>60</code> is more than enough.</p><p>The result of the preprocessing should be a <a class="groops-file" href="fileFormat_variationalEquation.html">variational equations file</a>,
 a <a class="groops-file" href="fileFormat_instrument.html">reduced dynamic orbit file</a> from <a class="groops-program" href="PreprocessingVariationalEquationOrbitFit.html">PreprocessingVariationalEquationOrbitFit</a>
 and an <a class="groops-file" href="fileFormat_instrument.html">attitude file</a> from <a class="groops-program" href="SimulateStarCameraGnss.html">SimulateStarCameraGnss</a> for each satellite.</p><p><h2 id="processing">GNSS processing</h2><p>
-The script <code>030groopsGnssProcessing.xml</code> in the <a href="https://ftp.tugraz.at/outgoing/ITSG/groops/scenario/scenarioGnssNetwork.zip">example scenario</a>
+The script <code>030groopsGnssProcessing.xml</code> in the <a href="https://ftp.tugraz.at/pub/ITSG/groops/scenario/scenarioGnssNetwork.zip">example scenario</a>
 implements the following steps and settings.</p><p>These are the settings for <a class="groops-program" href="GnssProcessing.html">GnssProcessing</a>. If not otherwise stated use the default values.</p><p>The first step is setting the processing sampling, in this example it is 30 seconds.
 The processing interval usually is a single 24-hour day, therefore define
 <a class="groops-class" href="timeSeriesType.html#uniformSampling">timeSeries:uniformSampling</a> with <strong class="groops-config-element">timeStart</strong>=<code>&lt;mjd></code>,

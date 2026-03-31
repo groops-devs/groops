@@ -43,11 +43,13 @@ GnssTransmitterGeneratorGnss::GnssTransmitterGeneratorGnss(Config &config)
         noPatternFoundAction = GnssAntennaDefinition::NoPatternFoundAction::THROW_EXCEPTION;
       endChoice(config);
     }
-    readConfig(config, "inputfileSignalDefintion",  fileNameSignalDef,        Config::OPTIONAL, "{groopsDataDir}/gnss/transmitter/signalDefinition/signalDefinition.xml", "transmitted signal types");
-    readConfig(config, "inputfileOrbit",            fileNameOrbit,            Config::MUSTSET,  "orbit_{loopTime:%D}.{prn}.dat",    "variable {prn} available");
-    readConfig(config, "inputfileAttitude",         fileNameAttitude,         Config::MUSTSET,  "attitude_{loopTime:%D}.{prn}.dat", "variable {prn} available");
-    readConfig(config, "inputfileClock",            fileNameClock,            Config::MUSTSET,  "clock_{loopTime:%D}.{prn}.dat",    "variable {prn} available");
-    readConfig(config, "interpolationDegree",       interpolationDegree,      Config::DEFAULT,  "7", "for orbit interpolation and velocity calculation");
+    readConfig(config, "inputfileSignalDefintion",     fileNameSignalDef,   Config::OPTIONAL, "{groopsDataDir}/gnss/transmitter/signalDefinition/signalDefinition.xml", "transmitted signal types");
+    readConfig(config, "inputfileClockFrequencyScale", fileNameScale,       Config::OPTIONAL, "",                                 "variable {prn} available");
+    readConfig(config, "inputfileOrbit",               fileNameOrbit,       Config::MUSTSET,  "orbit_{loopTime:%D}.{prn}.dat",    "variable {prn} available");
+    readConfig(config, "inputfileAttitude",            fileNameAttitude,    Config::MUSTSET,  "attitude_{loopTime:%D}.{prn}.dat", "variable {prn} available");
+    readConfig(config, "inputfileClock",               fileNameClock,       Config::MUSTSET,  "clock_{loopTime:%D}.{prn}.dat",    "variable {prn} available");
+    readConfig(config, "interpolateClock",             interpolateClock,    Config::DEFAULT,  "1", "linear interpolation of missing epochs");
+    readConfig(config, "interpolationDegree",          interpolationDegree, Config::DEFAULT,  "7", "for orbit interpolation and velocity calculation");
   }
   catch(std::exception &e)
   {
@@ -145,6 +147,8 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
         {
           const MiscValueArc arc = InstrumentFile::read(fileNameClock(fileNameVariableList));
           Polynomial polynomial(arc.times(), 1, FALSE/*throwException*/); // linear interpolation
+          if(!interpolateClock)
+            polynomial.init(arc.times(), 0, FALSE/*throwException*/, FALSE/*leastSquares*/, -1, 0);
           clock = Vector(polynomial.interpolate(times, arc.matrix().column(1)));
           for(UInt idEpoch=0; idEpoch<clock.size(); idEpoch++)
             if(std::isnan(clock.at(idEpoch)))
@@ -157,6 +161,27 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
         {
           logWarningOnce<<"Unable to read clock file <"<<fileNameClock(fileNameVariableList)<<">, disabling transmitter."<<Log::endl;
           continue;
+        }
+
+        // scale factor
+        // ------------
+        std::vector<Double> scale(times.size(), 1.);
+        if(!fileNameScale.empty())
+        {
+          try
+          {
+            const MiscValueArc arc = InstrumentFile::read(fileNameScale(fileNameVariableList));
+            Polynomial polynomial(arc.times(), 1, FALSE/*throwException*/); // linear interpolation
+            scale = Vector(polynomial.interpolate(times, arc.matrix().column(1)));
+            for(UInt idEpoch=0; idEpoch<scale.size(); idEpoch++)
+              if(std::isnan(scale.at(idEpoch)))
+                scale.at(idEpoch) = 1.; // to prevent NAN propagation when using parametrization clocksModel
+          }
+          catch(std::exception &/*e*/)
+          {
+            logWarningOnce<<"Unable to read scale file <"<<fileNameScale(fileNameVariableList)<<">, ignoring."<<Log::endl;
+            scale = std::vector<Double>(times.size(), 1.);
+          }
         }
 
         // test completeness of antennas
@@ -194,7 +219,7 @@ void GnssTransmitterGeneratorGnss::init(const std::vector<Time> &times, std::vec
           logWarningOnce<<platform.markerName<<"."<<platform.markerNumber<<": "<<useableEpochs.rows()-countUseableEpochs<<" epochs disabled due to missing orbit/attitude/clock data"<<Log::endl;
 
         transmitters.push_back(std::make_shared<GnssTransmitter>(GnssType("***"+platform.markerNumber), platform, noPatternFoundAction,
-                                                                 useableEpochs, clock, offset, crf2srf, srf2arf, timesPosVel, pos, vel, interpolationDegree));
+                                                                 useableEpochs, clock, scale, offset, crf2srf, srf2arf, timesPosVel, pos, vel, interpolationDegree));
         countTrans++;
       }
       catch(std::exception &e)

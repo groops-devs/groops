@@ -59,7 +59,7 @@ typedef std::shared_ptr<GnssProcessingStep> GnssProcessingStepPtr;
 /***** CLASS ***********************************/
 
 /** @brief Provides a list of receivers.
-* An Instance of this class can be created by @ref readConfig. */
+* An instance of this class can be created by @ref readConfig. */
 class GnssProcessingStep
 {
   std::vector<GnssProcessingStepBase*> bases;
@@ -68,21 +68,33 @@ public:
   class State
   {
   public:
-    GnssPtr                            gnss;
-    GnssNormalEquationInfo             normalEquationInfo;
-    Bool                               changedNormalEquationInfo;
-    MatrixDistributed                  normals;
-    std::vector<Matrix>                n;        // at master (after solve)
-    Vector                             lPl;      // at master (after solve)
-    UInt                               obsCount; // at master (after solve)
-    std::vector<std::vector<GnssType>> sigmaType;
-    std::vector<std::vector<Double>>   sigmaFactor; // for each receiver and type
+    class StationStatistics
+    {
+    public:
+      std::vector<GnssType> sigmaTypes;
+      std::vector<Double>   sigmaFactors; // for each type
+      UInt                  arOrder;
+      std::vector<GnssType> arTypes;
+      std::vector<std::vector<std::vector<Double>>> arProcesses; // for each type, order, order
+
+      StationStatistics() : arOrder(0) {}
+    };
+
+    GnssPtr                        gnss;
+    GnssNormalEquationInfo         normalEquationInfo;
+    Bool                           changedNormalEquationInfo;
+    MatrixDistributed              normals;
+    std::vector<Matrix>            n;        // at master (after solve)
+    Vector                         lPl;      // at master (after solve)
+    UInt                           obsCount; // at master (after solve)
+    std::vector<StationStatistics> stations;
 
     /** @brief Constructor. */
     State(GnssPtr gnss, Parallel::CommunicatorPtr comm);
 
     void regularizeNotUsedParameters(UInt blockStart, UInt blockCount, const std::vector<ParameterName> &parameterNames);
     void collectNormalsBlocks       (UInt blockStart, UInt blockCount);
+    void decorrelatedDesignMatrix   (GnssObservationEquation &eqn, GnssDesignMatrix &B, GnssDesignMatrix &A);
     void buildNormals               (Bool constraintsOnly, Bool solveEpochParameters);
     Double estimateSolution         (const std::function<Vector(const_MatrixSliceRef xFloat, MatrixSliceRef W, const_MatrixSliceRef d, Vector &xInt, Double &sigma)> &searchInteger,
                                      const std::vector<Byte> &ambiguityTransmitters, const std::vector<Byte> &ambiguityReceivers,
@@ -101,7 +113,7 @@ public:
   /** @brief Perform the processing steps. */
   void process(State &state);
 
-  /** @brief creates an derived instance of this class. */
+  /** @brief creates a derived instance of this class. */
   static GnssProcessingStepPtr create(Config &config, const std::string &name) {return GnssProcessingStepPtr(new GnssProcessingStep(config, name));}
 };
 
@@ -109,7 +121,7 @@ public:
 
 /** @brief Creates an instance of the class GnssProcessingStep.
 * Search for a node with @a name in the Config node.
-* if @a name is not found the function returns FALSE and @a var is untouched.
+* if @a name is not found, the function returns FALSE and @a var is untouched.
 * @param config The config node which includes the node with the options for this class
 * @param name Tag name in the config.
 * @param[out] var Created class.

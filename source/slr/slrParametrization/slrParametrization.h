@@ -69,8 +69,7 @@ See also \program{SlrProcessing}.
 * @defgroup slrParametrizationGroup SlrParametrization
 * @brief Parametrization of SLR observations.
 * @ingroup classesGroup
-* The interface is given by @ref SlrParametrization.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref SlrParametrization. */
 /// @{
 
 /***** TYPES ***********************************/

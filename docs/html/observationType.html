@@ -71,17 +71,17 @@
         <div id="content" class="container">
             
 <h1 id="observationType">Observation</h1><p>
-This class set up the oberservation equations in linearized Gauss-Makoff model
+This class sets up the observation equations in linearized Gauss-Markov model
 \[\label{gmm}
 \M l  = \M A \M x + \M e\qquad\text{and}\qquad\mathcal{C}(\M e) = \sigma^2\M P^{-1}.
-\]The observations are divided into short data blocks which can computed independently
-and so easily can be parallelized. Usually this data blocks are short arcs of a
-satellites orbit. In most cases the unknown parameter vector contains coefficients
+\]The observations are divided into short data blocks which can be computed independently
+and so easily can be parallelized. Usually these data blocks are short arcs of a
+satellite's orbit. In most cases the unknown parameter vector contains coefficients
 of a gravity field parametrization given by <a class="groops-class" href="parametrizationGravityType.html">parametrizationGravity</a>.
-Additional parameters like instrument calibrations parameters are appended at the
+Additional parameters like instrument calibration parameters are appended at the
 end of the vector $\M x$.
 It is possible to give several observation vectors in one model.</p><p>The observations within each arc are decorrelated in the following way:
-In a first step a cholesky decomposition of the covariance matrix is performed
+In a first step a Cholesky decomposition of the covariance matrix is performed
 \[
 \M P^{-1} = \M W^T\M W,
 \]where $\M W$ is an upper regular triangular matrix.
@@ -93,7 +93,7 @@ In a second step the transformation
 \bar{\M l} = \bar{\M A} \M x + \bar{\M e}
 \qquad\text{and}\qquad
 \mathcal{C}(\bar{\M e})= \sigma^2 \M I.
-\]Usually the arc depending parameters are eliminated in the next step
+\]Usually the arc dependent parameters are eliminated in the next step
 and not mentioned for the parameter names in the following.
 </p>
 
@@ -101,7 +101,7 @@ and not mentioned for the parameter names in the following.
 The observation equations for precise orbit data (POD) are formulated as variational equations.
 It is based on <a class="groops-file" href="fileFormat_variationalEquation.html">inputfileVariational</a> calculated with <a class="groops-program" href="PreprocessingVariationalEquation.html">PreprocessingVariationalEquation</a>.
 Necessary integrations are performed by integrating a moving interpolation polynomial of degree <strong class="groops-config-element">integrationDegree</strong>.</p><p>The kinematic positions as pseudo observations are taken from
-<strong class="groops-config-element">rightHandSide</strong> and should not given equally spaced in time. The observation
+<strong class="groops-config-element">rightHandSide</strong> and should not be given equally spaced in time. The observation
 equations are interpolated to these times by a moving polynomial of degree <strong class="groops-config-element">interpolationDegree</strong>.</p><p>The accuracy or the full covariance matrix of the precise orbit data is provided in
 <a class="groops-class" href="covariancePodType.html">covariancePod</a> and can be estimated with <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>.</p><p><strong class="groops-config-element">accelerateComputation</strong>: In the event that the sampling of the kinematic orbit is much higher than the sampling
 of the variational equations (e.g. 1 second vs. 5 seconds) the accumulation of the observation equations
@@ -118,8 +118,8 @@ to the sampling of the observations $\M l$ with more rows than columns. The QR d
   \begin{pmatrix} \M Q_1^T \M l \\ \M Q_2^T \M l \end{pmatrix} =
   \begin{pmatrix} \M Q_1^T \M R \\ \M 0 \end{pmatrix} \M A \M x +
   \begin{pmatrix} \M Q_1^T \M e \\ \M Q_2^T \M e \end{pmatrix}.
-\]As the zero lines should not be considered the computational time for the accumulation is reduced.
-This option is not meaningful for evaluating the residuals such in <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
+\]As the zero lines should not be considered, the computational time for the accumulation is reduced.
+This option is not meaningful for evaluating the residuals such as in <a class="groops-program" href="PreprocessingPod.html">PreprocessingPod</a>.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
 <ul>
 
 <li><code>*:&lt;parametrizationGravity>:*:*</code>,
@@ -273,11 +273,11 @@ The observation equations for precise orbit data (POD) are given by
   +\int_{t_0}^t(\dot{\M\Omega}\times\M r)\cdot \dot{\M r}\,dt
   - \int_{t_0}^t \M g_0 \cdot\dot{\M r}'\,dt
   = V + E.
-\]where the velocities of the satellite $\ddot{\M r}(t)$ are derived from
+\]where the velocities of the satellite $\dot{\M r}(t)$ are derived from
 the kinematic positions in <a class="groops-class" href="podRightSideType.html">rightHandSide</a> and the Earth's rotation vector $\M\Omega(t)$ is modeled
-within <a class="groops-class" href="earthRotationType.html">earthRotation</a>. The orbit differentation is
+within <a class="groops-class" href="earthRotationType.html">earthRotation</a>. The orbit differentiation is
 performed by a polynomial interpolation with degree <strong class="groops-config-element">interpolationDegree</strong>.
-The integrals are solved a polynomial interpolation with degree <strong class="groops-config-element">integrationDegree</strong>.
+The integrals are solved by a polynomial interpolation with degree <strong class="groops-config-element">integrationDegree</strong>.
 The reference forces $\M g_0(t)$ are computed with the background models in <a class="groops-class" href="podRightSideType.html">rightHandSide</a>.</p><p>All instrument data <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>, <a class="groops-class" href="fileFormat_instrument.html">inputfileStarCamera</a>, and <a class="groops-class" href="fileFormat_instrument.html">inputfileAccelerometer</a>
 must be synchronous and be given with a constant sampling without any gaps in each short arc
 (see <a class="groops-program" href="InstrumentSynchronize.html">InstrumentSynchronize</a>).</p><p>The unknown gravity potential $V(\M r)$ parametrized by <a class="groops-class" href="parametrizationGravityType.html">parametrizationGravity</a>
@@ -298,16 +298,16 @@ and should be a constant in theory but temporal changes might help to absorb oth
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">ephemerides</div></div></td><td><a href="ephemeridesType.html">ephemerides</a></td><td></td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrizationGravity</div></div></td><td><a href="parametrizationGravityType.html">parametrizationGravity</a></td><td>gravity field parametrization (potential)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">parametrizationBias</div></div></td><td><a href="parametrizationTemporalType.html">parametrizationTemporal</a></td><td>unknown total energy per arc</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>orbit differentation  by polynomial approximation of degree n</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">interpolationDegree</div></div></td><td>uint</td><td>orbit differentiation  by polynomial approximation of degree n</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">integrationDegree</div></div></td><td>uint</td><td>integration of forces by polynomial approximation of degree n</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">covariancePod</div></div></td><td><a href="covariancePodType.html">covariancePod</a></td><td>covariance matrix of kinematic orbits</td></tr>
 </table>
 
 <h2 id="sstVariational">SstVariational</h2><p>
 Like <a class="groops-class" href="observationType.html#podVariational">observation:podVariational</a> (see there for details)
-but with two satellites and additional satellite-to-satellite (SST) observations.</p><p>If multiple <a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a> are given
-all data are add together. So corrections in extra files like the light time correction
-can easily be added. Empirical parameters for the SST observations can be setup with
+but with two satellites and additional satellite-to-satellite (SST) observations.</p><p>If multiple <a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a> are given,
+all data are added together. So corrections in extra files like the light time correction
+can easily be added. Empirical parameters for the SST observations can be set up with
 <a class="groops-class" href="parametrizationSatelliteTrackingType.html">parametrizationSst</a>.
 The accuracy or the full covariance matrix of SST is provided in
 <a class="groops-class" href="covarianceSstType.html">covarianceSst</a>.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
@@ -378,8 +378,8 @@ The accuracy or the full covariance matrix of SST is provided in
 <h2 id="sstIntegral">SstIntegral</h2><p>
 Like <a class="groops-class" href="observationType.html#podIntegral">observation:podIntegral</a> (see there for details)
 but with two satellites and additional satellite-to-satellite (SST) observations.</p><p>If multiple <a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking</a> are given
-all data are add together. So corrections in extra files like the light time correction
-can easily be added. Empirical parameters for the SST observations can be setup with
+all data are added together. So corrections in extra files like the light time correction
+can easily be added. Empirical parameters for the SST observations can be set up with
 <a class="groops-class" href="parametrizationSatelliteTrackingType.html">parametrizationSst</a>.
 The accuracy or the full covariance matrix of SST is provided in
 <a class="groops-class" href="covarianceSstType.html">covarianceSst</a>.</p><p>The following parameters with <a class="groops-file" href="fileFormat_parameterName.html">parameter names</a> are set up:
@@ -456,11 +456,11 @@ and for each arc if <strong class="groops-config-element">keepSatelliteStates</s
 Like <a class="groops-class" href="observationType.html#sstVariational">observation:sstVariational</a> (see there for details)
 but with two simultaneous satellite-to-satellite (SST) observations.</p><p>This class reads two SST observation files (<a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking1</a> and
 <a class="groops-class" href="fileFormat_instrument.html">inputfileSatelliteTracking2</a>).
-Empirical parameters for the SST observations can be setup independently for both SST observation
+Empirical parameters for the SST observations can be set up independently for both SST observation
 types with <a class="groops-class" href="parametrizationSatelliteTrackingType.html">parametrizationSst1</a> and
 <a class="groops-class" href="parametrizationSatelliteTrackingType.html">parametrizationSst2</a>.</p><p>Both SST observation types are reduced by the same background models and the same impact
 of accelerometer measurements. The covariance matrix of the reduced observations should not consider
-the the instrument noise only (<a class="groops-class" href="covarianceSstType.html">covarianceSst1/2</a>) but must
+the instrument noise only (<a class="groops-class" href="covarianceSstType.html">covarianceSst1/2</a>) but must
 take the cross correlations <a class="groops-class" href="covarianceSstType.html">covarianceAcc</a> into account.
 The covariance matrix of the reduced observations is given by
 \[

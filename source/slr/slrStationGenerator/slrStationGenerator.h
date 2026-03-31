@@ -36,8 +36,7 @@ See also \program{SlrProcessing}.
 * @defgroup slrStationGeneratorGroup SlrStationGenerator
 * @brief Provides a list of stations.
 * @ingroup classesGroup
-* The interface is given by @ref SlrStationGenerator.
-* An Instance can be created by @ref readConfig. */
+* The interface is given by @ref SlrStationGenerator. */
 /// @{
 
 /***** TYPES ***********************************/

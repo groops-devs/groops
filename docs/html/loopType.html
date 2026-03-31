@@ -78,7 +78,7 @@ The <strong class="groops-config-element">variableLoopIndex</strong> and <strong
 The result would therefore be the same as using <a class="groops-program" href="LoopPrograms.html">LoopPrograms</a> with a nested <a class="groops-program" href="IfPrograms.html">IfPrograms</a>.</p><p>See <a class="groops-ref" href="general.loopsAndConditions.html">Loop and conditions</a> for usage.
 </p>
 
-<h2>TimeSeries</h2><p>
+<h2 id="timeSeries">TimeSeries</h2><p>
 Loop over points in time.
 </p>
 <table class="table table-hover">
@@ -90,7 +90,7 @@ Loop over points in time.
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
 </table>
 
-<h2>TimeIntervals</h2><p>
+<h2 id="timeIntervals">TimeIntervals</h2><p>
 Loop over the intervals between points in time.
 </p>
 <table class="table table-hover">
@@ -103,87 +103,76 @@ Loop over the intervals between points in time.
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
 </table>
 
-<h2 id="manualList">ManualList</h2><p>
+<h2 id="stringList">StringList</h2><p>
 Loop over list of strings.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">string</div></div></td><td>string</td><td>explicit list of strings</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">string</div></div></td><td>string</td><td>explicit list of strings</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopString</div></div></td><td>string</td><td>name of the variable to be replaced</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
 </table>
 
-<h2>ManualTable</h2><p>
-Loop over rows of a table containing strings.
-The table can be defined <strong class="groops-config-element">rowWise</strong> or <strong class="groops-config-element">columnWise</strong>.
-Each row/column must have the same number of cells.
+<h2 id="stringTable">StringTable</h2><p>
+Loop over <strong class="groops-config-element">row</strong>s of a table containing strings.
+Each row must have the same number of cells.
+For each column an extra <strong class="groops-config-element">variableLoopString</strong> can be defined.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">table</div></div></td><td>choice</td><td>define table by rows/columns</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">rowWise</div></div></td><td>sequence</td><td>define table by rows</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset-unbounded">row</div></div></td><td>sequence</td><td>define table by rows</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset-unbounded">cell</div></div></td><td>string</td><td>explicit list of cells in row/column</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">columnWise</div></div></td><td>sequence</td><td>define table by columns</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset-unbounded">column</div></div></td><td>sequence</td><td>define table by columns</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset-unbounded">cell</div></div></td><td>string</td><td>explicit list of cells in row/column</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional-unbounded">row</div></div></td><td>sequence</td><td>rows of a table</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset-unbounded">cell</div></div></td><td>string</td><td>list of columns in a row</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">transpose</div></div></td><td>boolean</td><td>loop over columns instead of rows</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">variableLoopString</div></div></td><td>string</td><td>1. variable name for the 1. column, next variable name for the 2. column, ... </td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
 </table>
 
-<h2>FileAscii</h2><p>
-Loop over list of strings from files.
+<h2 id="fileStringList">FileStringList</h2><p>
+Loop over list of strings from <a class="groops-file" href="fileFormat_stringList.html">files</a>.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td>simple ASCII file with strings (separated by whitespace)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sort</div></div></td><td>boolean</td><td>sort entries alphabetically (ascending)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">removeDuplicates</div></div></td><td>boolean</td><td>remove duplicate entries (order is preserved)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startIndex</div></div></td><td>uint</td><td>start at element startIndex (counting from 0)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">count</div></div></td><td>uint</td><td>use count elements (default: use all)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td>string list file</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopString</div></div></td><td>string</td><td>name of the variable to be replaced</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
 </table>
 
-<h2>FileAsciiTable</h2><p>
-Loop over rows of a table containing strings.
+<h2 id="fileStringTable">FileStringTable</h2><p>
+Loop over rows of a <a class="groops-file" href="fileFormat_stringTable.html">table</a> containing strings.
 Each row must have the same number of columns.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td>simple ASCII file with multiple columns (separated by whitespace)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startLine</div></div></td><td>uint</td><td>start at line startLine (counting from 0)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">countLines</div></div></td><td>uint</td><td>read count lines (default: all)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">variableLoopString</div></div></td><td>string</td><td>1. variable name for the 1. column, next variable name for the 2. column, ... </td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td>string table file with multiple columns</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">transpose</div></div></td><td>boolean</td><td>loop over columns instead of rows</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">variableLoopString</div></div></td><td>string</td><td>1. variable name for the 1. column, next variable name for the 2. column, ... </td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
 </table>
 
-<h2>FileLines</h2><p>
+<h2 id="fileTextLines">FileTextLines</h2><p>
 Loop over lines of a text file.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td>simple ASCII file with lines</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sort</div></div></td><td>boolean</td><td>sort lines alphabetically (ascending)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">removeDuplicates</div></div></td><td>boolean</td><td>remove duplicate lines (order is preserved)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">inputfile</div></div></td><td>filename</td><td>simple text file with lines</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">startIndex</div></div></td><td>uint</td><td>start at element startIndex (counting from 0)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">count</div></div></td><td>uint</td><td>use number of lines only (default: use all)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">count</div></div></td><td>uint</td><td>use number of loops only (default: use all)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopLine</div></div></td><td>string</td><td>name of the variable to be replaced</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
 <tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
 </table>
 
-<h2>Matrix</h2><p>
-Loop over rows of a matrix. To define the loop variables the standard
+<h2 id="matrix">Matrix</h2><p>
+Loop over rows of a <a class="groops-file" href="fileFormat_matrix.html">matrix</a>. To define the loop variables the standard
 data variables of the matrix are available, see <a class="groops-ref" href="general.parser.html#dataVariables">dataVariables</a>.
 </p>
 <table class="table table-hover">
@@ -198,7 +187,7 @@ data variables of the matrix are available, see <a class="groops-ref" href="gene
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
 </table>
 
-<h2>UniformSampling</h2><p>
+<h2 id="numberSequence">NumberSequence</h2><p>
 Loop over sequence of numbers.
 </p>
 <table class="table table-hover">
@@ -239,16 +228,6 @@ Loop over lines of command output.
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
 </table>
 
-<h2 id="loop">Loop</h2><p>
-Loop over nested loops. First <strong class="groops-config-element">loop</strong> is outermost loop, every subsequent <strong class="groops-config-element">loop</strong> is one level below the previous <strong class="groops-config-element">loop</strong>.
-</p>
-<table class="table table-hover">
-<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">loop</div></div></td><td><a href="loopType.html">loop</a></td><td>subloop</td></tr>
-<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
-<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
-</table>
-
 <h2 id="platformEquipment">PlatformEquipment</h2><p>
 Loop over specific equipment of a <a class="groops-file" href="fileFormat_platform.html">platform file</a>.
 </p>
@@ -276,8 +255,56 @@ Loop over specific equipment of a <a class="groops-file" href="fileFormat_platfo
 <tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
 </table>
 
+<h2 id="loop">Loop</h2><p>
+Loop over nested loops. First <strong class="groops-config-element">loop</strong> is outermost loop, every subsequent <strong class="groops-config-element">loop</strong> is one level below the previous <strong class="groops-config-element">loop</strong>.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">loop</div></div></td><td><a href="loopType.html">loop</a></td><td>subloop</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
+</table>
+
+<h2 id="sortAndRemoveDuplicates">SortAndRemoveDuplicates</h2><p>
+Perform the <a class="groops-class" href="loopType.html">loop</a> in the alphabetically
+order defined by the evaluated <strong class="groops-config-element">sortString</strong> for each loop step.
+So the string must contain loop variables. If <strong class="groops-config-element">sortString</strong>
+is empty, no sorting will take place.</p><p>Example: The <strong class="groops-config-element">sortString</strong>=<code>{loopTime:%m}</code> of a time series
+sorts the times in ascending order by month.</p><p>The same principle is used to remove duplicates. If different loop steps
+evaluates <strong class="groops-config-element">removeDuplicatesString</strong> to the same string,
+only the first loop step is executed.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">loop</div></div></td><td><a href="loopType.html">loop</a></td><td></td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">sortString</div></div></td><td>string</td><td>use {loopVariables}, sort alphabetically</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">descending</div></div></td><td>boolean</td><td>sorting descending instead of ascending</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">removeDuplicatesString</div></div></td><td>string</td><td>use {loopVariables}, remove duplicates (order is preserved)</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
+</table>
+
+<h2>ManualTable</h2><p>
+DEPRECATED since 2025-09-27. Use LoopStringTable instead.
+</p>
+<table class="table table-hover">
+<tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset">table</div></div></td><td>choice</td><td>define table by rows/columns</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">rowWise</div></div></td><td>sequence</td><td>define table by rows</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset-unbounded">row</div></div></td><td>sequence</td><td>define table by rows</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset-unbounded">cell</div></div></td><td>string</td><td>explicit list of cells in row/column</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-1"><div class="h-100 config mustset">columnWise</div></div></td><td>sequence</td><td>define table by columns</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-2"><div class="h-100 config mustset-unbounded">column</div></div></td><td>sequence</td><td>define table by columns</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-3"><div class="h-100 config mustset-unbounded">cell</div></div></td><td>string</td><td>explicit list of cells in row/column</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config mustset-unbounded">variableLoopString</div></div></td><td>string</td><td>1. variable name for the 1. column, next variable name for the 2. column, ... </td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopIndex</div></div></td><td>string</td><td>variable with index of current iteration (starts with zero)</td></tr>
+<tr class=""><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">variableLoopCount</div></div></td><td>string</td><td>variable with total number of iterations</td></tr>
+<tr class="table-light"><td class="m-0"><div class="h-100 config-tree depth-0"><div class="h-100 config optional">condition</div></div></td><td><a href="conditionType.html">condition</a></td><td>check before each loop step</td></tr>
+</table>
+
 <h2>FileGnssStationInfo</h2><p>
-DEPRECATDED. Use LoopPlatformEquipment instead.
+DEPRECATED since 2022-11-11. Use LoopPlatformEquipment instead.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

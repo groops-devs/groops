@@ -71,19 +71,19 @@
         <div id="content" class="container">
             <h1>PreprocessingVariationalEquation</h1><p>
 
-This program integrates an orbit dynamically using the given forces and setup the state transition matrix
-for each time step. These are the prerequisite for a least squares adjustement (e.g. gravity field determination) using
-the variational equation approach. The variational equations are computed arc wise as defined by <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>.
-This means for each arc new initial state parameters are setup.</p><p>In a first step the <a class="groops-class" href="forcesType.html">forces</a> acting on the satellite are evaluated at the apriori positions given
-by <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>. Non-conservative forces like solar radiation pressure needs the orientation of the
-satellite (<a class="groops-class" href="fileFormat_instrument.html">inputfileStarCamera</a>) and additional a satellite macro model (<strong class="groops-config-element">satelliteModel</strong>)
-with the surface properties. Furthermore <a class="groops-class" href="fileFormat_instrument.html">inputfileAccelerometer</a> observations are also considered.</p><p>In a second step the accelerations are integrated twice to an dynamic orbit using a moving polynomial with the degree
+This program integrates an orbit dynamically using the given forces and set up the state transition matrix
+for each time step. These are the prerequisites for a least squares adjustment (e.g. gravity field determination) using
+the variational equation approach. The variational equations are computed arc-wise as defined by <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>.
+This means for each arc new initial state parameters are set up.</p><p>In a first step the <a class="groops-class" href="forcesType.html">forces</a> acting on the satellite are evaluated at the apriori positions given
+by <a class="groops-class" href="fileFormat_instrument.html">inputfileOrbit</a>. Non-conservative forces like solar radiation pressure need the orientation of the
+satellite (<a class="groops-class" href="fileFormat_instrument.html">inputfileStarCamera</a>) and additionally, a satellite macro model (<strong class="groops-config-element">satelliteModel</strong>)
+with the surface properties. Furthermore <a class="groops-class" href="fileFormat_instrument.html">inputfileAccelerometer</a> observations are also considered.</p><p>In a second step the accelerations are integrated twice to a dynamic orbit using a moving polynomial with the degree
 <strong class="groops-config-element">integrationDegree</strong>. The orbit is corrected to be self-consistent. This means the forces should be evaluated
 at the new integrated positions instead of the apriori ones. This correction is computed in a linear approximation
 using the gradient of the forces with respect to the positions (<strong class="groops-config-element">gradientfield</strong>). As this term is small generally
-only the largest force components has to be considered. A low degree spherical harmonic expansion of the static gravity
+only the largest force components have to be considered. A low degree spherical harmonic expansion of the static gravity
 field (about up to degree 5) is sufficient in almost all cases. In this step also the state transition matrix (the partial
-derivatices of the current state, position and velocity) with respect to the initial state is computed.
+derivatives of the current state, position and velocity) with respect to the initial state is computed.
 The integrated orbit together with the state transitions are stored in <a class="groops-class" href="fileFormat_variationalEquation.html">outputfileVariational</a>,
 the integrated orbit only in <a class="groops-class" href="fileFormat_instrument.html">outputfileOrbit</a>.</p><p>To improve the numerical stability a reference ellipse can be reduced beforehand using Enke's method (<strong class="groops-config-element">useEnke</strong>).
 Mathematically the result is the same, but as the large central term is removed before and restored

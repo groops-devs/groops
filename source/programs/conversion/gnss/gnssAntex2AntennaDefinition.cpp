@@ -15,8 +15,10 @@
 #define DOCSTRING docstring
 static const char *docstring = R"(
 Converts metadata and antenna definitions from the \href{https://files.igs.org/pub/data/format/antex14.txt}{IGS ANTEX format}.
-to \configFile{transmitterInfo}{platform}, \configFile{antennaDefinition}{gnssAntennaDefinition}, \configFile{svnBlockTable}{stringTable},
-and \configFile{transmitterList}{stringList} files for the respective GNSS and for the list of ground station antennas.
+to \configFile{antennaDefinition}{gnssAntennaDefinition}, \configFile{transmitterInfo}{platform}, and
+\configFile{transmitterList}{stringList} files for the respective GNSS and for the list of ground station antennas.
+
+The \file{transmitterInfo}{platform} files for GLONASS satellites should then be updated using \program{GnssGlonassFrequencyNumberUpdate}.
 )";
 
 /***********************************************/
@@ -35,13 +37,9 @@ class GnssAntex2AntennaDefinition
 {
   Bool getLine(InFile &file, std::string &line, std::string &label, Bool throwException=FALSE) const;
   Bool testLabel(const std::string &labelInLine, const std::string &label, Bool optional=FALSE) const;
+  static Bool equal(GnssAntennaDefinitionPtr antenna, GnssAntennaDefinitionPtr antenna2);
+  void addAntenna(GnssAntennaDefinitionPtr antenna, std::vector<GnssAntennaDefinitionPtr> &antennaList);
   void addTransmitter(const PlatformGnssAntenna &platformAntenna, const std::string &markerName, const std::string &markerNumber, std::vector<Platform> &transmitterList);
-  void addAntenna(const GnssAntennaDefinitionPtr &antenna, std::vector<GnssAntennaDefinitionPtr> &antennaList);
-
-  enum Type
-  {
-    OTHER, STATION, GPS, GLONASS, GALILEO, BEIDOU, QZSS
-  };
 
 public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
@@ -55,40 +53,34 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
 {
   try
   {
-    FileName outFileNameAntennaStation, outFileNameAntennaTransmitter;
-    FileName outFileNameTransmitterInfo;
-    FileName outFileNameSvnBlockTableGps, outFileNameSvnBlockTableGlonass, outFileNameSvnBlockTableGalileo, outFileNameSvnBlockTableBeiDou, outFileNameSvnBlockTableQzss;
-    FileName outFileNameTransmitterListGps, outFileNameTransmitterListGlonass, outFileNameTransmitterListGalileo, outFileNameTransmitterListBeiDou, outFileNameTransmitterListQzss;
-    FileName inFileName;
+    FileName fileNameAntennaStation, fileNameAntennaTransmitter, fileNameTransmitterInfo;
+    FileName fileNameTransmitterListGps, fileNameTransmitterListGlonass, fileNameTransmitterListGalileo;
+    FileName fileNameTransmitterListBeiDou, fileNameTransmitterListQzss, fileNameTransmitterListIrnss;
+    FileName fileNameAntex;
     Time     timeStart;
     Bool     setZero;
 
-    readConfig(config, "outputfileAntennaDefinitionStation",      outFileNameAntennaStation,         Config::OPTIONAL, "",  "antenna center variations");
-    readConfig(config, "outputfileAntennaDefinitionTransmitter",  outFileNameAntennaTransmitter,     Config::OPTIONAL, "",  "antenna center variations");
-    readConfig(config, "outputfileTransmitterInfo",               outFileNameTransmitterInfo,        Config::OPTIONAL, "",  "PRN is appended to file name");
-    readConfig(config, "outputfileSvnBlockTableGps",              outFileNameSvnBlockTableGps,       Config::OPTIONAL, "",  "SVN to satellite block mapping");
-    readConfig(config, "outputfileSvnBlockTableGlonass",          outFileNameSvnBlockTableGlonass,   Config::OPTIONAL, "",  "SVN to satellite block mapping");
-    readConfig(config, "outputfileSvnBlockTableGalileo",          outFileNameSvnBlockTableGalileo,   Config::OPTIONAL, "",  "SVN to satellite block mapping");
-    readConfig(config, "outputfileSvnBlockTableBeiDou",           outFileNameSvnBlockTableBeiDou,    Config::OPTIONAL, "",  "SVN to satellite block mapping");
-    readConfig(config, "outputfileSvnBlockTableQzss",             outFileNameSvnBlockTableQzss,      Config::OPTIONAL, "",  "SVN to satellite block mapping");
-    readConfig(config, "outputfileTransmitterListGps",            outFileNameTransmitterListGps,     Config::OPTIONAL, "",  "list of PRNs");
-    readConfig(config, "outputfileTransmitterListGlonass",        outFileNameTransmitterListGlonass, Config::OPTIONAL, "",  "list of PRNs");
-    readConfig(config, "outputfileTransmitterListGalileo",        outFileNameTransmitterListGalileo, Config::OPTIONAL, "",  "list of PRNs");
-    readConfig(config, "outputfileTransmitterListBeiDou",         outFileNameTransmitterListBeiDou,  Config::OPTIONAL, "",  "list of PRNs");
-    readConfig(config, "outputfileTransmitterListQzss",           outFileNameTransmitterListQzss,    Config::OPTIONAL, "",  "list of PRNs");
-    readConfig(config, "inputfileAntex",                          inFileName,                        Config::MUSTSET,  "", "");
-    readConfig(config, "timeStart",                               timeStart,                         Config::OPTIONAL, "",  "ignore older antenna definitions");
-    readConfig(config, "createZeroModel",                         setZero,                           Config::DEFAULT,  "0", "create empty antenna patterns");
+    readConfig(config, "outputfileAntennaDefinitionStation",     fileNameAntennaStation,         Config::OPTIONAL, "",  "antenna center variations");
+    readConfig(config, "outputfileAntennaDefinitionTransmitter", fileNameAntennaTransmitter,     Config::OPTIONAL, "",  "antenna center variations");
+    readConfig(config, "outputfileTransmitterInfo",              fileNameTransmitterInfo,        Config::OPTIONAL, "",  "PRN is appended to file name");
+    readConfig(config, "outputfileTransmitterListGps",           fileNameTransmitterListGps,     Config::OPTIONAL, "",  "list of PRNs");
+    readConfig(config, "outputfileTransmitterListGlonass",       fileNameTransmitterListGlonass, Config::OPTIONAL, "",  "list of PRNs");
+    readConfig(config, "outputfileTransmitterListGalileo",       fileNameTransmitterListGalileo, Config::OPTIONAL, "",  "list of PRNs");
+    readConfig(config, "outputfileTransmitterListBeiDou",        fileNameTransmitterListBeiDou,  Config::OPTIONAL, "",  "list of PRNs");
+    readConfig(config, "outputfileTransmitterListQzss",          fileNameTransmitterListQzss,    Config::OPTIONAL, "",  "list of PRNs");
+    readConfig(config, "outputfileTransmitterListIrnss",         fileNameTransmitterListIrnss,   Config::OPTIONAL, "",  "list of PRNs");
+    readConfig(config, "inputfileAntex",                         fileNameAntex,                  Config::MUSTSET,  "", "");
+    readConfig(config, "timeStart",                              timeStart,                      Config::OPTIONAL, "",  "ignore older antenna definitions");
+    readConfig(config, "createZeroModel",                        setZero,                        Config::DEFAULT,  "0", "create empty antenna patterns");
     if(isCreateSchema(config)) return;
 
     // ==============================
 
-    std::vector<GnssAntennaDefinitionPtr> antennaListStation, antennaListGps, antennaListGlonass, antennaListGalileo, antennaListBeiDou, antennaListQzss;
-    std::vector<Platform>                 transmitterListGps, transmitterListGlonass, transmitterListGalileo, transmitterListBeiDou, transmitterListQzss;
+    std::vector<PlatformGnssAntenna> antennaInfos;
 
     // Open file
     // ---------
-    InFile file(inFileName);
+    InFile file(fileNameAntex);
     file.exceptions(std::ios::badbit|std::ios::failbit);
 
     // Read Header
@@ -104,34 +96,37 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
     // ---------
     for(;;)
     {
-      std::string atxSVN, atxCOSPAR;
-      PlatformGnssAntenna antennaInfo;
+      PlatformGnssAntenna      antennaInfo;
+      GnssAntennaDefinitionPtr antenna = GnssAntennaDefinitionPtr(new GnssAntennaDefinition);
+      antennaInfo.antennaDef = antenna;
 
       if(!getLine(file, line, label, FALSE))
         break;
       testLabel(label, "START OF ANTENNA");
       getLine(file, line, label);
 
+      // BLOCK IIA           G01                 G032      1992-079A TYPE / SERIAL NO
+      // JAVRINGANT_DMT  SCIS                                        TYPE / SERIAL NO
       testLabel(label, "TYPE / SERIAL NO");
-      antennaInfo.name   = String::trim(line.substr( 0,16));
-      antennaInfo.radome = String::trim(line.substr(16,4));
-      if(antennaInfo.radome == "NONE")
-        antennaInfo.radome.clear();
-      antennaInfo.serial = String::trim(line.substr(20,20));
-      atxSVN    = String::trim(line.substr(40,10));
-      atxCOSPAR = String::trim(line.substr(50,10));
-      getLine(file, line, label);
+      antenna->name   = String::trim(line.substr( 0,16));
+      antenna->radome = String::trim(line.substr(16,4));
+      if(antenna->radome == "NONE")
+        antenna->radome.clear();
+      antenna->serial    = String::trim(line.substr(20,20));
+      antennaInfo.serial = String::trim(line.substr(40,10)); // SVN
+      antennaInfo.radome = String::trim(line.substr(50,10)); // COSPAR
 
+      getLine(file, line, label);
       testLabel(label, "METH / BY / # / DATE");
-      getLine(file, line, label);
 
+      getLine(file, line, label);
       testLabel(label, "DAZI");
       UInt azimutCount = 0;
       Double dazi = String::toDouble(line.substr(2, 6));
       if(dazi!=0)
         azimutCount = static_cast<UInt>(360./dazi);
-      getLine(file, line, label);
 
+      getLine(file, line, label);
       testLabel(label, "ZEN1 / ZEN2 / DZEN");
       Double zen1 = String::toDouble(line.substr(2, 6));
       Double zen2 = String::toDouble(line.substr(8, 6));
@@ -153,7 +148,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         day   = String::toInt(line.substr(12, 6));
         hour  = String::toInt(line.substr(18, 6));
         min   = String::toInt(line.substr(24, 6));
-        sec   = String::toDouble(line.substr(33, 43));
+        sec   = String::toDouble(line.substr(33, 13));
         antennaInfo.timeStart = date2time(year, month, day, hour, min, sec);
         getLine(file, line, label);
       }
@@ -167,7 +162,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         day   = String::toInt(line.substr(12, 6));
         hour  = String::toInt(line.substr(18, 6));
         min   = String::toInt(line.substr(24, 6));
-        sec   = String::toDouble(line.substr(33, 43));
+        sec   = String::toDouble(line.substr(33, 13));
         if(sec >= 59)
           sec = 60; // to prevent gaps, since VALID UNTIL is inclusive in ANTEX but timeEnd is exclusive in GROOPS
         antennaInfo.timeEnd = date2time(year, month, day, hour, min, sec);
@@ -181,9 +176,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         getLine(file, line, label);
         while (testLabel(label, "SINEX CODE", TRUE))
         {
-          logWarning<<"Multiple lines with <SINEX CODE> detected for antenna "
-                    <<antennaInfo.name<<" "<<antennaInfo.serial<<" "<<atxSVN
-                    <<Log::endl;
+          logWarning<<"Multiple lines with <SINEX CODE> detected for antenna "<<antenna->name<<" "<<antenna->serial<<" "<<antennaInfo.serial<<Log::endl;
           getLine(file, line, label);
         }
       }
@@ -196,8 +189,6 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         getLine(file, line, label);
       }
 
-      GnssAntennaDefinitionPtr antenna = GnssAntennaDefinitionPtr(new GnssAntennaDefinition);
-      antennaInfo.antennaDef = antenna;
       antenna->patterns.resize(freqCount);
 
       for(UInt i=0; i<freqCount; i++)
@@ -239,6 +230,7 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
         Double x = String::toDouble(line.substr(0, 10));
         Double y = String::toDouble(line.substr(10, 10));
         Double z = String::toDouble(line.substr(20, 10));
+        // from millimeters to meters
         if(!setZero) antenna->patterns.at(i).offset = 1e-3 * Vector3d(x,y,z);
 
         antenna->patterns.at(i).dZenit  = Angle(dzen*DEG2RAD);
@@ -279,132 +271,122 @@ void GnssAntex2AntennaDefinition::run(Config &config, Parallel::CommunicatorPtr 
       }
       testLabel(label, "END OF ANTENNA");
 
-      if(antennaInfo.timeEnd != date2time(2500,1,1,0,0,0) && antennaInfo.timeEnd <= timeStart)
-        continue;
+      if((antennaInfo.timeEnd == date2time(2500,1,1,0,0,0)) || (antennaInfo.timeEnd > timeStart))
+        antennaInfos.push_back(antennaInfo);
+    } // for(antenna section)
 
-      Type type = OTHER;
-      if(antennaInfo.name.find("BLOCK")   != std::string::npos) type = GPS;
-      if(antennaInfo.name.find("GLONASS") != std::string::npos) type = GLONASS;
-      if(antennaInfo.name.find("GALILEO") != std::string::npos) type = GALILEO;
-      if(antennaInfo.name.find("BEIDOU")  != std::string::npos) type = BEIDOU;
-      if(antennaInfo.name.find("QZSS")    != std::string::npos) type = QZSS;
-      if(antennaInfo.timeStart == Time() && antennaInfo.timeEnd == date2time(2500,1,1,0,0,0)) type = STATION;
+    // ==============================
 
-      // GNSS satellite? ==> create transmitter info
-      if(type == GPS || type == GLONASS || type == GALILEO || type == BEIDOU || type == QZSS)
+    // Satellites: Shift mean antenna offsets to PlatformEquipment::position
+    // ---------------------------------------------------------------------
+    for(auto &antennaInfo : antennaInfos)
+      if(!antennaInfo.serial.empty()) // with SVN
       {
-        std::string prn = antennaInfo.serial;
-        antennaInfo.serial = atxSVN;
-        antennaInfo.radome = atxCOSPAR;
-
         // transformation to left-handed antenna system
         antennaInfo.local2antennaFrame = flipY() * rotaryZ(Angle(PI/2));
 
-        // shift from GnssAntennaPattern::offset to GnssAntennaInfo::position
+        // set the PlatformEquipment::position as the mean of offsets of all patterns
+        auto antenna = antennaInfo.antennaDef;
         for(UInt i=0; i<antenna->patterns.size(); i++)
           antennaInfo.position += (1./antenna->patterns.size()) * antenna->patterns.at(i).offset;
+        // shift the origin of offsets from the reference point (CoM) to PlatformEquipment::position
         for(UInt i=0; i<antenna->patterns.size(); i++)
           antenna->patterns.at(i).offset = antennaInfo.local2antennaFrame.transform(antenna->patterns.at(i).offset - antennaInfo.position);
-
-        if(type == GPS)     addTransmitter(antennaInfo, "GPS",     prn, transmitterListGps);
-        if(type == GLONASS) addTransmitter(antennaInfo, "GLONASS", prn, transmitterListGlonass);
-        if(type == GALILEO) addTransmitter(antennaInfo, "GALILEO", prn, transmitterListGalileo);
-        if(type == BEIDOU)  addTransmitter(antennaInfo, "BEIDOU",  prn, transmitterListBeiDou);
-        if(type == QZSS)    addTransmitter(antennaInfo, "QZSS",    prn, transmitterListQzss);
       }
 
-      antenna->name    = antennaInfo.name;
-      antenna->serial  = antennaInfo.serial;
-      antenna->radome  = antennaInfo.radome;
-      antenna->comment = antennaInfo.comment;
+    // ==============================
 
-      if(type == STATION) addAntenna(antenna, antennaListStation);
-      if(type == GPS)     addAntenna(antenna, antennaListGps);
-      if(type == GLONASS) addAntenna(antenna, antennaListGlonass);
-      if(type == GALILEO) addAntenna(antenna, antennaListGalileo);
-      if(type == BEIDOU)  addAntenna(antenna, antennaListBeiDou);
-      if(type == QZSS)    addAntenna(antenna, antennaListQzss);
-    } // for(antenna section)
+    // Distinguish between different antennas for the same SVN by using different radome names
+    // ---------------------------------------------------------------------------------------
+    // sort SVNs, timeStart
+    std::stable_sort(antennaInfos.begin(), antennaInfos.end(), [](auto &a1, auto &a2) {return (a1.serial != a2.serial) ? (a1.serial < a2.serial) : (a1.timeEnd < a2.timeEnd);});
+
+    for(UInt i=antennaInfos.size()-1; i-->0;)
+      if(!antennaInfos.at(i).serial.empty() && (antennaInfos.at(i).serial == antennaInfos.at(i+1).serial)) // with same SVN as before
+      {
+        if(equal(antennaInfos.at(i).antennaDef, antennaInfos.at(i+1).antennaDef))
+          antennaInfos.at(i).radome = antennaInfos.at(i+1).radome; // copy COSPAR + valid until
+        else
+          antennaInfos.at(i).radome = antennaInfos.at(i).radome.substr(0, 9)+" (valid unil "s+antennaInfos.at(i).timeEnd.dateTimeStr()+")"s;
+      }
+
+    // ==============================
+
+    std::vector<GnssAntennaDefinitionPtr> antennaListStation, antennaListTransmitter;
+    std::vector<Platform>                 transmitterList;
+
+    for(auto &antennaInfo : antennaInfos)
+    {
+      auto antenna = antennaInfo.antennaDef;
+
+      if(!antennaInfo.serial.empty()) // satellites with SVN
+      {
+        // Satellites
+        std::string prn  = antenna->serial;
+        antenna->serial  = antennaInfo.serial; // SVN;
+        antenna->radome  = antennaInfo.radome; // COSPAR;
+        antennaInfo.name = antenna->name;      // BLOCK name
+        addAntenna(antenna, antennaListTransmitter);
+
+        if     (antenna->name.find("BLOCK")   != std::string::npos) addTransmitter(antennaInfo, "GPS",     prn, transmitterList);
+        else if(antenna->name.find("GLONASS") != std::string::npos) addTransmitter(antennaInfo, "GLONASS", prn, transmitterList);
+        else if(antenna->name.find("GALILEO") != std::string::npos) addTransmitter(antennaInfo, "GALILEO", prn, transmitterList);
+        else if(antenna->name.find("BEIDOU")  != std::string::npos) addTransmitter(antennaInfo, "BEIDOU",  prn, transmitterList);
+        else if(antenna->name.find("QZSS")    != std::string::npos) addTransmitter(antennaInfo, "QZSS",    prn, transmitterList);
+        else if(antenna->name.find("IRNSS")   != std::string::npos) addTransmitter(antennaInfo, "IRNSS",   prn, transmitterList);
+        else
+          logWarning<<"Unknown satellite: "<<prn<<" "<<antenna->serial<<" ("<<antenna->name<<", "<<antenna->radome<<")"<<Log::endl;
+      }
+      else if(antennaInfo.timeStart == Time() && antennaInfo.timeEnd == date2time(2500,1,1,0,0,0)) // stations
+      {
+        addAntenna(antenna, antennaListStation);
+      }
+      else
+        logWarning<<"antenna '"<<antenna->name<<"."<<antenna->serial<<"."<<antenna->radome<<"' with validity period -> skipped"<<Log::endl;
+    }
 
     // ==============================
 
     // save
     // ----
-    auto writeAntenna = [] (const FileName &outFileNameAntenna, const std::vector<GnssAntennaDefinitionPtr> &antennaList)
+    if(!fileNameAntennaStation.empty() && antennaListStation.size())
     {
-      if(!outFileNameAntenna.empty() && antennaList.size())
-      {
-        logStatus<<"save antennas to <"<<outFileNameAntenna<<">"<< Log::endl;
-        writeFileGnssAntennaDefinition(outFileNameAntenna, antennaList);
-      }
-    };
+      logStatus<<"save antennas to <"<<fileNameAntennaStation<<">"<< Log::endl;
+      writeFileGnssAntennaDefinition(fileNameAntennaStation, antennaListStation);
+    }
 
-    // sort GPS antenna list according to SVN number (ascending)
-    std::sort(antennaListGps.begin(), antennaListGps.end(), [](GnssAntennaDefinitionPtr a, GnssAntennaDefinitionPtr b) {return std::stoi(a->serial.substr(1,3)) < std::stoi(b->serial.substr(1,3));});
-
-    writeAntenna(outFileNameAntennaStation, antennaListStation);
-    std::vector<GnssAntennaDefinitionPtr> antennaListTransmitter;
-    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListGps.begin(),     antennaListGps.end());
-    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListGlonass.begin(), antennaListGlonass.end());
-    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListGalileo.begin(), antennaListGalileo.end());
-    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListBeiDou.begin(),  antennaListBeiDou.end());
-    antennaListTransmitter.insert(antennaListTransmitter.end(), antennaListQzss.begin(),    antennaListQzss.end());
-    writeAntenna(outFileNameAntennaTransmitter, antennaListTransmitter);
-
-    auto writeTransmitterInfo = [] (const FileName &outFileNameTransmitterInfo, const std::vector<Platform> &transmitterList)
+    if(!fileNameAntennaTransmitter.empty() && antennaListTransmitter.size())
     {
-      if(!outFileNameTransmitterInfo.empty() && transmitterList.size())
-      {
-        logStatus<<"save transmitter info to <"<<outFileNameTransmitterInfo<<">"<< Log::endl;
-        for(const auto &transmitter : transmitterList)
-          writeFilePlatform(outFileNameTransmitterInfo.appendBaseName("."+transmitter.markerNumber), transmitter);
-      }
-    };
+      logStatus<<"save antennas to <"<<fileNameAntennaTransmitter<<">"<< Log::endl;
+      writeFileGnssAntennaDefinition(fileNameAntennaTransmitter, antennaListTransmitter);
+    }
 
-    std::vector<Platform> transmitterList;
-    transmitterList.insert(transmitterList.end(), transmitterListGps.begin(),     transmitterListGps.end());
-    transmitterList.insert(transmitterList.end(), transmitterListGlonass.begin(), transmitterListGlonass.end());
-    transmitterList.insert(transmitterList.end(), transmitterListGalileo.begin(), transmitterListGalileo.end());
-    transmitterList.insert(transmitterList.end(), transmitterListBeiDou.begin(),  transmitterListBeiDou.end());
-    transmitterList.insert(transmitterList.end(), transmitterListQzss.begin(),    transmitterListQzss.end());
-    writeTransmitterInfo(outFileNameTransmitterInfo, transmitterList);
-
-    auto writeSvnBlockTable = [] (const FileName &outFileNameSvnBlockTable, const std::vector<GnssAntennaDefinitionPtr> &antennaList)
+    if(!fileNameTransmitterInfo.empty() && transmitterList.size())
     {
-      if(!outFileNameSvnBlockTable.empty() && antennaList.size())
-      {
-        logStatus<<"save SVN-to-block table to <"<<outFileNameSvnBlockTable<<">"<< Log::endl;
-        std::vector<std::vector<std::string>> table;
-        for(const auto &antenna : antennaList)
-           table.push_back({antenna->serial, antenna->name});
-        std::sort(table.begin(), table.end(), [](const std::vector<std::string> &a, const std::vector<std::string> &b){ return a.at(0) < b.at(0); });
-        writeFileStringTable(outFileNameSvnBlockTable, table);
-      }
-    };
+      logStatus<<"save transmitter info to <"<<fileNameTransmitterInfo<<">"<< Log::endl;
+      for(const auto &transmitter : transmitterList)
+        writeFilePlatform(fileNameTransmitterInfo.appendBaseName("."+transmitter.markerNumber), transmitter);
+    }
 
-    writeSvnBlockTable(outFileNameSvnBlockTableGps,     antennaListGps);
-    writeSvnBlockTable(outFileNameSvnBlockTableGlonass, antennaListGlonass);
-    writeSvnBlockTable(outFileNameSvnBlockTableGalileo, antennaListGalileo);
-    writeSvnBlockTable(outFileNameSvnBlockTableBeiDou,  antennaListBeiDou);
-    writeSvnBlockTable(outFileNameSvnBlockTableQzss,    antennaListQzss);
-
-    auto writeTransmitterList = [] (const FileName &outFileNameTransmitterList, const std::vector<Platform> &transmitterList)
+    auto writeTransmitterList = [&](const FileName &fileNameTransmitterList, const std::string &markerName)
     {
-      if(!outFileNameTransmitterList.empty() && transmitterList.size())
+      if(!fileNameTransmitterList.empty() && transmitterList.size())
       {
-        logStatus<<"save transmitter list to <"<<outFileNameTransmitterList<<">"<< Log::endl;
+        logStatus<<"save transmitter list to <"<<fileNameTransmitterList<<">"<< Log::endl;
         std::set<std::string> list;
         for(const auto &transmitter : transmitterList)
-          list.insert(transmitter.markerNumber);
-        writeFileStringList(outFileNameTransmitterList, std::vector<std::string>(list.begin(), list.end()));
+          if(transmitter.markerName == markerName)
+            list.insert(transmitter.markerNumber);
+        writeFileStringList(fileNameTransmitterList, std::vector<std::string>(list.begin(), list.end()));
       }
     };
 
-    writeTransmitterList(outFileNameTransmitterListGps,     transmitterListGps);
-    writeTransmitterList(outFileNameTransmitterListGlonass, transmitterListGlonass);
-    writeTransmitterList(outFileNameTransmitterListGalileo, transmitterListGalileo);
-    writeTransmitterList(outFileNameTransmitterListBeiDou,  transmitterListBeiDou);
-    writeTransmitterList(outFileNameTransmitterListQzss,    transmitterListQzss);
+    writeTransmitterList(fileNameTransmitterListGps,     "GPS");
+    writeTransmitterList(fileNameTransmitterListGlonass, "GLONASS");
+    writeTransmitterList(fileNameTransmitterListGalileo, "GALILEO");
+    writeTransmitterList(fileNameTransmitterListBeiDou,  "BEIDOU");
+    writeTransmitterList(fileNameTransmitterListQzss,    "QZSS");
+    writeTransmitterList(fileNameTransmitterListIrnss,   "IRNSS");
   }
   catch(std::exception &e)
   {
@@ -449,31 +431,24 @@ Bool GnssAntex2AntennaDefinition::testLabel(const std::string &labelInLine, cons
 
 /***********************************************/
 
-void GnssAntex2AntennaDefinition::addTransmitter(const PlatformGnssAntenna &antennaInfo, const std::string &markerName, const std::string &markerNumber, std::vector<Platform> &transmitterList)
+Bool GnssAntex2AntennaDefinition::equal(GnssAntennaDefinitionPtr antenna, GnssAntennaDefinitionPtr antenna2)
 {
   try
   {
-    UInt idSat;
-    for(idSat=0; idSat<transmitterList.size(); idSat++)
-      if(transmitterList.at(idSat).markerNumber == markerNumber)
-        break;
-
-    if(idSat>=transmitterList.size()) // new PRN?
+    // check if antennas are identical
+    if(antenna->patterns.size() != antenna2->patterns.size())
+      return FALSE;
+    for(UInt idPattern=0; idPattern<antenna->patterns.size(); idPattern++)
     {
-      Platform satelliteGps;
-      satelliteGps.markerName   = markerName;
-      satelliteGps.markerNumber = markerNumber;
-      transmitterList.push_back(satelliteGps);
+      if((antenna->patterns.at(idPattern).type              != antenna2->patterns.at(idPattern).type) ||
+         (antenna->patterns.at(idPattern).pattern.rows()    != antenna2->patterns.at(idPattern).pattern.rows()) ||
+         (antenna->patterns.at(idPattern).pattern.columns() != antenna2->patterns.at(idPattern).pattern.columns()))
+        return FALSE;
+      if(((antenna->patterns.at(idPattern).offset - antenna2->patterns.at(idPattern).offset).r() > 0.0001) ||
+         (maxabs(antenna->patterns.at(idPattern).pattern - antenna2->patterns.at(idPattern).pattern) > 0.0001))
+        return FALSE;
     }
-
-    transmitterList.at(idSat).equipments.push_back(std::make_shared<PlatformGnssAntenna>(antennaInfo));
-
-    PlatformGnssReceiver receiverInfo;
-    receiverInfo.name      = antennaInfo.name;
-    receiverInfo.serial    = antennaInfo.serial;
-    receiverInfo.timeStart = antennaInfo.timeStart;
-    receiverInfo.timeEnd   = antennaInfo.timeEnd;
-    transmitterList.at(idSat).equipments.push_back(std::make_shared<PlatformGnssReceiver>(receiverInfo));
+    return TRUE;
   }
   catch(std::exception &e)
   {
@@ -483,34 +458,45 @@ void GnssAntex2AntennaDefinition::addTransmitter(const PlatformGnssAntenna &ante
 
 /***********************************************/
 
-void GnssAntex2AntennaDefinition::addAntenna(const GnssAntennaDefinitionPtr &antenna, std::vector<GnssAntennaDefinitionPtr> &antennaList)
+void GnssAntex2AntennaDefinition::addAntenna(GnssAntennaDefinitionPtr antenna, std::vector<GnssAntennaDefinitionPtr> &antennaList)
 {
   try
   {
     auto iter = std::find_if(antennaList.begin(), antennaList.end(), [&](auto &a){return ((a->name == antenna->name) && (a->serial == antenna->serial) && (a->radome == antenna->radome));});
-    if(iter != antennaList.end())
-    {
-      // check if antennas are identical
-      GnssAntennaDefinitionPtr antenna2 = *iter;
-      Bool equal = (antenna2->patterns.size() == antenna->patterns.size());
-      if(equal)
-        for(UInt idPattern=0; idPattern<antenna->patterns.size(); idPattern++)
-        {
-          equal =  (antenna->patterns.at(idPattern).type              == antenna2->patterns.at(idPattern).type)
-                && (antenna->patterns.at(idPattern).pattern.rows()    == antenna2->patterns.at(idPattern).pattern.rows())
-                && (antenna->patterns.at(idPattern).pattern.columns() == antenna2->patterns.at(idPattern).pattern.columns());
-          if(!equal)
-            break;
-          equal = ((antenna->patterns.at(idPattern).offset - antenna2->patterns.at(idPattern).offset).r() < 0.0001)
-                && (maxabs(antenna->patterns.at(idPattern).pattern - antenna2->patterns.at(idPattern).pattern) < 0.0001);
-          if(!equal)
-            break;
-        }
-      if(!equal)
-        logWarning<<"antenna '"<<antenna->name<<"."<<antenna->serial<<"."<<antenna->radome<<"' already in the list with different values -> skipped"<<Log::endl;
-    }
-    else
+    if(iter == antennaList.end())
       antennaList.push_back(antenna);
+    else if(!equal(antenna, *iter))
+      logWarning<<"antenna '"<<antenna->name<<"."<<antenna->serial<<"."<<antenna->radome<<"' already in the list with different values -> skipped"<<Log::endl;
+  }
+  catch(std::exception &e)
+  {
+    GROOPS_RETHROW(e)
+  }
+}
+
+/***********************************************/
+
+void GnssAntex2AntennaDefinition::addTransmitter(const PlatformGnssAntenna &antennaInfo, const std::string &markerName, const std::string &markerNumber, std::vector<Platform> &transmitterList)
+{
+  try
+  {
+    const UInt idSat = std::distance(transmitterList.begin(), std::find_if(transmitterList.begin(), transmitterList.end(),
+                                                                           [&](auto &t){return t.markerNumber == markerNumber;}));
+    if(idSat >= transmitterList.size()) // new PRN?
+    {
+      Platform satelliteGps;
+      satelliteGps.markerName   = markerName;
+      satelliteGps.markerNumber = markerNumber;
+      transmitterList.push_back(satelliteGps);
+    }
+
+    PlatformGnssReceiver receiverInfo;
+    receiverInfo.name      = antennaInfo.name;
+    receiverInfo.serial    = antennaInfo.serial;
+    receiverInfo.timeStart = antennaInfo.timeStart;
+    receiverInfo.timeEnd   = antennaInfo.timeEnd;
+    transmitterList.at(idSat).equipments.push_back(std::make_shared<PlatformGnssAntenna>(antennaInfo));
+    transmitterList.at(idSat).equipments.push_back(std::make_shared<PlatformGnssReceiver>(receiverInfo));
   }
   catch(std::exception &e)
   {

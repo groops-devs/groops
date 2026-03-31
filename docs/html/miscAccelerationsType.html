@@ -95,7 +95,7 @@ Input are a time series of gridded albedo values (unitless) as <a class="groops-
 and a time series of gridded longwave flux (W/m$^2$) as <a class="groops-class" href="fileFormat_griddedDataTimeSeries.html">inputfileLongwaveFluxTimeSeries</a>.
 Both files are optional and if not specified, the respective effect on the acceleration is not computed.
 The <strong class="groops-config-element">factorEarthRadation</strong> can be used to scale the computed acceleration of the earth radiation.</p><p>The thermal radiation (TRP) of the satellite itself is either computed as direct re-emission or
-based on the actual temperature of the satellite surfaces, depending on the seetings of the
+based on the actual temperature of the satellite surfaces, depending on the setings of the
 <a class="groops-file" href="fileFormat_satelliteModel.html">satellite macro model</a>. The second one uses a transient temperature model
 with a temporal differential equation which disallows parallel computing.
 The <strong class="groops-config-element">factorThermalRadiation</strong> can be used to scale the computed acceleration of the TRP.</p><p>The algorithms are described in:</p><p>Woeske et. al. (2019), GRACE accelerometer calibration by high precision non-gravitational force modeling,
@@ -187,7 +187,7 @@ Groups a set of <a class="groops-class" href="miscAccelerationsType.html">miscAc
 </table>
 
 <h2 id="solarRadiationPressure">SolarRadiationPressure</h2><p>
-DEPRECATED. Use radiationPressure instead.
+DEPRECATED since 2022-12-19. Use radiationPressure instead.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>
@@ -197,7 +197,7 @@ DEPRECATED. Use radiationPressure instead.
 </table>
 
 <h2 id="albedo">Albedo</h2><p>
-DEPRECATED. Use radiationPressure instead.
+DEPRECATED since 2022-12-19. Use radiationPressure instead.
 </p>
 <table class="table table-hover">
 <tr class="table-primary"><th>Name</th><th>Type</th><th>Annotation</th></tr>

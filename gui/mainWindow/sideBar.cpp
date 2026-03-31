@@ -156,7 +156,7 @@ void OpenFilesTreeWidget::populateTree()
       QStringList splitFileName = tree->fileName().split("/");
 
       // add root folder as top level item if treeWidget doesn't already have it
-      if(findItems(splitFileName[0], Qt::MatchFixedString).isEmpty())
+      if(findItems(splitFileName[0], Qt::MatchFixedString|Qt::MatchCaseSensitive).isEmpty())
       {
         topLevelItem = new TreeWidgetItem;
         topLevelItem->setText(0, splitFileName[0]);

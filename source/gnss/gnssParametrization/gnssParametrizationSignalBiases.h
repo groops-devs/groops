@@ -25,11 +25,11 @@ Each code and phase observation (e.g \verb|C1C| or \verb|L2W|) contains a bias a
 This class provides the apriori model $\M f(\M x_0)$ of eq. \eqref{gnssParametrizationType:model} only.
 
 The \configFile{inputfileSignalBiasTransmitter/Receiver}{gnssSignalBias} are read
-for each receiver and transmitter. The file name is interpreted as a template with
-the variables \verb|{prn}| and \verb|{station}| being replaced by the name.
+for each transmitter and receiver. Those file names are interpreted as a template with
+the variable \verb|{prn}| or \verb|{station}| being replaced by transmitter PRNs or receiver station names, respectively.
 (Infos regarding the variables \verb|{prn}| and \verb|{station}| can be found in
 \configClass{gnssTransmitterGeneratorType}{gnssTransmitterGeneratorType} and
-\configClass{gnssReceiverGeneratorType}{gnssReceiverGeneratorType} respectively). The files can
+\configClass{gnssReceiverGeneratorType}{gnssReceiverGeneratorType} respectively). Those files can
 be converted with \program{GnssSinexBias2SignalBias}.
 
 The estimation of the biases is complex due to different linear dependencies, which
@@ -39,8 +39,8 @@ For simplification the parametrization for $\Delta\M x$ has been split into:
 \configClass{parametrization:tecBiases}{gnssParametrizationType:tecBiases}, and
 \configClass{parametrization:ambiguities}{gnssParametrizationType:ambiguities} (including phase biases).
 The file handling on the other hand still remains within this class. Any prior
-values for the receiver/transmitter biases are read with the respective \config{inputFileSignalBias}.
-All biases for a receiver/transmitter are accumulated and written to the respective \config{outputFileSignalBias}.
+values for the transmitter/receiver biases are read with the respective \config{inputfileSignalBiasTransmitter/Receiver}.
+All biases for a transmitter/receiver are accumulated and written to the respective \config{outputfileSignalBiasTransmitter/Receiver}.
 )";
 #endif
 

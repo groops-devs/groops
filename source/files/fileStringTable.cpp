@@ -61,15 +61,7 @@ void readFileStringTable(const FileName &fileName, std::vector<std::vector<std::
       while(stripComments(ss))
       {
         std::string data;
-        ss>>data;
-        if(data.at(0) == '"') // string in quotes?
-        {
-          if(data.size() == 1)
-            data += ss.get();
-          while(data.back() != '"')
-            data += ss.get();
-          data = data.substr(1, data.size()-2);
-        }
+        ss>>std::quoted(data);
         dataLine.push_back(data);
       }
 
@@ -94,11 +86,11 @@ void writeFileStringTable(const FileName &fileName, const std::vector<std::vecto
     {
       for(UInt i=0; i<line.size(); i++)
       {
-        if((!line.at(i).empty()) && (line.at(i).find_first_of(" \t\n#") == std::string::npos))
-          file<<line.at(i);         // string without special characters
+        if((!line.at(i).empty()) && (line.at(i).find_first_of(" \t\n\"#") == std::string::npos))
+          file<<line.at(i);              // string without special characters
         else
-          file<<"\""<<line.at(i)<<"\""; // string in quotes
-        if(i < line.size()-1) // no space at the end of a line
+          file<<std::quoted(line.at(i)); // string in quotes
+        if(i < line.size()-1)            // no space at the end of a line
           file<<" ";
       }
       file<<std::endl;

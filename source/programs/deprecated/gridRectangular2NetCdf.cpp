@@ -2,7 +2,7 @@
 /**
 * @file gridRectangular2NetCdf.cpp
 *
-* @brief DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.
+* @brief DEPRECATED since 2023-07-06. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.
 *
 * @author Andreas Kvas
 * @author Torsten Mayer-Guerr
@@ -15,7 +15,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-DEPRECATED. Please use \program{GriddedData2NetCdf} or \program{GriddedDataTimeSeries2NetCdf} instead.
+DEPRECATED since 2023-07-06. Please use \program{GriddedData2NetCdf} or \program{GriddedDataTimeSeries2NetCdf} instead.
 )";
 
 /***********************************************/
@@ -28,7 +28,7 @@ DEPRECATED. Please use \program{GriddedData2NetCdf} or \program{GriddedDataTimeS
 
 /***** CLASS ***********************************/
 
-/** @brief DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.
+/** @brief DEPRECATED since 2023-07-06. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.
 * @ingroup programsConversionGroup */
 class GridRectangular2NetCdf
 {
@@ -55,7 +55,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GridRectangular2NetCdf, SINGLEPROCESS, "DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.", Deprecated)
+GROOPS_REGISTER_PROGRAM(GridRectangular2NetCdf, SINGLEPROCESS, "DEPRECATED since 2023-07-06. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead.", Deprecated)
 
 /***********************************************/
 
@@ -126,7 +126,7 @@ void GridRectangular2NetCdf::run(Config &config, Parallel::CommunicatorPtr /*com
     readConfig(config, "globalAttribute",          globalAttributes, Config::OPTIONAL, "", "additional meta data");
     if(isCreateSchema(config)) return;
 
-    logWarning<<"DEPRECATED. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead."<<Log::endl;
+    logWarning<<"DEPRECATED since 2023-07-06. Please use GriddedData2NetCdf or GriddedDataTimeSeries2NetCdf instead."<<Log::endl;
 
 #ifdef GROOPS_DISABLE_NETCDF
     throw(Exception("Compiled without NetCDF library"));

@@ -30,8 +30,7 @@ See also \program{GnssProcessing} or \program{SlrProcessing}.
 
 #include "base/import.h"
 #include "config/config.h"
-#include "gnss/gnssReceiver.h"
-#include "gnss/gnssTransmitter.h"
+#include "files/filePlatform.h"
 
 /**
 * @defgroup platformSelectorGroup PlatformSelector

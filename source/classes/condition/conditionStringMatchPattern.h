@@ -17,7 +17,11 @@
 #ifdef DOCSTRING_Condition
 static const char *docstringConditionStringMatchPattern = R"(
 \subsection{StringMatchPattern}
-Determines if a pattern or a regular expression matches the entire string.
+Determines if a \config{pattern} matches the entire \config{string}.
+Supports wildcards * for any number of characters and ? for exactly one character.
+If \config{isRegularExpression} is set, \config{pattern} is interpreted as a
+regular expression instead. In any case, the \reference{text parser}{general.parser:text}
+is applied beforehand.
 )";
 #endif
 
@@ -53,7 +57,7 @@ inline ConditionStringMatchPattern::ConditionStringMatchPattern(Config &config)
   try
   {
     readConfig(config, "string",              text,                Config::OPTIONAL, "",  "should contain a {variable}");
-    readConfig(config, "pattern",             pattern,             Config::OPTIONAL, "",  "");
+    readConfig(config, "pattern",             pattern,             Config::OPTIONAL, "",  "supports wildcards: * and ?");
     readConfig(config, "isRegularExpression", isRegularExpression, Config::DEFAULT,  "0", "pattern is  a regular expression");
     readConfig(config, "caseSensitive",       caseSensitive,       Config::DEFAULT,  "1", "treat lower and upper case as distinct");
     if(isCreateSchema(config)) return;
@@ -78,10 +82,7 @@ inline Bool ConditionStringMatchPattern::condition(const VariableList &varList) 
       p = String::lowerCase(p);
     }
 
-    if(isRegularExpression)
-      return std::regex_match(t, std::regex(p));
-    else
-      return (t == p);
+    return std::regex_match(t, ((isRegularExpression) ? std::regex(p) : String::wildcard2regex(p)));
   }
   catch(std::exception &e)
   {

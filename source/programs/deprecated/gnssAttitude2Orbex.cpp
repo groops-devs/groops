@@ -2,7 +2,7 @@
 /**
 * @file gnssAttitude2Orbex.cpp
 *
-* @brief DEPRECATED. Please use StarCamera2Orbex instead.
+* @brief DEPRECATED since 2024-11-30. Please use StarCamera2Orbex instead.
 *
 * @author Sebastian Strasser
 * @date 2019-05-29
@@ -14,7 +14,7 @@
 // Latex documentation
 #define DOCSTRING docstring
 static const char *docstring = R"(
-DEPRECATED. Please use \program{StarCamera2Orbex} instead.
+DEPRECATED since 2024-11-30. Please use \program{StarCamera2Orbex} instead.
 )";
 
 /***********************************************/
@@ -29,7 +29,7 @@ DEPRECATED. Please use \program{StarCamera2Orbex} instead.
 
 /***** CLASS ***********************************/
 
-/** @brief DEPRECATED. Please use StarCamera2Orbex instead.
+/** @brief DEPRECATED since 2024-11-30. Please use StarCamera2Orbex instead.
 * @ingroup programsConversionGroup */
 class GnssAttitude2Orbex
 {
@@ -46,7 +46,7 @@ public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
 
-GROOPS_REGISTER_PROGRAM(GnssAttitude2Orbex, SINGLEPROCESS, "DEPRECATED. Please use StarCamera2Orbex instead.", Deprecated)
+GROOPS_REGISTER_PROGRAM(GnssAttitude2Orbex, SINGLEPROCESS, "DEPRECATED since 2024-11-30. Please use StarCamera2Orbex instead.", Deprecated)
 
 /***********************************************/
 
@@ -78,7 +78,7 @@ void GnssAttitude2Orbex::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     readConfig(config, "comment",                  comments,                Config::OPTIONAL, "",      "");
     if(isCreateSchema(config)) return;
 
-    logWarning<<"DEPRECATED. Please use StarCamera2Orbex instead."<<Log::endl;
+    logWarning<<"DEPRECATED since 2024-11-30. Please use StarCamera2Orbex instead."<<Log::endl;
 
     std::vector<Time> times = timeSeriesPtr->times();
 

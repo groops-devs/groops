@@ -128,7 +128,7 @@ void OutArchiveXml::save(const Time &x)
 
     std::stringstream stream_;
     stream_.setf(std::ios::fixed,std::ios::floatfield);
-    stream_.precision(16);
+    stream_.precision(18);
     stream_<<mjd;
 
     stack.top()->setValue(stream_.str());

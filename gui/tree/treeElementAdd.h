@@ -33,6 +33,7 @@ public:
   bool optional()          const override {return false;}
   bool unbounded()         const override {return true;}
   bool isRenamedInSchema() const override {return false;}
+  bool isDeprecated()      const override {return false;}
 
   /** @brief Generate XML-tree. *
   * the add button will not be saved. */

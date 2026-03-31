@@ -78,7 +78,7 @@ have data from every instrument.</p><p>In a second step the epochs are divided i
 A Gap is defined by a time step with at least <strong class="groops-config-element">minGap</strong> seconds
 between consecutive epochs or if not set the 1.5 of the median sampling.
 Arc with an epoch count less than <strong class="groops-config-element">minArcLen</strong> will be rejected.</p><p>A specific region can be selected with <a class="groops-class" href="borderType.html">border</a>.
-In this case one of the instrument data must an orbit.</p><p>If <a class="groops-class" href="timeSeriesType.html">timeIntervals</a> is given the data are also divided into time bins.
+In this case one of the instrument data must be an orbit.</p><p>If <a class="groops-class" href="timeSeriesType.html">timeIntervals</a> is given the data are also divided into time bins.
 The assignment of arcs to the bins can be saved in <a class="groops-class" href="fileFormat_arcList.html">outputfileArcList</a>.
 This file can be used for the variational equation approach or <a class="groops-program" href="KalmanBuildNormals.html">KalmanBuildNormals</a>.</p><p>Instrument files from <strong class="groops-config-element">irregularData</strong> are not synchronized but
 divided into the same number of arcs within the same time intervals.

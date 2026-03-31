@@ -230,10 +230,10 @@ template<> void load(InArchive &ar, GriddedData &x)
   for(UInt i=0; i<pointCount; i++)
   {
     ar>>beginGroup("points");
-    ar>>nameValue("longitude", lat);
-    ar>>nameValue("latitude",  lon);
+    ar>>nameValue("longitude", lon);
+    ar>>nameValue("latitude",  lat);
     ar>>nameValue("height",    h);
-    x.points.at(i) = x.ellipsoid(lat, lon, h);
+    x.points.at(i) = x.ellipsoid(lon, lat, h);
     if(hasArea)
       ar>>nameValue("areas",  x.areas.at(i));
     for(UInt k=0; k<x.values.size(); k++)
@@ -270,7 +270,7 @@ template<> void load(InArchive &ar, GriddedDataRectangular &x)
     x.values.resize(valueCount);
     for(UInt id=0; id<x.values.size(); id++)
     {
-      x.values.at(id) = Matrix(x.latitudes.size(), x.longitudes.size());
+      x.values.at(id) = Matrix(x.latitudes.size(), x.longitudes.size(), Matrix::NOFILL);
       for(UInt i=0; i<x.values.at(id).rows(); i++)
         for(UInt k=0; k<x.values.at(id).columns(); k++)
           ar>>nameValue("value", x.values.at(id)(i, k));

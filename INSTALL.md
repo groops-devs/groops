@@ -161,8 +161,8 @@ working with GROOPS easier.
     :warning: When running GROOPS in parallel, threaded BLAS/LAPACK libraries may conflict with MPI processes and cause a deterioration of performance. In that case, the number of threads for matrix operations should be set to 1.
 
 GROOPS depends on data files such as Earth rotation, Love numbers, and wavelet coefficients.
-An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/outgoing/ITSG/groops/).
-You can choose between downloading the data directory or a single [zip file](https://ftp.tugraz.at/outgoing/ITSG/groops/data.zip) with the same content.
+An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/pub/ITSG/groops/).
+You can choose between downloading the data directory or a single [zip file](https://ftp.tugraz.at/pub/ITSG/groops/data.zip) with the same content.
 
 ## Linux
 
@@ -375,8 +375,8 @@ working with GROOPS easier.
     :warning: When running GROOPS in parallel, threaded BLAS/LAPACK libraries may conflict with MPI processes and cause a deterioration of performance. In that case, the number of threads for matrix operations should be set to 1.
 
 GROOPS depends on data files such as Earth rotation, Love numbers, and wavelet coefficients.
-An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/outgoing/ITSG/groops/).
-You can choose between downloading the data directory or a single [zip file](https://ftp.tugraz.at/outgoing/ITSG/groops/data.zip) with the same content.
+An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/pub/ITSG/groops/).
+You can choose between downloading the data directory or a single [zip file](https://ftp.tugraz.at/pub/ITSG/groops/data.zip) with the same content.
 
 ## Disabling external source files
 

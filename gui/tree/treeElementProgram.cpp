@@ -30,6 +30,8 @@ QWidget *TreeElementProgram::createEditor()
     openButton->setDefault(true);
     if(isSelectionRenamedInSchema(selectedIndex()))
       openButton->setIcon(QIcon(":/icons/scalable/edit-rename.svg"));
+    else if(isSelectionDeprecated(selectedIndex()))
+      openButton->setIcon(QIcon(":/icons/scalable/warning.svg"));
     else if(isSelectionUnknown(selectedIndex()))
       openButton->setIcon(QIcon(":/icons/scalable/element-unknown.svg"));
 
@@ -60,6 +62,8 @@ void TreeElementProgram::setSelectedIndex(int index)
   {
     if(isSelectionRenamedInSchema(selectedIndex()))
       openButton->setIcon(QIcon(":/icons/scalable/edit-rename.svg"));
+    else if(isSelectionDeprecated(selectedIndex()))
+      openButton->setIcon(QIcon(":/icons/scalable/warning.svg"));
     else if(isSelectionUnknown(selectedIndex()))
       openButton->setIcon(QIcon(":/icons/scalable/element-unknown.svg"));
     else

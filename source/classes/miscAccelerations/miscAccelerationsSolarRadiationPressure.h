@@ -2,7 +2,7 @@
 /**
 * @file miscAccelerationsSolarRadiationPressure.h
 *
-* @brief DEPRECATED. Use radiationPressure instead.
+* @brief DEPRECATED since 2022-12-19. Use radiationPressure instead.
 * @see MiscAccelerations
 *
 * @author Torsten Mayer-Guerr
@@ -18,7 +18,7 @@
 #ifdef DOCSTRING_MiscAccelerations
 static const char *docstringMiscAccelerationsSolarRadiationPressure = R"(
 \subsection{SolarRadiationPressure}\label{miscAccelerationsType:solarRadiationPressure}
-DEPRECATED. Use radiationPressure instead.
+DEPRECATED since 2022-12-19. Use radiationPressure instead.
 )";
 #endif
 
@@ -30,7 +30,7 @@ DEPRECATED. Use radiationPressure instead.
 
 /***** CLASS ***********************************/
 
-/** @brief DEPRECATED. Use radiationPressure instead.
+/** @brief DEPRECATED since 2022-12-19. Use radiationPressure instead.
  * @ingroup miscAccelerationsGroup
  * @see MiscAccelerations */
 class MiscAccelerationsSolarRadiationPressure : public MiscAccelerationsBase
@@ -56,6 +56,8 @@ inline MiscAccelerationsSolarRadiationPressure::MiscAccelerationsSolarRadiationP
     readConfig(config, "eclipse",   eclipse,   Config::MUSTSET, "",     "");
     readConfig(config, "factor",    factor,    Config::DEFAULT, "1.0",  "the result is multiplied by this factor, set -1 to subtract the field");
     if(isCreateSchema(config)) return;
+
+    logWarningOnce<<"MiscAccelerationsSolarRadiationPressure is DEPRECATDED since 2022-12-19. Use MiscAccelerationsRadiationPressure instead."<<Log::endl;
   }
   catch(std::exception &e)
   {

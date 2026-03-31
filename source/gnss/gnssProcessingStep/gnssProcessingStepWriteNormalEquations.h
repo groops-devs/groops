@@ -22,7 +22,7 @@ If \configClass{remainingParameters}{parameterSelectorType}
 is set only the selected parameters are written to the normal equations
 and all other parameters are eliminated beforehand (implicitly solved).
 
-The solution of the normals would results in $\Delta\M x$
+The solution of the normals would result in $\Delta\M x$
 (see \configClass{parametrizations}{gnssParametrizationType}). To write the
 appropriate apriori vector $\M x_0$ use
 \configClass{processingStep:writeAprioriSolution}{gnssProcessingStepType:writeAprioriSolution}.
@@ -93,6 +93,11 @@ inline void GnssProcessingStepWriteNormalEquations::process(GnssProcessingStep::
     if(parameterSelector)
     {
       indexVector = parameterSelector->indexVector(state.normalEquationInfo.parameterNames());
+      if(!indexVector.size())
+      {
+        logWarningOnce<<"No matching parameters selected"<<Log::endl;
+        return;
+      }
 
       const UInt countEpochParameter = state.normalEquationInfo.blockIndex(state.normalEquationInfo.blockInterval());
       eliminateEpochParameters = (*std::min_element(indexVector.begin(), indexVector.end()) >= countEpochParameter);

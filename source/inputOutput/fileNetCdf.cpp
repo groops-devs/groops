@@ -318,19 +318,9 @@ Vector NetCdf::Variable::values(const std::vector<UInt> &start, const std::vecto
     for(UInt c : count)
       countElements *= c;
 
-    nc_type ncType = 0;
-    nc_inq_vartype(groupId, varId, &ncType);
-
-    switch(ncType)
-    {
-      case NC_BYTE:   {std::vector<Byte>  tmp(countElements); nc_get_vara       (groupId, varId, start.data(), count.data(), reinterpret_cast<void*>(tmp.data())); return convert(tmp);}
-      case NC_CHAR:   {std::vector<char>  tmp(countElements); nc_get_vara_text  (groupId, varId, start.data(), count.data(), tmp.data());  return convert(tmp);}
-      case NC_SHORT:  {std::vector<short> tmp(countElements); nc_get_vara_short (groupId, varId, start.data(), count.data(), tmp.data());  return convert(tmp);}
-      case NC_INT:    {std::vector<int>   tmp(countElements); nc_get_vara_int   (groupId, varId, start.data(), count.data(), tmp.data());  return convert(tmp);}
-      case NC_FLOAT:  {std::vector<float> tmp(countElements); nc_get_vara_float (groupId, varId, start.data(), count.data(), tmp.data());  return convert(tmp);}
-      case NC_DOUBLE: {Vector             tmp(countElements); nc_get_vara_double(groupId, varId, start.data(), count.data(), tmp.field()); return tmp;}
-      default: throw(Exception("Unsupported data type."));
-    }
+    Vector values(countElements);
+    nc_get_vara_double(groupId, varId, start.data(), count.data(), values.field());
+    return values;
   }
   catch(std::exception &e)
   {

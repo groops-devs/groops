@@ -182,6 +182,7 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
           N = N.slice(1, 1, N.rows()-1, N.rows()-1); // without clock
 
           para->Bias = T * nullSpace(N, TRUE);
+          Parallel::broadCast(para->Bias, 0, normalEquationInfo.comm); // to ensure that all nodes use the same matrix
           if(!para->Bias.size())
             continue;
 
@@ -259,6 +260,7 @@ void GnssParametrizationCodeBiases::initParameter(GnssNormalEquationInfo &normal
         N = N.slice(1, 1, N.rows()-1, N.rows()-1); // without clock
 
         para->Bias = T * nullSpace(N, TRUE);
+        Parallel::broadCast(para->Bias, 0, normalEquationInfo.comm); // to ensure that all nodes use the same matrix
         if(!para->Bias.size())
           continue;
 
@@ -472,14 +474,14 @@ void GnssParametrizationCodeBiases::constraints(const GnssNormalEquationInfo &no
       logStatus<<"apply "<<zeroMeanDesign.rows()<<" zero mean equations for code bias parameters"<<Log::endl;
       if(zeroMeanDesign.size())
       {
-        GnssDesignMatrix A(normalEquationInfo, Vector(zeroMeanDesign.rows()));
+        GnssDesignMatrix A(normalEquationInfo, zeroMeanDesign.rows());
         for(auto para : paraTrans)
           if(para && para->index && (idxBiasTrans.at(para->trans->idTrans()) != NULLINDEX))
             axpy(1./sigmaZeroMean, zeroMeanDesign.column(idxBiasTrans.at(para->trans->idTrans()), para->Bias.columns()), A.column(para->index));
         for(auto para : paraRecv)
           if(para && para->index && (idxBiasRecv.at(para->recv->idRecv()) != NULLINDEX))
             axpy(1./sigmaZeroMean, zeroMeanDesign.column(idxBiasRecv.at(para->recv->idRecv()), para->Bias.columns()), A.column(para->index));
-        A.accumulateNormals(normals, n, lPl, obsCount);
+        GnssDesignMatrix::accumulateNormals(A, Vector(zeroMeanDesign.rows()), normals, n, lPl, obsCount);
       }
     }
   }

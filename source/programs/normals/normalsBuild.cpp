@@ -18,6 +18,7 @@ For a detailed description of the used algorithm see \configClass{normalEquation
 Large normal equation systems can be divided into blocks with \config{normalsBlockSize}.
 
 A simplifed and fast version of this program is \program{NormalsAccumulate}.
+For input normals with different parameters see \program{NormalsReorderAndAccumulate}.
 To solve the system of normal equations use \program{NormalsSolverVCE}.
 )";
 

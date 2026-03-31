@@ -167,13 +167,14 @@ void OutArchiveAscii::save(const GnssType &x) {stream<<' '<<x.str();            
 
 /***********************************************/
 
-void InArchiveAscii::load(Int      &x) {stripComments(); stream>>x;}
-void InArchiveAscii::load(UInt     &x) {stripComments(); stream>>x;}
-void InArchiveAscii::load(Double   &x) {stripComments(); x = readDouble(stream);}
-void InArchiveAscii::load(Bool     &x) {stripComments(); stream>>x;}
-void InArchiveAscii::load(Angle    &x) {stripComments(); Double w = readDouble(stream); x = Angle(w*DEG2RAD);}
-void InArchiveAscii::load(Doodson  &x) {stripComments(); std::string s; stream>>s; x = Doodson(s);}
-void InArchiveAscii::load(GnssType &x) {stripComments(); std::string s; stream>>s; x = GnssType(s);}
+void InArchiveAscii::load(std::string &x) {stripComments(); stream>>std::quoted(x);}
+void InArchiveAscii::load(Int         &x) {stripComments(); stream>>x;}
+void InArchiveAscii::load(UInt        &x) {stripComments(); stream>>x;}
+void InArchiveAscii::load(Double      &x) {stripComments(); x = readDouble(stream);}
+void InArchiveAscii::load(Bool        &x) {stripComments(); stream>>x;}
+void InArchiveAscii::load(Angle       &x) {stripComments(); Double w = readDouble(stream); x = Angle(w*DEG2RAD);}
+void InArchiveAscii::load(Doodson     &x) {stripComments(); std::string s; stream>>s; x = Doodson(s);}
+void InArchiveAscii::load(GnssType    &x) {stripComments(); std::string s; stream>>s; x = GnssType(s);}
 
 /***********************************************/
 /***********************************************/
@@ -183,35 +184,11 @@ void OutArchiveAscii::save(const std::string &x)
   try
   {
     stream<<' ';
-    if((!x.empty()) && (x.find_first_of(" \t\n#") == std::string::npos))
+    if((!x.empty()) && (x.find_first_of(" \t\n\"#") == std::string::npos))
       stream<<x; // string without special characters
     else
-      stream<<'"'<<x<<'"';
+      stream<<std::quoted(x);
     isNewLine = FALSE;
-  }
-  catch(std::exception &e)
-  {
-    GROOPS_RETHROW(e)
-  }
-}
-
-/***********************************************/
-/***********************************************/
-
-void InArchiveAscii::load(std::string &x)
-{
-  try
-  {
-    stripComments();
-    stream>>x;
-    if(x.at(0)=='"')
-    {
-      if(x.size()==1)
-        x += stream.get();
-      while(x.at(x.size()-1)!='"')
-        x += stream.get();
-      x = x.substr(1, x.size()-2);
-    }
   }
   catch(std::exception &e)
   {
@@ -377,7 +354,7 @@ void InArchiveAscii::load(Matrix &A)
           values.at(i).push_back(std::stod(dummy));
         }
       }
-      A = Matrix(values.size(), values.at(0).size());
+      A = Matrix(values.size(), values.at(0).size(), Matrix::NOFILL);
       for(UInt i=0; i<A.rows(); i++)
         for(UInt k=0; k<A.columns(); k++)
           A(i,k) = values.at(i).at(k);
@@ -389,7 +366,7 @@ void InArchiveAscii::load(Matrix &A)
     stream>>type>>rows>>c>>columns>>c;
     if(type=="Matrix(")
     {
-      A = Matrix(rows,columns);
+      A = Matrix(rows, columns, Matrix::NOFILL);
       for(UInt i=0; i<A.rows(); i++)
         for(UInt k=0; k<A.columns(); k++)
           A(i,k) = readDouble(stream);
@@ -502,7 +479,7 @@ void InArchiveAscii::load(SphericalHarmonics &harm)
       {
         std::string no;
         ss>>no;
-        if(no != "no")
+        if(no.rfind("no", 0) != 0)
           hasErrors = TRUE;
       }
       // Header fertig ?

@@ -20,7 +20,7 @@ static const char *docstringGnssProcessingStepEstimate = R"(
 Iterative non-linear least squares adjustment.
 In every iteration it accumulates the system of normal equations, solves the system and updates the estimated parameters.
 The estimated parameters serve as a priori values in the next iteration and the following processing steps.
-Iterates until either every single parameter update (converted to an influence in meter)
+Iterates until either every single parameter update (converted to an influence in meters)
 is below a \config{convergenceThreshold} or \config{maxIterationCount} is reached.
 
 With \config{computeResiduals} the observation equations are computed
@@ -31,7 +31,7 @@ is composed of several factors
 \begin{equation}
   \hat{\sigma}_i = \hat{\sigma}_i^{huber} \hat{\sigma}_{[\tau\nu a]}^{recv} \sigma_{[\tau\nu a]}^{recv}(E,A),
 \end{equation}
-where $[\tau\nu a]$ is the signal type, the azmiuth and elevation dependent $\sigma_{[\tau\nu a]}^{recv}(E,A)$ is given by
+where $[\tau\nu a]$ is the signal type, the azimuth and elevation dependent $\sigma_{[\tau\nu a]}^{recv}(E,A)$ is given by
 \configFile{receiver:inputfileAccuracyDefinition}{gnssAntennaDefinition} and the other factors are
 estimated iteratively from the residuals.
 
