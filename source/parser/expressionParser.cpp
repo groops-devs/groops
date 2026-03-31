@@ -675,7 +675,7 @@ class ExpressionLog : public ExpressionFunction1
 public:
   explicit ExpressionLog(const ExpressionPtr &ob) : ExpressionFunction1(ob) {}
   std::string   name() const override {return "log";}
-  ExpressionPtr create(const ExpressionPtr &ob) const override {return std::make_shared<ExpressionExp>(ob);}
+  ExpressionPtr create(const ExpressionPtr &ob) const override {return std::make_shared<ExpressionLog>(ob);}
   Double        evaluate(const VariableList &varList) const override {return std::log(operand->evaluate(varList));}
   ExpressionPtr derivative(const std::string &var) const override {return operand->derivative(var)^exprValue(-1);}
 };
