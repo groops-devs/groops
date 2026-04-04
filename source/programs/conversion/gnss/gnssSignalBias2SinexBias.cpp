@@ -146,7 +146,7 @@ void GnssSignalBias2SinexBias::run(Config &config, Parallel::CommunicatorPtr /*c
     readConfig(config, "determinationMethod", method,         Config::OPTIONAL, "CO-ESTIMATED_IN_LSA", "determination method used to generate the bias results (see SINEX Bias format description)");
     readConfig(config, "receiverClockReferenceGnss",         receiverClockReferenceGnss,         Config::OPTIONAL, "G", "(G, R, E, C) reference GNSS used for receiver clock estimation");
     readConfig(config, "satelliteClockReferenceObservables", satelliteClockReferenceObservables, Config::OPTIONAL, "G  C1W  C2W", "one per system, reference code observable on first and second frequency (RINEX3 format)");
-    readConfig(config, "description",         description,    Config::OPTIONAL, "Graz University of Technology, Austria (TUG/TU Graz)", "organizition gathering/altering the file contents");
+    readConfig(config, "description",         description,    Config::OPTIONAL, "Graz University of Technology, Austria (TUG/TU Graz)", "organization gathering/altering the file contents");
     readConfig(config, "contact",             contact,        Config::OPTIONAL, "", "contact name and/or email address");
     readConfig(config, "input",               input,          Config::OPTIONAL, "GNSS observations from the IGS station network", "brief description of the input used to generate this solution");
     readConfig(config, "output",              output,         Config::OPTIONAL, "Estimated signal biases from GNSS processing", "description of the file contents");
@@ -214,7 +214,7 @@ void GnssSignalBias2SinexBias::run(Config &config, Parallel::CommunicatorPtr /*c
       if(!std::isnan(sampling))       *block<<" OBSERVATION_SAMPLING                    "<<sampling%"% 12i"s<<std::endl;
       if(!std::isnan(intervalLength)) *block<<" PARAMETER_SPACING                       "<<intervalLength%"% 12i"s<<std::endl;
       if(!method.empty())             *block<<" DETERMINATION METHOD                    "<<method<<std::endl;
-      if(!biasMode.empty())           *block<<" BIAS_MODE                               "<<biasMode<<std::endl;
+      if(!biasMode.empty())           *block<<" BIAS_MODE                               "<<String::upperCase(biasMode)<<std::endl;
       *block<<" TIME_SYSTEM                             G"<<std::endl;
       if(!receiverClockReferenceGnss.empty()) *block<<" RECEIVER_CLOCK_REFERENCE_GNSS           "<<receiverClockReferenceGnss.at(0)<<std::endl;
       for(auto sys : satelliteClockReferenceObservables)
