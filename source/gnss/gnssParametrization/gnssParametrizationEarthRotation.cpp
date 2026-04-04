@@ -335,9 +335,10 @@ void GnssParametrizationEarthRotation::writeResults(const GnssNormalEquationInfo
       Matrix A(normalEquationInfo.idEpochs.size(), 9);
       for(UInt i=0; i<normalEquationInfo.idEpochs.size(); i++)
       {
-        times.push_back(gnss->times.at(normalEquationInfo.idEpochs.at(i)));
-        copy(gnss->eop.row(i), A.slice(i, 1, 1, 8));
-        A(i, 4) += (gnss->times.at(normalEquationInfo.idEpochs.at(i))-timeGPS2UTC(gnss->times.at(normalEquationInfo.idEpochs.at(i)))).seconds(); // UT1-GPS => UT1-UTC
+        const UInt idEpoch = normalEquationInfo.idEpochs.at(i);
+        times.push_back(gnss->times.at(idEpoch));
+        copy(gnss->eop.row(idEpoch), A.slice(i, 1, 1, 8));
+        A(i, 4) += (gnss->times.at(idEpoch)-timeGPS2UTC(gnss->times.at(idEpoch))).seconds(); // UT1-GPS => UT1-UTC
       }
       InstrumentFile::write(fileNameEOP.appendBaseName(suffix), Arc(times, A));
     }
