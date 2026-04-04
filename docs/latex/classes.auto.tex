@@ -980,7 +980,11 @@ The angle ist given by the Greenwich Mean Siderial Time (GMST).
 
 \subsection{Earth Rotation Angle (ERA)}
 The transformation is realized as rotation about the z-axis.
-The angle ist given by the Earth Rotation Angle (ERA).
+The angle ist given by the Earth Rotation Angle (ERA) as
+\begin{verbatim}
+  const Time T = timeUT1-mjd2time(J2000);
+  ERA = fmod(2*PI*(0.7790572732640 + T.mjdMod() + 0.00273781191135448*T.mjd()), 2*PI);
+\end{verbatim}
 
 
 \subsection{Z-Axis}

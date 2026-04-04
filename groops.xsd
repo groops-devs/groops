@@ -22621,7 +22621,7 @@
 						</xs:element>
 						<xs:element name="description" type="string" minOccurs="0" default="Graz University of Technology, Austria (TUG/TU Graz)">
 							<xs:annotation>
-								<xs:documentation>organizition gathering/altering the file contents</xs:documentation>
+								<xs:documentation>organization gathering/altering the file contents</xs:documentation>
 							</xs:annotation>
 						</xs:element>
 						<xs:element name="contact" type="string" minOccurs="0">
