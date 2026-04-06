@@ -22,7 +22,7 @@ in \program {SlrProcessing}.
 
 #include "programs/program.h"
 #include "base/string.h"
-#include "inputOutput/file.h"
+#include "files/fileStringTable.h"
 #include "inputOutput/fileSinex.h"
 #include "files/fileInstrument.h"
 
@@ -48,7 +48,7 @@ void SlrSinexDataHandling2Files::run(Config &config, Parallel::CommunicatorPtr /
     FileName                 fileNameSinex, fileNameSatelliteId;
     std::string              variableLoopStation, variableLoopSatellite;
     std::vector<std::string> stationNames;
-    std::map<std::string, std::string> satelliteNameFromSp3Id;
+    std::vector<std::vector<std::string>> tableSatelliteId;
 
     readConfig(config, "outputfileRangeBiasStation",          fileNameRangeBiasStation,   Config::OPTIONAL, "rangeBias.{station}.txt",             "MISCVALUE [m]");
     readConfig(config, "outputfileRangeBiasStationSatellite", fileNameRangeBiasSatellite, Config::OPTIONAL, "rangeBias.{station}.{satellite}.txt", "MISCVALUE [m]");
@@ -64,41 +64,7 @@ void SlrSinexDataHandling2Files::run(Config &config, Parallel::CommunicatorPtr /
     if(!fileNameSatelliteId.empty())
     {
       logStatus<<"read satellite ID mapping file <"<<fileNameSatelliteId<<">"<<Log::endl;
-      InFile file(fileNameSatelliteId);
-      std::string line;
-      UInt lineNo = 0;
-      while(std::getline(file, line))
-      {
-        lineNo++;
-        line = String::trim(line);
-        if(line.empty() || String::startsWith(line, "#"))
-          continue;
-
-        std::stringstream ss(line);
-        std::string sp3Id, satelliteName;
-        ss>>sp3Id>>satelliteName;
-        if(satelliteName.empty() || sp3Id.empty())
-        {
-          logWarning<<"Ignoring malformed line "<<lineNo<<" in <"<<fileNameSatelliteId<<">: '"<<line<<"' (expected: SP3_ID SATELLITE_NAME)"<<Log::endl;
-          continue;
-        }
-        // Uppercase for SP3 ID, i.e. PRN-like
-        sp3Id = String::upperCase(sp3Id);
-        // Lowercase for ILRS satellite name
-        satelliteName = String::lowerCase(satelliteName);
-
-        auto iter = satelliteNameFromSp3Id.find(sp3Id);
-        if(iter != satelliteNameFromSp3Id.end())
-        {
-          // the SP3 ID already exists
-          if(iter->second != satelliteName)
-            logWarning<<"Ignoring conflicting SP3 ID redefinition '"<<sp3Id<<"': already mapped to '"<<iter->second<<"', new value '"<<satelliteName<<"' in <"<<fileNameSatelliteId<<">"<<Log::endl;
-          continue; // ignore exact duplicates and conflicting redefinitions
-        }
-
-        satelliteNameFromSp3Id[sp3Id] = satelliteName;
-      }
-      logInfo<<"  "<<satelliteNameFromSp3Id.size()<<" mapping entries loaded"<<Log::endl;
+      readFileStringTable(fileNameSatelliteId, tableSatelliteId);
     }
 
     std::map<std::string, MiscValueArc>                         rangeBiasesStation;
@@ -147,15 +113,12 @@ void SlrSinexDataHandling2Files::run(Config &config, Parallel::CommunicatorPtr /
       else
       {
         // station-satellite specific range bias
-        satId = "L" + satId;
-        if(!fileNameSatelliteId.empty())
-        {
-          auto iter = satelliteNameFromSp3Id.find(satId);
-          if(iter != satelliteNameFromSp3Id.end())
-            satId = iter->second; // replace SP3 ID by satellite name
-          else
-            logWarning<<"No mapping found for SP3 ID '"<<satId<<"' in <"<<fileNameSatelliteId<<">, just using SP3 ID"<<Log::endl;
-        }
+        auto iter = std::find_if(tableSatelliteId.begin(), tableSatelliteId.end(), [&](auto &t){return (t.size()>1) && ((t.front() == satId) || (t.front() == "L"+satId));});
+        if(iter != tableSatelliteId.end())
+          satId = iter->at(1); // replace SP3 ID by satellite name from table
+        else
+          satId = "L" + satId; 
+
         if(rangeBiasesStationSatellite[station][satId].size() && (rangeBiasesStationSatellite[station][satId].back().time >= timeStart-seconds2time(1)))
           rangeBiasesStationSatellite[station][satId].remove(rangeBiasesStationSatellite[station][satId].size()-1);
         rangeBiasesStationSatellite[station][satId].push_back(epoch);
