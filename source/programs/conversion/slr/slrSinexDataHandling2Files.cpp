@@ -22,6 +22,7 @@ in \program {SlrProcessing}.
 
 #include "programs/program.h"
 #include "base/string.h"
+#include "files/fileStringTable.h"
 #include "inputOutput/fileSinex.h"
 #include "files/fileInstrument.h"
 
@@ -58,6 +59,14 @@ void SlrSinexDataHandling2Files::run(Config &config, Parallel::CommunicatorPtr /
     readConfig(config, "stationName",                         stationNames,               Config::OPTIONAL, "",                                    "convert only these stations");
     if(isCreateSchema(config)) return;
 
+    // Read the mapping from SP3 ID to ILRS satellite name
+    std::vector<std::vector<std::string>> tableSatelliteId;
+    if(!fileNameSatelliteId.empty())
+    {
+      logStatus<<"read satellite ID mapping file <"<<fileNameSatelliteId<<">"<<Log::endl;
+      readFileStringTable(fileNameSatelliteId, tableSatelliteId);
+    }
+
     std::map<std::string, MiscValueArc>                         rangeBiasesStation;
     std::map<std::string, std::map<std::string, MiscValueArc>>  rangeBiasesStationSatellite;
     std::map<std::string, MiscValuesArc>                        timeBiases;
@@ -72,8 +81,9 @@ void SlrSinexDataHandling2Files::run(Config &config, Parallel::CommunicatorPtr /
     {
       // *         1         2         3         4         5         6         7         8
       // *12345678901234567890123456789012345678901234567890123456789012345678901234567890
-      // *CODE PT UNIT T _DATA_START_ __DATA_END__ M __E-VALUE___ STD_DEV _E-RATE__ CMNTS
+      // *CODE PT SOLN T START_DATE__ END_DATE____ M __E-VALUE___ STD_DEV _E-RATE__ UNIT   CMNTS
       line.resize(80, ' ');
+      // 4-char station code
       std::string station = String::lowerCase(String::trim(line.substr(1, 4)));
       if(stationNames.size() && std::find(stationNames.begin(), stationNames.end(), station) == stationNames.end())
         continue;
@@ -85,7 +95,7 @@ void SlrSinexDataHandling2Files::run(Config &config, Parallel::CommunicatorPtr /
       MiscValueEpoch epoch;
       epoch.time  = timeStart;
       epoch.value = 1e-3 * String::toDouble(line.substr(44, 12)); // mm -> m
-
+      // satellite SP3c ID without the leading letter "L"
       std::string satId = String::trim(line.substr(6, 2));
       if(satId == "--")
         satId = "";
@@ -102,6 +112,11 @@ void SlrSinexDataHandling2Files::run(Config &config, Parallel::CommunicatorPtr /
       }
       else
       {
+        // station-satellite specific range bias
+        auto iter = std::find_if(tableSatelliteId.begin(), tableSatelliteId.end(), [&](auto &t){return (t.size()>1) && ((t.front() == satId) || (t.front() == "L"+satId));});
+        if(iter != tableSatelliteId.end())
+          satId = iter->at(1); // replace SP3 ID by satellite name from table
+
         if(rangeBiasesStationSatellite[station][satId].size() && (rangeBiasesStationSatellite[station][satId].back().time >= timeStart-seconds2time(1)))
           rangeBiasesStationSatellite[station][satId].remove(rangeBiasesStationSatellite[station][satId].size()-1);
         rangeBiasesStationSatellite[station][satId].push_back(epoch);
