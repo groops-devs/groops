@@ -111,7 +111,7 @@ void Tle2Orbit::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     const std::vector<Time> times = timeSeries->times();
     OrbitArc arc;
 
-    auto iterRecord = records.begin();
+    auto iterRecord = records.end();
     Single::forEach(times.size(), [&](UInt i)
     {
       auto iterRecordNew = std::min_element(records.begin(), records.end(),

@@ -11,6 +11,7 @@
 - Bugfix:           GNSS, WriteNormalEquations: check non-matching parameter selection.
 - Bugfix:           Instrument2AllanVariance: Fix sample counting.
 - Bugfix:           The parser was sometimes applied twice to filenames.
+- Bugfix:           Tle2Orbit: Fixed bug when first record in file is used.
 - Other:            NetCDF: enable to read multidimensional variables to store in muliple columns.
 - Other:            Changed ftp.tugraz.at/outgoing/ITSG to ftp.tugraz.at/pub/ITSG.
 - Other:            ModelEquilibriumTide: Taking into account spatially varying density.
