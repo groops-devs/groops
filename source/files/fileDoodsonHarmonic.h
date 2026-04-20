@@ -19,12 +19,12 @@ static const char *docstringDoodsonHarmonic = R"(
 Ocean tides are represented as time variable gravitational potential
 and is given by a fourier expansion
 \begin{equation}
-V(\M x,t) = \sum_{f} V_f^c(\M x)\cos(\Theta_f(t)) + V_f^s(\M x)\sin(\Theta_f(t)),
+V(\M x,t) = \sum_{f} V_f^c(\M x)\cos(\theta_f(t)) + V_f^s(\M x)\sin(\theta_f(t)),
 \end{equation}
 where $V_f^c(\M x)$ and $V_f^s(\M x)$ are spherical harmonics.
-The $\Theta_f(t)$ are the arguments of the tide constituents $f$:
+The $\theta_f(t)$ are the arguments of the tide constituents $f$:
 \begin{equation}
-\Theta_f(t) = \sum_{i=1}^6 n_f^i\beta_i(t),
+\theta_f(t) = \sum_{i=1}^6 n_f^i\beta_i(t),
 \end{equation}
 where $\beta_i(t)$ are the Doodson's fundamental arguments ($\tau,s,h,p,N',p_s$) and $n_f^i$
 are the Doodson multipliers for the term at frequency~$f$.
