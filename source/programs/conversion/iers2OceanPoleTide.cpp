@@ -48,8 +48,8 @@ void Iers2OceanPoleTide::run(Config &config, Parallel::CommunicatorPtr /*comm*/)
     UInt   maxDegree;
 
     readConfig(config, "outputfileOceanPole",        outputName,     Config::MUSTSET, "",                "");
-    readConfig(config, "inputfile",                  inputName,      Config::MUSTSET, "",                "");
-    readConfig(config, "inputfileLoadingLoveNumber", loveNumberName, Config::MUSTSET, "{groopsDataDir}/loading/loadLoveNumbers_Gegout97.txt", "");
+    readConfig(config, "inputfile",                  inputName,      Config::MUSTSET, "",                "coefficients of the ocean pole tide model");
+    readConfig(config, "inputfileLoadingLoveNumber", loveNumberName, Config::MUSTSET, "{groopsDataDir}/loading/loadLoveNumbers_Gegout97.txt", "load deformation coefficients");
     readConfig(config, "maxDegree",                  maxDegree,      Config::MUSTSET, "",                "");
     readConfig(config, "GM",                         GM,             Config::DEFAULT, STRING_DEFAULT_GM, "Geocentric gravitational constant");
     readConfig(config, "R",                          R,              Config::DEFAULT, STRING_DEFAULT_R,  "Reference radius");

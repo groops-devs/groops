@@ -47,9 +47,9 @@ void Igs2EarthOrientationParameter::run(Config &config, Parallel::CommunicatorPt
     Time timeStart, timeEnd = date2time(9999,1,1);
 
     readConfig(config, "outputfileEOP", outName,    Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",     fileNameIn, Config::MUSTSET,  "", "");
-    readConfig(config, "timeStart",     timeStart,  Config::OPTIONAL, "", "");
-    readConfig(config, "timeEnd",       timeEnd,    Config::OPTIONAL, "", "");
+    readConfig(config, "inputfile",     fileNameIn, Config::MUSTSET,  "", "IGS daily ERP files");
+    readConfig(config, "timeStart",     timeStart,  Config::OPTIONAL, "", "Start time of ERPs to read (inclusive). Default: MJD 0");
+    readConfig(config, "timeEnd",       timeEnd,    Config::OPTIONAL, "", "End time of ERPs to read (inclusive). Default: Date 9999-01-01");
     if(isCreateSchema(config)) return;
 
     logStatus<<"read input files"<<Log::endl;
