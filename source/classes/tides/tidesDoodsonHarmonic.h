@@ -34,7 +34,7 @@ $\Theta_f(t)$ are the arguments of the tide constituents~$f$:
 where $\beta_i(t)$ are the Doodson's fundamental arguments ($\tau,s,h,p,N',p_s$)
 and $n_f^i$ are the Doodson multipliers for the term at frequency~$f$.
 
-The major constituents given by \configFile{inputfileDoodsonHarmonic}{doodsonHarmonic} can be used to
+The major constituents given by \configFile{inputfileTides}{doodsonHarmonic} can be used to
 interpolate minor tidal constituents using the file \configFile{inputfileAdmittance}{admittance}.
 This file can be created with \program{DoodsonHarmonicsCalculateAdmittance}.
 

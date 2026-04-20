@@ -46,7 +46,7 @@ Tidal deformations typically include:
   \item \configClass{doodsonHarmonicTide}{tidesType:doodsonHarmonicTide}: atmospheric tidal deformation
         (e.g. AOD1B RL06, \config{minDegree}=\verb|1|)
   \item \configClass{poleTide}{tidesType:poleTide}: pole tidal deformations (IERS conventions)
-  \item \configClass{poleOceanTide}{tidesType:oceanPoleTide}: ocean pole tidal deformations (IERS conventions)
+  \item \configClass{oceanPoleTide}{tidesType:oceanPoleTide}: ocean pole tidal deformations (IERS conventions)
 \end{itemize}
 )";
 #endif
