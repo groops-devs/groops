@@ -48,9 +48,9 @@ void IersRapidIAU2000EarthOrientationParameter::run(Config &config, Parallel::Co
     Time timeEnd   = date2time(9999,1,1);
 
     readConfig(config, "outputfileEOP", outName,   Config::MUSTSET,  "", "");
-    readConfig(config, "inputfile",     inName,    Config::MUSTSET,  "", "");
-    readConfig(config, "timeStart",     timeStart, Config::OPTIONAL, "", "");
-    readConfig(config, "timeEnd",       timeEnd,   Config::OPTIONAL, "", "");
+    readConfig(config, "inputfile",     inName,    Config::MUSTSET,  "", "IERS Rapid EOP file");
+    readConfig(config, "timeStart",     timeStart, Config::OPTIONAL, "", "Start time of EOPs to read (inclusive). Default: MJD 0");
+    readConfig(config, "timeEnd",       timeEnd,   Config::OPTIONAL, "", "End time of EOPs to read (inclusive). Default: Date 9999-01-01");
     if(isCreateSchema(config)) return;
 
     // Erdrotationsparameter einlesen
