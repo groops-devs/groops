@@ -15,28 +15,28 @@ Basis splines are defined as polynomials of degree~$n$ in intervals between noda
 \end{equation}
 \item Linear splines ($n=1$)
 \begin{equation}
-  \Phi_i(t) = \begin{cases}
-  \tau_{i-1}   & \text{if } t_{i-1}\le t \le t_i, \\
-  1-\tau_i     & \text{if } t_{i}\le t \le t_{i+1}, \\
+  \Psi_i(t) = \begin{cases}
+    \tau_{i-1}  & \text{if } t_{i-1} \le t \le t_i, \\
+  1-\tau_i      & \text{if } t_{i}   \le t \le t_{i+1}, \\
   0 & \text{otherwise}.
 \end{cases}
 \end{equation}
 \item Quadratic splines ($n=2$)
 \begin{equation}
-  \Phi_i(t) = \begin{cases}
-  \frac{1}{2}\tau^2_{i-1}   & \text{if } t_{i-1}\le t \le t_i, \\
-  -\tau^2_{i-1}+\tau_{i-1}+\frac{1}{2}     & \text{if } t_{i}\le t \le t_{i+1}, \\
-  \frac{1}{2}\tau^2_{i-1}-\tau_{i-1}+\frac{1}{2}     & \text{if } t_{i}\le t \le t_{i+1}, \\
+  \Psi_i(t) = \begin{cases}
+  \frac{1}{2}\tau^2_{i-1}                           & \text{if } t_{i-1} \le t \le t_i, \\
+            -\tau^2_{i}   +\tau_{i}   +\frac{1}{2}  & \text{if } t_{i}   \le t \le t_{i+1}, \\
+  \frac{1}{2}\tau^2_{i+1} -\tau_{i+1} +\frac{1}{2}  & \text{if } t_{i+1} \le t \le t_{i+2}, \\
   0 & \text{otherwise}.
 \end{cases}
 \end{equation}
 \item Cubic splines ($n=3$)
 \begin{equation}
-  \Phi_i(t) = \begin{cases}
-   \frac{1}{6}\tau^3                                                        & \text{if } t_{i-1}\le t \le t_i, \\
-  -\frac{3}{6}\tau^3 +\frac{3}{6}\tau^2 +\frac{3}{6}\tau  +\frac{1}{6} & \text{if } t_{i-1}\le t \le t_i, \\
-   \frac{3}{6}\tau^3 -            \tau^2                     +\frac{4}{6} & \text{if } t_{i-1}\le t \le t_i, \\
-  -\frac{1}{6}\tau^3 +\frac{3}{6}\tau^2 -\frac{3}{6}\tau  +\frac{1}{6} & \text{if } t_{i-1}\le t \le t_i, \\
+  \Psi_i(t) = \begin{cases}
+   \frac{1}{6}\tau^3_{i-2}                                                               & \text{if } t_{i-2} \le t \le t_{i-1}, \\
+  -\frac{3}{6}\tau^3_{i-1} +\frac{3}{6}\tau^2_{i-1} +\frac{3}{6}\tau_{i-1} +\frac{1}{6}  & \text{if } t_{i-1} \le t \le t_i,     \\
+   \frac{3}{6}\tau^3_{i}   -           \tau^2_{i}   +\frac{4}{6}                         & \text{if } t_{i}   \le t \le t_{i+1}, \\
+  -\frac{1}{6}\tau^3_{i+1} +\frac{3}{6}\tau^2_{i+1} -\frac{3}{6}\tau_{i+1} +\frac{1}{6}  & \text{if } t_{i+1} \le t \le t_{i+2}, \\
   0 & \text{otherwise}.
 \end{cases}
 \end{equation}
