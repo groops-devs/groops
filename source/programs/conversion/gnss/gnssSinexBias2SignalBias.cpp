@@ -16,8 +16,9 @@ Converts GNSS signal biases from \href{https://files.igs.org/pub/data/format/sin
 to \file{GnssSignalBias format}{gnssSignalBias}.
 
 Only satellite observable-specific signal biases (OSB) are supported at the moment.
-If multiple entries exist for the same bias, the weighted average (based on time span) of all entries is used.
-Time-variable biases are not supported at the moment.
+Time-variable biases (slopes) are ignored. Combined \verb|X| signals are transformed to actually transmitted signals.
+
+If entries exist for different time periods, you must select one using \config{time}.
 
 See also \program{GnssSignalBias2SinexBias}.
 )";
@@ -26,9 +27,10 @@ See also \program{GnssSignalBias2SinexBias}.
 
 #include "programs/program.h"
 #include "base/string.h"
-#include "files/fileGnssSignalBias.h"
-#include "files/fileGnssReceiverDefinition.h"
 #include "inputOutput/fileSinex.h"
+#include "files/fileMatrix.h"
+#include "files/fileGnssSignalBias.h"
+#include "gnss/gnssReceiver.h"
 
 /***** CLASS ***********************************/
 
@@ -36,13 +38,6 @@ See also \program{GnssSignalBias2SinexBias}.
 * @ingroup programsGroup */
 class GnssSinexBias2SignalBias
 {
-  class Bias
-  {
-  public:
-    Time timeStart, timeEnd;
-    Double value, slope;
-  };
-
 public:
   void run(Config &config, Parallel::CommunicatorPtr comm);
 };
@@ -55,103 +50,106 @@ void GnssSinexBias2SignalBias::run(Config &config, Parallel::CommunicatorPtr /*c
 {
   try
   {
-    FileName fileNameOutSignalBias, fileNameInSinexBias, fileNameInGlonassSignalDefinition;
+    FileName fileNameSignalBias, fileNameSinexBias, fileNamePrnSvn2FreqNo;
     std::vector<std::string> identifiers;
+    Time time;
 
-    readConfig(config, "outputfileSignalBias",             fileNameOutSignalBias,             Config::MUSTSET,  "", "identifier is appended to file name");
-    readConfig(config, "inputfileSinexBias",               fileNameInSinexBias,               Config::MUSTSET,  "", "");
-    readConfig(config, "inputfileGlonassSignalDefinition", fileNameInGlonassSignalDefinition, Config::OPTIONAL, "{groopsDataDir}/gnss/transmitter/signalDefinition/signalDefinition.xml", "GLONASS frequency number mapping");
-    readConfig(config, "identifier",                       identifiers,                       Config::OPTIONAL, "", "(empty = all) satellite PRN, e.g. G23 or E05");
+    readConfig(config, "outputfileSignalBias",         fileNameSignalBias,    Config::MUSTSET,  "", "prn is appended to file name");
+    readConfig(config, "inputfileSinexBias",           fileNameSinexBias,     Config::MUSTSET,  "", "");
+    readConfig(config, "inputfilePrn2FrequencyNumber", fileNamePrnSvn2FreqNo, Config::OPTIONAL, "{groopsDataDir}/gnss/transmitter/glonassPrnSvn2FrequencyNumber.txt", "matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber");
+    readConfig(config, "identifier",                   identifiers,           Config::OPTIONAL, "", "(empty = all) satellite PRN, e.g. G23 or E05");
+    readConfig(config, "time",                         time,                  Config::OPTIONAL, "", "if entries exist for different time periods");
     if(isCreateSchema(config)) return;
 
-    logStatus<<"read SINEX Bias file <"<<fileNameInSinexBias<<">"<<Log::endl;
-    Sinex sinex;
-    readFileSinex(fileNameInSinexBias, sinex);
-    const std::vector<std::string> &lines = sinex.findBlock("BIAS/SOLUTION")->lines;
+    // ==================================================
 
-    std::vector<GnssReceiverDefinitionPtr> signalDefinitions;
-    if(!fileNameInGlonassSignalDefinition.empty())
+    Matrix prnSvn2FreqNo;
+    if(!fileNamePrnSvn2FreqNo.empty())
     {
-      logStatus<<"read GLONASS signal definition file <"<<fileNameInGlonassSignalDefinition<<">"<<Log::endl;
-      readFileGnssReceiverDefinition(fileNameInGlonassSignalDefinition, signalDefinitions);
+      logStatus<<"read GLONASS PRN/SVN to frequency number matrix <"<<fileNamePrnSvn2FreqNo<<">"<< Log::endl;
+      readFileMatrix(fileNamePrnSvn2FreqNo, prnSvn2FreqNo);
     }
 
-    Bool printStationWarning = TRUE;
-    Bool printNonOsbWarning = TRUE;
-    std::map<std::string, std::map<GnssType, std::vector<Bias>>> id2type2biases;
-    for(const auto &line : lines)
-    {
-      std::string biasType = String::trim(line.substr(1,3));
-      std::string svn      = String::trim(line.substr(6,4));
-      std::string prn      = String::trim(line.substr(11,3));
-      std::string station  = String::trim(line.substr(15,9));
+    // ==================================================
 
-      if(biasType != "OSB")
-      {
-        if(printNonOsbWarning)
-        {
-          logWarning<<"bias types other than OSB (observable-specific signal bias) are not yet implemented and will be ignored."<<Log::endl;
-          printNonOsbWarning = FALSE;
-        }
+    logStatus<<"read SINEX Bias file <"<<fileNameSinexBias<<">"<<Log::endl;
+    logInfo<<"  (only satellite specific OSB (observable-specific signal bias) are considered)"<<Log::endl;
+    Sinex sinex;
+    readFileSinex(fileNameSinexBias, sinex);
+
+    std::map<std::string, GnssSignalBias> prn2signalBias;
+    for(const auto &line : sinex.findBlock("BIAS/SOLUTION")->lines)
+    {
+      // *         1         2         3         4         5         6         7         8        9         10        11        12        13
+      // *123456789012345678901234567890123456789012345678901234567890123456789012345678902345678901234567890123456789012345678901234567890123456
+      // *BIAS SVN_ PRN STATION__ OBS1 OBS2 BIAS_START____ BIAS_END______ UNIT __ESTIMATED_VALUE____ _STD_DEV___ __ESTIMATED_SLOPE____ _STD_DEV__
+      std::string biasType  = String::trim(line.substr(1,3));
+      std::string svn       = String::trim(line.substr(6,4));
+      std::string prn       = String::trim(line.substr(11,3));
+      std::string station   = String::trim(line.substr(15,9));
+      GnssType    gnssType  = GnssType(line.substr(25,3)+prn);
+      Time        timeStart = Sinex::str2time(line, 35, FALSE, TRUE);
+      Time        timeEnd   = Sinex::str2time(line, 50, TRUE,  TRUE);
+      Time        timeMid   = 0.5*(timeStart+timeEnd);
+      std::string unit      = String::trim(line.substr(65,4));
+      Double      value     = String::toDouble(line.substr(70,21));
+   // Double      slope     = (line.size() >= 126) ? String::toDouble(line.substr(105,21)) : 0.;
+
+      // satellite specific OSB only
+      if((biasType != "OSB") || prn.empty() || !station.empty())
         continue;
-      }
-      if(station.size() && (!identifiers.size() || std::find(identifiers.begin(), identifiers.end(), station) != identifiers.end()))
-      {
-        if(printStationWarning)
-        {
-          logWarning<<"station biases are not yet implemented and will be ignored."<<Log::endl;
-          printStationWarning = FALSE;
-        }
-        continue;
-      }
       if(identifiers.size() && std::find(identifiers.begin(), identifiers.end(), prn) == identifiers.end())
         continue;
+      if((time != Time()) && !((timeStart <= time) && (time <= timeEnd)))
+        continue;
 
-      GnssType gnssType = GnssType(line.substr(25,3)+prn);
+      // add GLONASS frequency number (find PRN, SVN, time interval)
       if(gnssType == GnssType::GLONASS)
-      {
-        auto iter = std::find_if(signalDefinitions.begin(), signalDefinitions.end(), [&](const GnssReceiverDefinitionPtr &def){ return def->serial == svn; });
-        if(iter != signalDefinitions.end())
-          gnssType.setFrequencyNumber(String::toInt((*iter)->version));
-      }
-      std::string unit = String::trim(line.substr(65,4));
-      Bias bias;
-      bias.value = String::toDouble(line.substr(70,21));
-      bias.slope = line.size() >= 125 ? String::toDouble(line.substr(104,21)) : 0.;
-      bias.timeStart = Sinex::str2time(line, 35, FALSE, TRUE);
-      bias.timeEnd   = Sinex::str2time(line, 50, TRUE,  TRUE);
+        for(UInt i=0; i<prnSvn2FreqNo.rows(); i++)
+          if((prn == prnSvn2FreqNo(i,0)%"R%02i"s) && (svn == prnSvn2FreqNo(i,1)%"R%03i"s) &&
+             (mjd2time(prnSvn2FreqNo(i,2)) <= timeMid) && (timeMid <= mjd2time(prnSvn2FreqNo(i,3))))
+            gnssType.setFrequencyNumber(static_cast<Int>(prnSvn2FreqNo(i,4)));
+
       if(unit == "ns")
-      {
-        bias.value *= 1e-9*LIGHT_VELOCITY;
-        bias.slope *= 1e-9*LIGHT_VELOCITY;
-      }
+        value *= 1e-9*LIGHT_VELOCITY;
       else if(unit == "cyc")
-      {
-        bias.value *= gnssType.wavelength();
-        bias.slope *= gnssType.wavelength();
-      }
+        value *= gnssType.wavelength();
       else
         throw(Exception("unknown unit: "+unit));
-      id2type2biases[prn][gnssType].push_back(bias);
+
+      if(gnssType == GnssType::PHASE)
+        gnssType = gnssType & ~GnssType::ATTRIBUTE;
+
+      UInt idx;
+      if(!gnssType.isInList(prn2signalBias[prn].types, idx))
+      {
+        prn2signalBias[prn].types.push_back(gnssType);
+        prn2signalBias[prn].biases.push_back(value);
+      }
+      else if(value != prn2signalBias[prn].biases.at(idx))
+        logWarning<<prn<<": different biases for the same type "<<gnssType.str()<<" -> only the first one is used"<<Log::endl;
     }
 
-    if(id2type2biases.size())
+    if(prn2signalBias.empty())
     {
-      logStatus<<"write signal bias files <"<<fileNameOutSignalBias<<">"<<Log::endl;
-      for(const auto &id : id2type2biases)
-      {
-        GnssSignalBias signalBias;
-        for(const auto &type : id.second)
-        {
-          signalBias.types.push_back(type.first);
-          Double weightedSum  = std::accumulate(type.second.begin(), type.second.end(), 0.,
-                                                [](Double a, const Bias &bias){ return a + bias.value*(bias.timeEnd-bias.timeStart).seconds(); });
-          Double sumOfWeights = std::accumulate(type.second.begin(), type.second.end(), 0.,
-                                                [](Double a, const Bias &bias){ return a + (bias.timeEnd-bias.timeStart).seconds(); });
-          signalBias.biases.push_back(weightedSum/sumOfWeights);
-        }
-        writeFileGnssSignalBias(fileNameOutSignalBias.appendBaseName("."+id.first), signalBias);
-      }
+      logWarning<<"no satellites found"<<Log::endl;
+      return;
+    }
+
+    // ==================================================
+
+    logStatus<<"write signal bias files <"<<fileNameSignalBias<<">"<<Log::endl;
+    for(const auto &prn : prn2signalBias)
+    {
+      GnssSignalBias signalBias;
+
+      // Transform combined X signals to actually transmitted signals.
+      Matrix T;
+      GnssReceiver::signalCompositionDefault(prn.second.types, signalBias.types, T);
+      T = pseudoInverse(T);
+      signalBias.biases = Vector(T * Vector(prn.second.biases));
+
+      writeFileGnssSignalBias(fileNameSignalBias.appendBaseName("."+prn.first), signalBias);
     }
   }
   catch(std::exception &e)

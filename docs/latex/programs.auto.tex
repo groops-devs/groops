@@ -8222,8 +8222,9 @@ Converts GNSS signal biases from \href{https://files.igs.org/pub/data/format/sin
 to \file{GnssSignalBias format}{gnssSignalBias}.
 
 Only satellite observable-specific signal biases (OSB) are supported at the moment.
-If multiple entries exist for the same bias, the weighted average (based on time span) of all entries is used.
-Time-variable biases are not supported at the moment.
+Time-variable biases (slopes) are ignored. Combined \verb|X| signals are transformed to actually transmitted signals.
+
+If entries exist for different time periods, you must select one using \config{time}.
 
 See also \program{GnssSignalBias2SinexBias}.
 
@@ -8233,10 +8234,11 @@ See also \program{GnssSignalBias2SinexBias}.
 \hline
 Name & Type & Annotation\\
 \hline
-\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileSignalBias & \hfuzz=500pt filename & \hfuzz=500pt identifier is appended to file name\\
+\hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~outputfileSignalBias & \hfuzz=500pt filename & \hfuzz=500pt prn is appended to file name\\
 \hfuzz=500pt\includegraphics[width=1em]{element-mustset.pdf}~inputfileSinexBias & \hfuzz=500pt filename & \hfuzz=500pt \\
-\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfileGlonassSignalDefinition & \hfuzz=500pt filename & \hfuzz=500pt GLONASS frequency number mapping\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~inputfilePrn2FrequencyNumber & \hfuzz=500pt filename & \hfuzz=500pt matrix with columns: GLONASS PRN, SVN, mjdStart, mjdEnd, frequencyNumber\\
 \hfuzz=500pt\includegraphics[width=1em]{element-unbounded.pdf}~identifier & \hfuzz=500pt string & \hfuzz=500pt (empty = all) satellite PRN, e.g. G23 or E05\\
+\hfuzz=500pt\includegraphics[width=1em]{element.pdf}~time & \hfuzz=500pt time & \hfuzz=500pt if entries exist for different time periods\\
 \hline
 \end{tabularx}
 

@@ -104,6 +104,11 @@ public:
   Transform3d global2antennaFrame(UInt idEpoch) const {return global2antenna.at(idEpoch);}
 
   /** @brief Transformation matrix for observed (composed) types from original transmitted types.
+   * E.g. C2DG = C1CG - C1WG + C2WG.
+   * Returns the @a typesTrans and the transformation matrix @a A (dimension: types.size() times typesTrans.size()). */
+  static void signalCompositionDefault(const std::vector<GnssType> &types, std::vector<GnssType> &typesTrans, Matrix &A);
+
+  /** @brief Transformation matrix for observed (composed) types from original transmitted types.
   * E.g. C2DG = C1CG - C1WG + C2WG.
   * Returns the @a typesTrans and the transformation matrix @a A (dimension: types.size() times typesTrans.size()). */
   virtual void signalComposition(UInt /*idEpoch*/, const std::vector<GnssType> &types, std::vector<GnssType> &typesTrans, Matrix &A) const;
