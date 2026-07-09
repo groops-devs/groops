@@ -815,6 +815,12 @@ void Tree::fileRun()
       args->startupInfo->dwFlags &=~ STARTF_USESTDHANDLES;});
     process.start(QString("cmd.exe"), QStringList({"/k", command}));
     process.detach();
+#elif __APPLE__
+    QStringList tokens = command.split(QRegularExpression("\\s+(?=(?:[^\']*\'[^\']*\')*[^\']*$)"), Qt::SkipEmptyParts); // split by whitespace considering single quotes
+    for (QString &str : tokens)
+      str.remove('\'');  // remove any single quotes
+
+    QProcess::startDetached(tokens.at(0), tokens.mid(1));
 #else
     QProcess::startDetached(command);
 #endif

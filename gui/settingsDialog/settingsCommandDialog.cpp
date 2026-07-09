@@ -89,9 +89,11 @@ void SettingsCommandDialog::readCommandList(QStringList &labelList, QStringList 
       labelList<<"groops (Windows)";                 commandList<<"cd /d %w && groops.exe %f";
       labelList<<"groops (KDE)";                     commandList<<"konsole --workdir %w -e bash -ic \"groops %f; bash\"";
       labelList<<"groops (GNOME)";                   commandList<<"gnome-terminal --working-directory=%w -x bash -ic \"groops %f; bash\"";
+      labelList<<"groops (macOS)";                   commandList<<"osascript -e 'tell application \"Terminal\" to activate' -e 'tell application \"Terminal\" to do script \"cd %w && groops %f\"'";
       labelList<<"groopsMPI (Windows, 4 processes)"; commandList<<"cd /d %w && mpiexec /genv OMP_NUM_THREADS 1 -n 4 groopsMPI.exe %f";
       labelList<<"groopsMPI (KDE, 4 processes)";     commandList<<"konsole --workdir %w -e bash -ic \"OMP_NUM_THREADS=1 mpiexec -x OMP_NUM_THREADS -n 4 groopsMPI %f; bash\"";
       labelList<<"groopsMPI (GNOME, 4 processes)";   commandList<<"gnome-terminal --working-directory=%w -x bash -ic \"OMP_NUM_THREADS=1 mpiexec -x OMP_NUM_THREADS -n 4 groopsMPI %f; bash\"";
+      labelList<<"groopsMPI (macOS, 4 processes)";   commandList<<"osascript -e 'tell application \"Terminal\" to activate' -e 'tell application \"Terminal\" to do script \"cd %w && OMP_NUM_THREADS=1 mpiexec -x OMP_NUM_THREADS -n 4 groopsMPI %f\"'";
       settings.setValue("execute/commandLabels", labelList);
       settings.setValue("execute/commands",      commandList);
     }
