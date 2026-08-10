@@ -16,3 +16,9 @@ if((NOT ${DISABLE_NRLMSIS}) OR (NOT DEFINED DISABLE_NRLMSIS))
     external/nrlmsis2/nrlmsis2Wrapper.F90
     )
 endif()
+
+set(SOURCES ${SOURCES}
+external/msise00/msise00Kinds.F90
+external/msise00/msise00Data.F90
+external/msise00/msise00Model.F90
+)
