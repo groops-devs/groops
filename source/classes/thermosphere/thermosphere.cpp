@@ -17,6 +17,7 @@
 #include "external/hwm/hwm.h"
 #include "config/configRegister.h"
 #include "classes/thermosphere/thermosphereJB2008.h"
+#include "classes/thermosphere/thermosphereMSISE00.h"
 #include "classes/thermosphere/thermosphereNRLMSIS2.h"
 #include "classes/thermosphere/thermosphere.h"
 
@@ -25,6 +26,7 @@
 
 GROOPS_REGISTER_CLASS(Thermosphere, "thermosphereType",
                       ThermosphereJB2008,
+                      ThermosphereMSISE00,
                       ThermosphereNRLMSIS2)
 
 GROOPS_READCONFIG_CLASS(Thermosphere, "thermosphereType")
@@ -41,6 +43,8 @@ ThermospherePtr Thermosphere::create(Config &config, const std::string &name)
     readConfigChoice(config, name, choice, Config::MUSTSET, "", "density, temperature and velocity");
     if(readConfigChoiceElement(config, "jb2008",  choice, "Jacchia-Bowman 2008 Empirical Thermospheric Density Model"))
       thermosphere = ThermospherePtr(new ThermosphereJB2008(config));
+    if(readConfigChoiceElement(config, "msise00", choice, "NRLMSISE-00 Empirical Thermospheric Density Model"))
+      thermosphere = ThermospherePtr(new ThermosphereMSISE00(config));
     if(readConfigChoiceElement(config, "nrlmsis2",  choice, "NRLMSIS 2.0 Empirical Thermospheric Density Model"))
       thermosphere = ThermospherePtr(new ThermosphereNRLMSIS2(config));
     endChoice(config);
