@@ -40,6 +40,7 @@ model of temperature and neutral species densities. Earth and Space Science, Vol
 class ThermosphereNRLMSIS2 : public Thermosphere
 {
   MiscValuesArc msisData;
+  Bool          interpolateSpaceWeatherIndices;
 
 public:
   inline ThermosphereNRLMSIS2(Config &config);
@@ -57,6 +58,7 @@ inline ThermosphereNRLMSIS2::ThermosphereNRLMSIS2(Config &config)
 
     readConfig(config, "inputfileMsis",            fileNameMsis,         Config::MUSTSET,  "{groopsDataDir}/thermosphere/nrlmsis2/inputMSIS.txt", "input NRLMSIS 2.0");
     readConfig(config, "inputfileModelParameters", fileNameParm,         Config::MUSTSET,  "{groopsDataDir}/thermosphere/nrlmsis2/msis20.parm",   "path to msis20.parm file");
+    readConfig(config, "interpolateSpaceWeatherIndices", interpolateSpaceWeatherIndices, Config::OPTIONAL, "0", "linearly interpolate F10.7 and Ap between input epochs");
     readConfig(config, "inputfileMagnetic3hAp",    fileNameMagnetic3hAp, Config::OPTIONAL, "{groopsDataDir}/thermosphere/hwm14/apActivity.txt",   "indicies for wind model");
     readConfig(config, "hwm14DataDirectory",       fileNameHwm14Path,    Config::OPTIONAL, "{groopsDataDir}/thermosphere/hwm14",                  "directory containing dwm07b104i.dat, gd2qd.dat, hwm123114.bin");
     if(isCreateSchema(config)) return;
@@ -96,8 +98,8 @@ inline void ThermosphereNRLMSIS2::state(const Time &time, const Vector3d &positi
 
     // get data
     const Time     timeUt      =  timeGPS2UTC(time);
-    const Vector   index       =  getIndices(msisData, time, FALSE);
-    const F77Float dailyF107   =  static_cast<F77Float>(getIndices(msisData, time-mjd2time(1), FALSE)(1));
+    const Vector   index       =  getIndices(msisData, time, interpolateSpaceWeatherIndices);
+    const F77Float dailyF107   =  static_cast<F77Float>(getIndices(msisData, time-mjd2time(1), interpolateSpaceWeatherIndices)(1));
     const F77Float averageF107 =  static_cast<F77Float>(index(0));
     const F77Float aps[7]      = {static_cast<F77Float>(index(2)),
                                   static_cast<F77Float>(index(3)),
