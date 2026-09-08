@@ -160,6 +160,9 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
               if(type == (GnssType::ELEVATION + GnssType::L1)) {elevation = value; continue;}
             }
 
+            if(type == GnssType::IONODELAY)
+              continue;
+
             Double redundancy=NAN_EXPR, sigma=NAN_EXPR;
             if((idType < epoch.obsType.size()) && (type == epoch.obsType.at(idType))) // next redundancy?
             {
@@ -243,10 +246,10 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
       Double x      = dx/2;
       Double factor = 0;
       for(; x<std::min(huber, 10.); x+=dx)
-       factor += std::exp(-0.5*x*x) * dx;
+        factor += std::exp(-0.5*x*x) * dx;
       // variance of downweighted normal distribution
       for(; x<10.; x+=dx)
-       factor += std::pow(x/huber, -2*huberPower) * std::exp(-0.5*x*x) * dx;
+        factor += std::pow(x/huber, -2*huberPower) * std::exp(-0.5*x*x) * dx;
       factor *= 2./std::sqrt(2*PI);
 
       logStatus<<"write accuracy definition <"<<fileNameAntennaAccuracy<<">"<<Log::endl;
@@ -271,7 +274,7 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
           if(pattern.count.size())
             for(UInt i=0; i<pattern.pattern.rows(); i++)
               for(UInt k=0; k<pattern.pattern.columns(); k++)
-                pattern.pattern(i, k) = pattern.sum(i, k)/pattern.count(i, k);
+                pattern.pattern(i, k) = pattern.sum(i, k)/pattern.weight(i, k);
         }
       writeFileGnssAntennaDefinition(fileNameAntennaMean, antennaList);
     }
