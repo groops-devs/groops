@@ -243,10 +243,10 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
       Double x      = dx/2;
       Double factor = 0;
       for(; x<std::min(huber, 10.); x+=dx)
-       factor += std::exp(-0.5*x*x) * dx;
+        factor += std::exp(-0.5*x*x) * dx;
       // variance of downweighted normal distribution
       for(; x<10.; x+=dx)
-       factor += std::pow(x/huber, -2*huberPower) * std::exp(-0.5*x*x) * dx;
+        factor += std::pow(x/huber, -2*huberPower) * std::exp(-0.5*x*x) * dx;
       factor *= 2./std::sqrt(2*PI);
 
       logStatus<<"write accuracy definition <"<<fileNameAntennaAccuracy<<">"<<Log::endl;
