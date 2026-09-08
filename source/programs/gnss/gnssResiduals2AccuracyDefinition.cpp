@@ -160,6 +160,9 @@ void GnssResiduals2AccuracyDefinition::run(Config &config, Parallel::Communicato
               if(type == (GnssType::ELEVATION + GnssType::L1)) {elevation = value; continue;}
             }
 
+            if(type == GnssType::IONODELAY)
+              continue;
+
             Double redundancy=NAN_EXPR, sigma=NAN_EXPR;
             if((idType < epoch.obsType.size()) && (type == epoch.obsType.at(idType))) // next redundancy?
             {

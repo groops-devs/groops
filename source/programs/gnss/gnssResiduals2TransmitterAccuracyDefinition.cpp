@@ -111,6 +111,9 @@ void GnssResiduals2TransmitterAccuracyDefinition::run(Config &config, Parallel::
             if(type == (GnssType::AZIMUT    + GnssType::L2)) {azimuth   = value; continue;}
             if(type == (GnssType::ELEVATION + GnssType::L2)) {elevation = value; continue;}
 
+            if(type == GnssType::IONODELAY)
+              continue;
+
             Double redundancy=NAN_EXPR, sigma=NAN_EXPR;
             if((idType < epoch.obsType.size()) && (type == epoch.obsType.at(idType))) // next redundancy?
             {
