@@ -369,6 +369,10 @@ void RinexObservation2GnssReceiver::readHeader(InFile &file, UInt lineCount)
           if(rinexVersion <= 3.02 && system == 'C' && type[1] == '1')
             type[1] = '2'; // version 3.02: BeiDou C1C/L1I/... ==> C2C/L2I/...
 
+          // blank "attribute" for 'X' (channel number) pseudo-observations
+          if(type[0] == 'X' && type.size() == 2)
+            type += '?'; // e.g. X1 ==> X1?
+
           system2ObsTypes[system].push_back(GnssType(type+system+"**"));
         }
       }
