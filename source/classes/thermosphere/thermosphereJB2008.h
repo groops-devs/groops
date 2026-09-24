@@ -41,6 +41,7 @@ class ThermosphereJB2008 : public Thermosphere
 {
   MiscValuesArc solarFSMY;
   MiscValuesArc dtc;
+  Bool          interpolateSpaceWeatherIndices;
 
 public:
   inline ThermosphereJB2008(Config &config);
@@ -58,6 +59,7 @@ inline ThermosphereJB2008::ThermosphereJB2008(Config &config)
 
     readConfig(config, "inputfileSolfsmy",      fileNameSolfsmy,      Config::MUSTSET,  "{groopsDataDir}/thermosphere/jb2008/SOLFSMY.TXT",   "solar indices");
     readConfig(config, "inputfileDtc",          fileNameDtc,          Config::MUSTSET,  "{groopsDataDir}/thermosphere/jb2008/DTCFILE.TXT",   "");
+    readConfig(config, "interpolateSpaceWeatherIndices", interpolateSpaceWeatherIndices, Config::OPTIONAL, "0", "linearly interpolate the daily solar indices; DTC remains hourly interpolated");
     readConfig(config, "inputfileMagnetic3hAp", fileNameMagnetic3hAp, Config::OPTIONAL, "{groopsDataDir}/thermosphere/hwm14/apActivity.txt", "indicies for wind model");
     readConfig(config, "hwm14DataDirectory",    fileNameHwm14Path,    Config::OPTIONAL, "{groopsDataDir}/thermosphere/hwm14",                "directory containing dwm07b104i.dat, gd2qd.dat, hwm123114.bin");
     if(isCreateSchema(config)) return;
@@ -132,17 +134,17 @@ inline void ThermosphereJB2008::state(const Time &time, const Vector3d &position
     ellipsoid(position, lon, lat, height);
 
     // use 5 day lag for y10 for jb2008
-    const Vector index5 = getIndices(solarFSMY, time - mjd2time(5), FALSE);
+    const Vector index5 = getIndices(solarFSMY, time - mjd2time(5), interpolateSpaceWeatherIndices);
     const Double Y10  = index5(6);
     const Double Y10B = index5(7);
 
     // use 2 day lag for m10 for jb2008
-    const Vector index2 = getIndices(solarFSMY, time - mjd2time(2), FALSE);
+    const Vector index2 = getIndices(solarFSMY, time - mjd2time(2), interpolateSpaceWeatherIndices);
     const Double M10  = index2(4);
     const Double M10B = index2(5);
 
     // use 1 day lag for f10 and s10 for jb2008
-    const Vector index1 = getIndices(solarFSMY, time - mjd2time(1), FALSE);
+    const Vector index1 = getIndices(solarFSMY, time - mjd2time(1), interpolateSpaceWeatherIndices);
     const Double F10  = index1(0);
     const Double F10B = index1(1);
     const Double S10  = index1(2);
