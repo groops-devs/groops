@@ -8,6 +8,7 @@ This guide provides step-by-step instructions for compiling and running GROOPS f
     - [Ubuntu](#ubuntu)
     - [OpenSUSE](#opensuse)
     - [Arch Linux](#arch-linux)
+- [MacOS (Homebrew)](#macos-homebrew)
 
 ## Overview
 
@@ -368,6 +369,84 @@ working with GROOPS easier.
    ```
    echo "export PATH=$PATH:$HOME/groops/bin" >> $HOME/.bashrc
    source $HOME/.bashrc
+   ```
+
+2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` or `OMP_NUM_THREADS`  to the number of threads to use for matrix operations.
+
+    :warning: When running GROOPS in parallel, threaded BLAS/LAPACK libraries may conflict with MPI processes and cause a deterioration of performance. In that case, the number of threads for matrix operations should be set to 1.
+
+GROOPS depends on data files such as Earth rotation, Love numbers, and wavelet coefficients.
+An initial data set that is regularly updated is available on [our FTP server](https://ftp.tugraz.at/pub/ITSG/groops/).
+You can choose between downloading the data directory or a single [zip file](https://ftp.tugraz.at/pub/ITSG/groops/data.zip) with the same content.
+
+## MacOS (Homebrew)
+
+The installation procedure for MacOS relies on the [Homebrew](https://brew.sh) package manager.
+You can install it in various ways, following the [installation instructions](https://docs.brew.sh/Installation).
+This installation guide assumes that the GROOPS source code is located in `$HOME/groops` and is tested on MacOS Tahoe.
+
+1. First, make sure Homebrew packages are up to date:
+    ```
+    brew update && brew upgrade
+    ```
+
+2. Install dependencies and build tools:
+    ```
+    brew install gcc cmake expat gmt
+    ```
+
+3. *(Optional)* Install the NetCDF development package:
+    ```
+    brew install netcdf
+    ```
+
+4. *(Optional)* Install liberfa development packages:
+    ```
+    brew install erfa
+    ```
+
+5. *(Optional)* Install MPI development packages:
+    ```
+    brew install openmpi
+    ```
+
+6. Create the build directory and compile GROOPS:
+    ```
+    mkdir $HOME/groops/source/build && cd $HOME/groops/source/build
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/groops \
+    -DCMAKE_PREFIX_PATH="/opt/homebrew;/opt/homebrew/opt/openblas" \
+    -DCMAKE_Fortran_COMPILER="/opt/homebrew/bin/gfortran" \
+    -DCMAKE_CXX_COMPILER="/opt/homebrew/bin/g++-15"
+    make -j4
+    make install
+    ```
+### Graphical User Interface (GUI)
+
+:warning: The Graphical User Interface support on MacOS (Homebrew) is currently experimental.
+
+Install Qt base and compatibility packages:
+```
+brew install qtbase qt5compat
+```
+
+Then, change into the `gui` directory and compile the source code:
+```
+cd $HOME/groops/gui
+qmake
+make
+```
+
+### MacOs post-installation steps
+
+After the installation of GROOPS and GROOPS GUI, we recommend some post-installation configuration steps to make
+working with GROOPS easier.
+
+1. To use the GROOPS and GROOPS GUI binaries without directory prefix, you have to add the required
+   directories to the system path:
+
+   ```
+   echo "export PATH=$PATH:$HOME/groops/bin" >> $HOME/.zshrc
+   source $HOME/.zshrc
    ```
 
 2. *(Optional)* Set the environment variable `OPENBLAS_NUM_THREADS` or `OMP_NUM_THREADS`  to the number of threads to use for matrix operations.

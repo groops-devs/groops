@@ -26,6 +26,7 @@ QT += widgets
 CONFIG += c++14
 
 win32:RC_ICONS += resources/groops.ico
+macx:ICON = resources/groops.icns
 
 TEMPLATE = app
 
