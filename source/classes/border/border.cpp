@@ -18,6 +18,7 @@
 #include "borderCap.h"
 #include "borderPolygon.h"
 #include "borderGlobal.h"
+#include "borderSatelliteVisibility.h"
 #include "border.h"
 
 /***********************************************/
@@ -25,7 +26,8 @@
 GROOPS_REGISTER_CLASS(Border, "borderType",
                       BorderRectangle,
                       BorderCap,
-                      BorderPolygon)
+                      BorderPolygon,
+                      BorderSatelliteVisibility)
 
 GROOPS_READCONFIG_UNBOUNDED_CLASS(Border, "borderType")
 
@@ -44,6 +46,8 @@ Border::Border(Config &config, const std::string &name)
         border.push_back(new BorderCap(config));
       if(readConfigChoiceElement(config, "polygon", type, "polygon from file"))
         border.push_back(new BorderPolygon(config));
+      if(readConfigChoiceElement(config, "satelliteVisibility", type, "satellite visibility"))
+        border.push_back(new BorderSatelliteVisibility(config));
       endChoice(config);
       if(isCreateSchema(config))
         return;
