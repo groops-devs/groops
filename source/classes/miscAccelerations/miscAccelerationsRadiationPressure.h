@@ -25,10 +25,18 @@ Solar radiation pressure: The solar constant at 1~AU can be set via \config{sola
 The \config{factorSolarRadation} can be used to scale the computed acceleration of the direct solar radiation.
 
 Earth radiation pressure:
-Input are a time series of gridded albedo values (unitless) as \configFile{inputfileAlbedoTimeSeries}{griddedDataTimeSeries}
-and a time series of gridded longwave flux (W/m$^2$) as \configFile{inputfileLongwaveFluxTimeSeries}{griddedDataTimeSeries}.
-Both files are optional and if not specified, the respective effect on the acceleration is not computed.
-The \config{factorEarthRadation} can be used to scale the computed acceleration of the earth radiation.
+The reflected shortwave radiation is given either as a time series of gridded albedo values (unitless)
+as \configFile{inputfileAlbedoTimeSeries}{griddedDataTimeSeries}, which is multiplied by the
+incident solar radiation computed from the solar geometry, or directly as a time series of gridded
+reflected shortwave flux (W/m$^2$) as \configFile{inputfileShortwaveFluxTimeSeries}{griddedDataTimeSeries}
+(e.g. from ERA5 or CERES SYN1deg). The shortwave flux is used without illumination geometry,
+so its temporal resolution has to be high enough (e.g. hourly) to resolve the diurnal cycle.
+Both inputs are mutually exclusive.
+The emitted longwave radiation is given as a time series of gridded longwave flux (W/m$^2$)
+as \configFile{inputfileLongwaveFluxTimeSeries}{griddedDataTimeSeries}.
+All files are optional and if not specified, the respective effect on the acceleration is not computed.
+All inputs must be given on the same grid.
+The \config{factorEarthRadiation} can be used to scale the computed acceleration of the earth radiation.
 
 The thermal radiation (TRP) of the satellite itself is either computed as direct re-emission or
 based on the actual temperature of the satellite surfaces, depending on the setings of the
@@ -68,8 +76,8 @@ class MiscAccelerationsRadiationPressure : public MiscAccelerationsBase
 
   Double                      solarflux;
   EclipsePtr                  eclipse;
-  Bool                        hasAlbedo, hasFlux;
-  InFileGriddedDataTimeSeries fileAlbedoTimeSeries, fileFluxTimeSeries;
+  Bool                        hasAlbedo, hasFlux, hasSwFlux;
+  InFileGriddedDataTimeSeries fileAlbedoTimeSeries, fileFluxTimeSeries, fileSwFluxTimeSeries;
   std::vector<Vector3d>       points;
   std::vector<Double>         areas;
   Double                      factorSun, factorEarth, factorThermal;
@@ -90,7 +98,7 @@ inline MiscAccelerationsRadiationPressure::MiscAccelerationsRadiationPressure(Co
 {
   try
   {
-    FileName fileNameInAlbedo, fileNameInFlux;
+    FileName fileNameInAlbedo, fileNameInFlux, fileNameInSwFlux;
 
     renameDeprecatedConfig(config, "factorSolarRadation", "factorSolarRadiation", date2time(2026, 7, 6));
     renameDeprecatedConfig(config, "factorEarthRadation", "factorEarthRadiation", date2time(2026, 7, 6));
@@ -99,6 +107,7 @@ inline MiscAccelerationsRadiationPressure::MiscAccelerationsRadiationPressure(Co
     readConfig(config, "eclipse",                         eclipse,          Config::MUSTSET,  "",     "");
     readConfig(config, "inputfileAlbedoTimeSeries",       fileNameInAlbedo, Config::OPTIONAL, "{groopsDataDir}/earthRadiationPressure/CERES_SYN1deg_albedo_climatology.dat",       "GriddedDataTimeSeries of albedo values (unitless)");
     readConfig(config, "inputfileLongwaveFluxTimeSeries", fileNameInFlux,   Config::OPTIONAL, "{groopsDataDir}/earthRadiationPressure/CERES_SYN1deg_longwaveFlux_climatology.dat", "GriddedDataTimeSeries of longwave flux values [W/m^2]");
+    readConfig(config, "inputfileShortwaveFluxTimeSeries",fileNameInSwFlux, Config::OPTIONAL, "", "GriddedDataTimeSeries of reflected shortwave flux values [W/m^2]");
     readConfig(config, "factorSolarRadiation",            factorSun,        Config::DEFAULT,  "1.0",  "Solar radiation pressure is multiplied by this factor");
     readConfig(config, "factorEarthRadiation",            factorEarth,      Config::DEFAULT,  "1.0",  "Earth radiation preussure is multiplied by this factor");
     readConfig(config, "factorThermalRadiation",          factorThermal,    Config::DEFAULT,  "1.0",  "Thermal (re-)radiation is multiplied by this factor");
@@ -124,6 +133,20 @@ inline MiscAccelerationsRadiationPressure::MiscAccelerationsRadiationPressure(Co
       points  = grid.points;
       areas   = grid.areas;
       hasFlux = TRUE;
+    }
+
+    hasSwFlux = FALSE;
+    if(!fileNameInSwFlux.empty())
+    {
+      if(hasAlbedo)
+        throw(Exception("Albedo and shortwave flux are mutually exclusive"));
+      fileSwFluxTimeSeries.open(fileNameInSwFlux);
+      GriddedData grid = fileSwFluxTimeSeries.grid();
+      if(points.size() && (points.size() != grid.points.size()))
+        throw(Exception("All ERP inputs must be given on same grid"));
+      points    = grid.points;
+      areas     = grid.areas;
+      hasSwFlux = TRUE;
     }
 
     // convert area from unit sphere
@@ -165,11 +188,12 @@ inline Vector3d MiscAccelerationsRadiationPressure::acceleration(SatelliteModelP
 
     // Earth Radiation Pressure (ERP)
     // ------------------------------
-    if((factorEarth || factorThermal) && (hasAlbedo || hasFlux))
+    if((factorEarth || factorThermal) && (hasAlbedo || hasFlux || hasSwFlux))
     {
-      Vector dataAlbedo, dataFlux;
+      Vector dataAlbedo, dataFlux, dataSwFlux;
       if(hasAlbedo) dataAlbedo = fileAlbedoTimeSeries.data(time);
       if(hasFlux)   dataFlux   = fileFluxTimeSeries.data(time);
+      if(hasSwFlux) dataSwFlux = fileSwFluxTimeSeries.data(time);
 
       for(UInt i=0; i<points.size(); i++)
       {
@@ -185,7 +209,9 @@ inline Vector3d MiscAccelerationsRadiationPressure::acceleration(SatelliteModelP
 
         // Reflected Irradiance
         Double eReflectivity = 0;
-        if(hasAlbedo)
+        if(hasSwFlux)
+          eReflectivity = f * dataSwFlux(i)/LIGHT_VELOCITY;   // ERA5: reflected flux used directly
+        else if(hasAlbedo)
         {
           Vector3d directionSunEarth    = posEarth-posSun;
           const Double distanceSunEarth = directionSunEarth.normalize();
@@ -201,7 +227,7 @@ inline Vector3d MiscAccelerationsRadiationPressure::acceleration(SatelliteModelP
 
         F += factorEarth * force(satellite, directionEarthSat, eReflectivity, eEmittance, absorbedPressure);
       }
-    } // if((factorEarth || factorThermal) && (hasAlbedo || hasFlux)
+    } // if((factorEarth || factorThermal) && (hasAlbedo || hasFlux || hasSwFlux)
 
     // Thermal Radiation Pressure (TRP)
     // --------------------------------
