@@ -333,6 +333,7 @@ programs/griddedData/griddedDataConcatenate.cpp
 programs/griddedData/griddedDataCreate.cpp
 programs/griddedData/griddedDataInterpolate.cpp
 programs/griddedData/griddedDataReduceSampling.cpp
+programs/griddedData/griddedDataTimeSeries2Era5TOAFlux.cpp
 programs/griddedData/griddedDataTimeSeries2GriddedData.cpp
 programs/griddedData/griddedDataTimeSeries2PotentialCoefficients.cpp
 programs/griddedData/griddedTopography2AtmospherePotentialCoefficients.cpp
