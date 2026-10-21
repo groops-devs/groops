@@ -88,6 +88,8 @@ void GriddedDataTimeSeries2Era5Flux::run(Config &config, Parallel::CommunicatorP
     for(UInt i=1; i<timesIn.size(); i++)
       if(std::fabs((timesIn.at(i)-timesIn.at(i-1)).seconds() - accumulation) > 1e-3)
         throw(Exception("epochs must be continuous with spacing accumulationInterval, gap at "+timesIn.at(i).dateTimeStr()));
+    if(std::fabs(180./resolution - std::round(180./resolution)) > 1e-9)
+        throw(Exception("resolution must divide 180 degrees"));
 
     // ============================================
 
